@@ -2,6 +2,9 @@ package com.terraformation.backend.support.atlassian
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.support.atlassian.resource.AtlassianResource
+import com.terraformation.backend.support.atlassian.resource.CreateServiceDeskRequest
+import com.terraformation.backend.support.atlassian.resource.DeleteIssue
+import com.terraformation.backend.support.atlassian.resource.PostServiceDeskRequestResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.java.Java
 import io.ktor.client.plugins.auth.*
@@ -21,7 +24,24 @@ import kotlinx.coroutines.runBlocking
 class AtlassianHttpClient(private val config: TerrawareServerConfig) {
   private val httpClient: HttpClient by lazy { createHttpClient() }
 
-  fun <T> makeRequest(resource: AtlassianResource<T>): T {
+  fun deleteIssue(issueId: String) = makeRequest(DeleteIssue(issueId))
+
+  fun createServiceDeskRequest(
+      description: String,
+      summary: String,
+      reporter: String,
+      requestType: SupportRequestType,
+  ): PostServiceDeskRequestResponse =
+      makeRequest(
+          CreateServiceDeskRequest(
+              description = description,
+              summary = summary,
+              reporter = reporter,
+              requestTypeId = getSupportRequestTypeId(requestType),
+              serviceDeskId = config.atlassian.serviceDeskId!!,
+          ))
+
+  private fun <T> makeRequest(resource: AtlassianResource<T>): T {
 
     val response = runBlocking {
       val httpResponse = httpClient.request { resource.buildRequest(this) }
@@ -30,6 +50,12 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
 
     return response
   }
+
+  private fun getSupportRequestTypeId(requestType: SupportRequestType) =
+      when (requestType) {
+        SupportRequestType.BUG_REPORT -> config.atlassian.bugReportTypeId!!
+        SupportRequestType.FEATURE_REQUEST -> config.atlassian.featureRequestTypeId!!
+      }
 
   private fun createHttpClient(): HttpClient {
     return HttpClient(Java) {
