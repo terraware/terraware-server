@@ -2,8 +2,10 @@ package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.nursery.BatchSubstrate
+import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.nursery.model.ExistingBatchModel
+import io.mockk.every
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -79,5 +81,23 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
     val actual = store.fetchOneById(batchId)
 
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `fetchWithdrawalById populates undo fields`() {
+    every { user.canReadWithdrawal(any()) } returns true
+
+    insertBatch()
+    val withdrawalId = insertWithdrawal(purpose = WithdrawalPurpose.Other)
+    insertBatchWithdrawal(readyQuantityWithdrawn = 1)
+    val undoWithdrawalId =
+        insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+    insertBatchWithdrawal(readyQuantityWithdrawn = -1)
+
+    val withdrawal = store.fetchWithdrawalById(withdrawalId)
+    assertEquals(undoWithdrawalId, withdrawal.undoneByWithdrawalId, "Undone by")
+
+    val undoWithdrawal = store.fetchWithdrawalById(undoWithdrawalId)
+    assertEquals(withdrawalId, undoWithdrawal.undoesWithdrawalId, "Undoes")
   }
 }
