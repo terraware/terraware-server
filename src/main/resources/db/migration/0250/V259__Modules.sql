@@ -27,9 +27,7 @@ CREATE TABLE accelerator.events (
     created_by BIGINT NOT NULL REFERENCES users,
     created_time TIMESTAMP WITH TIME ZONE NOT NULL,
     modified_by BIGINT NOT NULL REFERENCES users,
-    modified_time TIMESTAMP WITH TIME ZONE NOT NULL,
-
-    UNIQUE(id, module_id, event_type_id)
+    modified_time TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
 CREATE TABLE accelerator.event_projects (
