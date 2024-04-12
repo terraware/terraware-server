@@ -1,1 +1,3 @@
+f8e9a83d2ed Update dependency org.apache.tika:tika-core to v2.9.2 (#1836)
+ef5157b2132 Update database dependencies (#1835)
 26c2735f02e SW-5187 Add endpoint to undo nursery withdrawals (#1839)
