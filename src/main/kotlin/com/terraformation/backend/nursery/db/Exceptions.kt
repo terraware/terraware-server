@@ -24,5 +24,15 @@ class CrossOrganizationNurseryTransferNotAllowedException(
         "Cannot transfer from facility $facilityId to facility $destinationFacilityId because " +
             "they are in different organizations")
 
+class UndoOfNurseryTransferNotAllowedException(val withdrawalId: WithdrawalId) :
+    MismatchedStateException("Cannot undo nursery transfer withdrawal $withdrawalId")
+
+class UndoOfUndoNotAllowedException(val withdrawalId: WithdrawalId) :
+    MismatchedStateException(
+        "Cannot undo withdrawal $withdrawalId that was an undo of another withdrawal")
+
+class WithdrawalAlreadyUndoneException(val withdrawalId: WithdrawalId) :
+    MismatchedStateException("Withdrawal $withdrawalId has already been undone")
+
 class WithdrawalNotFoundException(val withdrawalId: WithdrawalId) :
     EntityNotFoundException("Withdrawal $withdrawalId not found")

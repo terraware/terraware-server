@@ -98,6 +98,23 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         notReadyQuantityWithdrawn = 32,
         readyQuantityWithdrawn = 33)
 
+    // Withdrawal that is undone should not affect stats.
+    insertWithdrawal(facilityId = facilityId, purpose = WithdrawalPurpose.Dead)
+    insertBatchWithdrawal(
+        batchId = batchId1,
+        germinatingQuantityWithdrawn = 34,
+        notReadyQuantityWithdrawn = 35,
+        readyQuantityWithdrawn = 36)
+    insertWithdrawal(
+        facilityId = facilityId,
+        purpose = WithdrawalPurpose.Undo,
+        undoesWithdrawalId = inserted.withdrawalId)
+    insertBatchWithdrawal(
+        batchId = batchId1,
+        germinatingQuantityWithdrawn = -34,
+        notReadyQuantityWithdrawn = -35,
+        readyQuantityWithdrawn = -36)
+
     val expected =
         NurseryStats(
             facilityId = facilityId,
