@@ -232,7 +232,8 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 INSERT INTO tracking.planting_types (id, name)
 VALUES (1, 'Delivery'),
        (2, 'Reassignment From'),
-       (3, 'Reassignment To')
+       (3, 'Reassignment To'),
+       (4, 'Undo')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO tracking.recorded_plant_statuses (id, name)
@@ -440,7 +441,8 @@ INSERT INTO nursery.withdrawal_purposes (id, name)
 VALUES (1, 'Nursery Transfer'), -- ID 1 is used in a check constraint; don't change it
        (2, 'Dead'),
        (3, 'Out Plant'),
-       (4, 'Other')
+       (4, 'Other'),
+       (5, 'Undo')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO seedbank.withdrawal_purposes (id, name)

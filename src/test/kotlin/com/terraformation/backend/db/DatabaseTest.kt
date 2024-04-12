@@ -1240,6 +1240,7 @@ abstract class DatabaseTest {
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       purpose: WithdrawalPurpose = WithdrawalPurpose.Other,
+      undoesWithdrawalId: Any? = row.undoesWithdrawalId,
       withdrawnDate: LocalDate = row.withdrawnDate ?: LocalDate.EPOCH,
   ): WithdrawalId {
     val rowWithDefaults =
@@ -1252,6 +1253,7 @@ abstract class DatabaseTest {
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             purposeId = purpose,
+            undoesWithdrawalId = undoesWithdrawalId?.toIdWrapper { WithdrawalId(it) },
             withdrawnDate = withdrawnDate,
         )
 

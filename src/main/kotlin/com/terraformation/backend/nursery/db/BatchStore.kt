@@ -996,7 +996,9 @@ class BatchStore(
 
     // The query results won't include purposes without any withdrawals, so add them.
     val withdrawnForAllPurposes =
-        WithdrawalPurpose.entries.associateWith { withdrawnByPurpose[it]?.toLong() ?: 0L }
+        WithdrawalPurpose.entries
+            .filterNot { it == WithdrawalPurpose.Undo }
+            .associateWith { withdrawnByPurpose[it]?.toLong() ?: 0L }
 
     val conditions =
         listOfNotNull(
