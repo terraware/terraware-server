@@ -122,10 +122,10 @@ class TerrawareServerConfig(
       /** Enabled flag */
       @DefaultValue("false") val enabled: Boolean = false,
 
-      /** JIRA Bug Report type ID */
+      /** Jira Bug Report type ID */
       val bugReportTypeId: Int? = null,
 
-      /** JIRA Feature Request type ID */
+      /** Jira Feature Request type ID */
       val featureRequestTypeId: Int? = null,
 
       /** Service Desk ID */
@@ -140,7 +140,7 @@ class TerrawareServerConfig(
             featureRequestTypeId == null ||
             serviceDeskId == null) {
           throw IllegalArgumentException(
-              "Account, API hostname, API token and JIRA IDs are required if Atlassian is enabled")
+              "Account, API hostname, API token and Jira IDs are required if Atlassian is enabled")
         }
       }
     }

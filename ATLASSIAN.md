@@ -1,10 +1,10 @@
 # Configuring support tickets with Atlassian
 
-Feature requests and bug reports submitted are triaged as JIRA service issues on Atlassian. This requires configuring terraware-server with the right Atlassian API credentials. 
+Feature requests and bug reports submitted are triaged as Jira service issues on Atlassian. This requires configuring terraware-server with the right Atlassian API credentials. 
 
 ## Prerequisites
 
-- Atlassian Cloud site with JIRA
+- Atlassian Cloud site with Jira
 - An Atlassian account with the target service management project permission
 
 ### Step 1: Generate an API Token and configure client authentication
@@ -13,7 +13,7 @@ Go to the [Atlassian API Token console](https://id.atlassian.com/manage-profile/
 
 ### Step 2: Configure Basic Auth Header 
 
-This step describes how to use the generated API token to invoke JIRA APIs, which is required to retrieve some additional values for configs
+This step describes how to use the generated API token to invoke Jira APIs, which is required to retrieve some additional values for configs
 
 Details can be found on [Basic auth for REST APIs](https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/).
 
@@ -27,7 +27,7 @@ curl -D- \
 
 ### Step 3: Find the Service Desk ID
 
-The only way to find a service desk ID is via JIRA REST API.
+The only way to find a service desk ID is via Jira REST API.
 
 ```bash
 curl -D- \

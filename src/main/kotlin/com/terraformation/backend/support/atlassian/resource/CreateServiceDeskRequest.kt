@@ -14,9 +14,9 @@ import javax.inject.Named
 /**
  * The POST request to create a service ticket.
  *
- * @param requestTypeId the ID of the JIRA issue type
- * @param summary the title of the JIRA issue
- * @param description the details of the JIRA issue
+ * @param requestTypeId the ID of the Jira issue type
+ * @param summary the title of the Jira issue
+ * @param description the details of the Jira issue
  * @param reporter the email address of the reporter
  */
 data class CreateServiceDeskRequest(
