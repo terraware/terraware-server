@@ -20,14 +20,6 @@ data class BatchWithdrawalModel(
     val notReadyQuantityWithdrawn: Int,
     val readyQuantityWithdrawn: Int,
 ) {
-  init {
-    if (germinatingQuantityWithdrawn < 0 ||
-        notReadyQuantityWithdrawn < 0 ||
-        readyQuantityWithdrawn < 0) {
-      throw IllegalArgumentException("Withdrawal quantities may not be negative")
-    }
-  }
-
   val totalWithdrawn: Int
     get() = germinatingQuantityWithdrawn + notReadyQuantityWithdrawn + readyQuantityWithdrawn
 }
@@ -49,10 +41,16 @@ data class WithdrawalModel<ID : WithdrawalId?>(
     val notes: String? = null,
     val purpose: WithdrawalPurpose,
     val withdrawnDate: LocalDate,
+    val undoesWithdrawalId: WithdrawalId? = null,
 ) {
   init {
     if (batchWithdrawals.isEmpty()) {
       throw IllegalArgumentException("Withdrawals must come from at least one batch")
+    }
+
+    if (undoesWithdrawalId != null && purpose != WithdrawalPurpose.Undo ||
+        undoesWithdrawalId == null && purpose == WithdrawalPurpose.Undo) {
+      throw IllegalArgumentException("Must specify original withdrawal ID if purpose is Undo")
     }
   }
 }
@@ -81,4 +79,5 @@ fun WithdrawalsRow.toModel(batchWithdrawals: List<BatchWithdrawalsRow>): Existin
         notes = notes,
         purpose = purposeId!!,
         withdrawnDate = withdrawnDate!!,
+        undoesWithdrawalId = undoesWithdrawalId,
     )

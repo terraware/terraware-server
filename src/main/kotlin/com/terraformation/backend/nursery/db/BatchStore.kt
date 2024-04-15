@@ -56,6 +56,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
+import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.ExistingBatchModel
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewBatchModel
@@ -582,12 +583,15 @@ class BatchStore(
    * Withdraws from one or more batches. All batches must be at the same facility, but may be of
    * different species.
    *
+   * @param updateQuantityIfObservedBefore If this is earlier than the most recent quantity
+   *   observation (manual edit) of a batch, the batch's remaining quantities won't be adjusted.
    * @param readyByDate If the withdrawal is a nursery transfer, the estimated ready-by date to use
    *   for the newly-created batches.
    */
   fun withdraw(
       withdrawal: NewWithdrawalModel,
-      readyByDate: LocalDate? = null
+      readyByDate: LocalDate? = null,
+      updateQuantityIfObservedBefore: LocalDate = withdrawal.withdrawnDate,
   ): ExistingWithdrawalModel {
     withdrawal.batchWithdrawals.forEach { batchWithdrawal ->
       requirePermissions { updateBatch(batchWithdrawal.batchId) }
@@ -631,6 +635,7 @@ class BatchStore(
               notes = withdrawal.notes,
               purposeId = withdrawal.purpose,
               withdrawnDate = withdrawal.withdrawnDate,
+              undoesWithdrawalId = withdrawal.undoesWithdrawalId,
           )
 
       withdrawalsDao.insert(withdrawalsRow)
@@ -671,7 +676,7 @@ class BatchStore(
                   val latestObservedDate =
                       LocalDate.ofInstant(batch.latestObservedTime, nurseryTimeZone)
                   val withdrawalIsNewerThanObservation =
-                      withdrawal.withdrawnDate >= latestObservedDate
+                      updateQuantityIfObservedBefore >= latestObservedDate
 
                   if (withdrawalIsNewerThanObservation) {
                     val newGerminatingQuantity =
@@ -713,6 +718,49 @@ class BatchStore(
 
       withdrawalsRow.toModel(batchWithdrawalsRows)
     }
+  }
+
+  /** Creates a new withdrawal to undo an existing withdrawal. */
+  fun undoWithdrawal(withdrawalId: WithdrawalId): ExistingWithdrawalModel {
+    val withdrawalToUndo = fetchWithdrawalById(withdrawalId)
+
+    requirePermissions { withdrawalToUndo.batchWithdrawals.forEach { updateBatch(it.batchId) } }
+
+    if (withdrawalToUndo.purpose == WithdrawalPurpose.NurseryTransfer) {
+      throw UndoOfNurseryTransferNotAllowedException(withdrawalId)
+    } else if (withdrawalToUndo.purpose == WithdrawalPurpose.Undo) {
+      throw UndoOfUndoNotAllowedException(withdrawalId)
+    }
+
+    val isAlreadyUndone =
+        dslContext.fetchExists(WITHDRAWALS, WITHDRAWALS.UNDOES_WITHDRAWAL_ID.eq(withdrawalId))
+    if (isAlreadyUndone) {
+      throw WithdrawalAlreadyUndoneException(withdrawalId)
+    }
+
+    val nurseryTimeZone = parentStore.getEffectiveTimeZone(withdrawalToUndo.facilityId)
+    val todayAtNursery = LocalDate.ofInstant(clock.instant(), nurseryTimeZone)
+
+    val batchWithdrawals =
+        withdrawalToUndo.batchWithdrawals.map { batchWithdrawal ->
+          BatchWithdrawalModel(
+              batchId = batchWithdrawal.batchId,
+              germinatingQuantityWithdrawn = -batchWithdrawal.germinatingQuantityWithdrawn,
+              notReadyQuantityWithdrawn = -batchWithdrawal.notReadyQuantityWithdrawn,
+              readyQuantityWithdrawn = -batchWithdrawal.readyQuantityWithdrawn,
+          )
+        }
+
+    return withdraw(
+        NewWithdrawalModel(
+            batchWithdrawals = batchWithdrawals,
+            facilityId = withdrawalToUndo.facilityId,
+            id = null,
+            purpose = WithdrawalPurpose.Undo,
+            withdrawnDate = todayAtNursery,
+            undoesWithdrawalId = withdrawalId,
+        ),
+        updateQuantityIfObservedBefore = withdrawalToUndo.withdrawnDate)
   }
 
   /**
@@ -970,28 +1018,36 @@ class BatchStore(
         DSL.sum(
             BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN.plus(
                 BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN))
+    val undoneWithdrawals = WITHDRAWALS.`as`("undone_withdrawals")
+    val effectivePurpose =
+        DSL.coalesce(undoneWithdrawals.PURPOSE_ID, WITHDRAWALS.PURPOSE_ID).asNonNullable()
+
     val withdrawnByPurpose =
         if (projectId != null) {
           dslContext
-              .select(WITHDRAWALS.PURPOSE_ID, sumField)
+              .select(effectivePurpose, sumField)
               .from(WITHDRAWALS)
               .join(BATCH_WITHDRAWALS)
               .on(WITHDRAWALS.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
               .join(BATCHES)
               .on(BATCH_WITHDRAWALS.BATCH_ID.eq(BATCHES.ID))
+              .leftJoin(undoneWithdrawals)
+              .on(WITHDRAWALS.UNDOES_WITHDRAWAL_ID.eq(undoneWithdrawals.ID))
               .where(WITHDRAWALS.FACILITY_ID.eq(facilityId))
               .and(BATCHES.PROJECT_ID.eq(projectId))
-              .groupBy(WITHDRAWALS.PURPOSE_ID)
-              .fetchMap(WITHDRAWALS.PURPOSE_ID.asNonNullable(), sumField)
+              .groupBy(effectivePurpose)
+              .fetchMap(effectivePurpose, sumField)
         } else {
           dslContext
-              .select(WITHDRAWALS.PURPOSE_ID, sumField)
+              .select(effectivePurpose, sumField)
               .from(WITHDRAWALS)
               .join(BATCH_WITHDRAWALS)
               .on(WITHDRAWALS.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
+              .leftJoin(undoneWithdrawals)
+              .on(WITHDRAWALS.UNDOES_WITHDRAWAL_ID.eq(undoneWithdrawals.ID))
               .where(WITHDRAWALS.FACILITY_ID.eq(facilityId))
-              .groupBy(WITHDRAWALS.PURPOSE_ID)
-              .fetchMap(WITHDRAWALS.PURPOSE_ID.asNonNullable(), sumField)
+              .groupBy(effectivePurpose)
+              .fetchMap(effectivePurpose, sumField)
         }
 
     // The query results won't include purposes without any withdrawals, so add them.
@@ -1093,6 +1149,9 @@ class BatchStore(
    * update should be inserted before this is called.
    */
   private fun updateRates(batchId: BatchId) {
+    val undoneWithdrawals = WITHDRAWALS.`as`("undone_withdrawals")
+    val undonePurposeId = undoneWithdrawals.PURPOSE_ID.`as`("undone_purpose_id")
+
     val quantityHistory =
         dslContext
             .select(
@@ -1105,6 +1164,7 @@ class BatchStore(
                 BATCH_WITHDRAWALS.NOT_READY_QUANTITY_WITHDRAWN,
                 BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN,
                 WITHDRAWALS.PURPOSE_ID,
+                undonePurposeId,
             )
             .from(BATCH_QUANTITY_HISTORY)
             .leftJoin(BATCH_WITHDRAWALS)
@@ -1112,6 +1172,8 @@ class BatchStore(
             .and(BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
             .leftJoin(WITHDRAWALS)
             .on(BATCH_QUANTITY_HISTORY.WITHDRAWAL_ID.eq(WITHDRAWALS.ID))
+            .leftJoin(undoneWithdrawals)
+            .on(WITHDRAWALS.UNDOES_WITHDRAWAL_ID.eq(undoneWithdrawals.ID))
             .where(BATCH_QUANTITY_HISTORY.BATCH_ID.eq(batchId))
             .orderBy(BATCH_QUANTITY_HISTORY.VERSION)
             .fetch()
@@ -1158,22 +1220,28 @@ class BatchStore(
                     previous[BATCH_QUANTITY_HISTORY.READY_QUANTITY])
       }
 
-      if (current[WITHDRAWALS.PURPOSE_ID] == WithdrawalPurpose.NurseryTransfer &&
+      val purpose = current[WITHDRAWALS.PURPOSE_ID]
+      val undonePurpose = current[undonePurposeId]
+
+      if (purpose == WithdrawalPurpose.NurseryTransfer &&
           current[BATCH_WITHDRAWALS.BATCH_ID] != batchId) {
         hasAdditionalIncomingTransfers = true
       }
 
-      if (current[WITHDRAWALS.PURPOSE_ID] == WithdrawalPurpose.OutPlant ||
-          current[WITHDRAWALS.PURPOSE_ID] == WithdrawalPurpose.Dead) {
+      if (purpose == WithdrawalPurpose.OutPlant ||
+          purpose == WithdrawalPurpose.Dead ||
+          undonePurpose == WithdrawalPurpose.OutPlant ||
+          undonePurpose == WithdrawalPurpose.Dead) {
         totalOutplantAndDeadNotReadyAndReady += notReadyQuantityWithdrawn + readyQuantityWithdrawn
       }
 
-      if (current[WITHDRAWALS.PURPOSE_ID] == WithdrawalPurpose.Dead) {
+      if (purpose == WithdrawalPurpose.Dead || undonePurpose == WithdrawalPurpose.Dead) {
         totalDeadNotReadyAndReady += notReadyQuantityWithdrawn + readyQuantityWithdrawn
       }
 
-      if (current[WITHDRAWALS.PURPOSE_ID] != null &&
-          current[WITHDRAWALS.PURPOSE_ID] != WithdrawalPurpose.Dead) {
+      if (purpose != null &&
+          purpose != WithdrawalPurpose.Dead &&
+          undonePurpose != WithdrawalPurpose.Dead) {
         totalNonDeadGerminating += germinatingQuantityWithdrawn
       }
 

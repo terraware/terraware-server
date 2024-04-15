@@ -193,6 +193,12 @@ class ParentStore(private val dslContext: DSLContext) {
           DSL.coalesce(BATCHES.facilities.TIME_ZONE, BATCHES.facilities.organizations.TIME_ZONE))
           ?: ZoneOffset.UTC
 
+  fun getEffectiveTimeZone(facilityId: FacilityId): ZoneId =
+      fetchFieldById(
+          facilityId,
+          FACILITIES.ID,
+          DSL.coalesce(FACILITIES.TIME_ZONE, FACILITIES.organizations.TIME_ZONE)) ?: ZoneOffset.UTC
+
   fun getEffectiveTimeZone(plantingSiteId: PlantingSiteId): ZoneId =
       fetchFieldById(
           plantingSiteId,
