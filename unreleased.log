@@ -1,3 +1,5 @@
+779f1fe89e5 SW-5099 Added data tables for modules and events (#1840)
+035bf855643 SW-5188 Make nursery withdrawal undo endpoint functional (#1848)
 0f84e660465 SW-5188 Include undo information in withdrawal payload (#1847)
 60c3d67ae27 SW-5188 Add service method to undo withdrawal (#1846)
 8a205863878 Add Spring Actuator dependency (#1853)
