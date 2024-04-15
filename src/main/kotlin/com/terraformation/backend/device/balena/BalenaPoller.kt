@@ -34,7 +34,7 @@ class BalenaPoller(
         updateBalenaDevices()
       }
     } else {
-      scheduler.delete(jobId)
+      scheduler.deleteRecurringJob(jobId)
     }
   }
 

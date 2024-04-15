@@ -9,7 +9,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.event.ReportSubmittedEvent
 import jakarta.inject.Named
 import org.jobrunr.jobs.annotations.Job
-import org.jobrunr.spring.annotations.Recurring
+import org.jobrunr.jobs.annotations.Recurring
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
