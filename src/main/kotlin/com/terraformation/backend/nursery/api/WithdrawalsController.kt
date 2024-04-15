@@ -1,7 +1,9 @@
 package com.terraformation.backend.nursery.api
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonSetter
+import com.fasterxml.jackson.annotation.JsonValue
 import com.fasterxml.jackson.annotation.Nulls
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse200Photo
@@ -221,6 +223,28 @@ data class NurseryWithdrawalPayload(
   )
 }
 
+/** Valid user-supplied withdrawal purposes. */
+enum class CreateWithdrawalPurpose(val purpose: WithdrawalPurpose) {
+  NurseryTransfer(WithdrawalPurpose.NurseryTransfer),
+  Dead(WithdrawalPurpose.Dead),
+  OutPlant(WithdrawalPurpose.OutPlant),
+  Other(WithdrawalPurpose.Other);
+
+  val jsonValue: String
+    @JsonValue get() = purpose.jsonValue
+
+  companion object {
+    private val byJsonValue = entries.associateBy { it.purpose.jsonValue }
+
+    @JsonCreator
+    @JvmStatic
+    fun forJsonValue(jsonValue: String): CreateWithdrawalPurpose {
+      return byJsonValue[jsonValue]
+          ?: throw IllegalArgumentException("Unrecognized value: $jsonValue")
+    }
+  }
+}
+
 data class CreateNurseryWithdrawalRequestPayload(
     @ArraySchema(minItems = 1) val batchWithdrawals: List<BatchWithdrawalPayload>,
     @Schema(
@@ -242,7 +266,7 @@ data class CreateNurseryWithdrawalRequestPayload(
                 "were delivered. Must be specified if the planting site has planting subzones, " +
                 "but must be omitted or set to null if the planting site has no planting subzones.")
     val plantingSubzoneId: PlantingSubzoneId?,
-    val purpose: WithdrawalPurpose,
+    val purpose: CreateWithdrawalPurpose,
     @Schema(
         description =
             "If purpose is \"Nursery Transfer\", the estimated ready-by date to use for the " +
@@ -257,7 +281,7 @@ data class CreateNurseryWithdrawalRequestPayload(
           facilityId = facilityId,
           id = null,
           notes = notes,
-          purpose = purpose,
+          purpose = purpose.purpose,
           withdrawnDate = withdrawnDate,
       )
 }
