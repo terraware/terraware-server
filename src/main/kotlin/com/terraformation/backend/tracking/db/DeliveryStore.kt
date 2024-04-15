@@ -5,6 +5,8 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.WithdrawalId
+import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -15,16 +17,19 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.nursery.db.UndoOfUndoNotAllowedException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.model.DeliveryModel
 import com.terraformation.backend.tracking.model.PlantingModel
 import jakarta.inject.Named
+import java.time.Instant
 import java.time.InstantSource
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -148,6 +153,14 @@ class DeliveryStore(
         plantingsDao.fetchById(*originalPlantingIds.toTypedArray()).associateBy { it.id!! }
     val deliveryPlantings = plantingsDao.fetchByDeliveryId(deliveryId)
 
+    if (getWithdrawalPurpose(deliveryId) == WithdrawalPurpose.Undo) {
+      throw ReassignmentOfUndoNotAllowedException(deliveryId)
+    }
+
+    if (deliveryAlreadyUndone(deliveryId)) {
+      throw ReassignmentOfUndoneWithdrawalNotAllowedException(deliveryId)
+    }
+
     val newPlantings =
         reassignments.flatMap { reassignment ->
           val fromPlantingId = reassignment.fromPlantingId
@@ -225,11 +238,84 @@ class DeliveryStore(
     }
   }
 
+  fun undoDelivery(deliveryId: DeliveryId, undoWithdrawalId: WithdrawalId): DeliveryId {
+    requirePermissions { updateDelivery(deliveryId) }
+
+    val userId = currentUser().userId
+    val now = clock.instant()
+
+    val originalDelivery = fetchOneById(deliveryId)
+
+    if (getWithdrawalPurpose(originalDelivery.withdrawalId) == WithdrawalPurpose.Undo) {
+      throw UndoOfUndoNotAllowedException(originalDelivery.withdrawalId)
+    }
+
+    if (getWithdrawalPurpose(undoWithdrawalId) != WithdrawalPurpose.Undo) {
+      throw WithdrawalNotUndoException(undoWithdrawalId)
+    }
+
+    // If the last observation of the planting site happened after the delivery, we don't want
+    // to update the site's "plants since last observation" totals.
+    val lastObservationTime = getLastObservationTime(originalDelivery.plantingSiteId)
+    val deliveryNewerThanLastObservation =
+        lastObservationTime == null || lastObservationTime < originalDelivery.createdTime
+
+    return dslContext.transactionResult { _ ->
+      val deliveriesRow =
+          DeliveriesRow(
+              createdBy = userId,
+              createdTime = now,
+              modifiedBy = userId,
+              modifiedTime = now,
+              plantingSiteId = originalDelivery.plantingSiteId,
+              withdrawalId = undoWithdrawalId,
+          )
+
+      deliveriesDao.insert(deliveriesRow)
+      val undoDeliveryId = deliveriesRow.id!!
+
+      originalDelivery.plantings.forEach { originalPlanting ->
+        val plantingType =
+            when (originalPlanting.type) {
+              PlantingType.Delivery -> PlantingType.Undo
+              PlantingType.ReassignmentFrom -> PlantingType.ReassignmentTo
+              PlantingType.ReassignmentTo -> PlantingType.ReassignmentFrom
+              PlantingType.Undo ->
+                  throw UndoOfUndoNotAllowedException(originalDelivery.withdrawalId)
+            }
+
+        val newPlantingsRow =
+            PlantingsRow(
+                createdBy = userId,
+                createdTime = now,
+                deliveryId = undoDeliveryId,
+                numPlants = -originalPlanting.numPlants,
+                plantingSiteId = originalDelivery.plantingSiteId,
+                plantingSubzoneId = originalPlanting.plantingSubzoneId,
+                plantingTypeId = plantingType,
+                speciesId = originalPlanting.speciesId,
+            )
+
+        plantingsDao.insert(newPlantingsRow)
+
+        addToPopulations(
+            originalDelivery.plantingSiteId,
+            originalPlanting.plantingSubzoneId,
+            originalPlanting.speciesId,
+            -originalPlanting.numPlants,
+            if (deliveryNewerThanLastObservation) -originalPlanting.numPlants else 0)
+      }
+
+      undoDeliveryId
+    }
+  }
+
   private fun addToPopulations(
       plantingSiteId: PlantingSiteId,
       plantingSubzoneId: PlantingSubzoneId?,
       speciesId: SpeciesId,
-      numPlants: Int
+      numPlants: Int,
+      plantsSinceLastObservation: Int = numPlants,
   ) {
     with(PLANTING_SITE_POPULATIONS) {
       dslContext
@@ -237,11 +323,22 @@ class DeliveryStore(
           .set(PLANTING_SITE_ID, plantingSiteId)
           .set(SPECIES_ID, speciesId)
           .set(TOTAL_PLANTS, numPlants)
-          .set(PLANTS_SINCE_LAST_OBSERVATION, numPlants)
+          .set(PLANTS_SINCE_LAST_OBSERVATION, plantsSinceLastObservation)
           .onDuplicateKeyUpdate()
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(numPlants))
-          .set(PLANTS_SINCE_LAST_OBSERVATION, PLANTS_SINCE_LAST_OBSERVATION.plus(numPlants))
+          .set(
+              PLANTS_SINCE_LAST_OBSERVATION,
+              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation))
           .execute()
+
+      if (numPlants < 0) {
+        dslContext
+            .deleteFrom(PLANTING_SITE_POPULATIONS)
+            .where(PLANTING_SITE_ID.eq(PLANTING_SITE_ID))
+            .and(SPECIES_ID.eq(speciesId))
+            .and(TOTAL_PLANTS.le(0))
+            .execute()
+      }
     }
 
     if (plantingSubzoneId != null) {
@@ -252,7 +349,8 @@ class DeliveryStore(
   private fun addToSubzonePopulations(
       plantingSubzoneId: PlantingSubzoneId,
       speciesId: SpeciesId,
-      numPlants: Int
+      numPlants: Int,
+      plantsSinceLastObservation: Int = numPlants,
   ) {
     val plantingZoneId =
         dslContext
@@ -268,11 +366,22 @@ class DeliveryStore(
           .set(PLANTING_SUBZONE_ID, plantingSubzoneId)
           .set(SPECIES_ID, speciesId)
           .set(TOTAL_PLANTS, numPlants)
-          .set(PLANTS_SINCE_LAST_OBSERVATION, numPlants)
+          .set(PLANTS_SINCE_LAST_OBSERVATION, plantsSinceLastObservation)
           .onDuplicateKeyUpdate()
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(numPlants))
-          .set(PLANTS_SINCE_LAST_OBSERVATION, PLANTS_SINCE_LAST_OBSERVATION.plus(numPlants))
+          .set(
+              PLANTS_SINCE_LAST_OBSERVATION,
+              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation))
           .execute()
+
+      if (numPlants < 0) {
+        dslContext
+            .deleteFrom(PLANTING_SUBZONE_POPULATIONS)
+            .where(PLANTING_SUBZONE_ID.eq(plantingSubzoneId))
+            .and(SPECIES_ID.eq(speciesId))
+            .and(TOTAL_PLANTS.le(0))
+            .execute()
+      }
     }
 
     with(PLANTING_ZONE_POPULATIONS) {
@@ -281,11 +390,22 @@ class DeliveryStore(
           .set(PLANTING_ZONE_ID, plantingZoneId)
           .set(SPECIES_ID, speciesId)
           .set(TOTAL_PLANTS, numPlants)
-          .set(PLANTS_SINCE_LAST_OBSERVATION, numPlants)
+          .set(PLANTS_SINCE_LAST_OBSERVATION, plantsSinceLastObservation)
           .onDuplicateKeyUpdate()
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(numPlants))
-          .set(PLANTS_SINCE_LAST_OBSERVATION, PLANTS_SINCE_LAST_OBSERVATION.plus(numPlants))
+          .set(
+              PLANTS_SINCE_LAST_OBSERVATION,
+              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation))
           .execute()
+
+      if (numPlants < 0) {
+        dslContext
+            .deleteFrom(PLANTING_ZONE_POPULATIONS)
+            .where(PLANTING_ZONE_ID.eq(plantingZoneId))
+            .and(SPECIES_ID.eq(speciesId))
+            .and(TOTAL_PLANTS.le(0))
+            .execute()
+      }
     }
   }
 
@@ -304,6 +424,41 @@ class DeliveryStore(
         DSL.selectOne()
             .from(PLANTING_SUBZONES)
             .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId)))
+  }
+
+  private fun deliveryAlreadyUndone(deliveryId: DeliveryId): Boolean {
+    return dslContext.fetchExists(
+        DSL.selectOne()
+            .from(WITHDRAWALS)
+            .join(DELIVERIES)
+            .on(WITHDRAWALS.UNDOES_WITHDRAWAL_ID.eq(DELIVERIES.WITHDRAWAL_ID))
+            .where(DELIVERIES.ID.eq(deliveryId)))
+  }
+
+  private fun getWithdrawalPurpose(deliveryId: DeliveryId): WithdrawalPurpose? {
+    return dslContext
+        .select(WITHDRAWALS.PURPOSE_ID)
+        .from(WITHDRAWALS)
+        .join(DELIVERIES)
+        .on(WITHDRAWALS.ID.eq(DELIVERIES.WITHDRAWAL_ID))
+        .where(DELIVERIES.ID.eq(deliveryId))
+        .fetchOne(WITHDRAWALS.PURPOSE_ID)
+  }
+
+  private fun getWithdrawalPurpose(withdrawalId: WithdrawalId): WithdrawalPurpose {
+    return dslContext
+        .select(WITHDRAWALS.PURPOSE_ID)
+        .from(WITHDRAWALS)
+        .where(WITHDRAWALS.ID.eq(withdrawalId))
+        .fetchOne(WITHDRAWALS.PURPOSE_ID) ?: throw WithdrawalNotFoundException(withdrawalId)
+  }
+
+  private fun getLastObservationTime(plantingSiteId: PlantingSiteId): Instant? {
+    return dslContext
+        .select(DSL.max(OBSERVATIONS.COMPLETED_TIME))
+        .from(OBSERVATIONS)
+        .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .fetchOne(DSL.max(OBSERVATIONS.COMPLETED_TIME))
   }
 
   data class Reassignment(
