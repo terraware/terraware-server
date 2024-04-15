@@ -600,6 +600,47 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `undo relationships can be queried from both directions`() {
+      insertBatch()
+      val withdrawalId = insertWithdrawal()
+      insertBatchWithdrawal(germinatingQuantityWithdrawn = 1)
+      val undoWithdrawalId =
+          insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+      insertBatchWithdrawal(germinatingQuantityWithdrawn = -1)
+
+      val prefix = SearchFieldPrefix(searchTables.nurseryWithdrawals)
+      val fields =
+          listOf(
+                  "id",
+                  "totalWithdrawn",
+                  "undoesWithdrawalId",
+                  "undoneByWithdrawalId",
+              )
+              .map { prefix.resolve(it) }
+
+      val orderBy = listOf(SearchSortField(prefix.resolve("id")))
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "id" to "$withdrawalId",
+                      "totalWithdrawn" to "1",
+                      "undoneByWithdrawalId" to "$undoWithdrawalId",
+                  ),
+                  mapOf(
+                      "id" to "$undoWithdrawalId",
+                      "totalWithdrawn" to "-1",
+                      "undoesWithdrawalId" to "$withdrawalId",
+                  )),
+              null)
+
+      val actual = searchService.search(prefix, fields, NoConditionNode(), orderBy)
+
+      assertJsonEquals(expected, actual)
+    }
+
+    @Test
     fun `species projects table returns projects for nonempty batches`() {
       val projectId1 = insertProject(name = "Project 1")
       val projectId2 = insertProject(name = "Project 2")

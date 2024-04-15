@@ -53,6 +53,12 @@ class NurseryWithdrawalsTable(private val tables: SearchTables) : SearchTable() 
           enumField("purpose", WITHDRAWAL_SUMMARIES.PURPOSE_ID, nullable = false),
           longField("totalWithdrawn", WITHDRAWAL_SUMMARIES.TOTAL_WITHDRAWN),
           dateField("withdrawnDate", WITHDRAWAL_SUMMARIES.WITHDRAWN_DATE, nullable = false),
+          idWrapperField("undoesWithdrawalId", WITHDRAWAL_SUMMARIES.UNDOES_WITHDRAWAL_ID) {
+            WithdrawalId(it)
+          },
+          idWrapperField("undoneByWithdrawalId", WITHDRAWAL_SUMMARIES.UNDONE_BY_WITHDRAWAL_ID) {
+            WithdrawalId(it)
+          },
       )
 
   override fun conditionForVisibility(): Condition {
