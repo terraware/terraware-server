@@ -25,6 +25,7 @@ val ENUM_TABLES =
                 EnumTable("deliverable_types", listOf(".*\\.deliverable_type_id")),
                 EnumTable(
                     "document_stores", listOf(".*\\.document_store_id"), isLocalizable = false),
+                EnumTable("event_types", listOf(".*\\.event_type_id"), isLocalizable = false),
                 EnumTable("pipelines", listOf(".*\\.pipeline_id"), isLocalizable = false),
                 EnumTable(
                     "score_categories",

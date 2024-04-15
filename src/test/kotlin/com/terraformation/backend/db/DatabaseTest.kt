@@ -1506,6 +1506,7 @@ abstract class DatabaseTest {
       createdTime: Instant = Instant.EPOCH,
       id: Any? = null,
       name: String = "Module $nextModuleNumber",
+      phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy,
   ): ModuleId {
     nextModuleNumber++
 
@@ -1517,6 +1518,7 @@ abstract class DatabaseTest {
             modifiedBy = createdBy,
             modifiedTime = createdTime,
             name = name,
+            phaseId = phase,
         )
 
     modulesDao.insert(row)
