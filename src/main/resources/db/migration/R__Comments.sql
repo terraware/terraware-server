@@ -444,7 +444,7 @@ COMMENT ON COLUMN tracking.recorded_plants.species_name IS 'If certainty is "Oth
 
 COMMENT ON TABLE tracking.recorded_species_certainties IS '(Enum) Levels of certainty about the identity of a species recorded in a monitoring plot observation.';
 
-COMMENT ON CONSTRAINT num_plants_positive_unless_reassignment_from ON tracking.plantings IS 'If the planting represents the "from" side of a reassignment, the number of plants must be negative. Otherwise it must be positive.';
+COMMENT ON CONSTRAINT num_plants_sign_consistent_with_type ON tracking.plantings IS 'If the planting represents the "from" side of a reassignment or an undo of a withdrawal, the number of plants must be negative. Otherwise it must be positive.';
 
 COMMENT ON TABLE accelerator.cohorts IS 'Accelerator cohort details.';
 

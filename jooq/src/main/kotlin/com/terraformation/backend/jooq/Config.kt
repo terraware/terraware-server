@@ -203,6 +203,7 @@ val ID_WRAPPERS =
                         "nursery\\.withdrawals\\.id",
                         "nursery\\.withdrawal_summaries\\.id",
                         "nursery\\..*\\.withdrawal_id",
+                        "nursery\\..*\\..*_withdrawal_id",
                         "tracking\\..*\\.withdrawal_id")),
             ),
         "public" to
