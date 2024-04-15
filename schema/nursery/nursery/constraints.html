@@ -80,7 +80,7 @@
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="ion ion-key"></i>
-                            <h3 class="box-title">20 Foreign Key Constraints</h3>
+                            <h3 class="box-title">21 Foreign Key Constraints</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -284,6 +284,24 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
+                                        <td>withdrawals_undoes_withdrawal_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/withdrawals.html'>withdrawals</a><span>.undoes_withdrawal_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/withdrawals.html'>withdrawals</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
                                         <td>withdrawals_purpose_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -296,6 +314,42 @@
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
                                                     <td><a href='tables/withdrawal_purposes.html'>withdrawal_purposes</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>withdrawal_photos_photo_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/withdrawal_photos.html'>withdrawal_photos</a><span>.file_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/files.html'>files</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>withdrawal_photos_withdrawal_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/withdrawal_photos.html'>withdrawal_photos</a><span>.withdrawal_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/withdrawals.html'>withdrawals</a><span>.id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -354,42 +408,6 @@
                                             </table>
                                         </td>
                                         <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>withdrawal_photos_photo_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/withdrawal_photos.html'>withdrawal_photos</a><span>.file_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/files.html'>files</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>withdrawal_photos_withdrawal_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/withdrawal_photos.html'>withdrawal_photos</a><span>.withdrawal_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/withdrawals.html'>withdrawals</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
                                         <td>batch_details_history_substrate_id_fkey</td>
@@ -488,18 +506,8 @@
                                 <tbody>
                                     <tr>
                                         <td><a href='tables/batch_withdrawals.html'>batch_withdrawals</a></td>
-                                        <td>batch_withdrawals_germinating_quantity_withdrawn_check</td>
-                                        <td>((germinating_quantity_withdrawn &gt;= 0))</td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href='tables/batch_withdrawals.html'>batch_withdrawals</a></td>
-                                        <td>batch_withdrawals_not_ready_quantity_withdrawn_check</td>
-                                        <td>((not_ready_quantity_withdrawn &gt;= 0))</td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href='tables/batch_withdrawals.html'>batch_withdrawals</a></td>
-                                        <td>batch_withdrawals_ready_quantity_withdrawn_check</td>
-                                        <td>((ready_quantity_withdrawn &gt;= 0))</td>
+                                        <td>quantity_signs_consistent</td>
+                                        <td>((((germinating_quantity_withdrawn &lt;= 0) AND (not_ready_quantity_withdrawn &lt;= 0) AND (ready_quantity_withdrawn &lt;= 0)) OR ((germinating_quantity_withdrawn &gt;= 0) AND (not_ready_quantity_withdrawn &gt;= 0) AND (ready_quantity_withdrawn &gt;= 0))))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/batch_quantity_history.html'>batch_quantity_history</a></td>
@@ -515,6 +523,11 @@
                                         <td><a href='tables/batch_quantity_history.html'>batch_quantity_history</a></td>
                                         <td>batch_quantity_history_ready_quantity_check</td>
                                         <td>((ready_quantity &gt;= 0))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/withdrawals.html'>withdrawals</a></td>
+                                        <td>undo_requires_withdrawal_id</td>
+                                        <td>((((purpose_id = 5) AND (undoes_withdrawal_id IS NOT NULL)) OR ((purpose_id &lt;&gt; 5) AND (undoes_withdrawal_id IS NULL))))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/withdrawals.html'>withdrawals</a></td>

@@ -125,6 +125,10 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="withdrawals.undoes_withdrawal_id references withdrawals.id via withdrawals_undoes_withdrawal_id_fkey"><a href='withdrawals.html'>withdrawals</a><span class='relatedKey'>.undoes_withdrawal_id</span></td>
+                                                <td class="constraint detail">withdrawals_undoes_withdrawal_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="deliveries.withdrawal_id references withdrawals.id via deliveries_withdrawal_id_fkey"><a href='../../tracking/tables/deliveries.html'>deliveries</a><span class='relatedKey'>.withdrawal_id</span></td>
                                                 <td class="constraint detail">deliveries_withdrawal_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
@@ -301,6 +305,27 @@
                                     </td>
                                     <td><p>User-supplied freeform text describing the withdrawal.</p></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="undoes_withdrawal_id">undoes_withdrawal_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="withdrawals.undoes_withdrawal_id references withdrawals.id via withdrawals_undoes_withdrawal_id_fkey"><a href='withdrawals.html'>withdrawals</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">withdrawals_undoes_withdrawal_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -343,6 +368,12 @@
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>facility_id</td>
                                 </tr>
+                                <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> withdrawals_undoes_withdrawal_id_key</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>undoes_withdrawal_id</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div><!-- /.box-body -->
@@ -366,12 +397,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>withdrawals_destination_only_for_transfers</td>
-                                    <td>(((destination_facility_id IS NULL) OR (purpose_id = 1)))</td>
-                                </tr>
-                                <tr>
                                     <td>withdrawals_notes_check</td>
                                     <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>undo_requires_withdrawal_id</td>
+                                    <td>((((purpose_id = 5) AND (undoes_withdrawal_id IS NOT NULL)) OR ((purpose_id &lt;&gt; 5) AND (undoes_withdrawal_id IS NULL))))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_destination_only_for_transfers</td>
+                                    <td>(((destination_facility_id IS NULL) OR (purpose_id = 1)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -395,10 +430,10 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="299,5,664,368">
-<area shape="rect" id="node2" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="28,224,232,312">
-<area shape="rect" id="node3" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="5,67,255,184">
-<area shape="rect" id="node4" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="708,8,936,125">
+<area shape="rect" id="node1" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="299,29,667,421">
+<area shape="rect" id="node2" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="28,248,232,336">
+<area shape="rect" id="node3" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="5,91,255,208">
+<area shape="rect" id="node4" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="711,32,939,149">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/withdrawals.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

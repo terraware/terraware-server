@@ -176,9 +176,7 @@
          <index name="batch_withdrawals_withdrawal_id_idx" unique="false">
             <column ascending="true" name="withdrawal_id"/>
          </index>
-         <checkConstraint constraint="((germinating_quantity_withdrawn &gt;= 0))" name="batch_withdrawals_germinating_quantity_withdrawn_check"/>
-         <checkConstraint constraint="((not_ready_quantity_withdrawn &gt;= 0))" name="batch_withdrawals_not_ready_quantity_withdrawn_check"/>
-         <checkConstraint constraint="((ready_quantity_withdrawn &gt;= 0))" name="batch_withdrawals_ready_quantity_withdrawn_check"/>
+         <checkConstraint constraint="((((germinating_quantity_withdrawn &lt;= 0) AND (not_ready_quantity_withdrawn &lt;= 0) AND (ready_quantity_withdrawn &lt;= 0)) OR ((germinating_quantity_withdrawn &gt;= 0) AND (not_ready_quantity_withdrawn &gt;= 0) AND (ready_quantity_withdrawn &gt;= 0))))" name="quantity_signs_consistent"/>
       </table>
       <table name="batches" numRows="0" remarks="Information about batches of seedlings at nurseries." schema="nursery" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Globally-unique internal identifier for the batch. Not typically presented to end users; &quot;batch_number&quot; is the user-facing identifier." size="19" type="int8" typeCode="-5">
@@ -280,7 +278,7 @@
             <column ascending="true" name="withdrawal_id"/>
          </index>
       </table>
-      <table name="withdrawal_purposes" numRows="4" remarks="(Enum) Reasons that someone can withdraw seedlings from a nursery." schema="nursery" type="TABLE">
+      <table name="withdrawal_purposes" numRows="5" remarks="(Enum) Reasons that someone can withdraw seedlings from a nursery." schema="nursery" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="purpose_id" foreignKey="withdrawals_purpose_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawals"/>
          </column>
@@ -295,6 +293,7 @@
             <child column="withdrawal_id" foreignKey="batch_quantity_history_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_quantity_history"/>
             <child column="withdrawal_id" foreignKey="batch_withdrawals_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batch_withdrawals"/>
             <child column="withdrawal_id" foreignKey="withdrawal_photos_withdrawal_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_photos"/>
+            <child column="undoes_withdrawal_id" foreignKey="withdrawals_undoes_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="withdrawals"/>
             <child column="withdrawal_id" foreignKey="deliveries_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="deliveries"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="Nursery from which the seedlings were withdrawn." size="19" type="int8" typeCode="-5"/>
@@ -308,6 +307,9 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="modified_time" nullable="false" remarks="When the withdrawal was most recently modified." size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="destination_facility_id" nullable="true" remarks="If the withdrawal was a nursery transfer, the facility where the seedlings were sent. May be null if the facility was subsequently deleted." size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="notes" nullable="true" remarks="User-supplied freeform text describing the withdrawal." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="undoes_withdrawal_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="withdrawals_undoes_withdrawal_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="withdrawals"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="withdrawals_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -318,6 +320,10 @@
          <index name="withdrawals_facility_id_idx" unique="false">
             <column ascending="true" name="facility_id"/>
          </index>
+         <index name="withdrawals_undoes_withdrawal_id_key" unique="true">
+            <column ascending="true" name="undoes_withdrawal_id"/>
+         </index>
+         <checkConstraint constraint="((((purpose_id = 5) AND (undoes_withdrawal_id IS NOT NULL)) OR ((purpose_id &lt;&gt; 5) AND (undoes_withdrawal_id IS NULL))))" name="undo_requires_withdrawal_id"/>
          <checkConstraint constraint="(((destination_facility_id IS NULL) OR (purpose_id = 1)))" name="withdrawals_destination_only_for_transfers"/>
          <checkConstraint constraint="((notes !~ similar_to_escape(' *'::text)))" name="withdrawals_notes_check"/>
       </table>

@@ -137,6 +137,10 @@
                                                 <td class="constraint detail">withdrawal_photos_withdrawal_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="withdrawals.undoes_withdrawal_id references withdrawals.id via withdrawals_undoes_withdrawal_id_fkey"><a href='withdrawals.html'>withdrawals</a><span class='relatedKey'>.undoes_withdrawal_id</span></td>
+                                                <td class="constraint detail">withdrawals_undoes_withdrawal_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="deliveries.withdrawal_id references withdrawals.id via deliveries_withdrawal_id_fkey"><a href='../../tracking/tables/deliveries.html'>deliveries</a><span class='relatedKey'>.withdrawal_id</span></td>
                                                 <td class="constraint detail">deliveries_withdrawal_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
@@ -321,6 +325,27 @@
                                     </td>
                                     <td><p>User-supplied freeform text describing the withdrawal.</p></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="undoes_withdrawal_id">undoes_withdrawal_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="withdrawals.undoes_withdrawal_id references withdrawals.id via withdrawals_undoes_withdrawal_id_fkey"><a href='withdrawals.html'>withdrawals</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">withdrawals_undoes_withdrawal_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -363,6 +388,12 @@
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>facility_id</td>
                                 </tr>
+                                <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> withdrawals_undoes_withdrawal_id_key</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>undoes_withdrawal_id</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div><!-- /.box-body -->
@@ -386,12 +417,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>withdrawals_destination_only_for_transfers</td>
-                                    <td>(((destination_facility_id IS NULL) OR (purpose_id = 1)))</td>
-                                </tr>
-                                <tr>
                                     <td>withdrawals_notes_check</td>
                                     <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>undo_requires_withdrawal_id</td>
+                                    <td>((((purpose_id = 5) AND (undoes_withdrawal_id IS NOT NULL)) OR ((purpose_id &lt;&gt; 5) AND (undoes_withdrawal_id IS NULL))))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_destination_only_for_transfers</td>
+                                    <td>(((destination_facility_id IS NULL) OR (purpose_id = 1)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -416,33 +451,33 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="735,5,997,269">
+<area shape="rect" id="node1" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="737,5,1000,269">
 <area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="41,444,219,532">
-<area shape="rect" id="node3" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="299,313,664,676">
+<area shape="rect" id="node3" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="299,313,667,705">
 <area shape="rect" id="node6" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="28,552,232,640">
 <area shape="rect" id="node7" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="5,309,255,427">
-<area shape="rect" id="node4" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="708,287,1024,463">
-<area shape="rect" id="node5" href="../../tables/withdrawal_photos.html" target="_top" title="withdrawal_photos" alt="" coords="750,480,982,603">
-<area shape="rect" id="node8" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="752,620,980,737">
+<area shape="rect" id="node4" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="711,287,1027,463">
+<area shape="rect" id="node5" href="../../tables/withdrawal_photos.html" target="_top" title="withdrawal_photos" alt="" coords="753,480,985,603">
+<area shape="rect" id="node8" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="755,620,983,737">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/withdrawals.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/batch_details_history.html" target="_top" title="batch_details_history" alt="" coords="742,5,990,93">
-<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="407,216,555,304">
+<area shape="rect" id="node1" href="../../tables/batch_details_history.html" target="_top" title="batch_details_history" alt="" coords="745,5,993,93">
+<area shape="rect" id="node2" href="../../tables/batches.html" target="_top" title="batches" alt="" coords="409,216,557,304">
 <area shape="rect" id="node3" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="41,219,219,307">
-<area shape="rect" id="node10" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="28,443,232,531">
-<area shape="rect" id="node4" href="../../tables/batch_photos.html" target="_top" title="batch_photos" alt="" coords="772,111,960,199">
-<area shape="rect" id="node5" href="../../../public/tables/files.html" target="_top" title="public.files" alt="" coords="397,357,566,445">
-<area shape="rect" id="node6" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="735,515,997,779">
-<area shape="rect" id="node7" href="../../tables/batch_quantity_history_types.html" target="_top" title="batch_quantity_history_types" alt="" coords="326,463,637,551">
-<area shape="rect" id="node8" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="299,604,664,967">
-<area shape="rect" id="node13" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="5,665,255,783">
-<area shape="rect" id="node9" href="../../tables/batch_sub_locations.html" target="_top" title="batch_sub_locations" alt="" coords="747,216,985,304">
-<area shape="rect" id="node11" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="708,321,1024,497">
-<area shape="rect" id="node12" href="../../tables/withdrawal_photos.html" target="_top" title="withdrawal_photos" alt="" coords="750,796,982,919">
-<area shape="rect" id="node14" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="752,936,980,1053">
+<area shape="rect" id="node10" href="../../../public/tables/facilities.html" target="_top" title="public.facilities" alt="" coords="28,455,232,543">
+<area shape="rect" id="node4" href="../../tables/batch_photos.html" target="_top" title="batch_photos" alt="" coords="775,111,963,199">
+<area shape="rect" id="node5" href="../../../public/tables/files.html" target="_top" title="public.files" alt="" coords="398,357,567,445">
+<area shape="rect" id="node6" href="../../tables/batch_quantity_history.html" target="_top" title="batch_quantity_history" alt="" coords="737,515,1000,779">
+<area shape="rect" id="node7" href="../../tables/batch_quantity_history_types.html" target="_top" title="batch_quantity_history_types" alt="" coords="327,463,638,551">
+<area shape="rect" id="node8" href="../../tables/withdrawals.html" target="_top" title="withdrawals" alt="" coords="299,628,667,1020">
+<area shape="rect" id="node13" href="../../tables/withdrawal_purposes.html" target="_top" title="withdrawal_purposes" alt="" coords="5,689,255,807">
+<area shape="rect" id="node9" href="../../tables/batch_sub_locations.html" target="_top" title="batch_sub_locations" alt="" coords="749,216,988,304">
+<area shape="rect" id="node11" href="../../tables/batch_withdrawals.html" target="_top" title="batch_withdrawals" alt="" coords="711,321,1027,497">
+<area shape="rect" id="node12" href="../../tables/withdrawal_photos.html" target="_top" title="withdrawal_photos" alt="" coords="753,796,985,919">
+<area shape="rect" id="node14" href="../../../tracking/tables/deliveries.html" target="_top" title="tracking.deliveries" alt="" coords="755,936,983,1053">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/withdrawals.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

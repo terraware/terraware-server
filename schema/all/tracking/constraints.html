@@ -1655,8 +1655,8 @@
                                     </tr>
                                     <tr>
                                         <td><a href='tables/plantings.html'>plantings</a></td>
-                                        <td>num_plants_positive_unless_reassignment_from</td>
-                                        <td>((((planting_type_id = 2) AND (num_plants &lt; 0)) OR ((planting_type_id &lt;&gt; 2) AND (num_plants &gt; 0))))</td>
+                                        <td>num_plants_sign_consistent_with_type</td>
+                                        <td>((((planting_type_id = ANY (ARRAY[2, 4])) AND (num_plants &lt; 0)) OR ((planting_type_id &lt;&gt; ALL (ARRAY[2, 4])) AND (num_plants &gt; 0))))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/plantings.html'>plantings</a></td>

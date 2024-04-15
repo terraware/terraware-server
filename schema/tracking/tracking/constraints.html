@@ -1001,8 +1001,8 @@
                                     </tr>
                                     <tr>
                                         <td><a href='tables/plantings.html'>plantings</a></td>
-                                        <td>num_plants_positive_unless_reassignment_from</td>
-                                        <td>((((planting_type_id = 2) AND (num_plants &lt; 0)) OR ((planting_type_id &lt;&gt; 2) AND (num_plants &gt; 0))))</td>
+                                        <td>num_plants_sign_consistent_with_type</td>
+                                        <td>((((planting_type_id = ANY (ARRAY[2, 4])) AND (num_plants &lt; 0)) OR ((planting_type_id &lt;&gt; ALL (ARRAY[2, 4])) AND (num_plants &gt; 0))))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/plantings.html'>plantings</a></td>
@@ -1035,6 +1035,11 @@
                                         <td>((area_ha &gt; (0)::numeric))</td>
                                     </tr>
                                     <tr>
+                                        <td><a href='tables/recorded_plants.html'>recorded_plants</a></td>
+                                        <td>species_info_matches_certainty</td>
+                                        <td>((((certainty_id = 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id = 2) AND (species_id IS NULL)) OR ((certainty_id = 3) AND (species_id IS NULL) AND (species_name IS NULL))))</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/planting_sites.html'>planting_sites</a></td>
                                         <td>area_positive</td>
                                         <td>((area_ha &gt; (0)::numeric))</td>
@@ -1043,11 +1048,6 @@
                                         <td><a href='tables/planting_sites.html'>planting_sites</a></td>
                                         <td>planting_sites_description_check</td>
                                         <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href='tables/recorded_plants.html'>recorded_plants</a></td>
-                                        <td>species_info_matches_certainty</td>
-                                        <td>((((certainty_id = 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id = 2) AND (species_id IS NULL)) OR ((certainty_id = 3) AND (species_id IS NULL) AND (species_name IS NULL))))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/observations.html'>observations</a></td>
