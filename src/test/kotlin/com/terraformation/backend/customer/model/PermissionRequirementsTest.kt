@@ -539,6 +539,16 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun readInternalTags() = allow { readInternalTags() } ifUser { canReadInternalTags() }
 
+  @Test fun readModulesForProject() {
+    assertThrows<ProjectNotFoundException> { requirements.readModulesForProject(projectId) }
+
+    grant { user.canReadProject(projectId) }
+    assertThrows<AccessDeniedException> { requirements.readModulesForProject(projectId) }
+
+    grant { user.canReadModulesForProject(projectId) }
+    requirements.readModulesForProject(projectId)
+  }
+
   @Test fun readNotification() = testRead { readNotification(notificationId) }
 
   @Test fun readObservation() = testRead { readObservation(observationId) }

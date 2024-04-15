@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.model
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -229,6 +230,8 @@ interface TerrawareUser : Principal {
   fun canReadGlobalRoles(): Boolean
 
   fun canReadInternalTags(): Boolean
+
+  fun canReadModulesForProject(projectId: ProjectId) : Boolean
 
   fun canReadNotification(notificationId: NotificationId): Boolean
 
