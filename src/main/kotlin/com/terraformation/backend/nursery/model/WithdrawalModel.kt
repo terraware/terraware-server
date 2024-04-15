@@ -42,6 +42,7 @@ data class WithdrawalModel<ID : WithdrawalId?>(
     val purpose: WithdrawalPurpose,
     val withdrawnDate: LocalDate,
     val undoesWithdrawalId: WithdrawalId? = null,
+    val undoneByWithdrawalId: WithdrawalId? = null,
 ) {
   init {
     if (batchWithdrawals.isEmpty()) {
@@ -70,7 +71,10 @@ fun BatchWithdrawalsRow.toModel(): BatchWithdrawalModel =
         readyQuantityWithdrawn = readyQuantityWithdrawn!!,
     )
 
-fun WithdrawalsRow.toModel(batchWithdrawals: List<BatchWithdrawalsRow>): ExistingWithdrawalModel =
+fun WithdrawalsRow.toModel(
+    batchWithdrawals: List<BatchWithdrawalsRow>,
+    undoneByWithdrawalId: WithdrawalId? = null
+): ExistingWithdrawalModel =
     ExistingWithdrawalModel(
         batchWithdrawals = batchWithdrawals.map { it.toModel() },
         destinationFacilityId = destinationFacilityId,
@@ -80,4 +84,5 @@ fun WithdrawalsRow.toModel(batchWithdrawals: List<BatchWithdrawalsRow>): Existin
         purpose = purposeId!!,
         withdrawnDate = withdrawnDate!!,
         undoesWithdrawalId = undoesWithdrawalId,
+        undoneByWithdrawalId = undoneByWithdrawalId,
     )

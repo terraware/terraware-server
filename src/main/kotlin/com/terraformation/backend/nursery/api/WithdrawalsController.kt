@@ -209,6 +209,10 @@ data class NurseryWithdrawalPayload(
     val notes: String?,
     val purpose: WithdrawalPurpose,
     val withdrawnDate: LocalDate,
+    @Schema(description = "If purpose is \"Undo\", the ID of the withdrawal this one undoes.")
+    val undoesWithdrawalId: WithdrawalId?,
+    @Schema(description = "If this withdrawal was undone, the ID of the withdrawal that undid it.")
+    val undoneByWithdrawalId: WithdrawalId?,
 ) {
   constructor(
       model: ExistingWithdrawalModel
@@ -220,6 +224,8 @@ data class NurseryWithdrawalPayload(
       model.notes,
       model.purpose,
       model.withdrawnDate,
+      model.undoesWithdrawalId,
+      model.undoneByWithdrawalId,
   )
 }
 

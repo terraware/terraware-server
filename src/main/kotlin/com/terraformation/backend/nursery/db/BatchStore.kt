@@ -138,8 +138,14 @@ class BatchStore(
     val batchWithdrawalsRows = batchWithdrawalsDao.fetchByWithdrawalId(withdrawalId)
     val withdrawalsRow =
         withdrawalsDao.fetchOneById(withdrawalId) ?: throw WithdrawalNotFoundException(withdrawalId)
+    val undoneByWithdrawalId =
+        dslContext
+            .select(WITHDRAWALS.ID)
+            .from(WITHDRAWALS)
+            .where(WITHDRAWALS.UNDOES_WITHDRAWAL_ID.eq(withdrawalId))
+            .fetchOne(WITHDRAWALS.ID)
 
-    return withdrawalsRow.toModel(batchWithdrawalsRows)
+    return withdrawalsRow.toModel(batchWithdrawalsRows, undoneByWithdrawalId)
   }
 
   /**
