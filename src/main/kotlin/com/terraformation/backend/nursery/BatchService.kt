@@ -1,6 +1,7 @@
 package com.terraformation.backend.nursery
 
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -18,6 +19,22 @@ class BatchService(
     private val deliveryStore: DeliveryStore,
     private val dslContext: DSLContext,
 ) {
+  fun undoWithdrawal(withdrawalId: WithdrawalId): ExistingWithdrawalModel {
+    return dslContext.transactionResult { _ ->
+      val undoWithdrawal = batchStore.undoWithdrawal(withdrawalId)
+
+      val deliveryToUndo = deliveryStore.fetchOneByWithdrawalId(withdrawalId)
+
+      if (deliveryToUndo != null) {
+        val deliveryId = deliveryStore.undoDelivery(deliveryToUndo.id, undoWithdrawal.id)
+
+        undoWithdrawal.copy(deliveryId = deliveryId)
+      } else {
+        undoWithdrawal
+      }
+    }
+  }
+
   fun withdraw(
       newWithdrawal: NewWithdrawalModel,
       readyByDate: LocalDate? = null,
