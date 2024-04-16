@@ -680,15 +680,8 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                               ))),
           )
 
-      assertEquals(
-          expected,
-          store.fetchModulesForProject(projectId),
-      )
-
-      assertEquals(
-          expected,
-          store.fetchModulesForProject(anotherProjectId),
-      )
+      assertEquals(expected, store.fetchModulesForProject(projectId))
+      assertEquals(expected, store.fetchModulesForProject(anotherProjectId))
     }
 
     @Test
