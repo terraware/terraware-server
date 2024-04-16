@@ -138,6 +138,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     every { user.canCreateObservation(any()) } returns true
     every { user.canManageObservation(any()) } returns true
+    every { user.canReadMonitoringPlot(any()) } returns true
     every { user.canReadObservation(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
     every { user.canReadPlantingZone(any()) } returns true

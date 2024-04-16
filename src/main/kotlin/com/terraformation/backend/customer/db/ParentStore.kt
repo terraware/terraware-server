@@ -43,6 +43,7 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -50,6 +51,7 @@ import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -114,6 +116,12 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getOrganizationId(facilityId: FacilityId): OrganizationId? =
       fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.ORGANIZATION_ID)
+
+  fun getOrganizationId(monitoringPlotId: MonitoringPlotId): OrganizationId? =
+      fetchFieldById(
+          monitoringPlotId,
+          MONITORING_PLOTS.ID,
+          MONITORING_PLOTS.plantingSubzones.plantingSites.ORGANIZATION_ID)
 
   fun getOrganizationId(observationId: ObservationId): OrganizationId? =
       fetchFieldById(observationId, OBSERVATIONS.ID, OBSERVATIONS.plantingSites.ORGANIZATION_ID)
