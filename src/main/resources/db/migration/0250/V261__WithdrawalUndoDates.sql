@@ -1,6 +1,7 @@
 DROP VIEW nursery.withdrawal_summaries;
 
 -- Add undoes_withdrawal_date and undone_by_withdrawal_date
+-- Previous version was in V259
 CREATE VIEW nursery.withdrawal_summaries AS
 SELECT withdrawals.id,
        withdrawals.facility_id,
