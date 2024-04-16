@@ -23,7 +23,7 @@ class ModuleStore(
     private val dslContext: DSLContext,
 ) {
   fun fetchModulesForProject(projectId: ProjectId): List<ModuleModel> {
-    requirePermissions { readModulesForProject(projectId) }
+    requirePermissions { readProjectModules(projectId) }
 
     val eventsField = eventsMultiset(projectId)
     return with(MODULES) {
@@ -90,15 +90,19 @@ class ModuleStore(
             DSL.multiset(DSL.select(PROJECT_ID).from(this).where(EVENT_ID.eq(EVENTS.ID)))
                 .convertFrom { result -> result.map { it.value1() }.toSet() }
           }
-        } else null
+        } else {
+          null
+        }
     return with(EVENTS) {
       DSL.multiset(
-              DSL.selectDistinct(asterisk(), projectsField)
+              DSL.select(asterisk(), projectsField)
                   .from(this)
-                  .join(EVENT_PROJECTS)
-                  .on(EVENT_PROJECTS.EVENT_ID.eq(ID))
-                  .where(MODULE_ID.eq(MODULES.ID))
-                  .and(projectCondition)
+                  .where(
+                      ID.`in`(
+                          DSL.select(EVENT_PROJECTS.EVENT_ID)
+                              .from(EVENT_PROJECTS)
+                              .where(projectCondition)))
+                  .and(MODULE_ID.eq(MODULES.ID))
                   .orderBy(START_TIME))
           .convertFrom { result ->
             result.groupBy({ it[EVENTS.EVENT_TYPE_ID]!! }, { EventModel.of(it, projectsField) })

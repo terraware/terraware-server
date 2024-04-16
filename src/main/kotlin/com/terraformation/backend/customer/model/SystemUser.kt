@@ -276,8 +276,6 @@ class SystemUser(
 
   override fun canReadInternalTags(): Boolean = true
 
-  override fun canReadModulesForProject(projectId: ProjectId): Boolean = true
-
   override fun canReadNotification(notificationId: NotificationId): Boolean = true
 
   override fun canReadObservation(observationId: ObservationId): Boolean = true
@@ -304,6 +302,8 @@ class SystemUser(
   override fun canReadProjectAcceleratorDetails(projectId: ProjectId): Boolean = true
 
   override fun canReadProjectDeliverables(projectId: ProjectId): Boolean = true
+
+  override fun canReadProjectModules(projectId: ProjectId): Boolean = true
 
   override fun canReadProjectScores(projectId: ProjectId): Boolean = true
 

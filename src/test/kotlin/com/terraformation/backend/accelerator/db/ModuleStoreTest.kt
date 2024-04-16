@@ -40,7 +40,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.canManageModules() } returns true
     every { user.canReadProject(any()) } returns true
-    every { user.canReadModulesForProject(any()) } returns true
+    every { user.canReadProjectModules(any()) } returns true
   }
 
   @Nested
@@ -219,7 +219,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to read project modules`() {
-      every { user.canReadModulesForProject(any()) } returns false
+      every { user.canReadProjectModules(any()) } returns false
       assertThrows<AccessDeniedException> { store.fetchModulesForProject(inserted.projectId) }
 
       every { user.canReadProject(any()) } returns false

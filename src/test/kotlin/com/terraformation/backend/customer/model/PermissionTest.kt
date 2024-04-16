@@ -519,9 +519,9 @@ internal class PermissionTest : DatabaseTest() {
         *projectIds.forOrg1(),
         createSubmission = true,
         deleteProject = true,
-        readModulesForProject = true,
         readProject = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         updateProject = true,
     )
 
@@ -746,9 +746,9 @@ internal class PermissionTest : DatabaseTest() {
         *projectIds.forOrg1(),
         createSubmission = true,
         deleteProject = true,
-        readModulesForProject = true,
         readProject = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         updateProject = true,
     )
 
@@ -887,9 +887,9 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *projectIds.forOrg1(),
         createSubmission = true,
-        readModulesForProject = true,
         readProject = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
     )
 
     permissions.expect(
@@ -1012,8 +1012,8 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
-        readModulesForProject = true,
         readProject = true,
+        readProjectModules = true,
     )
 
     permissions.expect(
@@ -1276,10 +1276,10 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readDefaultVoters = true,
-        readModulesForProject = true,
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateDefaultVoters = true,
@@ -1377,10 +1377,10 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readDefaultVoters = true,
-        readModulesForProject = true,
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateDefaultVoters = true,
@@ -1407,10 +1407,10 @@ internal class PermissionTest : DatabaseTest() {
         ProjectId(4000),
         createSubmission = true,
         readDefaultVoters = true,
-        readModulesForProject = true,
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateDefaultVoters = true,
@@ -1530,10 +1530,10 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readDefaultVoters = true,
-        readModulesForProject = true,
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateProject = true,
@@ -1680,10 +1680,10 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         deleteProject = true,
         readDefaultVoters = true,
-        readModulesForProject = true,
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateProject = true,
@@ -1703,10 +1703,10 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(4000),
         readDefaultVoters = true,
-        readModulesForProject = true,
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateProjectAcceleratorDetails = true,
@@ -1820,10 +1820,10 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *projectIds.forOrg1(),
         readDefaultVoters = true,
-        readModulesForProject = true,
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
     )
@@ -1832,10 +1832,10 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(4000),
         readDefaultVoters = true,
-        readModulesForProject = true,
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
     )
@@ -2615,11 +2615,11 @@ internal class PermissionTest : DatabaseTest() {
         vararg projectIds: ProjectId,
         createSubmission: Boolean = false,
         deleteProject: Boolean = false,
-        readModulesForProject: Boolean = false,
         readDefaultVoters: Boolean = false,
         readProject: Boolean = false,
         readProjectAcceleratorDetails: Boolean = false,
         readProjectDeliverables: Boolean = false,
+        readProjectModules: Boolean = false,
         readProjectScores: Boolean = false,
         readProjectVotes: Boolean = false,
         updateDefaultVoters: Boolean = false,
@@ -2639,9 +2639,7 @@ internal class PermissionTest : DatabaseTest() {
             deleteProject, user.canDeleteProject(projectId), "Can delete project $projectId")
         assertEquals(readDefaultVoters, user.canReadDefaultVoters(), "Can read default voters")
         assertEquals(
-            readModulesForProject,
-            user.canReadModulesForProject(projectId),
-            "Can read project modules")
+            readProjectModules, user.canReadProjectModules(projectId), "Can read project modules")
         assertEquals(readProject, user.canReadProject(projectId), "Can read project $projectId")
         assertEquals(
             readProjectAcceleratorDetails,

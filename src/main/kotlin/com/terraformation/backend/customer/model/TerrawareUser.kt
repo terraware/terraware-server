@@ -230,8 +230,6 @@ interface TerrawareUser : Principal {
 
   fun canReadInternalTags(): Boolean
 
-  fun canReadModulesForProject(projectId: ProjectId): Boolean
-
   fun canReadNotification(notificationId: NotificationId): Boolean
 
   fun canReadObservation(observationId: ObservationId): Boolean
@@ -257,6 +255,8 @@ interface TerrawareUser : Principal {
   fun canReadProjectAcceleratorDetails(projectId: ProjectId): Boolean
 
   fun canReadProjectDeliverables(projectId: ProjectId): Boolean
+
+  fun canReadProjectModules(projectId: ProjectId): Boolean
 
   fun canReadProjectScores(projectId: ProjectId): Boolean
 

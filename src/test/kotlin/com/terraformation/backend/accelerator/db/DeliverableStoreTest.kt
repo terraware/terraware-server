@@ -14,7 +14,6 @@ import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.net.URI
 import java.time.Instant
-import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -98,9 +97,9 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       val deliverableId3 = insertDeliverable(id = 3, moduleId = 2)
       insertDeliverableDocument(templateUrl = "https://example.com/")
 
-      insertCohortModule(cohortId1, moduleId1, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 31))
-      insertCohortModule(cohortId1, moduleId2, LocalDate.of(2024, 2, 1), LocalDate.of(2024, 2, 28))
-      insertCohortModule(cohortId2, moduleId2, LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 31))
+      insertCohortModule(cohortId1, moduleId1)
+      insertCohortModule(cohortId1, moduleId2)
+      insertCohortModule(cohortId2, moduleId2)
 
       val submissionId1 =
           insertSubmission(

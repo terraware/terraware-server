@@ -2069,11 +2069,13 @@ abstract class DatabaseTest {
     return row.id!!.also { inserted.cohortIds.add(it) }
   }
 
+  private var nextCohortModuleStartDate = LocalDate.EPOCH
+
   fun insertCohortModule(
       cohortId: Any = inserted.cohortId,
       moduleId: Any = inserted.moduleId,
-      startDate: LocalDate = LocalDate.EPOCH,
-      endDate: LocalDate = LocalDate.of(2257, 1, 1),
+      startDate: LocalDate = nextCohortModuleStartDate,
+      endDate: LocalDate = startDate.plusDays(6),
   ) {
     val row =
         CohortModulesRow(
@@ -2083,6 +2085,7 @@ abstract class DatabaseTest {
             endDate = endDate,
         )
 
+    nextCohortModuleStartDate = endDate.plusDays(1)
     cohortModulesDao.insert(row)
   }
 
@@ -2090,11 +2093,11 @@ abstract class DatabaseTest {
       id: Any? = null,
       moduleId: Any = inserted.moduleId,
       eventType: EventType = EventType.Workshop,
-      meetingUrl: URI? = null,
-      slidesUrl: URI? = null,
-      recordingUrl: URI? = null,
+      meetingUrl: Any? = null,
+      slidesUrl: Any? = null,
+      recordingUrl: Any? = null,
       startTime: Instant? = null,
-      endTime: Instant? = null,
+      endTime: Instant? = startTime?.plusSeconds(3600),
       createdBy: Any = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
   ): EventId {
@@ -2103,9 +2106,9 @@ abstract class DatabaseTest {
             id = id?.toIdWrapper { EventId(it) },
             moduleId = moduleId.toIdWrapper { ModuleId(it) },
             eventTypeId = eventType,
-            meetingUrl = meetingUrl,
-            slidesUrl = slidesUrl,
-            recordingUrl = recordingUrl,
+            meetingUrl = meetingUrl?.let { URI("$it") },
+            slidesUrl = slidesUrl?.let { URI("$it") },
+            recordingUrl = recordingUrl?.let { URI("$it") },
             startTime = startTime,
             endTime = endTime,
             createdBy = createdBy.toIdWrapper { UserId(it) },

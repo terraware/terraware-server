@@ -346,11 +346,6 @@ data class IndividualUser(
 
   override fun canReadGlobalRoles() = isAcceleratorAdmin()
 
-  override fun canReadModulesForProject(projectId: ProjectId): Boolean {
-    val organizationId = parentStore.getOrganizationId(projectId) ?: return false
-    return isMember(organizationId) || isGlobalReader(organizationId)
-  }
-
   override fun canReadNotification(notificationId: NotificationId) =
       parentStore.getUserId(notificationId) == userId
 
@@ -397,6 +392,11 @@ data class IndividualUser(
 
   override fun canReadProjectDeliverables(projectId: ProjectId): Boolean =
       isReadOnlyOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
+
+  override fun canReadProjectModules(projectId: ProjectId): Boolean {
+    val organizationId = parentStore.getOrganizationId(projectId) ?: return false
+    return isMember(organizationId) || isGlobalReader(organizationId)
+  }
 
   override fun canReadProjectScores(projectId: ProjectId) = isReadOnlyOrHigher()
 

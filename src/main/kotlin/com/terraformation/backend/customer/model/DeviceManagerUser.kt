@@ -278,8 +278,6 @@ data class DeviceManagerUser(
 
   override fun canReadInternalTags(): Boolean = false
 
-  override fun canReadModulesForProject(projectId: ProjectId): Boolean = false
-
   override fun canReadNotification(notificationId: NotificationId): Boolean = false
 
   override fun canReadObservation(observationId: ObservationId): Boolean = false
@@ -304,6 +302,8 @@ data class DeviceManagerUser(
   override fun canReadProjectAcceleratorDetails(projectId: ProjectId): Boolean = false
 
   override fun canReadProjectDeliverables(projectId: ProjectId): Boolean = false
+
+  override fun canReadProjectModules(projectId: ProjectId): Boolean = false
 
   override fun canReadProjectScores(projectId: ProjectId): Boolean = false
 
