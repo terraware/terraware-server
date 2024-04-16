@@ -14,6 +14,8 @@ import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.DocumentStore
+import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.Pipeline
@@ -27,6 +29,8 @@ import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
 import com.terraformation.backend.db.accelerator.tables.daos.DefaultVotersDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
+import com.terraformation.backend.db.accelerator.tables.daos.EventProjectsDao
+import com.terraformation.backend.db.accelerator.tables.daos.EventsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectAcceleratorDetailsDao
@@ -40,6 +44,8 @@ import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DefaultVotersRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableDocumentsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverablesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.EventProjectsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectAcceleratorDetailsRow
@@ -390,6 +396,8 @@ abstract class DatabaseTest {
   protected val devicesDao: DevicesDao by lazyDao()
   protected val deviceTemplatesDao: DeviceTemplatesDao by lazyDao()
   protected val draftPlantingSitesDao: DraftPlantingSitesDao by lazyDao()
+  protected val eventProjectsDao: EventProjectsDao by lazyDao()
+  protected val eventsDao: EventsDao by lazyDao()
   protected val facilitiesDao: FacilitiesDao by lazyDao()
   protected val filesDao: FilesDao by lazyDao()
   protected val geolocationsDao: GeolocationsDao by lazyDao()
@@ -1506,6 +1514,12 @@ abstract class DatabaseTest {
       createdTime: Instant = Instant.EPOCH,
       id: Any? = null,
       name: String = "Module $nextModuleNumber",
+      overview: String? = null,
+      preparationMaterials: String? = null,
+      liveSessionDescription: String? = null,
+      workshopDescription: String? = null,
+      oneOnOneSessionDescription: String? = null,
+      additionalResources: String? = null,
       phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy,
   ): ModuleId {
     nextModuleNumber++
@@ -1518,6 +1532,12 @@ abstract class DatabaseTest {
             modifiedBy = createdBy,
             modifiedTime = createdTime,
             name = name,
+            overview = overview,
+            preparationMaterials = preparationMaterials,
+            liveSessionDescription = liveSessionDescription,
+            workshopDescription = workshopDescription,
+            oneOnOneSessionDescription = oneOnOneSessionDescription,
+            additionalResources = additionalResources,
             phaseId = phase,
         )
 
@@ -2066,6 +2086,46 @@ abstract class DatabaseTest {
     cohortModulesDao.insert(row)
   }
 
+  fun insertEvent(
+      id: Any? = null,
+      moduleId: Any = inserted.moduleId,
+      eventType: EventType = EventType.Workshop,
+      meetingUrl: URI? = null,
+      slidesUrl: URI? = null,
+      recordingUrl: URI? = null,
+      startTime: Instant? = null,
+      endTime: Instant? = null,
+      createdBy: Any = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+  ): EventId {
+    val row =
+        EventsRow(
+            id = id?.toIdWrapper { EventId(it) },
+            moduleId = moduleId.toIdWrapper { ModuleId(it) },
+            eventTypeId = eventType,
+            meetingUrl = meetingUrl,
+            slidesUrl = slidesUrl,
+            recordingUrl = recordingUrl,
+            startTime = startTime,
+            endTime = endTime,
+            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdTime = createdTime,
+            modifiedBy = createdBy.toIdWrapper { UserId(it) },
+            modifiedTime = createdTime,
+        )
+    eventsDao.insert(row)
+
+    return row.id!!.also { inserted.eventIds.add(it) }
+  }
+
+  fun insertEventProject(eventId: Any = inserted.eventId, projectId: Any = inserted.projectId) {
+    val row =
+        EventProjectsRow(
+            eventId = eventId.toIdWrapper { EventId(it) },
+            projectId = projectId.toIdWrapper { ProjectId(it) })
+    eventProjectsDao.insert(row)
+  }
+
   fun insertVote(
       projectId: Any = inserted.projectId,
       phase: CohortPhase = CohortPhase.Phase0DueDiligence,
@@ -2121,6 +2181,7 @@ abstract class DatabaseTest {
     val deliveryIds = mutableListOf<DeliveryId>()
     val deviceIds = mutableListOf<DeviceId>()
     val draftPlantingSiteIds = mutableListOf<DraftPlantingSiteId>()
+    val eventIds = mutableListOf<EventId>()
     val facilityIds = mutableListOf<FacilityId>()
     val fileIds = mutableListOf<FileId>()
     val moduleIds = mutableListOf<ModuleId>()
@@ -2168,6 +2229,9 @@ abstract class DatabaseTest {
 
     val draftPlantingSiteId
       get() = draftPlantingSiteIds.last()
+
+    val eventId
+      get() = eventIds.last()
 
     val facilityId
       get() = facilityIds.last()

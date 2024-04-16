@@ -2638,7 +2638,10 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             deleteProject, user.canDeleteProject(projectId), "Can delete project $projectId")
         assertEquals(readDefaultVoters, user.canReadDefaultVoters(), "Can read default voters")
-        assertEquals(readModulesForProject, user.canReadModulesForProject(projectId), "Can read project modules")
+        assertEquals(
+            readModulesForProject,
+            user.canReadModulesForProject(projectId),
+            "Can read project modules")
         assertEquals(readProject, user.canReadProject(projectId), "Can read project $projectId")
         assertEquals(
             readProjectAcceleratorDetails,

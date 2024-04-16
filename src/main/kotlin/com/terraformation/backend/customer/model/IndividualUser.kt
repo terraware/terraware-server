@@ -7,7 +7,6 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
-import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -351,6 +350,7 @@ data class IndividualUser(
     val organizationId = parentStore.getOrganizationId(projectId) ?: return false
     return isMember(organizationId) || isGlobalReader(organizationId)
   }
+
   override fun canReadNotification(notificationId: NotificationId) =
       parentStore.getUserId(notificationId) == userId
 
