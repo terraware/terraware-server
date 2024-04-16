@@ -274,6 +274,8 @@ data class IndividualUser(
   override fun canDeleteSubLocation(subLocationId: SubLocationId) =
       isAdminOrHigher(parentStore.getFacilityId(subLocationId))
 
+  override fun canDeleteSupportIssue(): Boolean = false
+
   override fun canDeleteUpload(uploadId: UploadId) = canReadUpload(uploadId)
 
   override fun canImportGlobalSpeciesData() = isSuperAdmin()

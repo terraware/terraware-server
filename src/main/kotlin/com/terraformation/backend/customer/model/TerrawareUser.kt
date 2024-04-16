@@ -177,6 +177,8 @@ interface TerrawareUser : Principal {
 
   fun canDeleteSubLocation(subLocationId: SubLocationId): Boolean
 
+  fun canDeleteSupportIssue(): Boolean
+
   fun canDeleteUpload(uploadId: UploadId): Boolean
 
   fun canImportGlobalSpeciesData(): Boolean

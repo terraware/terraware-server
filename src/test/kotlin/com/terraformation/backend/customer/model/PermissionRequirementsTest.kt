@@ -453,6 +453,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun deleteSubLocation() =
       allow { deleteSubLocation(subLocationId) } ifUser { canDeleteSubLocation(subLocationId) }
 
+  @Test fun deleteSupportIssue() = allow { deleteSupportIssue() } ifUser { canDeleteSupportIssue() }
+
   @Test fun deleteUpload() = allow { deleteUpload(uploadId) } ifUser { canDeleteUpload(uploadId) }
 
   @Test

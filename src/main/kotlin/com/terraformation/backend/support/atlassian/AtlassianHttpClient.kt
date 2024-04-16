@@ -1,9 +1,15 @@
 package com.terraformation.backend.support.atlassian
 
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.support.atlassian.model.ServiceDeskModel
+import com.terraformation.backend.support.atlassian.model.ServiceRequestFieldsModel
+import com.terraformation.backend.support.atlassian.model.ServiceRequestTypeModel
 import com.terraformation.backend.support.atlassian.resource.AtlassianResource
 import com.terraformation.backend.support.atlassian.resource.CreateServiceDeskRequest
 import com.terraformation.backend.support.atlassian.resource.DeleteIssue
+import com.terraformation.backend.support.atlassian.resource.ListServiceDesks
+import com.terraformation.backend.support.atlassian.resource.ListServiceRequestTypes
 import com.terraformation.backend.support.atlassian.resource.PostServiceDeskRequestResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.java.Java
@@ -23,39 +29,60 @@ import kotlinx.coroutines.runBlocking
 @Named
 class AtlassianHttpClient(private val config: TerrawareServerConfig) {
   private val httpClient: HttpClient by lazy { createHttpClient() }
+  private val serviceDesk: ServiceDeskModel? by lazy { findServiceDesk() }
 
-  fun deleteIssue(issueId: String) = makeRequest(DeleteIssue(issueId))
+  val requestTypes: Set<ServiceRequestTypeModel> by lazy { getServiceRequestTypes() }
+
+  fun deleteIssue(issueId: String) {
+    requirePermissions { deleteSupportIssue() }
+    makeRequest(DeleteIssue(issueId))
+  }
 
   fun createServiceDeskRequest(
       description: String,
       summary: String,
+      requestTypeId: Int,
       reporter: String,
-      requestType: SupportRequestType,
-  ): PostServiceDeskRequestResponse =
-      makeRequest(
-          CreateServiceDeskRequest(
-              description = description,
-              summary = summary,
-              reporter = reporter,
-              requestTypeId = getSupportRequestTypeId(requestType),
-              serviceDeskId = config.atlassian.serviceDeskId!!,
-          ))
+  ): PostServiceDeskRequestResponse {
+    // No required permission
+    if (requestTypes.find { it.id == requestTypeId } == null) {
+      throw RuntimeException("Request ID type not recognized")
+    }
+    return makeRequest(
+        CreateServiceDeskRequest(
+            reporter = reporter,
+            requestFieldValues = ServiceRequestFieldsModel(summary, description),
+            requestTypeId = requestTypeId,
+            serviceDeskId = serviceDeskId(),
+        ))
+  }
+
+  private fun serviceDeskId(): Int =
+      if (serviceDesk == null) {
+        throw IllegalStateException("Atlassian configuration is invalid")
+      } else {
+        serviceDesk!!.id
+      }
+
+  private fun getServiceRequestTypes(): Set<ServiceRequestTypeModel> =
+      makeRequest(ListServiceRequestTypes(serviceDeskId())).values.toSet()
+
+  private fun findServiceDesk(): ServiceDeskModel? =
+      makeRequest(ListServiceDesks()).values.firstOrNull {
+        it.projectKey == config.atlassian.serviceDeskKey
+      }
 
   private fun <T> makeRequest(resource: AtlassianResource<T>): T {
+    if (!config.atlassian.enabled) {
+      throw IllegalStateException("Atlassian service is disabled")
+    }
 
     val response = runBlocking {
       val httpResponse = httpClient.request { resource.buildRequest(this) }
       resource.parseResponse(httpResponse)
     }
-
     return response
   }
-
-  private fun getSupportRequestTypeId(requestType: SupportRequestType) =
-      when (requestType) {
-        SupportRequestType.BUG_REPORT -> config.atlassian.bugReportTypeId!!
-        SupportRequestType.FEATURE_REQUEST -> config.atlassian.featureRequestTypeId!!
-      }
 
   private fun createHttpClient(): HttpClient {
     return HttpClient(Java) {

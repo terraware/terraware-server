@@ -1,30 +1,37 @@
 package com.terraformation.backend.support
 
+import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.mockUser
 import com.terraformation.backend.support.atlassian.AtlassianHttpClient
-import com.terraformation.backend.support.atlassian.SupportRequestType
+import com.terraformation.backend.support.atlassian.model.ServiceRequestTypeModel
+import io.mockk.every
 import java.net.URI
 import org.junit.Assume
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.security.access.AccessDeniedException
 
 @EnableConfigurationProperties(TerrawareServerConfig::class)
-class AtlassianHttpClientExternalTest {
+class AtlassianHttpClientExternalTest : RunsAsUser {
+  override val user: TerrawareUser = mockUser()
   private lateinit var client: AtlassianHttpClient
+  private lateinit var requestTypes: Set<ServiceRequestTypeModel>
   private val createdIssueIds: MutableList<String> = mutableListOf()
 
   @BeforeEach
   fun setUp() {
+    every { user.canDeleteSupportIssue() } returns true
+
     val account = getEnvOrSkipTest("TERRAWARE_ATLASSIAN_ACCOUNT")
     val apiHostname = getEnvOrSkipTest("TERRAWARE_ATLASSIAN_HOST")
     val apiToken = getEnvOrSkipTest("TERRAWARE_ATLASSIAN_TOKEN")
-    val bugReportTypeId = getEnvOrSkipTest("TERRAWARE_ATLASSIAN_BUG_REPORT_TYPE_ID").toInt()
-    val featureRequestTypeId =
-        getEnvOrSkipTest("TERRAWARE_ATLASSIAN_FEATURE_REQUEST_TYPE_ID").toInt()
-    val serviceDeskId = getEnvOrSkipTest("TERRAWARE_ATLASSIAN_SERVICE_DESK_ID").toInt()
+    val serviceDeskKey = getEnvOrSkipTest("TERRAWARE_ATLASSIAN_SERVICE_DESK_KEY")
 
     val config =
         TerrawareServerConfig(
@@ -34,10 +41,8 @@ class AtlassianHttpClientExternalTest {
                     account = account,
                     apiHostname = apiHostname,
                     apiToken = apiToken,
-                    bugReportTypeId = bugReportTypeId,
                     enabled = true,
-                    featureRequestTypeId = featureRequestTypeId,
-                    serviceDeskId = serviceDeskId),
+                    serviceDeskKey = serviceDeskKey),
             keycloak =
                 TerrawareServerConfig.KeycloakConfig(
                     apiClientId = "test",
@@ -45,6 +50,9 @@ class AtlassianHttpClientExternalTest {
                     apiClientUsernamePrefix = "test"))
 
     client = AtlassianHttpClient(config)
+    requestTypes = client.requestTypes
+
+    assertTrue(requestTypes.isNotEmpty())
   }
 
   @AfterEach
@@ -59,11 +67,30 @@ class AtlassianHttpClientExternalTest {
         client.createServiceDeskRequest(
             description = "Description",
             summary = "Summary",
+            requestTypeId = requestTypes.first().id,
             reporter = "testuser@example.com",
-            requestType = SupportRequestType.FEATURE_REQUEST)
+        )
 
     assertNotNull(response)
     createdIssueIds.addLast(response.issueId)
+  }
+
+  @Test
+  fun `throws exception if request type ID is incorrect`() {
+    assertThrows<RuntimeException> {
+      client.createServiceDeskRequest(
+          description = "Description",
+          summary = "Summary",
+          requestTypeId = -1,
+          reporter = "testuser@example.com",
+      )
+    }
+  }
+
+  @Test
+  fun `throws exception if no permission to delete issue`() {
+    every { user.canDeleteSupportIssue() } returns false
+    assertThrows<AccessDeniedException> { client.deleteIssue("issue") }
   }
 
   private fun getEnvOrSkipTest(name: String): String {

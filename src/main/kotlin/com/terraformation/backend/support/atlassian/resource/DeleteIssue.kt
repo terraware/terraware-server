@@ -6,7 +6,7 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.path
 
 /** DELETE request to delete an issue. */
-data class DeleteIssue(val issueId: String) : AtlassianResource<Unit> {
+class DeleteIssue(issueId: String) : AtlassianResource<Unit> {
   private val path = "/rest/api/3/issue/$issueId"
   private val httpMethod = HttpMethod.Delete
 
