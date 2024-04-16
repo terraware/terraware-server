@@ -1,3 +1,4 @@
+8a8c876dd8c Update Python dependencies (#1854)
 779f1fe89e5 SW-5099 Added data tables for modules and events (#1840)
 035bf855643 SW-5188 Make nursery withdrawal undo endpoint functional (#1848)
 0f84e660465 SW-5188 Include undo information in withdrawal payload (#1847)
