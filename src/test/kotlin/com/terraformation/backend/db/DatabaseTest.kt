@@ -957,7 +957,7 @@ abstract class DatabaseTest {
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, createdTime)
           .set(MODIFIED_BY, createdBy)
-          .set(MODIFIED_TIME, Instant.EPOCH)
+          .set(MODIFIED_TIME, createdTime)
           .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
           .set(ROLE_ID, role)
           .set(USER_ID, userId.toIdWrapper { UserId(it) })
