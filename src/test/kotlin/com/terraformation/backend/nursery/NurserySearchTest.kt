@@ -602,10 +602,13 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `undo relationships can be queried from both directions`() {
       insertBatch()
-      val withdrawalId = insertWithdrawal()
+      val withdrawalId = insertWithdrawal(withdrawnDate = LocalDate.of(2024, 1, 15))
       insertBatchWithdrawal(germinatingQuantityWithdrawn = 1)
       val undoWithdrawalId =
-          insertWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+          insertWithdrawal(
+              purpose = WithdrawalPurpose.Undo,
+              undoesWithdrawalId = withdrawalId,
+              withdrawnDate = LocalDate.of(2024, 2, 5))
       insertBatchWithdrawal(germinatingQuantityWithdrawn = -1)
 
       val prefix = SearchFieldPrefix(searchTables.nurseryWithdrawals)
@@ -613,7 +616,9 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           listOf(
                   "id",
                   "totalWithdrawn",
+                  "undoesWithdrawalDate",
                   "undoesWithdrawalId",
+                  "undoneByWithdrawalDate",
                   "undoneByWithdrawalId",
               )
               .map { prefix.resolve(it) }
@@ -626,11 +631,13 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   mapOf(
                       "id" to "$withdrawalId",
                       "totalWithdrawn" to "1",
+                      "undoneByWithdrawalDate" to "2024-02-05",
                       "undoneByWithdrawalId" to "$undoWithdrawalId",
                   ),
                   mapOf(
                       "id" to "$undoWithdrawalId",
                       "totalWithdrawn" to "-1",
+                      "undoesWithdrawalDate" to "2024-01-15",
                       "undoesWithdrawalId" to "$withdrawalId",
                   )),
               null)

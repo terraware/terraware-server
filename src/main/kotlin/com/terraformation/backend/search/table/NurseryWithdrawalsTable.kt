@@ -53,9 +53,11 @@ class NurseryWithdrawalsTable(private val tables: SearchTables) : SearchTable() 
           enumField("purpose", WITHDRAWAL_SUMMARIES.PURPOSE_ID, nullable = false),
           longField("totalWithdrawn", WITHDRAWAL_SUMMARIES.TOTAL_WITHDRAWN),
           dateField("withdrawnDate", WITHDRAWAL_SUMMARIES.WITHDRAWN_DATE, nullable = false),
+          dateField("undoesWithdrawalDate", WITHDRAWAL_SUMMARIES.UNDOES_WITHDRAWAL_DATE),
           idWrapperField("undoesWithdrawalId", WITHDRAWAL_SUMMARIES.UNDOES_WITHDRAWAL_ID) {
             WithdrawalId(it)
           },
+          dateField("undoneByWithdrawalDate", WITHDRAWAL_SUMMARIES.UNDONE_BY_WITHDRAWAL_DATE),
           idWrapperField("undoneByWithdrawalId", WITHDRAWAL_SUMMARIES.UNDONE_BY_WITHDRAWAL_ID) {
             WithdrawalId(it)
           },
