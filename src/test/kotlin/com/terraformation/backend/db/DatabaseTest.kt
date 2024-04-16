@@ -949,14 +949,15 @@ abstract class DatabaseTest {
       organizationId: Any = this.organizationId,
       role: Role = Role.Contributor,
       createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
   ) {
     with(ORGANIZATION_USERS) {
       dslContext
           .insertInto(ORGANIZATION_USERS)
           .set(CREATED_BY, createdBy)
-          .set(CREATED_TIME, Instant.EPOCH)
+          .set(CREATED_TIME, createdTime)
           .set(MODIFIED_BY, createdBy)
-          .set(MODIFIED_TIME, Instant.EPOCH)
+          .set(MODIFIED_TIME, createdTime)
           .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
           .set(ROLE_ID, role)
           .set(USER_ID, userId.toIdWrapper { UserId(it) })

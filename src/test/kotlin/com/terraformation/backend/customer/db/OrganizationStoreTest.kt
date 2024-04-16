@@ -34,6 +34,7 @@ import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import org.jooq.JSONB
 import org.jooq.Record
 import org.jooq.Table
@@ -442,7 +443,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 "First1",
                 "Last1",
                 UserType.Individual,
-                clock.instant(),
+                clock.instant().plus(1, ChronoUnit.DAYS),
                 organizationId,
                 Role.Admin),
             OrganizationUserModel(
@@ -451,7 +452,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
                 "First2",
                 "Last2",
                 UserType.Individual,
-                clock.instant(),
+                clock.instant().plus(2, ChronoUnit.MINUTES),
                 organizationId,
                 Role.Contributor),
         )
@@ -866,6 +867,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   private fun configureUser(model: OrganizationUserModel) {
     insertUser(model.userId, null, model.email, model.firstName, model.lastName, model.userType)
-    insertOrganizationUser(model.userId, model.organizationId, model.role)
+    insertOrganizationUser(
+        model.userId, model.organizationId, model.role, createdTime = model.createdTime)
   }
 }

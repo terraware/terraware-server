@@ -278,7 +278,7 @@ class OrganizationStore(
             USERS.FIRST_NAME,
             USERS.LAST_NAME,
             USERS.USER_TYPE_ID,
-            USERS.CREATED_TIME,
+            ORGANIZATION_USERS.CREATED_TIME,
             ORGANIZATION_USERS.ORGANIZATION_ID,
             ORGANIZATION_USERS.ROLE_ID,
         )
@@ -292,7 +292,7 @@ class OrganizationStore(
           val userId = record[USERS.ID]
           val organizationId = record[ORGANIZATION_USERS.ORGANIZATION_ID]
           val userType = record[USERS.USER_TYPE_ID]
-          val createdTime = record[USERS.CREATED_TIME]
+          val createdTime = record[ORGANIZATION_USERS.CREATED_TIME]
           val email = record[USERS.EMAIL]
 
           val firstName = record[USERS.FIRST_NAME]
