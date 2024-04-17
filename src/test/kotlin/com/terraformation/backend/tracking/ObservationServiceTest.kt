@@ -1605,6 +1605,30 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `creates new temporary plot if needed`() {
+      insertPlantingSubzone(width = 2, height = 1, plantingCompletedTime = Instant.EPOCH)
+      val monitoringPlotId = insertMonitoringPlot(x = 0)
+      insertObservationPlot()
+
+      val result =
+          service.replaceMonitoringPlot(
+              observationId, monitoringPlotId, "Mudslide", ReplacementDuration.Temporary)
+
+      val plots = monitoringPlotsDao.findAll()
+
+      assertEquals(2, plots.size, "Number of monitoring plots after replacement")
+
+      val otherPlotId = plots.first { it.id != monitoringPlotId }.id!!
+
+      assertEquals(ReplacementResult(setOf(otherPlotId), setOf(monitoringPlotId)), result)
+
+      assertEquals(
+          listOf(otherPlotId),
+          observationPlotsDao.findAll().map { it.monitoringPlotId },
+          "Observation should only have replacement plot")
+    }
+
+    @Test
     fun `replaces entire permanent cluster if this is the first observation and there are no completed plots`() {
       insertPlantingZone(numPermanentClusters = 1, width = 2, height = 4)
       insertPlantingSubzone(width = 2, height = 4, plantingCompletedTime = Instant.EPOCH)
@@ -1662,6 +1686,17 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       insertCluster(2)
       insertCluster(3)
 
+      testPermanentClusterReplacement(cluster1)
+    }
+
+    @Test
+    fun `creates a new cluster to replace permanent plot if this is the first observation and duration is long-term`() {
+      val cluster1 = insertCluster(1, isPermanent = true)
+
+      testPermanentClusterReplacement(cluster1)
+    }
+
+    private fun testPermanentClusterReplacement(cluster1: List<MonitoringPlotId>) {
       val result =
           service.replaceMonitoringPlot(
               observationId, cluster1[0], "why not", ReplacementDuration.LongTerm)

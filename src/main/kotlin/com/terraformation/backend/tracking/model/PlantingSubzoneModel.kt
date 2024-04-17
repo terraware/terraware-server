@@ -16,20 +16,8 @@ data class PlantingSubzoneModel(
     val plantingCompletedTime: Instant?,
     val monitoringPlots: List<MonitoringPlotModel>,
 ) {
-  fun chooseTemporaryPlots(
-      excludePlotIds: Set<MonitoringPlotId>,
-      count: Int
-  ): List<MonitoringPlotId> {
-    return monitoringPlots
-        .asSequence()
-        .filter { it.id !in excludePlotIds }
-        .filter { it.isAvailable }
-        .filter { it.boundary.coveredBy(boundary) }
-        .map { it.id }
-        .shuffled()
-        .take(count)
-        .toList()
-  }
+  fun findMonitoringPlot(monitoringPlotId: MonitoringPlotId): MonitoringPlotModel? =
+      monitoringPlots.find { it.id == monitoringPlotId }
 
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is PlantingSubzoneModel &&
