@@ -63,15 +63,7 @@ data class ProjectModuleEventSession(
 data class ProjectModuleEvent(
     val eventDescription: String,
     val sessions: List<ProjectModuleEventSession>,
-) {
-  constructor(
-      eventDescription: String,
-      events: List<EventModel> = emptyList(),
-  ) : this(
-      eventDescription = eventDescription,
-      sessions = events.map { ProjectModuleEventSession(it) },
-  )
-}
+)
 
 data class ProjectModule(
     val id: ModuleId,
@@ -97,7 +89,11 @@ data class ProjectModule(
       preparationMaterials = model.preparationMaterials,
       events =
           model.eventDescriptions.mapValues {
-            ProjectModuleEvent(it.value, model.eventSessions[it.key] ?: emptyList())
+            ProjectModuleEvent(
+                it.value,
+                model.eventSessions[it.key]?.map { event -> ProjectModuleEventSession(event) }
+                    ?: emptyList(),
+            )
           })
 }
 
