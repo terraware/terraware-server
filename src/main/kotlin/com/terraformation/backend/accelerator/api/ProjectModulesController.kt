@@ -6,7 +6,6 @@ import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -40,10 +39,8 @@ class ProjectModulesController(
 
 data class ProjectModuleEventSession(
     val id: EventId,
-    // Times
     val startTime: Instant?,
     val endTime: Instant?,
-    // URIs
     val meetingURL: URI?,
     val recordingURL: URI?,
     val slidesURL: URI?,
@@ -70,11 +67,9 @@ data class ProjectModule(
     val name: String,
     val startDate: LocalDate,
     val endDate: LocalDate,
-    // Optional texts
     val additionalResources: String?,
     val overview: String?,
     val preparationMaterials: String?,
-    // Events
     val events: Map<EventType, ProjectModuleEvent>,
 ) {
   constructor(
@@ -98,9 +93,7 @@ data class ProjectModule(
 }
 
 data class GetProjectModulesResponsePayload(
-    val modules: Map<CohortPhase, List<ProjectModule>> = emptyMap(),
+    val modules: List<ProjectModule> = emptyList(),
 ) {
-  constructor(
-      models: List<ModuleModel>
-  ) : this(models.groupBy { it.phase }.mapValues { entry -> entry.value.map { ProjectModule(it) } })
+  constructor(models: List<ModuleModel>) : this(models.map { ProjectModule(it) })
 }
