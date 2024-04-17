@@ -4,30 +4,24 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
-import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
+import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
-import com.terraformation.backend.util.createRectangle
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.InstantSource
 import java.util.EnumSet
-import kotlin.math.min
 import kotlin.math.roundToInt
-import org.geotools.geometry.jts.JTS
-import org.geotools.referencing.GeodeticCalculator
 import org.jooq.DSLContext
-import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
@@ -39,8 +33,8 @@ import org.locationtech.jts.geom.PrecisionModel
 class PlantingSiteImporter(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
-    private val monitoringPlotsDao: MonitoringPlotsDao,
     private val plantingSitesDao: PlantingSitesDao,
+    private val plantingSiteStore: PlantingSiteStore,
     private val plantingZonesDao: PlantingZonesDao,
     private val plantingSubzonesDao: PlantingSubzonesDao,
 ) {
@@ -84,9 +78,6 @@ class PlantingSiteImporter(
 
     /** Target planting density to use if not included in zone properties. */
     val DEFAULT_TARGET_PLANTING_DENSITY = BigDecimal(1500)
-
-    const val AZIMUTH_EAST: Double = 90.0
-    const val AZIMUTH_NORTH: Double = 0.0
 
     /** The maximum size of the envelope (bounding box) of a site. */
     const val MAX_SITE_ENVELOPE_AREA_HA = 20000.0
@@ -148,15 +139,7 @@ class PlantingSiteImporter(
         validationOptions)
   }
 
-  /**
-   * Imports a planting site from site, zone, and subzone shapefiles.
-   *
-   * @param fitSiteToPlots If true, treat the site, zone, and subzone boundaries as approximations;
-   *   generate a set of plots that approximately fit in the boundaries (with up to 5% of a plot
-   *   allowed to fall outside the boundary) and then fit the site, zone, and subzone boundaries to
-   *   match the generated plots. This is used when creating a minimal-sized planting site from the
-   *   admin UI.
-   */
+  /** Imports a planting site from site, zone, and subzone shapefiles. */
   fun importShapefiles(
       name: String,
       description: String? = null,
@@ -166,11 +149,9 @@ class PlantingSiteImporter(
       subzonesFile: Shapefile,
       exclusionsFile: Shapefile?,
       validationOptions: Set<ValidationOption> = EnumSet.allOf(ValidationOption::class.java),
-      fitSiteToPlots: Boolean = false,
   ): PlantingSiteId {
     requirePermissions { createPlantingSite(organizationId) }
 
-    val coveragePercent = if (fitSiteToPlots) 95.0 else 100.0
     val problems = mutableListOf<String>()
     val siteFeature = getSiteBoundary(siteFile, validationOptions, problems)
 
@@ -186,15 +167,6 @@ class PlantingSiteImporter(
     val zonesByName = getZones(siteFeature, zonesFile, validationOptions, problems)
     val subzonesByZone = getSubzonesByZone(zonesByName, subzonesFile, validationOptions, problems)
     val exclusion = getExclusion(exclusionsFile, problems)
-    val plotBoundaries = generatePlotBoundaries(siteFeature, exclusion, coveragePercent)
-
-    val totalPlots = plotBoundaries.sumOf { it.size }
-    val totalPermanentClusters = plotBoundaries.count { it.size == 4 }
-
-    // Need a minimum of 1 permanent cluster and 1 temporary plot.
-    if (totalPlots < 5 || totalPermanentClusters == 0) {
-      problems.add("Could not create enough monitoring plots (is the site at least 100x50 meters?)")
-    }
 
     if (problems.isNotEmpty()) {
       throw PlantingSiteUploadProblemsException(problems)
@@ -204,18 +176,10 @@ class PlantingSiteImporter(
     val userId = currentUser().userId
 
     return dslContext.transactionResult { _ ->
-      val plotGeometries = plotBoundaries.flatten().map { it.boundary!! }
-      val siteBoundary =
-          if (fitSiteToPlots) {
-            siteFeature.geometry.fitToPlots(plotGeometries)
-          } else {
-            siteFeature.geometry
-          }
-
       val sitesRow =
           PlantingSitesRow(
               areaHa = scale(siteFeature.calculateAreaHectares()),
-              boundary = siteBoundary,
+              boundary = siteFeature.geometry,
               createdBy = userId,
               createdTime = now,
               description = description,
@@ -235,24 +199,17 @@ class PlantingSiteImporter(
             zoneFeature.getProperty(targetPlantingDensityProperties)?.toBigDecimalOrNull()
                 ?: DEFAULT_TARGET_PLANTING_DENSITY
 
-        val zoneBoundary =
-            if (fitSiteToPlots) {
-              zoneFeature.geometry.fitToPlots(plotGeometries)
-            } else {
-              zoneFeature.geometry
-            }
-
         val numPermanentClusters =
             zoneFeature.getProperty(permanentClusterCountProperties)?.toIntOrNull()
-                ?: min(DEFAULT_NUM_PERMANENT_CLUSTERS, totalPermanentClusters)
+                ?: DEFAULT_NUM_PERMANENT_CLUSTERS
         val numTemporaryPlots =
             zoneFeature.getProperty(temporaryPlotCountProperies)?.toIntOrNull()
-                ?: min(DEFAULT_NUM_TEMPORARY_PLOTS, totalPlots - numPermanentClusters * 4)
+                ?: DEFAULT_NUM_TEMPORARY_PLOTS
 
         val zonesRow =
             PlantingZonesRow(
                 areaHa = scale(zoneFeature.calculateAreaHectares()),
-                boundary = zoneBoundary,
+                boundary = zoneFeature.geometry,
                 createdBy = userId,
                 createdTime = now,
                 errorMargin = DEFAULT_ERROR_MARGIN,
@@ -271,42 +228,58 @@ class PlantingSiteImporter(
         plantingZonesDao.insert(zonesRow)
 
         subzonesByZone[zoneName]?.let { subzoneFeatures ->
-          val subzoneRows =
-              subzoneFeatures.map { subzoneFeature ->
-                val subzoneName = subzoneFeature.getProperty(subzoneNameProperties)!!
-                val fullSubzoneName = getFullSubzoneName(subzoneFeature)
+          subzoneFeatures.forEach { subzoneFeature ->
+            val subzoneName = subzoneFeature.getProperty(subzoneNameProperties)!!
+            val fullSubzoneName = getFullSubzoneName(subzoneFeature)
 
-                val subzoneBoundary =
-                    if (fitSiteToPlots) {
-                      subzoneFeature.geometry.fitToPlots(plotGeometries)
-                    } else {
-                      subzoneFeature.geometry
-                    }
+            val plantingSubzonesRow =
+                PlantingSubzonesRow(
+                    areaHa = scale(subzoneFeature.calculateAreaHectares()),
+                    boundary = subzoneFeature.geometry,
+                    createdBy = userId,
+                    createdTime = now,
+                    fullName = fullSubzoneName,
+                    modifiedBy = userId,
+                    modifiedTime = now,
+                    name = subzoneName,
+                    plantingSiteId = siteId,
+                    plantingZoneId = zonesRow.id,
+                )
 
-                val plantingSubzonesRow =
-                    PlantingSubzonesRow(
-                        areaHa = scale(subzoneFeature.calculateAreaHectares()),
-                        boundary = subzoneBoundary,
-                        createdBy = userId,
-                        createdTime = now,
-                        fullName = fullSubzoneName,
-                        modifiedBy = userId,
-                        modifiedTime = now,
-                        name = subzoneName,
-                        plantingSiteId = siteId,
-                        plantingZoneId = zonesRow.id,
-                    )
-
-                plantingSubzonesDao.insert(plantingSubzonesRow)
-
-                plantingSubzonesRow
-              }
-
-          val plots =
-              assignPlots(zoneFeature.geometry, plotBoundaries, subzoneRows, coveragePercent)
-
-          monitoringPlotsDao.insert(plots)
+            plantingSubzonesDao.insert(plantingSubzonesRow)
+          }
         }
+      }
+
+      // Verify that every zone is big enough to fit a permanent cluster and a temporary plot.
+      val plantingSite = plantingSiteStore.fetchSiteById(siteId, PlantingSiteDepth.Subzone)
+      plantingSite.plantingZones.forEach { plantingZone ->
+        // Find 5 squares: 4 for the cluster and one for a temporary plot.
+        val plotBoundaries =
+            plantingZone.findUnusedSquares(
+                count = 5,
+                exclusion = plantingSite.exclusion,
+                gridOrigin = plantingSite.gridOrigin!!,
+            )
+
+        // Make sure we have room for an actual cluster.
+        val clusterBoundaries =
+            plantingZone.findUnusedSquares(
+                count = 1,
+                exclusion = plantingSite.exclusion,
+                gridOrigin = plantingSite.gridOrigin,
+                sizeMeters = MONITORING_PLOT_SIZE * 2,
+            )
+
+        if (clusterBoundaries.isEmpty() || plotBoundaries.size < 5) {
+          problems.add(
+              "Could not create enough monitoring plots in zone ${plantingZone.name} " +
+                  "(is the zone at least 150x75 meters?)")
+        }
+      }
+
+      if (problems.isNotEmpty()) {
+        throw PlantingSiteUploadProblemsException(problems)
       }
 
       log.info("Imported planting site $siteId for organization $organizationId")
@@ -547,205 +520,6 @@ class PlantingSiteImporter(
     return subzonesByZone
   }
 
-  /**
-   * Assigns monitoring plots to subzones and to clusters of permanent monitoring plots.
-   *
-   * The permanent monitoring plots for a planting zone must always come in clusters of 4, and those
-   * clusters of 4 must be selected at random. The number of permanent monitoring plots can vary
-   * from one observation to the next, but the plots that are selected have to be consistent over
-   * time.
-   *
-   * We guarantee this consistency by randomizing the list of eligible clusters at import time and
-   * recording the randomized order in the form of a cluster number on each monitoring plot. The
-   * cluster number starts at 1 for each planting zone, and there are always exactly 4 plots with a
-   * given cluster number in a given planting zone.
-   *
-   * The cluster numbers allow permanent monitoring plots to be allocated using a SQL query. If we
-   * want 3 clusters of permanent plots from planting zone 4321, we can do a query along the lines
-   * of
-   *
-   *     SELECT mp.id, mp.permanent_cluster, mp.permanent_cluster_subplot
-   *     FROM tracking.monitoring_plots mp
-   *     JOIN tracking.planting_subzones ps ON mp.planting_subzone_id = ps.id
-   *     WHERE ps.planting_zone_id = 4321
-   *     AND mp.permanent_cluster <= 3
-   *     ORDER BY mp.permanent_cluster, mp.permanent_cluster_subplot;
-   *
-   * and get back a result like
-   *
-   * | id   | cluster | subplot |
-   * |------|---------|---------|
-   * | 1756 | 1       | 1       |
-   * | 1757 | 1       | 2       |
-   * | 1758 | 1       | 3       |
-   * | 1759 | 1       | 4       |
-   * | 781  | 2       | 1       |
-   * | 782  | 2       | 2       |
-   * | 783  | 2       | 3       |
-   * | 784  | 2       | 4       |
-   * | 360  | 3       | 1       |
-   * | 361  | 3       | 2       |
-   * | 362  | 3       | 3       |
-   * | 363  | 3       | 4       |
-   */
-  private fun assignPlots(
-      zoneBoundary: Geometry,
-      allClusters: Collection<Cluster>,
-      subzoneRows: Collection<PlantingSubzonesRow>,
-      coveragePercent: Double,
-  ): List<MonitoringPlotsRow> {
-    val now = clock.instant()
-    val userId = currentUser().userId
-
-    if (subzoneRows.map { it.plantingZoneId }.distinct().size != 1) {
-      throw IllegalArgumentException("BUG! Plots must be assigned one zone at a time.")
-    }
-
-    // Determine which subzone each monitoring plot should be associated with. If a subzone border
-    // runs through a monitoring plot, we choose whichever subzone contains the biggest percentage
-    // of the monitoring plot.
-    //
-    // A cluster may contain monitoring plots in different subzones; this is normal and expected.
-    val subzonePlotNumbers = mutableMapOf<PlantingSubzonesRow, Int>()
-    val clustersInSubzones: List<Cluster> =
-        allClusters.mapNotNull { cluster ->
-          cluster.mapPlots { plotsRow ->
-            val plotBoundary = plotsRow.boundary!!
-
-            if (plotBoundary.overlapPercent(zoneBoundary) >= coveragePercent) {
-              val parentSubzone =
-                  subzoneRows
-                      .mapNotNull { row ->
-                        val coveredArea = row.boundary!!.intersection(plotBoundary).area
-                        if (coveredArea > 0) {
-                          row to coveredArea
-                        } else {
-                          null
-                        }
-                      }
-                      .maxByOrNull { (_, area) -> area }
-                      ?.first
-
-              if (parentSubzone != null) {
-                val plotNumber = subzonePlotNumbers.merge(parentSubzone, 1, Int::plus)
-
-                plotsRow.copy(
-                    createdBy = userId,
-                    createdTime = now,
-                    fullName = "${parentSubzone.fullName}-$plotNumber",
-                    modifiedBy = userId,
-                    modifiedTime = now,
-                    name = "$plotNumber",
-                    plantingSubzoneId = parentSubzone.id!!,
-                )
-              } else {
-                null
-              }
-            } else {
-              null
-            }
-          }
-        }
-
-    subzonePlotNumbers.forEach { (subzoneRow, count) ->
-      log.debug("Assigned $count plots to subzone ${subzoneRow.fullName}")
-    }
-
-    // Now we have a list of clusters of monitoring plots. Add permanent monitoring cluster numbers
-    // in random order to the clusters with 4 plots.
-    val permanentClusters =
-        clustersInSubzones
-            .filter { it.size == 4 }
-            .shuffled()
-            .mapIndexed { clusterIndex, plotsRows ->
-              plotsRows.mapIndexed { subplotIndex, plotsRow ->
-                plotsRow.copy(
-                    permanentCluster = clusterIndex + 1,
-                    permanentClusterSubplot = subplotIndex + 1,
-                )
-              }
-            }
-
-    // Plots in clusters with fewer than 4 plots can still be selected as temporary plots.
-    val temporaryOnlyClusters = clustersInSubzones.filter { it.size < 4 }
-
-    return (permanentClusters + temporaryOnlyClusters).flatten()
-  }
-
-  /**
-   * Generates a list of all potential monitoring plots for an entire planting site, clustered in
-   * 2x2 groups. Only plots that fall within the planting site are included.
-   *
-   * This effectively divides the site into a grid of 50m squares, divides each square into four 25m
-   * squares, and returns a polygon for each of the smaller squares.
-   */
-  private fun generatePlotBoundaries(
-      siteFeature: ShapefileFeature,
-      exclusion: MultiPolygon?,
-      coveragePercent: Double,
-  ): List<Cluster> {
-    val clusters = mutableListOf<Cluster>()
-    val crs = siteFeature.coordinateReferenceSystem
-    val calculator = GeodeticCalculator(crs)
-    val siteGeometry =
-        if (exclusion != null) {
-          siteFeature.geometry.difference(exclusion)
-        } else {
-          siteFeature.geometry
-        }
-    val factory = geometryFactory(siteFeature)
-    val southwestCorner = getGridOrigin(siteFeature)
-    val northeastCorner = siteGeometry.envelope.coordinates[2]
-    val siteWest = southwestCorner.x
-    val siteSouth = southwestCorner.y
-    val siteEast = northeastCorner.x
-    val siteNorth = northeastCorner.y
-
-    var clusterSouth = siteSouth
-
-    while (clusterSouth < siteNorth) {
-      var clusterWest = siteWest
-
-      calculator.startingPosition = JTS.toDirectPosition(Coordinate(clusterWest, clusterSouth), crs)
-      calculator.setDirection(AZIMUTH_NORTH, MONITORING_PLOT_SIZE)
-      val middleY = calculator.destinationPosition.getOrdinate(1)
-      calculator.startingPosition = calculator.destinationPosition
-      calculator.setDirection(AZIMUTH_NORTH, MONITORING_PLOT_SIZE)
-      val clusterNorth = calculator.destinationPosition.getOrdinate(1)
-
-      while (clusterWest < siteEast) {
-        calculator.setDirection(AZIMUTH_EAST, MONITORING_PLOT_SIZE)
-        val middleX = calculator.destinationPosition.getOrdinate(0)
-        calculator.startingPosition = calculator.destinationPosition
-        calculator.setDirection(AZIMUTH_EAST, MONITORING_PLOT_SIZE)
-        val clusterEast = calculator.destinationPosition.getOrdinate(0)
-        calculator.startingPosition = calculator.destinationPosition
-
-        val plotsRows =
-            listOf(
-                    // The order is important here: southwest, southeast, northeast, northwest
-                    // (the position in this list turns into the cluster subplot number).
-                    factory.createRectangle(clusterWest, clusterSouth, middleX, middleY),
-                    factory.createRectangle(middleX, clusterSouth, clusterEast, middleY),
-                    factory.createRectangle(middleX, middleY, clusterEast, clusterNorth),
-                    factory.createRectangle(clusterWest, middleY, middleX, clusterNorth),
-                )
-                .filter { it.overlapPercent(siteGeometry) >= coveragePercent }
-                .map { MonitoringPlotsRow(boundary = it) }
-
-        if (plotsRows.isNotEmpty()) {
-          clusters.add(Cluster(plotsRows))
-        }
-
-        clusterWest = clusterEast
-      }
-
-      clusterSouth = clusterNorth
-    }
-
-    return clusters
-  }
-
   private fun checkCoveredBy(
       child: ShapefileFeature,
       parent: ShapefileFeature,
@@ -796,17 +570,6 @@ class PlantingSiteImporter(
   private fun Geometry.overlapPercent(otherGeometry: Geometry): Double =
       if (covers(otherGeometry)) 100.0 else intersection(otherGeometry).area / area * 100.0
 
-  private fun Geometry.fitToPlots(plots: List<Geometry>): MultiPolygon {
-    val fitted = plots.filter { it.overlapPercent(this) >= 50.0 }.reduce(Geometry::union)
-    return when (fitted) {
-      is MultiPolygon -> fitted
-      is Polygon -> geometryFactory(fitted).createMultiPolygon(arrayOf(fitted))
-      else ->
-          throw IllegalArgumentException(
-              "Fitted geometry is ${fitted.javaClass.simpleName}, not Polygon")
-    }
-  }
-
   private fun getFullSubzoneName(feature: ShapefileFeature): String =
       "${feature.getProperty(zoneNameProperties)!!}-${feature.getProperty(subzoneNameProperties)!!}"
 
@@ -826,20 +589,4 @@ class PlantingSiteImporter(
   private fun geometryFactory(geometry: Geometry) = GeometryFactory(PrecisionModel(), geometry.srid)
 
   private fun geometryFactory(feature: ShapefileFeature) = geometryFactory(feature.geometry)
-
-  /**
-   * A cluster of up to four monitoring plots. This is a simple wrapper around a list; it's purely
-   * for purposes of code clarity.
-   */
-  private class Cluster(private val plots: List<MonitoringPlotsRow>) :
-      List<MonitoringPlotsRow> by plots {
-    fun mapPlots(func: (MonitoringPlotsRow) -> MonitoringPlotsRow?): Cluster? {
-      val rows = plots.mapNotNull(func)
-      return if (rows.isNotEmpty()) {
-        Cluster(rows)
-      } else {
-        null
-      }
-    }
-  }
 }

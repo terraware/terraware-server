@@ -41,7 +41,6 @@
         const mapButton = document.getElementById('showMap');
         const mapContainer = document.getElementById('map');
         const mapInstructions = document.getElementById('mapInstructions');
-        const mapSubmit = document.getElementById('mapSubmit');
         const temporaryPosition = document.getElementById('temporaryPosition');
 
         loadCss('https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css');
@@ -100,33 +99,53 @@
             map.on('draw.delete', updateBoundary);
             map.on('draw.update', updateBoundary);
 
-            const bearings = {
-                n: 0,
-                e: 90,
-                s: 180,
-                w: -90,
-            };
-
             /**
-             * Paths to follow to draw outlines at each valid clock position. '.' places a vertex.
+             * Paths to follow to draw outlines at each valid clock position. Each step is an
+             * azimuth and a distance in meters. This creates a boundary that's 1 meter larger
+             * than strictly necessary, to account for differences in geometry calculation
+             * accuracy on the client and server sides.
              */
             const paths = {
-                '1': 'sw.ee.nnn.w.s.w.',
-                '2': 'sw.ee.n.e.n.www.',
-                '4': 'sw.eee.n.w.n.ww.',
-                '11': 'sw.ee.nn.w.n.w.',
+                '1': [
+                    [-135, 35],
+                    [90, 51],
+                    [0, 76],
+                    [-90, 27],
+                    [180, 25],
+                    [-90, 24],
+                ],
+                '2': [
+                    [-135, 35],
+                    [90, 51],
+                    [0, 24],
+                    [90, 25],
+                    [0, 27],
+                    [-90, 76],
+                ],
+                '4': [
+                    [-135, 35],
+                    [90, 76],
+                    [0, 26],
+                    [-90, 25],
+                    [0, 25],
+                    [-90, 51],
+                ],
+                '11': [
+                    [-135, 35],
+                    [90, 51],
+                    [0, 51],
+                    [-90, 24],
+                    [0, 25],
+                    [-90, 27],
+                ],
             };
 
             const outline = (startingPoint, path) => {
                 const points = [];
                 let position = startingPoint;
                 for (const step of path) {
-                    if (step === '.') {
-                        points.push(position.geometry.coordinates);
-                    } else {
-                        position =
-                            turf.destination(position, 25, bearings[step], { units: 'meters' });
-                    }
+                    position = turf.destination(position, step[1], step[0], { units: 'meters'});
+                    points.push(position.geometry.coordinates);
                 }
 
                 // Close the polygon.
@@ -152,8 +171,6 @@
 
                 // Allow the user to drag the site boundary around.
                 draw.changeMode('simple_select', { featureIds: featureIds });
-
-                document.getElementById('fitSiteToPlots').value = 'true';
             };
 
             document.getElementById('addMinimalSite').addEventListener('click', addMinimalSite);
@@ -263,7 +280,6 @@
     </p>
 
     <input type="hidden" name="organizationId" th:value="${organization.id}"/>
-    <input type="hidden" id="fitSiteToPlots" name="fitSiteToPlots" value="false"/>
     <label for="siteName">Name</label>
     <input type="text" name="siteName" id="siteName" required/>
     <br/>

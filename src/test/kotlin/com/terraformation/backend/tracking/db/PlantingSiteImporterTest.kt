@@ -2,6 +2,8 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
@@ -10,6 +12,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.ShapefileGenerator
 import com.terraformation.backend.tracking.db.PlantingSiteImporter.ValidationOption
 import com.terraformation.backend.tracking.model.Shapefile
+import com.terraformation.backend.tracking.model.ShapefileFeature
 import io.mockk.every
 import kotlin.io.path.Path
 import org.jooq.Record
@@ -31,8 +34,17 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
     PlantingSiteImporter(
         clock,
         dslContext,
-        monitoringPlotsDao,
         plantingSitesDao,
+        PlantingSiteStore(
+            clock,
+            dslContext,
+            TestEventPublisher(),
+            monitoringPlotsDao,
+            ParentStore(dslContext),
+            plantingSeasonsDao,
+            plantingSitesDao,
+            plantingSubzonesDao,
+            plantingZonesDao),
         plantingZonesDao,
         plantingSubzonesDao)
   }
@@ -42,6 +54,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     every { user.canCreatePlantingSite(any()) } returns true
+    every { user.canReadPlantingSite(any()) } returns true
 
     insertUser()
     insertOrganization()
@@ -64,62 +77,6 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class PlotCreation {
-    private val gen = ShapefileGenerator()
-
-    @Test
-    fun `fills zone boundary with monitoring plots`() {
-      val siteBoundary = gen.multiRectangle(0 to 0, 176 to 151)
-      val siteFeature = gen.siteFeature(siteBoundary)
-      val zoneFeature = gen.zoneFeature(siteBoundary)
-      val subzoneFeature = gen.subzoneFeature(siteBoundary)
-
-      importer.importShapefiles(
-          name = "Test Site",
-          organizationId = organizationId,
-          siteFile = Shapefile(listOf(siteFeature)),
-          zonesFile = Shapefile(listOf(zoneFeature)),
-          subzonesFile = Shapefile(listOf(subzoneFeature)),
-          exclusionsFile = null,
-      )
-
-      assertPlotCounts(permanent = 36, temporary = 6)
-    }
-
-    @Test
-    fun `honors exclusion area`() {
-      val siteBoundary = gen.multiRectangle(0 to 0, 176 to 151)
-      val exclusionBoundary = gen.multiRectangle(26 to 0, 30 to 99)
-      val siteFeature = gen.siteFeature(siteBoundary)
-      val zoneFeature = gen.zoneFeature(siteBoundary)
-      val subzoneFeature = gen.subzoneFeature(siteBoundary)
-      val exclusionFeature = gen.exclusionFeature(exclusionBoundary)
-
-      importer.importShapefiles(
-          name = "Test Site",
-          organizationId = organizationId,
-          siteFile = Shapefile(listOf(siteFeature)),
-          zonesFile = Shapefile(listOf(zoneFeature)),
-          subzonesFile = Shapefile(listOf(subzoneFeature)),
-          exclusionsFile = Shapefile(listOf(exclusionFeature)),
-      )
-
-      assertPlotCounts(permanent = 28, temporary = 10)
-    }
-
-    private fun assertPlotCounts(permanent: Int, temporary: Int) {
-      val plots = monitoringPlotsDao.findAll()
-
-      assertEquals(
-          permanent,
-          plots.count { it.permanentCluster != null },
-          "Number of plots in permanent clusters")
-      assertEquals(
-          temporary, plots.count { it.permanentCluster == null }, "Number of temporary-only plots")
-    }
-  }
-
-  @Nested
   inner class Validation {
     @Test
     fun `detects too few shapefiles`() {
@@ -129,18 +86,46 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
           "Expected 3 or 4 shapefiles (site, zones, subzones, and optionally exclusions) but found 2")
     }
 
-    private fun assertProblems(
-        zipFile: String,
-        validationOptions: Set<ValidationOption>,
-        func: (List<String>) -> Unit
-    ) {
-      val shapefiles = Shapefile.fromZipFile(Path("$resourcesDir/$zipFile"))
+    @Test
+    fun `detects zone that is big enough for 5 plots but too small for a permanent cluster`() {
+      val gen = ShapefileGenerator()
+      val siteBoundary = gen.multiRectangle(0 to 0, 200 to 30)
+      val siteFeature = gen.siteFeature(siteBoundary)
+      val zoneFeature = gen.zoneFeature(siteBoundary)
+      val subzoneFeature = gen.subzoneFeature(siteBoundary)
 
+      assertHasProblem(
+          "Could not create enough monitoring plots in zone Z1 (is the zone at least 150x75 meters?)",
+          listOf(siteFeature),
+          listOf(zoneFeature),
+          listOf(subzoneFeature))
+    }
+
+    @Test
+    fun `detects zone that is big enough for a permanent cluster but not also for a temporary plot`() {
+      val gen = ShapefileGenerator()
+      val siteBoundary = gen.multiRectangle(0 to 0, 60 to 60)
+      val siteFeature = gen.siteFeature(siteBoundary)
+      val zoneFeature = gen.zoneFeature(siteBoundary)
+      val subzoneFeature = gen.subzoneFeature(siteBoundary)
+
+      assertHasProblem(
+          "Could not create enough monitoring plots in zone Z1 (is the zone at least 150x75 meters?)",
+          listOf(siteFeature),
+          listOf(zoneFeature),
+          listOf(subzoneFeature))
+    }
+
+    private fun assertHasProblem(expected: String, importFunc: () -> Unit) {
       try {
-        importer.import("name", "description", organizationId, shapefiles, validationOptions)
+        importFunc()
         fail("Should have throw exception for validation failure")
       } catch (e: PlantingSiteUploadProblemsException) {
-        func(e.problems)
+        if (e.problems.none { it == expected }) {
+          // Assertion failure message will include the list of problems we actually got back.
+          assertEquals(
+              listOf(expected), e.problems, "Did not find expected problem in problems list")
+        }
       }
     }
 
@@ -149,11 +134,32 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
         validationOption: ValidationOption,
         expected: String
     ) {
-      assertProblems(zipFile, setOf(validationOption)) { problems ->
-        if (problems.none { it == expected }) {
-          // Assertion failure message will include the list of problems we actually got back.
-          assertEquals(listOf(expected), problems, "Did not find expected problem in problems list")
-        }
+      assertHasProblem(expected) {
+        importer.import(
+            "name",
+            "description",
+            organizationId,
+            Shapefile.fromZipFile(Path("$resourcesDir/$zipFile")),
+            setOf(validationOption))
+      }
+    }
+
+    private fun assertHasProblem(
+        expected: String,
+        siteFeatures: List<ShapefileFeature>,
+        zoneFeatures: List<ShapefileFeature>,
+        subzoneFeatures: List<ShapefileFeature>,
+        exclusions: List<ShapefileFeature>? = null,
+    ) {
+      assertHasProblem(expected) {
+        importer.importShapefiles(
+            name = "Test Site",
+            organizationId = organizationId,
+            siteFile = Shapefile(siteFeatures),
+            zonesFile = Shapefile(zoneFeatures),
+            subzonesFile = Shapefile(subzoneFeatures),
+            exclusionsFile = exclusions?.let { Shapefile(it) },
+        )
       }
     }
   }
