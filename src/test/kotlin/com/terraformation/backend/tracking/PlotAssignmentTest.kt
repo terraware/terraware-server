@@ -27,16 +27,6 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
-  private val plantingSiteImporter: PlantingSiteImporter by lazy {
-    PlantingSiteImporter(
-        clock,
-        dslContext,
-        monitoringPlotsDao,
-        plantingSitesDao,
-        plantingZonesDao,
-        plantingSubzonesDao,
-    )
-  }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
         clock,
@@ -58,6 +48,16 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         plantingSitesDao,
         plantingSubzonesDao,
         plantingZonesDao)
+  }
+  private val plantingSiteImporter: PlantingSiteImporter by lazy {
+    PlantingSiteImporter(
+        clock,
+        dslContext,
+        plantingSitesDao,
+        plantingSiteStore,
+        plantingZonesDao,
+        plantingSubzonesDao,
+    )
   }
   private val observationService: ObservationService by lazy {
     ObservationService(

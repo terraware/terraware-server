@@ -317,7 +317,6 @@ class AdminPlantingSitesController(
       @RequestParam organizationId: OrganizationId,
       @RequestParam siteName: String,
       @RequestParam boundary: String,
-      @RequestParam fitSiteToPlots: Boolean,
       @RequestParam siteType: String,
       redirectAttributes: RedirectAttributes,
   ): String {
@@ -339,15 +338,7 @@ class AdminPlantingSitesController(
                         PlantingSiteImporter.subzoneNameProperties.first() to "Subzone"))
 
             plantingSiteImporter.importShapefiles(
-                siteName,
-                null,
-                organizationId,
-                siteFile,
-                zonesFile,
-                subzonesFile,
-                null,
-                emptySet(),
-                fitSiteToPlots)
+                siteName, null, organizationId, siteFile, zonesFile, subzonesFile, null, emptySet())
           } else {
             plantingSiteStore
                 .createPlantingSite(
