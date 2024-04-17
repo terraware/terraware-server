@@ -93,15 +93,17 @@ class ModuleStore(
         } else {
           null
         }
+
+    val projectEventCondition =
+        projectCondition?.let {
+          EVENTS.ID.`in`(DSL.select(EVENT_PROJECTS.EVENT_ID).from(EVENT_PROJECTS).where(it))
+        }
+
     return with(EVENTS) {
       DSL.multiset(
               DSL.select(asterisk(), projectsField)
                   .from(this)
-                  .where(
-                      ID.`in`(
-                          DSL.select(EVENT_PROJECTS.EVENT_ID)
-                              .from(EVENT_PROJECTS)
-                              .where(projectCondition)))
+                  .where(projectEventCondition)
                   .and(MODULE_ID.eq(MODULES.ID))
                   .orderBy(START_TIME))
           .convertFrom { result ->
