@@ -43,6 +43,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -57,6 +58,7 @@ import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSubzoneNotFoundException
 import com.terraformation.backend.tracking.db.PlantingZoneNotFoundException
+import com.terraformation.backend.tracking.db.PlotNotFoundException
 import io.mockk.MockKMatcherScope
 import io.mockk.every
 import io.mockk.mockk
@@ -122,6 +124,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(DraftPlantingSiteNotFoundException::class) { canReadDraftPlantingSite(it) }
   private val facilityId: FacilityId by
       readableId(FacilityNotFoundException::class) { canReadFacility(it) }
+  private val monitoringPlotId: MonitoringPlotId by
+      readableId(PlotNotFoundException::class) { canReadMonitoringPlot(it) }
   private val notificationUserId = UserId(2)
   private val notificationId: NotificationId by
       readableId(NotificationNotFoundException::class) { canReadNotification(it) }
@@ -538,6 +542,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readGlobalRoles() = allow { readGlobalRoles() } ifUser { canReadGlobalRoles() }
 
   @Test fun readInternalTags() = allow { readInternalTags() } ifUser { canReadInternalTags() }
+
+  @Test fun readMonitoringPlot() = testRead { readMonitoringPlot(monitoringPlotId) }
 
   @Test fun readNotification() = testRead { readNotification(notificationId) }
 

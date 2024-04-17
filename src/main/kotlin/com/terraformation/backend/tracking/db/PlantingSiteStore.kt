@@ -817,7 +817,10 @@ class PlantingSiteStore(
             ?: throw PlantingSubzoneNotFoundException(plotsRow.plantingSubzoneId!!)
     val plantingZoneId = subzonesRow.plantingZoneId!!
 
-    requirePermissions { updatePlantingSite(subzonesRow.plantingSiteId!!) }
+    requirePermissions {
+      readMonitoringPlot(monitoringPlotId)
+      updatePlantingSite(subzonesRow.plantingSiteId!!)
+    }
 
     val permanentCluster =
         plotsRow.permanentCluster ?: return ReplacementResult(emptySet(), emptySet())

@@ -29,6 +29,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -275,6 +276,8 @@ class SystemUser(
   override fun canReadGlobalRoles(): Boolean = true
 
   override fun canReadInternalTags(): Boolean = true
+
+  override fun canReadMonitoringPlot(monitoringPlotId: MonitoringPlotId): Boolean = true
 
   override fun canReadNotification(notificationId: NotificationId): Boolean = true
 

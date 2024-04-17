@@ -46,6 +46,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -60,6 +61,7 @@ import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSubzoneNotFoundException
 import com.terraformation.backend.tracking.db.PlantingZoneNotFoundException
+import com.terraformation.backend.tracking.db.PlotNotFoundException
 import org.springframework.security.access.AccessDeniedException
 
 /**
@@ -575,6 +577,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readInternalTags() {
     if (!user.canReadInternalTags()) {
       throw AccessDeniedException("No permission to read internal tags")
+    }
+  }
+
+  fun readMonitoringPlot(monitoringPlotId: MonitoringPlotId) {
+    if (!user.canReadMonitoringPlot(monitoringPlotId)) {
+      throw PlotNotFoundException(monitoringPlotId)
     }
   }
 

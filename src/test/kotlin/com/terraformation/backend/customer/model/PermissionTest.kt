@@ -54,6 +54,7 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -138,6 +139,7 @@ internal class PermissionTest : DatabaseTest() {
 
   private val facilityIds = listOf(1000, 1001, 3000).map { FacilityId(it.toLong()) }
   private val draftPlantingSiteIds = facilityIds.map { DraftPlantingSiteId(it.value) }
+  private val monitoringPlotIds = facilityIds.map { MonitoringPlotId(it.value) }
   private val plantingSiteIds = facilityIds.map { PlantingSiteId(it.value) }
   private val plantingSubzoneIds = facilityIds.map { PlantingSubzoneId(it.value) }
   private val plantingZoneIds = facilityIds.map { PlantingZoneId(it.value) }
@@ -305,6 +307,14 @@ internal class PermissionTest : DatabaseTest() {
           id = plantingSubzoneId,
           plantingSiteId = PlantingSiteId(plantingSubzoneId.value),
           plantingZoneId = PlantingZoneId(plantingSubzoneId.value),
+      )
+    }
+
+    monitoringPlotIds.forEach { monitoringPlotId ->
+      insertMonitoringPlot(
+          createdBy = userId,
+          id = monitoringPlotId,
+          plantingSubzoneId = PlantingSubzoneId(monitoringPlotId.value),
       )
     }
 
@@ -480,6 +490,11 @@ internal class PermissionTest : DatabaseTest() {
         *plantingZoneIds.forOrg1(),
         readPlantingZone = true,
         updatePlantingZone = true,
+    )
+
+    permissions.expect(
+        *monitoringPlotIds.forOrg1(),
+        readMonitoringPlot = true,
     )
 
     permissions.expect(
@@ -709,6 +724,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *monitoringPlotIds.forOrg1(),
+        readMonitoringPlot = true,
+    )
+
+    permissions.expect(
         *draftPlantingSiteIds.forOrg1(),
         deleteDraftPlantingSite = true,
         readDraftPlantingSite = true,
@@ -861,6 +881,11 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *monitoringPlotIds.forOrg1(),
+        readMonitoringPlot = true,
+    )
+
+    permissions.expect(
         *draftPlantingSiteIds.forOrg1(),
         readDraftPlantingSite = true,
     )
@@ -988,6 +1013,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingZoneIds.forOrg1(),
         readPlantingZone = true,
+    )
+
+    permissions.expect(
+        *monitoringPlotIds.forOrg1(),
+        readMonitoringPlot = true,
     )
 
     permissions.expect(
@@ -1232,6 +1262,11 @@ internal class PermissionTest : DatabaseTest() {
         *plantingZoneIds.toTypedArray(),
         readPlantingZone = true,
         updatePlantingZone = true,
+    )
+
+    permissions.expect(
+        *monitoringPlotIds.toTypedArray(),
+        readMonitoringPlot = true,
     )
 
     permissions.expect(
@@ -1961,6 +1996,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedDevices = deviceIds.toMutableSet()
     private val uncheckedDraftPlantingSites = draftPlantingSiteIds.toMutableSet()
     private val uncheckedFacilities = facilityIds.toMutableSet()
+    private val uncheckedMonitoringPlots = monitoringPlotIds.toMutableSet()
     private val uncheckedObservations = observationIds.toMutableSet()
     private val uncheckedOrgs = organizationIds.toMutableSet()
     private val uncheckedPlantings = plantingIds.toMutableSet()
@@ -2500,6 +2536,20 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun expect(
+        vararg monitoringPlotIds: MonitoringPlotId,
+        readMonitoringPlot: Boolean = false,
+    ) {
+      monitoringPlotIds.forEach { monitoringPlotId ->
+        assertEquals(
+            readMonitoringPlot,
+            user.canReadMonitoringPlot(monitoringPlotId),
+            "Can read monitoring plot $monitoringPlotId")
+
+        uncheckedMonitoringPlots.remove(monitoringPlotId)
+      }
+    }
+
+    fun expect(
         vararg draftPlantingSiteIds: DraftPlantingSiteId,
         deleteDraftPlantingSite: Boolean = false,
         readDraftPlantingSite: Boolean = false,
@@ -2721,6 +2771,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedDevices.toTypedArray())
       expect(*uncheckedDraftPlantingSites.toTypedArray())
       expect(*uncheckedFacilities.toTypedArray())
+      expect(*uncheckedMonitoringPlots.toTypedArray())
       expect(*uncheckedObservations.toTypedArray())
       expect(*uncheckedOrgs.toTypedArray())
       expect(*uncheckedPlantings.toTypedArray())

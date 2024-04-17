@@ -31,6 +31,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -350,6 +351,9 @@ data class IndividualUser(
       parentStore.getUserId(notificationId) == userId
 
   override fun canReadInternalTags() = isReadOnlyOrHigher()
+
+  override fun canReadMonitoringPlot(monitoringPlotId: MonitoringPlotId) =
+      isMember(parentStore.getOrganizationId(monitoringPlotId))
 
   override fun canReadObservation(observationId: ObservationId) =
       isMember(parentStore.getOrganizationId(observationId))
