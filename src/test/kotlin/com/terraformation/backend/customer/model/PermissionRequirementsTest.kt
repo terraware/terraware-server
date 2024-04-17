@@ -616,6 +616,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun readProjectModules() {
+    assertThrows<ProjectNotFoundException> { requirements.readProjectModules(projectId) }
+
+    grant { user.canReadProject(projectId) }
+    assertThrows<AccessDeniedException> { requirements.readProjectModules(projectId) }
+
+    grant { user.canReadProjectModules(projectId) }
+    requirements.readProjectModules(projectId)
+  }
+
+  @Test
   fun readProjectScores() {
     assertThrows<ProjectNotFoundException> { requirements.readProjectScores(projectId) }
 

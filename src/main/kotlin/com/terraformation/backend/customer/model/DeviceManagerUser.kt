@@ -306,6 +306,8 @@ data class DeviceManagerUser(
 
   override fun canReadProjectDeliverables(projectId: ProjectId): Boolean = false
 
+  override fun canReadProjectModules(projectId: ProjectId): Boolean = false
+
   override fun canReadProjectScores(projectId: ProjectId): Boolean = false
 
   override fun canReadProjectVotes(projectId: ProjectId): Boolean = false

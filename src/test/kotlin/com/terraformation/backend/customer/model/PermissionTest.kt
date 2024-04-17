@@ -536,6 +536,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteProject = true,
         readProject = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         updateProject = true,
     )
 
@@ -767,6 +768,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteProject = true,
         readProject = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         updateProject = true,
     )
 
@@ -912,6 +914,7 @@ internal class PermissionTest : DatabaseTest() {
         createSubmission = true,
         readProject = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
     )
 
     permissions.expect(
@@ -1040,6 +1043,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *projectIds.forOrg1(),
         readProject = true,
+        readProjectModules = true,
     )
 
     permissions.expect(
@@ -1310,6 +1314,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateDefaultVoters = true,
@@ -1410,6 +1415,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateDefaultVoters = true,
@@ -1439,6 +1445,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateDefaultVoters = true,
@@ -1561,6 +1568,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateProject = true,
@@ -1710,6 +1718,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateProject = true,
@@ -1732,6 +1741,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateProjectAcceleratorDetails = true,
@@ -1848,6 +1858,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
     )
@@ -1859,6 +1870,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
     )
@@ -2657,6 +2669,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject: Boolean = false,
         readProjectAcceleratorDetails: Boolean = false,
         readProjectDeliverables: Boolean = false,
+        readProjectModules: Boolean = false,
         readProjectScores: Boolean = false,
         readProjectVotes: Boolean = false,
         updateDefaultVoters: Boolean = false,
@@ -2675,6 +2688,8 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             deleteProject, user.canDeleteProject(projectId), "Can delete project $projectId")
         assertEquals(readDefaultVoters, user.canReadDefaultVoters(), "Can read default voters")
+        assertEquals(
+            readProjectModules, user.canReadProjectModules(projectId), "Can read project modules")
         assertEquals(readProject, user.canReadProject(projectId), "Can read project $projectId")
         assertEquals(
             readProjectAcceleratorDetails,

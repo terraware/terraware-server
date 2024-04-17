@@ -670,6 +670,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readProjectModules(projectId: ProjectId) {
+    if (!user.canReadProjectModules(projectId)) {
+      readProject(projectId)
+      throw AccessDeniedException("No permission to read project modules")
+    }
+  }
+
   fun readProjectScores(projectId: ProjectId) {
     if (!user.canReadProjectScores(projectId)) {
       readProject(projectId)

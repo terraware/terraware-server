@@ -306,6 +306,8 @@ class SystemUser(
 
   override fun canReadProjectDeliverables(projectId: ProjectId): Boolean = true
 
+  override fun canReadProjectModules(projectId: ProjectId): Boolean = true
+
   override fun canReadProjectScores(projectId: ProjectId): Boolean = true
 
   override fun canReadProjectVotes(projectId: ProjectId): Boolean = true
