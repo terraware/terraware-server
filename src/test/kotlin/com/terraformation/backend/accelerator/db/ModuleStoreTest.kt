@@ -162,8 +162,8 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
       val fetchModules = store.fetchModulesForProject(projectId)
       val otherFetchModules = store.fetchModulesForProject(otherProjectId)
 
-      assertEquals(fetchModules.map { it.id }, listOf(moduleId))
-      assertEquals(otherFetchModules.map { it.id }, listOf(otherModuleId))
+      assertEquals(listOf(moduleId), fetchModules.map { it.id })
+      assertEquals(listOf(otherModuleId), otherFetchModules.map { it.id })
     }
 
     @Test
