@@ -1,3 +1,5 @@
+1469c563c4a SW-4733 Don't generate all plots on shapefile import (#1863)
+afb6bd0c363 SW-4796 Create replacement plots if needed (#1862)
 bc5d3e5f3a9 SW-4796 Generalize plot replacement tests (#1861)
 2867cbb10ba SW-4796 Add monitoring plot read permission (#1860)
 29535727289 SW-5215 Fetch organization user's created_time when querying for organization users (#1859)
