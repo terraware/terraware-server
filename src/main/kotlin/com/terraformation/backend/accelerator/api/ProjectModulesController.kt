@@ -33,7 +33,7 @@ class ProjectModulesController(
       @PathVariable("projectId") projectId: ProjectId,
   ): GetProjectModulesResponsePayload {
     val models = moduleStore.fetchModulesForProject(projectId)
-    return GetProjectModulesResponsePayload(models)
+    return GetProjectModulesResponsePayload(models.map { ProjectModule(it) })
   }
 }
 
@@ -94,6 +94,4 @@ data class ProjectModule(
 
 data class GetProjectModulesResponsePayload(
     val modules: List<ProjectModule> = emptyList(),
-) {
-  constructor(models: List<ModuleModel>) : this(models.map { ProjectModule(it) })
-}
+)
