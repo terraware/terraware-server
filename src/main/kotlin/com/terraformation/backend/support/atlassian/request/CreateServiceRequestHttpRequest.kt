@@ -1,4 +1,4 @@
-package com.terraformation.backend.support.atlassian.resource
+package com.terraformation.backend.support.atlassian.request
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.terraformation.backend.support.atlassian.model.ServiceRequestFieldsModel
@@ -17,12 +17,12 @@ import io.ktor.http.path
  * @param reporter the email address of the reporter
  * @param serviceDeskId the ID for the service desk
  */
-class CreateServiceDeskRequest(
+class CreateServiceRequestHttpRequest(
     reporter: String? = null,
     requestFieldValues: ServiceRequestFieldsModel,
     requestTypeId: Int,
     serviceDeskId: Int,
-) : AtlassianResource<PostServiceDeskRequestResponse> {
+) : AtlassianHttpRequest<PostServiceDeskRequestResponse> {
   private val path = "/rest/servicedeskapi/request"
   private val httpMethod = HttpMethod.Post
   private val requestBody =

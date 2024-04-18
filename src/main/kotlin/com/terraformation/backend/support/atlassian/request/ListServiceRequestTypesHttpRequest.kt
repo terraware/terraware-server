@@ -1,15 +1,16 @@
-package com.terraformation.backend.support.atlassian.resource
+package com.terraformation.backend.support.atlassian.request
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.terraformation.backend.support.atlassian.model.ServiceDeskModel
+import com.terraformation.backend.support.atlassian.model.ServiceRequestTypeModel
 import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpMethod
 import io.ktor.http.path
 
-class ListServiceDesks : AtlassianResource<ListServiceDesksResponse> {
-  private val path = "/rest/servicedeskapi/servicedesk/"
+class ListServiceRequestTypes(serviceDeskId: Int) :
+    AtlassianHttpRequest<ListServiceRequestTypesResponse> {
+  private val path = "/rest/servicedeskapi/servicedesk/$serviceDeskId/requesttype/"
   private val httpMethod = HttpMethod.Get
 
   override fun buildRequest(requestBuilder: HttpRequestBuilder) {
@@ -19,10 +20,10 @@ class ListServiceDesks : AtlassianResource<ListServiceDesksResponse> {
     }
   }
 
-  override suspend fun parseResponse(response: HttpResponse): ListServiceDesksResponse {
+  override suspend fun parseResponse(response: HttpResponse): ListServiceRequestTypesResponse {
     return response.body()
   }
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class ListServiceDesksResponse(val values: List<ServiceDeskModel>)
+data class ListServiceRequestTypesResponse(val values: List<ServiceRequestTypeModel>)

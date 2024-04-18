@@ -122,7 +122,7 @@ class TerrawareServerConfig(
       /** Enabled flag */
       @DefaultValue("false") val enabled: Boolean = false,
 
-      /** Service Desk Tag */
+      /** Service Desk Key */
       val serviceDeskKey: String? = null,
   ) {
     init {

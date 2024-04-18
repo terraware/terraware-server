@@ -2,15 +2,15 @@ package com.terraformation.backend.support.atlassian
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.support.atlassian.model.ServiceDeskModel
+import com.terraformation.backend.support.atlassian.model.ServiceDeskProjectModel
 import com.terraformation.backend.support.atlassian.model.ServiceRequestFieldsModel
 import com.terraformation.backend.support.atlassian.model.ServiceRequestTypeModel
-import com.terraformation.backend.support.atlassian.resource.AtlassianResource
-import com.terraformation.backend.support.atlassian.resource.CreateServiceDeskRequest
-import com.terraformation.backend.support.atlassian.resource.DeleteIssue
-import com.terraformation.backend.support.atlassian.resource.ListServiceDesks
-import com.terraformation.backend.support.atlassian.resource.ListServiceRequestTypes
-import com.terraformation.backend.support.atlassian.resource.PostServiceDeskRequestResponse
+import com.terraformation.backend.support.atlassian.request.AtlassianHttpRequest
+import com.terraformation.backend.support.atlassian.request.CreateServiceRequestHttpRequest
+import com.terraformation.backend.support.atlassian.request.DeleteIssueHttpRequest
+import com.terraformation.backend.support.atlassian.request.ListServiceDesksHttpRequest
+import com.terraformation.backend.support.atlassian.request.ListServiceRequestTypes
+import com.terraformation.backend.support.atlassian.request.PostServiceDeskRequestResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.java.Java
 import io.ktor.client.plugins.auth.*
@@ -29,13 +29,13 @@ import kotlinx.coroutines.runBlocking
 @Named
 class AtlassianHttpClient(private val config: TerrawareServerConfig) {
   private val httpClient: HttpClient by lazy { createHttpClient() }
-  private val serviceDesk: ServiceDeskModel? by lazy { findServiceDesk() }
+  private val serviceDesk: ServiceDeskProjectModel by lazy { findServiceDesk() }
 
   val requestTypes: Set<ServiceRequestTypeModel> by lazy { getServiceRequestTypes() }
 
   fun deleteIssue(issueId: String) {
     requirePermissions { deleteSupportIssue() }
-    makeRequest(DeleteIssue(issueId))
+    makeRequest(DeleteIssueHttpRequest(issueId))
   }
 
   fun createServiceDeskRequest(
@@ -45,38 +45,27 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
       reporter: String,
   ): PostServiceDeskRequestResponse {
     // No required permission
-    if (requestTypes.find { it.id == requestTypeId } == null) {
+    if (requestTypes.none { it.id == requestTypeId }) {
       throw RuntimeException("Request ID type not recognized")
     }
     return makeRequest(
-        CreateServiceDeskRequest(
+        CreateServiceRequestHttpRequest(
             reporter = reporter,
             requestFieldValues = ServiceRequestFieldsModel(summary, description),
             requestTypeId = requestTypeId,
-            serviceDeskId = serviceDeskId(),
+            serviceDeskId = serviceDesk.id,
         ))
   }
 
-  private fun serviceDeskId(): Int =
-      if (serviceDesk == null) {
-        throw IllegalStateException("Atlassian configuration is invalid")
-      } else {
-        serviceDesk!!.id
-      }
-
   private fun getServiceRequestTypes(): Set<ServiceRequestTypeModel> =
-      makeRequest(ListServiceRequestTypes(serviceDeskId())).values.toSet()
+      makeRequest(ListServiceRequestTypes(serviceDesk.id)).values.toSet()
 
-  private fun findServiceDesk(): ServiceDeskModel? =
-      makeRequest(ListServiceDesks()).values.firstOrNull {
+  private fun findServiceDesk(): ServiceDeskProjectModel =
+      makeRequest(ListServiceDesksHttpRequest()).values.firstOrNull {
         it.projectKey == config.atlassian.serviceDeskKey
-      }
+      } ?: throw IllegalStateException("Atlassian configuration is invalid")
 
-  private fun <T> makeRequest(resource: AtlassianResource<T>): T {
-    if (!config.atlassian.enabled) {
-      throw IllegalStateException("Atlassian service is disabled")
-    }
-
+  private fun <T> makeRequest(resource: AtlassianHttpRequest<T>): T {
     val response = runBlocking {
       val httpResponse = httpClient.request { resource.buildRequest(this) }
       resource.parseResponse(httpResponse)
@@ -85,6 +74,10 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
   }
 
   private fun createHttpClient(): HttpClient {
+    if (!config.atlassian.enabled) {
+      throw IllegalStateException("Atlassian service is disabled")
+    }
+
     return HttpClient(Java) {
       defaultRequest {
         accept(ContentType.Application.Json)

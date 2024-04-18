@@ -1,4 +1,4 @@
-package com.terraformation.backend.support.atlassian.resource
+package com.terraformation.backend.support.atlassian.request
 
 import com.terraformation.backend.support.atlassian.AtlassianHttpClient
 import io.ktor.client.request.HttpRequestBuilder
@@ -10,7 +10,7 @@ import io.ktor.client.statement.HttpResponse
  * will invoke the [buildRequest] method so the caller will not be able to erroneously or
  * maliciously set the request body.
  */
-interface AtlassianResource<T> {
+interface AtlassianHttpRequest<T> {
   fun buildRequest(requestBuilder: HttpRequestBuilder)
 
   suspend fun parseResponse(response: HttpResponse): T
