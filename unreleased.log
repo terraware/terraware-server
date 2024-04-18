@@ -1,3 +1,4 @@
+dd6812023b9 SW-4736 Delete unused monitoring plots (#1865)
 cd0b7649b16 SW-5123 Modules Store (#1855)
 1469c563c4a SW-4733 Don't generate all plots on shapefile import (#1863)
 afb6bd0c363 SW-4796 Create replacement plots if needed (#1862)
