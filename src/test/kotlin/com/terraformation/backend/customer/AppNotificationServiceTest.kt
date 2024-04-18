@@ -116,6 +116,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val objectMapper = jacksonObjectMapper()
     val publisher = TestEventPublisher()
 
+    parentStore = ParentStore(dslContext)
+
     accessionStore =
         AccessionStore(
             dslContext,
@@ -145,7 +147,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     moduleStore = ModuleStore(dslContext)
     notificationStore = NotificationStore(dslContext, clock)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
-    parentStore = ParentStore(dslContext)
     participantStore = ParticipantStore(clock, dslContext, publisher, participantsDao)
     plantingSiteStore =
         PlantingSiteStore(
