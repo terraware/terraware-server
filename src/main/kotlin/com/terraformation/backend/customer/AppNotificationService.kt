@@ -1,8 +1,10 @@
 package com.terraformation.backend.customer
 
+import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
+import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
@@ -20,6 +22,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -55,6 +58,7 @@ class AppNotificationService(
     private val deviceStore: DeviceStore,
     private val dslContext: DSLContext,
     private val facilityStore: FacilityStore,
+    private val moduleStore: ModuleStore,
     private val notificationStore: NotificationStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
@@ -337,6 +341,27 @@ class AppNotificationService(
     }
   }
 
+  @EventListener
+  fun on(event: ModuleEventStartingEvent) {
+    val moduleEvent = moduleStore.fetchEventById(event.eventId)
+    if (moduleEvent != null && event.startTime == moduleEvent.startTime) {
+      // Only sends event starting notifications if event information is still up-to-date
+      val renderMessage = {
+        messages.moduleEventStartingNotification(
+            parentStore.getEventType(event.eventId)!!,
+            event.leadTime,
+            parentStore.getModuleName(event.eventId)!!)
+      }
+      moduleEvent.projects!!.forEach {
+        val organizationId = parentStore.getOrganizationId(it)!!
+        val eventUrl =
+            webAppUrls.moduleEvent(
+                parentStore.getModuleId(event.eventId)!!, event.eventId, organizationId, it)
+        insertProjectNotifications(it, NotificationType.EventReminder, renderMessage, eventUrl)
+      }
+    }
+  }
+
   private fun insertFacilityNotifications(
       accessionId: AccessionId,
       notificationType: NotificationType,
@@ -401,6 +426,16 @@ class AppNotificationService(
         insert(notificationType, user, organizationId, renderMessage, localUrl, organizationId)
       }
     }
+  }
+
+  private fun insertProjectNotifications(
+      projectId: ProjectId,
+      notificationType: NotificationType,
+      renderMessage: () -> NotificationMessage,
+      localUrl: URI,
+  ) {
+    val organizationId = parentStore.getOrganizationId(projectId)!!
+    insertOrganizationNotifications(organizationId, notificationType, renderMessage, localUrl)
   }
 
   private fun insertAcceleratorNotification(

@@ -3,6 +3,8 @@ package com.terraformation.backend.email
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -144,6 +146,19 @@ class WebAppUrls(
     return UriBuilder.fromUri(config.webAppUrl)
         .path("/reports/$reportId")
         .queryParam("organizationId", organizationId)
+        .build()
+  }
+
+  fun moduleEvent(
+      moduleId: ModuleId,
+      eventId: EventId,
+      organizationId: OrganizationId,
+      projectId: ProjectId
+  ): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/modules/$moduleId/events/$eventId")
+        .queryParam("organizationId", organizationId)
+        .queryParam("organizationId", projectId)
         .build()
   }
 

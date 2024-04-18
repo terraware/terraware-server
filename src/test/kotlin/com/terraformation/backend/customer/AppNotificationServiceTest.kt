@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -99,6 +100,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var automationStore: AutomationStore
   private lateinit var deviceStore: DeviceStore
   private lateinit var facilityStore: FacilityStore
+  private lateinit var moduleStore: ModuleStore
   private lateinit var notificationStore: NotificationStore
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
@@ -114,10 +116,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val objectMapper = jacksonObjectMapper()
     val publisher = TestEventPublisher()
 
-    notificationStore = NotificationStore(dslContext, clock)
-    organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
-    parentStore = ParentStore(dslContext)
-    participantStore = ParticipantStore(clock, dslContext, publisher, participantsDao)
     accessionStore =
         AccessionStore(
             dslContext,
@@ -144,6 +142,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             messages,
             organizationsDao,
             subLocationsDao)
+    moduleStore = ModuleStore(dslContext)
+    notificationStore = NotificationStore(dslContext, clock)
+    organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
+    parentStore = ParentStore(dslContext)
+    participantStore = ParticipantStore(clock, dslContext, publisher, participantsDao)
     plantingSiteStore =
         PlantingSiteStore(
             clock,
@@ -177,6 +180,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             deviceStore,
             dslContext,
             facilityStore,
+            moduleStore,
             notificationStore,
             organizationStore,
             parentStore,

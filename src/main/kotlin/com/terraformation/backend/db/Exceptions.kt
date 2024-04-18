@@ -1,5 +1,6 @@
 package com.terraformation.backend.db
 
+import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
@@ -85,6 +86,9 @@ class DeviceManagerNotFoundException(val deviceManagerId: DeviceManagerId) :
 
 class DeviceNotFoundException(val deviceId: DeviceId) :
     EntityNotFoundException("Device $deviceId not found")
+
+class EventNotFoundException(val eventId: EventId) :
+    EntityNotFoundException("Event $eventId not found")
 
 class FacilityAlreadyConnectedException(val facilityId: FacilityId) :
     DuplicateEntityException("Facility $facilityId already connected")

@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -279,6 +280,10 @@ class SystemUser(
 
   override fun canReadInternalTags(): Boolean = true
 
+  override fun canReadModuleEvent(eventId: EventId): Boolean = true
+
+  override fun canReadModuleEventParticipants(eventId: EventId): Boolean = true
+
   override fun canReadMonitoringPlot(monitoringPlotId: MonitoringPlotId): Boolean = true
 
   override fun canReadNotification(notificationId: NotificationId): Boolean = true
@@ -324,11 +329,11 @@ class SystemUser(
 
   override fun canReadSubmissionDocument(documentId: SubmissionDocumentId): Boolean = true
 
-  override fun canReadUser(userId: UserId): Boolean = true
-
   override fun canReadTimeseries(deviceId: DeviceId): Boolean = true
 
   override fun canReadUpload(uploadId: UploadId): Boolean = true
+
+  override fun canReadUser(userId: UserId): Boolean = true
 
   override fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean = true
 
