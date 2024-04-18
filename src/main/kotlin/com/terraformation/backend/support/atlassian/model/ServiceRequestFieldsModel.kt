@@ -3,7 +3,8 @@ package com.terraformation.backend.support.atlassian.model
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 /**
- * The body of a Jira service request ticket. Contains user-input title and description of the ticket.
+ * The body of a Jira service request ticket. Contains user-input title and description of the
+ * ticket.
  *
  * @param summary the title of a service request ticket
  * @param description the description of a service request ticket
