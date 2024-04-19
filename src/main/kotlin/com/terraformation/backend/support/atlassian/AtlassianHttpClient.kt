@@ -82,7 +82,7 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
       defaultRequest {
         accept(ContentType.Application.Json)
         contentType(ContentType.Application.Json)
-        url(scheme = "https", host = config.atlassian.apiHostname!!)
+        url(scheme = "https", host = config.atlassian.apiHost!!)
       }
 
       install(ContentNegotiation) { register(ContentType.Application.Json, JacksonConverter()) }

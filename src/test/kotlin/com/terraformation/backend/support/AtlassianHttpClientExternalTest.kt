@@ -39,7 +39,7 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
             atlassian =
                 TerrawareServerConfig.AtlassianConfig(
                     account = account,
-                    apiHostname = apiHostname,
+                    apiHost = apiHostname,
                     apiToken = apiToken,
                     enabled = true,
                     serviceDeskKey = serviceDeskKey),

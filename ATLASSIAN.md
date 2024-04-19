@@ -24,7 +24,7 @@ A local application yaml file:
 terraware:
   atlassian:
     account: "ATLASSIAN ACCOUNT EMAIL"
-    apiHostname = "{your-domain}.atlassian.net"
+    apiHost = "{your-domain}.atlassian.net"
     apiToken = "API TOKEN (STEP 1)"
     enabled: true,
     serviceDeskKey = "SERVICE DESK ID (STEP 2)"
@@ -33,7 +33,7 @@ terraware:
 For docker: set the following env
 
 - `TERRAWARE_ATLASSIAN_ACCOUNT`
-- `TERRAWARE_ATLASSIAN_HOSTNAME`
+- `TERRAWARE_ATLASSIAN_HOST`
 - `TERRAWARE_ATLASSIAN_TOKEN`
 - `TERRAWARE_ATLASSIAN_ENABLED` (set this to `true`)
 - `TERRAWARE_ATLASSIAN_SERVICE_DESK_KEY`

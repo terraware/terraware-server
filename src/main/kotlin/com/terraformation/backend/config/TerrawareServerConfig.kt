@@ -110,26 +110,26 @@ class TerrawareServerConfig(
     val support: SupportConfig = SupportConfig(),
 ) {
   class AtlassianConfig(
-      /** Atlassian account name */
+    /** Atlassian account name */
       val account: String? = null,
 
-      /** Atlassian host endpoint for Terraformation */
-      val apiHostname: String? = null,
+    /** Atlassian host endpoint for Terraformation */
+      val apiHost: String? = null,
 
-      /** Atlassian api key */
+    /** Atlassian api key */
       val apiToken: String? = null,
 
-      /** Enabled flag */
+    /** Enabled flag */
       @DefaultValue("false") val enabled: Boolean = false,
 
-      /** Service Desk Key */
+    /** Service Desk Key */
       val serviceDeskKey: String? = null,
   ) {
     init {
       if (enabled) {
-        if (account == null || apiHostname == null || apiToken == null || serviceDeskKey == null) {
+        if (account == null || apiHost == null || apiToken == null || serviceDeskKey == null) {
           throw IllegalArgumentException(
-              "Account, API hostname, API token and Jira Service Desk tag are required if Atlassian is enabled")
+              "Account, API host, API token and Jira Service Desk tag are required if Atlassian is enabled")
         }
       }
     }
