@@ -291,10 +291,10 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                       EventModel(
                           id = eventId,
                           endTime = Instant.ofEpochSecond(4000),
-                          meetingURL = URI("https://example.com/meeting"),
+                          meetingUrl = URI("https://example.com/meeting"),
                           projects = setOf(projectId),
-                          recordingURL = URI("https://example.com/recording"),
-                          slidesURL = URI("https://example.com/slides"),
+                          recordingUrl = URI("https://example.com/recording"),
+                          slidesUrl = URI("https://example.com/slides"),
                           startTime = Instant.ofEpochSecond(1000),
                       ))),
           fetchAllResult.find { it.id == moduleId }!!.eventSessions)
@@ -387,10 +387,10 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                       EventModel(
                           id = eventId,
                           endTime = Instant.ofEpochSecond(4000),
-                          meetingURL = URI("https://example.com/meeting"),
+                          meetingUrl = URI("https://example.com/meeting"),
                           projects = null,
-                          recordingURL = URI("https://example.com/recording"),
-                          slidesURL = URI("https://example.com/slides"),
+                          recordingUrl = URI("https://example.com/recording"),
+                          slidesUrl = URI("https://example.com/slides"),
                           startTime = Instant.ofEpochSecond(1000),
                       ))),
           fetchByProjectResult.find { it.id == moduleId }!!.eventSessions)
