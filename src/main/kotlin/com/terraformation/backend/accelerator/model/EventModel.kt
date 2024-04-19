@@ -9,13 +9,13 @@ import org.jooq.Field
 import org.jooq.Record
 
 data class EventModel(
-  val id: EventId,
-  val endTime: Instant?,
-  val meetingUrl: URI?,
-  val projects: Set<ProjectId>? = null,
-  val recordingUrl: URI?,
-  val slidesUrl: URI?,
-  val startTime: Instant?,
+    val id: EventId,
+    val endTime: Instant?,
+    val meetingUrl: URI?,
+    val projects: Set<ProjectId>? = null,
+    val recordingUrl: URI?,
+    val slidesUrl: URI?,
+    val startTime: Instant?,
 ) {
   companion object {
     fun of(record: Record, projectsField: Field<Set<ProjectId>>? = null): EventModel =

@@ -38,12 +38,12 @@ class ProjectModulesController(
 }
 
 data class ProjectModuleEventSession(
-  val id: EventId,
-  val startTime: Instant?,
-  val endTime: Instant?,
-  val meetingUrl: URI?,
-  val recordingUrl: URI?,
-  val slidesUrl: URI?,
+    val id: EventId,
+    val startTime: Instant?,
+    val endTime: Instant?,
+    val meetingUrl: URI?,
+    val recordingUrl: URI?,
+    val slidesUrl: URI?,
 ) {
   constructor(
       model: EventModel
