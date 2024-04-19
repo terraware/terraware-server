@@ -17,6 +17,33 @@
         </label>
         <input type="submit"/>
     </form>
+
+
+    <table>
+        <thead>
+        <tr>
+            <th>Module Name</th>
+            <th>Module ID</th>
+            <th>Cohorts</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="module : ${modules}" class="striped">
+            <td>
+                <a th:href="|/admin/modules/${module.id}|" th:text="${module.name}">
+                    Module Name
+                </a>
+            </td>
+            <td th:text="${module.id}">Module ID</td>
+            <td>
+                <ul>
+                    <li th:each="cohort:${module.cohorts}" th:text="${cohortNames.get(cohort.cohortId)}">Cohort Name</li>
+                </ul>
+            </td>
+        </tr>
+        </tbody>
+    </table>
 </th:block>
 
 <th:block th:if="${canManageDeliverables}">

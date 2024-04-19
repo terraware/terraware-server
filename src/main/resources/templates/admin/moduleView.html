@@ -1,0 +1,53 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+-
+<a href="/admin/modules">Modules</a>
+
+<th:block th:if="${canManageModules && hasModule}">
+    <h2 th:text="|Module ${module.name}|">Module (name)</h2>
+
+    <th:block th:if="${module.overview}">
+        <h3> Overview </h3>
+        <div data-th-utext="${module.overview}"> </div>
+    </th:block>
+
+    <th:block th:if="${module.preparationMaterials}">
+        <h3> Preparation Materials </h3>
+        <div data-th-utext="${module.preparationMaterials}"> </div>
+    </th:block>
+
+    <th:block th:if="${oneOnOneInfo}">
+        <h3> 1:1 Sessions </h3>
+        <div data-th-utext="${oneOnOneInfo}"> </div>
+        <h4> Occurrences </h4>
+    </th:block>
+
+    <th:block th:if="${workshopInfo}">
+        <h3> Workshop </h3>
+        <div data-th-utext="${workshopInfo}"> </div>
+        <h4> Occurrences </h4>
+    </th:block>
+
+
+    <th:block th:if="${liveSessionInfo}">
+        <h3> Live Session </h3>
+        <div data-th-utext="${liveSessionInfo}"> </div>
+        <h4> Occurrences </h4>
+    </th:block>
+
+
+    <th:block th:if="${module.additionalResources}">
+        <h3> Addtional Resources </h3>
+        <div data-th-utext="${module.additionalResources}"> </div>
+    </th:block>
+
+</th:block>
+
+</body>
+</html>
