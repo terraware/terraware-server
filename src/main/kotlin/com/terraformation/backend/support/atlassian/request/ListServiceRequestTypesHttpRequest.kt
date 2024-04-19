@@ -8,7 +8,7 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpMethod
 import io.ktor.http.path
 
-class ListServiceRequestTypes(serviceDeskId: Int) :
+class ListServiceRequestTypesHttpRequest(serviceDeskId: Int) :
     AtlassianHttpRequest<ListServiceRequestTypesResponse> {
   private val path = "/rest/servicedeskapi/servicedesk/$serviceDeskId/requesttype/"
   private val httpMethod = HttpMethod.Get

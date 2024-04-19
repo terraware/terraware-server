@@ -77,7 +77,7 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
 
   @Test
   fun `throws exception if request type ID is incorrect`() {
-    assertThrows<RuntimeException> {
+    assertThrows<IllegalArgumentException> {
       client.createServiceDeskRequest(
           description = "Description",
           summary = "Summary",

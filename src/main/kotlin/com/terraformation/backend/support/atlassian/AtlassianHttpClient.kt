@@ -9,7 +9,7 @@ import com.terraformation.backend.support.atlassian.request.AtlassianHttpRequest
 import com.terraformation.backend.support.atlassian.request.CreateServiceRequestHttpRequest
 import com.terraformation.backend.support.atlassian.request.DeleteIssueHttpRequest
 import com.terraformation.backend.support.atlassian.request.ListServiceDesksHttpRequest
-import com.terraformation.backend.support.atlassian.request.ListServiceRequestTypes
+import com.terraformation.backend.support.atlassian.request.ListServiceRequestTypesHttpRequest
 import com.terraformation.backend.support.atlassian.request.PostServiceDeskRequestResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.java.Java
@@ -46,7 +46,7 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
   ): PostServiceDeskRequestResponse {
     // No required permission
     if (requestTypes.none { it.id == requestTypeId }) {
-      throw RuntimeException("Request ID type not recognized")
+      throw IllegalArgumentException("Request ID type not recognized")
     }
     return makeRequest(
         CreateServiceRequestHttpRequest(
@@ -58,7 +58,7 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
   }
 
   private fun getServiceRequestTypes(): Set<ServiceRequestTypeModel> =
-      makeRequest(ListServiceRequestTypes(serviceDesk.id)).values.toSet()
+      makeRequest(ListServiceRequestTypesHttpRequest(serviceDesk.id)).values.toSet()
 
   private fun findServiceDesk(): ServiceDeskProjectModel =
       makeRequest(ListServiceDesksHttpRequest()).values.firstOrNull {
