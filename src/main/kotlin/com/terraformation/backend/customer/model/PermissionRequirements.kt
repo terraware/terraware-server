@@ -415,6 +415,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun deleteSupportIssue() {
+    if (!user.canDeleteSupportIssue()) {
+      throw AccessDeniedException("No permission to delete a support issue")
+    }
+  }
+
   fun deleteUpload(uploadId: UploadId) {
     if (!user.canDeleteUpload(uploadId)) {
       readUpload(uploadId)

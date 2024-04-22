@@ -223,6 +223,8 @@ class SystemUser(
 
   override fun canDeleteSubLocation(subLocationId: SubLocationId): Boolean = true
 
+  override fun canDeleteSupportIssue(): Boolean = true
+
   override fun canDeleteUpload(uploadId: UploadId): Boolean = true
 
   override fun canImportGlobalSpeciesData(): Boolean = false
