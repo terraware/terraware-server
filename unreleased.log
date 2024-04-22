@@ -1,2 +1,4 @@
+6fe6e0a5b62 Update database dependencies (#1867)
+636f564e323 Update plugin org.springframework.boot to v3.2.5 (#1868)
 752ba3bfb70 SW-5179 Created Atlassian Client for support tickets (#1838)
 ceb68df7348 SW-5210 Added project module controller (#1864)
