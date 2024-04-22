@@ -350,15 +350,13 @@ class AppNotificationService(
         messages.moduleEventStartingNotification(
             parentStore.getEventType(event.eventId)!!,
             ModuleEventNotifier.notificationLeadTime,
-            parentStore.getModuleName(event.eventId)!!
-        )
+            parentStore.getModuleName(event.eventId)!!)
       }
       moduleEvent.projects!!.forEach {
         val organizationId = parentStore.getOrganizationId(it)!!
         val eventUrl =
             webAppUrls.moduleEvent(
-                parentStore.getModuleId(event.eventId)!!, event.eventId, organizationId, it
-            )
+                parentStore.getModuleId(event.eventId)!!, event.eventId, organizationId, it)
         insertProjectNotifications(it, NotificationType.EventReminder, renderMessage, eventUrl)
       }
     }
