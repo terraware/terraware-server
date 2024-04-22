@@ -1,0 +1,163 @@
+package com.terraformation.backend.accelerator.db
+
+import com.terraformation.backend.accelerator.event.ModuleEventScheduledEvent
+import com.terraformation.backend.accelerator.model.EventModel
+import com.terraformation.backend.accelerator.model.toModel
+import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.EventNotFoundException
+import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.EventType
+import com.terraformation.backend.db.accelerator.ModuleId
+import com.terraformation.backend.db.accelerator.tables.daos.EventsDao
+import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
+import com.terraformation.backend.db.accelerator.tables.references.EVENTS
+import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
+import com.terraformation.backend.db.default_schema.ProjectId
+import jakarta.inject.Named
+import java.net.URI
+import java.time.Duration
+import java.time.Instant
+import java.time.InstantSource
+import org.jooq.DSLContext
+import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
+
+@Named
+class ModuleEventStore(
+    private val clock: InstantSource,
+    private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
+    private val eventsDao: EventsDao,
+) {
+  private val eventProjectsHelper: ModuleEventProjectsHelper by lazy { ModuleEventProjectsHelper() }
+
+  fun fetchOneById(eventId: EventId, projectId: ProjectId? = null): EventModel {
+    requirePermissions { readModuleEvent(eventId) }
+
+    val projectsField =
+        if (projectId == null) {
+          eventProjectsHelper.eventProjectsMultiset()
+        } else {
+          requirePermissions { readModuleEvent(eventId) }
+          null
+        }
+
+    val projectEventCondition =
+        projectId?.let {
+          EVENTS.ID.`in`(
+              DSL.select(EVENT_PROJECTS.EVENT_ID)
+                  .from(EVENT_PROJECTS)
+                  .where(EVENT_PROJECTS.PROJECT_ID.eq(it)))
+        }
+
+    return with(EVENTS) {
+      dslContext
+          .select(asterisk(), projectsField)
+          .from(this)
+          .where(ID.eq(eventId))
+          .and(projectEventCondition)
+          .fetchOne { EventModel.of(it, projectsField) } ?: throw EventNotFoundException(eventId)
+    }
+  }
+
+  fun create(
+      moduleId: ModuleId,
+      eventType: EventType,
+      startTime: Instant? = null,
+      endTime: Instant? = startTime?.plus(Duration.ofHours(1)),
+      meetingUrl: URI? = null,
+      recordingUrl: URI? = null,
+      slidesUrl: URI? = null,
+  ): EventModel {
+    requirePermissions { manageModuleEvents() }
+
+    val now = clock.instant()
+    val user = currentUser()
+
+    val eventsRow =
+        EventsRow(
+            moduleId = moduleId,
+            eventTypeId = eventType,
+            startTime = startTime,
+            endTime = endTime,
+            meetingUrl = meetingUrl,
+            recordingUrl = recordingUrl,
+            revision = 1,
+            slidesUrl = slidesUrl,
+            createdBy = user.userId,
+            createdTime = now,
+            modifiedBy = user.userId,
+            modifiedTime = now,
+        )
+
+    eventsDao.insert(eventsRow)
+
+    val model = eventsRow.toModel()
+    startTime?.let {
+      eventPublisher.publishEvent(ModuleEventScheduledEvent(model.id, model.revision))
+    }
+
+    return model
+  }
+
+  fun updateEvent(eventId: EventId, updateFunc: (EventModel) -> EventModel) {
+    requirePermissions { manageModuleEvents() }
+
+    val existing = fetchOneById(eventId)
+    val updated = updateFunc(existing)
+    val userId = currentUser().userId
+    val now = clock.instant()
+
+    val revision =
+        if (updated.startTime == existing.startTime) {
+          existing.revision
+        } else {
+          existing.revision + 1
+        }
+
+    dslContext.transaction { _ ->
+      val rowsUpdated =
+          with(EVENTS) {
+            dslContext
+                .update(this)
+                .set(MEETING_URL, updated.meetingUrl)
+                .set(RECORDING_URL, updated.recordingUrl)
+                .set(SLIDES_URL, updated.slidesUrl)
+                .set(START_TIME, updated.startTime)
+                .set(END_TIME, updated.endTime)
+                .set(REVISION, revision)
+                .set(MODIFIED_BY, userId)
+                .set(MODIFIED_TIME, now)
+                .where(ID.eq(eventId))
+                .execute()
+          }
+
+      if (rowsUpdated < 1) {
+        throw EventNotFoundException(eventId)
+      }
+
+      if (updated.projects != existing.projects) {
+        val overlap = updated.projects!!.intersect(existing.projects!!)
+        val toAdd = updated.projects.minus(overlap)
+        val toRemove = existing.projects.minus(overlap)
+
+        with(EVENT_PROJECTS) {
+          dslContext
+              .deleteFrom(this)
+              .where(EVENT_ID.eq(eventId))
+              .and(PROJECT_ID.`in`(toRemove))
+              .execute()
+
+          toAdd.forEach {
+            dslContext.insertInto(this, EVENT_ID, PROJECT_ID).values(eventId, it).execute()
+          }
+        }
+      }
+    }
+
+    if (updated.startTime != existing.startTime) {
+      eventPublisher.publishEvent(ModuleEventScheduledEvent(eventId, revision))
+    }
+  }
+}

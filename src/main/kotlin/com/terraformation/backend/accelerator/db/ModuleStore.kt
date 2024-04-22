@@ -4,7 +4,6 @@ import com.terraformation.backend.accelerator.model.CohortModuleModel
 import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
@@ -23,6 +22,8 @@ import org.jooq.impl.DSL
 class ModuleStore(
     private val dslContext: DSLContext,
 ) {
+  private val eventProjectsHelper: ModuleEventProjectsHelper by lazy { ModuleEventProjectsHelper() }
+
   fun fetchModulesForProject(projectId: ProjectId): List<ModuleModel> {
     requirePermissions { readProjectModules(projectId) }
 
@@ -60,37 +61,6 @@ class ModuleStore(
     }
   }
 
-  fun fetchEventById(eventId: EventId, projectId: ProjectId? = null): EventModel? {
-    val projectsField =
-        if (projectId == null) {
-          requirePermissions { readModuleEventParticipants(eventId) }
-          eventProjectsMultiset()
-        } else {
-          requirePermissions { readModuleEvent(eventId) }
-          null
-        }
-
-    return with(EVENTS) {
-      dslContext.select(asterisk(), projectsField).from(this).where(ID.eq(eventId)).fetchOne {
-        EventModel.of(it, projectsField)
-      }
-    }
-  }
-
-  fun fetchEventParticipants(eventId: EventId): Set<ProjectId> {
-    requirePermissions { readModuleEventParticipants(eventId) }
-
-    return with(EVENT_PROJECTS) {
-      dslContext
-          .select(PROJECT_ID)
-          .from(this)
-          .where(EVENT_ID.eq(eventId))
-          .fetch(PROJECT_ID)
-          .filterNotNull()
-          .toSet()
-    }
-  }
-
   private fun cohortsMultiset(): Field<List<CohortModuleModel>> {
     val projectsField =
         DSL.multiset(
@@ -112,20 +82,12 @@ class ModuleStore(
     }
   }
 
-  private fun eventProjectsMultiset() =
-      with(EVENT_PROJECTS) {
-        DSL.multiset(DSL.select(PROJECT_ID).from(this).where(EVENT_ID.eq(EVENTS.ID))).convertFrom {
-            result ->
-          result.map { it.value1() }.toSet()
-        }
-      }
-
   private fun eventsMultiset(
       projectId: ProjectId? = null
   ): Field<Map<EventType, List<EventModel>>> {
     val projectsField =
         if (projectId == null) {
-          eventProjectsMultiset()
+          eventProjectsHelper.eventProjectsMultiset()
         } else {
           null
         }

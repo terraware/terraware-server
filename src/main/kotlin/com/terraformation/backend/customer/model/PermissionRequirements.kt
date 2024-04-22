@@ -478,6 +478,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun manageModuleEvents() {
+    if (!user.canManageModuleEvents()) {
+      throw AccessDeniedException("No permission to manage module events")
+    }
+  }
+
   fun manageModules() {
     if (!user.canManageModules()) {
       throw AccessDeniedException("No permission to manage modules")
@@ -594,9 +600,8 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun readModuleEventParticipants(eventId: EventId) {
-    if (!user.canReadModuleEventParticipants(eventId)) {
-      readModuleEvent(eventId)
+  fun readModuleEventParticipants() {
+    if (!user.canReadModuleEventParticipants()) {
       throw AccessDeniedException("No permission to view event participants")
     }
   }

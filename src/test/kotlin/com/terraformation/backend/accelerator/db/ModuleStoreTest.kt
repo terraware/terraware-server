@@ -39,6 +39,8 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
     projectId = insertProject(participantId = inserted.participantId)
 
     every { user.canManageModules() } returns true
+    every { user.canReadModuleEvent(any()) } returns true
+    every { user.canReadModuleEventParticipants() } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canReadProjectModules(any()) } returns true
   }
@@ -294,6 +296,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                           meetingUrl = URI("https://example.com/meeting"),
                           projects = setOf(projectId),
                           recordingUrl = URI("https://example.com/recording"),
+                          revision = 1,
                           slidesUrl = URI("https://example.com/slides"),
                           startTime = Instant.ofEpochSecond(1000),
                       ))),
@@ -390,6 +393,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                           meetingUrl = URI("https://example.com/meeting"),
                           projects = null,
                           recordingUrl = URI("https://example.com/recording"),
+                          revision = 1,
                           slidesUrl = URI("https://example.com/slides"),
                           startTime = Instant.ofEpochSecond(1000),
                       ))),

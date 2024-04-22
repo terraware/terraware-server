@@ -198,6 +198,8 @@ interface TerrawareUser : Principal {
 
   fun canManageInternalTags(): Boolean
 
+  fun canManageModuleEvents(): Boolean
+
   fun canManageModules(): Boolean
 
   fun canManageNotifications(): Boolean
@@ -236,7 +238,7 @@ interface TerrawareUser : Principal {
 
   fun canReadModuleEvent(eventId: EventId): Boolean
 
-  fun canReadModuleEventParticipants(eventId: EventId): Boolean
+  fun canReadModuleEventParticipants(): Boolean
 
   fun canReadMonitoringPlot(monitoringPlotId: MonitoringPlotId): Boolean
 

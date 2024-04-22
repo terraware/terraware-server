@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer
 
-import com.terraformation.backend.accelerator.db.ModuleStore
+import com.terraformation.backend.accelerator.ModuleEventNotifier
+import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -58,7 +59,7 @@ class AppNotificationService(
     private val deviceStore: DeviceStore,
     private val dslContext: DSLContext,
     private val facilityStore: FacilityStore,
-    private val moduleStore: ModuleStore,
+    private val moduleEventStore: ModuleEventStore,
     private val notificationStore: NotificationStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
@@ -343,20 +344,21 @@ class AppNotificationService(
 
   @EventListener
   fun on(event: ModuleEventStartingEvent) {
-    val moduleEvent = moduleStore.fetchEventById(event.eventId)
-    if (moduleEvent != null && event.startTime == moduleEvent.startTime) {
-      // Only sends event starting notifications if event information is still up-to-date
+    systemUser.run {
+      val moduleEvent = moduleEventStore.fetchOneById(event.eventId)
       val renderMessage = {
         messages.moduleEventStartingNotification(
             parentStore.getEventType(event.eventId)!!,
-            event.leadTime,
-            parentStore.getModuleName(event.eventId)!!)
+            ModuleEventNotifier.notificationLeadTime,
+            parentStore.getModuleName(event.eventId)!!
+        )
       }
       moduleEvent.projects!!.forEach {
         val organizationId = parentStore.getOrganizationId(it)!!
         val eventUrl =
             webAppUrls.moduleEvent(
-                parentStore.getModuleId(event.eventId)!!, event.eventId, organizationId, it)
+                parentStore.getModuleId(event.eventId)!!, event.eventId, organizationId, it
+            )
         insertProjectNotifications(it, NotificationType.EventReminder, renderMessage, eventUrl)
       }
     }

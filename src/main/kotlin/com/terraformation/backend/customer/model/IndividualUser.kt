@@ -304,6 +304,8 @@ data class IndividualUser(
 
   override fun canManageInternalTags() = isSuperAdmin()
 
+  override fun canManageModuleEvents() = isAcceleratorAdmin()
+
   override fun canManageModules() = isAcceleratorAdmin()
 
   override fun canManageNotifications() = false
@@ -354,7 +356,7 @@ data class IndividualUser(
     return parentStore.exists(eventId, userId) || isReadOnlyOrHigher()
   }
 
-  override fun canReadModuleEventParticipants(eventId: EventId): Boolean {
+  override fun canReadModuleEventParticipants(): Boolean {
     return isReadOnlyOrHigher()
   }
 

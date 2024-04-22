@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
 import com.terraformation.backend.db.accelerator.tables.references.EVENTS
 import com.terraformation.backend.db.default_schema.ProjectId
 import java.net.URI
@@ -14,6 +15,7 @@ data class EventModel(
     val meetingUrl: URI?,
     val projects: Set<ProjectId>? = null,
     val recordingUrl: URI?,
+    val revision: Int,
     val slidesUrl: URI?,
     val startTime: Instant?,
 ) {
@@ -25,8 +27,22 @@ data class EventModel(
             meetingUrl = record[EVENTS.MEETING_URL],
             projects = projectsField?.let { record[it] },
             recordingUrl = record[EVENTS.RECORDING_URL],
+            revision = record[EVENTS.REVISION]!!,
             slidesUrl = record[EVENTS.SLIDES_URL],
             startTime = record[EVENTS.START_TIME],
         )
   }
+}
+
+fun EventsRow.toModel(projectIds: Set<ProjectId> = emptySet()): EventModel {
+  return EventModel(
+      id = id!!,
+      endTime = endTime,
+      meetingUrl = meetingUrl,
+      projects = projectIds,
+      recordingUrl = recordingUrl,
+      revision = revision!!,
+      slidesUrl = slidesUrl,
+      startTime = startTime,
+  )
 }

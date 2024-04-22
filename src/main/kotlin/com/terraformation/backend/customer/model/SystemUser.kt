@@ -244,6 +244,8 @@ class SystemUser(
 
   override fun canManageInternalTags(): Boolean = false
 
+  override fun canManageModuleEvents(): Boolean = false
+
   override fun canManageModules(): Boolean = false
 
   override fun canManageNotifications(): Boolean = true
@@ -282,7 +284,7 @@ class SystemUser(
 
   override fun canReadModuleEvent(eventId: EventId): Boolean = true
 
-  override fun canReadModuleEventParticipants(eventId: EventId): Boolean = true
+  override fun canReadModuleEventParticipants(): Boolean = true
 
   override fun canReadMonitoringPlot(monitoringPlotId: MonitoringPlotId): Boolean = true
 

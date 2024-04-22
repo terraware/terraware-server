@@ -4,12 +4,14 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.accelerator.db.ModuleStore
+import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
+import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
@@ -100,7 +102,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var automationStore: AutomationStore
   private lateinit var deviceStore: DeviceStore
   private lateinit var facilityStore: FacilityStore
-  private lateinit var moduleStore: ModuleStore
+  private lateinit var moduleEventStore: ModuleEventStore
   private lateinit var notificationStore: NotificationStore
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
@@ -144,7 +146,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             messages,
             organizationsDao,
             subLocationsDao)
-    moduleStore = ModuleStore(dslContext)
+    moduleEventStore = ModuleEventStore(clock, dslContext, publisher, eventsDao)
     notificationStore = NotificationStore(dslContext, clock)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
     participantStore = ParticipantStore(clock, dslContext, publisher, participantsDao)
@@ -181,7 +183,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             deviceStore,
             dslContext,
             facilityStore,
-            moduleStore,
+            moduleEventStore,
             notificationStore,
             organizationStore,
             parentStore,
@@ -201,6 +203,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         NotificationMessage("nursery title", "nursery body")
     every { messages.facilityIdle() } returns
         NotificationMessage("facility idle title", "facility idle body")
+    every { messages.moduleEventStartingNotification(any(), any(), any()) } returns
+        NotificationMessage("module event starting title", "module event starting body")
     every { user.canCreateAccession(facilityId) } returns true
     every { user.canCreateAutomation(any()) } returns true
     every { user.canCreateNotification(any(), organizationId) } returns true
@@ -208,8 +212,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAutomation(any()) } returns true
     every { user.canReadDevice(any()) } returns true
     every { user.canReadFacility(any()) } returns true
+    every { user.canReadModuleEvent(any()) } returns true
+    every { user.canReadModuleEventParticipants() } returns true
     every { user.canReadOrganization(organizationId) } returns true
     every { user.canReadPlantingSite(any()) } returns true
+    every { user.canReadProjectModules(any()) } returns true
     every { user.locale } returns Locale.ENGLISH
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
 
@@ -684,6 +691,53 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             deliverableId, projectId, SubmissionStatus.NeedsTranslation, SubmissionStatus.InReview))
 
     assertNotifications(emptyList())
+  }
+
+  @Test
+  fun `is a listener for Module Event Starting event`() {
+    assertIsEventListener<ModuleEventStartingEvent>(service)
+  }
+
+  @Test
+  fun `should store module event starting notification for all projects`() {
+    val moduleId = insertModule()
+    val eventId = insertEvent(moduleId = moduleId)
+
+    insertOrganizationUser(role = Role.Admin)
+    // Other user in same project
+    val otherUser = insertUser(otherUserId)
+    insertOrganizationUser(otherUser)
+    val projectId = insertProject()
+
+    // Other project in different org
+    val thirdUserId = insertUser(300)
+    val otherOrgId = insertOrganization(300)
+    insertOrganizationUser(thirdUserId, otherOrgId)
+    val otherProjectId = insertProject(organizationId = otherOrgId)
+
+    insertEventProject(eventId, projectId)
+    insertEventProject(eventId, otherProjectId)
+
+    val commonValues =
+        NotificationsRow(
+            body = "module event starting body",
+            localUrl = webAppUrls.moduleEvent(moduleId, eventId, organizationId, projectId),
+            notificationTypeId = NotificationType.EventReminder,
+            organizationId = organizationId,
+            title = "module event starting title",
+        )
+
+    service.on(ModuleEventStartingEvent(eventId))
+
+    assertNotifications(
+        listOf(
+            commonValues.copy(userId = currentUser().userId),
+            commonValues.copy(userId = otherUserId),
+            commonValues.copy(
+                userId = thirdUserId,
+                localUrl = webAppUrls.moduleEvent(moduleId, eventId, otherOrgId, otherProjectId),
+                organizationId = otherOrgId),
+        ))
   }
 
   @Test

@@ -256,6 +256,8 @@ data class DeviceManagerUser(
 
   override fun canManageInternalTags(): Boolean = false
 
+  override fun canManageModuleEvents(): Boolean = false
+
   override fun canManageModules(): Boolean = false
 
   override fun canManageNotifications(): Boolean = false
@@ -284,7 +286,7 @@ data class DeviceManagerUser(
 
   override fun canReadModuleEvent(eventId: EventId): Boolean = false
 
-  override fun canReadModuleEventParticipants(eventId: EventId): Boolean = false
+  override fun canReadModuleEventParticipants(): Boolean = false
 
   override fun canReadMonitoringPlot(monitoringPlotId: MonitoringPlotId): Boolean = false
 

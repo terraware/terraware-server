@@ -9,6 +9,7 @@ import com.terraformation.backend.db.AutomationNotFoundException
 import com.terraformation.backend.db.DeviceManagerNotFoundException
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.EntityNotFoundException
+import com.terraformation.backend.db.EventNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.InvalidRoleUpdateException
 import com.terraformation.backend.db.NotificationNotFoundException
@@ -22,6 +23,7 @@ import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -122,6 +124,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(DeviceManagerNotFoundException::class) { canReadDeviceManager(it) }
   private val draftPlantingSiteId: DraftPlantingSiteId by
       readableId(DraftPlantingSiteNotFoundException::class) { canReadDraftPlantingSite(it) }
+  private val eventId: EventId by
+      readableId(EventNotFoundException::class) { canReadModuleEvent(it) }
   private val facilityId: FacilityId by
       readableId(FacilityNotFoundException::class) { canReadFacility(it) }
   private val monitoringPlotId: MonitoringPlotId by
@@ -486,6 +490,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun manageDeliverables() = allow { manageDeliverables() } ifUser { canManageDeliverables() }
 
+  @Test fun manageModuleEvents() = allow { manageModuleEvents() } ifUser { canManageModuleEvents() }
+
   @Test fun manageModules() = allow { manageModules() } ifUser { canManageModules() }
 
   @Test
@@ -544,6 +550,12 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readGlobalRoles() = allow { readGlobalRoles() } ifUser { canReadGlobalRoles() }
 
   @Test fun readInternalTags() = allow { readInternalTags() } ifUser { canReadInternalTags() }
+
+  @Test fun readModuleEvents() = testRead { readModuleEvent(eventId) }
+
+  @Test
+  fun readModuleEventParticipants() =
+      allow { readModuleEventParticipants() } ifUser { canReadModuleEventParticipants() }
 
   @Test fun readMonitoringPlot() = testRead { readMonitoringPlot(monitoringPlotId) }
 
