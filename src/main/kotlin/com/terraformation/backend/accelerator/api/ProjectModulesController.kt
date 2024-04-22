@@ -6,6 +6,7 @@ import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -94,4 +95,4 @@ data class ProjectModule(
 
 data class GetProjectModulesResponsePayload(
     val modules: List<ProjectModule> = emptyList(),
-)
+) : SuccessResponsePayload
