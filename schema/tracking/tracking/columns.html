@@ -209,17 +209,17 @@
         "comments": "<p>When the planting was created. Note that plantings are never updated, so there is no modified time.<\/p>"
     },
     {
-        "tableName": "observations",
+        "tableName": "observed_plot_coordinates",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "upcoming_notification_sent_time",
-        "type": "timestamptz",
-        "length": 35,
-        "nullable": "√",
+        "name": "gps_coordinates",
+        "type": "geometry",
+        "length": 2147483647,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When the notification that the observation is starting in 1 month was sent. Null if the notification has not been sent yet.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "planting_site_notifications",
@@ -902,13 +902,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "created_time",
+        "name": "upcoming_notification_sent_time",
         "type": "timestamptz",
         "length": 35,
-        "nullable": "",
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>When the notification that the observation is starting in 1 month was sent. Null if the notification has not been sent yet.<\/p>"
     },
     {
         "tableName": "planting_zone_populations",
@@ -1171,17 +1171,17 @@
         "comments": "<p>Which user created the delivery.<\/p>"
     },
     {
-        "tableName": "observations",
+        "tableName": "observed_plot_coordinates",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "completed_time",
-        "type": "timestamptz",
-        "length": 35,
-        "nullable": "√",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Server-generated date and time the final piece of data for the observation was received.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observed_plot_species_totals",
@@ -1249,11 +1249,11 @@
         "comments": ""
     },
     {
-        "tableName": "observed_plot_coordinates",
+        "tableName": "observations",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_site_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
@@ -1394,15 +1394,15 @@
     {
         "tableName": "observations",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "completed_time",
+        "type": "timestamptz",
+        "length": 35,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Server-generated date and time the final piece of data for the observation was received.<\/p>"
     },
     {
         "tableName": "draft_planting_sites",
@@ -1509,17 +1509,17 @@
         "comments": "<p>If this is a permanent monitoring plot, percentage of plants of the species observed in this plot, in either this observation or in previous ones, that were dead. Null if this is not a permanent monitoring plot in the current observation.<\/p>"
     },
     {
-        "tableName": "observations",
+        "tableName": "observed_plot_coordinates",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "start_date",
-        "type": "date",
-        "length": 13,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>First day of the observation. This is either the first day of the month following the end of the planting season, or 6 months after that day.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "monitoring_plots",
@@ -1535,17 +1535,17 @@
         "comments": "<p>When the monitoring plot was originally created.<\/p>"
     },
     {
-        "tableName": "observed_plot_coordinates",
+        "tableName": "observations",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "gps_coordinates",
-        "type": "geometry",
-        "length": 2147483647,
+        "name": "end_date",
+        "type": "date",
+        "length": 13,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Last day of the observation. This is typically the last day of the same month as <code>start_date<\/code>.<\/p>"
     },
     {
         "tableName": "planting_site_populations",
@@ -1721,9 +1721,9 @@
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_site_id",
-        "type": "int8",
-        "length": 19,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>state_id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -2003,11 +2003,11 @@
         "comments": ""
     },
     {
-        "tableName": "observations",
+        "tableName": "observed_plot_coordinates",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>state_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>position_id",
         "type": "int4",
         "length": 10,
         "nullable": "",
@@ -2185,17 +2185,17 @@
         "comments": ""
     },
     {
-        "tableName": "observations",
+        "tableName": "observed_plot_coordinates",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "end_date",
-        "type": "date",
-        "length": 13,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Last day of the observation. This is typically the last day of the same month as <code>start_date<\/code>.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "planting_zones",
@@ -2237,17 +2237,17 @@
         "comments": ""
     },
     {
-        "tableName": "observed_plot_coordinates",
+        "tableName": "observations",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>position_id",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "start_date",
+        "type": "date",
+        "length": 13,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>First day of the observation. This is either the first day of the month following the end of the planting season, or 6 months after that day.<\/p>"
     },
     {
         "tableName": "observation_photos",
@@ -2328,7 +2328,7 @@
         "comments": "<p>When the subzone was most recently modified.<\/p>"
     },
     {
-        "tableName": "observed_plot_coordinates",
+        "tableName": "observations",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
@@ -2640,13 +2640,13 @@
         "comments": "<p>Which user most recently modified the delivery.<\/p>"
     },
     {
-        "tableName": "observed_plot_coordinates",
+        "tableName": "observations",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "created_time",
+        "type": "timestamptz",
+        "length": 35,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
