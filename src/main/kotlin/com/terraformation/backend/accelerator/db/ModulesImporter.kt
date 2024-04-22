@@ -14,8 +14,8 @@ import org.jooq.DSLContext
 /** Imports the list of modules from a CSV file. */
 @Named
 class ModulesImporter(
-  private val clock: InstantSource,
-  private val dslContext: DSLContext,
+    private val clock: InstantSource,
+    private val dslContext: DSLContext,
 ) {
   companion object {
     private const val COLUMN_NAME = 0
