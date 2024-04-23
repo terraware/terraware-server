@@ -1,3 +1,4 @@
+067c018a97b Put the event type in the ProjectModuleEventSession response object (#1874)
 39822db86c5 SW-5213 Generate some documentation on in-app and email notifications (#1873)
 bda08c4879a Update JamesIves/github-pages-deploy-action action to v4.6.0 (#1869)
 6938f17daaa Update amazoncorretto Docker tag to v21.0.3 (#1870)
