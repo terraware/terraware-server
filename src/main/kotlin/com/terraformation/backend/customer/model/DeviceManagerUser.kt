@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -283,6 +284,10 @@ data class DeviceManagerUser(
   override fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = false
 
   override fun canReadInternalTags(): Boolean = false
+
+  override fun canReadModule(moduleId: ModuleId): Boolean = false
+
+  override fun canReadModuleDetails(moduleId: ModuleId): Boolean = false
 
   override fun canReadModuleEvent(eventId: EventId): Boolean = false
 

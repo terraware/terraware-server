@@ -42,7 +42,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
     insertUser()
     insertOrganization()
     cohortId = insertCohort()
-    insertParticipant(cohortId)
+    insertParticipant(cohortId = cohortId)
     moduleId = insertModule()
     insertCohortModule(cohortId, moduleId)
 
@@ -55,23 +55,18 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class FetchEventById {
+  inner class FetchOneById {
     @Test
     fun `throws exception if event does not exist`() {
-      assertThrows<EventNotFoundException> { store.fetchEventById(EventId(-1)) }
+      assertThrows<EventNotFoundException> { store.fetchOneById(EventId(-1)) }
     }
 
     @Test
     fun `throws exception no permission to view event or participants`() {
-      every { user.canReadModuleEvent(any()) } returns false
+      every { user.canReadModuleEventParticipants() } returns false
       insertProject(participantId = inserted.participantId)
       val eventId = insertEvent()
-      assertThrows<EventNotFoundException> { store.fetchEventById(eventId) }
-
-      every { user.canReadModuleEvent(any()) } returns true
-      every { user.canReadModuleEventParticipants() } returns false
-
-      assertThrows<AccessDeniedException> { store.fetchEventById(eventId) }
+      assertThrows<AccessDeniedException> { store.fetchOneById(eventId) }
     }
 
     @Test
@@ -104,7 +99,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               startTime = startTime,
               endTime = endTime,
               projects = emptySet()),
-          store.fetchEventById(workshop))
+          store.fetchOneById(workshop))
 
       insertEventProject(workshop, project1)
       insertEventProject(workshop, project2)
@@ -121,17 +116,17 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               startTime = startTime,
               endTime = endTime,
               projects = setOf(project1, project2)),
-          store.fetchEventById(workshop))
+          store.fetchOneById(workshop))
     }
   }
 
   @Nested
-  inner class FetchProjectEventById {
+  inner class FetchOneForProjectById {
     @Test
     fun `throws exception if event exists but project is not a participant`() {
       val projectId = insertProject(participantId = inserted.participantId)
       val eventId = insertEvent()
-      assertThrows<EventNotFoundException> { store.fetchProjectEventById(eventId, projectId) }
+      assertThrows<EventNotFoundException> { store.fetchOneForProjectById(eventId, projectId) }
     }
 
     @Test
@@ -167,7 +162,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               startTime = startTime,
               endTime = endTime,
           ),
-          store.fetchProjectEventById(workshop, project1))
+          store.fetchOneForProjectById(workshop, project1))
     }
 
     @Test
@@ -175,15 +170,16 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadModuleEvent(any()) } returns false
       val projectId = insertProject(participantId = inserted.participantId)
       val eventId = insertEvent()
-      assertThrows<EventNotFoundException> { store.fetchProjectEventById(eventId, projectId) }
+      insertEventProject(eventId, projectId)
+      assertThrows<EventNotFoundException> { store.fetchOneForProjectById(eventId, projectId) }
 
       every { user.canReadModuleEvent(any()) } returns true
       every { user.canReadProject(any()) } returns false
-      assertThrows<ProjectNotFoundException> { store.fetchProjectEventById(eventId, projectId) }
+      assertThrows<ProjectNotFoundException> { store.fetchOneForProjectById(eventId, projectId) }
 
       every { user.canReadProject(any()) } returns true
-      every { user.canReadModuleEventParticipants() } returns false
-      assertThrows<AccessDeniedException> { store.fetchProjectEventById(eventId, projectId) }
+      every { user.canReadModuleEvent(any()) } returns true
+      assertDoesNotThrow { store.fetchOneForProjectById(eventId, projectId) }
     }
   }
 

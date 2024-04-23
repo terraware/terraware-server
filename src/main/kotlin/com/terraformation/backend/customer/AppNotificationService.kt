@@ -347,7 +347,7 @@ class AppNotificationService(
   @EventListener
   fun on(event: ModuleEventStartingEvent) {
     systemUser.run {
-      val moduleEvent = moduleEventStore.fetchEventById(event.eventId)
+      val moduleEvent = moduleEventStore.fetchOneById(event.eventId)
       val module = moduleStore.fetchOneById(moduleEvent.moduleId)
       val renderMessage = {
         messages.moduleEventStartingNotification(

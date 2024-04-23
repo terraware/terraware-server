@@ -221,6 +221,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadOrganization(organizationId) } returns true
     every { user.canReadPlantingSite(any()) } returns true
     every { user.canReadProjectModules(any()) } returns true
+    every { user.canReadModule(any()) } returns true
     every { user.locale } returns Locale.ENGLISH
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
 

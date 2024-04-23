@@ -12,6 +12,7 @@ import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.EventNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.InvalidRoleUpdateException
+import com.terraformation.backend.db.ModuleNotFoundException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -25,6 +26,7 @@ import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -591,6 +593,19 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readInternalTags() {
     if (!user.canReadInternalTags()) {
       throw AccessDeniedException("No permission to read internal tags")
+    }
+  }
+
+  fun readModule(moduleId: ModuleId) {
+    if (!user.canReadModule(moduleId)) {
+      throw ModuleNotFoundException(moduleId)
+    }
+  }
+
+  fun readModuleDetails(moduleId: ModuleId) {
+    if (!user.canReadModuleDetails(moduleId)) {
+      readModule(moduleId)
+      throw AccessDeniedException("No permission to read module details")
     }
   }
 

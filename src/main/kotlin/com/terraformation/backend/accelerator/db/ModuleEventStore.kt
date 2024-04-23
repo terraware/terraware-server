@@ -30,7 +30,7 @@ class ModuleEventStore(
     private val eventPublisher: ApplicationEventPublisher,
     private val eventsDao: EventsDao,
 ) {
-  fun fetchEventById(eventId: EventId): EventModel {
+  fun fetchOneById(eventId: EventId): EventModel {
     requirePermissions { readModuleEventParticipants() }
     val projectsField = eventProjectsMultiset()
     return with(EVENTS) {
@@ -40,7 +40,7 @@ class ModuleEventStore(
     }
   }
 
-  fun fetchProjectEventById(eventId: EventId, projectId: ProjectId) {
+  fun fetchOneForProjectById(eventId: EventId, projectId: ProjectId): EventModel {
     requirePermissions {
       readModuleEvent(eventId)
       readProject(projectId)
@@ -102,7 +102,7 @@ class ModuleEventStore(
   fun updateEvent(eventId: EventId, updateFunc: (EventModel) -> EventModel) {
     requirePermissions { manageModuleEvents() }
 
-    val existing = fetchEventById(eventId)
+    val existing = fetchOneById(eventId)
     val updated = updateFunc(existing)
     val userId = currentUser().userId
     val now = clock.instant()

@@ -26,13 +26,16 @@ class ModuleStore(
     private val dslContext: DSLContext,
 ) {
   fun fetchOneById(moduleId: ModuleId): ModuleModel {
-    requirePermissions { manageModules() }
+    requirePermissions { readModuleDetails(moduleId) }
 
     return fetch(MODULES.ID.eq(moduleId)).firstOrNull() ?: throw ModuleNotFoundException(moduleId)
   }
 
   fun fetchOneByIdForProject(moduleId: ModuleId, projectId: ProjectId): ModuleModel {
-    requirePermissions { readProjectModules(projectId) }
+    requirePermissions {
+      readModule(moduleId)
+      readProject(projectId)
+    }
 
     return fetchForProject(projectId, MODULES.ID.eq(moduleId)).firstOrNull()
         ?: throw ModuleNotFoundException(moduleId)

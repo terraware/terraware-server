@@ -12,6 +12,7 @@ import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.EventNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.InvalidRoleUpdateException
+import com.terraformation.backend.db.ModuleNotFoundException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -24,6 +25,7 @@ import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -128,6 +130,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(EventNotFoundException::class) { canReadModuleEvent(it) }
   private val facilityId: FacilityId by
       readableId(FacilityNotFoundException::class) { canReadFacility(it) }
+  private val moduleId: ModuleId by readableId(ModuleNotFoundException::class) { canReadModule(it) }
   private val monitoringPlotId: MonitoringPlotId by
       readableId(PlotNotFoundException::class) { canReadMonitoringPlot(it) }
   private val notificationUserId = UserId(2)
@@ -550,6 +553,12 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readGlobalRoles() = allow { readGlobalRoles() } ifUser { canReadGlobalRoles() }
 
   @Test fun readInternalTags() = allow { readInternalTags() } ifUser { canReadInternalTags() }
+
+  @Test fun readModule() = testRead { readModule(moduleId) }
+
+  @Test
+  fun readModuleDetails() =
+      allow { readModuleDetails(moduleId) } ifUser { canReadModuleDetails(moduleId) }
 
   @Test fun readModuleEvents() = testRead { readModuleEvent(eventId) }
 

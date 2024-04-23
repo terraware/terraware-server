@@ -5,8 +5,11 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.SubmissionId
+import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
@@ -242,6 +245,21 @@ class ParentStore(private val dslContext: DSLContext) {
           .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
           .where(ORGANIZATION_USERS.USER_ID.eq(userId))
           .and(EVENT_PROJECTS.EVENT_ID.eq(eventId))
+          .fetch()
+          .isNotEmpty
+
+  fun exists(moduleId: ModuleId, userId: UserId): Boolean =
+      dslContext
+          .selectOne()
+          .from(COHORT_MODULES)
+          .join(PARTICIPANTS)
+          .on(PARTICIPANTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
+          .join(PROJECTS)
+          .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+          .join(ORGANIZATION_USERS)
+          .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
+          .where(ORGANIZATION_USERS.USER_ID.eq(userId))
+          .and(COHORT_MODULES.MODULE_ID.eq(moduleId))
           .fetch()
           .isNotEmpty
 

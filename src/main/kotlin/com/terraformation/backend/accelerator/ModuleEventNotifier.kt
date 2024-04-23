@@ -35,7 +35,7 @@ class ModuleEventNotifier(
     systemUser.run {
       val moduleEvent =
           try {
-            eventStore.fetchEventById(event.eventId)
+            eventStore.fetchOneById(event.eventId)
           } catch (e: EventNotFoundException) {
             log.error("Module event ${event.eventId} not found.")
             return@run
@@ -60,7 +60,7 @@ class ModuleEventNotifier(
     systemUser.run {
       val moduleEvent =
           try {
-            eventStore.fetchEventById(event.eventId)
+            eventStore.fetchOneById(event.eventId)
           } catch (e: EventNotFoundException) {
             log.error("Module event ${event.eventId} not found.")
             return@run

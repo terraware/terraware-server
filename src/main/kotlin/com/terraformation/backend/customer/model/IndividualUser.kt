@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -351,6 +352,12 @@ data class IndividualUser(
   override fun canReadFacility(facilityId: FacilityId) = isMember(facilityId)
 
   override fun canReadGlobalRoles() = isAcceleratorAdmin()
+
+  override fun canReadModule(moduleId: ModuleId): Boolean {
+    return parentStore.exists(moduleId, userId) || isReadOnlyOrHigher()
+  }
+
+  override fun canReadModuleDetails(moduleId: ModuleId): Boolean = isReadOnlyOrHigher()
 
   override fun canReadModuleEvent(eventId: EventId): Boolean {
     return parentStore.exists(eventId, userId) || isReadOnlyOrHigher()

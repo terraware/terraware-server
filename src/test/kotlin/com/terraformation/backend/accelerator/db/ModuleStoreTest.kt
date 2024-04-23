@@ -41,6 +41,8 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
     projectId = insertProject(participantId = inserted.participantId)
 
     every { user.canManageModules() } returns true
+    every { user.canReadModule(any()) } returns true
+    every { user.canReadModuleDetails(any()) } returns true
     every { user.canReadModuleEvent(any()) } returns true
     every { user.canReadModuleEventParticipants() } returns true
     every { user.canReadProject(any()) } returns true
@@ -152,9 +154,14 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception if no permission to manage modules`() {
-      every { user.canManageModules() } returns false
-      assertThrows<AccessDeniedException> { store.fetchOneById(ModuleId(-1)) }
+    fun `throws exception if no permission to read module details`() {
+      val moduleId = insertModule()
+      every { user.canReadModule(any()) } returns false
+      every { user.canReadModuleDetails(any()) } returns false
+      assertThrows<ModuleNotFoundException> { store.fetchOneById(moduleId) }
+
+      every { user.canReadModule(any()) } returns true
+      assertThrows<AccessDeniedException> { store.fetchOneById(moduleId) }
     }
 
     @Test
@@ -209,14 +216,15 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception if no permission to read project modules`() {
+    fun `throws exception if no permission to read module or project`() {
       val moduleId = insertModule()
       insertCohortModule(cohortId, moduleId)
 
-      every { user.canReadProjectModules(any()) } returns false
-      assertThrows<AccessDeniedException> { store.fetchOneByIdForProject(moduleId, projectId) }
-
       every { user.canReadProject(any()) } returns false
+      every { user.canReadModule(any()) } returns false
+      assertThrows<ModuleNotFoundException> { store.fetchOneByIdForProject(moduleId, projectId) }
+
+      every { user.canReadModule(any()) } returns true
       assertThrows<ProjectNotFoundException> { store.fetchOneByIdForProject(moduleId, projectId) }
     }
 
