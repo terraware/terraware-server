@@ -4,7 +4,7 @@ def extract_notifications(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         for line in file:
             line = line.strip()
-            if '=' in line:
+            if '=' in line and line[0] != '#':
                 key, value = line.split('=', 1)
                 key_parts = key.split('.')
                 if 'notification' in key_parts[0]:  # Ensure it starts with 'notification'
