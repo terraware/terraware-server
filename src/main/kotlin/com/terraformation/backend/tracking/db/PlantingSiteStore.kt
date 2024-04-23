@@ -54,6 +54,7 @@ import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
+import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.createRectangle
 import com.terraformation.backend.util.toInstant
 import jakarta.inject.Named
@@ -232,11 +233,12 @@ class PlantingSiteStore(
   fun createPlantingSite(
       organizationId: OrganizationId,
       name: String,
-      description: String?,
-      timeZone: ZoneId?,
-      projectId: ProjectId?,
+      description: String? = null,
+      timeZone: ZoneId? = null,
+      projectId: ProjectId? = null,
       boundary: MultiPolygon? = null,
       plantingSeasons: Collection<UpdatedPlantingSeasonModel> = emptyList(),
+      exclusion: MultiPolygon? = null,
   ): PlantingSiteModel {
     requirePermissions {
       createPlantingSite(organizationId)
@@ -249,12 +251,25 @@ class PlantingSiteStore(
 
     val now = clock.instant()
 
+    // The point that will be used as the origin for the grid of monitoring plots. We use the
+    // southwest corner of the envelope (bounding box) of the site boundary.
+    val gridOrigin =
+        if (boundary != null) {
+          GeometryFactory(PrecisionModel(), boundary.srid)
+              .createPoint(boundary.envelope.coordinates[0])
+        } else {
+          null
+        }
+
     val plantingSitesRow =
         PlantingSitesRow(
+            areaHa = boundary?.calculateAreaHectares(),
             boundary = boundary,
             createdBy = currentUser().userId,
             createdTime = now,
             description = description,
+            exclusion = exclusion,
+            gridOrigin = gridOrigin,
             modifiedBy = currentUser().userId,
             modifiedTime = now,
             name = name,
@@ -309,7 +324,10 @@ class PlantingSiteStore(
             .set(TIME_ZONE, edited.timeZone)
             .apply {
               // Boundaries can only be updated on simple planting sites.
-              if (initial.plantingZones.isEmpty()) set(BOUNDARY, edited.boundary)
+              if (initial.plantingZones.isEmpty()) {
+                set(AREA_HA, edited.boundary?.calculateAreaHectares())
+                set(BOUNDARY, edited.boundary)
+              }
             }
             .where(ID.eq(plantingSiteId))
             .execute()

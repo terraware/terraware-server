@@ -1,8 +1,11 @@
 package com.terraformation.backend.util
 
+import com.terraformation.backend.db.SRID
+import com.terraformation.backend.tracking.model.HECTARES_SCALE
 import freemarker.template.Template
 import java.io.StringWriter
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.net.URI
 import java.text.Normalizer
 import java.time.Instant
@@ -10,11 +13,18 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import org.geotools.api.referencing.FactoryException
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem
+import org.geotools.geometry.jts.JTS
+import org.geotools.referencing.CRS
+import org.geotools.referencing.crs.DefaultGeographicCRS
+import org.geotools.referencing.operation.projection.TransverseMercator
 import org.jooq.Field
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
 import org.locationtech.jts.geom.util.GeometryFixer
@@ -147,4 +157,38 @@ fun Geometry.fixIfNeeded(): Geometry {
   } else {
     GeometryFixer(this).result
   }
+}
+
+/**
+ * Calculates the approximate area of a geometry in hectares. If this feature isn't already in a UTM
+ * coordinate system, converts it to the appropriate one first.
+ *
+ * @throws FactoryException The geometry couldn't be converted to UTM.
+ */
+fun Geometry.calculateAreaHectares(originalCrs: CoordinateReferenceSystem? = null): BigDecimal {
+  val crs = originalCrs ?: CRS.decode("EPSG:$srid", true)
+
+  // Transform to UTM if it isn't already.
+  val utmGeometry =
+      if (CRS.getProjectedCRS(crs) is TransverseMercator) {
+        this
+      } else {
+        // To use the "look up the right UTM for a location" feature of GeoTools, we need to
+        // know the location in WGS84 (EPSG:4326) longitude and latitude; transform the feature's
+        // centroid coordinates to WGS84.
+        val wgs84Centroid =
+            if (CRS.lookupEpsgCode(crs, false) == SRID.LONG_LAT) {
+              centroid
+            } else {
+              val wgs84Transform = CRS.findMathTransform(crs, DefaultGeographicCRS.WGS84)
+              JTS.transform(centroid, wgs84Transform) as Point
+            }
+
+        val utmCrs = CRS.decode("AUTO2:42001,${wgs84Centroid.x},${wgs84Centroid.y}")
+
+        JTS.transform(this, CRS.findMathTransform(crs, utmCrs))
+      }
+
+  return BigDecimal(utmGeometry.area / SQUARE_METERS_PER_HECTARE)
+      .setScale(HECTARES_SCALE, RoundingMode.HALF_EVEN)
 }

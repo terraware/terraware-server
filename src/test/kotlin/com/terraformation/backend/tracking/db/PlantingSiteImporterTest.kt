@@ -34,7 +34,6 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
     PlantingSiteImporter(
         clock,
         dslContext,
-        plantingSitesDao,
         PlantingSiteStore(
             clock,
             dslContext,

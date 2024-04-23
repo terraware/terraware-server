@@ -4,10 +4,8 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.log.perClassLogger
@@ -15,17 +13,15 @@ import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
+import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
 import java.math.BigDecimal
-import java.math.RoundingMode
 import java.time.InstantSource
 import java.util.EnumSet
-import kotlin.math.roundToInt
 import org.jooq.DSLContext
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
-import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
 
@@ -33,7 +29,6 @@ import org.locationtech.jts.geom.PrecisionModel
 class PlantingSiteImporter(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
-    private val plantingSitesDao: PlantingSitesDao,
     private val plantingSiteStore: PlantingSiteStore,
     private val plantingZonesDao: PlantingZonesDao,
     private val plantingSubzonesDao: PlantingSubzonesDao,
@@ -62,9 +57,6 @@ class PlantingSiteImporter(
      */
     const val OUTSIDE_BOUNDS_MIN_PERCENT = 0.01
 
-    /** Number of digits after the decimal point to retain in area (hectares) calculations. */
-    const val HECTARES_SCALE = 1
-
     // Default values of the three parameters that determine how many monitoring plots should be
     // required in each observation. The "Student's t" value is a constant based on an 80%
     // confidence level and should rarely need to change, but the other two will be adjusted by
@@ -80,7 +72,7 @@ class PlantingSiteImporter(
     val DEFAULT_TARGET_PLANTING_DENSITY = BigDecimal(1500)
 
     /** The maximum size of the envelope (bounding box) of a site. */
-    const val MAX_SITE_ENVELOPE_AREA_HA = 20000.0
+    val MAX_SITE_ENVELOPE_AREA_HA = BigDecimal(20000)
 
     private val log = perClassLogger()
   }
@@ -159,8 +151,7 @@ class PlantingSiteImporter(
     if (siteAreaHa > MAX_SITE_ENVELOPE_AREA_HA) {
       problems.add(
           "Site must be contained within an envelope (rectangular area) of no more than " +
-              "${MAX_SITE_ENVELOPE_AREA_HA.roundToInt()} hectares; actual envelope area was " +
-              "${siteAreaHa.roundToInt()} hectares.")
+              "$MAX_SITE_ENVELOPE_AREA_HA hectares; actual envelope area was $siteAreaHa hectares.")
       throw PlantingSiteUploadProblemsException(problems)
     }
 
@@ -176,23 +167,16 @@ class PlantingSiteImporter(
     val userId = currentUser().userId
 
     return dslContext.transactionResult { _ ->
-      val sitesRow =
-          PlantingSitesRow(
-              areaHa = scale(siteFeature.calculateAreaHectares()),
-              boundary = siteFeature.geometry,
-              createdBy = userId,
-              createdTime = now,
-              description = description,
-              exclusion = exclusion,
-              gridOrigin = getGridOrigin(siteFeature),
-              modifiedBy = userId,
-              modifiedTime = now,
-              name = name,
-              organizationId = organizationId,
-          )
-
-      plantingSitesDao.insert(sitesRow)
-      val siteId = sitesRow.id!!
+      val siteId =
+          plantingSiteStore
+              .createPlantingSite(
+                  boundary = siteFeature.geometry.toMultiPolygon(),
+                  description = description,
+                  exclusion = exclusion,
+                  name = name,
+                  organizationId = organizationId,
+              )
+              .id
 
       zonesByName.forEach { (zoneName, zoneFeature) ->
         val targetPlantingDensity =
@@ -208,7 +192,7 @@ class PlantingSiteImporter(
 
         val zonesRow =
             PlantingZonesRow(
-                areaHa = scale(zoneFeature.calculateAreaHectares()),
+                areaHa = zoneFeature.calculateAreaHectares(),
                 boundary = zoneFeature.geometry,
                 createdBy = userId,
                 createdTime = now,
@@ -234,7 +218,7 @@ class PlantingSiteImporter(
 
             val plantingSubzonesRow =
                 PlantingSubzonesRow(
-                    areaHa = scale(subzoneFeature.calculateAreaHectares()),
+                    areaHa = subzoneFeature.calculateAreaHectares(),
                     boundary = subzoneFeature.geometry,
                     createdBy = userId,
                     createdTime = now,
@@ -321,7 +305,7 @@ class PlantingSiteImporter(
                     if (ValidationOption.SiteIsMultiPolygon in validationOptions) {
                       problems += "Planting site geometry must be a MultiPolygon, not a Polygon"
                     }
-                    geometryFactory(geometry).createMultiPolygon(arrayOf(geometry))
+                    geometry.toMultiPolygon()
                   }
                   else -> {
                     throw PlantingSiteUploadProblemsException(
@@ -334,17 +318,6 @@ class PlantingSiteImporter(
       ShapefileFeature(
           geometry, siteFile.features[0].properties, siteFile.features[0].coordinateReferenceSystem)
     }
-  }
-
-  /**
-   * Returns the point that will be used as the origin for the grid of monitoring plots. We use the
-   * southwest corner of the envelope (bounding box) of the site boundary.
-   */
-  private fun getGridOrigin(siteFeature: ShapefileFeature): Point {
-    // Envelope always starts with the minimum X and Y coordinates.
-    val southwestCorner = siteFeature.geometry.envelope.coordinates[0]
-
-    return geometryFactory(siteFeature).createPoint(southwestCorner)
   }
 
   /**
@@ -583,10 +556,6 @@ class PlantingSiteImporter(
     ZonesHaveTargetDensity("Zones must have target planting densities"),
   }
 
-  private fun scale(value: Double) =
-      BigDecimal(value).setScale(HECTARES_SCALE, RoundingMode.HALF_EVEN)
-
-  private fun geometryFactory(geometry: Geometry) = GeometryFactory(PrecisionModel(), geometry.srid)
-
-  private fun geometryFactory(feature: ShapefileFeature) = geometryFactory(feature.geometry)
+  private fun geometryFactory(feature: ShapefileFeature) =
+      GeometryFactory(PrecisionModel(), feature.geometry.srid)
 }

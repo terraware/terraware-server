@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.SRID
+import java.math.BigDecimal
 import org.geotools.referencing.CRS
 import org.geotools.referencing.crs.DefaultGeographicCRS
 import org.junit.jupiter.api.Assertions.*
@@ -29,7 +30,7 @@ class ShapefileFeatureTest {
                           CoordinateXY(373929.1743, 662471.6669)))))
       val feature = ShapefileFeature(geometry, emptyMap(), CRS.decode("EPSG:$srid"))
 
-      assertEquals(101.8, feature.calculateAreaHectares(), 0.05)
+      assertEquals(BigDecimal("101.8"), feature.calculateAreaHectares())
     }
 
     @Test
@@ -47,7 +48,7 @@ class ShapefileFeatureTest {
                           CoordinateXY(-76.13567116641384, 5.989357251936355)))))
       val feature = ShapefileFeature(geometry, emptyMap(), DefaultGeographicCRS.WGS84)
 
-      assertEquals(101.8, feature.calculateAreaHectares(), 0.05)
+      assertEquals(BigDecimal("101.8"), feature.calculateAreaHectares())
     }
 
     @Test
@@ -66,7 +67,7 @@ class ShapefileFeatureTest {
       val feature =
           ShapefileFeature(geometry, emptyMap(), CRS.decode("EPSG:${SRID.SPHERICAL_MERCATOR}"))
 
-      assertEquals(101.8, feature.calculateAreaHectares(), 0.05)
+      assertEquals(BigDecimal("101.8"), feature.calculateAreaHectares())
     }
   }
 }
