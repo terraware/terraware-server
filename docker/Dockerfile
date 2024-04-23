@@ -1,4 +1,4 @@
-FROM amazoncorretto:21.0.2
+FROM amazoncorretto:21.0.3
 
 ARG USER_ID=1001
 
