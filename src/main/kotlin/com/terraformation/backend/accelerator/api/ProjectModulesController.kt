@@ -39,27 +39,30 @@ class ProjectModulesController(
 }
 
 data class ProjectModuleEventSession(
-    val id: EventId,
-    val startTime: Instant?,
     val endTime: Instant?,
+    val id: EventId,
     val meetingUrl: URI?,
     val recordingUrl: URI?,
     val slidesUrl: URI?,
+    val startTime: Instant?,
+    val type: EventType,
 ) {
   constructor(
-      model: EventModel
+      model: EventModel,
+      type: EventType,
   ) : this(
-      id = model.id,
-      startTime = model.startTime,
       endTime = model.endTime,
+      id = model.id,
       meetingUrl = model.meetingUrl,
       recordingUrl = model.recordingUrl,
       slidesUrl = model.slidesUrl,
+      startTime = model.startTime,
+      type = type,
   )
 }
 
 data class ProjectModuleEvent(
-    val eventDescription: String,
+    val description: String,
     val sessions: List<ProjectModuleEventSession>,
 )
 
@@ -71,7 +74,7 @@ data class ProjectModule(
     val additionalResources: String?,
     val overview: String?,
     val preparationMaterials: String?,
-    val events: Map<EventType, ProjectModuleEvent>,
+    val events: List<ProjectModuleEvent>,
 ) {
   constructor(
       model: ModuleModel
@@ -84,11 +87,12 @@ data class ProjectModule(
       overview = model.overview,
       preparationMaterials = model.preparationMaterials,
       events =
-          model.eventDescriptions.mapValues {
+          model.eventDescriptions.map { (eventType, description) ->
             ProjectModuleEvent(
-                it.value,
-                model.eventSessions[it.key]?.map { event -> ProjectModuleEventSession(event) }
-                    ?: emptyList(),
+                description,
+                model.eventSessions[eventType]?.map { event ->
+                  ProjectModuleEventSession(event, eventType)
+                } ?: emptyList(),
             )
           })
 }
