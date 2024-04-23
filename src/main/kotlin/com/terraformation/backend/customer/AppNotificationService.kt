@@ -2,6 +2,7 @@ package com.terraformation.backend.customer
 
 import com.terraformation.backend.accelerator.ModuleEventNotifier
 import com.terraformation.backend.accelerator.db.ModuleEventStore
+import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -60,6 +61,7 @@ class AppNotificationService(
     private val dslContext: DSLContext,
     private val facilityStore: FacilityStore,
     private val moduleEventStore: ModuleEventStore,
+    private val moduleStore: ModuleStore,
     private val notificationStore: NotificationStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
@@ -345,18 +347,19 @@ class AppNotificationService(
   @EventListener
   fun on(event: ModuleEventStartingEvent) {
     systemUser.run {
-      val moduleEvent = moduleEventStore.fetchOneById(event.eventId)
+      val moduleEvent = moduleEventStore.fetchEventById(event.eventId)
+      val module = moduleStore.fetchOneById(moduleEvent.moduleId)
       val renderMessage = {
         messages.moduleEventStartingNotification(
-            parentStore.getEventType(event.eventId)!!,
+            moduleEvent.eventType,
             ModuleEventNotifier.notificationLeadTime,
-            parentStore.getModuleName(event.eventId)!!)
+            module.name,
+        )
       }
       moduleEvent.projects!!.forEach {
         val organizationId = parentStore.getOrganizationId(it)!!
         val eventUrl =
-            webAppUrls.moduleEvent(
-                parentStore.getModuleId(event.eventId)!!, event.eventId, organizationId, it)
+            webAppUrls.moduleEvent(moduleEvent.moduleId, moduleEvent.id, organizationId, it)
         insertProjectNotifications(it, NotificationType.EventReminder, renderMessage, eventUrl)
       }
     }

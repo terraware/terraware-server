@@ -30,34 +30,32 @@ class ModuleEventStore(
     private val eventPublisher: ApplicationEventPublisher,
     private val eventsDao: EventsDao,
 ) {
-  private val eventProjectsHelper: ModuleEventProjectsHelper by lazy { ModuleEventProjectsHelper() }
+  fun fetchEventById(eventId: EventId): EventModel {
+    requirePermissions { readModuleEventParticipants() }
+    val projectsField = eventProjectsMultiset()
+    return with(EVENTS) {
+      dslContext.select(asterisk(), projectsField).from(this).where(ID.eq(eventId)).fetchOne {
+        EventModel.of(it, projectsField)
+      } ?: throw EventNotFoundException(eventId)
+    }
+  }
 
-  fun fetchOneById(eventId: EventId, projectId: ProjectId? = null): EventModel {
-    requirePermissions { readModuleEvent(eventId) }
-
-    val projectsField =
-        if (projectId == null) {
-          eventProjectsHelper.eventProjectsMultiset()
-        } else {
-          requirePermissions { readModuleEvent(eventId) }
-          null
-        }
-
-    val projectEventCondition =
-        projectId?.let {
-          EVENTS.ID.`in`(
-              DSL.select(EVENT_PROJECTS.EVENT_ID)
-                  .from(EVENT_PROJECTS)
-                  .where(EVENT_PROJECTS.PROJECT_ID.eq(it)))
-        }
+  fun fetchProjectEventById(eventId: EventId, projectId: ProjectId) {
+    requirePermissions {
+      readModuleEvent(eventId)
+      readProject(projectId)
+    }
 
     return with(EVENTS) {
       dslContext
-          .select(asterisk(), projectsField)
-          .from(this)
+          .selectFrom(this)
           .where(ID.eq(eventId))
-          .and(projectEventCondition)
-          .fetchOne { EventModel.of(it, projectsField) } ?: throw EventNotFoundException(eventId)
+          .and(
+              EVENTS.ID.`in`(
+                  DSL.select(EVENT_PROJECTS.EVENT_ID)
+                      .from(EVENT_PROJECTS)
+                      .where(EVENT_PROJECTS.PROJECT_ID.eq(projectId))))
+          .fetchOne { EventModel.of(it) } ?: throw EventNotFoundException(eventId)
     }
   }
 
@@ -104,7 +102,7 @@ class ModuleEventStore(
   fun updateEvent(eventId: EventId, updateFunc: (EventModel) -> EventModel) {
     requirePermissions { manageModuleEvents() }
 
-    val existing = fetchOneById(eventId)
+    val existing = fetchEventById(eventId)
     val updated = updateFunc(existing)
     val userId = currentUser().userId
     val now = clock.instant()
@@ -143,11 +141,13 @@ class ModuleEventStore(
         val toRemove = existing.projects.minus(overlap)
 
         with(EVENT_PROJECTS) {
-          dslContext
-              .deleteFrom(this)
-              .where(EVENT_ID.eq(eventId))
-              .and(PROJECT_ID.`in`(toRemove))
-              .execute()
+          if (toRemove.isNotEmpty()) {
+            dslContext
+                .deleteFrom(this)
+                .where(EVENT_ID.eq(eventId))
+                .and(PROJECT_ID.`in`(toRemove))
+                .execute()
+          }
 
           toAdd.forEach {
             dslContext.insertInto(this, EVENT_ID, PROJECT_ID).values(eventId, it).execute()

@@ -76,7 +76,7 @@ class ModuleEventNotifierTest : DatabaseTest(), RunsAsUser {
     val moduleEventId = insertEvent(revision = 1, startTime = startTime)
     val notificationEvent = ModuleEventScheduledEvent(moduleEventId, 1)
 
-    assertTrue(notifyTime.isAfter((clock.instant)))
+    assertTrue(notifyTime.isAfter((clock.instant())))
 
     notifier.on(notificationEvent)
     verify(exactly = 1) { scheduler.schedule<ModuleEventNotifier>(notifyTime, any()) }
@@ -91,7 +91,7 @@ class ModuleEventNotifierTest : DatabaseTest(), RunsAsUser {
     val moduleEventId = insertEvent(revision = 1, startTime = startTime)
     val notificationEvent = ModuleEventScheduledEvent(moduleEventId, 1)
 
-    assertTrue(notifyTime.isBefore((clock.instant)))
+    assertTrue(notifyTime.isBefore((clock.instant())))
 
     notifier.on(notificationEvent)
     verify(exactly = 0) { scheduler.schedule<ModuleEventNotifier>(notifyTime, any()) }

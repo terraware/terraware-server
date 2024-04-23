@@ -5,6 +5,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ModuleEventStore
+import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -103,6 +104,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var deviceStore: DeviceStore
   private lateinit var facilityStore: FacilityStore
   private lateinit var moduleEventStore: ModuleEventStore
+  private lateinit var moduleStore: ModuleStore
   private lateinit var notificationStore: NotificationStore
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
@@ -147,6 +149,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             organizationsDao,
             subLocationsDao)
     moduleEventStore = ModuleEventStore(clock, dslContext, publisher, eventsDao)
+    moduleStore = ModuleStore(dslContext)
     notificationStore = NotificationStore(dslContext, clock)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
     participantStore = ParticipantStore(clock, dslContext, publisher, participantsDao)
@@ -184,6 +187,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             dslContext,
             facilityStore,
             moduleEventStore,
+            moduleStore,
             notificationStore,
             organizationStore,
             parentStore,

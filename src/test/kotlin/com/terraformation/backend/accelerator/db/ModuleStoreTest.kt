@@ -5,10 +5,12 @@ import com.terraformation.backend.accelerator.model.CohortModuleModel
 import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.ModuleNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.EventType
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -89,6 +91,146 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<DataIntegrityViolationException> {
         insertEvent(startTime = Instant.ofEpochSecond(500), endTime = Instant.ofEpochSecond(400))
       }
+    }
+  }
+
+  @Nested
+  inner class FetchOneById {
+    @Test
+    fun `returns one module with all cohorts`() {
+      val otherCohortId = insertCohort()
+      val otherParticipantId = insertParticipant(cohortId = otherCohortId)
+      val otherProjectId = insertProject(participantId = otherParticipantId)
+
+      val moduleId =
+          insertModule(
+              additionalResources = "<b> Additional Resources </b>",
+              liveSessionDescription = "Live session lectures",
+              name = "TestModule",
+              oneOnOneSessionDescription = "1:1 meetings",
+              overview = "<h> Overview </h>",
+              preparationMaterials = "<i> Preps </i>",
+              phase = CohortPhase.Phase1FeasibilityStudy,
+              workshopDescription = "Workshop ideas",
+          )
+
+      insertCohortModule(cohortId, moduleId, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 31))
+      insertCohortModule(
+          otherCohortId, moduleId, LocalDate.of(2024, 2, 1), LocalDate.of(2024, 2, 28))
+
+      assertEquals(
+          ModuleModel(
+              id = moduleId,
+              name = "TestModule",
+              phase = CohortPhase.Phase1FeasibilityStudy,
+              additionalResources = "<b> Additional Resources </b>",
+              cohorts =
+                  listOf(
+                      CohortModuleModel(
+                          cohortId = cohortId,
+                          startDate = LocalDate.of(2024, 1, 1),
+                          endDate = LocalDate.of(2024, 1, 31),
+                          projects = setOf(projectId),
+                      ),
+                      CohortModuleModel(
+                          cohortId = otherCohortId,
+                          startDate = LocalDate.of(2024, 2, 1),
+                          endDate = LocalDate.of(2024, 2, 28),
+                          projects = setOf(otherProjectId),
+                      )),
+              eventDescriptions =
+                  mapOf(
+                      EventType.LiveSession to "Live session lectures",
+                      EventType.OneOnOneSession to "1:1 meetings",
+                      EventType.Workshop to "Workshop ideas",
+                  ),
+              eventSessions = emptyMap(),
+              overview = "<h> Overview </h>",
+              preparationMaterials = "<i> Preps </i>",
+          ),
+          store.fetchOneById(moduleId))
+    }
+
+    @Test
+    fun `throws exception if no permission to manage modules`() {
+      every { user.canManageModules() } returns false
+      assertThrows<AccessDeniedException> { store.fetchOneById(ModuleId(-1)) }
+    }
+
+    @Test
+    fun `throws exception if no module found`() {
+      assertThrows<ModuleNotFoundException> { store.fetchOneById(ModuleId(-1)) }
+    }
+  }
+
+  @Nested
+  inner class FetchOneByIdForProject {
+    @Test
+    fun `returns one module with project cohort`() {
+      val moduleId =
+          insertModule(
+              additionalResources = "<b> Additional Resources </b>",
+              liveSessionDescription = "Live session lectures",
+              name = "TestModule",
+              oneOnOneSessionDescription = "1:1 meetings",
+              overview = "<h> Overview </h>",
+              preparationMaterials = "<i> Preps </i>",
+              phase = CohortPhase.Phase1FeasibilityStudy,
+              workshopDescription = "Workshop ideas",
+          )
+
+      insertCohortModule(cohortId, moduleId, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 31))
+
+      assertEquals(
+          ModuleModel(
+              id = moduleId,
+              name = "TestModule",
+              phase = CohortPhase.Phase1FeasibilityStudy,
+              additionalResources = "<b> Additional Resources </b>",
+              cohorts =
+                  listOf(
+                      CohortModuleModel(
+                          cohortId = cohortId,
+                          startDate = LocalDate.of(2024, 1, 1),
+                          endDate = LocalDate.of(2024, 1, 31),
+                          projects = null,
+                      )),
+              eventDescriptions =
+                  mapOf(
+                      EventType.LiveSession to "Live session lectures",
+                      EventType.OneOnOneSession to "1:1 meetings",
+                      EventType.Workshop to "Workshop ideas",
+                  ),
+              eventSessions = emptyMap(),
+              overview = "<h> Overview </h>",
+              preparationMaterials = "<i> Preps </i>",
+          ),
+          store.fetchOneByIdForProject(moduleId, projectId))
+    }
+
+    @Test
+    fun `throws exception if no permission to read project modules`() {
+      val moduleId = insertModule()
+      insertCohortModule(cohortId, moduleId)
+
+      every { user.canReadProjectModules(any()) } returns false
+      assertThrows<AccessDeniedException> { store.fetchOneByIdForProject(moduleId, projectId) }
+
+      every { user.canReadProject(any()) } returns false
+      assertThrows<ProjectNotFoundException> { store.fetchOneByIdForProject(moduleId, projectId) }
+    }
+
+    @Test
+    fun `throws exception if no module found`() {
+      assertThrows<ModuleNotFoundException> {
+        store.fetchOneByIdForProject(ModuleId(-1), projectId)
+      }
+    }
+
+    @Test
+    fun `throws exception if project not associated with module found`() {
+      val moduleId = insertModule()
+      assertThrows<ModuleNotFoundException> { store.fetchOneByIdForProject(moduleId, projectId) }
     }
   }
 
@@ -293,7 +435,9 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                       EventModel(
                           id = eventId,
                           endTime = Instant.ofEpochSecond(4000),
+                          eventType = EventType.Workshop,
                           meetingUrl = URI("https://example.com/meeting"),
+                          moduleId = moduleId,
                           projects = setOf(projectId),
                           recordingUrl = URI("https://example.com/recording"),
                           revision = 1,
@@ -390,7 +534,9 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                       EventModel(
                           id = eventId,
                           endTime = Instant.ofEpochSecond(4000),
+                          eventType = EventType.Workshop,
                           meetingUrl = URI("https://example.com/meeting"),
+                          moduleId = moduleId,
                           projects = null,
                           recordingUrl = URI("https://example.com/recording"),
                           revision = 1,

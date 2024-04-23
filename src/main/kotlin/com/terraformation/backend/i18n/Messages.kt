@@ -154,7 +154,11 @@ class Messages {
                   "notification.module.eventStarting.title",
                   eventType.getDisplayName(currentLocale()),
                   leadTime.toMinutes().toString()),
-          body = getMessage("notification.accession.dryingEnd.app.title", moduleName))
+          body =
+              getMessage(
+                  "notification.module.eventStarting.body",
+                  eventType.getDisplayName(currentLocale()),
+                  moduleName))
 
   fun nurserySeedlingBatchReadyNotification(
       batchNumber: String,

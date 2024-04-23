@@ -5,12 +5,8 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.accelerator.EventId
-import com.terraformation.backend.db.accelerator.EventType
-import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.SubmissionId
-import com.terraformation.backend.db.accelerator.tables.references.EVENTS
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
-import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
@@ -82,9 +78,6 @@ import org.jooq.impl.DSL
  */
 @Named
 class ParentStore(private val dslContext: DSLContext) {
-  fun getEventType(eventId: EventId): EventType? =
-      fetchFieldById(eventId, EVENTS.ID, EVENTS.EVENT_TYPE_ID)
-
   fun getFacilityId(accessionId: AccessionId): FacilityId? =
       fetchFieldById(accessionId, ACCESSIONS.ID, ACCESSIONS.FACILITY_ID)
 
@@ -108,15 +101,6 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getFacilityId(withdrawalId: WithdrawalId): FacilityId? =
       fetchFieldById(withdrawalId, WITHDRAWALS.ID, WITHDRAWALS.FACILITY_ID)
-
-  fun getModuleId(eventId: EventId): ModuleId? =
-      fetchFieldById(eventId, EVENTS.ID, EVENTS.MODULE_ID)
-
-  fun getModuleName(eventId: EventId): String? =
-      fetchFieldById(getModuleId(eventId), MODULES.ID, MODULES.NAME)
-
-  fun getModuleName(moduleId: ModuleId): String? =
-      fetchFieldById(moduleId, MODULES.ID, MODULES.NAME)
 
   fun getOrganizationId(batchId: BatchId): OrganizationId? =
       fetchFieldById(batchId, BATCHES.ID, BATCHES.ORGANIZATION_ID)

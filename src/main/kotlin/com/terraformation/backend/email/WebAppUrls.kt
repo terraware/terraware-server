@@ -155,10 +155,9 @@ class WebAppUrls(
       organizationId: OrganizationId,
       projectId: ProjectId
   ): URI {
-    return UriBuilder.fromUri(config.webAppUrl)
-        .path("/modules/$moduleId/events/$eventId")
+    return UriBuilder.fromPath("/modules/$moduleId/events/$eventId")
         .queryParam("organizationId", organizationId)
-        .queryParam("organizationId", projectId)
+        .queryParam("projectId", projectId)
         .build()
   }
 

@@ -7,6 +7,7 @@ import com.terraformation.backend.accelerator.event.ModuleEventScheduledEvent
 import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EventNotFoundException
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventType
@@ -41,7 +42,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
     insertUser()
     insertOrganization()
     cohortId = insertCohort()
-    insertParticipant(cohortId = inserted.cohortId)
+    insertParticipant(cohortId)
     moduleId = insertModule()
     insertCohortModule(cohortId, moduleId)
 
@@ -50,38 +51,31 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadModuleEvent(any()) } returns true
     every { user.canReadModuleEventParticipants() } returns true
     every { user.canReadProjectModules(any()) } returns true
+    every { user.canReadProject(any()) } returns true
   }
 
   @Nested
-  inner class FetchOneById {
+  inner class FetchEventById {
     @Test
     fun `throws exception if event does not exist`() {
-      assertThrows<EventNotFoundException> { store.fetchOneById(EventId(-1)) }
-    }
-
-    @Test
-    fun `throws exception if event exists but project is not a participant`() {
-      val projectId = insertProject(participantId = inserted.participantId)
-      val eventId = insertEvent()
-      assertThrows<EventNotFoundException> { store.fetchOneById(eventId, projectId) }
+      assertThrows<EventNotFoundException> { store.fetchEventById(EventId(-1)) }
     }
 
     @Test
     fun `throws exception no permission to view event or participants`() {
       every { user.canReadModuleEvent(any()) } returns false
-      val projectId = insertProject(participantId = inserted.participantId)
+      insertProject(participantId = inserted.participantId)
       val eventId = insertEvent()
-      assertThrows<EventNotFoundException> { store.fetchOneById(eventId) }
-      assertThrows<EventNotFoundException> { store.fetchOneById(eventId, projectId) }
+      assertThrows<EventNotFoundException> { store.fetchEventById(eventId) }
 
       every { user.canReadModuleEvent(any()) } returns true
       every { user.canReadModuleEventParticipants() } returns false
 
-      assertThrows<AccessDeniedException> { store.fetchOneById(eventId) }
+      assertThrows<AccessDeniedException> { store.fetchEventById(eventId) }
     }
 
     @Test
-    fun `returns event with participants if projectId is not provided`() {
+    fun `returns event with participants`() {
       clock.instant = Instant.EPOCH.plusSeconds(500)
       val startTime = clock.instant.plusSeconds(3600)
       val endTime = startTime.plusSeconds(3600)
@@ -101,6 +95,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           EventModel(
               id = workshop,
+              eventType = EventType.Workshop,
+              moduleId = moduleId,
               meetingUrl = URI("https://meeting.com"),
               slidesUrl = URI("https://slides.com"),
               recordingUrl = URI("https://recording.com"),
@@ -108,7 +104,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               startTime = startTime,
               endTime = endTime,
               projects = emptySet()),
-          store.fetchOneById(workshop))
+          store.fetchEventById(workshop))
 
       insertEventProject(workshop, project1)
       insertEventProject(workshop, project2)
@@ -116,6 +112,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           EventModel(
               id = workshop,
+              eventType = EventType.Workshop,
+              moduleId = moduleId,
               meetingUrl = URI("https://meeting.com"),
               slidesUrl = URI("https://slides.com"),
               recordingUrl = URI("https://recording.com"),
@@ -123,11 +121,21 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               startTime = startTime,
               endTime = endTime,
               projects = setOf(project1, project2)),
-          store.fetchOneById(workshop))
+          store.fetchEventById(workshop))
+    }
+  }
+
+  @Nested
+  inner class FetchProjectEventById {
+    @Test
+    fun `throws exception if event exists but project is not a participant`() {
+      val projectId = insertProject(participantId = inserted.participantId)
+      val eventId = insertEvent()
+      assertThrows<EventNotFoundException> { store.fetchProjectEventById(eventId, projectId) }
     }
 
     @Test
-    fun `returns event without participants if projectId is provided`() {
+    fun `returns event without participants`() {
       clock.instant = Instant.EPOCH.plusSeconds(500)
       val startTime = clock.instant.plusSeconds(3600)
       val endTime = startTime.plusSeconds(3600)
@@ -150,6 +158,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           EventModel(
               id = workshop,
+              eventType = EventType.Workshop,
+              moduleId = moduleId,
               meetingUrl = URI("https://meeting.com"),
               slidesUrl = URI("https://slides.com"),
               recordingUrl = URI("https://recording.com"),
@@ -157,7 +167,23 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               startTime = startTime,
               endTime = endTime,
           ),
-          store.fetchOneById(workshop, project1))
+          store.fetchProjectEventById(workshop, project1))
+    }
+
+    @Test
+    fun `throws exception no permission to view event or participants`() {
+      every { user.canReadModuleEvent(any()) } returns false
+      val projectId = insertProject(participantId = inserted.participantId)
+      val eventId = insertEvent()
+      assertThrows<EventNotFoundException> { store.fetchProjectEventById(eventId, projectId) }
+
+      every { user.canReadModuleEvent(any()) } returns true
+      every { user.canReadProject(any()) } returns false
+      assertThrows<ProjectNotFoundException> { store.fetchProjectEventById(eventId, projectId) }
+
+      every { user.canReadProject(any()) } returns true
+      every { user.canReadModuleEventParticipants() } returns false
+      assertThrows<AccessDeniedException> { store.fetchProjectEventById(eventId, projectId) }
     }
   }
 
