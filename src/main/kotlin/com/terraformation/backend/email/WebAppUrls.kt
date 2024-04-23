@@ -155,7 +155,7 @@ class WebAppUrls(
       organizationId: OrganizationId,
       projectId: ProjectId
   ): URI {
-    return UriBuilder.fromPath("/projects/$projectId/modules/$moduleId/events/$eventId")
+    return UriBuilder.fromPath("/projects/$projectId/modules/$moduleId/sessions/$eventId")
         .queryParam("organizationId", organizationId)
         .build()
   }
