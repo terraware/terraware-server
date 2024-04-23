@@ -286,16 +286,23 @@ val ID_WRAPPERS =
                 IdWrapper("PlantingId", listOf("plantings\\.id")),
                 IdWrapper("PlantingSeasonId", listOf("planting_seasons\\.id")),
                 IdWrapper(
+                    "PlantingSiteHistoryId",
+                    listOf("planting_site_histories\\.id", ".*\\.planting_site_history_id")),
+                IdWrapper(
                     "PlantingSiteId",
                     listOf(
                         "planting_sites\\.id",
                         "planting_site_summaries\\.id",
                         ".*\\.planting_site_id")),
                 IdWrapper("PlantingSiteNotificationId", listOf("planting_site_notifications\\.id")),
-                IdWrapper("PlantingZoneId", listOf("planting_zones\\.id", ".*\\.planting_zone_id")),
+                IdWrapper("PlantingSubzoneHistoryId", listOf("planting_subzone_histories\\.id")),
                 IdWrapper(
                     "PlantingSubzoneId",
                     listOf("planting_subzones\\.id", ".*\\.planting_subzone_id")),
+                IdWrapper(
+                    "PlantingZoneHistoryId",
+                    listOf("planting_zone_histories\\.id", ".*\\.planting_zone_history_id")),
+                IdWrapper("PlantingZoneId", listOf("planting_zones\\.id", ".*\\.planting_zone_id")),
                 IdWrapper("RecordedPlantId", listOf("recorded_plants\\.id")),
             ),
     )

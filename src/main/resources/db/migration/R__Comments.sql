@@ -393,6 +393,9 @@ COMMENT ON COLUMN tracking.planting_seasons.is_active IS 'True if the planting s
 COMMENT ON COLUMN tracking.planting_seasons.start_date IS 'What day the planting season starts.';
 COMMENT ON COLUMN tracking.planting_seasons.start_time IS 'When the planting season will start. This is midnight on `start_date` in the planting site''s time zone.';
 
+COMMENT ON TABLE tracking.planting_site_histories IS 'Versions of planting site maps over time. Each time a planting site map changes, the new map is inserted into this table and its child tables.';
+COMMENT ON COLUMN tracking.planting_site_histories.created_time IS 'When the site map was created or updated. You can determine which map was active for a site at a particular time by looking for the maximum `created_time` less than or equal to the time in question.';
+
 COMMENT ON TABLE tracking.planting_site_notifications IS 'Tracks which notifications have already been sent regarding planting sites.';
 COMMENT ON COLUMN tracking.planting_site_notifications.notification_number IS 'Number of notifications of this type that have been sent, including this one. 1 for initial notification, 2 for reminder, 3 for second reminder, etc.';
 
@@ -412,6 +415,10 @@ COMMENT ON COLUMN tracking.planting_sites.organization_id IS 'Which organization
 
 COMMENT ON TABLE tracking.planting_types IS '(Enum) Type of planting associated with a delivery. Different planting types distinguish reassignments from initial plantings.';
 
+COMMENT ON TABLE tracking.planting_subzone_histories IS 'Versions of planting subzone maps over time. Each time a planting site map changes, its subzones'' maps are inserted into this table.';
+
+COMMENT ON TABLE tracking.planting_subzone_populations IS 'Total number of plants of each species in each subzone.';
+
 COMMENT ON TABLE tracking.planting_subzones IS 'Regions within planting zones that are a convenient size for a planting operation. Typically <10Ha.';
 COMMENT ON COLUMN tracking.planting_subzones.boundary IS 'Boundary of the subzone. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.planting_subzones.created_by IS 'Which user created the subzone.';
@@ -422,7 +429,9 @@ COMMENT ON COLUMN tracking.planting_subzones.name IS 'Short name of this plantin
 COMMENT ON COLUMN tracking.planting_subzones.planting_site_id IS 'Which planting site this subzone is part of. This is the same as the planting site ID of this subzone''s planting zone, but is duplicated here so it can be used as the target of a foreign key constraint.';
 COMMENT ON COLUMN tracking.planting_subzones.planting_zone_id IS 'Which planting zone this subzone is part of.';
 
-COMMENT ON TABLE tracking.planting_subzone_populations IS 'Total number of plants of each species in each subzone.';
+COMMENT ON TABLE tracking.planting_zone_histories IS 'Versions of planting zone maps over time. Each time a planting site map changes, its zones'' maps are inserted into this table.';
+
+COMMENT ON TABLE tracking.planting_zone_populations IS 'Total number of plants of each species in each zone.';
 
 COMMENT ON TABLE tracking.planting_zones IS 'Regions within planting sites that have a consistent set of conditions such that survey results from any part of the zone can be extrapolated to the entire zone. Planting zones are subdivided into plots. Every planting zone has at least one plot.';
 COMMENT ON COLUMN tracking.planting_zones.boundary IS 'Boundary of the planting zone. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a planting zone has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
@@ -434,8 +443,6 @@ COMMENT ON COLUMN tracking.planting_zones.modified_time IS 'When the planting zo
 COMMENT ON COLUMN tracking.planting_zones.name IS 'Short name of this planting zone. This is often just a single letter. Must be unique within a planting site.';
 COMMENT ON COLUMN tracking.planting_zones.num_permanent_clusters IS 'Number of permanent clusters to assign to the next observation. This is typically derived from a statistical formula and from `extra_permanent_clusters`.';
 COMMENT ON COLUMN tracking.planting_zones.planting_site_id IS 'Which planting site this zone is part of.';
-
-COMMENT ON TABLE tracking.planting_zone_populations IS 'Total number of plants of each species in each zone.';
 
 COMMENT ON TABLE tracking.plantings IS 'Details about plants that were planted or reassigned as part of a delivery. There is one plantings row per species in a delivery.';
 COMMENT ON COLUMN tracking.plantings.created_by IS 'Which user created the planting.';
