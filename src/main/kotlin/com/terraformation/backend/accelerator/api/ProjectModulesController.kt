@@ -87,11 +87,11 @@ data class ProjectModule(
       overview = model.overview,
       preparationMaterials = model.preparationMaterials,
       events =
-          model.eventDescriptions.map {
+          model.eventDescriptions.map { (eventType, description) ->
             ProjectModuleEvent(
-                it.value,
-                model.eventSessions[it.key]?.map { event ->
-                  ProjectModuleEventSession(event, it.key)
+                description,
+                model.eventSessions[eventType]?.map { event ->
+                  ProjectModuleEventSession(event, eventType)
                 } ?: emptyList(),
             )
           })
