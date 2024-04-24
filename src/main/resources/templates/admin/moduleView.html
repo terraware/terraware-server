@@ -13,14 +13,11 @@
     <h2 th:text="|Module ${module.name}|">Module (name)</h2>
 
     <p>
-        Preview module content and schedule events.
+        Preview module content and schedule events. Event schedules are all in UTC. CMD or CRTL +
+        click to select multiple projects for adding/removing from events
     </p>
 
     <h3> Cohorts and Projects </h3>
-    <p>
-        To add modules to cohorts, visit the cohorts page.
-    </p>
-
     <div th:each="cohort : ${module.cohorts}">
         <h4 th:text="${cohortNames.get(cohort.cohortId)} + ' '
             + ${#temporals.format(cohort.startDate, 'yyyy/MM/dd')} + ' - '
