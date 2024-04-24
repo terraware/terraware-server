@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
+import com.terraformation.backend.accelerator.db.ModuleNotFoundException
 import com.terraformation.backend.accelerator.db.ParticipantNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionNotFoundException
@@ -12,7 +13,6 @@ import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.EventNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.InvalidRoleUpdateException
-import com.terraformation.backend.db.ModuleNotFoundException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException

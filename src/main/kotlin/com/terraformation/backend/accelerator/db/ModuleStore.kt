@@ -4,7 +4,6 @@ import com.terraformation.backend.accelerator.model.CohortModuleModel
 import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.ModuleNotFoundException
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS

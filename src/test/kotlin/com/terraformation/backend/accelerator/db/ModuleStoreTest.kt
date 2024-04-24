@@ -5,7 +5,6 @@ import com.terraformation.backend.accelerator.model.CohortModuleModel
 import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.ModuleNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase

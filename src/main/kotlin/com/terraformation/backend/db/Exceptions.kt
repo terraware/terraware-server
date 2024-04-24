@@ -1,7 +1,6 @@
 package com.terraformation.backend.db
 
 import com.terraformation.backend.db.accelerator.EventId
-import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
@@ -122,9 +121,6 @@ open class KeycloakRequestFailedException(
 
 /** Keycloak couldn't find a user that we expected to be able to find. */
 class KeycloakUserNotFoundException(message: String) : EntityNotFoundException(message)
-
-class ModuleNotFoundException(moduleId: ModuleId) :
-    EntityNotFoundException("Module $moduleId not found")
 
 /**
  * Thrown when the system detects that an operation is already in progress that prevents a requested

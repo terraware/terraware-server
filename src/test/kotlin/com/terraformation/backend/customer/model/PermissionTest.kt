@@ -761,6 +761,10 @@ internal class PermissionTest : DatabaseTest() {
         updatePlantingZone = true,
     )
 
+    permissions.expect(*moduleEventIds.forOrg1(), readModuleEvent = true)
+
+    permissions.expect(*moduleIds.forOrg1(), readModule = true)
+
     permissions.expect(
         *monitoringPlotIds.forOrg1(),
         readMonitoringPlot = true,
@@ -2946,6 +2950,8 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedDevices.toTypedArray())
       expect(*uncheckedDraftPlantingSites.toTypedArray())
       expect(*uncheckedFacilities.toTypedArray())
+      expect(*uncheckedModuleEvents.toTypedArray())
+      expect(*uncheckedModules.toTypedArray())
       expect(*uncheckedMonitoringPlots.toTypedArray())
       expect(*uncheckedObservations.toTypedArray())
       expect(*uncheckedOrgs.toTypedArray())
