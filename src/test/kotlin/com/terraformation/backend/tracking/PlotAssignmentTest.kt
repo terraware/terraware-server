@@ -53,7 +53,6 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     PlantingSiteImporter(
         clock,
         dslContext,
-        plantingSitesDao,
         plantingSiteStore,
         plantingZonesDao,
         plantingSubzonesDao,

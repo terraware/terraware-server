@@ -396,6 +396,38 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `calculates correct area and grid origin for new site with boundary`() {
+      val gridOrigin = point(1)
+      val boundary = Turtle(gridOrigin).makeMultiPolygon { square(150) }
+
+      val model =
+          store.createPlantingSite(
+              boundary = boundary,
+              name = "name",
+              organizationId = organizationId,
+          )
+
+      assertEquals(
+          listOf(
+              PlantingSitesRow(
+                  areaHa = BigDecimal("2.3"),
+                  boundary = boundary,
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  gridOrigin = gridOrigin,
+                  id = model.id,
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  name = "name",
+                  organizationId = organizationId,
+              )),
+          plantingSitesDao.findAll(),
+          "Planting sites")
+
+      assertEquals(emptyList<PlantingZonesRow>(), plantingZonesDao.findAll(), "Planting zones")
+    }
+
+    @Test
     fun `inserts initial planting seasons`() {
       clock.instant = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, timeZone).toInstant()
 
@@ -539,7 +571,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     fun `updates values`() {
       val initialModel =
           store.createPlantingSite(
-              boundary = multiPolygon(1),
+              boundary = Turtle(point(0)).makeMultiPolygon { square(100) },
               description = null,
               name = "initial name",
               organizationId = organizationId,
@@ -553,9 +585,11 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val now = createdTime.plusSeconds(1000)
       clock.instant = now
 
+      val newBoundary = Turtle(point(1)).makeMultiPolygon { square(200) }
+
       store.updatePlantingSite(initialModel.id, emptyList()) { model ->
         model.copy(
-            boundary = multiPolygon(2),
+            boundary = newBoundary,
             description = "new description",
             name = "new name",
             timeZone = newTimeZone,
@@ -565,7 +599,9 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               PlantingSitesRow(
-                  boundary = multiPolygon(2),
+                  areaHa = BigDecimal("4.0"),
+                  boundary = newBoundary,
+                  gridOrigin = initialModel.gridOrigin,
                   id = initialModel.id,
                   organizationId = organizationId,
                   name = "new name",
