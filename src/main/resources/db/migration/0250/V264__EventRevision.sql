@@ -1,0 +1,1 @@
+ALTER TABLE accelerator.events ADD COLUMN revision INTEGER NOT NULL DEFAULT 1;

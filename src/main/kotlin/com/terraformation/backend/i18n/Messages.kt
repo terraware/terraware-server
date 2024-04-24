@@ -1,6 +1,7 @@
 package com.terraformation.backend.i18n
 
 import com.terraformation.backend.db.LocalizableEnum
+import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
@@ -16,6 +17,7 @@ import com.terraformation.backend.util.equalsIgnoreScale
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.text.NumberFormat
+import java.time.Duration
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -140,6 +142,23 @@ class Messages {
       NotificationMessage(
           title = getMessage("notification.accession.dryingEnd.app.title"),
           body = getMessage("notification.accession.dryingEnd.app.body", accessionNumber))
+
+  fun moduleEventStartingNotification(
+      eventType: EventType,
+      leadTime: Duration,
+      moduleName: String,
+  ): NotificationMessage =
+      NotificationMessage(
+          title =
+              getMessage(
+                  "notification.module.eventStarting.title",
+                  eventType.getDisplayName(currentLocale()),
+                  leadTime.toMinutes().toString()),
+          body =
+              getMessage(
+                  "notification.module.eventStarting.body",
+                  eventType.getDisplayName(currentLocale()),
+                  moduleName))
 
   fun nurserySeedlingBatchReadyNotification(
       batchNumber: String,

@@ -3,6 +3,8 @@ package com.terraformation.backend.customer.model
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -197,6 +199,8 @@ interface TerrawareUser : Principal {
 
   fun canManageInternalTags(): Boolean
 
+  fun canManageModuleEvents(): Boolean
+
   fun canManageModules(): Boolean
 
   fun canManageNotifications(): Boolean
@@ -232,6 +236,14 @@ interface TerrawareUser : Principal {
   fun canReadGlobalRoles(): Boolean
 
   fun canReadInternalTags(): Boolean
+
+  fun canReadModule(moduleId: ModuleId): Boolean
+
+  fun canReadModuleDetails(moduleId: ModuleId): Boolean
+
+  fun canReadModuleEvent(eventId: EventId): Boolean
+
+  fun canReadModuleEventParticipants(): Boolean
 
   fun canReadMonitoringPlot(monitoringPlotId: MonitoringPlotId): Boolean
 
@@ -277,11 +289,11 @@ interface TerrawareUser : Principal {
 
   fun canReadSubmissionDocument(documentId: SubmissionDocumentId): Boolean
 
-  fun canReadUser(userId: UserId): Boolean
-
   fun canReadTimeseries(deviceId: DeviceId): Boolean
 
   fun canReadUpload(uploadId: UploadId): Boolean
+
+  fun canReadUser(userId: UserId): Boolean
 
   fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean
 

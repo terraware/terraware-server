@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.model.PermissionTest.PermissionsTrack
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
@@ -146,6 +147,7 @@ internal class PermissionTest : DatabaseTest() {
   private val observationIds = plantingSiteIds.map { ObservationId(it.value) }
 
   private val projectIds = listOf(1000, 1001, 3000, 4000).map { ProjectId(it.toLong()) }
+  private val moduleEventIds = listOf(1000, 1001, 3000, 4000).map { EventId(it.toLong()) }
   private val submissionDocumentIds = projectIds.map { SubmissionDocumentId(it.value) }
 
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
@@ -172,13 +174,12 @@ internal class PermissionTest : DatabaseTest() {
 
   private val uploadId = UploadId(1)
 
-  // For now, participant permissions are global, not per-participant, so we only need one ID.
-  private val participantId = ParticipantId(1)
-  private val cohortId = CohortId(1)
+  private val participantIds = listOf(1, 3, 4).map { ParticipantId(it.toLong()) }
+  private val cohortIds = listOf(1, 3, 4).map { CohortId(it.toLong()) }
   private val globalRoles = setOf(GlobalRole.SuperAdmin)
 
-  private val moduleId = ModuleId(1)
-  private val deliverableIds = listOf(DeliverableId(10))
+  private val moduleIds = listOf(1000, 1001, 3000, 4000).map { ModuleId(it.toLong()) }
+  private val deliverableIds = listOf(DeliverableId(1000))
   private val submissionIds = projectIds.map { SubmissionId(it.value) }
 
   private inline fun <reified T> List<T>.filterToArray(func: (T) -> Boolean): Array<T> =
@@ -337,20 +338,36 @@ internal class PermissionTest : DatabaseTest() {
       insertObservation(id = observationId, plantingSiteId = plantingSiteId)
     }
 
+    cohortIds.forEach { cohortId -> insertCohort(createdBy = userId, id = cohortId) }
+
+    participantIds.forEach { participantId ->
+      val cohortId = CohortId(participantId.value)
+      insertParticipant(createdBy = userId, id = participantId, cohortId = cohortId)
+    }
+
     projectIds.forEach { projectId ->
       val organizationId = OrganizationId(projectId.value / 1000)
+      val participantId = ParticipantId(projectId.value / 1000)
       insertProject(
           createdBy = userId,
           id = projectId,
           organizationId = organizationId,
+          participantId = participantId,
       )
     }
 
-    insertModule(
-        createdBy = userId,
-        id = moduleId,
-    )
+    moduleIds.forEach { moduleId ->
+      val cohortId = CohortId(moduleId.value / 1000)
+      insertModule(
+          createdBy = userId,
+          id = moduleId,
+      )
+
+      insertCohortModule(cohortId, moduleId)
+    }
+
     deliverableIds.forEach { deliverableId ->
+      val moduleId = ModuleId(deliverableId.value)
       insertDeliverable(
           createdBy = userId,
           id = deliverableId,
@@ -365,6 +382,16 @@ internal class PermissionTest : DatabaseTest() {
             projectId = ProjectId(submissionId.value),
         )
       }
+    }
+
+    moduleEventIds.forEach { eventId ->
+      val moduleId = ModuleId(eventId.value)
+      insertEvent(
+          createdBy = userId,
+          id = eventId,
+          moduleId = moduleId,
+      )
+      insertEventProject(eventId, ProjectId(eventId.value))
     }
   }
 
@@ -520,6 +547,16 @@ internal class PermissionTest : DatabaseTest() {
         deleteReport = true,
         readReport = true,
         updateReport = true,
+    )
+
+    permissions.expect(
+        *moduleEventIds.forOrg1(),
+        readModuleEvent = true,
+    )
+
+    permissions.expect(
+        *moduleIds.forOrg1(),
+        readModule = true,
     )
 
     permissions.expect(
@@ -724,6 +761,10 @@ internal class PermissionTest : DatabaseTest() {
         updatePlantingZone = true,
     )
 
+    permissions.expect(*moduleEventIds.forOrg1(), readModuleEvent = true)
+
+    permissions.expect(*moduleIds.forOrg1(), readModule = true)
+
     permissions.expect(
         *monitoringPlotIds.forOrg1(),
         readMonitoringPlot = true,
@@ -904,6 +945,16 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *moduleEventIds.forOrg1(),
+        readModuleEvent = true,
+    )
+
+    permissions.expect(
+        *moduleIds.forOrg1(),
+        readModule = true,
+    )
+
+    permissions.expect(
         *observationIds.forOrg1(),
         readObservation = true,
         updateObservation = true,
@@ -1016,6 +1067,16 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingZoneIds.forOrg1(),
         readPlantingZone = true,
+    )
+
+    permissions.expect(
+        *moduleEventIds.forOrg1(),
+        readModuleEvent = true,
+    )
+
+    permissions.expect(
+        *moduleIds.forOrg1(),
+        readModule = true,
     )
 
     permissions.expect(
@@ -1235,6 +1296,7 @@ internal class PermissionTest : DatabaseTest() {
         readAllDeliverables = true,
         readCohort = true,
         readGlobalRoles = true,
+        readModuleEventParticipants = true,
         readInternalTags = true,
         readParticipant = true,
         setTestClock = true,
@@ -1296,6 +1358,17 @@ internal class PermissionTest : DatabaseTest() {
         *reportIds.toTypedArray(),
         readReport = true,
         updateReport = true,
+    )
+
+    permissions.expect(
+        *moduleEventIds.toTypedArray(),
+        readModuleEvent = true,
+    )
+
+    permissions.expect(
+        *moduleIds.toTypedArray(),
+        readModule = true,
+        readModuleDetails = true,
     )
 
     permissions.expect(
@@ -1457,6 +1530,17 @@ internal class PermissionTest : DatabaseTest() {
         updateSubmissionStatus = true,
     )
 
+    permissions.expect(
+        *moduleEventIds.toTypedArray(),
+        readModuleEvent = true,
+    )
+
+    permissions.expect(
+        *moduleIds.toTypedArray(),
+        readModule = true,
+        readModuleDetails = true,
+    )
+
     // Can read all submissions even those outside of this org
     permissions.expect(
         *submissionIds.toTypedArray(),
@@ -1489,12 +1573,14 @@ internal class PermissionTest : DatabaseTest() {
         importGlobalSpeciesData = true,
         manageDeliverables = true,
         manageInternalTags = true,
+        manageModuleEvents = true,
         manageModules = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
         readGlobalRoles = true,
         readInternalTags = true,
+        readModuleEventParticipants = true,
         readParticipant = true,
         regenerateAllDeviceManagerTokens = true,
         setTestClock = true,
@@ -1608,6 +1694,17 @@ internal class PermissionTest : DatabaseTest() {
         updateSubmissionStatus = true,
     )
 
+    permissions.expect(
+        *moduleEventIds.toTypedArray(),
+        readModuleEvent = true,
+    )
+
+    permissions.expect(
+        *moduleIds.toTypedArray(),
+        readModule = true,
+        readModuleDetails = true,
+    )
+
     // Can read all submissions even those outside of this org
     permissions.expect(
         *submissionIds.toTypedArray(),
@@ -1640,12 +1737,14 @@ internal class PermissionTest : DatabaseTest() {
         importGlobalSpeciesData = false,
         manageDeliverables = true,
         manageInternalTags = false,
+        manageModuleEvents = true,
         manageModules = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
         readGlobalRoles = true,
         readInternalTags = true,
+        readModuleEventParticipants = true,
         readParticipant = true,
         regenerateAllDeviceManagerTokens = false,
         setTestClock = false,
@@ -1751,6 +1850,17 @@ internal class PermissionTest : DatabaseTest() {
         updateSubmissionStatus = true,
     )
 
+    permissions.expect(
+        *moduleEventIds.toTypedArray(),
+        readModuleEvent = true,
+    )
+
+    permissions.expect(
+        *moduleIds.toTypedArray(),
+        readModule = true,
+        readModuleDetails = true,
+    )
+
     // Can read all submissions even those outside of this org
     permissions.expect(
         *submissionIds.toTypedArray(),
@@ -1781,6 +1891,7 @@ internal class PermissionTest : DatabaseTest() {
         readAllDeliverables = true,
         readCohort = true,
         readGlobalRoles = false,
+        readModuleEventParticipants = true,
         readInternalTags = true,
         readParticipant = true,
         regenerateAllDeviceManagerTokens = false,
@@ -1842,6 +1953,17 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationDeliverables = true,
     )
 
+    permissions.expect(
+        *moduleEventIds.toTypedArray(),
+        readModuleEvent = true,
+    )
+
+    permissions.expect(
+        *moduleIds.toTypedArray(),
+        readModule = true,
+        readModuleDetails = true,
+    )
+
     // Can read all submissions even those outside of this org
     permissions.expect(
         *submissionIds.toTypedArray(),
@@ -1895,6 +2017,7 @@ internal class PermissionTest : DatabaseTest() {
         readAllDeliverables = true,
         readCohort = true,
         readGlobalRoles = false,
+        readModuleEventParticipants = true,
         readInternalTags = true,
         readParticipant = true,
         regenerateAllDeviceManagerTokens = false,
@@ -2009,6 +2132,8 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedDevices = deviceIds.toMutableSet()
     private val uncheckedDraftPlantingSites = draftPlantingSiteIds.toMutableSet()
     private val uncheckedFacilities = facilityIds.toMutableSet()
+    private val uncheckedModuleEvents = moduleEventIds.toMutableSet()
+    private val uncheckedModules = moduleIds.toMutableSet()
     private val uncheckedMonitoringPlots = monitoringPlotIds.toMutableSet()
     private val uncheckedObservations = observationIds.toMutableSet()
     private val uncheckedOrgs = organizationIds.toMutableSet()
@@ -2339,6 +2464,7 @@ internal class PermissionTest : DatabaseTest() {
         importGlobalSpeciesData: Boolean = false,
         manageDeliverables: Boolean = false,
         manageInternalTags: Boolean = false,
+        manageModuleEvents: Boolean = false,
         manageModules: Boolean = false,
         manageNotifications: Boolean = false,
         readAllAcceleratorDetails: Boolean = false,
@@ -2346,6 +2472,7 @@ internal class PermissionTest : DatabaseTest() {
         readCohort: Boolean = false,
         readGlobalRoles: Boolean = false,
         readInternalTags: Boolean = false,
+        readModuleEventParticipants: Boolean = false,
         readParticipant: Boolean = false,
         regenerateAllDeviceManagerTokens: Boolean = false,
         setTestClock: Boolean = false,
@@ -2360,26 +2487,26 @@ internal class PermissionTest : DatabaseTest() {
           addAnyOrganizationUser, user.canAddAnyOrganizationUser(), "Can add any organization user")
       assertEquals(
           addCohortParticipant,
-          user.canAddCohortParticipant(cohortId, participantId),
+          user.canAddCohortParticipant(cohortIds[0], participantIds[0]),
           "Can add cohort participant")
       assertEquals(
           addParticipantProject,
-          user.canAddParticipantProject(participantId, projectIds[0]),
+          user.canAddParticipantProject(participantIds[0], projectIds[0]),
           "Can add participant project")
       assertEquals(createCohort, user.canCreateCohort(), "Can create cohort")
       assertEquals(createCohortModule, user.canCreateCohortModule(), "Can create cohort module")
       assertEquals(createDeviceManager, user.canCreateDeviceManager(), "Can create device manager")
       assertEquals(createParticipant, user.canCreateParticipant(), "Can create participant")
-      assertEquals(deleteCohort, user.canDeleteCohort(cohortId), "Can delete cohort")
+      assertEquals(deleteCohort, user.canDeleteCohort(cohortIds[0]), "Can delete cohort")
       assertEquals(
           deleteCohortParticipant,
-          user.canDeleteCohortParticipant(cohortId, participantId),
+          user.canDeleteCohortParticipant(cohortIds[0], participantIds[0]),
           "Can delete cohort participant")
       assertEquals(
-          deleteParticipant, user.canDeleteParticipant(participantId), "Can delete participant")
+          deleteParticipant, user.canDeleteParticipant(participantIds[0]), "Can delete participant")
       assertEquals(
           deleteParticipantProject,
-          user.canDeleteParticipantProject(participantId, projectIds[0]),
+          user.canDeleteParticipantProject(participantIds[0], projectIds[0]),
           "Can delete participant project")
       assertEquals(deleteSelf, user.canDeleteSelf(), "Can delete self")
       assertEquals(deleteSupportIssue, user.canDeleteSupportIssue(), "Can delete support issue")
@@ -2389,6 +2516,7 @@ internal class PermissionTest : DatabaseTest() {
           "Can import global species data")
       assertEquals(manageDeliverables, user.canManageDeliverables(), "Can manage deliverables")
       assertEquals(manageInternalTags, user.canManageInternalTags(), "Can manage internal tags")
+      assertEquals(manageModuleEvents, user.canManageModuleEvents(), "Can manage module events")
       assertEquals(manageModules, user.canManageModules(), "Can manage modules")
       assertEquals(manageNotifications, user.canManageNotifications(), "Can manage notifications")
       assertEquals(
@@ -2396,22 +2524,27 @@ internal class PermissionTest : DatabaseTest() {
           user.canReadAllAcceleratorDetails(),
           "Can read all accelerator details")
       assertEquals(readAllDeliverables, user.canReadAllDeliverables(), "Can read all deliverables")
-      assertEquals(readCohort, user.canReadCohort(cohortId), "Can read cohort")
+      assertEquals(readCohort, user.canReadCohort(cohortIds[0]), "Can read cohort")
       assertEquals(readGlobalRoles, user.canReadGlobalRoles(), "Can read global roles")
       assertEquals(readInternalTags, user.canReadInternalTags(), "Can read internal tags")
-      assertEquals(readParticipant, user.canReadParticipant(participantId), "Can read participant")
+      assertEquals(
+          readModuleEventParticipants,
+          user.canReadModuleEventParticipants(),
+          "Can read module event participants")
+      assertEquals(
+          readParticipant, user.canReadParticipant(participantIds[0]), "Can read participant")
       assertEquals(
           regenerateAllDeviceManagerTokens,
           user.canRegenerateAllDeviceManagerTokens(),
           "Can regenerate all device manager tokens")
       assertEquals(setTestClock, user.canSetTestClock(), "Can set test clock")
       assertEquals(updateAppVersions, user.canUpdateAppVersions(), "Can update app versions")
-      assertEquals(updateCohort, user.canUpdateCohort(cohortId), "Can update cohort")
+      assertEquals(updateCohort, user.canUpdateCohort(cohortIds[0]), "Can update cohort")
       assertEquals(
           updateDeviceTemplates, user.canUpdateDeviceTemplates(), "Can update device templates")
       assertEquals(updateGlobalRoles, user.canUpdateGlobalRoles(), "Can update global roles")
       assertEquals(
-          updateParticipant, user.canUpdateParticipant(participantId), "Can update participant")
+          updateParticipant, user.canUpdateParticipant(participantIds[0]), "Can update participant")
       assertEquals(
           updateSpecificGlobalRoles,
           user.canUpdateSpecificGlobalRoles(globalRoles),
@@ -2742,6 +2875,34 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun expect(
+        vararg eventIds: EventId,
+        readModuleEvent: Boolean = false,
+    ) {
+      eventIds.forEach { eventId ->
+        assertEquals(
+            readModuleEvent, user.canReadModuleEvent(eventId), "Can read module event $eventId")
+
+        uncheckedModuleEvents.remove(eventId)
+      }
+    }
+
+    fun expect(
+        vararg moduleIds: ModuleId,
+        readModule: Boolean = false,
+        readModuleDetails: Boolean = false,
+    ) {
+      moduleIds.forEach { moduleId ->
+        assertEquals(readModule, user.canReadModule(moduleId), "Can read module $moduleId")
+        assertEquals(
+            readModuleDetails,
+            user.canReadModuleDetails(moduleId),
+            "Can read module details $moduleId")
+
+        uncheckedModules.remove(moduleId)
+      }
+    }
+
+    fun expect(
         vararg submissionIds: SubmissionId,
         readSubmission: Boolean = false,
     ) {
@@ -2789,6 +2950,8 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedDevices.toTypedArray())
       expect(*uncheckedDraftPlantingSites.toTypedArray())
       expect(*uncheckedFacilities.toTypedArray())
+      expect(*uncheckedModuleEvents.toTypedArray())
+      expect(*uncheckedModules.toTypedArray())
       expect(*uncheckedMonitoringPlots.toTypedArray())
       expect(*uncheckedObservations.toTypedArray())
       expect(*uncheckedOrgs.toTypedArray())

@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
+import com.terraformation.backend.accelerator.db.ModuleNotFoundException
 import com.terraformation.backend.accelerator.db.ParticipantNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionNotFoundException
@@ -9,6 +10,7 @@ import com.terraformation.backend.db.AutomationNotFoundException
 import com.terraformation.backend.db.DeviceManagerNotFoundException
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.EntityNotFoundException
+import com.terraformation.backend.db.EventNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.InvalidRoleUpdateException
 import com.terraformation.backend.db.NotificationNotFoundException
@@ -23,6 +25,8 @@ import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -476,6 +480,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun manageModuleEvents() {
+    if (!user.canManageModuleEvents()) {
+      throw AccessDeniedException("No permission to manage module events")
+    }
+  }
+
   fun manageModules() {
     if (!user.canManageModules()) {
       throw AccessDeniedException("No permission to manage modules")
@@ -583,6 +593,31 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readInternalTags() {
     if (!user.canReadInternalTags()) {
       throw AccessDeniedException("No permission to read internal tags")
+    }
+  }
+
+  fun readModule(moduleId: ModuleId) {
+    if (!user.canReadModule(moduleId)) {
+      throw ModuleNotFoundException(moduleId)
+    }
+  }
+
+  fun readModuleDetails(moduleId: ModuleId) {
+    if (!user.canReadModuleDetails(moduleId)) {
+      readModule(moduleId)
+      throw AccessDeniedException("No permission to read module details")
+    }
+  }
+
+  fun readModuleEvent(eventId: EventId) {
+    if (!user.canReadModuleEvent(eventId)) {
+      throw EventNotFoundException(eventId)
+    }
+  }
+
+  fun readModuleEventParticipants() {
+    if (!user.canReadModuleEventParticipants()) {
+      throw AccessDeniedException("No permission to view event participants")
     }
   }
 
@@ -721,12 +756,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun readSubmissionDocument(documentId: SubmissionDocumentId) {
-    if (!user.canReadSubmissionDocument(documentId)) {
-      throw SubmissionDocumentNotFoundException(documentId)
-    }
-  }
-
   fun readTimeseries(deviceId: DeviceId) {
     if (!user.canReadTimeseries(deviceId)) {
       throw TimeseriesNotFoundException(deviceId)
@@ -736,6 +765,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readUpload(uploadId: UploadId) {
     if (!user.canReadUpload(uploadId)) {
       throw UploadNotFoundException(uploadId)
+    }
+  }
+
+  fun readSubmissionDocument(documentId: SubmissionDocumentId) {
+    if (!user.canReadSubmissionDocument(documentId)) {
+      throw SubmissionDocumentNotFoundException(documentId)
     }
   }
 

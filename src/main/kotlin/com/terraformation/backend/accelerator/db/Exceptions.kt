@@ -5,6 +5,7 @@ import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -18,6 +19,9 @@ class CohortHasParticipantsException(id: CohortId) :
 
 class DeliverableNotFoundException(id: DeliverableId) :
     EntityNotFoundException("Deliverable $id not found")
+
+class ModuleNotFoundException(moduleId: ModuleId) :
+    EntityNotFoundException("Module $moduleId not found")
 
 class ParticipantHasProjectsException(id: ParticipantId) :
     MismatchedStateException("Participant $id has projects")
