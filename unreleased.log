@@ -1,3 +1,5 @@
+37a884418d8 SW-5201 Module Events Admin UI (#1877)
+a7bb125ba37 SW-5205 Implemented module event notifications (#1866)
 af1e716b07c SW-5264 Use PlantingSiteStore to create site in importer (#1876)
 50d2e6fe129 Update actions/setup-python action to v5 (#1875)
 067c018a97b Put the event type in the ProjectModuleEventSession response object (#1874)
