@@ -6,6 +6,8 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.model.CohortDepth
 import com.terraformation.backend.accelerator.model.CohortModel
+import com.terraformation.backend.accelerator.model.CohortModuleDepth
+import com.terraformation.backend.accelerator.model.CohortModuleModel
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortId
@@ -29,7 +31,7 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val store: CohortStore by lazy {
-    CohortStore(clock, cohortModulesDao, cohortsDao, dslContext, eventPublisher, modulesDao)
+    CohortStore(clock, cohortsDao, dslContext, eventPublisher)
   }
 
   @BeforeEach
@@ -61,41 +63,6 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedTime = clock.instant,
               )),
           cohortsDao.findAll())
-    }
-
-    @Test
-    fun `assigns the module if there is only one on cohort creation`() {
-      every { user.canCreateCohort() } returns true
-      every { user.canCreateCohortModule() } returns true
-
-      val moduleId = insertModule()
-
-      clock.instant = Instant.EPOCH.plusSeconds(500)
-
-      val model = store.create(CohortModel.create("Cohort Test", CohortPhase.Phase0DueDiligence))
-
-      assertEquals(
-          listOf(
-              CohortsRow(
-                  id = model.id,
-                  name = "Cohort Test",
-                  phaseId = CohortPhase.Phase0DueDiligence,
-                  createdBy = user.userId,
-                  createdTime = clock.instant,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
-              )),
-          cohortsDao.findAll())
-
-      assertEquals(
-          listOf(
-              CohortModulesRow(
-                  cohortId = model.id,
-                  moduleId = moduleId,
-                  startDate = LocalDate.of(1970, 1, 1),
-                  endDate = LocalDate.of(1970, 5, 1),
-              )),
-          cohortModulesDao.findAll().map { it.copy(id = null) })
     }
 
     @Test
@@ -165,6 +132,7 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
               name = "Cohort Test",
               phase = CohortPhase.Phase0DueDiligence,
               participantIds = setOf(),
+              modules = emptyList(),
           ),
           store.fetchOneById(cohortId))
 
@@ -174,8 +142,75 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
               name = "Cohort Test",
               phase = CohortPhase.Phase0DueDiligence,
               participantIds = setOf(participantId1, participantId2),
+              modules = emptyList(),
           ),
           store.fetchOneById(cohortId, CohortDepth.Participant))
+    }
+
+    @Test
+    fun `includes or excludes list of modules according to depth, ordered by dates`() {
+      val cohortId = insertCohort(name = "Cohort Test", phase = CohortPhase.Phase0DueDiligence)
+
+      val module1 = insertModule()
+      val module2 = insertModule()
+      val module3 = insertModule()
+
+      insertCohortModule(
+          cohortId,
+          module1,
+          startDate = LocalDate.of(2024, 1, 1),
+          endDate = LocalDate.of(2024, 1, 3))
+      insertCohortModule(
+          cohortId,
+          module2,
+          startDate = LocalDate.of(2024, 3, 1),
+          endDate = LocalDate.of(2024, 3, 3))
+      insertCohortModule(
+          cohortId,
+          module3,
+          startDate = LocalDate.of(2024, 2, 1),
+          endDate = LocalDate.of(2024, 2, 3))
+
+      // No depth, defaults to "cohort"
+      assertEquals(
+          ExistingCohortModel(
+              id = cohortId,
+              name = "Cohort Test",
+              phase = CohortPhase.Phase0DueDiligence,
+              participantIds = setOf(),
+              modules = emptyList(),
+          ),
+          store.fetchOneById(cohortId))
+
+      assertEquals(
+          ExistingCohortModel(
+              id = cohortId,
+              name = "Cohort Test",
+              phase = CohortPhase.Phase0DueDiligence,
+              participantIds = setOf(),
+              modules =
+                  listOf(
+                      CohortModuleModel(
+                          cohortId,
+                          module1,
+                          startDate = LocalDate.of(2024, 1, 1),
+                          endDate = LocalDate.of(2024, 1, 3),
+                      ),
+                      CohortModuleModel(
+                          cohortId,
+                          module3,
+                          startDate = LocalDate.of(2024, 2, 1),
+                          endDate = LocalDate.of(2024, 2, 3),
+                      ),
+                      CohortModuleModel(
+                          cohortId,
+                          module2,
+                          startDate = LocalDate.of(2024, 3, 1),
+                          endDate = LocalDate.of(2024, 3, 3),
+                      ),
+                  ),
+          ),
+          store.fetchOneById(cohortId, cohortModuleDepth = CohortModuleDepth.Module))
     }
 
     @Test
@@ -232,6 +267,67 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
 
       eventPublisher.assertEventPublished(
           CohortPhaseUpdatedEvent(cohortId, CohortPhase.Phase1FeasibilityStudy))
+    }
+
+    @Test
+    fun `upserts cohort modules`() {
+      every { user.canUpdateCohort(any()) } returns true
+
+      val cohortId = insertCohort()
+      val module1 = insertModule()
+      val module2 = insertModule()
+
+          insertCohortModule(
+              cohortId,
+              module1,
+              startDate = LocalDate.of(2024, 1, 1),
+              endDate = LocalDate.of(2024, 1, 3))
+
+      assertEquals(
+          listOf(
+              CohortModulesRow(
+                  cohortId,
+                  module1,
+                  LocalDate.of(2024, 1, 1),
+                  LocalDate.of(2024, 1, 3))),
+          cohortModulesDao.findAll(),
+          "Cohort modules before update."
+      )
+
+      store.update(cohortId) {
+        it.copy(
+            modules =
+                listOf(
+                    CohortModuleModel(
+                        cohortId,
+                        module1,
+                        LocalDate.of(2024, 2, 1),
+                        LocalDate.of(2024, 2, 3),
+                    ),
+                    CohortModuleModel(
+                        cohortId,
+                        module2,
+                        LocalDate.of(2024, 3, 1),
+                        LocalDate.of(2024, 3, 3),
+                    )),
+        )
+      }
+
+      assertEquals(
+          listOf(
+              CohortModulesRow(
+                  cohortId,
+                  module1,
+                  LocalDate.of(2024, 2, 1),
+                  LocalDate.of(2024, 2, 3)),
+              CohortModulesRow(
+                  cohortId,
+                  module2,
+                  LocalDate.of(2024, 3, 1),
+                  LocalDate.of(2024, 3, 3))),
+          cohortModulesDao.findAll(),
+          "Cohort modules after update."
+      )
     }
 
     @Test

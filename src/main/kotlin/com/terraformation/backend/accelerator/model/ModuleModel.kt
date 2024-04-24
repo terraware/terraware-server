@@ -39,6 +39,7 @@ data class ModuleModel(
             listOf(
                 CohortModuleModel(
                     it[COHORT_MODULES.COHORT_ID]!!,
+                    it[COHORT_MODULES.MODULE_ID]!!,
                     it[COHORT_MODULES.START_DATE]!!,
                     it[COHORT_MODULES.END_DATE]!!,
                 ))

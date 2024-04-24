@@ -32,7 +32,7 @@ class VoteServiceTest : DatabaseTest(), RunsAsUser {
   private val eventPublisher = TestEventPublisher()
   private val service: VoteService by lazy {
     VoteService(
-        CohortStore(clock, cohortModulesDao, cohortsDao, dslContext, eventPublisher, modulesDao),
+        CohortStore(clock, cohortsDao, dslContext, eventPublisher),
         dslContext,
         ParticipantStore(clock, dslContext, eventPublisher, participantsDao),
         VoteStore(clock, dslContext, PhaseChecker(dslContext)))
