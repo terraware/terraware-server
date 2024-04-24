@@ -3,13 +3,13 @@ package com.terraformation.backend.admin
 import com.terraformation.backend.accelerator.db.CohortStore
 import com.terraformation.backend.accelerator.db.DeliverablesImporter
 import com.terraformation.backend.accelerator.db.ModuleEventStore
+import com.terraformation.backend.accelerator.db.ModuleNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ModulesImporter
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ProjectStore
-import com.terraformation.backend.db.ModuleNotFoundException
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
