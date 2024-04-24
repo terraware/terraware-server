@@ -67,6 +67,7 @@ class ModuleEventStore(
       meetingUrl: URI? = null,
       recordingUrl: URI? = null,
       slidesUrl: URI? = null,
+      projects: Set<ProjectId> = emptySet(),
   ): EventModel {
     requirePermissions { manageModuleEvents() }
 
@@ -91,12 +92,28 @@ class ModuleEventStore(
 
     eventsDao.insert(eventsRow)
 
-    val model = eventsRow.toModel()
+    with(EVENT_PROJECTS) {
+      projects.forEach {
+        dslContext.insertInto(this, EVENT_ID, PROJECT_ID).values(eventsRow.id, it).execute()
+      }
+    }
+
+    val model = eventsRow.toModel(projects)
     startTime?.let {
       eventPublisher.publishEvent(ModuleEventScheduledEvent(model.id, model.revision))
     }
 
     return model
+  }
+
+  fun delete(eventId: EventId) {
+    requirePermissions { manageModuleEvents() }
+
+    val rowsDeleted = with(EVENTS) { dslContext.deleteFrom(this).where(ID.eq(eventId)).execute() }
+
+    if (rowsDeleted == 0) {
+      throw EventNotFoundException(eventId)
+    }
   }
 
   fun updateEvent(eventId: EventId, updateFunc: (EventModel) -> EventModel) {
