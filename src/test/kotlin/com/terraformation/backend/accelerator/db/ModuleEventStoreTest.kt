@@ -12,6 +12,7 @@ import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
+import com.terraformation.backend.db.accelerator.tables.pojos.EventProjectsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -210,6 +211,35 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
 
       eventPublisher.assertEventPublished(ModuleEventScheduledEvent(model.id, model.revision))
     }
+
+    @Test
+    fun `creates event project rows when projects are provided`() {
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+      val startTime = clock.instant.plusSeconds(3600)
+      val project1 = insertProject(participantId = inserted.participantId)
+      val project2 = insertProject(participantId = inserted.participantId)
+      val model =
+          store.create(
+              moduleId, EventType.Workshop, startTime, projects = setOf(project1, project2))
+
+      assertNotNull(eventsDao.fetchOneById(model.id))
+
+      assertEquals(
+          listOf(
+              EventProjectsRow(model.id, project1),
+              EventProjectsRow(model.id, project2),
+          ),
+          eventProjectsDao.findAll())
+    }
+
+    @Test
+    fun `throws exception if no permission to manage events`() {
+      every { user.canManageModuleEvents() } returns false
+
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+      val startTime = clock.instant.plusSeconds(3600)
+      assertThrows<AccessDeniedException> { store.create(moduleId, EventType.Workshop, startTime) }
+    }
   }
 
   @Nested
@@ -331,6 +361,34 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
           updated)
 
       eventPublisher.assertEventPublished(ModuleEventScheduledEvent(workshop, newRevision))
+    }
+  }
+
+  @Nested
+  inner class Delete {
+    @Test
+    fun `throws exception if event does not exist`() {
+      assertThrows<EventNotFoundException> { store.delete(EventId(-1)) }
+    }
+
+    @Test
+    fun `throws exception if no permission to manage events`() {
+      every { user.canManageModuleEvents() } returns false
+
+      val eventId = insertEvent()
+      assertThrows<AccessDeniedException> { store.delete(eventId) }
+    }
+
+    @Test
+    fun `deletes the event`() {
+      val event1 = insertEvent()
+      val event2 = insertEvent()
+
+      assertTrue(eventsDao.findAll().isNotEmpty())
+      store.delete(event1)
+      assertTrue(eventsDao.findAll().any { it.id == event2 })
+      store.delete(event2)
+      assertTrue(eventsDao.findAll().isEmpty())
     }
   }
 }
