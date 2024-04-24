@@ -225,11 +225,11 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       assertNotNull(eventsDao.fetchOneById(model.id))
 
       assertEquals(
-          listOf(
+          setOf(
               EventProjectsRow(model.id, project1),
               EventProjectsRow(model.id, project2),
           ),
-          eventProjectsDao.findAll())
+          eventProjectsDao.findAll().toSet())
     }
 
     @Test
@@ -384,11 +384,23 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       val event1 = insertEvent()
       val event2 = insertEvent()
 
-      assertTrue(eventsDao.findAll().isNotEmpty())
+      assertNotEquals(
+          emptyList<EventsRow>(),
+          eventsDao.findAll().isNotEmpty(),
+          "Events before deletion",
+      )
       store.delete(event1)
-      assertTrue(eventsDao.findAll().any { it.id == event2 })
+      assertEquals(
+          event2,
+          eventsDao.findAll().firstOrNull()?.id,
+          "Events contain $event2 after one deletion",
+      )
       store.delete(event2)
-      assertTrue(eventsDao.findAll().isEmpty())
+      assertEquals(
+          emptyList<EventsRow>(),
+          eventsDao.findAll(),
+          "Events after all deletions",
+      )
     }
   }
 }

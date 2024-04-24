@@ -71,8 +71,7 @@
                         id="defaultVoters"
                         multiple>
                     <option th:each="userId : ${defaultVoters}"
-                            th:text="${users.get(userId).email}"
-                            th:value="${userId}">
+                            th:text="${users.get(userId).email}">
                         someone@terraformation.com
                     </option>
                 </select>

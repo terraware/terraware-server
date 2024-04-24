@@ -10,11 +10,12 @@
 <a href="/admin/modules">Modules</a>
 
 <th:block th:if="${canManageModules}">
-    <h2 th:text="|Module ${module.name}|">Module (name)</h2>
+    <h2 th:text="|(${module.id}) Module ${module.name}|">Module (name)</h2>
 
     <p>
         Preview module content and schedule events. Event schedules are all in UTC. CMD or CRTL +
-        click to select multiple projects for adding/removing from events
+        click to select multiple projects for adding/removing from events. An event type without
+        any descriptions will not have any event sessions.
     </p>
 
     <h3> Cohorts and Projects </h3>
@@ -33,25 +34,25 @@
     <th:block th:if="${module.overview}">
         <hr>
         <h3> Overview </h3>
-        <div data-th-utext="${module.overview}"> </div>
+        <div th:utext="${module.overview}"> </div>
     </th:block>
 
     <th:block th:if="${module.preparationMaterials}">
         <hr>
         <h3> Preparation Materials </h3>
-        <div data-th-utext="${module.preparationMaterials}"> </div>
+        <div th:utext="${module.preparationMaterials}"> </div>
     </th:block>
 
     <th:block th:if="${module.additionalResources}">
         <hr>
         <h3> Additional Resources </h3>
-        <div data-th-utext="${module.additionalResources}"> </div>
+        <div th:utext="${module.additionalResources}"> </div>
     </th:block>
 
-    <th:block th:if="${oneOnOneInfo}">
+    <div th:each="event : ${module.eventDescriptions.keySet()}">
         <hr>
-        <h3> 1:1 Sessions </h3>
-        <div data-th-utext="${oneOnOneInfo}"> </div>
+        <h3 th:text="${event.getDisplayName(#locale.default)}"> Event Type </h3>
+        <div th:utext="${module.eventDescriptions.get(event)}"> Event Description </div>
 
         <h4> Sessions </h4>
         <table>
@@ -71,48 +72,48 @@
             </thead>
 
             <tbody>
-            <tr th:each="event : ${oneOnOneEvents}" class="striped">
-                <td th:text="${event.id}">Event ID</td>
+            <tr th:each="eventSession : ${module.eventSessions.get(event)}" class="striped">
+                <td th:text="${eventSession.id}">Event ID</td>
                 <td>
                     <input type="datetime-local"
                            name="startTime"
                            required
-                           th:form="|update-${event.id}|"
-                           th:value="${#temporals.format(event.startTime.atZone('UTC'), dateFormat)}" />
+                           th:form="|update-${eventSession.id}|"
+                           th:value="${#temporals.format(eventSession.startTime.atZone('UTC'), dateFormat)}" />
                 </td>
                 <td>
                     <input type="datetime-local"
                            name="endTime"
                            required
-                           th:form="|update-${event.id}|"
-                           th:value="${#temporals.format(event.endTime.atZone('UTC'), dateFormat)}" />
+                           th:form="|update-${eventSession.id}|"
+                           th:value="${#temporals.format(eventSession.endTime.atZone('UTC'), dateFormat)}" />
                 </td>
                 <td>
                     <input type="url"
                            name="meetingUrl"
-                           th:form="|update-${event.id}|"
-                           th:value="${event.meetingUrl}"
+                           th:form="|update-${eventSession.id}|"
+                           th:value="${eventSession.meetingUrl}"
                     />
                 </td>
                 <td>
                     <input type="url"
                            name="recordingUrl"
-                           th:form="|update-${event.id}|"
-                           th:value="${event.recordingUrl}"
+                           th:form="|update-${eventSession.id}|"
+                           th:value="${eventSession.recordingUrl}"
                     />
                 </td>
                 <td>
                     <input type="url"
                            name="slidesUrl"
-                           th:form="|update-${event.id}|"
-                           th:value="${event.slidesUrl}"
+                           th:form="|update-${eventSession.id}|"
+                           th:value="${eventSession.slidesUrl}"
                     />
                 </td>
                 <td>
                     <select name="toRemove"
-                            th:form="|update-${event.id}|"
+                            th:form="|update-${eventSession.id}|"
                             multiple>
-                        <option th:each="projectId : ${event.projects}"
+                        <option th:each="projectId : ${eventSession.projects}"
                                 th:text="${cohortProjectNames.get(projectId)}"
                                 th:value="${projectId}">
                             Project Name
@@ -121,10 +122,10 @@
                 </td>
                 <td>
                     <select name="toAdd"
-                            th:form="|update-${event.id}|"
+                            th:form="|update-${eventSession.id}|"
                             multiple>
                         <option th:each="projectId : ${moduleProjects}"
-                                th:if="${event.projects.isEmpty() || !event.projects.contains(projectId)}"
+                                th:if="${eventSession.projects.isEmpty() || !eventSession.projects.contains(projectId)}"
                                 th:text="${cohortProjectNames.get(projectId)}"
                                 th:value="${projectId}">
                             Project Name
@@ -133,20 +134,20 @@
                 </td>
                 <td>
                     <form method="POST"
-                          th:id="|update-${event.id}|"
+                          th:id="|update-${eventSession.id}|"
                           th:action="|/admin/modules/${module.id}/updateEvent|">
-                        <input type="hidden" name="id" th:value="${event.id}"/>
+                        <input type="hidden" name="id" th:value="${eventSession.id}"/>
                         <input type="submit"
                                value="Update" />
                     </form>
                 </td>
                 <td>
                     <form method="POST"
-                          th:id="|delete-${event.id}|"
+                          th:id="|delete-${eventSession.id}|"
                           th:action="|/admin/modules/${module.id}/deleteEvent|">
-                        <input type="hidden" name="id" th:value="${event.id}"/>
+                        <input type="hidden" name="id" th:value="${eventSession.id}"/>
                         <input type="submit"
-                               th:disabled="${event.projects.size() > 0}"
+                               th:disabled="${eventSession.projects.size() > 0}"
                                value="Delete" />
                     </form>
                 </td>
@@ -158,34 +159,34 @@
                     <input type="datetime-local"
                            name="startTime"
                            required
-                           form="add-one-on-one-event" />
+                           th:form="|add-${event.getId()}|" />
                 </td>
                 <td>
                     <input type="datetime-local"
                            name="endTime"
                            required
-                           form="add-one-on-one-event" />
+                           th:form="|add-${event.getId()}|" />
                 </td>
                 <td>
                     <input type="url"
                            name="meetingUrl"
-                           form="add-one-on-one-event" />
+                           th:form="|add-${event.getId()}|" />
                 </td>
                 <td>
                     <input type="url"
                            name="recordingUrl"
-                           form="add-one-on-one-event" />
+                           th:form="|add-${event.getId()}|" />
                 </td>
                 <td>
                     <input type="url"
                            name="slidesUrl"
-                           form="add-one-on-one-event" />
+                           th:form="|add-${event.getId()}|" />
                 </td>
                 <td>
                 </td>
                 <td>
                     <select name="toAdd"
-                            form="add-one-on-one-event"
+                            th:form="|add-${event.getId()}|"
                             multiple>
                         <option th:each="projectId : ${moduleProjects}"
                                 th:text="${cohortProjectNames.get(projectId)}"
@@ -196,9 +197,9 @@
                 </td>
                 <td>
                     <form method="POST"
-                          id="add-one-on-one-event"
+                          th:id="|add-${event.getId()}|"
                           th:action="|/admin/modules/${module.id}/createEvent|">
-                        <input type="hidden" name="eventTypeId" th:value="1"/>
+                        <input type="hidden" name="eventTypeId" th:value="${event.getId()}"/>
                         <input type="submit"
                                value="Create" />
                     </form>
@@ -206,329 +207,7 @@
             </tr>
             </tbody>
         </table>
-    </th:block>
-
-    <th:block th:if="${workshopInfo}">
-        <hr>
-        <h3> Workshop </h3>
-        <div data-th-utext="${workshopInfo}"> </div>
-
-        <h4> Sessions </h4>
-        <table>
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Start Time</th>
-                <th>End Time</th>
-                <th>Meeting Link</th>
-                <th>Recording Link</th>
-                <th>Slides Link</th>
-                <th>Remove projects</th>
-                <th>Add projects</th>
-                <th></th>
-                <th></th>
-            </tr>
-            </thead>
-
-            <tbody>
-            <tr th:each="event : ${workshopEvents}" class="striped">
-                <td th:text="${event.id}">Event ID</td>
-                <td>
-                    <input type="datetime-local"
-                           name="startTime"
-                           required
-                           th:form="|update-${event.id}|"
-                           th:value="${#temporals.format(event.startTime.atZone('UTC'), dateFormat)}" />
-                </td>
-                <td>
-                    <input type="datetime-local"
-                           name="endTime"
-                           required
-                           th:form="|update-${event.id}|"
-                           th:value="${#temporals.format(event.endTime.atZone('UTC'), dateFormat)}" />
-                </td>
-                <td>
-                    <input type="url"
-                           name="meetingUrl"
-                           th:form="|update-${event.id}|"
-                           th:value="${event.meetingUrl}"
-                    />
-                </td>
-                <td>
-                    <input type="url"
-                           name="recordingUrl"
-                           th:form="|update-${event.id}|"
-                           th:value="${event.recordingUrl}"
-                    />
-                </td>
-                <td>
-                    <input type="url"
-                           name="slidesUrl"
-                           th:form="|update-${event.id}|"
-                           th:value="${event.slidesUrl}"
-                    />
-                </td>
-                <td>
-                    <select name="toRemove"
-                            th:form="|update-${event.id}|"
-                            multiple>
-                        <option th:each="projectId : ${event.projects}"
-                                th:text="${cohortProjectNames.get(projectId)}"
-                                th:value="${projectId}">
-                            Project Name
-                        </option>
-                    </select>
-                </td>
-                <td>
-                    <select name="toAdd"
-                            th:form="|update-${event.id}|"
-                            multiple>
-                        <option th:each="projectId : ${moduleProjects}"
-                                th:if="${event.projects.isEmpty() || !event.projects.contains(projectId)}"
-                                th:text="${cohortProjectNames.get(projectId)}"
-                                th:value="${projectId}">
-                            Project Name
-                        </option>
-                    </select>
-                </td>
-                <td>
-                    <form method="POST"
-                          th:id="|update-${event.id}|"
-                          th:action="|/admin/modules/${module.id}/updateEvent|">
-                        <input type="hidden" name="id" th:value="${event.id}"/>
-                        <input type="submit"
-                               value="Update" />
-                    </form>
-                </td>
-                <td>
-                    <form method="POST"
-                          th:id="|delete-${event.id}|"
-                          th:action="|/admin/modules/${module.id}/deleteEvent|">
-                        <input type="hidden" name="id" th:value="${event.id}"/>
-                        <input type="submit"
-                               th:disabled="${event.projects.size() > 0}"
-                               value="Delete" />
-                    </form>
-                </td>
-            </tr>
-
-            <tr class="striped">
-                <td></td>
-                <td>
-                    <input type="datetime-local"
-                           name="startTime"
-                           required
-                           form="add-workshop-event" />
-                </td>
-                <td>
-                    <input type="datetime-local"
-                           name="endTime"
-                           required
-                           form="add-workshop-event" />
-                </td>
-                <td>
-                    <input type="url"
-                           name="meetingUrl"
-                           form="add-workshop-event" />
-                </td>
-                <td>
-                    <input type="url"
-                           name="recordingUrl"
-                           form="add-workshop-event" />
-                </td>
-                <td>
-                    <input type="url"
-                           name="slidesUrl"
-                           form="add-workshop-event" />
-                </td>
-                <td>
-                </td>
-                <td>
-                    <select name="toAdd"
-                            form="add-workshop-event"
-                            multiple>
-                        <option th:each="projectId : ${moduleProjects}"
-                                th:text="${cohortProjectNames.get(projectId)}"
-                                th:value="${projectId}">
-                            Project Name
-                        </option>
-                    </select>
-                </td>
-                <td>
-                    <form method="POST"
-                          id="add-workshop-event"
-                          th:action="|/admin/modules/${module.id}/createEvent|">
-                        <input type="hidden" name="eventTypeId" th:value="2"/>
-                        <input type="submit"
-                               value="Create" />
-                    </form>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </th:block>
-
-
-    <th:block th:if="${liveSessionInfo}">
-        <hr>
-        <h3> Live Session </h3>
-        <div data-th-utext="${liveSessionInfo}"> </div>
-
-        <h4> Sessions </h4>
-        <table>
-            <thead>
-            <tr>
-                <th>ID</th>
-                <th>Start Time</th>
-                <th>End Time</th>
-                <th>Meeting Link</th>
-                <th>Recording Link</th>
-                <th>Slides Link</th>
-                <th>Remove projects</th>
-                <th>Add projects</th>
-                <th></th>
-                <th></th>
-            </tr>
-            </thead>
-
-            <tbody>
-            <tr th:each="event : ${liveSessionEvents}" class="striped">
-                <td th:text="${event.id}">Event ID</td>
-                <td>
-                    <input type="datetime-local"
-                           name="startTime"
-                           required
-                           th:form="|update-${event.id}|"
-                           th:value="${#temporals.format(event.startTime.atZone('UTC'), dateFormat)}" />
-                </td>
-                <td>
-                    <input type="datetime-local"
-                           name="endTime"
-                           required
-                           th:form="|update-${event.id}|"
-                           th:value="${#temporals.format(event.endTime.atZone('UTC'), dateFormat)}" />
-                </td>
-                <td>
-                    <input type="url"
-                           name="meetingUrl"
-                           th:form="|update-${event.id}|"
-                           th:value="${event.meetingUrl}"
-                    />
-                </td>
-                <td>
-                    <input type="url"
-                           name="recordingUrl"
-                           th:form="|update-${event.id}|"
-                           th:value="${event.recordingUrl}"
-                    />
-                </td>
-                <td>
-                    <input type="url"
-                           name="slidesUrl"
-                           th:form="|update-${event.id}|"
-                           th:value="${event.slidesUrl}"
-                    />
-                </td>
-                <td>
-                    <select name="toRemove"
-                            th:form="|update-${event.id}|"
-                            multiple>
-                        <option th:each="projectId : ${event.projects}"
-                                th:text="${cohortProjectNames.get(projectId)}"
-                                th:value="${projectId}">
-                            Project Name
-                        </option>
-                    </select>
-                </td>
-                <td>
-                    <select name="toAdd"
-                            th:form="|update-${event.id}|"
-                            multiple>
-                        <option th:each="projectId : ${moduleProjects}"
-                                th:if="${event.projects.isEmpty() || !event.projects.contains(projectId)}"
-                                th:text="${cohortProjectNames.get(projectId)}"
-                                th:value="${projectId}">
-                            Project Name
-                        </option>
-                    </select>
-                </td>
-                <td>
-                    <form method="POST"
-                          th:id="|update-${event.id}|"
-                          th:action="|/admin/modules/${module.id}/updateEvent|">
-                        <input type="hidden" name="id" th:value="${event.id}"/>
-                        <input type="submit"
-                               value="Update" />
-                    </form>
-                </td>
-                <td>
-                    <form method="POST"
-                          th:id="|delete-${event.id}|"
-                          th:action="|/admin/modules/${module.id}/deleteEvent|">
-                        <input type="hidden" name="id" th:value="${event.id}"/>
-                        <input type="submit"
-                               th:disabled="${event.projects.size() > 0}"
-                               value="Delete" />
-                    </form>
-                </td>
-            </tr>
-
-            <tr class="striped">
-                <td></td>
-                <td>
-                    <input type="datetime-local"
-                           name="startTime"
-                           required
-                           form="add-live-session-event" />
-                </td>
-                <td>
-                    <input type="datetime-local"
-                           name="endTime"
-                           required
-                           form="add-live-session-event" />
-                </td>
-                <td>
-                    <input type="url"
-                           name="meetingUrl"
-                           form="add-live-session-event" />
-                </td>
-                <td>
-                    <input type="url"
-                           name="recordingUrl"
-                           form="add-live-session-event" />
-                </td>
-                <td>
-                    <input type="url"
-                           name="slidesUrl"
-                           form="add-live-session-event" />
-                </td>
-                <td>
-                </td>
-                <td>
-                    <select name="toAdd"
-                            form="add-live-session-event"
-                            multiple>
-                        <option th:each="projectId : ${moduleProjects}"
-                                th:text="${cohortProjectNames.get(projectId)}"
-                                th:value="${projectId}">
-                            Project Name
-                        </option>
-                    </select>
-                </td>
-                <td>
-                    <form method="POST"
-                          id="add-live-session-event"
-                          th:action="|/admin/modules/${module.id}/createEvent|">
-                        <input type="hidden" name="eventTypeId" th:value="3"/>
-                        <input type="submit"
-                               value="Create" />
-                    </form>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </th:block>
-
+    </div>
 </th:block>
 
 </body>

@@ -6,7 +6,6 @@ import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ModulesImporter
 import com.terraformation.backend.accelerator.db.ParticipantStore
-import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ProjectStore
@@ -80,7 +79,7 @@ class AdminModulesController(
           moduleStore.fetchOneById(ModuleId(moduleId))
         } catch (e: ModuleNotFoundException) {
           log.warn("Module not found")
-          redirectAttributes.failureMessage = "Import failed: ${e.message}"
+          redirectAttributes.failureMessage = "Module not found: ${e.message}"
           return redirectToModulesHome()
         }
 
@@ -89,15 +88,15 @@ class AdminModulesController(
     val cohortNames =
         module.cohorts.associate { it.cohortId to cohortStore.fetchOneById(it.cohortId).name }
 
-    val projectNames = moduleProjects.associateWith { projectStore.fetchOneById(it).name }
+    val projects = moduleProjects.associateWith { projectStore.fetchOneById(it) }
+    val projectNames = projects.mapValues { it.value.name }
 
     // cohort name - project name
     val cohortProjectNames =
-        moduleProjects.associateWith {
-          val project = projectStore.fetchOneById(it)
+        projects.mapValues {
           cohortStore
-              .fetchOneById(participantStore.fetchOneById(project.participantId!!).cohortId!!)
-              .name + " - " + project.name
+              .fetchOneById(participantStore.fetchOneById(it.value.participantId!!).cohortId!!)
+              .name + " - " + it.value.name
         }
 
     model.addAttribute("canManageModules", currentUser().canManageModules())
@@ -107,16 +106,6 @@ class AdminModulesController(
     model.addAttribute("module", module)
     model.addAttribute("moduleProjects", moduleProjects)
     model.addAttribute("projectNames", projectNames)
-    model.addAttribute("workshopInfo", module.eventDescriptions[EventType.Workshop])
-    model.addAttribute("oneOnOneInfo", module.eventDescriptions[EventType.OneOnOneSession])
-    model.addAttribute("liveSessionInfo", module.eventDescriptions[EventType.LiveSession])
-    model.addAttribute(
-        "workshopEvents", module.eventSessions[EventType.Workshop] ?: emptyList<EventModel>())
-    model.addAttribute(
-        "oneOnOneEvents",
-        module.eventSessions[EventType.OneOnOneSession] ?: emptyList<EventModel>())
-    model.addAttribute(
-        "liveSessionEvents", module.eventSessions[EventType.LiveSession] ?: emptyList<EventModel>())
 
     return "/admin/moduleView"
   }
@@ -134,15 +123,23 @@ class AdminModulesController(
       @RequestParam toAdd: List<ProjectId>?,
       redirectAttributes: RedirectAttributes
   ): String {
-    eventStore.create(
-        ModuleId(moduleId),
-        EventType.forId(eventTypeId) ?: throw IllegalArgumentException("Event Type not recognized"),
-        dateStringToInstant(startTime),
-        dateStringToInstant(endTime),
-        meetingUrl,
-        recordingUrl,
-        slidesUrl,
-        toAdd?.toSet() ?: emptySet())
+    try {
+      val event =
+          eventStore.create(
+              ModuleId(moduleId),
+              EventType.forId(eventTypeId)
+                  ?: throw IllegalArgumentException("Event Type not recognized"),
+              dateStringToInstant(startTime),
+              dateStringToInstant(endTime),
+              meetingUrl,
+              recordingUrl,
+              slidesUrl,
+              toAdd?.toSet() ?: emptySet())
+      redirectAttributes.successMessage = "Event created. id=${event.id}"
+    } catch (e: Exception) {
+      log.warn("Create event failed", e)
+      redirectAttributes.failureMessage = "Create event failed: ${e.message}"
+    }
     return redirectToModule(ModuleId(moduleId))
   }
 
@@ -162,19 +159,23 @@ class AdminModulesController(
   ): String {
     val event = eventStore.fetchOneById(id)
 
-    val projects = event.projects?.toMutableSet() ?: mutableSetOf()
+    val projects =
+        (event.projects ?: emptySet()).plus(toAdd ?: emptySet()).minus(toRemove ?: emptySet())
 
-    toAdd?.let { projects += it.toSet() }
-    toRemove?.let { projects -= it.toSet() }
-
-    eventStore.updateEvent(id) {
-      event.copy(
-          startTime = dateStringToInstant(startTime),
-          endTime = dateStringToInstant(endTime),
-          meetingUrl = meetingUrl,
-          recordingUrl = recordingUrl,
-          slidesUrl = slidesUrl,
-          projects = projects)
+    try {
+      eventStore.updateEvent(id) {
+        event.copy(
+            startTime = dateStringToInstant(startTime),
+            endTime = dateStringToInstant(endTime),
+            meetingUrl = meetingUrl,
+            recordingUrl = recordingUrl,
+            slidesUrl = slidesUrl,
+            projects = projects)
+      }
+      redirectAttributes.successMessage = "Event updated."
+    } catch (e: Exception) {
+      log.warn("Update event failed", e)
+      redirectAttributes.failureMessage = "Update event failed: ${e.message}"
     }
     return redirectToModule(ModuleId(moduleId))
   }
@@ -186,7 +187,13 @@ class AdminModulesController(
       @RequestParam id: EventId,
       redirectAttributes: RedirectAttributes
   ): String {
-    eventStore.delete(id)
+    try {
+      eventStore.delete(id)
+      redirectAttributes.successMessage = "Event deleted."
+    } catch (e: Exception) {
+      log.warn("Delete event failed", e)
+      redirectAttributes.failureMessage = "Delete event failed: ${e.message}"
+    }
     return redirectToModule(ModuleId(moduleId))
   }
 
