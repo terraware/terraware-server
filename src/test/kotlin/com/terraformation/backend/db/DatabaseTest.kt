@@ -195,11 +195,14 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservedPlotCoordinatesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonsDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteNotificationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitePopulationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzoneHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonePopulationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingZoneHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonePopulationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
@@ -431,11 +434,14 @@ abstract class DatabaseTest {
   protected val participantsDao: ParticipantsDao by lazyDao()
   protected val plantingsDao: PlantingsDao by lazyDao()
   protected val plantingSeasonsDao: PlantingSeasonsDao by lazyDao()
+  protected val plantingSiteHistoriesDao: PlantingSiteHistoriesDao by lazyDao()
   protected val plantingSiteNotificationsDao: PlantingSiteNotificationsDao by lazyDao()
   protected val plantingSitePopulationsDao: PlantingSitePopulationsDao by lazyDao()
   protected val plantingSitesDao: PlantingSitesDao by lazyDao()
+  protected val plantingSubzoneHistoriesDao: PlantingSubzoneHistoriesDao by lazyDao()
   protected val plantingSubzonePopulationsDao: PlantingSubzonePopulationsDao by lazyDao()
   protected val plantingSubzonesDao: PlantingSubzonesDao by lazyDao()
+  protected val plantingZoneHistoriesDao: PlantingZoneHistoriesDao by lazyDao()
   protected val plantingZonePopulationsDao: PlantingZonePopulationsDao by lazyDao()
   protected val plantingZonesDao: PlantingZonesDao by lazyDao()
   protected val projectAcceleratorDetailsDao: ProjectAcceleratorDetailsDao by lazyDao()

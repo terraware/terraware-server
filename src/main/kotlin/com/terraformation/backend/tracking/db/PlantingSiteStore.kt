@@ -7,14 +7,18 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneHistoryId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.PlantingZoneHistoryId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonsDao
@@ -26,6 +30,9 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
+import com.terraformation.backend.db.tracking.tables.records.PlantingSiteHistoriesRecord
+import com.terraformation.backend.db.tracking.tables.records.PlantingSubzoneHistoriesRecord
+import com.terraformation.backend.db.tracking.tables.records.PlantingZoneHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
@@ -62,6 +69,7 @@ import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.createRectangle
+import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.toInstant
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -77,6 +85,7 @@ import org.jooq.Record
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
 import org.springframework.context.ApplicationEventPublisher
@@ -288,11 +297,19 @@ class PlantingSiteStore(
       plantingSitesDao.insert(plantingSitesRow)
       val plantingSiteId = plantingSitesRow.id!!
 
-      newModel.plantingZones.forEach { zone ->
-        val plantingZoneId = createPlantingZone(zone, plantingSiteId, now)
+      var siteHistoryId: PlantingSiteHistoryId? = null
 
-        zone.plantingSubzones.forEach { subzone ->
-          createPlantingSubzone(subzone, plantingSiteId, plantingZoneId, now)
+      if (newModel.boundary != null && gridOrigin != null) {
+        siteHistoryId = insertPlantingSiteHistory(newModel, gridOrigin, now, plantingSiteId)
+
+        newModel.plantingZones.forEach { zone ->
+          val zoneId = createPlantingZone(zone, plantingSiteId, now)
+          val zoneHistoryId = insertPlantingZoneHistory(zone, siteHistoryId, zoneId)
+
+          zone.plantingSubzones.forEach { subzone ->
+            val subzoneId = createPlantingSubzone(subzone, plantingSiteId, zoneId, now)
+            insertPlantingSubzoneHistory(subzone, zoneHistoryId, subzoneId)
+          }
         }
       }
 
@@ -304,7 +321,7 @@ class PlantingSiteStore(
 
       log.info("Created planting site $plantingSiteId for organization ${newModel.organizationId}")
 
-      fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
+      fetchSiteById(plantingSiteId, PlantingSiteDepth.Subzone).copy(historyId = siteHistoryId)
     }
   }
 
@@ -329,13 +346,15 @@ class PlantingSiteStore(
     val initialTimeZone = initial.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId)
     val editedTimeZone = edited.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId)
 
+    val now = clock.instant()
+
     dslContext.transaction { _ ->
       with(PLANTING_SITES) {
         dslContext
             .update(PLANTING_SITES)
             .set(DESCRIPTION, edited.description)
             .set(MODIFIED_BY, currentUser().userId)
-            .set(MODIFIED_TIME, clock.instant())
+            .set(MODIFIED_TIME, now)
             .set(NAME, edited.name)
             .set(PROJECT_ID, edited.projectId)
             .set(TIME_ZONE, edited.timeZone)
@@ -357,6 +376,22 @@ class PlantingSiteStore(
           initial.plantingSeasons,
           initial.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId),
       )
+
+      if (edited.boundary != null && !edited.boundary.equalsOrBothNull(initial.boundary) ||
+          !edited.exclusion.equalsOrBothNull(initial.exclusion)) {
+        val historiesRecord =
+            PlantingSiteHistoriesRecord(
+                    boundary = edited.boundary,
+                    createdBy = currentUser().userId,
+                    createdTime = now,
+                    exclusion = edited.exclusion,
+                    gridOrigin = initial.gridOrigin,
+                    plantingSiteId = plantingSiteId,
+                )
+                .attach(dslContext)
+
+        historiesRecord.insert()
+      }
 
       if (initialTimeZone != editedTimeZone) {
         eventPublisher.publishEvent(
@@ -1432,5 +1467,69 @@ class PlantingSiteStore(
 
       func()
     }
+  }
+
+  private fun insertPlantingSiteHistory(
+      newModel: PlantingSiteModel<*, *, *>,
+      gridOrigin: Point,
+      now: Instant,
+      plantingSiteId: PlantingSiteId =
+          newModel.id ?: throw IllegalArgumentException("Planting site missing ID"),
+  ): PlantingSiteHistoryId {
+    val historiesRecord =
+        PlantingSiteHistoriesRecord(
+                boundary = newModel.boundary,
+                createdBy = currentUser().userId,
+                createdTime = now,
+                exclusion = newModel.exclusion,
+                gridOrigin = gridOrigin,
+                plantingSiteId = plantingSiteId,
+            )
+            .attach(dslContext)
+
+    historiesRecord.insert()
+
+    return historiesRecord.id!!
+  }
+
+  private fun insertPlantingZoneHistory(
+      model: PlantingZoneModel<*, *>,
+      plantingSiteHistoryId: PlantingSiteHistoryId,
+      plantingZoneId: PlantingZoneId =
+          model.id ?: throw IllegalArgumentException("Planting zone missing ID"),
+  ): PlantingZoneHistoryId {
+    val historiesRecord =
+        PlantingZoneHistoriesRecord(
+                boundary = model.boundary,
+                name = model.name,
+                plantingSiteHistoryId = plantingSiteHistoryId,
+                plantingZoneId = plantingZoneId,
+            )
+            .attach(dslContext)
+
+    historiesRecord.insert()
+
+    return historiesRecord.id!!
+  }
+
+  private fun insertPlantingSubzoneHistory(
+      model: PlantingSubzoneModel<*>,
+      plantingZoneHistoryId: PlantingZoneHistoryId,
+      plantingSubzoneId: PlantingSubzoneId =
+          model.id ?: throw IllegalArgumentException("Planting subzone missing ID"),
+  ): PlantingSubzoneHistoryId {
+    val historiesRecord =
+        PlantingSubzoneHistoriesRecord(
+                boundary = model.boundary,
+                fullName = model.fullName,
+                name = model.name,
+                plantingSubzoneId = plantingSubzoneId,
+                plantingZoneHistoryId = plantingZoneHistoryId,
+            )
+            .attach(dslContext)
+
+    historiesRecord.insert()
+
+    return historiesRecord.id!!
   }
 }
