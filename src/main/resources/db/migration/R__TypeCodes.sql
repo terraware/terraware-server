@@ -146,7 +146,8 @@ VALUES (1, 'Tree'),
        (10, 'Liana'),
        (11, 'Shrub/Tree'),
        (12, 'Subshrub'),
-       (13, 'Multiple Forms')
+       (13, 'Multiple Forms'),
+       (14, 'Mangrove')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO land_use_model_types (id, name)
