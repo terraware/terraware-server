@@ -11,7 +11,7 @@ import org.jooq.TableField
 
 class SpeciesGrowthFormsTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
-    get() = SPECIES_GROWTH_FORMS.SPECIES_ID
+    get() = SPECIES_GROWTH_FORMS.SPECIES_GROWTH_FORM_ID
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {
