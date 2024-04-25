@@ -2,7 +2,9 @@ package com.terraformation.backend.db
 
 import java.util.Locale
 import org.jooq.Collation
+import org.jooq.DSLContext
 import org.jooq.Field
+import org.jooq.Record
 import org.jooq.impl.DSL
 
 /**
@@ -69,3 +71,13 @@ val Locale.collation: Collation
 
 /** Wraps a field in the "unaccent" function which removes diacritics. */
 fun Field<String?>.unaccent() = DSL.function("unaccent", String::class.java, this)
+
+/**
+ * Attaches a jOOQ Record to the default configuration of a DSL context and returns the Record. This
+ * can be used to create an attached record in one expression rather than needing to attach in a
+ * separate statement or use an `also` block.
+ */
+fun <T : Record> T.attach(dslContext: DSLContext): T {
+  attach(dslContext.configuration())
+  return this
+}

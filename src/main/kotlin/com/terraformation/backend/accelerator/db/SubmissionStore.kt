@@ -12,6 +12,7 @@ import com.terraformation.backend.db.accelerator.tables.records.SubmissionsRecor
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DOCUMENTS
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.ProjectId
 import jakarta.inject.Named
 import java.time.InstantSource
@@ -57,7 +58,7 @@ class SubmissionStore(
                     createdBy = currentUser().userId,
                     createdTime = now,
                 )
-                .also { it.attach(dslContext.configuration()) }
+                .attach(dslContext)
 
     val oldStatus = submission.submissionStatusId!!
 
