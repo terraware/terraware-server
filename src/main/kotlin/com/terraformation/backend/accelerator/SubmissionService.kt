@@ -20,6 +20,7 @@ import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCEL
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DOCUMENTS
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.file.DropboxWriter
 import com.terraformation.backend.file.GoogleDriveWriter
@@ -144,7 +145,7 @@ class SubmissionService(
                 originalName = originalName,
                 projectId = projectId,
             )
-            .also { it.attach(dslContext.configuration()) }
+            .attach(dslContext)
 
     try {
       try {
