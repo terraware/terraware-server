@@ -18,7 +18,7 @@ data class SpeciesModel<ID : SpeciesId?>(
     val deletedTime: Instant? = null,
     val ecosystemTypes: Set<EcosystemType> = emptySet(),
     val familyName: String? = null,
-    val growthForm: GrowthForm? = null,
+    val growthForms: Set<GrowthForm> = emptySet(),
     val id: ID,
     val organizationId: OrganizationId,
     val rare: Boolean? = null,
@@ -29,7 +29,8 @@ data class SpeciesModel<ID : SpeciesId?>(
   companion object {
     fun of(
         record: Record,
-        ecosystemTypesMultiset: Field<Set<EcosystemType>>
+        ecosystemTypesMultiset: Field<Set<EcosystemType>>,
+        growthFormsMultiset: Field<Set<GrowthForm>>
     ): ExistingSpeciesModel =
         ExistingSpeciesModel(
             checkedTime = record[SPECIES.CHECKED_TIME],
@@ -38,7 +39,7 @@ data class SpeciesModel<ID : SpeciesId?>(
             deletedTime = record[SPECIES.DELETED_TIME],
             ecosystemTypes = record[ecosystemTypesMultiset] ?: emptySet(),
             familyName = record[SPECIES.FAMILY_NAME],
-            growthForm = record[SPECIES.GROWTH_FORM_ID],
+            growthForms = record[growthFormsMultiset] ?: emptySet(),
             id = record[SPECIES.ID]!!,
             initialScientificName = record[SPECIES.INITIAL_SCIENTIFIC_NAME]!!,
             organizationId = record[SPECIES.ORGANIZATION_ID]!!,

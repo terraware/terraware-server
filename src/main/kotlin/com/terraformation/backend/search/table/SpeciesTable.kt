@@ -48,7 +48,6 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
           textField("commonName", SPECIES.COMMON_NAME),
           enumField("conservationCategory", SPECIES.CONSERVATION_CATEGORY_ID, localize = false),
           textField("familyName", SPECIES.FAMILY_NAME, nullable = false),
-          enumField("growthForm", SPECIES.GROWTH_FORM_ID),
           idWrapperField("id", SPECIES.ID) { SpeciesId(it) },
           booleanField("rare", SPECIES.RARE),
           textField("scientificName", SPECIES.SCIENTIFIC_NAME, nullable = false),

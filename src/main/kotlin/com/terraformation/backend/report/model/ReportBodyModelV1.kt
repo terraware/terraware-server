@@ -157,7 +157,7 @@ data class ReportBodyModelV1(
     }
 
     data class Species(
-        val growthForm: GrowthForm? = null,
+        val growthForms: Set<GrowthForm> = emptySet(),
         val id: SpeciesId,
         val mortalityRateInField: Int? = null,
         val scientificName: String,
@@ -166,13 +166,13 @@ data class ReportBodyModelV1(
       constructor(
           model: ExistingSpeciesModel
       ) : this(
-          growthForm = model.growthForm,
+          growthForms = model.growthForms,
           id = model.id,
           scientificName = model.scientificName,
       )
 
       fun freshen(model: ExistingSpeciesModel): Species {
-        return copy(growthForm = model.growthForm, scientificName = model.scientificName)
+        return copy(growthForms = model.growthForms, scientificName = model.scientificName)
       }
 
       internal fun validate(context: Validator) {

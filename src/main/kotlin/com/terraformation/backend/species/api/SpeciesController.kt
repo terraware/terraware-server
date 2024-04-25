@@ -221,7 +221,7 @@ data class SpeciesResponseElement(
             ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
     val conservationCategory: ConservationCategory?,
     val familyName: String?,
-    val growthForm: GrowthForm?,
+    val growthForms: Set<GrowthForm>?,
     val id: SpeciesId,
     val problems: List<SpeciesProblemElement>?,
     val rare: Boolean?,
@@ -236,7 +236,7 @@ data class SpeciesResponseElement(
       commonName = model.commonName,
       conservationCategory = model.conservationCategory,
       familyName = model.familyName,
-      growthForm = model.growthForm,
+      growthForms = model.growthForms,
       id = model.id,
       problems = problems?.map { SpeciesProblemElement(it) }?.ifEmpty { null },
       rare = model.rare,
@@ -254,7 +254,7 @@ data class SpeciesRequestPayload(
             ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
     val conservationCategory: ConservationCategory?,
     val familyName: String?,
-    val growthForm: GrowthForm?,
+    val growthForms: Set<GrowthForm>?,
     @Schema(description = "Which organization's species list to update.")
     val organizationId: OrganizationId,
     val rare: Boolean?,
@@ -267,7 +267,7 @@ data class SpeciesRequestPayload(
           conservationCategory = conservationCategory,
           ecosystemTypes = ecosystemTypes ?: emptySet(),
           familyName = familyName,
-          growthForm = growthForm,
+          growthForms = growthForms ?: emptySet(),
           id = id,
           initialScientificName = scientificName,
           rare = rare,

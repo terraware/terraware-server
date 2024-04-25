@@ -148,7 +148,13 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
         reportRenderer,
         reportStore,
         scheduler,
-        SpeciesStore(clock, dslContext, speciesDao, speciesEcosystemTypesDao, speciesProblemsDao),
+        SpeciesStore(
+            clock,
+            dslContext,
+            speciesDao,
+            speciesEcosystemTypesDao,
+            speciesGrowthFormsDao,
+            speciesProblemsDao),
         SystemUser(usersDao),
     )
   }
@@ -178,7 +184,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val nurseryId = FacilityId(1)
       val plantingSiteId = PlantingSiteId(1)
       val seedBankId = FacilityId(2)
-      val speciesId = insertSpecies(growthForm = GrowthForm.Shrub, scientificName = "My species")
+      val speciesId =
+          insertSpecies(growthForms = setOf(GrowthForm.Shrub), scientificName = "My species")
 
       insertFacility(
           nurseryId,
@@ -236,7 +243,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               species =
                                   listOf(
                                       ReportBodyModelV1.PlantingSite.Species(
-                                          growthForm = GrowthForm.Shrub,
+                                          growthForms = setOf(GrowthForm.Shrub),
                                           id = speciesId,
                                           scientificName = "My species",
                                       ),
@@ -285,7 +292,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       val projectId = insertProject(name = "Test Project")
       val otherProjectId = insertProject(name = "Other Project")
-      val speciesId = insertSpecies(growthForm = GrowthForm.Shrub, scientificName = "My species")
+      val speciesId =
+          insertSpecies(growthForms = setOf(GrowthForm.Shrub), scientificName = "My species")
 
       insertFacility(nonProjectNurseryId, type = FacilityType.Nursery)
       insertFacility(nonProjectSeedBankId, type = FacilityType.SeedBank)
@@ -396,7 +404,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               species =
                                   listOf(
                                       ReportBodyModelV1.PlantingSite.Species(
-                                          growthForm = GrowthForm.Shrub,
+                                          growthForms = setOf(GrowthForm.Shrub),
                                           id = speciesId,
                                           scientificName = "My species",
                                       ),
@@ -678,7 +686,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
           ),
       )
 
-      val speciesId = insertSpecies(growthForm = GrowthForm.Forb, scientificName = "New species")
+      val speciesId =
+          insertSpecies(growthForms = setOf(GrowthForm.Forb), scientificName = "New species")
       insertBatch(
           facilityId = firstNursery,
           germinatingQuantity = 50,
@@ -741,7 +750,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                           species =
                               listOf(
                                   ReportBodyModelV1.PlantingSite.Species(
-                                      growthForm = GrowthForm.Forb,
+                                      growthForms = setOf(GrowthForm.Forb),
                                       id = speciesId,
                                       mortalityRateInField = 9,
                                       scientificName = "Old species",
@@ -840,7 +849,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                                   species =
                                       listOf(
                                           ReportBodyModelV1.PlantingSite.Species(
-                                              growthForm = GrowthForm.Forb,
+                                              growthForms = setOf(GrowthForm.Forb),
                                               id = speciesId,
                                               scientificName = "New species",
                                           ),

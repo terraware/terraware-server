@@ -102,6 +102,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.ReportPhotosDao
 import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesEcosystemTypesDao
+import com.terraformation.backend.db.default_schema.tables.daos.SpeciesGrowthFormsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SubLocationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ThumbnailsDao
@@ -129,6 +130,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GROWTH_FORMS
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
@@ -442,6 +444,7 @@ abstract class DatabaseTest {
   protected val reportsDao: ReportsDao by lazyDao()
   protected val speciesDao: SpeciesDao by lazyDao()
   protected val speciesEcosystemTypesDao: SpeciesEcosystemTypesDao by lazyDao()
+  protected val speciesGrowthFormsDao: SpeciesGrowthFormsDao by lazyDao()
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
   protected val subLocationsDao: SubLocationsDao by lazyDao()
   protected val submissionsDao: SubmissionsDao by lazyDao()
@@ -806,7 +809,7 @@ abstract class DatabaseTest {
       initialScientificName: String = scientificName,
       commonName: String? = null,
       ecosystemTypes: Set<EcosystemType> = emptySet(),
-      growthForm: GrowthForm? = null,
+      growthForms: Set<GrowthForm> = emptySet(),
   ): SpeciesId {
     val speciesIdWrapper = speciesId?.toIdWrapper { SpeciesId(it) }
     val organizationIdWrapper = organizationId.toIdWrapper { OrganizationId(it) }
@@ -821,7 +824,6 @@ abstract class DatabaseTest {
               .set(CREATED_TIME, createdTime)
               .set(DELETED_BY, if (deletedTime != null) createdBy else null)
               .set(DELETED_TIME, deletedTime)
-              .set(GROWTH_FORM_ID, growthForm)
               .apply { speciesIdWrapper?.let { set(ID, it) } }
               .set(INITIAL_SCIENTIFIC_NAME, initialScientificName)
               .set(MODIFIED_BY, createdBy)
@@ -837,6 +839,14 @@ abstract class DatabaseTest {
           .insertInto(SPECIES_ECOSYSTEM_TYPES)
           .set(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID, actualSpeciesId)
           .set(SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID, ecosystemType)
+          .execute()
+    }
+
+    growthForms.forEach { growthForm ->
+      dslContext
+          .insertInto(SPECIES_GROWTH_FORMS)
+          .set(SPECIES_GROWTH_FORMS.SPECIES_ID, actualSpeciesId)
+          .set(SPECIES_GROWTH_FORMS.GROWTH_FORM_ID, growthForm)
           .execute()
     }
 

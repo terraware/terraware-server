@@ -99,7 +99,13 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
         )
 
     speciesStore =
-        SpeciesStore(clock, dslContext, speciesDao, speciesEcosystemTypesDao, speciesProblemsDao)
+        SpeciesStore(
+            clock,
+            dslContext,
+            speciesDao,
+            speciesEcosystemTypesDao,
+            speciesGrowthFormsDao,
+            speciesProblemsDao)
 
     insertSiteData()
   }

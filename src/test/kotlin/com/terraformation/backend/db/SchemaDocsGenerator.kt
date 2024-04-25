@@ -219,6 +219,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "spatial_ref_sys" to emptySet(),
                   "species" to setOf(ALL, SEEDBANK, SPECIES),
                   "species_ecosystem_types" to setOf(ALL, SPECIES),
+                  "species_growth_forms" to setOf(ALL, SPECIES),
                   "species_problem_fields" to setOf(ALL, SPECIES),
                   "species_problem_types" to setOf(ALL, SPECIES),
                   "species_problems" to setOf(ALL, SPECIES),

@@ -70,7 +70,7 @@ class ReportBodyModelV1Test {
                       species =
                           listOf(
                               ReportBodyModelV1.PlantingSite.Species(
-                                  growthForm = GrowthForm.Forb,
+                                  growthForms = setOf(GrowthForm.Forb),
                                   id = SpeciesId(1),
                                   mortalityRateInField = 9,
                                   scientificName = "Species name",

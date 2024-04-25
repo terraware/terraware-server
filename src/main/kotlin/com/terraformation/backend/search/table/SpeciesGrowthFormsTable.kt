@@ -1,6 +1,5 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GROWTH_FORMS
 import com.terraformation.backend.search.SearchTable
@@ -24,8 +23,7 @@ class SpeciesGrowthFormsTable(private val tables: SearchTables) : SearchTable() 
 
   override val fields: List<SearchField> =
       listOf(
-          idWrapperField("species_id", SPECIES_GROWTH_FORMS.SPECIES_ID) { SpeciesId(it) },
-          enumField("growth_form", SPECIES_GROWTH_FORMS.GROWTH_FORM_ID),
+          enumField("growthForm", SPECIES_GROWTH_FORMS.GROWTH_FORM_ID),
       )
 
   override val inheritsVisibilityFrom: SearchTable
