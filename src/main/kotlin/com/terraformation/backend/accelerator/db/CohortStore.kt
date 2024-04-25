@@ -96,7 +96,7 @@ class CohortStore(
   fun update(cohortId: CohortId, updateFunc: (ExistingCohortModel) -> ExistingCohortModel) {
     requirePermissions { updateCohort(cohortId) }
 
-    val existing = fetchOneById(cohortId)
+    val existing = fetchOneById(cohortId, cohortModuleDepth = CohortModuleDepth.Module)
     val updated = updateFunc(existing)
 
     dslContext.transaction { _ ->
@@ -117,8 +117,14 @@ class CohortStore(
       }
 
       if (existing.modules != updated.modules) {
-        updated.modules.forEach {
-          with(COHORT_MODULES) {
+        val toRemove =
+            existing.modules.map { it.moduleId }.toSet() -
+                updated.modules.map { it.moduleId }.toSet()
+
+        with(COHORT_MODULES) {
+          toRemove.forEach { dslContext.deleteFrom(this).where(MODULE_ID.eq(it)).execute() }
+
+          updated.modules.forEach {
             dslContext
                 .insertInto(this)
                 .set(COHORT_ID, cohortId)

@@ -277,22 +277,18 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
       val module1 = insertModule()
       val module2 = insertModule()
 
-          insertCohortModule(
-              cohortId,
-              module1,
-              startDate = LocalDate.of(2024, 1, 1),
-              endDate = LocalDate.of(2024, 1, 3))
+      insertCohortModule(
+          cohortId,
+          module1,
+          startDate = LocalDate.of(2024, 1, 1),
+          endDate = LocalDate.of(2024, 1, 3))
 
       assertEquals(
           listOf(
               CohortModulesRow(
-                  cohortId,
-                  module1,
-                  LocalDate.of(2024, 1, 1),
-                  LocalDate.of(2024, 1, 3))),
+                  cohortId, module1, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 3))),
           cohortModulesDao.findAll(),
-          "Cohort modules before update."
-      )
+          "Cohort modules before update.")
 
       store.update(cohortId) {
         it.copy(
@@ -316,18 +312,38 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               CohortModulesRow(
-                  cohortId,
-                  module1,
-                  LocalDate.of(2024, 2, 1),
-                  LocalDate.of(2024, 2, 3)),
+                  cohortId, module1, LocalDate.of(2024, 2, 1), LocalDate.of(2024, 2, 3)),
               CohortModulesRow(
-                  cohortId,
-                  module2,
-                  LocalDate.of(2024, 3, 1),
-                  LocalDate.of(2024, 3, 3))),
+                  cohortId, module2, LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 3))),
           cohortModulesDao.findAll(),
-          "Cohort modules after update."
-      )
+          "Cohort modules after update.")
+    }
+
+    @Test
+    fun `deletes cohort modules if modules are removed`() {
+      every { user.canUpdateCohort(any()) } returns true
+
+      val cohortId = insertCohort()
+      val module1 = insertModule()
+      val module2 = insertModule()
+
+      insertCohortModule(
+          cohortId,
+          module1,
+          startDate = LocalDate.of(2024, 1, 1),
+          endDate = LocalDate.of(2024, 1, 3))
+
+      assertEquals(
+          listOf(
+              CohortModulesRow(
+                  cohortId, module1, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 3))),
+          cohortModulesDao.findAll(),
+          "Cohort modules before update.")
+
+      store.update(cohortId) { it.copy(modules = emptyList()) }
+
+      assertEquals(
+          emptyList<CohortModulesRow>(), cohortModulesDao.findAll(), "Cohort modules after update.")
     }
 
     @Test

@@ -8,7 +8,6 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.accelerator.CohortId
-import com.terraformation.backend.db.accelerator.CohortModuleId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.DeliverableCategory
