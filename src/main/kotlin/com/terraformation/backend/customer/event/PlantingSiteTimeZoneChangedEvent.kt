@@ -1,6 +1,6 @@
 package com.terraformation.backend.customer.event
 
-import com.terraformation.backend.tracking.model.PlantingSiteModel
+import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import java.time.ZoneId
 
 /**
@@ -9,7 +9,7 @@ import java.time.ZoneId
  * time zone of its own.
  */
 data class PlantingSiteTimeZoneChangedEvent(
-    val plantingSite: PlantingSiteModel,
+    val plantingSite: ExistingPlantingSiteModel,
     val oldTimeZone: ZoneId?,
     /** The new effective time zone; this might be inherited from the organization. */
     val newTimeZone: ZoneId?,

@@ -32,6 +32,7 @@ import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEven
 import com.terraformation.backend.tracking.model.CannotCreatePastPlantingSeasonException
 import com.terraformation.backend.tracking.model.CannotUpdatePastPlantingSeasonException
 import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
+import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSeasonTooFarInFutureException
 import com.terraformation.backend.tracking.model.PlantingSeasonTooLongException
@@ -126,7 +127,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         insertPlantingSeason(startDate = season2StartDate, endDate = season2EndDate)
 
     val expectedWithSite =
-        PlantingSiteModel(
+        ExistingPlantingSiteModel(
             boundary = multiPolygon(3),
             description = null,
             exclusion = multiPolygon(1.5),

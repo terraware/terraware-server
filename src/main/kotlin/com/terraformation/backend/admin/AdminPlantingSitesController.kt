@@ -24,9 +24,9 @@ import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlantingSiteUploadProblemsException
 import com.terraformation.backend.tracking.mapbox.MapboxService
+import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
-import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import io.swagger.v3.oas.annotations.Hidden
@@ -178,7 +178,7 @@ class AdminPlantingSitesController(
     return plotsToGeoJson(site, plantedSubzoneIds)
   }
 
-  private fun zonesToGeoJson(site: PlantingSiteModel) =
+  private fun zonesToGeoJson(site: ExistingPlantingSiteModel) =
       mapOf(
           "type" to "FeatureCollection",
           "features" to
@@ -190,7 +190,7 @@ class AdminPlantingSitesController(
                 )
               })
 
-  private fun subzonesToGeoJson(site: PlantingSiteModel) =
+  private fun subzonesToGeoJson(site: ExistingPlantingSiteModel) =
       mapOf(
           "type" to "FeatureCollection",
           "features" to
@@ -204,7 +204,10 @@ class AdminPlantingSitesController(
                 }
               })
 
-  private fun plotsToGeoJson(site: PlantingSiteModel, plantedSubzoneIds: Set<PlantingSubzoneId>) =
+  private fun plotsToGeoJson(
+      site: ExistingPlantingSiteModel,
+      plantedSubzoneIds: Set<PlantingSubzoneId>
+  ) =
       mapOf(
           "type" to "FeatureCollection",
           "features" to

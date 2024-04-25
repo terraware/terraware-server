@@ -44,6 +44,9 @@ import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.model.CannotUpdatePastPlantingSeasonException
 import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
+import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
+import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
+import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSeasonsOverlapException
@@ -96,7 +99,7 @@ class PlantingSiteStore(
   fun fetchSiteById(
       plantingSiteId: PlantingSiteId,
       depth: PlantingSiteDepth,
-  ): PlantingSiteModel {
+  ): ExistingPlantingSiteModel {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return fetchSitesByCondition(PLANTING_SITES.ID.eq(plantingSiteId), depth).firstOrNull()
@@ -106,7 +109,7 @@ class PlantingSiteStore(
   fun fetchSitesByOrganizationId(
       organizationId: OrganizationId,
       depth: PlantingSiteDepth = PlantingSiteDepth.Site,
-  ): List<PlantingSiteModel> {
+  ): List<ExistingPlantingSiteModel> {
     requirePermissions { readOrganization(organizationId) }
 
     return fetchSitesByCondition(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId), depth)
@@ -115,7 +118,7 @@ class PlantingSiteStore(
   fun fetchSitesByProjectId(
       projectId: ProjectId,
       depth: PlantingSiteDepth = PlantingSiteDepth.Site,
-  ): List<PlantingSiteModel> {
+  ): List<ExistingPlantingSiteModel> {
     requirePermissions { readProject(projectId) }
 
     return fetchSitesByCondition(PLANTING_SITES.PROJECT_ID.eq(projectId), depth)
@@ -124,7 +127,7 @@ class PlantingSiteStore(
   private fun fetchSitesByCondition(
       condition: Condition,
       depth: PlantingSiteDepth,
-  ): List<PlantingSiteModel> {
+  ): List<ExistingPlantingSiteModel> {
     val zonesField =
         if (depth != PlantingSiteDepth.Site) {
           plantingZonesMultiset(depth)
@@ -137,7 +140,7 @@ class PlantingSiteStore(
         .from(PLANTING_SITES)
         .where(condition)
         .orderBy(PLANTING_SITES.ID)
-        .fetch { PlantingSiteModel(it, plantingSeasonsMultiset, zonesField) }
+        .fetch { PlantingSiteModel.of(it, plantingSeasonsMultiset, zonesField) }
   }
 
   fun countMonitoringPlots(
@@ -239,7 +242,7 @@ class PlantingSiteStore(
       boundary: MultiPolygon? = null,
       plantingSeasons: Collection<UpdatedPlantingSeasonModel> = emptyList(),
       exclusion: MultiPolygon? = null,
-  ): PlantingSiteModel {
+  ): ExistingPlantingSiteModel {
     requirePermissions {
       createPlantingSite(organizationId)
       projectId?.let { readProject(it) }
@@ -294,7 +297,7 @@ class PlantingSiteStore(
   fun updatePlantingSite(
       plantingSiteId: PlantingSiteId,
       plantingSeasons: Collection<UpdatedPlantingSeasonModel>,
-      editFunc: (PlantingSiteModel) -> PlantingSiteModel,
+      editFunc: (ExistingPlantingSiteModel) -> ExistingPlantingSiteModel,
   ) {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
@@ -906,8 +909,8 @@ class PlantingSiteStore(
    * as temporary plots in the past.
    */
   private fun createPermanentClusters(
-      plantingSite: PlantingSiteModel,
-      plantingZone: PlantingZoneModel,
+      plantingSite: ExistingPlantingSiteModel,
+      plantingZone: ExistingPlantingZoneModel,
       clusterNumbers: List<Int>,
   ): List<MonitoringPlotId> {
     val userId = currentUser().userId
@@ -1088,7 +1091,7 @@ class PlantingSiteStore(
 
   private fun plantingSubzonesMultiset(
       depth: PlantingSiteDepth
-  ): Field<List<PlantingSubzoneModel>> {
+  ): Field<List<ExistingPlantingSubzoneModel>> {
     val plotsField = if (depth == PlantingSiteDepth.Plot) monitoringPlotsMultiset else null
 
     return DSL.multiset(
@@ -1118,7 +1121,9 @@ class PlantingSiteStore(
         }
   }
 
-  private fun plantingZonesMultiset(depth: PlantingSiteDepth): Field<List<PlantingZoneModel>> {
+  private fun plantingZonesMultiset(
+      depth: PlantingSiteDepth
+  ): Field<List<ExistingPlantingZoneModel>> {
     val subzonesField =
         if (depth == PlantingSiteDepth.Subzone || depth == PlantingSiteDepth.Plot) {
           plantingSubzonesMultiset(depth)
