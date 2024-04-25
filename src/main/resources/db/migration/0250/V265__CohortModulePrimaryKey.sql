@@ -8,3 +8,6 @@ DELETE FROM accelerator.cohort_modules a USING accelerator.cohort_modules b
 ALTER TABLE accelerator.cohort_modules DROP CONSTRAINT cohort_modules_pkey;
 ALTER TABLE accelerator.cohort_modules ADD PRIMARY KEY (cohort_id, module_id);
 ALTER TABLE accelerator.cohort_modules DROP COLUMN id;
+
+CREATE INDEX ON accelerator.cohort_modules(cohort_id);
+CREATE INDEX ON accelerator.cohort_modules(module_id);
