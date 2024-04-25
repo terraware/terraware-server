@@ -2700,6 +2700,7 @@ $dokka.location:com.terraformation.backend.daily/PlantingSeasonScheduler/transit
 $dokka.location:com.terraformation.backend.db////PointingToDeclaration/-terraware -server/com.terraformation.backend.db/index.html
 $dokka.location:com.terraformation.backend.db//asGeoJson/org.jooq.Field[org.locationtech.jts.geom.Geometry?]#/PointingToDeclaration/-terraware -server/com.terraformation.backend.db/as-geo-json.html
 $dokka.location:com.terraformation.backend.db//asNonNullable/org.jooq.Field[TypeParam(bounds=[kotlin.Any])?]#/PointingToDeclaration/-terraware -server/com.terraformation.backend.db/as-non-nullable.html
+$dokka.location:com.terraformation.backend.db//attach/TypeParam(bounds=[org.jooq.Record])#org.jooq.DSLContext/PointingToDeclaration/-terraware -server/com.terraformation.backend.db/attach.html
 $dokka.location:com.terraformation.backend.db//collation/java.util.Locale#/PointingToDeclaration/-terraware -server/com.terraformation.backend.db/collation.html
 $dokka.location:com.terraformation.backend.db//escapeLikePattern/#kotlin.String/PointingToDeclaration/-terraware -server/com.terraformation.backend.db/escape-like-pattern.html
 $dokka.location:com.terraformation.backend.db//forMultiset/org.jooq.Field[org.locationtech.jts.geom.Geometry?]#/PointingToDeclaration/-terraware -server/com.terraformation.backend.db/for-multiset.html
