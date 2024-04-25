@@ -25,14 +25,14 @@ data class PlantingSiteModel<
 >(
     val areaHa: BigDecimal? = null,
     val boundary: MultiPolygon?,
-    val description: String?,
+    val description: String? = null,
     val exclusion: MultiPolygon? = null,
     val gridOrigin: Point? = null,
     val id: PSID,
     val name: String,
     val organizationId: OrganizationId,
     val plantingSeasons: List<ExistingPlantingSeasonModel> = emptyList(),
-    val plantingZones: List<PlantingZoneModel<PZID, PSZID>>,
+    val plantingZones: List<PlantingZoneModel<PZID, PSZID>> = emptyList(),
     val projectId: ProjectId? = null,
     val timeZone: ZoneId? = null,
 ) {
@@ -97,6 +97,34 @@ data class PlantingSiteModel<
             plantingZones = plantingZonesMultiset?.let { record[it] } ?: emptyList(),
             projectId = record[PLANTING_SITES.PROJECT_ID],
             timeZone = record[PLANTING_SITES.TIME_ZONE],
+        )
+
+    fun create(
+        areaHa: BigDecimal? = null,
+        boundary: MultiPolygon? = null,
+        description: String? = null,
+        exclusion: MultiPolygon? = null,
+        gridOrigin: Point? = null,
+        name: String,
+        organizationId: OrganizationId,
+        plantingSeasons: List<ExistingPlantingSeasonModel> = emptyList(),
+        plantingZones: List<NewPlantingZoneModel> = emptyList(),
+        projectId: ProjectId? = null,
+        timeZone: ZoneId? = null,
+    ) =
+        NewPlantingSiteModel(
+            areaHa = areaHa,
+            boundary = boundary,
+            description = description,
+            exclusion = exclusion,
+            gridOrigin = gridOrigin,
+            id = null,
+            name = name,
+            organizationId = organizationId,
+            plantingSeasons = plantingSeasons,
+            plantingZones = plantingZones,
+            projectId = projectId,
+            timeZone = timeZone,
         )
   }
 }

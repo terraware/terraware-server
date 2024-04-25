@@ -27,6 +27,7 @@ import com.terraformation.backend.tracking.mapbox.MapboxService
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import io.swagger.v3.oas.annotations.Hidden
@@ -345,13 +346,11 @@ class AdminPlantingSitesController(
           } else {
             plantingSiteStore
                 .createPlantingSite(
-                    organizationId = organizationId,
-                    name = siteName,
-                    description = null,
-                    timeZone = null,
-                    projectId = null,
-                    boundary = siteFile.features.first().geometry as MultiPolygon,
-                )
+                    PlantingSiteModel.create(
+                        boundary = siteFile.features.first().geometry as MultiPolygon,
+                        name = siteName,
+                        organizationId = organizationId,
+                    ))
                 .id
           }
 

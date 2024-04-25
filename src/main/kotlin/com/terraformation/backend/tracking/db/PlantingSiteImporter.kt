@@ -11,6 +11,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
 import com.terraformation.backend.util.toMultiPolygon
@@ -170,12 +171,13 @@ class PlantingSiteImporter(
       val siteId =
           plantingSiteStore
               .createPlantingSite(
-                  boundary = siteFeature.geometry.toMultiPolygon(),
-                  description = description,
-                  exclusion = exclusion,
-                  name = name,
-                  organizationId = organizationId,
-              )
+                  PlantingSiteModel.create(
+                      boundary = siteFeature.geometry.toMultiPolygon(),
+                      description = description,
+                      exclusion = exclusion,
+                      name = name,
+                      organizationId = organizationId,
+                  ))
               .id
 
       zonesByName.forEach { (zoneName, zoneFeature) ->

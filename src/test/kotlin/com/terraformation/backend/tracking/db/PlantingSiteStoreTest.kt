@@ -369,12 +369,13 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val projectId = insertProject()
       val model =
           store.createPlantingSite(
-              description = "description",
-              name = "name",
-              organizationId = organizationId,
-              projectId = projectId,
-              timeZone = timeZone,
-          )
+              PlantingSiteModel.create(
+                  description = "description",
+                  name = "name",
+                  organizationId = organizationId,
+                  projectId = projectId,
+                  timeZone = timeZone,
+              ))
 
       assertEquals(
           listOf(
@@ -403,10 +404,11 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
       val model =
           store.createPlantingSite(
-              boundary = boundary,
-              name = "name",
-              organizationId = organizationId,
-          )
+              PlantingSiteModel.create(
+                  boundary = boundary,
+                  name = "name",
+                  organizationId = organizationId,
+              ))
 
       assertEquals(
           listOf(
@@ -439,19 +441,18 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
       val model =
           store.createPlantingSite(
-              description = null,
-              name = "name",
-              organizationId = organizationId,
+              PlantingSiteModel.create(
+                  name = "name",
+                  organizationId = organizationId,
+                  timeZone = timeZone,
+              ),
               plantingSeasons =
                   listOf(
                       UpdatedPlantingSeasonModel(
                           startDate = season1StartDate, endDate = season1EndDate),
                       UpdatedPlantingSeasonModel(
                           startDate = season2StartDate, endDate = season2EndDate),
-                  ),
-              projectId = null,
-              timeZone = timeZone,
-          )
+                  ))
 
       val expected =
           listOf(
@@ -484,12 +485,10 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<AccessDeniedException> {
         store.createPlantingSite(
-            description = null,
-            name = "name",
-            organizationId = organizationId,
-            projectId = null,
-            timeZone = null,
-        )
+            PlantingSiteModel.create(
+                name = "name",
+                organizationId = organizationId,
+            ))
       }
     }
 
@@ -501,12 +500,11 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<ProjectInDifferentOrganizationException> {
         store.createPlantingSite(
-            description = null,
-            organizationId = organizationId,
-            name = "name",
-            projectId = projectId,
-            timeZone = null,
-        )
+            PlantingSiteModel.create(
+                name = "name",
+                organizationId = organizationId,
+                projectId = projectId,
+            ))
       }
     }
 
@@ -516,11 +514,11 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<PlantingSeasonsOverlapException> {
         store.createPlantingSite(
-            description = null,
-            organizationId = organizationId,
-            name = "name",
-            projectId = null,
-            timeZone = timeZone,
+            PlantingSiteModel.create(
+                name = "name",
+                organizationId = organizationId,
+                timeZone = timeZone,
+            ),
             plantingSeasons =
                 listOf(
                     UpdatedPlantingSeasonModel(
@@ -550,11 +548,11 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     ) {
       assertThrows<T> {
         store.createPlantingSite(
-            description = null,
-            organizationId = organizationId,
-            name = "name",
-            projectId = null,
-            timeZone = timeZone,
+            PlantingSiteModel.create(
+                name = "name",
+                organizationId = organizationId,
+                timeZone = timeZone,
+            ),
             plantingSeasons =
                 listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate)))
       }
@@ -572,14 +570,12 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     fun `updates values`() {
       val initialModel =
           store.createPlantingSite(
-              boundary = Turtle(point(0)).makeMultiPolygon { square(100) },
-              description = null,
-              name = "initial name",
-              organizationId = organizationId,
-              plantingSeasons = emptyList(),
-              projectId = null,
-              timeZone = timeZone,
-          )
+              PlantingSiteModel.create(
+                  boundary = Turtle(point(0)).makeMultiPolygon { square(100) },
+                  name = "initial name",
+                  organizationId = organizationId,
+                  timeZone = timeZone,
+              ))
 
       val createdTime = clock.instant()
       val newTimeZone = insertTimeZone("Europe/Paris")
@@ -1741,14 +1737,13 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
       val endDate = startDate.plusDays(60)
       val model =
           store.createPlantingSite(
-              description = null,
-              name = "name",
-              organizationId = organizationId,
+              PlantingSiteModel.create(
+                  name = "name",
+                  organizationId = organizationId,
+                  timeZone = timeZone,
+              ),
               plantingSeasons =
-                  listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate)),
-              projectId = null,
-              timeZone = timeZone,
-          )
+                  listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate)))
 
       assertSeasonActive(false, "Should start as inactive")
 
@@ -1782,14 +1777,13 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
       val model =
           store.createPlantingSite(
-              description = null,
-              name = "name",
-              organizationId = organizationId,
+              PlantingSiteModel.create(
+                  name = "name",
+                  organizationId = organizationId,
+                  timeZone = timeZone,
+              ),
               plantingSeasons =
-                  listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate)),
-              projectId = null,
-              timeZone = timeZone,
-          )
+                  listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate)))
 
       assertSeasonActive(true, "Should start as active")
 
