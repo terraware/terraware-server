@@ -7,9 +7,9 @@ ALTER TABLE species ADD COLUMN native_ecosystem TEXT;
 ALTER TABLE species ADD COLUMN other_facts TEXT;
 
 -- Number fields
-ALTER TABLE species ADD COLUMN average_wood_density FLOAT;
-ALTER TABLE species ADD COLUMN height_at_maturity_value FLOAT;
-ALTER TABLE species ADD COLUMN dbh_value FLOAT;
+ALTER TABLE species ADD COLUMN average_wood_density NUMERIC;
+ALTER TABLE species ADD COLUMN height_at_maturity_value NUMERIC;
+ALTER TABLE species ADD COLUMN dbh_value NUMERIC;
 
 -- Dropdown fields
 -- Wood density level enum table

@@ -209,9 +209,9 @@ VALUES (1, 'Seed collection & germination'),
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO wood_density_levels (id, name)
-VALUES (1, 'Species level'),
-       (2, 'Genus level'),
-       (3, 'Family level')
+VALUES (1, 'Species'),
+       (2, 'Genus'),
+       (3, 'Family')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO tracking.observable_conditions (id, name)

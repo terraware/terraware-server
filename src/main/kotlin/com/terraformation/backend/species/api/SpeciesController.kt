@@ -32,6 +32,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import java.math.BigDecimal
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -216,7 +217,7 @@ data class SpeciesProblemElement(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class SpeciesResponseElement(
-    val averageWoodDensity: Double?,
+    val averageWoodDensity: BigDecimal?,
     val commonName: String?,
     @Schema(
         description = "IUCN Red List conservation category code.",
@@ -224,13 +225,13 @@ data class SpeciesResponseElement(
             ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
     val conservationCategory: ConservationCategory?,
     val dbhSource: String?,
-    val dbhValue: Double?,
+    val dbhValue: BigDecimal?,
     val ecologicalRoleKnown: String?,
     val ecosystemTypes: Set<EcosystemType>?,
     val familyName: String?,
     val growthForms: Set<GrowthForm>?,
     val heightAtMaturitySource: String?,
-    val heightAtMaturityValue: Double?,
+    val heightAtMaturityValue: BigDecimal?,
     val id: SpeciesId,
     val localUsesKnown: String?,
     val nativeEcosystem: String?,
@@ -273,7 +274,7 @@ data class SpeciesResponseElement(
 }
 
 data class SpeciesRequestPayload(
-    val averageWoodDensity: Double?,
+    val averageWoodDensity: BigDecimal?,
     val commonName: String?,
     @Schema(
         description = "IUCN Red List conservation category code.",
@@ -281,13 +282,13 @@ data class SpeciesRequestPayload(
             ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
     val conservationCategory: ConservationCategory?,
     val dbhSource: String?,
-    val dbhValue: Double?,
+    val dbhValue: BigDecimal?,
     val ecologicalRoleKnown: String?,
     val ecosystemTypes: Set<EcosystemType>?,
     val familyName: String?,
     val growthForms: Set<GrowthForm>?,
     val heightAtMaturitySource: String?,
-    val heightAtMaturityValue: Double?,
+    val heightAtMaturityValue: BigDecimal?,
     val localUsesKnown: String?,
     val nativeEcosystem: String?,
     @Schema(description = "Which organization's species list to update.")

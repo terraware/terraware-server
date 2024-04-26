@@ -10,24 +10,25 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.WoodDensityLevel
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import java.math.BigDecimal
 import java.time.Instant
 import org.jooq.Field
 import org.jooq.Record
 
 data class SpeciesModel<ID : SpeciesId?>(
-    val averageWoodDensity: Double? = null,
+    val averageWoodDensity: BigDecimal? = null,
     val checkedTime: Instant? = null,
     val commonName: String? = null,
     val conservationCategory: ConservationCategory? = null,
     val dbhSource: String? = null,
-    val dbhValue: Double? = null,
+    val dbhValue: BigDecimal? = null,
     val deletedTime: Instant? = null,
     val ecologicalRoleKnown: String? = null,
     val ecosystemTypes: Set<EcosystemType> = emptySet(),
     val familyName: String? = null,
     val growthForms: Set<GrowthForm> = emptySet(),
     val heightAtMaturitySource: String? = null,
-    val heightAtMaturityValue: Double? = null,
+    val heightAtMaturityValue: BigDecimal? = null,
     val id: ID,
     val localUsesKnown: String? = null,
     val nativeEcosystem: String? = null,
