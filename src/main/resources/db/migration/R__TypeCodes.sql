@@ -107,6 +107,13 @@ VALUES (1, 'Boreal forests/Taiga'),
        (14, 'Tundra')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO accelerator.event_statuses (id, name)
+VALUES (1, 'Not Started'),
+       (2, 'Starting Soon'),
+       (3, 'In Progress'),
+       (4, 'Ended')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO accelerator.event_types (id, name)
 VALUES (1, 'One-on-One Session'),
        (2, 'Workshop'),

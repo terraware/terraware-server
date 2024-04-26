@@ -482,6 +482,8 @@ COMMENT ON TABLE accelerator.document_stores IS '(Enum) Locations where uploaded
 
 COMMENT ON TABLE accelerator.event_projects IS 'Projects that are participants of an event.';
 
+COMMENT ON TABLE accelerator.event_statuses IS '(Enum) Statuses of events for an accelerator module';
+
 COMMENT ON TABLE accelerator.event_types IS '(Enum) Types of events for an accelerator module';
 
 COMMENT ON TABLE accelerator.events IS 'Events with meeting links and time within an acclerator module.';
