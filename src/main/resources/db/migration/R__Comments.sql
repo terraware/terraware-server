@@ -128,6 +128,8 @@ COMMENT ON COLUMN organizations.id IS 'Unique numeric identifier of the organiza
 COMMENT ON COLUMN organizations.organization_type_details IS 'User provided information on the organization when type is Other, limited to 100 characters.';
 COMMENT ON COLUMN organizations.website IS 'Website information for the organization with no formatting restrictions.';
 
+COMMENT ON TABLE plant_material_sourcing_methods IS '(Enum) Sourcing methods for acquiring plant material.';
+
 COMMENT ON TABLE project_land_use_model_types IS 'Which projects have which types of land use models.';
 
 COMMENT ON TABLE project_report_settings IS 'Which projects require reports to be submitted each quarter. Organization-level settings are in `organization_report_settings`.';
@@ -163,7 +165,11 @@ COMMENT ON TABLE species_ecosystem_types IS 'Ecosystems where each species can b
 
 COMMENT ON TABLE species_growth_forms IS 'Growth forms of each species';
 
+COMMENT ON TABLE species_plant_material_sourcing_methods IS 'Sourcing methods for the plant material used to grow a particular species.';
+
 COMMENT ON TABLE species_problem_fields IS '(Enum) Species fields that can be scanned for problems.';
+
+COMMENT ON TABLE species_successional_groups IS 'The successional groupings that the species is planted in.';
 
 COMMENT ON TABLE species_problem_types IS '(Enum) Specific types of problems that can be detected in species data.';
 
@@ -175,6 +181,8 @@ COMMENT ON TABLE spring_session_attributes IS 'Data associated with a login sess
 
 COMMENT ON TABLE sub_locations IS 'The available locations where seeds can be stored at a seed bank facility or seedlings can be stored at a nursery facility.';
 COMMENT ON COLUMN sub_locations.name IS 'E.g., Freezer 1, Freezer 2';
+
+COMMENT ON TABLE successional_groups IS '(Enum) Successional Groups that a plant may be planted in.';
 
 COMMENT ON TABLE test_clock IS 'User-adjustable clock for test environments. Not used in production.';
 COMMENT ON COLUMN test_clock.fake_time IS 'What time the server should believe it was at the time the row was written.';

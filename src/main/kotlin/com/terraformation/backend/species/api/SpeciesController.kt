@@ -13,11 +13,13 @@ import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
+import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.seedbank.api.ValuesController
 import com.terraformation.backend.species.SpeciesService
@@ -223,10 +225,12 @@ data class SpeciesResponseElement(
     val familyName: String?,
     val growthForms: Set<GrowthForm>?,
     val id: SpeciesId,
+    val plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod>?,
     val problems: List<SpeciesProblemElement>?,
     val rare: Boolean?,
     val scientificName: String,
     val seedStorageBehavior: SeedStorageBehavior?,
+    val successionalGroups: Set<SuccessionalGroup>?,
 ) {
   constructor(
       model: ExistingSpeciesModel,
@@ -238,10 +242,12 @@ data class SpeciesResponseElement(
       familyName = model.familyName,
       growthForms = model.growthForms,
       id = model.id,
+      plantMaterialSourcingMethods = model.plantMaterialSourcingMethods,
       problems = problems?.map { SpeciesProblemElement(it) }?.ifEmpty { null },
       rare = model.rare,
       scientificName = model.scientificName,
       seedStorageBehavior = model.seedStorageBehavior,
+      successionalGroups = model.successionalGroups,
   )
 }
 
@@ -257,9 +263,11 @@ data class SpeciesRequestPayload(
     val growthForms: Set<GrowthForm>?,
     @Schema(description = "Which organization's species list to update.")
     val organizationId: OrganizationId,
+    val plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod>?,
     val rare: Boolean?,
     val scientificName: String,
     val seedStorageBehavior: SeedStorageBehavior?,
+    val successionalGroups: Set<SuccessionalGroup>?,
 ) {
   fun <T : SpeciesId?> toModel(id: T) =
       SpeciesModel(
@@ -272,8 +280,10 @@ data class SpeciesRequestPayload(
           initialScientificName = scientificName,
           rare = rare,
           organizationId = organizationId,
+          plantMaterialSourcingMethods = plantMaterialSourcingMethods ?: emptySet(),
           scientificName = scientificName,
           seedStorageBehavior = seedStorageBehavior,
+          successionalGroups = successionalGroups ?: emptySet(),
       )
 }
 

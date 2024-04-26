@@ -11,10 +11,12 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
+import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesEcosystemTypesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesGrowthFormsDao
@@ -26,7 +28,9 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GROWTH_FORMS
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PLANT_MATERIAL_SOURCING_METHODS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_SUCCESSIONAL_GROUPS
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -78,6 +82,30 @@ class SpeciesStore(
             result.mapNotNull { record -> record[SPECIES_GROWTH_FORMS.GROWTH_FORM_ID] }.toSet()
           }
 
+  private val speciesPlantMaterialSourcingMethodsMultiset: Field<Set<PlantMaterialSourcingMethod>> =
+      DSL.multiset(
+              DSL.select(SPECIES_PLANT_MATERIAL_SOURCING_METHODS.PLANT_MATERIAL_SOURCING_METHOD_ID)
+                  .from(SPECIES_PLANT_MATERIAL_SOURCING_METHODS)
+                  .where(SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID.eq(SPECIES.ID)))
+          .convertFrom { result ->
+            result
+                .mapNotNull { record ->
+                  record[SPECIES_PLANT_MATERIAL_SOURCING_METHODS.PLANT_MATERIAL_SOURCING_METHOD_ID]
+                }
+                .toSet()
+          }
+
+  private val speciesSuccessionalGroupsMultiset: Field<Set<SuccessionalGroup>> =
+      DSL.multiset(
+              DSL.select(SPECIES_SUCCESSIONAL_GROUPS.SUCCESSIONAL_GROUP_ID)
+                  .from(SPECIES_SUCCESSIONAL_GROUPS)
+                  .where(SPECIES_SUCCESSIONAL_GROUPS.SPECIES_ID.eq(SPECIES.ID)))
+          .convertFrom { result ->
+            result
+                .mapNotNull { record -> record[SPECIES_SUCCESSIONAL_GROUPS.SUCCESSIONAL_GROUP_ID] }
+                .toSet()
+          }
+
   private val usedInAccessions: Condition =
       DSL.exists(DSL.selectOne().from(ACCESSIONS).where(ACCESSIONS.SPECIES_ID.eq(SPECIES.ID)))
 
@@ -91,12 +119,22 @@ class SpeciesStore(
     requirePermissions { readSpecies(speciesId) }
 
     return dslContext
-        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
+        .select(
+            SPECIES.asterisk(),
+            speciesEcosystemTypesMultiset,
+            speciesGrowthFormsMultiset,
+            speciesPlantMaterialSourcingMethodsMultiset,
+            speciesSuccessionalGroupsMultiset)
         .from(SPECIES)
         .where(SPECIES.ID.eq(speciesId))
         .and(SPECIES.DELETED_TIME.isNull)
         .fetchOne {
-          ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
+          ExistingSpeciesModel.of(
+              it,
+              speciesEcosystemTypesMultiset,
+              speciesGrowthFormsMultiset,
+              speciesPlantMaterialSourcingMethodsMultiset,
+              speciesSuccessionalGroupsMultiset)
         } ?: throw SpeciesNotFoundException(speciesId)
   }
 
@@ -104,7 +142,12 @@ class SpeciesStore(
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return dslContext
-        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
+        .select(
+            SPECIES.asterisk(),
+            speciesEcosystemTypesMultiset,
+            speciesGrowthFormsMultiset,
+            speciesPlantMaterialSourcingMethodsMultiset,
+            speciesSuccessionalGroupsMultiset)
         .from(SPECIES)
         .where(
             SPECIES.ID.`in`(
@@ -113,7 +156,12 @@ class SpeciesStore(
                     .where(PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId))))
         .and(SPECIES.DELETED_TIME.isNull)
         .fetch {
-          ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
+          ExistingSpeciesModel.of(
+              it,
+              speciesEcosystemTypesMultiset,
+              speciesGrowthFormsMultiset,
+              speciesPlantMaterialSourcingMethodsMultiset,
+              speciesSuccessionalGroupsMultiset)
         }
   }
 
@@ -123,7 +171,12 @@ class SpeciesStore(
     requirePermissions { readPlantingSubzone(plantingSubzoneId) }
 
     return dslContext
-        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
+        .select(
+            SPECIES.asterisk(),
+            speciesEcosystemTypesMultiset,
+            speciesGrowthFormsMultiset,
+            speciesPlantMaterialSourcingMethodsMultiset,
+            speciesSuccessionalGroupsMultiset)
         .from(SPECIES)
         .where(
             SPECIES.ID.`in`(
@@ -133,7 +186,12 @@ class SpeciesStore(
         .and(SPECIES.DELETED_TIME.isNull)
         .orderBy(SPECIES.ID)
         .fetch {
-          ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
+          ExistingSpeciesModel.of(
+              it,
+              speciesEcosystemTypesMultiset,
+              speciesGrowthFormsMultiset,
+              speciesPlantMaterialSourcingMethodsMultiset,
+              speciesSuccessionalGroupsMultiset)
         }
   }
 
@@ -163,14 +221,24 @@ class SpeciesStore(
         }
 
     return dslContext
-        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
+        .select(
+            SPECIES.asterisk(),
+            speciesEcosystemTypesMultiset,
+            speciesGrowthFormsMultiset,
+            speciesPlantMaterialSourcingMethodsMultiset,
+            speciesSuccessionalGroupsMultiset)
         .from(SPECIES)
         .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
         .and(SPECIES.DELETED_TIME.isNull)
         .and(condition)
         .orderBy(SPECIES.ID)
         .fetch {
-          ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
+          ExistingSpeciesModel.of(
+              it,
+              speciesEcosystemTypesMultiset,
+              speciesGrowthFormsMultiset,
+              speciesPlantMaterialSourcingMethodsMultiset,
+              speciesSuccessionalGroupsMultiset)
         }
   }
 
@@ -274,6 +342,8 @@ class SpeciesStore(
       speciesDao.update(rowWithNewValues)
       updateEcosystemTypes(speciesId, model.ecosystemTypes)
       updateGrowthForms(speciesId, model.growthForms)
+      updatePlantMaterialSourcingMethods(speciesId, model.plantMaterialSourcingMethods)
+      updateSuccessionalGroups(speciesId, model.successionalGroups)
 
       speciesId
     } else {
@@ -384,6 +454,8 @@ class SpeciesStore(
 
         updateEcosystemTypes(speciesId, model.ecosystemTypes)
         updateGrowthForms(speciesId, model.growthForms)
+        updatePlantMaterialSourcingMethods(speciesId, model.plantMaterialSourcingMethods)
+        updateSuccessionalGroups(speciesId, model.successionalGroups)
       }
 
       val existingByCurrentName =
@@ -431,6 +503,8 @@ class SpeciesStore(
 
           updateEcosystemTypes(newSpeciesId, model.ecosystemTypes)
           updateGrowthForms(newSpeciesId, model.growthForms)
+          updatePlantMaterialSourcingMethods(newSpeciesId, model.plantMaterialSourcingMethods)
+          updateSuccessionalGroups(newSpeciesId, model.successionalGroups)
 
           newSpeciesId
         } else {
@@ -472,6 +546,8 @@ class SpeciesStore(
 
     updateEcosystemTypes(model.id, model.ecosystemTypes)
     updateGrowthForms(model.id, model.growthForms)
+    updatePlantMaterialSourcingMethods(model.id, model.plantMaterialSourcingMethods)
+    updateSuccessionalGroups(model.id, model.successionalGroups)
 
     return model.copy(
         checkedTime = existing.checkedTime,
@@ -544,6 +620,28 @@ class SpeciesStore(
           speciesIdField = SPECIES_GROWTH_FORMS.SPECIES_ID,
           values = growthForms,
       )
+
+  private fun updatePlantMaterialSourcingMethods(
+      speciesId: SpeciesId,
+      plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod>
+  ) =
+      updateSet(
+          speciesId,
+          plantMaterialSourcingMethods,
+          SPECIES_PLANT_MATERIAL_SOURCING_METHODS,
+          SPECIES_PLANT_MATERIAL_SOURCING_METHODS.PLANT_MATERIAL_SOURCING_METHOD_ID,
+          SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID)
+
+  private fun updateSuccessionalGroups(
+      speciesId: SpeciesId,
+      successionalGroups: Set<SuccessionalGroup>
+  ) =
+      updateSet(
+          speciesId,
+          successionalGroups,
+          SPECIES_SUCCESSIONAL_GROUPS,
+          SPECIES_SUCCESSIONAL_GROUPS.SUCCESSIONAL_GROUP_ID,
+          SPECIES_SUCCESSIONAL_GROUPS.SPECIES_ID)
 
   /**
    * Deletes a species from an organization. This doesn't remove any existing references to the

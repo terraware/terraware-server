@@ -6,7 +6,9 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GROWTH_FORMS
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PLANT_MATERIAL_SOURCING_METHODS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_SUCCESSIONAL_GROUPS
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.SPECIES_PROJECTS
 import com.terraformation.backend.search.SearchTable
@@ -23,21 +25,26 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          speciesEcosystemTypes.asMultiValueSublist(
-              "ecosystemTypes", SPECIES.ID.eq(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID)),
-          nurserySpeciesProjects.asMultiValueSublist(
-              "nurseryProjects", SPECIES.ID.eq(SPECIES_PROJECTS.SPECIES_ID)),
-          organizations.asSingleValueSublist(
-              "organization", SPECIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
-          speciesProblems.asMultiValueSublist(
-              "problems", SPECIES.ID.eq(SPECIES_PROBLEMS.SPECIES_ID)),
-          speciesGrowthForms.asMultiValueSublist(
-              "growthForms", SPECIES.ID.eq(SPECIES_GROWTH_FORMS.SPECIES_ID)),
           inventories.asSingleValueSublist(
               "inventory",
               SPECIES.ORGANIZATION_ID.eq(INVENTORIES.ORGANIZATION_ID)
                   .and(SPECIES.ID.eq(INVENTORIES.SPECIES_ID)),
               isRequired = false),
+          nurserySpeciesProjects.asMultiValueSublist(
+              "nurseryProjects", SPECIES.ID.eq(SPECIES_PROJECTS.SPECIES_ID)),
+          organizations.asSingleValueSublist(
+              "organization", SPECIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+          speciesEcosystemTypes.asMultiValueSublist(
+              "ecosystemTypes", SPECIES.ID.eq(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID)),
+          speciesGrowthForms.asMultiValueSublist(
+              "growthForms", SPECIES.ID.eq(SPECIES_GROWTH_FORMS.SPECIES_ID)),
+          speciesPlantMaterialSourcingMethods.asMultiValueSublist(
+              "plantMaterialSourcingMethods",
+              SPECIES.ID.eq(SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID)),
+          speciesProblems.asMultiValueSublist(
+              "problems", SPECIES.ID.eq(SPECIES_PROBLEMS.SPECIES_ID)),
+          speciesSuccessionalGroups.asMultiValueSublist(
+              "successionalGroups", SPECIES.ID.eq(SPECIES_SUCCESSIONAL_GROUPS.SPECIES_ID)),
       )
     }
   }
