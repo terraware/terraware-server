@@ -13,8 +13,8 @@ data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
     val id: PSZID,
     val fullName: String,
     val name: String,
-    val plantingCompletedTime: Instant?,
-    val monitoringPlots: List<MonitoringPlotModel>,
+    val plantingCompletedTime: Instant? = null,
+    val monitoringPlots: List<MonitoringPlotModel> = emptyList(),
 ) {
   fun findMonitoringPlot(monitoringPlotId: MonitoringPlotId): MonitoringPlotModel? =
       monitoringPlots.find { it.id == monitoringPlotId }
