@@ -1,2 +1,4 @@
+02cc6f2a068 SW-5230 Remove shapefile validation options (#1889)
+2324f57fc2b SW-5228 Use model to create new planting sites (#1887)
 6e0d979aa48 Parameterize planting site model IDs (#1886)
 67f417224c6 Fix 'create species' script (#1888)
