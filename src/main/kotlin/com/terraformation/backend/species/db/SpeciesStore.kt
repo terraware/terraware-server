@@ -632,7 +632,6 @@ class SpeciesStore(
           values = plantMaterialSourcingMethods,
       )
 
-
   private fun updateSuccessionalGroups(
       speciesId: SpeciesId,
       successionalGroups: Set<SuccessionalGroup>
