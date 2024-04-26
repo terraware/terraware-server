@@ -21,10 +21,8 @@ import com.terraformation.backend.tracking.model.ShapefileFeature
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
-import java.math.BigDecimal
 import java.time.InstantSource
 import org.jooq.DSLContext
-import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
@@ -47,37 +45,6 @@ class PlantingSiteImporter(
     // Optional zone-level properties to set initial plot counts; mostly for testing
     val permanentClusterCountProperties = setOf("permanent")
     val temporaryPlotCountProperies = setOf("temporary")
-
-    /**
-     * Minimum percentage of a zone or subzone that has to overlap with a neighboring one in order
-     * to trip the validation check for overlapping areas. This fuzz factor is needed to account for
-     * floating-point inaccuracy.
-     */
-    const val OVERLAP_MIN_PERCENT = 0.01
-
-    /**
-     * Minimum percentage of a zone or subzone that has to fall outside the boundaries of its parent
-     * in order to trip the validation check for areas being contained in their parents. This fuzz
-     * factor is needed to account for floating-point inaccuracy.
-     */
-    const val OUTSIDE_BOUNDS_MIN_PERCENT = 0.01
-
-    // Default values of the three parameters that determine how many monitoring plots should be
-    // required in each observation. The "Student's t" value is a constant based on an 80%
-    // confidence level and should rarely need to change, but the other two will be adjusted by
-    // admins based on the conditions at the planting site. These defaults mean that planting zones
-    // will have 7 permanent clusters and 9 temporary plots.
-    val DEFAULT_ERROR_MARGIN = BigDecimal(100)
-    val DEFAULT_STUDENTS_T = BigDecimal("1.282")
-    val DEFAULT_VARIANCE = BigDecimal(40000)
-    const val DEFAULT_NUM_PERMANENT_CLUSTERS = 7
-    const val DEFAULT_NUM_TEMPORARY_PLOTS = 9
-
-    /** Target planting density to use if not included in zone properties. */
-    val DEFAULT_TARGET_PLANTING_DENSITY = BigDecimal(1500)
-
-    /** The maximum size of the envelope (bounding box) of a site. */
-    val MAX_SITE_ENVELOPE_AREA_HA = BigDecimal(20000)
 
     private val log = perClassLogger()
   }
@@ -148,23 +115,14 @@ class PlantingSiteImporter(
 
     val problems = mutableListOf<String>()
     val siteFeature = getSiteBoundary(siteFile, problems)
-    val siteBoundary = siteFeature.geometry
 
-    val siteAreaHa = siteBoundary.calculateAreaHectares()
-    if (siteAreaHa > MAX_SITE_ENVELOPE_AREA_HA) {
-      problems.add(
-          "Site must be contained within an envelope (rectangular area) of no more than " +
-              "$MAX_SITE_ENVELOPE_AREA_HA hectares; actual envelope area was $siteAreaHa hectares.")
-      throw PlantingSiteUploadProblemsException(problems)
-    }
-
-    val zonesByName = getZones(siteFeature, zonesFile, problems)
+    val zonesByName = getZones(zonesFile)
     val subzonesByZone = getSubzonesByZone(zonesByName, subzonesFile, problems)
     val exclusion = getExclusion(exclusionsFile, problems)
 
     val newModel =
         PlantingSiteModel.create(
-            boundary = siteBoundary.toMultiPolygon(),
+            boundary = siteFeature.geometry.toMultiPolygon(),
             description = description,
             exclusion = exclusion,
             name = name,
@@ -173,6 +131,8 @@ class PlantingSiteImporter(
                 zonesByName.values.map { zone ->
                   zone.copy(plantingSubzones = subzonesByZone[zone.name] ?: emptyList())
                 })
+
+    problems.addAll(newModel.validate() ?: emptyList())
 
     if (problems.isNotEmpty()) {
       throw PlantingSiteUploadProblemsException(problems)
@@ -309,37 +269,10 @@ class PlantingSiteImporter(
   }
 
   private fun getZones(
-      siteFeature: ShapefileFeature,
       zonesFile: Shapefile,
-      problems: MutableList<String>,
   ): Map<String, NewPlantingZoneModel> {
     if (zonesFile.features.isEmpty()) {
       throw IllegalArgumentException("No planting zones defined")
-    }
-
-    val zoneNames = zonesFile.features.map { it.getProperty(zoneNameProperties)!! }
-
-    zoneNames
-        .groupBy { it.lowercase() }
-        .values
-        .filter { it.size > 1 }
-        .forEach {
-          throw IllegalArgumentException("Planting zone ${it[0]} appears ${it.size} times")
-        }
-
-    zonesFile.features.forEach { feature ->
-      checkCoveredBy(feature.geometry, siteFeature.geometry, problems) { percent ->
-        val zoneName = feature.getProperty(zoneNameProperties)
-
-        "$percent of planting zone $zoneName is not contained within planting site"
-      }
-    }
-
-    checkOverlap(zonesFile.features, problems) { feature, otherFeature, overlapPercent ->
-      val featureName = feature.getProperty(zoneNameProperties)
-      val otherName = otherFeature.getProperty(zoneNameProperties)
-
-      "$overlapPercent of zone $featureName overlaps with zone $otherName"
     }
 
     return zonesFile.features.associate { feature ->
@@ -359,29 +292,29 @@ class PlantingSiteImporter(
           }
       val targetPlantingDensity =
           feature.getProperty(targetPlantingDensityProperties)?.toBigDecimalOrNull()
-              ?: DEFAULT_TARGET_PLANTING_DENSITY
+              ?: PlantingZoneModel.DEFAULT_TARGET_PLANTING_DENSITY
 
       val numPermanentClusters =
           feature.getProperty(permanentClusterCountProperties)?.toIntOrNull()
-              ?: DEFAULT_NUM_PERMANENT_CLUSTERS
+              ?: PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS
       val numTemporaryPlots =
           feature.getProperty(temporaryPlotCountProperies)?.toIntOrNull()
-              ?: DEFAULT_NUM_TEMPORARY_PLOTS
+              ?: PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS
 
       name to
           NewPlantingZoneModel(
               areaHa = boundary.calculateAreaHectares(),
               boundary = boundary,
-              errorMargin = DEFAULT_ERROR_MARGIN,
+              errorMargin = PlantingZoneModel.DEFAULT_ERROR_MARGIN,
               extraPermanentClusters = 0,
               id = null,
               name = name,
               numPermanentClusters = numPermanentClusters,
               numTemporaryPlots = numTemporaryPlots,
               plantingSubzones = emptyList(),
-              studentsT = DEFAULT_STUDENTS_T,
+              studentsT = PlantingZoneModel.DEFAULT_STUDENTS_T,
               targetPlantingDensity = targetPlantingDensity,
-              variance = DEFAULT_VARIANCE,
+              variance = PlantingZoneModel.DEFAULT_VARIANCE,
           )
     }
   }
@@ -416,30 +349,7 @@ class PlantingSiteImporter(
         }
 
     val subzonesByZone =
-        validSubzones.groupBy { feature ->
-          val zoneName = feature.getProperty(zoneNameProperties)!!
-
-          checkCoveredBy(feature.geometry, zones[zoneName]!!.boundary, problems) { percent ->
-            val subzoneName = feature.getProperty(subzoneNameProperties)!!
-
-            "$percent of subzone $subzoneName is not contained within zone $zoneName"
-          }
-
-          zoneName
-        }
-
-    checkOverlap(validSubzones, problems) { feature, otherFeature, overlapPercent ->
-      val featureName = feature.getProperty(subzoneNameProperties)
-      val otherName = otherFeature.getProperty(subzoneNameProperties)
-
-      "$overlapPercent of subzone $featureName overlaps with subzone $otherName"
-    }
-
-    zones.keys.forEach { zoneName ->
-      if (zoneName !in subzonesByZone) {
-        problems += "Zone $zoneName has no subzones"
-      }
-    }
+        validSubzones.groupBy { feature -> feature.getProperty(zoneNameProperties)!! }
 
     return subzonesByZone.mapValues { (zoneName, subzoneFeatures) ->
       subzoneFeatures.map { subzoneFeature ->
@@ -456,57 +366,4 @@ class PlantingSiteImporter(
       }
     }
   }
-
-  private fun checkCoveredBy(
-      child: Geometry,
-      parent: Geometry,
-      problems: MutableList<String>,
-      problemFunc: (String) -> String
-  ) {
-    if (!child.coveredBy(parent)) {
-      val difference = child.difference(parent)
-      val childArea = child.area
-      val differenceArea = difference.area
-      val uncoveredPercent = differenceArea / childArea * 100.0
-
-      if (uncoveredPercent > OUTSIDE_BOUNDS_MIN_PERCENT) {
-        val problem = problemFunc("%.02f%%".format(uncoveredPercent))
-        problems += problem
-
-        log.debug(problem)
-        log.debug("Parent: $parent")
-        log.debug("Child: $child")
-        log.debug("Difference: $difference")
-      }
-    }
-  }
-
-  private fun checkOverlap(
-      features: List<ShapefileFeature>,
-      problems: MutableList<String>,
-      problemFunc: (ShapefileFeature, ShapefileFeature, String) -> String
-  ) {
-    features.forEachIndexed { index, feature ->
-      features.drop(index + 1).forEach { otherFeature ->
-        val geometry = feature.geometry
-        val otherGeometry = otherFeature.geometry
-        if (geometry.overlaps(otherGeometry)) {
-          val overlapPercent = geometry.overlapPercent(otherGeometry)
-
-          if (overlapPercent > OVERLAP_MIN_PERCENT) {
-            val problem = problemFunc(feature, otherFeature, "%.02f%%".format(overlapPercent))
-            problems += problem
-
-            log.debug(problem)
-          }
-        }
-      }
-    }
-  }
-
-  private fun Geometry.overlapPercent(otherGeometry: Geometry): Double =
-      if (covers(otherGeometry)) 100.0 else intersection(otherGeometry).area / area * 100.0
-
-  private fun getFullSubzoneName(feature: ShapefileFeature): String =
-      "${feature.getProperty(zoneNameProperties)!!}-${feature.getProperty(subzoneNameProperties)!!}"
 }

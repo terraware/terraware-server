@@ -3,7 +3,9 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.util.coveragePercent
 import com.terraformation.backend.util.equalsIgnoreScale
+import com.terraformation.backend.util.nearlyCoveredBy
 import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
 import org.locationtech.jts.geom.Coordinate
@@ -17,16 +19,16 @@ import org.locationtech.jts.geom.PrecisionModel
 data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
-    val errorMargin: BigDecimal,
-    val extraPermanentClusters: Int,
+    val errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
+    val extraPermanentClusters: Int = 0,
     val id: PZID,
     val name: String,
-    val numPermanentClusters: Int,
-    val numTemporaryPlots: Int,
+    val numPermanentClusters: Int = DEFAULT_NUM_PERMANENT_CLUSTERS,
+    val numTemporaryPlots: Int = DEFAULT_NUM_TEMPORARY_PLOTS,
     val plantingSubzones: List<PlantingSubzoneModel<PSZID>>,
-    val studentsT: BigDecimal,
-    val targetPlantingDensity: BigDecimal,
-    val variance: BigDecimal,
+    val studentsT: BigDecimal = DEFAULT_STUDENTS_T,
+    val targetPlantingDensity: BigDecimal = DEFAULT_TARGET_PLANTING_DENSITY,
+    val variance: BigDecimal = DEFAULT_VARIANCE,
 ) {
   /**
    * Chooses a set of plots to act as permanent monitoring plots. The number of plots is determined
@@ -277,6 +279,41 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
     }
   }
 
+  fun validate(): List<String> {
+    val problems = mutableListOf<String>()
+
+    plantingSubzones
+        .groupBy { it.name.lowercase() }
+        .values
+        .filter { it.size > 1 }
+        .forEach { problems.add("Zone $name has two subzones named ${it[0].name}") }
+
+    if (plantingSubzones.isEmpty()) {
+      problems.add("Planting zone $name has no subzones")
+    }
+
+    plantingSubzones.forEachIndexed { index, subzone ->
+      if (!subzone.boundary.nearlyCoveredBy(boundary)) {
+        val percent = "%.02f%%".format(100.0 - subzone.boundary.coveragePercent(boundary))
+        problems.add(
+            "$percent of planting subzone ${subzone.name} is not contained within planting " +
+                "zone $name")
+      }
+
+      plantingSubzones.drop(index + 1).forEach { otherSubzone ->
+        val overlapPercent = subzone.boundary.coveragePercent(otherSubzone.boundary)
+        if (overlapPercent > PlantingSiteModel.REGION_OVERLAP_MAX_PERCENT) {
+          val overlapPercentText = "%.02f%%".format(overlapPercent)
+          problems.add(
+              "$overlapPercentText of subzone ${subzone.name} in zone $name overlaps with " +
+                  "subzone ${otherSubzone.name}")
+        }
+      }
+    }
+
+    return problems
+  }
+
   /**
    * Returns a MultiPolygon that contains polygons in each of the zone's permanent monitoring plots,
    * its unavailable plots, and plots with particular IDs. Returns null if there are no plots
@@ -326,6 +363,22 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
         variance.equalsIgnoreScale(other.variance) &&
         plantingSubzones.zip(other.plantingSubzones).all { (a, b) -> a.equals(b, tolerance) } &&
         boundary.equalsExact(other.boundary, tolerance)
+  }
+
+  companion object {
+    // Default values of the three parameters that determine how many monitoring plots should be
+    // required in each observation. The "Student's t" value is a constant based on an 80%
+    // confidence level and should rarely need to change, but the other two will be adjusted by
+    // admins based on the conditions at the planting site. These defaults mean that planting zones
+    // will have 7 permanent clusters and 9 temporary plots.
+    val DEFAULT_ERROR_MARGIN = BigDecimal(100)
+    val DEFAULT_STUDENTS_T = BigDecimal("1.282")
+    val DEFAULT_VARIANCE = BigDecimal(40000)
+    const val DEFAULT_NUM_PERMANENT_CLUSTERS = 7
+    const val DEFAULT_NUM_TEMPORARY_PLOTS = 9
+
+    /** Target planting density to use if not included in zone properties. */
+    val DEFAULT_TARGET_PLANTING_DENSITY = BigDecimal(1500)
   }
 }
 

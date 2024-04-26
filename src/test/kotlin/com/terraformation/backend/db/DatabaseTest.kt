@@ -227,8 +227,8 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.polygon
 import com.terraformation.backend.toBigDecimal
-import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
+import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.toInstant
 import jakarta.ws.rs.NotFoundException
@@ -1454,7 +1454,7 @@ abstract class DatabaseTest {
               },
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
-      errorMargin: BigDecimal = row.errorMargin ?: PlantingSiteImporter.DEFAULT_ERROR_MARGIN,
+      errorMargin: BigDecimal = row.errorMargin ?: PlantingZoneModel.DEFAULT_ERROR_MARGIN,
       extraPermanentClusters: Int = row.extraPermanentClusters ?: 0,
       id: Any? = row.id,
       plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
@@ -1462,12 +1462,12 @@ abstract class DatabaseTest {
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: id?.let { "Z$id" } ?: "Z${nextPlantingZoneNumber++}",
       numPermanentClusters: Int =
-          row.numPermanentClusters ?: PlantingSiteImporter.DEFAULT_NUM_PERMANENT_CLUSTERS,
+          row.numPermanentClusters ?: PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS,
       numTemporaryPlots: Int =
-          row.numTemporaryPlots ?: PlantingSiteImporter.DEFAULT_NUM_TEMPORARY_PLOTS,
-      studentsT: BigDecimal = row.studentsT ?: PlantingSiteImporter.DEFAULT_STUDENTS_T,
+          row.numTemporaryPlots ?: PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      studentsT: BigDecimal = row.studentsT ?: PlantingZoneModel.DEFAULT_STUDENTS_T,
       targetPlantingDensity: BigDecimal? = row.targetPlantingDensity,
-      variance: BigDecimal = row.variance ?: PlantingSiteImporter.DEFAULT_VARIANCE,
+      variance: BigDecimal = row.variance ?: PlantingZoneModel.DEFAULT_VARIANCE,
   ): PlantingZoneId {
     val rowWithDefaults =
         row.copy(
