@@ -81,7 +81,6 @@ TREE_SPECIES = [
     "Alnus glutinosa",
     "Alnus incana",
     "Aralia elata",
-    "Balanites aegyptiaca",
     "Carpinus betulus",
     "Carpinus orientalis",
     "Castanopsis cuspidata",
