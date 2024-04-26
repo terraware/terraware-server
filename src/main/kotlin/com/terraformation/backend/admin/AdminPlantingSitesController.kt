@@ -288,7 +288,6 @@ class AdminPlantingSitesController(
   fun createPlantingSite(
       @RequestParam organizationId: OrganizationId,
       @RequestParam siteName: String,
-      @RequestParam validation: Set<PlantingSiteImporter.ValidationOption>,
       @RequestPart zipfile: MultipartFile,
       redirectAttributes: RedirectAttributes,
   ): String {
@@ -300,7 +299,7 @@ class AdminPlantingSitesController(
 
         val siteId =
             plantingSiteImporter.import(
-                siteName, null, organizationId, Shapefile.fromZipFile(localZipFile), validation)
+                siteName, null, organizationId, Shapefile.fromZipFile(localZipFile))
 
         redirectAttributes.successMessage = "Planting site $siteId imported successfully."
       }
@@ -342,7 +341,7 @@ class AdminPlantingSitesController(
                         PlantingSiteImporter.subzoneNameProperties.first() to "Subzone"))
 
             plantingSiteImporter.importShapefiles(
-                siteName, null, organizationId, siteFile, zonesFile, subzonesFile, null, emptySet())
+                siteName, null, organizationId, siteFile, zonesFile, subzonesFile, null)
           } else {
             plantingSiteStore
                 .createPlantingSite(
