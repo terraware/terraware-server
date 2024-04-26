@@ -216,16 +216,24 @@ data class SpeciesProblemElement(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class SpeciesResponseElement(
-    val ecosystemTypes: Set<EcosystemType>?,
+    val averageWoodDensity: Double?,
     val commonName: String?,
     @Schema(
         description = "IUCN Red List conservation category code.",
         externalDocs =
             ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
     val conservationCategory: ConservationCategory?,
+    val dbhSource: String?,
+    val dbhValue: Double?,
+    val ecologicalRoleKnown: String?,
+    val ecosystemTypes: Set<EcosystemType>?,
     val familyName: String?,
     val growthForms: Set<GrowthForm>?,
+    val heightAtMaturitySource: String?,
+    val heightAtMaturityValue: Double?,
     val id: SpeciesId,
+    val localUsesKnown: String?,
+    val nativeEcosystem: String?,
     val plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod>?,
     val problems: List<SpeciesProblemElement>?,
     val otherFacts: String?,
@@ -233,17 +241,26 @@ data class SpeciesResponseElement(
     val scientificName: String,
     val seedStorageBehavior: SeedStorageBehavior?,
     val successionalGroups: Set<SuccessionalGroup>?,
+    val woodDensityLevel: WoodDensityLevel?,
 ) {
   constructor(
       model: ExistingSpeciesModel,
       problems: List<SpeciesProblemsRow>?,
   ) : this(
-      ecosystemTypes = model.ecosystemTypes.ifEmpty { null },
+      averageWoodDensity = model.averageWoodDensity,
       commonName = model.commonName,
       conservationCategory = model.conservationCategory,
+      dbhSource = model.dbhSource,
+      dbhValue = model.dbhValue,
+      ecologicalRoleKnown = model.ecologicalRoleKnown,
+      ecosystemTypes = model.ecosystemTypes.ifEmpty { null },
       familyName = model.familyName,
       growthForms = model.growthForms,
+      heightAtMaturitySource = model.heightAtMaturitySource,
+      heightAtMaturityValue = model.heightAtMaturityValue,
       id = model.id,
+      localUsesKnown = model.localUsesKnown,
+      nativeEcosystem = model.nativeEcosystem,
       plantMaterialSourcingMethods = model.plantMaterialSourcingMethods,
       problems = problems?.map { SpeciesProblemElement(it) }?.ifEmpty { null },
       otherFacts = model.otherFacts,
@@ -251,6 +268,7 @@ data class SpeciesResponseElement(
       scientificName = model.scientificName,
       seedStorageBehavior = model.seedStorageBehavior,
       successionalGroups = model.successionalGroups,
+      woodDensityLevel = model.woodDensityLevel,
   )
 }
 
@@ -268,7 +286,7 @@ data class SpeciesRequestPayload(
     val ecosystemTypes: Set<EcosystemType>?,
     val familyName: String?,
     val growthForms: Set<GrowthForm>?,
-    val heightAtMaturitySource: String,
+    val heightAtMaturitySource: String?,
     val heightAtMaturityValue: Double?,
     val localUsesKnown: String?,
     val nativeEcosystem: String?,
