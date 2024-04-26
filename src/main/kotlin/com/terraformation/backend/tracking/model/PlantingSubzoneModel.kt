@@ -7,10 +7,10 @@ import java.math.BigDecimal
 import java.time.Instant
 import org.locationtech.jts.geom.MultiPolygon
 
-data class PlantingSubzoneModel(
+data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
-    val id: PlantingSubzoneId,
+    val id: PSZID,
     val fullName: String,
     val name: String,
     val plantingCompletedTime: Instant?,
@@ -20,7 +20,7 @@ data class PlantingSubzoneModel(
       monitoringPlots.find { it.id == monitoringPlotId }
 
   fun equals(other: Any?, tolerance: Double): Boolean {
-    return other is PlantingSubzoneModel &&
+    return other is PlantingSubzoneModel<*> &&
         id == other.id &&
         fullName == other.fullName &&
         name == other.name &&
@@ -30,3 +30,7 @@ data class PlantingSubzoneModel(
         boundary.equalsExact(other.boundary, tolerance)
   }
 }
+
+typealias ExistingPlantingSubzoneModel = PlantingSubzoneModel<PlantingSubzoneId>
+
+typealias NewPlantingSubzoneModel = PlantingSubzoneModel<Nothing?>

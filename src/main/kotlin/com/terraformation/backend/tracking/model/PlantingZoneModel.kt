@@ -14,16 +14,16 @@ import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
 
-data class PlantingZoneModel(
+data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val errorMargin: BigDecimal,
     val extraPermanentClusters: Int,
-    val id: PlantingZoneId,
+    val id: PZID,
     val name: String,
     val numPermanentClusters: Int,
     val numTemporaryPlots: Int,
-    val plantingSubzones: List<PlantingSubzoneModel>,
+    val plantingSubzones: List<PlantingSubzoneModel<PSZID>>,
     val studentsT: BigDecimal,
     val targetPlantingDensity: BigDecimal,
     val variance: BigDecimal,
@@ -40,7 +40,7 @@ data class PlantingZoneModel(
       throw IllegalArgumentException("No subzones found for planting zone $id (wrong fetch depth?)")
     }
 
-    val plantedSubzones = plantingSubzones.filter { it.id in plantedSubzoneIds }
+    val plantedSubzones = plantingSubzones.filter { it.id != null && it.id in plantedSubzoneIds }
     val plotsInPlantedSubzones =
         plantedSubzones.flatMap { subzone ->
           subzone.monitoringPlots.filter { plot ->
@@ -101,10 +101,11 @@ data class PlantingZoneModel(
     return plantingSubzones
         .sortedBy { subzone ->
           val numPermanentPlots = subzone.monitoringPlots.count { it.id in permanentPlotIds }
-          if (subzone.id in plantedSubzoneIds) numPermanentPlots else numPermanentPlots + 1
+          if (subzone.id != null && subzone.id in plantedSubzoneIds) numPermanentPlots
+          else numPermanentPlots + 1
         }
         .flatMapIndexed { index, subzone ->
-          if (subzone.id in plantedSubzoneIds) {
+          if (subzone.id != null && subzone.id in plantedSubzoneIds) {
             val numPlots =
                 if (index < numExcessPlots) {
                   numEvenlySpreadPlotsPerSubzone + 1
@@ -136,7 +137,9 @@ data class PlantingZoneModel(
    * Returns the planting subzone that contains a monitoring plot, or null if the plot isn't in any
    * of the subzones.
    */
-  fun findSubzoneWithMonitoringPlot(monitoringPlotId: MonitoringPlotId): PlantingSubzoneModel? {
+  fun findSubzoneWithMonitoringPlot(
+      monitoringPlotId: MonitoringPlotId
+  ): PlantingSubzoneModel<PSZID>? {
     return plantingSubzones.firstOrNull { subzone ->
       subzone.monitoringPlots.any { it.id == monitoringPlotId }
     }
@@ -256,7 +259,7 @@ data class PlantingZoneModel(
    * Returns the subzone that contains the largest portion of a shape, or null if the shape does not
    * overlap with any subzone.
    */
-  fun findPlantingSubzone(geometry: Geometry): PlantingSubzoneModel? {
+  fun findPlantingSubzone(geometry: Geometry): PlantingSubzoneModel<PSZID>? {
     return plantingSubzones
         .filter { it.boundary.intersects(geometry) }
         .maxByOrNull { it.boundary.intersection(geometry).area }
@@ -311,7 +314,7 @@ data class PlantingZoneModel(
   }
 
   fun equals(other: Any?, tolerance: Double): Boolean {
-    return other is PlantingZoneModel &&
+    return other is PlantingZoneModel<*, *> &&
         id == other.id &&
         name == other.name &&
         extraPermanentClusters == other.extraPermanentClusters &&
@@ -325,3 +328,7 @@ data class PlantingZoneModel(
         boundary.equalsExact(other.boundary, tolerance)
   }
 }
+
+typealias ExistingPlantingZoneModel = PlantingZoneModel<PlantingZoneId, PlantingSubzoneId>
+
+typealias NewPlantingZoneModel = PlantingZoneModel<Nothing?, Nothing?>

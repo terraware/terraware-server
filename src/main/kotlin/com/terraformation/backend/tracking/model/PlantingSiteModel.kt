@@ -4,6 +4,8 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.util.equalsIgnoreScale
 import com.terraformation.backend.util.equalsOrBothNull
@@ -16,39 +18,24 @@ import org.jooq.Record
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 
-data class PlantingSiteModel(
+data class PlantingSiteModel<
+    PSID : PlantingSiteId?,
+    PZID : PlantingZoneId?,
+    PSZID : PlantingSubzoneId?,
+>(
     val areaHa: BigDecimal? = null,
     val boundary: MultiPolygon?,
     val description: String?,
     val exclusion: MultiPolygon? = null,
     val gridOrigin: Point? = null,
-    val id: PlantingSiteId,
+    val id: PSID,
     val name: String,
     val organizationId: OrganizationId,
     val plantingSeasons: List<ExistingPlantingSeasonModel> = emptyList(),
-    val plantingZones: List<PlantingZoneModel>,
+    val plantingZones: List<PlantingZoneModel<PZID, PSZID>>,
     val projectId: ProjectId? = null,
     val timeZone: ZoneId? = null,
 ) {
-  constructor(
-      record: Record,
-      plantingSeasonsMultiset: Field<List<ExistingPlantingSeasonModel>>?,
-      plantingZonesMultiset: Field<List<PlantingZoneModel>>? = null
-  ) : this(
-      areaHa = record[PLANTING_SITES.AREA_HA],
-      boundary = record[PLANTING_SITES.BOUNDARY] as? MultiPolygon,
-      description = record[PLANTING_SITES.DESCRIPTION],
-      exclusion = record[PLANTING_SITES.EXCLUSION] as? MultiPolygon,
-      gridOrigin = record[PLANTING_SITES.GRID_ORIGIN] as? Point,
-      id = record[PLANTING_SITES.ID]!!,
-      name = record[PLANTING_SITES.NAME]!!,
-      organizationId = record[PLANTING_SITES.ORGANIZATION_ID]!!,
-      plantingSeasons = plantingSeasonsMultiset?.let { record[it] } ?: emptyList(),
-      plantingZones = plantingZonesMultiset?.let { record[it] } ?: emptyList(),
-      projectId = record[PLANTING_SITES.PROJECT_ID],
-      timeZone = record[PLANTING_SITES.TIME_ZONE],
-  )
-
   /**
    * Returns the start date of the next observation for this planting site, or null if the planting
    * season end date is not set.
@@ -68,14 +55,16 @@ data class PlantingSiteModel(
   /**
    * Returns the planting zone that contains a monitoring plot, or null if the plot wasn't found.
    */
-  fun findZoneWithMonitoringPlot(monitoringPlotId: MonitoringPlotId): PlantingZoneModel? {
+  fun findZoneWithMonitoringPlot(
+      monitoringPlotId: MonitoringPlotId
+  ): PlantingZoneModel<PZID, PSZID>? {
     return plantingZones.firstOrNull { zone ->
       zone.findSubzoneWithMonitoringPlot(monitoringPlotId) != null
     }
   }
 
   fun equals(other: Any?, tolerance: Double): Boolean {
-    return other is PlantingSiteModel &&
+    return other is PlantingSiteModel<*, *, *> &&
         description == other.description &&
         id == other.id &&
         name == other.name &&
@@ -88,4 +77,31 @@ data class PlantingSiteModel(
         exclusion.equalsOrBothNull(other.exclusion) &&
         gridOrigin.equalsOrBothNull(other.gridOrigin)
   }
+
+  companion object {
+    fun of(
+        record: Record,
+        plantingSeasonsMultiset: Field<List<ExistingPlantingSeasonModel>>?,
+        plantingZonesMultiset: Field<List<ExistingPlantingZoneModel>>? = null
+    ) =
+        ExistingPlantingSiteModel(
+            areaHa = record[PLANTING_SITES.AREA_HA],
+            boundary = record[PLANTING_SITES.BOUNDARY] as? MultiPolygon,
+            description = record[PLANTING_SITES.DESCRIPTION],
+            exclusion = record[PLANTING_SITES.EXCLUSION] as? MultiPolygon,
+            gridOrigin = record[PLANTING_SITES.GRID_ORIGIN] as? Point,
+            id = record[PLANTING_SITES.ID]!!,
+            name = record[PLANTING_SITES.NAME]!!,
+            organizationId = record[PLANTING_SITES.ORGANIZATION_ID]!!,
+            plantingSeasons = plantingSeasonsMultiset?.let { record[it] } ?: emptyList(),
+            plantingZones = plantingZonesMultiset?.let { record[it] } ?: emptyList(),
+            projectId = record[PLANTING_SITES.PROJECT_ID],
+            timeZone = record[PLANTING_SITES.TIME_ZONE],
+        )
+  }
 }
+
+typealias ExistingPlantingSiteModel =
+    PlantingSiteModel<PlantingSiteId, PlantingZoneId, PlantingSubzoneId>
+
+typealias NewPlantingSiteModel = PlantingSiteModel<Nothing?, Nothing?, Nothing?>

@@ -11,8 +11,8 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
-import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
 import io.mockk.every
@@ -192,7 +192,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
       zoneFeatures: List<ShapefileFeature>,
       subzoneFeatures: List<ShapefileFeature>,
       exclusionFeature: ShapefileFeature? = null,
-  ): PlantingSiteModel {
+  ): ExistingPlantingSiteModel {
     val plantingSiteId =
         plantingSiteImporter.importShapefiles(
             name = "Test Site ${nextPlantingSiteNumber++}",

@@ -10,7 +10,7 @@ import com.terraformation.backend.nursery.model.NurseryStats
 import com.terraformation.backend.report.ReportNotCompleteException
 import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import com.terraformation.backend.species.model.ExistingSpeciesModel
-import com.terraformation.backend.tracking.model.PlantingSiteModel
+import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import java.time.LocalDate
 
 @JsonTypeName("1")
@@ -121,7 +121,7 @@ data class ReportBodyModelV1(
       val workers: Workers = Workers(),
   ) {
     constructor(
-        model: PlantingSiteModel,
+        model: ExistingPlantingSiteModel,
         species: List<ExistingSpeciesModel>
     ) : this(
         id = model.id,
@@ -130,7 +130,7 @@ data class ReportBodyModelV1(
     )
 
     fun populate(
-        model: PlantingSiteModel,
+        model: ExistingPlantingSiteModel,
         speciesModels: List<ExistingSpeciesModel>
     ): PlantingSite {
       return copy(

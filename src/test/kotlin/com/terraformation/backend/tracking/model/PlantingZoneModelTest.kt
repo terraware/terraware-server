@@ -607,7 +607,7 @@ class PlantingZoneModelTest {
    * Returns the boundary for a sample planting zone that contains some number of 51x76 meter
    * subzones laid out west to east.
    */
-  private fun plantingZoneBoundary(subzones: List<PlantingSubzoneModel>): MultiPolygon {
+  private fun plantingZoneBoundary(subzones: List<ExistingPlantingSubzoneModel>): MultiPolygon {
     if (subzones.isEmpty()) {
       return multiPolygon(1)
     }
@@ -621,10 +621,10 @@ class PlantingZoneModelTest {
   private fun plantingZoneModel(
       numTemporaryPlots: Int = 1,
       numPermanentClusters: Int = 1,
-      subzones: List<PlantingSubzoneModel>,
+      subzones: List<ExistingPlantingSubzoneModel>,
       boundary: MultiPolygon = plantingZoneBoundary(subzones),
   ) =
-      PlantingZoneModel(
+      ExistingPlantingZoneModel(
           areaHa = BigDecimal.ONE,
           boundary = boundary,
           errorMargin = BigDecimal.ONE,

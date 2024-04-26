@@ -39,6 +39,7 @@ import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
@@ -51,7 +52,6 @@ import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
-import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import io.swagger.v3.oas.annotations.Operation
@@ -106,7 +106,7 @@ class ObservationsController(
       plantingSiteId: PlantingSiteId? = null,
   ): ListObservationsResponsePayload {
     val observations: Collection<ExistingObservationModel>
-    val plantingSites: Map<PlantingSiteId, PlantingSiteModel>
+    val plantingSites: Map<PlantingSiteId, ExistingPlantingSiteModel>
     val plotCounts: Map<ObservationId, ObservationPlotCounts>
 
     if (plantingSiteId != null) {

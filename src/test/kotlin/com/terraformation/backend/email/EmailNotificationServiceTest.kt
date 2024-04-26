@@ -75,8 +75,8 @@ import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
-import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import freemarker.template.Configuration
 import io.mockk.every
@@ -182,7 +182,7 @@ internal class EmailNotificationServiceTest {
   private val accessionId = AccessionId(13)
   private val accessionNumber = "202201010001"
   private val plantingSite =
-      PlantingSiteModel(
+      ExistingPlantingSiteModel(
           boundary = multiPolygon(1),
           description = null,
           id = PlantingSiteId(1),

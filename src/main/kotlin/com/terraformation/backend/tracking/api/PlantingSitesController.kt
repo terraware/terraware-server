@@ -15,11 +15,11 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.tracking.PlantingSiteService
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
+import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
+import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
+import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
-import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
-import com.terraformation.backend.tracking.model.PlantingSubzoneModel
-import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
@@ -152,7 +152,7 @@ data class PlantingSubzonePayload(
     val plantingCompletedTime: Instant?,
 ) {
   constructor(
-      model: PlantingSubzoneModel
+      model: ExistingPlantingSubzoneModel
   ) : this(
       model.areaHa,
       model.boundary,
@@ -174,7 +174,7 @@ data class PlantingZonePayload(
     val targetPlantingDensity: BigDecimal,
 ) {
   constructor(
-      model: PlantingZoneModel
+      model: ExistingPlantingZoneModel
   ) : this(
       model.areaHa,
       model.boundary,
@@ -217,7 +217,7 @@ data class PlantingSitePayload(
     val timeZone: ZoneId?,
 ) {
   constructor(
-      model: PlantingSiteModel
+      model: ExistingPlantingSiteModel
   ) : this(
       areaHa = model.areaHa,
       boundary = model.boundary,
@@ -323,7 +323,7 @@ data class UpdatePlantingSiteRequestPayload(
     val projectId: ProjectId? = null,
     val timeZone: ZoneId?,
 ) {
-  fun applyTo(model: PlantingSiteModel) =
+  fun applyTo(model: ExistingPlantingSiteModel) =
       model.copy(
           boundary = boundary,
           description = description?.ifBlank { null },
