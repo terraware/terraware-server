@@ -123,6 +123,7 @@ class ModuleEventStore(
     }
   }
 
+  /** Update event details including times, participants and URLs. */
   fun updateEvent(eventId: EventId, updateFunc: (EventModel) -> EventModel) {
     requirePermissions { manageModuleEvents() }
 
@@ -193,6 +194,9 @@ class ModuleEventStore(
     }
   }
 
+  /**
+   * Update event status. Primarily used by job scheduler to update event status at scheduled times.
+   */
   fun updateEventStatus(eventId: EventId, status: EventStatus) {
     requirePermissions { manageModuleEventStatuses() }
 

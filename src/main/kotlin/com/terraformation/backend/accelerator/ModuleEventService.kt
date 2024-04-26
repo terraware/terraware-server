@@ -43,32 +43,37 @@ class ModuleEventService(
           }
 
       val now = clock.instant()
-      val notifyTime = moduleEvent.startTime.minus(notificationLeadTime)
+      val startTime = moduleEvent.startTime
+      val notifyTime = startTime.minus(notificationLeadTime)
       val endTime = moduleEvent.endTime
 
-      when {
-        now.isBefore(notifyTime) -> {
-          scheduler.schedule<ModuleEventService>(notifyTime) {
-            notifyStartingIfModuleEventUpToDate(event)
-            updateEventStatusIfEventUpToDate(event, EventStatus.InProgress)
-          }
-          scheduler.schedule<ModuleEventService>(endTime) {
-            updateEventStatusIfEventUpToDate(event, EventStatus.Ended)
-          }
+      if (now.isBefore(notifyTime)) {
+        scheduler.schedule<ModuleEventService>(notifyTime) {
+          notifyStartingIfModuleEventUpToDate(event)
         }
-        now.isAfter(endTime) ->
-            log.warn(
-                "Module event ${event.eventId} has already ended. No " +
-                    "notifications scheduled. ")
-        else -> {
-          log.warn(
-              "Module event ${event.eventId} is in progress. No notifications scheduled. " +
-                  "Updating event status to in progress. ")
+        scheduler.schedule<ModuleEventService>(notifyTime) {
+          updateEventStatusIfEventUpToDate(event, EventStatus.StartingSoon)
+        }
+      } else {
+        log.warn(
+            "Module event ${event.eventId} is starting before notificaiton lead time. " +
+                "No notifications sent to users.")
+      }
+
+      if (now.isBefore(startTime)) {
+        scheduler.schedule<ModuleEventService>(startTime) {
           updateEventStatusIfEventUpToDate(event, EventStatus.InProgress)
-          scheduler.schedule<ModuleEventService>(endTime) {
-            updateEventStatusIfEventUpToDate(event, EventStatus.Ended)
-          }
         }
+      } else {
+        log.warn("Module event ${event.eventId} is already in progress. ")
+      }
+
+      if (now.isBefore(endTime)) {
+        scheduler.schedule<ModuleEventService>(endTime) {
+          updateEventStatusIfEventUpToDate(event, EventStatus.Ended)
+        }
+      } else {
+        log.warn("Module event ${event.eventId} has already ended. ")
       }
     }
   }

@@ -14,6 +14,7 @@ import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.mockUser
+import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -69,57 +70,65 @@ class ModuleEventServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `schedules job at lead time of module event and schedules job at end time of module event`() {
+  fun `schedules jobs at notify, start and end times, if now is before notify time`() {
     clock.instant = Instant.EPOCH.plusSeconds(3600)
-    val startTime = clock.instant.plusSeconds(3600)
+
+    val notifyTime = clock.instant.plusSeconds(1)
+    val startTime = notifyTime.plus(ModuleEventService.notificationLeadTime)
     val endTime = startTime.plusSeconds(3600)
-    val notifyTime = startTime.minus(ModuleEventService.notificationLeadTime)
 
     val moduleEventId = insertEvent(revision = 1, startTime = startTime, endTime = endTime)
     val notificationEvent = ModuleEventScheduledEvent(moduleEventId, 1)
 
-    assertTrue(
-        notifyTime.isAfter(clock.instant), "Sanity check that notification time is in the future. ")
-
     service.on(notificationEvent)
-    verify(exactly = 1) { scheduler.schedule<ModuleEventService>(notifyTime, any()) }
+    verify(exactly = 2) { scheduler.schedule<ModuleEventService>(notifyTime, any()) }
+    verify(exactly = 1) { scheduler.schedule<ModuleEventService>(startTime, any()) }
     verify(exactly = 1) { scheduler.schedule<ModuleEventService>(endTime, any()) }
+    confirmVerified(scheduler)
   }
 
   @Test
-  fun `does not schedule notification job if module event is starting within the lead time`() {
+  fun `schedules jobs at start and end time, if now is between notify and start time`() {
     clock.instant = Instant.EPOCH.plusSeconds(3600)
-    val startTime = clock.instant.plus(ModuleEventService.notificationLeadTime).minusSeconds(1)
+
+    val notifyTime = clock.instant.minusSeconds(1)
+    val startTime = notifyTime.plus(ModuleEventService.notificationLeadTime)
     val endTime = startTime.plusSeconds(3600)
-    val notifyTime = startTime.minus(ModuleEventService.notificationLeadTime)
 
     val moduleEventId = insertEvent(revision = 1, startTime = startTime, endTime = endTime)
     val notificationEvent = ModuleEventScheduledEvent(moduleEventId, 1)
 
-    assertTrue(
-        notifyTime.isBefore(clock.instant), "Sanity check that notification time is in the past. ")
-    assertTrue(endTime.isAfter(clock.instant), "Sanity check that end time time is in the future. ")
-
     service.on(notificationEvent)
-    verify(exactly = 0) { scheduler.schedule<ModuleEventService>(notifyTime, any()) }
+    verify(exactly = 1) { scheduler.schedule<ModuleEventService>(startTime, any()) }
     verify(exactly = 1) { scheduler.schedule<ModuleEventService>(endTime, any()) }
+    confirmVerified(scheduler)
   }
 
   @Test
-  fun `does not schedule any job if module event is in the past`() {
+  fun `schedules jobs at end time, if now is between start and end time`() {
+    clock.instant = Instant.EPOCH.plusSeconds(3600)
+    val startTime = clock.instant.minusSeconds(1)
+    val endTime = startTime.plusSeconds(3600)
+
+    val moduleEventId = insertEvent(revision = 1, startTime = startTime, endTime = endTime)
+    val notificationEvent = ModuleEventScheduledEvent(moduleEventId, 1)
+
+    service.on(notificationEvent)
+    verify(exactly = 1) { scheduler.schedule<ModuleEventService>(endTime, any()) }
+    confirmVerified(scheduler)
+  }
+
+  @Test
+  fun `does not schedule any job if now is after end time`() {
     clock.instant = Instant.EPOCH.plusSeconds(3600)
     val endTime = clock.instant.minusSeconds(1)
     val startTime = endTime.minusSeconds(600)
-    val notifyTime = startTime.minus(ModuleEventService.notificationLeadTime)
 
     val moduleEventId = insertEvent(revision = 1, startTime = startTime, endTime = endTime)
     val notificationEvent = ModuleEventScheduledEvent(moduleEventId, 1)
 
-    assertTrue(endTime.isBefore(clock.instant), "Sanity check that end time time is in the past. ")
-
     service.on(notificationEvent)
-    verify(exactly = 0) { scheduler.schedule<ModuleEventService>(notifyTime, any()) }
-    verify(exactly = 0) { scheduler.schedule<ModuleEventService>(endTime, any()) }
+    confirmVerified(scheduler)
   }
 
   @Nested
