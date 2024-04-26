@@ -626,22 +626,23 @@ class SpeciesStore(
       plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod>
   ) =
       updateSet(
-          speciesId,
-          plantMaterialSourcingMethods,
-          SPECIES_PLANT_MATERIAL_SOURCING_METHODS,
-          SPECIES_PLANT_MATERIAL_SOURCING_METHODS.PLANT_MATERIAL_SOURCING_METHOD_ID,
-          SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID)
+          enumIdField = SPECIES_PLANT_MATERIAL_SOURCING_METHODS.PLANT_MATERIAL_SOURCING_METHOD_ID,
+          speciesId = speciesId,
+          speciesIdField = SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID,
+          values = plantMaterialSourcingMethods,
+      )
+
 
   private fun updateSuccessionalGroups(
       speciesId: SpeciesId,
       successionalGroups: Set<SuccessionalGroup>
   ) =
       updateSet(
-          speciesId,
-          successionalGroups,
-          SPECIES_SUCCESSIONAL_GROUPS,
-          SPECIES_SUCCESSIONAL_GROUPS.SUCCESSIONAL_GROUP_ID,
-          SPECIES_SUCCESSIONAL_GROUPS.SPECIES_ID)
+          enumIdField = SPECIES_SUCCESSIONAL_GROUPS.SUCCESSIONAL_GROUP_ID,
+          speciesId = speciesId,
+          speciesIdField = SPECIES_SUCCESSIONAL_GROUPS.SPECIES_ID,
+          values = successionalGroups,
+      )
 
   /**
    * Deletes a species from an organization. This doesn't remove any existing references to the
