@@ -4,6 +4,7 @@ ALTER TABLE species ADD COLUMN dbh_source TEXT;
 ALTER TABLE species ADD COLUMN height_at_maturity_source TEXT;
 ALTER TABLE species ADD COLUMN local_uses_known TEXT;
 ALTER TABLE species ADD COLUMN native_ecosystem TEXT;
+ALTER TABLE species ADD COLUMN other_facts TEXT;
 
 -- Number fields
 ALTER TABLE species ADD COLUMN average_wood_density FLOAT;

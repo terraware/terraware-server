@@ -342,6 +342,7 @@ class SpeciesStore(
               modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
               nativeEcosystem = model.nativeEcosystem,
+              otherFacts = model.otherFacts,
               rare = model.rare,
               scientificName = model.scientificName,
               seedStorageBehaviorId = model.seedStorageBehavior,
@@ -376,6 +377,7 @@ class SpeciesStore(
               modifiedTime = clock.instant(),
               nativeEcosystem = model.nativeEcosystem,
               organizationId = organizationId,
+              otherFacts = model.otherFacts,
               rare = model.rare,
               scientificName = model.scientificName,
               seedStorageBehaviorId = model.seedStorageBehavior,
@@ -466,6 +468,7 @@ class SpeciesStore(
                 .set(HEIGHT_AT_MATURITY_VALUE, model.heightAtMaturityValue)
                 .set(LOCAL_USES_KNOWN, model.localUsesKnown)
                 .set(NATIVE_ECOSYSTEM, model.nativeEcosystem)
+                .set(OTHER_FACTS, model.otherFacts)
                 .set(RARE, model.rare)
                 .set(SEED_STORAGE_BEHAVIOR_ID, model.seedStorageBehavior)
                 .set(WOOD_DENSITY_LEVEL_ID, model.woodDensityLevel)
@@ -531,6 +534,7 @@ class SpeciesStore(
                   .set(MODIFIED_TIME, clock.instant())
                   .set(NATIVE_ECOSYSTEM, model.nativeEcosystem)
                   .set(ORGANIZATION_ID, model.organizationId)
+                  .set(OTHER_FACTS, model.otherFacts)
                   .set(RARE, model.rare)
                   .set(SEED_STORAGE_BEHAVIOR_ID, model.seedStorageBehavior)
                   .set(WOOD_DENSITY_LEVEL_ID, model.woodDensityLevel)
@@ -583,6 +587,7 @@ class SpeciesStore(
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             nativeEcosystem = model.nativeEcosystem,
+            otherFacts = model.otherFacts,
             rare = model.rare,
             scientificName = model.scientificName,
             seedStorageBehaviorId = model.seedStorageBehavior,

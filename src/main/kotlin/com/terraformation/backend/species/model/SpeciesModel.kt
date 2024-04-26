@@ -32,6 +32,7 @@ data class SpeciesModel<ID : SpeciesId?>(
     val localUsesKnown: String? = null,
     val nativeEcosystem: String? = null,
     val organizationId: OrganizationId,
+    val otherFacts: String? = null,
     val plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod> = emptySet(),
     val rare: Boolean? = null,
     val scientificName: String,
@@ -67,6 +68,7 @@ data class SpeciesModel<ID : SpeciesId?>(
             localUsesKnown = record[SPECIES.LOCAL_USES_KNOWN],
             nativeEcosystem = record[SPECIES.NATIVE_ECOSYSTEM],
             organizationId = record[SPECIES.ORGANIZATION_ID]!!,
+            otherFacts = record[SPECIES.OTHER_FACTS],
             plantMaterialSourcingMethods =
                 record[plantMaterialSourcingMethodsMultiset] ?: emptySet(),
             rare = record[SPECIES.RARE],
