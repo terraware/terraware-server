@@ -49,6 +49,7 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
+import com.terraformation.backend.tracking.model.NewPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSeasonsOverlapException
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
@@ -234,21 +235,16 @@ class PlantingSiteStore(
   }
 
   fun createPlantingSite(
-      organizationId: OrganizationId,
-      name: String,
-      description: String? = null,
-      timeZone: ZoneId? = null,
-      projectId: ProjectId? = null,
-      boundary: MultiPolygon? = null,
+      newModel: NewPlantingSiteModel,
       plantingSeasons: Collection<UpdatedPlantingSeasonModel> = emptyList(),
-      exclusion: MultiPolygon? = null,
   ): ExistingPlantingSiteModel {
     requirePermissions {
-      createPlantingSite(organizationId)
-      projectId?.let { readProject(it) }
+      createPlantingSite(newModel.organizationId)
+      newModel.projectId?.let { readProject(it) }
     }
 
-    if (projectId != null && organizationId != parentStore.getOrganizationId(projectId)) {
+    if (newModel.projectId != null &&
+        newModel.organizationId != parentStore.getOrganizationId(newModel.projectId)) {
       throw ProjectInDifferentOrganizationException()
     }
 
@@ -257,34 +253,35 @@ class PlantingSiteStore(
     // The point that will be used as the origin for the grid of monitoring plots. We use the
     // southwest corner of the envelope (bounding box) of the site boundary.
     val gridOrigin =
-        if (boundary != null) {
-          GeometryFactory(PrecisionModel(), boundary.srid)
-              .createPoint(boundary.envelope.coordinates[0])
+        if (newModel.boundary != null) {
+          GeometryFactory(PrecisionModel(), newModel.boundary.srid)
+              .createPoint(newModel.boundary.envelope.coordinates[0])
         } else {
           null
         }
 
     val plantingSitesRow =
         PlantingSitesRow(
-            areaHa = boundary?.calculateAreaHectares(),
-            boundary = boundary,
+            areaHa = newModel.boundary?.calculateAreaHectares(),
+            boundary = newModel.boundary,
             createdBy = currentUser().userId,
             createdTime = now,
-            description = description,
-            exclusion = exclusion,
+            description = newModel.description,
+            exclusion = newModel.exclusion,
             gridOrigin = gridOrigin,
             modifiedBy = currentUser().userId,
             modifiedTime = now,
-            name = name,
-            organizationId = organizationId,
-            projectId = projectId,
-            timeZone = timeZone,
+            name = newModel.name,
+            organizationId = newModel.organizationId,
+            projectId = newModel.projectId,
+            timeZone = newModel.timeZone,
         )
 
     dslContext.transaction { _ ->
       plantingSitesDao.insert(plantingSitesRow)
 
-      val effectiveTimeZone = timeZone ?: parentStore.getEffectiveTimeZone(plantingSitesRow.id!!)
+      val effectiveTimeZone =
+          newModel.timeZone ?: parentStore.getEffectiveTimeZone(plantingSitesRow.id!!)
 
       if (!plantingSeasons.isEmpty()) {
         updatePlantingSeasons(plantingSitesRow.id!!, plantingSeasons, effectiveTimeZone)

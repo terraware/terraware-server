@@ -19,6 +19,7 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.toMultiPolygon
@@ -103,14 +104,15 @@ class PlantingSitesController(
 
     val model =
         plantingSiteStore.createPlantingSite(
-            boundary = payload.boundary?.toMultiPolygon(),
-            description = payload.description,
-            name = payload.name,
-            organizationId = payload.organizationId,
-            plantingSeasons = plantingSeasons,
-            projectId = payload.projectId,
-            timeZone = payload.timeZone,
-        )
+            PlantingSiteModel.create(
+                boundary = payload.boundary?.toMultiPolygon(),
+                description = payload.description,
+                name = payload.name,
+                organizationId = payload.organizationId,
+                projectId = payload.projectId,
+                timeZone = payload.timeZone,
+            ),
+            plantingSeasons = plantingSeasons)
     return CreatePlantingSiteResponsePayload(model.id)
   }
 
