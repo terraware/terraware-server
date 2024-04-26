@@ -18,7 +18,7 @@
 <table>
     <thead>
     <tr>
-        <th>Number</th>
+        <th>Title</th>
         <th>Module</th>
         <th>Start Date</th>
         <th>End Date</th>
@@ -29,7 +29,14 @@
 
     <tbody>
     <tr th:each="module : ${cohort.modules}" class="striped">
-        <td th:text="${moduleStat.index}">1</td>
+        <td>
+            <input type="text"
+                   name="title"
+                   required
+                   th:disabled="${!canUpdateCohort}"
+                   th:form="|update-${module.moduleId}|"
+                   th:value="${module.title}" />
+        </td>
         <td th:text="${moduleNames.get(module.moduleId)}">Module ID and Name</td>
         <td>
             <input type="date"
@@ -69,7 +76,13 @@
         </td>
     </tr>
     <tr>
-        <td></td>
+        <td>
+            <input type="text"
+                   name="title"
+                   required
+                   form="add-module"
+                   th:disabled="${!canUpdateCohort}" />
+        </td>
         <td>
             <select name="moduleId"
                     form="add-module">

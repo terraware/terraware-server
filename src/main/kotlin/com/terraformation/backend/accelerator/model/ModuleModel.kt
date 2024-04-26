@@ -40,6 +40,7 @@ data class ModuleModel(
                 CohortModuleModel(
                     it[COHORT_MODULES.COHORT_ID]!!,
                     it[COHORT_MODULES.MODULE_ID]!!,
+                    it[COHORT_MODULES.TITLE]!!,
                     it[COHORT_MODULES.START_DATE]!!,
                     it[COHORT_MODULES.END_DATE]!!,
                 ))

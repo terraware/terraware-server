@@ -2116,6 +2116,7 @@ abstract class DatabaseTest {
   fun insertCohortModule(
       cohortId: Any = inserted.cohortId,
       moduleId: Any = inserted.moduleId,
+      title: String = "Module 1",
       startDate: LocalDate = nextCohortModuleStartDate,
       endDate: LocalDate = startDate.plusDays(6),
   ) {
@@ -2123,6 +2124,7 @@ abstract class DatabaseTest {
         CohortModulesRow(
             cohortId = cohortId.toIdWrapper { CohortId(it) },
             moduleId = moduleId.toIdWrapper { ModuleId(it) },
+            title = title,
             startDate = startDate,
             endDate = endDate,
         )

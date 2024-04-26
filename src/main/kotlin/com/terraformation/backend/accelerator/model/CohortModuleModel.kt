@@ -11,6 +11,7 @@ import org.jooq.Record
 data class CohortModuleModel(
     val cohortId: CohortId,
     val moduleId: ModuleId,
+    val title: String,
     val startDate: LocalDate,
     val endDate: LocalDate,
     val projects: Set<ProjectId>? = null,
@@ -21,6 +22,7 @@ data class CohortModuleModel(
         CohortModuleModel(
             cohortId = record[COHORT_ID]!!,
             moduleId = record[MODULE_ID]!!,
+            title = record[TITLE]!!,
             startDate = record[START_DATE]!!,
             endDate = record[END_DATE]!!,
             projects = projectsField?.let { record[it] },
