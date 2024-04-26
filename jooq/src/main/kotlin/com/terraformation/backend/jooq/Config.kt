@@ -129,6 +129,9 @@ val ENUM_TABLES =
                     additionalColumns = listOf(EnumTableColumnInfo("expire_files", "Boolean")),
                     isLocalizable = false),
                 EnumTable("user_types", listOf(".*\\.user_type_id"), isLocalizable = false),
+                EnumTable(
+                    "wood_density_levels",
+                    listOf("wood_density_levels\\.id", ".*\\.wood_density_level_id")),
             ),
         "seedbank" to
             listOf(

@@ -245,6 +245,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "user_preferences" to setOf(ALL, CUSTOMER),
                   "user_types" to setOf(ALL, CUSTOMER),
                   "users" to setOf(ALL, CUSTOMER),
+                  "wood_density_levels" to setOf(ALL, SPECIES),
               ),
           "seedbank" to
               mapOf(

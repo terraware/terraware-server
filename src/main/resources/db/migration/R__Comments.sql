@@ -226,6 +226,8 @@ COMMENT ON COLUMN users.auth_id IS 'Unique identifier of the user in the authent
 COMMENT ON COLUMN users.email_notifications_enabled IS 'If true, the user wants to receive notifications via email.';
 COMMENT ON COLUMN users.last_activity_time IS 'When the user most recently interacted with the system.';
 
+COMMENT ON TABLE wood_density_levels IS 'The taxonomic level in the at which a wood density measurement is known';
+
 COMMENT ON TABLE seedbank.viability_test_results IS 'Result from a viability test of a batch of seeds. Viability tests can have multiple germinations, e.g., if different seeds germinate on different days.';
 
 COMMENT ON TABLE seedbank.viability_test_seed_types IS '(Enum) Types of seeds that can be tested for viability. This refers to how the seeds were stored, not the physical characteristics of the seeds themselves.';

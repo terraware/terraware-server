@@ -20,6 +20,7 @@ import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
+import com.terraformation.backend.db.default_schema.WoodDensityLevel
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.seedbank.api.ValuesController
 import com.terraformation.backend.species.SpeciesService
@@ -252,15 +253,23 @@ data class SpeciesResponseElement(
 }
 
 data class SpeciesRequestPayload(
-    val ecosystemTypes: Set<EcosystemType>?,
+    val averageWoodDensity: Double?,
     val commonName: String?,
     @Schema(
         description = "IUCN Red List conservation category code.",
         externalDocs =
             ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
     val conservationCategory: ConservationCategory?,
+    val dbhSource: String?,
+    val dbhValue: Double?,
+    val ecologicalRoleKnown: String?,
+    val ecosystemTypes: Set<EcosystemType>?,
     val familyName: String?,
     val growthForms: Set<GrowthForm>?,
+    val heightAtMaturitySource: String,
+    val heightAtMaturityValue: Double?,
+    val localUsesKnown: String?,
+    val nativeEcosystem: String?,
     @Schema(description = "Which organization's species list to update.")
     val organizationId: OrganizationId,
     val plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod>?,
@@ -268,22 +277,32 @@ data class SpeciesRequestPayload(
     val scientificName: String,
     val seedStorageBehavior: SeedStorageBehavior?,
     val successionalGroups: Set<SuccessionalGroup>?,
+    val woodDensityLevel: WoodDensityLevel?,
 ) {
   fun <T : SpeciesId?> toModel(id: T) =
       SpeciesModel(
+          averageWoodDensity = averageWoodDensity,
           commonName = commonName,
           conservationCategory = conservationCategory,
+          dbhSource = dbhSource,
+          dbhValue = dbhValue,
+          ecologicalRoleKnown = ecologicalRoleKnown,
           ecosystemTypes = ecosystemTypes ?: emptySet(),
           familyName = familyName,
           growthForms = growthForms ?: emptySet(),
+          heightAtMaturitySource = heightAtMaturitySource,
+          heightAtMaturityValue = heightAtMaturityValue,
           id = id,
           initialScientificName = scientificName,
+          localUsesKnown = localUsesKnown,
+          nativeEcosystem = nativeEcosystem,
           rare = rare,
           organizationId = organizationId,
           plantMaterialSourcingMethods = plantMaterialSourcingMethods ?: emptySet(),
           scientificName = scientificName,
           seedStorageBehavior = seedStorageBehavior,
           successionalGroups = successionalGroups ?: emptySet(),
+          woodDensityLevel = woodDensityLevel,
       )
 }
 
