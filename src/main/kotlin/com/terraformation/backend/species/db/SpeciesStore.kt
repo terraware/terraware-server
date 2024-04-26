@@ -41,7 +41,6 @@ import java.time.Clock
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
-import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.TableRecord
 import org.jooq.impl.DSL
@@ -486,30 +485,28 @@ class SpeciesStore(
    * Updates a set of enum values associated to the species by deleting and/or inserting rows into
    * the species-enum relationship table.
    *
-   * @param speciesId - The species ID we want to update
-   * @param values - The set of enum values that we want the species to have
-   * @param enumTable - The species-enum relationship table, e.g. SPECIES_ECOSYSTEM_TYPES
    * @param enumIdField - The ID field for the enum in the relationship table, e.g.
-   *   SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID
+   *   SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID. The table to update is referenced through this
+   *   field.
+   * @param speciesId - The species ID we want to update
    * @param speciesIdField - The ID field for the species in the relationship table, e.g.
    *   SPECIES_ECOSYSTEM_TYPES.SPECIES_ID
+   * @param values - The set of enum values that we want the species to have
    */
   private fun <
       V : EnumFromReferenceTable<*, V>,
       R : TableRecord<R>,
-      T : Table<R>,
       E : TableField<R, V?>,
       S : TableField<R, SpeciesId?>> updateSet(
-      speciesId: SpeciesId,
-      values: Set<V>,
-      enumTable: T,
       enumIdField: E,
-      speciesIdField: S
+      speciesId: SpeciesId,
+      speciesIdField: S,
+      values: Set<V>,
   ) {
     val existing =
         dslContext
             .select(enumIdField)
-            .from(enumTable)
+            .from(enumIdField.table)
             .where(speciesIdField.eq(speciesId))
             .fetch(enumIdField.asNonNullable())
             .toSet()
@@ -518,7 +515,7 @@ class SpeciesStore(
 
     if (toDelete.isNotEmpty()) {
       dslContext
-          .deleteFrom(enumTable)
+          .deleteFrom(enumIdField.table)
           .where(speciesIdField.eq(speciesId))
           .and(enumIdField.`in`(toDelete))
           .execute()
@@ -526,7 +523,7 @@ class SpeciesStore(
 
     if (toInsert.isNotEmpty()) {
       dslContext
-          .insertInto(enumTable, speciesIdField, enumIdField)
+          .insertInto(enumIdField.table, speciesIdField, enumIdField)
           .valuesOfRows(toInsert.map { DSL.row(speciesId, it) })
           .execute()
     }
@@ -534,19 +531,19 @@ class SpeciesStore(
 
   private fun updateEcosystemTypes(speciesId: SpeciesId, ecosystemTypes: Set<EcosystemType>) =
       updateSet(
-          speciesId,
-          ecosystemTypes,
-          SPECIES_ECOSYSTEM_TYPES,
-          SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID,
-          SPECIES_ECOSYSTEM_TYPES.SPECIES_ID)
+          enumIdField = SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID,
+          speciesId = speciesId,
+          speciesIdField = SPECIES_ECOSYSTEM_TYPES.SPECIES_ID,
+          values = ecosystemTypes,
+      )
 
   private fun updateGrowthForms(speciesId: SpeciesId, growthForms: Set<GrowthForm>) =
       updateSet(
-          speciesId,
-          growthForms,
-          SPECIES_GROWTH_FORMS,
-          SPECIES_GROWTH_FORMS.GROWTH_FORM_ID,
-          SPECIES_GROWTH_FORMS.SPECIES_ID)
+          enumIdField = SPECIES_GROWTH_FORMS.GROWTH_FORM_ID,
+          speciesId = speciesId,
+          speciesIdField = SPECIES_GROWTH_FORMS.SPECIES_ID,
+          values = growthForms,
+      )
 
   /**
    * Deletes a species from an organization. This doesn't remove any existing references to the
