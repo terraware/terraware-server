@@ -8,6 +8,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -453,6 +454,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                       EventModel(
                           id = eventId,
                           endTime = Instant.ofEpochSecond(4000),
+                          eventStatus = EventStatus.NotStarted,
                           eventType = EventType.Workshop,
                           meetingUrl = URI("https://example.com/meeting"),
                           moduleId = moduleId,
@@ -552,6 +554,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                       EventModel(
                           id = eventId,
                           endTime = Instant.ofEpochSecond(4000),
+                          eventStatus = EventStatus.NotStarted,
                           eventType = EventType.Workshop,
                           meetingUrl = URI("https://example.com/meeting"),
                           moduleId = moduleId,

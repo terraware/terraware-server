@@ -486,6 +486,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun manageModuleEventStatuses() {
+    if (!user.canManageModuleEventStatuses()) {
+      throw AccessDeniedException("No permission to manage module event statuses")
+    }
+  }
+
   fun manageModules() {
     if (!user.canManageModules()) {
       throw AccessDeniedException("No permission to manage modules")

@@ -10,6 +10,7 @@ import com.terraformation.backend.db.EventNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.pojos.EventProjectsRow
@@ -91,6 +92,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           EventModel(
               id = workshop,
+              eventStatus = EventStatus.NotStarted,
               eventType = EventType.Workshop,
               moduleId = moduleId,
               meetingUrl = URI("https://meeting.com"),
@@ -108,6 +110,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           EventModel(
               id = workshop,
+              eventStatus = EventStatus.NotStarted,
               eventType = EventType.Workshop,
               moduleId = moduleId,
               meetingUrl = URI("https://meeting.com"),
@@ -154,6 +157,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           EventModel(
               id = workshop,
+              eventStatus = EventStatus.NotStarted,
               eventType = EventType.Workshop,
               moduleId = moduleId,
               meetingUrl = URI("https://meeting.com"),
@@ -187,7 +191,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class Create {
     @Test
-    fun `creates event`() {
+    fun `creates event and publishes event scheduled event`() {
       clock.instant = Instant.EPOCH.plusSeconds(500)
       val startTime = clock.instant.plusSeconds(3600)
 
@@ -198,6 +202,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               EventsRow(
                   id = model.id,
                   moduleId = moduleId,
+                  eventStatusId = EventStatus.NotStarted,
                   eventTypeId = EventType.Workshop,
                   revision = 1,
                   startTime = startTime,
@@ -210,6 +215,52 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
           eventsDao.findAll())
 
       eventPublisher.assertEventPublished(ModuleEventScheduledEvent(model.id, model.revision))
+    }
+
+    @Test
+    fun `creates event and set event status based on time`() {
+      clock.instant = Instant.EPOCH.plusSeconds(3600)
+      val threeSecondsAgo = clock.instant.minusSeconds(3)
+      val twoSecondsAgo = clock.instant.minusSeconds(2)
+      val now = clock.instant
+      val twoSecondsLater = clock.instant.plusSeconds(2)
+      val threeSecondsLater = clock.instant.plusSeconds(3)
+
+      val endedEvent =
+          store.create(
+              moduleId, EventType.Workshop, startTime = threeSecondsAgo, endTime = twoSecondsAgo)
+      val endingEvent =
+          store.create(moduleId, EventType.Workshop, startTime = twoSecondsAgo, endTime = now)
+      val inProgressEvent =
+          store.create(
+              moduleId, EventType.Workshop, startTime = twoSecondsAgo, endTime = twoSecondsLater)
+      val startingEvent =
+          store.create(moduleId, EventType.Workshop, startTime = now, endTime = twoSecondsLater)
+      val futureEvent =
+          store.create(
+              moduleId,
+              EventType.Workshop,
+              startTime = twoSecondsLater,
+              endTime = threeSecondsLater)
+
+      val results = eventsDao.findAll()
+      val statuses = results.associate { it.id to it.eventStatusId }
+
+      assertEquals(statuses[endedEvent.id], EventStatus.Ended, "end < now events has Ended status")
+      assertEquals(
+          statuses[endingEvent.id],
+          EventStatus.InProgress,
+          "end = now events has InProgress status")
+      assertEquals(
+          statuses[inProgressEvent.id],
+          EventStatus.InProgress,
+          "start < now < end events has InProgress status")
+      assertEquals(
+          statuses[startingEvent.id], EventStatus.InProgress, "now = start has InProgress status")
+      assertEquals(
+          statuses[futureEvent.id],
+          EventStatus.NotStarted,
+          "now < start events has NotStarted status")
     }
 
     @Test
@@ -315,7 +366,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `updates event ignores event id or revision updates`() {
+    fun `updates event ignores event id, revision or status updates`() {
       clock.instant = Instant.EPOCH.plusSeconds(500)
       val startTime = clock.instant.plusSeconds(3600)
       val endTime = startTime.plusSeconds(3600)
@@ -329,7 +380,9 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
 
       val original = eventsDao.findById(workshop)
 
-      store.updateEvent(workshop) { it.copy(id = EventId(100), revision = 10) }
+      store.updateEvent(workshop) {
+        it.copy(id = EventId(100), eventStatus = EventStatus.Ended, revision = 10)
+      }
 
       val updated = eventsDao.findById(workshop)
       assertEquals(original!!.copy(modifiedTime = clock.instant), updated)
@@ -348,19 +401,130 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               startTime = startTime,
               endTime = endTime)
 
-      val original = eventsDao.findById(workshop)
-      val newRevision = original!!.revision!! + 1
       val newStartTime = startTime.plusSeconds(1800)
-
       store.updateEvent(workshop) { it.copy(startTime = newStartTime, revision = 10) }
+      assertRevisionUpdatedAndEventPublished(workshop, newStartTime = newStartTime)
+    }
 
-      val updated = eventsDao.findById(workshop)
+    @Test
+    fun `increments revision and publishes event if end time updated`() {
+      clock.instant = Instant.EPOCH.plusSeconds(500)
+      val startTime = clock.instant.plusSeconds(3600)
+      val endTime = startTime.plusSeconds(3600)
+
+      val workshop =
+          insertEvent(
+              moduleId = moduleId,
+              eventType = EventType.Workshop,
+              startTime = startTime,
+              endTime = endTime)
+
+      val newEndTime = endTime.plusSeconds(1800)
+      store.updateEvent(workshop) { it.copy(endTime = newEndTime, revision = 10) }
+      assertRevisionUpdatedAndEventPublished(workshop, newEndTime = newEndTime)
+    }
+
+    @Test
+    fun `sets event status based on time`() {
+      clock.instant = Instant.EPOCH.plusSeconds(3600)
+      val threeSecondsAgo = clock.instant.minusSeconds(3)
+      val twoSecondsAgo = clock.instant.minusSeconds(2)
+      val now = clock.instant
+      val twoSecondsLater = clock.instant.plusSeconds(2)
+      val threeSecondsLater = clock.instant.plusSeconds(3)
+
+      val endedEvent = insertEvent(moduleId = moduleId)
+      val endingEvent = insertEvent(moduleId = moduleId)
+      val inProgressEvent = insertEvent(moduleId = moduleId)
+      val startingEvent = insertEvent(moduleId = moduleId)
+      val futureEvent = insertEvent(moduleId = moduleId)
+
+      store.updateEvent(endedEvent) {
+        it.copy(startTime = threeSecondsAgo, endTime = twoSecondsAgo)
+      }
+      store.updateEvent(endingEvent) { it.copy(startTime = twoSecondsAgo, endTime = now) }
+      store.updateEvent(inProgressEvent) {
+        it.copy(startTime = twoSecondsAgo, endTime = twoSecondsLater)
+      }
+      store.updateEvent(startingEvent) { it.copy(startTime = now, endTime = twoSecondsLater) }
+      store.updateEvent(futureEvent) {
+        it.copy(startTime = twoSecondsLater, endTime = threeSecondsLater)
+      }
+
+      val results = eventsDao.findAll()
+      val statuses = results.associate { it.id to it.eventStatusId }
+
+      assertEquals(statuses[endedEvent], EventStatus.Ended, "end < now events has Ended status")
+      assertEquals(
+          statuses[endingEvent], EventStatus.InProgress, "end = now events has InProgress status")
+      assertEquals(
+          statuses[inProgressEvent],
+          EventStatus.InProgress,
+          "start < now < end events has InProgress status")
+      assertEquals(
+          statuses[startingEvent], EventStatus.InProgress, "now = start has InProgress status")
+      assertEquals(
+          statuses[futureEvent], EventStatus.NotStarted, "now < start events has NotStarted status")
+    }
+
+    private fun assertRevisionUpdatedAndEventPublished(
+        eventId: EventId,
+        newStartTime: Instant? = null,
+        newEndTime: Instant? = null
+    ) {
+      val original = eventsDao.findById(eventId)
+      val revision = original!!.revision!! + 1
+      val startTime = newStartTime ?: original.startTime
+      val endTime = newEndTime ?: original.endTime
+      val updated = eventsDao.findById(eventId)
       assertEquals(
           original.copy(
-              startTime = newStartTime, revision = newRevision, modifiedTime = clock.instant),
+              startTime = startTime,
+              endTime = endTime,
+              revision = revision,
+              modifiedTime = clock.instant),
           updated)
 
-      eventPublisher.assertEventPublished(ModuleEventScheduledEvent(workshop, newRevision))
+      eventPublisher.assertEventPublished(ModuleEventScheduledEvent(eventId, revision))
+    }
+  }
+
+  @Nested
+  inner class UpdateEventStatus {
+    @Test
+    fun `updates the event status`() {
+      every { user.canManageModuleEventStatuses() } returns true
+
+      val eventId = insertEvent(eventStatus = EventStatus.NotStarted)
+
+      assertEquals(
+          EventStatus.NotStarted,
+          eventsDao.fetchOneById(eventId)!!.eventStatusId,
+          "Status before update. ")
+
+      store.updateEventStatus(eventId, EventStatus.Ended)
+
+      assertEquals(
+          EventStatus.NotStarted,
+          eventsDao.fetchOneById(eventId)!!.eventStatusId,
+          "Status after update. ")
+    }
+
+    @Test
+    fun `throws exception when event does not exist`() {
+      every { user.canManageModuleEventStatuses() } returns true
+
+      assertThrows<EventNotFoundException> {
+        store.updateEventStatus(EventId(-1), EventStatus.Ended)
+      }
+    }
+
+    @Test
+    fun `throws exception when no permission to manage module event statuses`() {
+      every { user.canManageModuleEventStatuses() } returns false
+
+      val eventId = insertEvent(eventStatus = EventStatus.NotStarted)
+      assertThrows<AccessDeniedException> { store.updateEventStatus(eventId, EventStatus.Ended) }
     }
   }
 

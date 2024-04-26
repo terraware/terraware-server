@@ -307,6 +307,8 @@ data class IndividualUser(
 
   override fun canManageModuleEvents() = isAcceleratorAdmin()
 
+  override fun canManageModuleEventStatuses() = false
+
   override fun canManageModules() = isAcceleratorAdmin()
 
   override fun canManageNotifications() = false

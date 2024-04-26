@@ -59,6 +59,7 @@
             <thead>
             <tr>
                 <th>ID</th>
+                <th>Status</th>
                 <th>Start Time</th>
                 <th>End Time</th>
                 <th>Meeting Link</th>
@@ -74,6 +75,7 @@
             <tbody>
             <tr th:each="eventSession : ${module.eventSessions.get(event)}" class="striped">
                 <td th:text="${eventSession.id}">Event ID</td>
+                <td th:text="${eventSession.eventStatus.getDisplayName(#locale.default)}">Event Status</td>
                 <td>
                     <input type="datetime-local"
                            name="startTime"
@@ -154,6 +156,7 @@
             </tr>
 
             <tr class="striped">
+                <td></td>
                 <td></td>
                 <td>
                     <input type="datetime-local"

@@ -495,6 +495,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun manageModuleEvents() = allow { manageModuleEvents() } ifUser { canManageModuleEvents() }
 
+  @Test
+  fun manageModuleEventStatuses() =
+      allow { manageModuleEventStatuses() } ifUser { canManageModuleEventStatuses() }
+
   @Test fun manageModules() = allow { manageModules() } ifUser { canManageModules() }
 
   @Test

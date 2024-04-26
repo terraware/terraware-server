@@ -15,6 +15,7 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
@@ -2136,13 +2137,14 @@ abstract class DatabaseTest {
   fun insertEvent(
       id: Any? = null,
       moduleId: Any = inserted.moduleId,
+      eventStatus: EventStatus = EventStatus.NotStarted,
       eventType: EventType = EventType.Workshop,
       meetingUrl: Any? = null,
       slidesUrl: Any? = null,
       recordingUrl: Any? = null,
       revision: Int = 1,
-      startTime: Instant? = null,
-      endTime: Instant? = startTime?.plusSeconds(3600),
+      startTime: Instant = Instant.EPOCH.plusSeconds(3600),
+      endTime: Instant = startTime.plusSeconds(3600),
       createdBy: Any = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
   ): EventId {
@@ -2150,6 +2152,7 @@ abstract class DatabaseTest {
         EventsRow(
             id = id?.toIdWrapper { EventId(it) },
             moduleId = moduleId.toIdWrapper { ModuleId(it) },
+            eventStatusId = eventStatus,
             eventTypeId = eventType,
             meetingUrl = meetingUrl?.let { URI("$it") },
             slidesUrl = slidesUrl?.let { URI("$it") },

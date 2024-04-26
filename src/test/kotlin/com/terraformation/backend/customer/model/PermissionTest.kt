@@ -1291,6 +1291,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipant = true,
         deleteParticipantProject = true,
         deleteSupportIssue = true,
+        manageModuleEventStatuses = true,
         manageNotifications = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
@@ -2470,6 +2471,7 @@ internal class PermissionTest : DatabaseTest() {
         manageDeliverables: Boolean = false,
         manageInternalTags: Boolean = false,
         manageModuleEvents: Boolean = false,
+        manageModuleEventStatuses: Boolean = false,
         manageModules: Boolean = false,
         manageNotifications: Boolean = false,
         readAllAcceleratorDetails: Boolean = false,
@@ -2523,6 +2525,10 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(manageDeliverables, user.canManageDeliverables(), "Can manage deliverables")
       assertEquals(manageInternalTags, user.canManageInternalTags(), "Can manage internal tags")
       assertEquals(manageModuleEvents, user.canManageModuleEvents(), "Can manage module events")
+      assertEquals(
+          manageModuleEventStatuses,
+          user.canManageModuleEventStatuses(),
+          "Can manage module event statuses")
       assertEquals(manageModules, user.canManageModules(), "Can manage modules")
       assertEquals(manageNotifications, user.canManageNotifications(), "Can manage notifications")
       assertEquals(
