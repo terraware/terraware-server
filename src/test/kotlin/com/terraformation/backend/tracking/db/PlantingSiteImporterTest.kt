@@ -10,7 +10,6 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.ShapefileGenerator
-import com.terraformation.backend.tracking.db.PlantingSiteImporter.ValidationOption
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
 import io.mockk.every
@@ -70,8 +69,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
           "name",
           "description",
           organizationId,
-          Shapefile.fromZipFile(Path("$resourcesDir/TooFewShapefiles.zip")),
-          emptySet())
+          Shapefile.fromZipFile(Path("$resourcesDir/TooFewShapefiles.zip")))
     }
   }
 
@@ -81,7 +79,6 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
     fun `detects too few shapefiles`() {
       assertHasProblem(
           "TooFewShapefiles.zip",
-          ValidationOption.ZonesContainedInSite,
           "Expected 3 or 4 shapefiles (site, zones, subzones, and optionally exclusions) but found 2")
     }
 
@@ -128,18 +125,13 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       }
     }
 
-    private fun assertHasProblem(
-        zipFile: String,
-        validationOption: ValidationOption,
-        expected: String
-    ) {
+    private fun assertHasProblem(zipFile: String, expected: String) {
       assertHasProblem(expected) {
         importer.import(
             "name",
             "description",
             organizationId,
-            Shapefile.fromZipFile(Path("$resourcesDir/$zipFile")),
-            setOf(validationOption))
+            Shapefile.fromZipFile(Path("$resourcesDir/$zipFile")))
       }
     }
 

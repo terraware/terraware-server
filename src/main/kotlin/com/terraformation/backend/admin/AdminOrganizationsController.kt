@@ -13,7 +13,6 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.db.ReportStore
-import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.mapbox.MapboxService
 import jakarta.validation.constraints.NotBlank
@@ -64,8 +63,6 @@ class AdminOrganizationsController(
     model.addAttribute("facilityTypes", FacilityType.entries)
     model.addAttribute("mapboxToken", mapboxService.generateTemporaryToken())
     model.addAttribute("organization", organization)
-    model.addAttribute(
-        "plantingSiteValidationOptions", PlantingSiteImporter.ValidationOption.entries)
     model.addAttribute("plantingSites", plantingSites)
     model.addAttribute("reports", reports)
     model.addAttribute("terraformationContact", tfContact)

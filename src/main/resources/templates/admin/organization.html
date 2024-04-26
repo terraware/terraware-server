@@ -261,11 +261,6 @@
     Must contain either three or four shapefiles (exclusions shapefile is optional) and their
     associated supplementary datafiles.
     <br/>
-    Validation Options:
-    <div class="validationOption" th:each="option : ${plantingSiteValidationOptions}">
-        <input type="checkbox" checked name="validation" th:value="${option}"/>
-        <th:block th:text="${option.displayName}">Some option</th:block>
-    </div>
     <input type="submit" value=" Create Planting Site "/>
 </form>
 
