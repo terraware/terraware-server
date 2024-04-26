@@ -1,5 +1,4 @@
--- Set new column sequence to number orderings
-BEGIN;
+-- Set new column title to "Module X"
 ALTER TABLE accelerator.cohort_modules ADD COLUMN title TEXT;
 UPDATE accelerator.cohort_modules t
 SET title = CONCAT('Module ', s.row_num::TEXT)
@@ -10,4 +9,3 @@ SET title = CONCAT('Module ', s.row_num::TEXT)
 WHERE t.cohort_id = s.cohort_id AND t.start_date = s.start_date;
 
 ALTER TABLE accelerator.cohort_modules ALTER COLUMN title SET NOT NULL;
-COMMIT;
