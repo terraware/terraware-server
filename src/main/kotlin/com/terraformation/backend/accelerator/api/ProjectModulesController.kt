@@ -31,7 +31,7 @@ class ProjectModulesController(
   @GetMapping
   @Operation(summary = "Gets modules for a project.")
   fun listModules(
-      @PathVariable("projectId") projectId: ProjectId,
+      @PathVariable projectId: ProjectId,
   ): GetProjectModulesResponsePayload {
     val models = moduleStore.fetchModulesForProject(projectId)
     return GetProjectModulesResponsePayload(models.map { model -> ProjectModule(model) })
@@ -42,7 +42,7 @@ class ProjectModulesController(
   @GetMapping("/{moduleId}")
   @Operation(summary = "Gets one module for a project.")
   fun getModule(
-      @PathVariable("projectId") projectId: ProjectId,
+      @PathVariable projectId: ProjectId,
       @PathVariable moduleId: ModuleId,
   ): GetProjectModuleResponsePayload {
     val model = moduleStore.fetchOneByIdForProject(moduleId, projectId)
