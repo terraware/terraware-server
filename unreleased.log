@@ -1,3 +1,5 @@
+6e5a6791688 SW-5293 Implemented GET one module API (#1878)
+6701a1eb356 SW-5300 Module title column (#1891)
 8e533e6259f SW-5201 Cohort Module Admin UI (#1884)
 80bb7c9dd7d SW-5269 Add new enum set species fields  (#1892)
 7bbd1c188ea Refactor species-enum-value updating (#1890)
