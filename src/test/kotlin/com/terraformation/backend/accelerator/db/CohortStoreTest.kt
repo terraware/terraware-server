@@ -158,16 +158,19 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
       insertCohortModule(
           cohortId,
           module1,
+          title = "1A",
           startDate = LocalDate.of(2024, 1, 1),
           endDate = LocalDate.of(2024, 1, 3))
       insertCohortModule(
           cohortId,
           module2,
+          title = "1B",
           startDate = LocalDate.of(2024, 3, 1),
           endDate = LocalDate.of(2024, 3, 3))
       insertCohortModule(
           cohortId,
           module3,
+          title = "2",
           startDate = LocalDate.of(2024, 2, 1),
           endDate = LocalDate.of(2024, 2, 3))
 
@@ -193,18 +196,21 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
                       CohortModuleModel(
                           cohortId,
                           module1,
+                          title = "1A",
                           startDate = LocalDate.of(2024, 1, 1),
                           endDate = LocalDate.of(2024, 1, 3),
                       ),
                       CohortModuleModel(
                           cohortId,
                           module3,
+                          title = "2",
                           startDate = LocalDate.of(2024, 2, 1),
                           endDate = LocalDate.of(2024, 2, 3),
                       ),
                       CohortModuleModel(
                           cohortId,
                           module2,
+                          title = "1B",
                           startDate = LocalDate.of(2024, 3, 1),
                           endDate = LocalDate.of(2024, 3, 3),
                       ),
@@ -279,23 +285,33 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
       val toAdd = insertModule()
 
       insertCohortModule(
-          cohortId,
-          toRemove,
+          cohortId = cohortId,
+          moduleId = toRemove,
+          title = "1",
           startDate = LocalDate.of(2024, 1, 1),
           endDate = LocalDate.of(2024, 1, 3))
 
       insertCohortModule(
-          cohortId,
-          toModify,
+          cohortId = cohortId,
+          moduleId = toModify,
+          title = "2",
           startDate = LocalDate.of(2024, 2, 1),
           endDate = LocalDate.of(2024, 2, 3))
 
       assertEquals(
           listOf(
               CohortModulesRow(
-                  cohortId, toRemove, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 3)),
+                  cohortId = cohortId,
+                  moduleId = toRemove,
+                  title = "1",
+                  startDate = LocalDate.of(2024, 1, 1),
+                  endDate = LocalDate.of(2024, 1, 3)),
               CohortModulesRow(
-                  cohortId, toModify, LocalDate.of(2024, 2, 1), LocalDate.of(2024, 2, 3))),
+                  cohortId = cohortId,
+                  moduleId = toModify,
+                  title = "2",
+                  startDate = LocalDate.of(2024, 2, 1),
+                  endDate = LocalDate.of(2024, 2, 3))),
           cohortModulesDao.findAll(),
           "Cohort modules before update.")
 
@@ -304,16 +320,18 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
             modules =
                 listOf(
                     CohortModuleModel(
-                        cohortId,
-                        toModify,
-                        LocalDate.of(2024, 5, 1),
-                        LocalDate.of(2024, 5, 3),
+                        cohortId = cohortId,
+                        moduleId = toModify,
+                        title = "A",
+                        startDate = LocalDate.of(2024, 5, 1),
+                        endDate = LocalDate.of(2024, 5, 3),
                     ),
                     CohortModuleModel(
-                        cohortId,
-                        toAdd,
-                        LocalDate.of(2024, 6, 1),
-                        LocalDate.of(2024, 6, 3),
+                        cohortId = cohortId,
+                        moduleId = toAdd,
+                        title = "B",
+                        startDate = LocalDate.of(2024, 6, 1),
+                        endDate = LocalDate.of(2024, 6, 3),
                     )),
         )
       }
@@ -321,9 +339,17 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               CohortModulesRow(
-                  cohortId, toModify, LocalDate.of(2024, 5, 1), LocalDate.of(2024, 5, 3)),
+                  cohortId = cohortId,
+                  moduleId = toModify,
+                  title = "A",
+                  startDate = LocalDate.of(2024, 5, 1),
+                  endDate = LocalDate.of(2024, 5, 3)),
               CohortModulesRow(
-                  cohortId, toAdd, LocalDate.of(2024, 6, 1), LocalDate.of(2024, 6, 3))),
+                  cohortId = cohortId,
+                  moduleId = toAdd,
+                  title = "B",
+                  startDate = LocalDate.of(2024, 6, 1),
+                  endDate = LocalDate.of(2024, 6, 3))),
           cohortModulesDao.findAll(),
           "Cohort modules after update.")
     }

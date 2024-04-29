@@ -459,6 +459,8 @@ COMMENT ON CONSTRAINT num_plants_sign_consistent_with_type ON tracking.plantings
 COMMENT ON TABLE accelerator.cohorts IS 'Accelerator cohort details.';
 
 COMMENT ON TABLE accelerator.cohort_modules IS 'Which modules are assigned to which cohorts.';
+COMMENT ON COLUMN accelerator.cohort_modules.title IS 'The title for the module for the cohort. For example "Module 3A" for Module 3A: Title';
+
 
 COMMENT ON TABLE accelerator.cohort_phases IS '(Enum) Available cohort phases';
 

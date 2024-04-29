@@ -115,9 +115,10 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
               workshopDescription = "Workshop ideas",
           )
 
-      insertCohortModule(cohortId, moduleId, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 31))
       insertCohortModule(
-          otherCohortId, moduleId, LocalDate.of(2024, 2, 1), LocalDate.of(2024, 2, 28))
+          cohortId, moduleId, "1", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 31))
+      insertCohortModule(
+          otherCohortId, moduleId, "2", LocalDate.of(2024, 2, 1), LocalDate.of(2024, 2, 28))
 
       assertEquals(
           ModuleModel(
@@ -130,6 +131,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                       CohortModuleModel(
                           cohortId = cohortId,
                           moduleId = moduleId,
+                          title = "1",
                           startDate = LocalDate.of(2024, 1, 1),
                           endDate = LocalDate.of(2024, 1, 31),
                           projects = setOf(projectId),
@@ -137,6 +139,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                       CohortModuleModel(
                           cohortId = otherCohortId,
                           moduleId = moduleId,
+                          title = "2",
                           startDate = LocalDate.of(2024, 2, 1),
                           endDate = LocalDate.of(2024, 2, 28),
                           projects = setOf(otherProjectId),
@@ -187,7 +190,8 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
               workshopDescription = "Workshop ideas",
           )
 
-      insertCohortModule(cohortId, moduleId, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 31))
+      insertCohortModule(
+          cohortId, moduleId, "1", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 31))
 
       assertEquals(
           ModuleModel(
@@ -200,6 +204,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                       CohortModuleModel(
                           cohortId = cohortId,
                           moduleId = moduleId,
+                          title = "1",
                           startDate = LocalDate.of(2024, 1, 1),
                           endDate = LocalDate.of(2024, 1, 31),
                           projects = null,
@@ -271,7 +276,8 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
               workshopDescription = "Workshop ideas",
           )
 
-      insertCohortModule(cohortId, moduleId, LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 31))
+      insertCohortModule(
+          cohortId, moduleId, "1", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 1, 31))
 
       assertEquals(
           listOf(
@@ -285,6 +291,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                           CohortModuleModel(
                               cohortId = cohortId,
                               moduleId = moduleId,
+                              title = "1",
                               startDate = LocalDate.of(2024, 1, 1),
                               endDate = LocalDate.of(2024, 1, 31),
                               projects = null, // other projects of cohorts not visible

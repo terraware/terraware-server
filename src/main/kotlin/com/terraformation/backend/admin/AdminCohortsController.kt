@@ -79,6 +79,7 @@ class AdminCohortsController(
       model: Model,
       @PathVariable cohortId: CohortId,
       @RequestParam moduleId: ModuleId,
+      @RequestParam title: String,
       @RequestParam startDate: LocalDate,
       @RequestParam endDate: LocalDate,
       redirectAttributes: RedirectAttributes
@@ -87,7 +88,7 @@ class AdminCohortsController(
     try {
       cohortStore.update(cohortId) {
         val updatedModules =
-            it.modules.plus(CohortModuleModel(cohortId, moduleId, startDate, endDate))
+            it.modules.plus(CohortModuleModel(cohortId, moduleId, title, startDate, endDate))
         it.copy(modules = updatedModules)
       }
       redirectAttributes.successMessage = "Cohort module added."
@@ -108,6 +109,7 @@ class AdminCohortsController(
       model: Model,
       @PathVariable cohortId: CohortId,
       @RequestParam moduleId: ModuleId,
+      @RequestParam title: String,
       @RequestParam startDate: LocalDate,
       @RequestParam endDate: LocalDate,
       redirectAttributes: RedirectAttributes
@@ -115,7 +117,7 @@ class AdminCohortsController(
     requirePermissions { updateCohort(cohortId) }
     try {
       cohortStore.update(cohortId) {
-        val newModule = CohortModuleModel(cohortId, moduleId, startDate, endDate)
+        val newModule = CohortModuleModel(cohortId, moduleId, title, startDate, endDate)
         val updatedModules =
             it.modules.map { existingModule ->
               if (existingModule.moduleId == moduleId) {
