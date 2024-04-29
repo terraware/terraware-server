@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
@@ -147,8 +148,9 @@ class PlantingSiteImporter(
 
     val problems = mutableListOf<String>()
     val siteFeature = getSiteBoundary(siteFile, problems)
+    val siteBoundary = siteFeature.geometry
 
-    val siteAreaHa = siteFeature.calculateAreaHectares(siteFeature.geometry.envelope)
+    val siteAreaHa = siteBoundary.calculateAreaHectares()
     if (siteAreaHa > MAX_SITE_ENVELOPE_AREA_HA) {
       problems.add(
           "Site must be contained within an envelope (rectangular area) of no more than " +
@@ -162,7 +164,7 @@ class PlantingSiteImporter(
 
     val newModel =
         PlantingSiteModel.create(
-            boundary = siteFeature.geometry.toMultiPolygon(),
+            boundary = siteBoundary.toMultiPolygon(),
             description = description,
             exclusion = exclusion,
             name = name,
@@ -302,7 +304,7 @@ class PlantingSiteImporter(
               }
             }
 
-    return geometryFactory(exclusionsFile.features.first())
+    return GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
         .createMultiPolygon(allPolygons.toTypedArray())
   }
 
@@ -368,7 +370,7 @@ class PlantingSiteImporter(
 
       name to
           NewPlantingZoneModel(
-              areaHa = boundary.calculateAreaHectares(feature.coordinateReferenceSystem),
+              areaHa = boundary.calculateAreaHectares(),
               boundary = boundary,
               errorMargin = DEFAULT_ERROR_MARGIN,
               extraPermanentClusters = 0,
@@ -445,7 +447,7 @@ class PlantingSiteImporter(
         val name = subzoneFeature.getProperty(subzoneNameProperties)!!
 
         NewPlantingSubzoneModel(
-            areaHa = boundary.calculateAreaHectares(subzoneFeature.coordinateReferenceSystem),
+            areaHa = boundary.calculateAreaHectares(),
             boundary = boundary.toMultiPolygon(),
             id = null,
             fullName = "$zoneName-$name",
@@ -507,7 +509,4 @@ class PlantingSiteImporter(
 
   private fun getFullSubzoneName(feature: ShapefileFeature): String =
       "${feature.getProperty(zoneNameProperties)!!}-${feature.getProperty(subzoneNameProperties)!!}"
-
-  private fun geometryFactory(feature: ShapefileFeature) =
-      GeometryFactory(PrecisionModel(), feature.geometry.srid)
 }
