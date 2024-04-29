@@ -7,32 +7,28 @@
 
 <a href="/admin/">Home</a>
 
-<th:block th:if="${canReadCohorts}">
-    <h2>Cohorts</h2>
-    <table>
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Phase</th>
-        </tr>
-        </thead>
+<h2>Cohorts</h2>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Phase</th>
+    </tr>
+    </thead>
 
-        <tbody>
-        <tr th:each="cohort : ${cohorts}" class="striped">
-            <td th:text="${cohort.id}">ID</td>
-            <td>
-                <a th:href="|/admin/cohorts/${cohort.id}|" th:text="${cohort.name}">
-                    Cohort Name
-                </a>
-            </td>
-            <td th:text="${cohort.phase.getDisplayName(#locale.default)}">Phase</td>
-        </tr>
-        </tbody>
-    </table>
-</th:block>
-
-<h2 th:text="No permission to manage cohorts" th:if="${!canUpdateCohorts}"> Error </h2>
+    <tbody>
+    <tr th:each="cohort : ${cohorts}" class="striped">
+        <td th:text="${cohort.id}">ID</td>
+        <td>
+            <a th:href="|/admin/cohorts/${cohort.id}|" th:text="${cohort.name}">
+                Cohort Name
+            </a>
+        </td>
+        <td th:text="${cohort.phase.getDisplayName(#locale.default)}">Phase</td>
+    </tr>
+    </tbody>
+</table>
 
 </body>
 </html>

@@ -330,6 +330,8 @@ data class IndividualUser(
 
   override fun canReadCohort(cohortId: CohortId) = isReadOnlyOrHigher()
 
+  override fun canReadCohorts(): Boolean = isReadOnlyOrHigher()
+
   override fun canReadDefaultVoters(): Boolean = isReadOnlyOrHigher()
 
   override fun canReadDelivery(deliveryId: DeliveryId) =

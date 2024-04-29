@@ -38,12 +38,10 @@ class AdminCohortsController(
 
   @GetMapping("/cohorts")
   fun cohortsHome(model: Model): String {
+    requirePermissions { readCohorts() }
     val cohorts = cohortStore.findAll()
 
-    val canReadCohorts = cohorts.all { currentUser().canReadCohort(it.id) }
-
     model.addAttribute("cohorts", cohorts)
-    model.addAttribute("canReadCohorts", canReadCohorts)
 
     return "/admin/cohorts"
   }

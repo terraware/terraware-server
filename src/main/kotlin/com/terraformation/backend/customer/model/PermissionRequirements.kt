@@ -548,6 +548,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readCohorts() {
+    if (!user.canReadCohorts()) {
+      throw AccessDeniedException("No permission to read cohorts")
+    }
+  }
+
   fun readDefaultVoters() {
     if (!user.canReadDefaultVoters()) {
       throw AccessDeniedException("No permission to read default voters")

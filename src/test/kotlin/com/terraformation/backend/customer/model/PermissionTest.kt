@@ -1295,6 +1295,7 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
+        readCohorts = true,
         readGlobalRoles = true,
         readModuleEventParticipants = true,
         readInternalTags = true,
@@ -1578,6 +1579,7 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
+        readCohorts = true,
         readGlobalRoles = true,
         readInternalTags = true,
         readModuleEventParticipants = true,
@@ -1742,6 +1744,7 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
+        readCohorts = true,
         readGlobalRoles = true,
         readInternalTags = true,
         readModuleEventParticipants = true,
@@ -1890,6 +1893,7 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
+        readCohorts = true,
         readGlobalRoles = false,
         readModuleEventParticipants = true,
         readInternalTags = true,
@@ -2016,6 +2020,7 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
+        readCohorts = true,
         readGlobalRoles = false,
         readModuleEventParticipants = true,
         readInternalTags = true,
@@ -2470,6 +2475,7 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails: Boolean = false,
         readAllDeliverables: Boolean = false,
         readCohort: Boolean = false,
+        readCohorts: Boolean = false,
         readGlobalRoles: Boolean = false,
         readInternalTags: Boolean = false,
         readModuleEventParticipants: Boolean = false,
@@ -2525,6 +2531,7 @@ internal class PermissionTest : DatabaseTest() {
           "Can read all accelerator details")
       assertEquals(readAllDeliverables, user.canReadAllDeliverables(), "Can read all deliverables")
       assertEquals(readCohort, user.canReadCohort(cohortIds[0]), "Can read cohort")
+      assertEquals(readCohorts, user.canReadCohorts(), "Can read all cohorts")
       assertEquals(readGlobalRoles, user.canReadGlobalRoles(), "Can read global roles")
       assertEquals(readInternalTags, user.canReadInternalTags(), "Can read internal tags")
       assertEquals(

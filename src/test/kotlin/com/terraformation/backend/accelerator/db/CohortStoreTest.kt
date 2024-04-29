@@ -131,7 +131,7 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
               id = cohortId,
               name = "Cohort Test",
               phase = CohortPhase.Phase0DueDiligence,
-              participantIds = setOf(),
+              participantIds = emptySet(),
               modules = emptyList(),
           ),
           store.fetchOneById(cohortId))
