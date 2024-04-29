@@ -159,12 +159,24 @@
          <checkConstraint constraint="(((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; ''::text)))" name="other_type_details_null_or_not_empty"/>
          <checkConstraint constraint="((((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6))))" name="other_type_details_only_for_other"/>
       </table>
+      <table name="plant_material_sourcing_methods" numRows="7" remarks="(Enum) Sourcing methods for acquiring plant material." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="plant_material_sourcing_method_id" foreignKey="species_plant_material_sourci_plant_material_sourcing_meth_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_plant_material_sourcing_methods"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="plant_material_sourcing_methods_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
       <table name="species" numRows="0" remarks="Per-organization information about species." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="species_id" foreignKey="batches_species_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
             <child column="species_id" foreignKey="species_ecosystem_types_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_ecosystem_types"/>
             <child column="species_id" foreignKey="species_growth_forms_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_growth_forms"/>
+            <child column="species_id" foreignKey="species_plant_material_sourcing_methods_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_plant_material_sourcing_methods"/>
             <child column="species_id" foreignKey="species_problems_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_problems"/>
+            <child column="species_id" foreignKey="species_successional_groups_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species_successional_groups"/>
             <child column="species_id" foreignKey="accessions_species_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="species_id" foreignKey="observed_plot_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_plot_species_totals"/>
             <child column="species_id" foreignKey="observed_site_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_site_species_totals"/>
@@ -241,6 +253,23 @@
             <column ascending="true" name="species_id"/>
          </index>
       </table>
+      <table name="species_plant_material_sourcing_methods" numRows="0" remarks="Sourcing methods for the plant material used to grow a particular species." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="species_plant_material_sourcing_methods_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="plant_material_sourcing_method_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_plant_material_sourci_plant_material_sourcing_meth_fkey" implied="false" onDeleteCascade="false" schema="public" table="plant_material_sourcing_methods"/>
+         </column>
+         <primaryKey column="species_id" sequenceNumberInPK="1"/>
+         <primaryKey column="plant_material_sourcing_method_id" sequenceNumberInPK="2"/>
+         <index name="species_plant_material_sourcing_methods_pkey" unique="true">
+            <column ascending="true" name="species_id"/>
+            <column ascending="true" name="plant_material_sourcing_method_id"/>
+         </index>
+         <index name="species_plant_material_sourcing_methods_species_id_idx" unique="false">
+            <column ascending="true" name="species_id"/>
+         </index>
+      </table>
       <table name="species_problem_fields" numRows="1" remarks="(Enum) Species fields that can be scanned for problems." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="field_id" foreignKey="species_problems_field_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_problems"/>
@@ -282,6 +311,33 @@
             <column ascending="true" name="species_id"/>
          </index>
          <checkConstraint constraint="((suggested_value !~ similar_to_escape(' *'::text)))" name="species_problems_suggested_value_check"/>
+      </table>
+      <table name="species_successional_groups" numRows="0" remarks="The successional groupings that the species is planted in." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="species_successional_groups_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="successional_group_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_successional_groups_successional_group_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="successional_groups"/>
+         </column>
+         <primaryKey column="species_id" sequenceNumberInPK="1"/>
+         <primaryKey column="successional_group_id" sequenceNumberInPK="2"/>
+         <index name="species_successional_groups_pkey" unique="true">
+            <column ascending="true" name="species_id"/>
+            <column ascending="true" name="successional_group_id"/>
+         </index>
+         <index name="species_successional_groups_species_id_idx" unique="false">
+            <column ascending="true" name="species_id"/>
+         </index>
+      </table>
+      <table name="successional_groups" numRows="4" remarks="(Enum) Successional Groups that a plant may be planted in." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="successional_group_id" foreignKey="species_successional_groups_successional_group_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_successional_groups"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="successional_groups_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
       </table>
    </tables>
    <routines>

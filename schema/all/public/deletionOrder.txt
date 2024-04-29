@@ -8,6 +8,8 @@ notifications
 user_preferences
 user_global_roles
 upload_problems
+species_successional_groups
+species_plant_material_sourcing_methods
 species_growth_forms
 species_ecosystem_types
 report_photos
@@ -41,12 +43,14 @@ upload_types
 upload_statuses
 upload_problem_types
 timeseries_types
+successional_groups
 species_problem_types
 species_problem_fields
 seed_storage_behaviors
 roles
 report_statuses
 regions
+plant_material_sourcing_methods
 organization_types
 notification_criticalities
 managed_location_types

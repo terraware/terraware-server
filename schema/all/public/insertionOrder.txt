@@ -11,12 +11,14 @@ land_use_model_types
 managed_location_types
 notification_criticalities
 organization_types
+plant_material_sourcing_methods
 regions
 report_statuses
 roles
 seed_storage_behaviors
 species_problem_fields
 species_problem_types
+successional_groups
 timeseries_types
 upload_problem_types
 upload_statuses
@@ -50,6 +52,8 @@ report_files
 report_photos
 species_ecosystem_types
 species_growth_forms
+species_plant_material_sourcing_methods
+species_successional_groups
 upload_problems
 user_global_roles
 user_preferences

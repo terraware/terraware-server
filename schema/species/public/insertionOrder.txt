@@ -2,13 +2,17 @@ organizations
 conservation_categories
 ecosystem_types
 gbif_taxa
+plant_material_sourcing_methods
 species_problem_fields
 species_problem_types
+successional_groups
 species
 gbif_names
 gbif_name_words
 species_growth_forms
 species_ecosystem_types
+species_plant_material_sourcing_methods
+species_successional_groups
 species_problems
 gbif_distributions
 gbif_vernacular_names
