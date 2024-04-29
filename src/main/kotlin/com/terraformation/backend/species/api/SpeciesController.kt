@@ -20,6 +20,7 @@ import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
+import com.terraformation.backend.db.default_schema.WoodDensityLevel
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.seedbank.api.ValuesController
 import com.terraformation.backend.species.SpeciesService
@@ -31,6 +32,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
+import java.math.BigDecimal
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -215,75 +217,115 @@ data class SpeciesProblemElement(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class SpeciesResponseElement(
-    val ecosystemTypes: Set<EcosystemType>?,
+    val averageWoodDensity: BigDecimal?,
     val commonName: String?,
     @Schema(
         description = "IUCN Red List conservation category code.",
         externalDocs =
             ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
     val conservationCategory: ConservationCategory?,
+    val dbhSource: String?,
+    val dbhValue: BigDecimal?,
+    val ecologicalRoleKnown: String?,
+    val ecosystemTypes: Set<EcosystemType>?,
     val familyName: String?,
     val growthForms: Set<GrowthForm>?,
+    val heightAtMaturitySource: String?,
+    val heightAtMaturityValue: BigDecimal?,
     val id: SpeciesId,
+    val localUsesKnown: String?,
+    val nativeEcosystem: String?,
     val plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod>?,
     val problems: List<SpeciesProblemElement>?,
+    val otherFacts: String?,
     val rare: Boolean?,
     val scientificName: String,
     val seedStorageBehavior: SeedStorageBehavior?,
     val successionalGroups: Set<SuccessionalGroup>?,
+    val woodDensityLevel: WoodDensityLevel?,
 ) {
   constructor(
       model: ExistingSpeciesModel,
       problems: List<SpeciesProblemsRow>?,
   ) : this(
-      ecosystemTypes = model.ecosystemTypes.ifEmpty { null },
+      averageWoodDensity = model.averageWoodDensity,
       commonName = model.commonName,
       conservationCategory = model.conservationCategory,
+      dbhSource = model.dbhSource,
+      dbhValue = model.dbhValue,
+      ecologicalRoleKnown = model.ecologicalRoleKnown,
+      ecosystemTypes = model.ecosystemTypes.ifEmpty { null },
       familyName = model.familyName,
       growthForms = model.growthForms,
+      heightAtMaturitySource = model.heightAtMaturitySource,
+      heightAtMaturityValue = model.heightAtMaturityValue,
       id = model.id,
+      localUsesKnown = model.localUsesKnown,
+      nativeEcosystem = model.nativeEcosystem,
       plantMaterialSourcingMethods = model.plantMaterialSourcingMethods,
       problems = problems?.map { SpeciesProblemElement(it) }?.ifEmpty { null },
+      otherFacts = model.otherFacts,
       rare = model.rare,
       scientificName = model.scientificName,
       seedStorageBehavior = model.seedStorageBehavior,
       successionalGroups = model.successionalGroups,
+      woodDensityLevel = model.woodDensityLevel,
   )
 }
 
 data class SpeciesRequestPayload(
-    val ecosystemTypes: Set<EcosystemType>?,
+    val averageWoodDensity: BigDecimal?,
     val commonName: String?,
     @Schema(
         description = "IUCN Red List conservation category code.",
         externalDocs =
             ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
     val conservationCategory: ConservationCategory?,
+    val dbhSource: String?,
+    val dbhValue: BigDecimal?,
+    val ecologicalRoleKnown: String?,
+    val ecosystemTypes: Set<EcosystemType>?,
     val familyName: String?,
     val growthForms: Set<GrowthForm>?,
+    val heightAtMaturitySource: String?,
+    val heightAtMaturityValue: BigDecimal?,
+    val localUsesKnown: String?,
+    val nativeEcosystem: String?,
     @Schema(description = "Which organization's species list to update.")
     val organizationId: OrganizationId,
+    val otherFacts: String?,
     val plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod>?,
     val rare: Boolean?,
     val scientificName: String,
     val seedStorageBehavior: SeedStorageBehavior?,
     val successionalGroups: Set<SuccessionalGroup>?,
+    val woodDensityLevel: WoodDensityLevel?,
 ) {
   fun <T : SpeciesId?> toModel(id: T) =
       SpeciesModel(
+          averageWoodDensity = averageWoodDensity,
           commonName = commonName,
           conservationCategory = conservationCategory,
+          dbhSource = dbhSource,
+          dbhValue = dbhValue,
+          ecologicalRoleKnown = ecologicalRoleKnown,
           ecosystemTypes = ecosystemTypes ?: emptySet(),
           familyName = familyName,
           growthForms = growthForms ?: emptySet(),
+          heightAtMaturitySource = heightAtMaturitySource,
+          heightAtMaturityValue = heightAtMaturityValue,
           id = id,
           initialScientificName = scientificName,
+          localUsesKnown = localUsesKnown,
+          nativeEcosystem = nativeEcosystem,
           rare = rare,
           organizationId = organizationId,
+          otherFacts = otherFacts,
           plantMaterialSourcingMethods = plantMaterialSourcingMethods ?: emptySet(),
           scientificName = scientificName,
           seedStorageBehavior = seedStorageBehavior,
           successionalGroups = successionalGroups ?: emptySet(),
+          woodDensityLevel = woodDensityLevel,
       )
 }
 

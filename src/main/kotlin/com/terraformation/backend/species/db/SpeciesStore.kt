@@ -327,16 +327,26 @@ class SpeciesStore(
 
       val rowWithNewValues =
           existingRow.copy(
+              averageWoodDensity = model.averageWoodDensity,
               commonName = model.commonName,
               conservationCategoryId = model.conservationCategory,
+              dbhSource = model.dbhSource,
+              dbhValue = model.dbhValue,
               deletedBy = null,
               deletedTime = null,
+              ecologicalRoleKnown = model.ecologicalRoleKnown,
               familyName = model.familyName,
+              heightAtMaturitySource = model.heightAtMaturitySource,
+              heightAtMaturityValue = model.heightAtMaturityValue,
+              localUsesKnown = model.localUsesKnown,
               modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
+              nativeEcosystem = model.nativeEcosystem,
+              otherFacts = model.otherFacts,
               rare = model.rare,
               scientificName = model.scientificName,
               seedStorageBehaviorId = model.seedStorageBehavior,
+              woodDensityLevelId = model.woodDensityLevel,
           )
 
       speciesDao.update(rowWithNewValues)
@@ -349,19 +359,29 @@ class SpeciesStore(
     } else {
       val rowWithMetadata =
           SpeciesRow(
+              averageWoodDensity = model.averageWoodDensity,
               checkedTime = null,
               commonName = model.commonName,
               conservationCategoryId = model.conservationCategory,
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
+              dbhSource = model.dbhSource,
+              dbhValue = model.dbhValue,
+              ecologicalRoleKnown = model.ecologicalRoleKnown,
               familyName = model.familyName,
+              heightAtMaturitySource = model.heightAtMaturitySource,
+              heightAtMaturityValue = model.heightAtMaturityValue,
               initialScientificName = model.scientificName,
+              localUsesKnown = model.localUsesKnown,
               modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
+              nativeEcosystem = model.nativeEcosystem,
               organizationId = organizationId,
+              otherFacts = model.otherFacts,
               rare = model.rare,
               scientificName = model.scientificName,
               seedStorageBehaviorId = model.seedStorageBehavior,
+              woodDensityLevelId = model.woodDensityLevel,
           )
 
       speciesDao.insert(rowWithMetadata)
@@ -437,11 +457,21 @@ class SpeciesStore(
         val rowsUpdated =
             dslContext
                 .update(SPECIES)
+                .set(AVERAGE_WOOD_DENSITY, model.averageWoodDensity)
                 .set(COMMON_NAME, model.commonName)
                 .set(CONSERVATION_CATEGORY_ID, model.conservationCategory)
+                .set(DBH_SOURCE, model.dbhSource)
+                .set(DBH_VALUE, model.dbhValue)
+                .set(ECOLOGICAL_ROLE_KNOWN, model.ecologicalRoleKnown)
                 .set(FAMILY_NAME, model.familyName)
+                .set(HEIGHT_AT_MATURITY_SOURCE, model.heightAtMaturitySource)
+                .set(HEIGHT_AT_MATURITY_VALUE, model.heightAtMaturityValue)
+                .set(LOCAL_USES_KNOWN, model.localUsesKnown)
+                .set(NATIVE_ECOSYSTEM, model.nativeEcosystem)
+                .set(OTHER_FACTS, model.otherFacts)
                 .set(RARE, model.rare)
                 .set(SEED_STORAGE_BEHAVIOR_ID, model.seedStorageBehavior)
+                .set(WOOD_DENSITY_LEVEL_ID, model.woodDensityLevel)
                 .setNull(DELETED_TIME)
                 .setNull(DELETED_BY)
                 .set(MODIFIED_BY, currentUser().userId)
@@ -488,16 +518,26 @@ class SpeciesStore(
                   .insertInto(SPECIES)
                   .set(SCIENTIFIC_NAME, model.scientificName)
                   .set(INITIAL_SCIENTIFIC_NAME, model.scientificName)
+                  .set(AVERAGE_WOOD_DENSITY, model.averageWoodDensity)
                   .set(COMMON_NAME, model.commonName)
-                  .set(FAMILY_NAME, model.familyName)
                   .set(CONSERVATION_CATEGORY_ID, model.conservationCategory)
-                  .set(RARE, model.rare)
-                  .set(SEED_STORAGE_BEHAVIOR_ID, model.seedStorageBehavior)
                   .set(CREATED_BY, currentUser().userId)
                   .set(CREATED_TIME, clock.instant())
+                  .set(DBH_SOURCE, model.dbhSource)
+                  .set(DBH_VALUE, model.dbhValue)
+                  .set(ECOLOGICAL_ROLE_KNOWN, model.ecologicalRoleKnown)
+                  .set(FAMILY_NAME, model.familyName)
+                  .set(HEIGHT_AT_MATURITY_SOURCE, model.heightAtMaturitySource)
+                  .set(HEIGHT_AT_MATURITY_VALUE, model.heightAtMaturityValue)
+                  .set(LOCAL_USES_KNOWN, model.localUsesKnown)
                   .set(MODIFIED_BY, currentUser().userId)
                   .set(MODIFIED_TIME, clock.instant())
+                  .set(NATIVE_ECOSYSTEM, model.nativeEcosystem)
                   .set(ORGANIZATION_ID, model.organizationId)
+                  .set(OTHER_FACTS, model.otherFacts)
+                  .set(RARE, model.rare)
+                  .set(SEED_STORAGE_BEHAVIOR_ID, model.seedStorageBehavior)
+                  .set(WOOD_DENSITY_LEVEL_ID, model.woodDensityLevel)
                   .returning(ID)
                   .fetchOne(ID)!!
 
@@ -532,14 +572,26 @@ class SpeciesStore(
 
     val updatedRow =
         existing.copy(
+            averageWoodDensity = model.averageWoodDensity,
             commonName = model.commonName,
             conservationCategoryId = model.conservationCategory,
+            dbhSource = model.dbhSource,
+            dbhValue = model.dbhValue,
+            deletedBy = null,
+            deletedTime = null,
+            ecologicalRoleKnown = model.ecologicalRoleKnown,
             familyName = model.familyName,
+            heightAtMaturitySource = model.heightAtMaturitySource,
+            heightAtMaturityValue = model.heightAtMaturityValue,
+            localUsesKnown = model.localUsesKnown,
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
+            nativeEcosystem = model.nativeEcosystem,
+            otherFacts = model.otherFacts,
             rare = model.rare,
             scientificName = model.scientificName,
             seedStorageBehaviorId = model.seedStorageBehavior,
+            woodDensityLevelId = model.woodDensityLevel,
         )
 
     speciesDao.update(updatedRow)

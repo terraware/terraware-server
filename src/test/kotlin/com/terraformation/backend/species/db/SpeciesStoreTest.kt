@@ -18,6 +18,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
+import com.terraformation.backend.db.default_schema.WoodDensityLevel
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesEcosystemTypesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesGrowthFormsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesPlantMaterialSourcingMethodsRow
@@ -30,6 +31,7 @@ import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.NewSpeciesModel
 import com.terraformation.backend.tracking.db.PlantingSubzoneNotFoundException
 import io.mockk.every
+import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -71,16 +73,26 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `createSpecies inserts species`() {
     val model =
         NewSpeciesModel(
+            averageWoodDensity = BigDecimal(1.1),
             commonName = "common",
             conservationCategory = ConservationCategory.Endangered,
+            dbhSource = "dbh source",
+            dbhValue = BigDecimal(2.1),
             deletedTime = Instant.EPOCH,
+            ecologicalRoleKnown = "role",
             familyName = "family",
             growthForms = setOf(GrowthForm.Shrub),
+            heightAtMaturitySource = "height source",
+            heightAtMaturityValue = BigDecimal(3.1),
             id = null,
+            localUsesKnown = "uses",
+            nativeEcosystem = "ecosystem",
             organizationId = organizationId,
+            otherFacts = "facts",
             rare = false,
             scientificName = "test",
             seedStorageBehavior = SeedStorageBehavior.Recalcitrant,
+            woodDensityLevel = WoodDensityLevel.Family,
         )
 
     val speciesId = store.createSpecies(model)
@@ -89,21 +101,31 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val expected =
         listOf(
             SpeciesRow(
+                averageWoodDensity = BigDecimal(1.1),
                 commonName = "common",
                 conservationCategoryId = ConservationCategory.Endangered,
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
+                dbhSource = "dbh source",
+                dbhValue = BigDecimal(2.1),
                 deletedBy = null,
                 deletedTime = null,
+                ecologicalRoleKnown = "role",
                 familyName = "family",
                 id = speciesId,
+                heightAtMaturitySource = "height source",
+                heightAtMaturityValue = BigDecimal(3.1),
                 initialScientificName = "test",
                 modifiedBy = user.userId,
                 modifiedTime = Instant.EPOCH,
+                localUsesKnown = "uses",
+                nativeEcosystem = "ecosystem",
                 organizationId = organizationId,
+                otherFacts = "facts",
                 rare = false,
                 scientificName = "test",
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+                woodDensityLevelId = WoodDensityLevel.Family,
             ))
 
     val actual = speciesDao.findAll()
@@ -126,18 +148,28 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val originalSpeciesId =
         store.createSpecies(
             NewSpeciesModel(
+                averageWoodDensity = BigDecimal(1.1),
                 commonName = "original common",
                 conservationCategory = ConservationCategory.LeastConcern,
+                dbhSource = "original dbh source",
+                dbhValue = BigDecimal(2.1),
+                ecologicalRoleKnown = "original role",
                 ecosystemTypes = setOf(EcosystemType.Mangroves),
                 familyName = "original family",
-                id = null,
-                organizationId = organizationId,
-                scientificName = "test",
                 growthForms = setOf(GrowthForm.Fern),
+                heightAtMaturitySource = "original height source",
+                heightAtMaturityValue = BigDecimal(3.1),
+                id = null,
+                localUsesKnown = "original uses",
+                nativeEcosystem = "original ecosystem",
+                organizationId = organizationId,
+                otherFacts = "original facts",
                 plantMaterialSourcingMethods = setOf(PlantMaterialSourcingMethod.SeedlingPurchase),
                 rare = false,
+                scientificName = "test",
                 seedStorageBehavior = SeedStorageBehavior.Orthodox,
                 successionalGroups = setOf(SuccessionalGroup.Pioneer),
+                woodDensityLevel = WoodDensityLevel.Family,
             ))
     val originalRow = speciesDao.fetchOneById(originalSpeciesId)!!
 
@@ -145,18 +177,28 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     val editedModel =
         NewSpeciesModel(
+            averageWoodDensity = BigDecimal(1.99),
             commonName = "edited common",
             conservationCategory = ConservationCategory.NearThreatened,
+            dbhSource = "edit db source",
+            dbhValue = BigDecimal(2.99),
+            ecologicalRoleKnown = "edited role",
             ecosystemTypes = setOf(EcosystemType.Tundra),
             familyName = "edited family",
-            id = null,
-            organizationId = organizationId,
             growthForms = setOf(GrowthForm.Shrub),
+            heightAtMaturitySource = "edited height source",
+            heightAtMaturityValue = BigDecimal(3.99),
+            id = null,
+            localUsesKnown = "edited uses",
+            nativeEcosystem = "edited ecosystem",
+            organizationId = organizationId,
+            otherFacts = "edited facts",
             plantMaterialSourcingMethods = setOf(PlantMaterialSourcingMethod.WildlingHarvest),
             rare = true,
             scientificName = "test",
             seedStorageBehavior = SeedStorageBehavior.Recalcitrant,
             successionalGroups = setOf(SuccessionalGroup.Mature),
+            woodDensityLevel = WoodDensityLevel.Species,
         )
 
     val newInstant = Instant.ofEpochSecond(500)
@@ -166,19 +208,29 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     val expectedSpecies =
         SpeciesRow(
+            averageWoodDensity = BigDecimal(1.99),
             commonName = "edited common",
             conservationCategoryId = ConservationCategory.NearThreatened,
             createdBy = originalRow.createdBy,
             createdTime = originalRow.createdTime,
+            dbhSource = "edit db source",
+            dbhValue = BigDecimal(2.99),
+            ecologicalRoleKnown = "edited role",
             familyName = "edited family",
+            heightAtMaturitySource = "edited height source",
+            heightAtMaturityValue = BigDecimal(3.99),
             id = originalSpeciesId,
             initialScientificName = "test",
+            localUsesKnown = "edited uses",
+            nativeEcosystem = "edited ecosystem",
             organizationId = organizationId,
+            otherFacts = "edited facts",
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
             rare = true,
             scientificName = "test",
             seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
+            woodDensityLevelId = WoodDensityLevel.Species,
         )
 
     val actualSpecies = speciesDao.fetchOneById(reusedSpeciesId)
@@ -228,18 +280,28 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `updateSpecies updates all modifiable fields`() {
     val initial =
         NewSpeciesModel(
+            averageWoodDensity = BigDecimal(1.1),
             commonName = "original common",
             conservationCategory = ConservationCategory.Extinct,
+            dbhSource = "original db source",
+            dbhValue = BigDecimal(2.1),
             ecosystemTypes = setOf(EcosystemType.Mangroves, EcosystemType.Tundra),
+            ecologicalRoleKnown = "original role",
             familyName = "original family",
             growthForms = setOf(GrowthForm.Shrub),
+            heightAtMaturitySource = "original height source",
+            heightAtMaturityValue = BigDecimal(3.1),
             id = null,
+            localUsesKnown = "original uses",
+            nativeEcosystem = "original ecosystem",
             organizationId = organizationId,
+            otherFacts = "original facts",
             plantMaterialSourcingMethods = setOf(PlantMaterialSourcingMethod.SeedlingPurchase),
             rare = true,
             scientificName = "original scientific",
             seedStorageBehavior = SeedStorageBehavior.Unknown,
             successionalGroups = setOf(SuccessionalGroup.Pioneer),
+            woodDensityLevel = WoodDensityLevel.Family,
         )
     val speciesId = store.createSpecies(initial)
 
@@ -251,39 +313,59 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     val update =
         ExistingSpeciesModel(
+            averageWoodDensity = BigDecimal(1.99),
             commonName = "new common",
             conservationCategory = ConservationCategory.ExtinctInTheWild,
+            dbhSource = "new db source",
+            dbhValue = BigDecimal(2.99),
             deletedTime = bogusInstant,
+            ecologicalRoleKnown = "new role",
             ecosystemTypes = setOf(EcosystemType.BorealForestsTaiga, EcosystemType.Tundra),
             familyName = "new family",
             growthForms = setOf(GrowthForm.Fern),
+            heightAtMaturitySource = "new height source",
+            heightAtMaturityValue = BigDecimal(3.99),
             id = speciesId,
             initialScientificName = "new initial",
+            localUsesKnown = "new uses",
+            nativeEcosystem = "new ecosystem",
             organizationId = bogusOrganizationId,
+            otherFacts = "new facts",
             plantMaterialSourcingMethods = setOf(PlantMaterialSourcingMethod.WildlingHarvest),
             rare = false,
             scientificName = "new scientific",
             seedStorageBehavior = SeedStorageBehavior.Orthodox,
             successionalGroups = setOf(SuccessionalGroup.Mature),
+            woodDensityLevel = WoodDensityLevel.Species,
         )
 
     val expectedSpecies =
         SpeciesRow(
+            averageWoodDensity = BigDecimal(1.99),
             commonName = "new common",
             conservationCategoryId = ConservationCategory.ExtinctInTheWild,
             createdBy = user.userId,
             createdTime = Instant.EPOCH,
+            dbhSource = "new db source",
+            dbhValue = BigDecimal(2.99),
             deletedBy = null,
             deletedTime = null,
+            ecologicalRoleKnown = "new role",
             familyName = "new family",
+            heightAtMaturitySource = "new height source",
+            heightAtMaturityValue = BigDecimal(3.99),
             id = speciesId,
             initialScientificName = "original scientific",
+            localUsesKnown = "new uses",
+            nativeEcosystem = "new ecosystem",
             modifiedBy = user.userId,
             modifiedTime = newInstant,
             organizationId = organizationId,
+            otherFacts = "new facts",
             rare = false,
             scientificName = "new scientific",
             seedStorageBehaviorId = SeedStorageBehavior.Orthodox,
+            woodDensityLevelId = WoodDensityLevel.Species,
         )
 
     store.updateSpecies(update)

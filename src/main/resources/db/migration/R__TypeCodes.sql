@@ -215,6 +215,12 @@ VALUES (1, 'Seed collection & germination'),
        (7, 'Other')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO wood_density_levels (id, name)
+VALUES (1, 'Species'),
+       (2, 'Genus'),
+       (3, 'Family')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO tracking.observable_conditions (id, name)
 VALUES (1, 'AnimalDamage'),
        (2, 'FastGrowth'),
