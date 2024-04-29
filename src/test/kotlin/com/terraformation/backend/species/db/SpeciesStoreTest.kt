@@ -17,6 +17,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesEcosystemTypesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesGrowthFormsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
@@ -45,7 +46,13 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     store =
-        SpeciesStore(clock, dslContext, speciesDao, speciesEcosystemTypesDao, speciesProblemsDao)
+        SpeciesStore(
+            clock,
+            dslContext,
+            speciesDao,
+            speciesEcosystemTypesDao,
+            speciesGrowthFormsDao,
+            speciesProblemsDao)
 
     every { user.canCreateSpecies(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
@@ -64,7 +71,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             conservationCategory = ConservationCategory.Endangered,
             deletedTime = Instant.EPOCH,
             familyName = "family",
-            growthForm = GrowthForm.Shrub,
+            growthForms = setOf(GrowthForm.Shrub),
             id = null,
             organizationId = organizationId,
             rare = false,
@@ -85,7 +92,6 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 deletedBy = null,
                 deletedTime = null,
                 familyName = "family",
-                growthFormId = GrowthForm.Shrub,
                 id = speciesId,
                 initialScientificName = "test",
                 modifiedBy = user.userId,
@@ -123,7 +129,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 id = null,
                 organizationId = organizationId,
                 scientificName = "test",
-                growthForm = GrowthForm.Fern,
+                growthForms = setOf(GrowthForm.Fern),
                 rare = false,
                 seedStorageBehavior = SeedStorageBehavior.Orthodox,
             ))
@@ -139,7 +145,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             familyName = "edited family",
             id = null,
             organizationId = organizationId,
-            growthForm = GrowthForm.Shrub,
+            growthForms = setOf(GrowthForm.Shrub),
             rare = true,
             scientificName = "test",
             seedStorageBehavior = SeedStorageBehavior.Recalcitrant,
@@ -159,7 +165,6 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             familyName = "edited family",
             id = originalSpeciesId,
             initialScientificName = "test",
-            growthFormId = GrowthForm.Shrub,
             organizationId = organizationId,
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
@@ -176,6 +181,11 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     val actualEcosystemTypes = speciesEcosystemTypesDao.fetchBySpeciesId(originalSpeciesId)
     assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
+
+    val expectedGrowthForms = listOf(SpeciesGrowthFormsRow(originalSpeciesId, GrowthForm.Shrub))
+
+    val actualGrowthForms = speciesGrowthFormsDao.fetchBySpeciesId(originalSpeciesId)
+    assertEquals(expectedGrowthForms, actualGrowthForms)
   }
 
   @Test
@@ -203,7 +213,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             conservationCategory = ConservationCategory.Extinct,
             ecosystemTypes = setOf(EcosystemType.Mangroves, EcosystemType.Tundra),
             familyName = "original family",
-            growthForm = GrowthForm.Shrub,
+            growthForms = setOf(GrowthForm.Shrub),
             id = null,
             organizationId = organizationId,
             rare = true,
@@ -225,7 +235,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             deletedTime = bogusInstant,
             ecosystemTypes = setOf(EcosystemType.BorealForestsTaiga, EcosystemType.Tundra),
             familyName = "new family",
-            growthForm = GrowthForm.Fern,
+            growthForms = setOf(GrowthForm.Fern),
             id = speciesId,
             initialScientificName = "new initial",
             organizationId = bogusOrganizationId,
@@ -243,7 +253,6 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             deletedBy = null,
             deletedTime = null,
             familyName = "new family",
-            growthFormId = GrowthForm.Fern,
             id = speciesId,
             initialScientificName = "original scientific",
             modifiedBy = user.userId,
@@ -267,6 +276,11 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     val actualEcosystemTypes = speciesEcosystemTypesDao.fetchBySpeciesId(speciesId).toSet()
     assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
+
+    val expectedGrowthForms = setOf(SpeciesGrowthFormsRow(speciesId, GrowthForm.Fern))
+
+    val actualGrowthForms = speciesGrowthFormsDao.fetchBySpeciesId(speciesId).toSet()
+    assertEquals(expectedGrowthForms, actualGrowthForms)
   }
 
   @Test

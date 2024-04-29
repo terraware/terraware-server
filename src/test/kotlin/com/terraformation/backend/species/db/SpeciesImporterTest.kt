@@ -17,6 +17,7 @@ import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesEcosystemTypesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesGrowthFormsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
@@ -62,7 +63,13 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   private val scheduler: JobScheduler = mockk()
   private val speciesChecker: SpeciesChecker = mockk()
   private val speciesStore: SpeciesStore by lazy {
-    SpeciesStore(clock, dslContext, speciesDao, speciesEcosystemTypesDao, speciesProblemsDao)
+    SpeciesStore(
+        clock,
+        dslContext,
+        speciesDao,
+        speciesEcosystemTypesDao,
+        speciesGrowthFormsDao,
+        speciesProblemsDao)
   }
   private val uploadService: UploadService = mockk()
   private val uploadStore: UploadStore by lazy {
@@ -333,7 +340,6 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 familyName = "Family",
                 conservationCategoryId = ConservationCategory.NearThreatened,
                 rare = false,
-                growthFormId = GrowthForm.Shrub,
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
                 createdBy = userId,
                 createdTime = Instant.EPOCH,
@@ -362,6 +368,14 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val actualEcosystemTypes = speciesEcosystemTypesDao.findAll().toSet()
     assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
 
+    val expectedGrowthForms =
+        setOf(
+            SpeciesGrowthFormsRow(SpeciesId(1), GrowthForm.Shrub),
+        )
+
+    val actualGrowthForms = speciesGrowthFormsDao.findAll().toSet()
+    assertEquals(expectedGrowthForms, actualGrowthForms)
+
     assertStatus(UploadStatus.Completed)
   }
 
@@ -388,8 +402,16 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         organizationId = organizationId,
         status = UploadStatus.AwaitingProcessing,
         storageUrl = storageUrl)
-    insertSpecies(2, "Existing name", ecosystemTypes = setOf(EcosystemType.Mangroves))
-    insertSpecies(3, "New name", initialScientificName = "Initial name")
+    insertSpecies(
+        2,
+        "Existing name",
+        ecosystemTypes = setOf(EcosystemType.Mangroves),
+        growthForms = setOf(GrowthForm.Shrub))
+    insertSpecies(
+        3,
+        "New name",
+        growthForms = setOf(GrowthForm.Shrub),
+        initialScientificName = "Initial name")
 
     val now = clock.instant() + Duration.ofDays(1)
     clock.instant = now
@@ -407,7 +429,6 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 familyName = "Family",
                 conservationCategoryId = ConservationCategory.Endangered,
                 rare = false,
-                growthFormId = GrowthForm.Shrub,
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
                 createdBy = userId,
                 createdTime = Instant.EPOCH,
@@ -422,7 +443,6 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 familyName = "NewFamily",
                 conservationCategoryId = ConservationCategory.LeastConcern,
                 rare = true,
-                growthFormId = GrowthForm.Shrub,
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
                 createdBy = userId,
                 createdTime = Instant.EPOCH,
@@ -436,6 +456,15 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     val actualEcosystemTypes = speciesEcosystemTypesDao.findAll().toSet()
     assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
+
+    val expectedGrowthForms =
+        setOf(
+            SpeciesGrowthFormsRow(SpeciesId(2), GrowthForm.Shrub),
+            SpeciesGrowthFormsRow(SpeciesId(3), GrowthForm.Shrub),
+        )
+
+    val actualGrowthForms = speciesGrowthFormsDao.findAll().toSet()
+    assertEquals(expectedGrowthForms, actualGrowthForms)
 
     assertStatus(UploadStatus.Completed)
   }
@@ -468,7 +497,6 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 familyName = "NewFamily",
                 conservationCategoryId = ConservationCategory.Vulnerable,
                 rare = true,
-                growthFormId = GrowthForm.Shrub,
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
                 createdBy = userId,
                 createdTime = Instant.EPOCH,
@@ -501,7 +529,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         organizationId = organizationId,
         status = UploadStatus.AwaitingProcessing,
         storageUrl = storageUrl)
-    insertSpecies(10, "Existing name", ecosystemTypes = setOf(EcosystemType.Mangroves))
+    insertSpecies(
+        10,
+        "Existing name",
+        growthForms = setOf(GrowthForm.Shrub),
+        ecosystemTypes = setOf(EcosystemType.Mangroves))
     insertSpecies(11, "New name", initialScientificName = "Initial name")
 
     clock.instant = Instant.EPOCH + Duration.ofDays(1)
@@ -518,6 +550,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     val actualEcosystemTypes = speciesEcosystemTypesDao.findAll().toSet()
     assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
+
+    val expectedGrowthForms = setOf(SpeciesGrowthFormsRow(SpeciesId(10), GrowthForm.Shrub))
+
+    val actualGrowthForms = speciesGrowthFormsDao.findAll().toSet()
+    assertEquals(expectedGrowthForms, actualGrowthForms)
 
     assertStatus(UploadStatus.Completed)
   }
@@ -554,7 +591,6 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 familyName = "Family",
                 conservationCategoryId = ConservationCategory.Endangered,
                 rare = false,
-                growthFormId = GrowthForm.Shrub,
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
                 createdBy = userId,
                 createdTime = Instant.EPOCH,
@@ -568,6 +604,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     val actualEcosystemTypes = speciesEcosystemTypesDao.findAll().toSet()
     assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
+
+    val expectedGrowthForms = setOf(SpeciesGrowthFormsRow(SpeciesId(2), GrowthForm.Shrub))
+
+    val actualGrowthForms = speciesGrowthFormsDao.findAll().toSet()
+    assertEquals(expectedGrowthForms, actualGrowthForms)
 
     assertStatus(UploadStatus.Completed)
   }
@@ -610,7 +651,6 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 commonName = "New common",
                 familyName = "NewFamily",
                 rare = true,
-                growthFormId = GrowthForm.Shrub,
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
                 createdBy = userId,
                 createdTime = now,
@@ -671,7 +711,6 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 initialScientificName = "New name",
                 conservationCategoryId = ConservationCategory.ExtinctInTheWild,
                 rare = true,
-                growthFormId = GrowthForm.Shrub,
                 seedStorageBehaviorId = SeedStorageBehavior.Recalcitrant,
                 createdBy = userId,
                 createdTime = Instant.EPOCH,

@@ -161,6 +161,8 @@ COMMENT ON COLUMN species.checked_time IS 'If non-null, when the species was che
 
 COMMENT ON TABLE species_ecosystem_types IS 'Ecosystems where each species can be found.';
 
+COMMENT ON TABLE species_growth_forms IS 'Growth forms of each species';
+
 COMMENT ON TABLE species_problem_fields IS '(Enum) Species fields that can be scanned for problems.';
 
 COMMENT ON TABLE species_problem_types IS '(Enum) Specific types of problems that can be detected in species data.';

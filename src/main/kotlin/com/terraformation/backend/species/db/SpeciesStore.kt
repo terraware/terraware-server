@@ -8,6 +8,7 @@ import com.terraformation.backend.db.SpeciesProblemHasNoSuggestionException
 import com.terraformation.backend.db.SpeciesProblemNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.EcosystemType
+import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
@@ -15,12 +16,15 @@ import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesEcosystemTypesDao
+import com.terraformation.backend.db.default_schema.tables.daos.SpeciesGrowthFormsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesProblemsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesEcosystemTypesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesGrowthFormsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GROWTH_FORMS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
@@ -46,6 +50,7 @@ class SpeciesStore(
     private val dslContext: DSLContext,
     private val speciesDao: SpeciesDao,
     private val speciesEcosystemTypesDao: SpeciesEcosystemTypesDao,
+    private val speciesGrowthFormsDao: SpeciesGrowthFormsDao,
     private val speciesProblemsDao: SpeciesProblemsDao,
 ) {
   private val log = perClassLogger()
@@ -61,6 +66,15 @@ class SpeciesStore(
                 .toSet()
           }
 
+  private val speciesGrowthFormsMultiset: Field<Set<GrowthForm>> =
+      DSL.multiset(
+              DSL.select(SPECIES_GROWTH_FORMS.GROWTH_FORM_ID)
+                  .from(SPECIES_GROWTH_FORMS)
+                  .where(SPECIES_GROWTH_FORMS.SPECIES_ID.eq(SPECIES.ID)))
+          .convertFrom { result ->
+            result.mapNotNull { record -> record[SPECIES_GROWTH_FORMS.GROWTH_FORM_ID] }.toSet()
+          }
+
   private val usedInAccessions: Condition =
       DSL.exists(DSL.selectOne().from(ACCESSIONS).where(ACCESSIONS.SPECIES_ID.eq(SPECIES.ID)))
 
@@ -74,19 +88,20 @@ class SpeciesStore(
     requirePermissions { readSpecies(speciesId) }
 
     return dslContext
-        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset)
+        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
         .from(SPECIES)
         .where(SPECIES.ID.eq(speciesId))
         .and(SPECIES.DELETED_TIME.isNull)
-        .fetchOne { ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset) }
-        ?: throw SpeciesNotFoundException(speciesId)
+        .fetchOne {
+          ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
+        } ?: throw SpeciesNotFoundException(speciesId)
   }
 
   fun fetchSpeciesByPlantingSiteId(plantingSiteId: PlantingSiteId): List<ExistingSpeciesModel> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return dslContext
-        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset)
+        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
         .from(SPECIES)
         .where(
             SPECIES.ID.`in`(
@@ -94,7 +109,9 @@ class SpeciesStore(
                     .from(PLANTINGS)
                     .where(PLANTINGS.PLANTING_SITE_ID.eq(plantingSiteId))))
         .and(SPECIES.DELETED_TIME.isNull)
-        .fetch { ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset) }
+        .fetch {
+          ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
+        }
   }
 
   fun fetchSpeciesByPlantingSubzoneId(
@@ -103,7 +120,7 @@ class SpeciesStore(
     requirePermissions { readPlantingSubzone(plantingSubzoneId) }
 
     return dslContext
-        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset)
+        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
         .from(SPECIES)
         .where(
             SPECIES.ID.`in`(
@@ -112,7 +129,9 @@ class SpeciesStore(
                     .where(PLANTINGS.PLANTING_SUBZONE_ID.eq(plantingSubzoneId))))
         .and(SPECIES.DELETED_TIME.isNull)
         .orderBy(SPECIES.ID)
-        .fetch { ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset) }
+        .fetch {
+          ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
+        }
   }
 
   fun countSpecies(organizationId: OrganizationId): Int {
@@ -141,13 +160,15 @@ class SpeciesStore(
         }
 
     return dslContext
-        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset)
+        .select(SPECIES.asterisk(), speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
         .from(SPECIES)
         .where(SPECIES.ORGANIZATION_ID.eq(organizationId))
         .and(SPECIES.DELETED_TIME.isNull)
         .and(condition)
         .orderBy(SPECIES.ID)
-        .fetch { ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset) }
+        .fetch {
+          ExistingSpeciesModel.of(it, speciesEcosystemTypesMultiset, speciesGrowthFormsMultiset)
+        }
   }
 
   fun isInUse(speciesId: SpeciesId): Boolean {
@@ -240,7 +261,6 @@ class SpeciesStore(
               deletedBy = null,
               deletedTime = null,
               familyName = model.familyName,
-              growthFormId = model.growthForm,
               modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
               rare = model.rare,
@@ -250,6 +270,7 @@ class SpeciesStore(
 
       speciesDao.update(rowWithNewValues)
       updateEcosystemTypes(speciesId, model.ecosystemTypes)
+      updateGrowthForms(speciesId, model.growthForms)
 
       speciesId
     } else {
@@ -261,7 +282,6 @@ class SpeciesStore(
               createdBy = currentUser().userId,
               createdTime = clock.instant(),
               familyName = model.familyName,
-              growthFormId = model.growthForm,
               initialScientificName = model.scientificName,
               modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
@@ -277,6 +297,10 @@ class SpeciesStore(
       if (model.ecosystemTypes.isNotEmpty()) {
         speciesEcosystemTypesDao.insert(
             model.ecosystemTypes.map { SpeciesEcosystemTypesRow(speciesId, it) })
+      }
+
+      if (model.growthForms.isNotEmpty()) {
+        speciesGrowthFormsDao.insert(model.growthForms.map { SpeciesGrowthFormsRow(speciesId, it) })
       }
 
       speciesId
@@ -344,7 +368,6 @@ class SpeciesStore(
                 .set(CONSERVATION_CATEGORY_ID, model.conservationCategory)
                 .set(FAMILY_NAME, model.familyName)
                 .set(RARE, model.rare)
-                .set(GROWTH_FORM_ID, model.growthForm)
                 .set(SEED_STORAGE_BEHAVIOR_ID, model.seedStorageBehavior)
                 .setNull(DELETED_TIME)
                 .setNull(DELETED_BY)
@@ -357,6 +380,7 @@ class SpeciesStore(
         }
 
         updateEcosystemTypes(speciesId, model.ecosystemTypes)
+        updateGrowthForms(speciesId, model.growthForms)
       }
 
       val existingByCurrentName =
@@ -393,7 +417,6 @@ class SpeciesStore(
                   .set(FAMILY_NAME, model.familyName)
                   .set(CONSERVATION_CATEGORY_ID, model.conservationCategory)
                   .set(RARE, model.rare)
-                  .set(GROWTH_FORM_ID, model.growthForm)
                   .set(SEED_STORAGE_BEHAVIOR_ID, model.seedStorageBehavior)
                   .set(CREATED_BY, currentUser().userId)
                   .set(CREATED_TIME, clock.instant())
@@ -404,6 +427,7 @@ class SpeciesStore(
                   .fetchOne(ID)!!
 
           updateEcosystemTypes(newSpeciesId, model.ecosystemTypes)
+          updateGrowthForms(newSpeciesId, model.growthForms)
 
           newSpeciesId
         } else {
@@ -434,7 +458,6 @@ class SpeciesStore(
             commonName = model.commonName,
             conservationCategoryId = model.conservationCategory,
             familyName = model.familyName,
-            growthFormId = model.growthForm,
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             rare = model.rare,
@@ -445,6 +468,7 @@ class SpeciesStore(
     speciesDao.update(updatedRow)
 
     updateEcosystemTypes(model.id, model.ecosystemTypes)
+    updateGrowthForms(model.id, model.growthForms)
 
     return model.copy(
         checkedTime = existing.checkedTime,
@@ -480,6 +504,36 @@ class SpeciesStore(
               SPECIES_ECOSYSTEM_TYPES.SPECIES_ID,
               SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID)
           .valuesOfRows(typesToInsert.map { DSL.row(speciesId, it) })
+          .execute()
+    }
+  }
+
+  private fun updateGrowthForms(speciesId: SpeciesId, growthForms: Set<GrowthForm>) {
+    val existingGrowthForms =
+        dslContext
+            .select(SPECIES_GROWTH_FORMS.GROWTH_FORM_ID)
+            .from(SPECIES_GROWTH_FORMS)
+            .where(SPECIES_GROWTH_FORMS.SPECIES_ID.eq(speciesId))
+            .fetch(SPECIES_GROWTH_FORMS.GROWTH_FORM_ID.asNonNullable())
+            .toSet()
+    val formsToInsert = growthForms - existingGrowthForms
+    val formsToDelete = existingGrowthForms - growthForms
+
+    if (formsToDelete.isNotEmpty()) {
+      dslContext
+          .deleteFrom(SPECIES_GROWTH_FORMS)
+          .where(SPECIES_GROWTH_FORMS.SPECIES_ID.eq(speciesId))
+          .and(SPECIES_GROWTH_FORMS.GROWTH_FORM_ID.`in`(formsToDelete))
+          .execute()
+    }
+
+    if (formsToInsert.isNotEmpty()) {
+      dslContext
+          .insertInto(
+              SPECIES_GROWTH_FORMS,
+              SPECIES_GROWTH_FORMS.SPECIES_ID,
+              SPECIES_GROWTH_FORMS.GROWTH_FORM_ID)
+          .valuesOfRows(formsToInsert.map { DSL.row(speciesId, it) })
           .execute()
     }
   }

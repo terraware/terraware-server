@@ -5,6 +5,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GROWTH_FORMS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.SPECIES_PROJECTS
@@ -30,6 +31,8 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
               "organization", SPECIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
           speciesProblems.asMultiValueSublist(
               "problems", SPECIES.ID.eq(SPECIES_PROBLEMS.SPECIES_ID)),
+          speciesGrowthForms.asMultiValueSublist(
+              "growthForms", SPECIES.ID.eq(SPECIES_GROWTH_FORMS.SPECIES_ID)),
           inventories.asSingleValueSublist(
               "inventory",
               SPECIES.ORGANIZATION_ID.eq(INVENTORIES.ORGANIZATION_ID)
@@ -45,7 +48,6 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
           textField("commonName", SPECIES.COMMON_NAME),
           enumField("conservationCategory", SPECIES.CONSERVATION_CATEGORY_ID, localize = false),
           textField("familyName", SPECIES.FAMILY_NAME, nullable = false),
-          enumField("growthForm", SPECIES.GROWTH_FORM_ID),
           idWrapperField("id", SPECIES.ID) { SpeciesId(it) },
           booleanField("rare", SPECIES.RARE),
           textField("scientificName", SPECIES.SCIENTIFIC_NAME, nullable = false),

@@ -340,4 +340,8 @@ val EMBEDDABLES =
             .withName("species_ecosystem_id")
             .withTables("public.species_ecosystem_types")
             .withColumns("species_id", "ecosystem_type_id"),
+        EmbeddableDefinitionType()
+            .withName("species_growth_form_id")
+            .withTables("public.species_growth_forms")
+            .withColumns("species_id", "growth_form_id"),
     )

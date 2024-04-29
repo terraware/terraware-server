@@ -939,7 +939,6 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             mapOf(
                 "checkedTime" to checkedTimeString,
                 "commonName" to "Common 1",
-                "growthForm" to "Graminoid",
                 "id" to "10000",
                 "rare" to "false",
                 "scientificName" to "Kousa Dogwood",

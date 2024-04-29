@@ -128,7 +128,8 @@ class SpeciesImporter(
                       ConservationCategory.forJsonValue(it.trim().uppercase(Locale.ENGLISH))
                     },
                 rare = values[4]?.let { it in trueValues },
-                growthForm = values[5]?.let { GrowthForm.forDisplayName(it, locale) },
+                growthForms =
+                    values[5]?.let { setOf(GrowthForm.forDisplayName(it, locale)) } ?: emptySet(),
                 seedStorageBehavior =
                     values[6]?.let { SeedStorageBehavior.forDisplayName(it, locale) },
                 ecosystemTypes =

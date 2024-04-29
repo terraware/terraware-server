@@ -6,7 +6,6 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.FacilityId
-import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -96,7 +95,6 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
             checkedTime = checkedTime,
             commonName = "Common 1",
             rare = false,
-            growthFormId = GrowthForm.Graminoid,
             createdBy = user.userId,
             createdTime = now,
             modifiedBy = user.userId,
