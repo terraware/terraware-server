@@ -532,6 +532,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun readCohort() = testRead { readCohort(cohortId) }
 
+  @Test fun readCohorts() = allow { readCohorts() } ifUser { canReadCohorts() }
+
   @Test fun readDelivery() = testRead { readDelivery(deliveryId) }
 
   @Test

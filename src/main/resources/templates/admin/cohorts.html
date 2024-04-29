@@ -1,0 +1,34 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+
+<h2>Cohorts</h2>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Phase</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="cohort : ${cohorts}" class="striped">
+        <td th:text="${cohort.id}">ID</td>
+        <td>
+            <a th:href="|/admin/cohorts/${cohort.id}|" th:text="${cohort.name}">
+                Cohort Name
+            </a>
+        </td>
+        <td th:text="${cohort.phase.getDisplayName(#locale.default)}">Phase</td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

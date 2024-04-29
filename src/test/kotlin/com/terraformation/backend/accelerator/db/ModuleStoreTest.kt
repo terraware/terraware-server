@@ -129,12 +129,14 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                   listOf(
                       CohortModuleModel(
                           cohortId = cohortId,
+                          moduleId = moduleId,
                           startDate = LocalDate.of(2024, 1, 1),
                           endDate = LocalDate.of(2024, 1, 31),
                           projects = setOf(projectId),
                       ),
                       CohortModuleModel(
                           cohortId = otherCohortId,
+                          moduleId = moduleId,
                           startDate = LocalDate.of(2024, 2, 1),
                           endDate = LocalDate.of(2024, 2, 28),
                           projects = setOf(otherProjectId),
@@ -197,6 +199,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                   listOf(
                       CohortModuleModel(
                           cohortId = cohortId,
+                          moduleId = moduleId,
                           startDate = LocalDate.of(2024, 1, 1),
                           endDate = LocalDate.of(2024, 1, 31),
                           projects = null,
@@ -281,6 +284,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                       listOf(
                           CohortModuleModel(
                               cohortId = cohortId,
+                              moduleId = moduleId,
                               startDate = LocalDate.of(2024, 1, 1),
                               endDate = LocalDate.of(2024, 1, 31),
                               projects = null, // other projects of cohorts not visible

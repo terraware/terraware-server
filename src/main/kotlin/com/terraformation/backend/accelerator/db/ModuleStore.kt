@@ -127,6 +127,7 @@ class ModuleStore(
               asterisk(),
               eventsField,
               COHORT_MODULES.COHORT_ID,
+              COHORT_MODULES.MODULE_ID,
               COHORT_MODULES.START_DATE,
               COHORT_MODULES.END_DATE)
           .from(this)

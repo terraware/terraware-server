@@ -267,6 +267,8 @@ class SystemUser(
 
   override fun canReadCohort(cohortId: CohortId): Boolean = true
 
+  override fun canReadCohorts(): Boolean = true
+
   override fun canReadDefaultVoters(): Boolean = true
 
   override fun canReadDelivery(deliveryId: DeliveryId): Boolean = true
