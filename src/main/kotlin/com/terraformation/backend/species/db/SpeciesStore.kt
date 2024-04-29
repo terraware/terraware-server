@@ -2,6 +2,7 @@ package com.terraformation.backend.species.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.EnumFromReferenceTable
 import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.SpeciesProblemHasNoSuggestionException
@@ -40,6 +41,8 @@ import java.time.Clock
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
+import org.jooq.TableField
+import org.jooq.TableRecord
 import org.jooq.impl.DSL
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
@@ -478,65 +481,69 @@ class SpeciesStore(
     )
   }
 
-  private fun updateEcosystemTypes(speciesId: SpeciesId, ecosystemTypes: Set<EcosystemType>) {
-    val existingEcosystemTypes =
+  /**
+   * Updates a set of enum values associated to the species by deleting and/or inserting rows into
+   * the species-enum relationship table.
+   *
+   * @param enumIdField - The ID field for the enum in the relationship table, e.g.
+   *   SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID. The table to update is referenced through this
+   *   field.
+   * @param speciesId - The species ID we want to update
+   * @param speciesIdField - The ID field for the species in the relationship table, e.g.
+   *   SPECIES_ECOSYSTEM_TYPES.SPECIES_ID
+   * @param values - The set of enum values that we want the species to have
+   */
+  private fun <
+      V : EnumFromReferenceTable<*, V>,
+      R : TableRecord<R>,
+      E : TableField<R, V?>,
+      S : TableField<R, SpeciesId?>> updateSet(
+      enumIdField: E,
+      speciesId: SpeciesId,
+      speciesIdField: S,
+      values: Set<V>,
+  ) {
+    val existing =
         dslContext
-            .select(SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID)
-            .from(SPECIES_ECOSYSTEM_TYPES)
-            .where(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID.eq(speciesId))
-            .fetch(SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID.asNonNullable())
+            .select(enumIdField)
+            .from(enumIdField.table)
+            .where(speciesIdField.eq(speciesId))
+            .fetch(enumIdField.asNonNullable())
             .toSet()
-    val typesToInsert = ecosystemTypes - existingEcosystemTypes
-    val typesToDelete = existingEcosystemTypes - ecosystemTypes
+    val toInsert = values - existing
+    val toDelete = existing - values
 
-    if (typesToDelete.isNotEmpty()) {
+    if (toDelete.isNotEmpty()) {
       dslContext
-          .deleteFrom(SPECIES_ECOSYSTEM_TYPES)
-          .where(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID.eq(speciesId))
-          .and(SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID.`in`(typesToDelete))
+          .deleteFrom(enumIdField.table)
+          .where(speciesIdField.eq(speciesId))
+          .and(enumIdField.`in`(toDelete))
           .execute()
     }
 
-    if (typesToInsert.isNotEmpty()) {
+    if (toInsert.isNotEmpty()) {
       dslContext
-          .insertInto(
-              SPECIES_ECOSYSTEM_TYPES,
-              SPECIES_ECOSYSTEM_TYPES.SPECIES_ID,
-              SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID)
-          .valuesOfRows(typesToInsert.map { DSL.row(speciesId, it) })
+          .insertInto(enumIdField.table, speciesIdField, enumIdField)
+          .valuesOfRows(toInsert.map { DSL.row(speciesId, it) })
           .execute()
     }
   }
 
-  private fun updateGrowthForms(speciesId: SpeciesId, growthForms: Set<GrowthForm>) {
-    val existingGrowthForms =
-        dslContext
-            .select(SPECIES_GROWTH_FORMS.GROWTH_FORM_ID)
-            .from(SPECIES_GROWTH_FORMS)
-            .where(SPECIES_GROWTH_FORMS.SPECIES_ID.eq(speciesId))
-            .fetch(SPECIES_GROWTH_FORMS.GROWTH_FORM_ID.asNonNullable())
-            .toSet()
-    val formsToInsert = growthForms - existingGrowthForms
-    val formsToDelete = existingGrowthForms - growthForms
+  private fun updateEcosystemTypes(speciesId: SpeciesId, ecosystemTypes: Set<EcosystemType>) =
+      updateSet(
+          enumIdField = SPECIES_ECOSYSTEM_TYPES.ECOSYSTEM_TYPE_ID,
+          speciesId = speciesId,
+          speciesIdField = SPECIES_ECOSYSTEM_TYPES.SPECIES_ID,
+          values = ecosystemTypes,
+      )
 
-    if (formsToDelete.isNotEmpty()) {
-      dslContext
-          .deleteFrom(SPECIES_GROWTH_FORMS)
-          .where(SPECIES_GROWTH_FORMS.SPECIES_ID.eq(speciesId))
-          .and(SPECIES_GROWTH_FORMS.GROWTH_FORM_ID.`in`(formsToDelete))
-          .execute()
-    }
-
-    if (formsToInsert.isNotEmpty()) {
-      dslContext
-          .insertInto(
-              SPECIES_GROWTH_FORMS,
-              SPECIES_GROWTH_FORMS.SPECIES_ID,
-              SPECIES_GROWTH_FORMS.GROWTH_FORM_ID)
-          .valuesOfRows(formsToInsert.map { DSL.row(speciesId, it) })
-          .execute()
-    }
-  }
+  private fun updateGrowthForms(speciesId: SpeciesId, growthForms: Set<GrowthForm>) =
+      updateSet(
+          enumIdField = SPECIES_GROWTH_FORMS.GROWTH_FORM_ID,
+          speciesId = speciesId,
+          speciesIdField = SPECIES_GROWTH_FORMS.SPECIES_ID,
+          values = growthForms,
+      )
 
   /**
    * Deletes a species from an organization. This doesn't remove any existing references to the
