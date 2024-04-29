@@ -1,3 +1,4 @@
+8e533e6259f SW-5201 Cohort Module Admin UI (#1884)
 80bb7c9dd7d SW-5269 Add new enum set species fields  (#1892)
 7bbd1c188ea Refactor species-enum-value updating (#1890)
 9a9e0768b30 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v7.1.0 (#1898)

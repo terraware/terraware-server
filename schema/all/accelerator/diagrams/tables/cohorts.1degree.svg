@@ -13,35 +13,31 @@
 <!-- cohort_modules -->
 <g id="node1" class="node"><title>cohort_modules</title>
 <g id="a_node1"><a xlink:href="../../tables/cohort_modules.html" xlink:title="cohort_modules" target="_top">
-<polygon fill="#ffffff" stroke="none" points="449,-46 449,-192 588,-192 588,-46 449,-46"/>
+<polygon fill="#ffffff" stroke="none" points="449,-68 449,-192 588,-192 588,-68 449,-68"/>
 <polygon fill="#f5f5f5" stroke="none" points="449.5,-170 449.5,-192 588.5,-192 588.5,-170 449.5,-170"/>
 <polygon fill="none" stroke="black" points="449.5,-170 449.5,-192 588.5,-192 588.5,-170 449.5,-170"/>
 <text text-anchor="start" x="454.5" y="-179.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">cohort_modules</text>
 <text text-anchor="start" x="549.5" y="-178.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="449.5,-148 449.5,-170 588.5,-170 588.5,-148 449.5,-148"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="454.5" y="-165"/>
-<text text-anchor="start" x="481.5" y="-156.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="none" points="449.5,-126 449.5,-148 588.5,-148 588.5,-126 449.5,-126"/>
+<text text-anchor="start" x="481.5" y="-156.2" font-family="Helvetica,sans-Serif" font-size="11.00">cohort_id</text>
 <polygon fill="none" stroke="black" points="449.5,-126 449.5,-148 588.5,-148 588.5,-126 449.5,-126"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="454.5" y="-143"/>
-<text text-anchor="start" x="481.5" y="-134.2" font-family="Helvetica,sans-Serif" font-size="11.00">cohort_id</text>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="454.5" y="-143"/>
+<text text-anchor="start" x="481.5" y="-134.2" font-family="Helvetica,sans-Serif" font-size="11.00">module_id</text>
+<polygon fill="#ffffff" stroke="none" points="449.5,-104 449.5,-126 588.5,-126 588.5,-104 449.5,-104"/>
 <polygon fill="none" stroke="black" points="449.5,-104 449.5,-126 588.5,-126 588.5,-104 449.5,-104"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="454.5" y="-121"/>
-<text text-anchor="start" x="481.5" y="-112.2" font-family="Helvetica,sans-Serif" font-size="11.00">module_id</text>
-<polygon fill="#ffffff" stroke="none" points="449.5,-82 449.5,-104 588.5,-104 588.5,-82 449.5,-82"/>
-<polygon fill="none" stroke="black" points="449.5,-82 449.5,-104 588.5,-104 588.5,-82 449.5,-82"/>
-<text text-anchor="start" x="481.5" y="-90.2" font-family="Helvetica,sans-Serif" font-size="11.00">start_date</text>
-<polygon fill="none" stroke="black" points="449.5,-64 449.5,-82 588.5,-82 588.5,-64 449.5,-64"/>
-<text text-anchor="start" x="452.5" y="-70.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="449.5,-46 449.5,-64 502.5,-64 502.5,-46 449.5,-46"/>
-<polygon fill="none" stroke="black" points="449.5,-46 449.5,-64 502.5,-64 502.5,-46 449.5,-46"/>
-<text text-anchor="start" x="452.5" y="-52.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="none" points="502.5,-46 502.5,-64 559.5,-64 559.5,-46 502.5,-46"/>
-<polygon fill="none" stroke="black" points="502.5,-46 502.5,-64 559.5,-64 559.5,-46 502.5,-46"/>
-<text text-anchor="start" x="520.5" y="-52.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="559.5,-46 559.5,-64 588.5,-64 588.5,-46 559.5,-46"/>
-<polygon fill="none" stroke="black" points="559.5,-46 559.5,-64 588.5,-64 588.5,-46 559.5,-46"/>
-<text text-anchor="start" x="578.5" y="-52.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<text text-anchor="start" x="481.5" y="-112.2" font-family="Helvetica,sans-Serif" font-size="11.00">start_date</text>
+<polygon fill="none" stroke="black" points="449.5,-86 449.5,-104 588.5,-104 588.5,-86 449.5,-86"/>
+<text text-anchor="start" x="452.5" y="-92.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="449.5,-68 449.5,-86 502.5,-86 502.5,-68 449.5,-68"/>
+<polygon fill="none" stroke="black" points="449.5,-68 449.5,-86 502.5,-86 502.5,-68 449.5,-68"/>
+<text text-anchor="start" x="452.5" y="-74.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="none" points="502.5,-68 502.5,-86 559.5,-86 559.5,-68 502.5,-68"/>
+<polygon fill="none" stroke="black" points="502.5,-68 502.5,-86 559.5,-86 559.5,-68 502.5,-68"/>
+<text text-anchor="start" x="520.5" y="-74.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="559.5,-68 559.5,-86 588.5,-86 588.5,-68 559.5,-68"/>
+<polygon fill="none" stroke="black" points="559.5,-68 559.5,-86 588.5,-86 588.5,-68 559.5,-68"/>
+<text text-anchor="start" x="578.5" y="-74.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
@@ -103,9 +99,9 @@
 </g>
 <!-- cohort_modules&#45;&gt;cohorts -->
 <g id="edge1" class="edge"><title>cohort_modules:cohort_id:w&#45;&gt;cohorts:id.type:e</title>
-<path fill="none" stroke="black" d="M434.703,-141.462C414.405,-158.702 436.314,-220 399.5,-220"/>
-<polygon fill="black" stroke="black" points="440.888,-139.462 449.608,-140.425 444.694,-138.231 448.5,-137 448.5,-137 448.5,-137 444.694,-138.231 447.392,-133.575 440.888,-139.462 440.888,-139.462"/>
-<ellipse fill="none" stroke="black" cx="437.844" cy="-140.447" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M434.91,-163.787C419.155,-178.167 428.298,-220 399.5,-220"/>
+<polygon fill="black" stroke="black" points="440.954,-161.658 449.696,-162.396 444.727,-160.329 448.5,-159 448.5,-159 448.5,-159 444.727,-160.329 447.304,-155.604 440.954,-161.658 440.954,-161.658"/>
+<ellipse fill="none" stroke="black" cx="437.936" cy="-162.721" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- public.users -->
 <g id="node3" class="node"><title>public.users</title>

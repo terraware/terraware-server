@@ -13,46 +13,40 @@
 <!-- cohort_modules -->
 <g id="node1" class="node"><title>cohort_modules</title>
 <g id="a_node1"><a xlink:href="../../tables/cohort_modules.html" xlink:title="cohort_modules" target="_top">
-<polygon fill="#ffffff" stroke="none" points="448,-174 448,-328 618,-328 618,-174 448,-174"/>
-<polygon fill="#f5f5f5" stroke="none" points="450,-304 450,-326 616,-326 616,-304 450,-304"/>
-<polygon fill="none" stroke="black" points="450,-304 450,-326 616,-326 616,-304 450,-304"/>
-<text text-anchor="start" x="455" y="-313.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">cohort_modules</text>
-<text text-anchor="start" x="577" y="-312.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="450,-282 450,-304 566,-304 566,-282 450,-282"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="455" y="-299"/>
-<text text-anchor="start" x="470" y="-290.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="none" stroke="black" points="566,-282 566,-304 616,-304 616,-282 566,-282"/>
-<text text-anchor="start" x="569" y="-290.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
-<polygon fill="#ffffff" stroke="none" points="450,-260 450,-282 566,-282 566,-260 450,-260"/>
-<polygon fill="none" stroke="black" points="450,-260 450,-282 566,-282 566,-260 450,-260"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="455" y="-277"/>
-<text text-anchor="start" x="470" y="-268.2" font-family="Helvetica,sans-Serif" font-size="11.00">cohort_id</text>
-<polygon fill="none" stroke="black" points="566,-260 566,-282 616,-282 616,-260 566,-260"/>
-<text text-anchor="start" x="569" y="-268.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
-<polygon fill="none" stroke="black" points="450,-238 450,-260 566,-260 566,-238 450,-238"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="455" y="-255"/>
-<text text-anchor="start" x="470" y="-246.2" font-family="Helvetica,sans-Serif" font-size="11.00">module_id</text>
-<polygon fill="none" stroke="black" points="566,-238 566,-260 616,-260 616,-238 566,-238"/>
-<text text-anchor="start" x="569" y="-246.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
-<polygon fill="#ffffff" stroke="none" points="450,-216 450,-238 566,-238 566,-216 450,-216"/>
-<polygon fill="none" stroke="black" points="450,-216 450,-238 566,-238 566,-216 450,-216"/>
-<text text-anchor="start" x="470" y="-224.2" font-family="Helvetica,sans-Serif" font-size="11.00">start_date</text>
-<polygon fill="none" stroke="black" points="566,-216 566,-238 616,-238 616,-216 566,-216"/>
-<text text-anchor="start" x="569" y="-224.2" font-family="Helvetica,sans-Serif" font-size="11.00">date[13]</text>
-<polygon fill="none" stroke="black" points="450,-194 450,-216 566,-216 566,-194 450,-194"/>
-<text text-anchor="start" x="470" y="-202.2" font-family="Helvetica,sans-Serif" font-size="11.00">end_date</text>
-<polygon fill="none" stroke="black" points="566,-194 566,-216 616,-216 616,-194 566,-194"/>
-<text text-anchor="start" x="569" y="-202.2" font-family="Helvetica,sans-Serif" font-size="11.00">date[13]</text>
-<polygon fill="#ffffff" stroke="none" points="450,-176 450,-194 498,-194 498,-176 450,-176"/>
-<polygon fill="none" stroke="black" points="450,-176 450,-194 498,-194 498,-176 450,-176"/>
-<text text-anchor="start" x="453" y="-182.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="none" points="498,-176 498,-194 566,-194 566,-176 498,-176"/>
-<polygon fill="none" stroke="black" points="498,-176 498,-194 566,-194 566,-176 498,-176"/>
-<text text-anchor="start" x="527" y="-182.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="566,-176 566,-194 616,-194 616,-176 566,-176"/>
-<polygon fill="none" stroke="black" points="566,-176 566,-194 616,-194 616,-176 566,-176"/>
-<text text-anchor="start" x="596" y="-182.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="449,-175 449,-327 617,-327 617,-175 449,-175"/>
+<polygon fill="#ffffff" stroke="none" points="448,-185 448,-317 618,-317 618,-185 448,-185"/>
+<polygon fill="#f5f5f5" stroke="none" points="450,-293 450,-315 616,-315 616,-293 450,-293"/>
+<polygon fill="none" stroke="black" points="450,-293 450,-315 616,-315 616,-293 450,-293"/>
+<text text-anchor="start" x="455" y="-302.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">cohort_modules</text>
+<text text-anchor="start" x="577" y="-301.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="450,-271 450,-293 566,-293 566,-271 450,-271"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="455" y="-288"/>
+<text text-anchor="start" x="470" y="-279.2" font-family="Helvetica,sans-Serif" font-size="11.00">cohort_id</text>
+<polygon fill="none" stroke="black" points="566,-271 566,-293 616,-293 616,-271 566,-271"/>
+<text text-anchor="start" x="569" y="-279.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
+<polygon fill="none" stroke="black" points="450,-249 450,-271 566,-271 566,-249 450,-249"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="455" y="-266"/>
+<text text-anchor="start" x="470" y="-257.2" font-family="Helvetica,sans-Serif" font-size="11.00">module_id</text>
+<polygon fill="none" stroke="black" points="566,-249 566,-271 616,-271 616,-249 566,-249"/>
+<text text-anchor="start" x="569" y="-257.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
+<polygon fill="#ffffff" stroke="none" points="450,-227 450,-249 566,-249 566,-227 450,-227"/>
+<polygon fill="none" stroke="black" points="450,-227 450,-249 566,-249 566,-227 450,-227"/>
+<text text-anchor="start" x="470" y="-235.2" font-family="Helvetica,sans-Serif" font-size="11.00">start_date</text>
+<polygon fill="none" stroke="black" points="566,-227 566,-249 616,-249 616,-227 566,-227"/>
+<text text-anchor="start" x="569" y="-235.2" font-family="Helvetica,sans-Serif" font-size="11.00">date[13]</text>
+<polygon fill="none" stroke="black" points="450,-205 450,-227 566,-227 566,-205 450,-205"/>
+<text text-anchor="start" x="470" y="-213.2" font-family="Helvetica,sans-Serif" font-size="11.00">end_date</text>
+<polygon fill="none" stroke="black" points="566,-205 566,-227 616,-227 616,-205 566,-205"/>
+<text text-anchor="start" x="569" y="-213.2" font-family="Helvetica,sans-Serif" font-size="11.00">date[13]</text>
+<polygon fill="#ffffff" stroke="none" points="450,-187 450,-205 498,-205 498,-187 450,-187"/>
+<polygon fill="none" stroke="black" points="450,-187 450,-205 498,-205 498,-187 450,-187"/>
+<text text-anchor="start" x="453" y="-193.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="none" points="498,-187 498,-205 566,-205 566,-187 498,-187"/>
+<polygon fill="none" stroke="black" points="498,-187 498,-205 566,-205 566,-187 498,-187"/>
+<text text-anchor="start" x="527" y="-193.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="566,-187 566,-205 616,-205 616,-187 566,-187"/>
+<polygon fill="none" stroke="black" points="566,-187 566,-205 616,-205 616,-187 566,-187"/>
+<text text-anchor="start" x="596" y="-193.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="449,-186 449,-316 617,-316 617,-186 449,-186"/>
 </a>
 </g>
 </g>
@@ -97,9 +91,9 @@
 </g>
 <!-- cohort_modules&#45;&gt;cohorts -->
 <g id="edge1" class="edge"><title>cohort_modules:cohort_id:w&#45;&gt;cohorts:id:e</title>
-<path fill="none" stroke="black" d="M434.54,-269.603C399.024,-262.315 391.298,-229 348,-229"/>
-<polygon fill="black" stroke="black" points="441.037,-270.23 448.654,-274.583 445.019,-270.615 449,-271 449,-271 449,-271 445.019,-270.615 449.346,-267.417 441.037,-270.23 441.037,-270.23"/>
-<ellipse fill="none" stroke="black" cx="437.852" cy="-269.923" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M434.545,-280.356C397.82,-271.41 393.347,-229 348,-229"/>
+<polygon fill="black" stroke="black" points="441.051,-281.096 448.593,-285.577 445.026,-281.548 449,-282 449,-282 449,-282 445.026,-281.548 449.407,-278.423 441.051,-281.096 441.051,-281.096"/>
+<ellipse fill="none" stroke="black" cx="437.872" cy="-280.734" rx="3.2" ry="3.2"/>
 </g>
 <!-- modules -->
 <g id="node3" class="node"><title>modules</title>
@@ -137,9 +131,9 @@
 </g>
 <!-- cohort_modules&#45;&gt;modules -->
 <g id="edge2" class="edge"><title>cohort_modules:module_id:w&#45;&gt;modules:id:e</title>
-<path fill="none" stroke="black" d="M434.797,-251.936C393.926,-272.655 463.084,-396 400,-396"/>
-<polygon fill="black" stroke="black" points="441.166,-250.62 449.729,-252.525 445.083,-249.81 449,-249 449,-249 449,-249 445.083,-249.81 448.271,-245.475 441.166,-250.62 441.166,-250.62"/>
-<ellipse fill="none" stroke="black" cx="438.032" cy="-251.268" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M434.483,-263.362C398.394,-284.305 458.225,-396 400,-396"/>
+<polygon fill="black" stroke="black" points="441.206,-261.805 449.812,-263.507 445.103,-260.902 449,-260 449,-260 449,-260 445.103,-260.902 448.188,-256.493 441.206,-261.805 441.206,-261.805"/>
+<ellipse fill="none" stroke="black" cx="438.089" cy="-262.527" rx="3.2" ry="3.2"/>
 </g>
 <!-- public.users -->
 <g id="node4" class="node"><title>public.users</title>
