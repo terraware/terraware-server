@@ -21,20 +21,32 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
-@RequestMapping("/api/v1/modules")
+@RequestMapping("/api/v1/projects/{projectId}/modules")
 @RestController
 class ProjectModulesController(
     private val moduleStore: ModuleStore,
 ) {
   @ApiResponse200
   @ApiResponse404
-  @GetMapping("/projects/{projectId}")
+  @GetMapping
   @Operation(summary = "Gets modules for a project.")
   fun listModules(
-      @PathVariable("projectId") projectId: ProjectId,
+      @PathVariable projectId: ProjectId,
   ): GetProjectModulesResponsePayload {
     val models = moduleStore.fetchModulesForProject(projectId)
-    return GetProjectModulesResponsePayload(models.map { ProjectModule(it) })
+    return GetProjectModulesResponsePayload(models.map { model -> ProjectModule(model) })
+  }
+
+  @ApiResponse200
+  @ApiResponse404
+  @GetMapping("/{moduleId}")
+  @Operation(summary = "Gets one module for a project.")
+  fun getModule(
+      @PathVariable projectId: ProjectId,
+      @PathVariable moduleId: ModuleId,
+  ): GetProjectModuleResponsePayload {
+    val model = moduleStore.fetchOneByIdForProject(moduleId, projectId)
+    return GetProjectModuleResponsePayload(ProjectModule(model))
   }
 }
 
@@ -68,6 +80,7 @@ data class ProjectModuleEvent(
 
 data class ProjectModule(
     val id: ModuleId,
+    val title: String,
     val name: String,
     val startDate: LocalDate,
     val endDate: LocalDate,
@@ -80,6 +93,7 @@ data class ProjectModule(
       model: ModuleModel
   ) : this(
       id = model.id,
+      title = model.cohorts.first().title,
       name = model.name,
       startDate = model.cohorts.first().startDate,
       endDate = model.cohorts.first().endDate,
@@ -96,6 +110,8 @@ data class ProjectModule(
             )
           })
 }
+
+data class GetProjectModuleResponsePayload(val module: ProjectModule) : SuccessResponsePayload
 
 data class GetProjectModulesResponsePayload(
     val modules: List<ProjectModule> = emptyList(),
