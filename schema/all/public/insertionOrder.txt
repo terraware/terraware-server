@@ -49,6 +49,7 @@ project_land_use_model_types
 report_files
 report_photos
 species_ecosystem_types
+species_growth_forms
 upload_problems
 user_global_roles
 user_preferences

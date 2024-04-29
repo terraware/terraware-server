@@ -8,6 +8,7 @@ notifications
 user_preferences
 user_global_roles
 upload_problems
+species_growth_forms
 species_ecosystem_types
 report_photos
 report_files
