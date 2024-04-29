@@ -328,6 +328,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
           EventsRow(
               id = workshop,
               moduleId = moduleId,
+              eventStatusId = EventStatus.NotStarted,
               eventTypeId = EventType.Workshop,
               meetingUrl = URI("https://meeting.com"),
               slidesUrl = URI("https://slides.com"),
@@ -348,6 +349,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
           EventsRow(
               id = workshop,
               moduleId = moduleId,
+              eventStatusId = EventStatus.NotStarted,
               eventTypeId = EventType.Workshop,
               meetingUrl = URI("https://newmeeting.com"),
               slidesUrl = URI("https://slides.com"),
@@ -392,6 +394,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
     fun `increments revision and publishes event if start time updated`() {
       clock.instant = Instant.EPOCH.plusSeconds(500)
       val startTime = clock.instant.plusSeconds(3600)
+      val newStartTime = startTime.plusSeconds(1800)
       val endTime = startTime.plusSeconds(3600)
 
       val workshop =
@@ -399,11 +402,21 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               moduleId = moduleId,
               eventType = EventType.Workshop,
               startTime = startTime,
-              endTime = endTime)
+              endTime = endTime,
+              revision = 1)
+      val original = eventsDao.findById(workshop)!!
 
-      val newStartTime = startTime.plusSeconds(1800)
-      store.updateEvent(workshop) { it.copy(startTime = newStartTime, revision = 10) }
-      assertRevisionUpdatedAndEventPublished(workshop, newStartTime = newStartTime)
+      store.updateEvent(workshop) { it.copy(startTime = newStartTime) }
+      val updated = eventsDao.findById(workshop)
+      assertEquals(
+          original.copy(
+              startTime = newStartTime,
+              endTime = endTime,
+              revision = 2,
+              modifiedTime = clock.instant),
+          updated)
+
+      eventPublisher.assertEventPublished(ModuleEventScheduledEvent(workshop, 2))
     }
 
     @Test
@@ -411,17 +424,27 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = Instant.EPOCH.plusSeconds(500)
       val startTime = clock.instant.plusSeconds(3600)
       val endTime = startTime.plusSeconds(3600)
-
+      val newEndTime = endTime.plusSeconds(1800)
       val workshop =
           insertEvent(
               moduleId = moduleId,
               eventType = EventType.Workshop,
               startTime = startTime,
-              endTime = endTime)
+              endTime = endTime,
+              revision = 1)
+      val original = eventsDao.findById(workshop)!!
 
-      val newEndTime = endTime.plusSeconds(1800)
-      store.updateEvent(workshop) { it.copy(endTime = newEndTime, revision = 10) }
-      assertRevisionUpdatedAndEventPublished(workshop, newEndTime = newEndTime)
+      store.updateEvent(workshop) { it.copy(endTime = newEndTime) }
+      val updated = eventsDao.findById(workshop)
+      assertEquals(
+          original.copy(
+              startTime = startTime,
+              endTime = newEndTime,
+              revision = 2,
+              modifiedTime = clock.instant),
+          updated)
+
+      eventPublisher.assertEventPublished(ModuleEventScheduledEvent(workshop, 2))
     }
 
     @Test
@@ -466,27 +489,6 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           statuses[futureEvent], EventStatus.NotStarted, "now < start events has NotStarted status")
     }
-
-    private fun assertRevisionUpdatedAndEventPublished(
-        eventId: EventId,
-        newStartTime: Instant? = null,
-        newEndTime: Instant? = null
-    ) {
-      val original = eventsDao.findById(eventId)
-      val revision = original!!.revision!! + 1
-      val startTime = newStartTime ?: original.startTime
-      val endTime = newEndTime ?: original.endTime
-      val updated = eventsDao.findById(eventId)
-      assertEquals(
-          original.copy(
-              startTime = startTime,
-              endTime = endTime,
-              revision = revision,
-              modifiedTime = clock.instant),
-          updated)
-
-      eventPublisher.assertEventPublished(ModuleEventScheduledEvent(eventId, revision))
-    }
   }
 
   @Nested
@@ -505,7 +507,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       store.updateEventStatus(eventId, EventStatus.Ended)
 
       assertEquals(
-          EventStatus.NotStarted,
+          EventStatus.Ended,
           eventsDao.fetchOneById(eventId)!!.eventStatusId,
           "Status after update. ")
     }

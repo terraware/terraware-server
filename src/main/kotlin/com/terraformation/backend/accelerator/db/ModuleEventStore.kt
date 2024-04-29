@@ -133,7 +133,7 @@ class ModuleEventStore(
     val now = clock.instant()
 
     val revision =
-        if (updated.startTime == existing.startTime) {
+        if (updated.startTime == existing.startTime && updated.endTime == existing.endTime) {
           existing.revision
         } else {
           existing.revision + 1
