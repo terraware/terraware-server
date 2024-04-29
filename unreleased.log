@@ -1,3 +1,7 @@
+7bbd1c188ea Refactor species-enum-value updating (#1890)
+9a9e0768b30 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v7.1.0 (#1898)
+f948453a910 Update Python dependencies (#1897)
+efba8f0d532 Update dependency com.google.api-client:google-api-client to v2.4.1 (#1896)
 72c95a8053e SW-5269 - Add species_growth_forms table (#1880)
 02cc6f2a068 SW-5230 Remove shapefile validation options (#1889)
 2324f57fc2b SW-5228 Use model to create new planting sites (#1887)
