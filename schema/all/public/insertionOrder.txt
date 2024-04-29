@@ -24,6 +24,7 @@ upload_problem_types
 upload_statuses
 upload_types
 user_types
+wood_density_levels
 countries
 notification_types
 users

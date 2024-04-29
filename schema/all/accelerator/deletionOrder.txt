@@ -1,3 +1,4 @@
+event_statuses
 project_votes
 project_scores
 submission_documents

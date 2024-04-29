@@ -1,3 +1,6 @@
+4106f597791 Move migration according to commit orders (#1900)
+8498de1d488 SW-5269 Add other species fields to the database, store, controller, tests (#1893)
+90e8ad1d24f SW-5303 Added Event Status tables and Enums (#1894)
 6e5a6791688 SW-5293 Implemented GET one module API (#1878)
 6701a1eb356 SW-5300 Module title column (#1891)
 8e533e6259f SW-5201 Cohort Module Admin UI (#1884)

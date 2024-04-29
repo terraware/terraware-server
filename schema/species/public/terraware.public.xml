@@ -206,6 +206,18 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="conservation_category_id" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
             <parent column="id" foreignKey="species_conservation_category_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="conservation_categories"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="ecological_role_known" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="dbh_source" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="height_at_maturity_source" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="local_uses_known" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="native_ecosystem" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="other_facts" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="average_wood_density" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="23" name="height_at_maturity_value" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="24" name="dbh_value" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="25" name="wood_density_level_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="species_wood_density_level_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="wood_density_levels"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="species_pkey1" unique="true">
             <column ascending="true" name="id"/>
@@ -336,6 +348,16 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="successional_groups_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="wood_density_levels" numRows="3" remarks="The taxonomic level in the at which a wood density measurement is known" schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="wood_density_level_id" foreignKey="species_wood_density_level_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="wood_density_levels_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
       </table>

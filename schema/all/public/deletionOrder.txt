@@ -38,6 +38,7 @@ country_subdivisions
 users
 notification_types
 countries
+wood_density_levels
 user_types
 upload_types
 upload_statuses

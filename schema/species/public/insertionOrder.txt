@@ -6,6 +6,7 @@ plant_material_sourcing_methods
 species_problem_fields
 species_problem_types
 successional_groups
+wood_density_levels
 species
 gbif_names
 gbif_name_words

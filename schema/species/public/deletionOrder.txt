@@ -8,6 +8,7 @@ species_growth_forms
 gbif_name_words
 gbif_names
 species
+wood_density_levels
 successional_groups
 species_problem_types
 species_problem_fields

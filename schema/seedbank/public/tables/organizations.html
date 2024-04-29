@@ -430,28 +430,28 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>other_type_details_null_or_not_empty</td>
-                                    <td>(((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text)))</td>
-                                </tr>
-                                <tr>
-                                    <td>organizations_country_subdivision_code_check</td>
-                                    <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>organizations_description_check</td>
                                     <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
-                                    <td>organizations_country_code_check</td>
-                                    <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    <td>other_type_details_null_or_not_empty</td>
+                                    <td>(((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text)))</td>
                                 </tr>
                                 <tr>
                                     <td>other_type_details_only_for_other</td>
                                     <td>((((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6))))</td>
                                 </tr>
                                 <tr>
+                                    <td>organizations_country_subdivision_code_check</td>
+                                    <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
                                     <td>country_code_matches_subdivision</td>
                                     <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
+                                </tr>
+                                <tr>
+                                    <td>organizations_country_code_check</td>
+                                    <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -479,7 +479,7 @@
 <area shape="rect" id="node1" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="791,34,1145,239">
 <area shape="rect" id="node2" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="478,63,713,327">
 <area shape="rect" id="node3" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,483,400,963">
-<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="469,345,721,579">
+<area shape="rect" id="node4" href="../../tables/species.html" target="_top" title="species" alt="" coords="465,345,726,579">
 <area shape="rect" id="node5" href="../../tables/identifier_sequences.html" target="_top" title="identifier_sequences" alt="" coords="474,597,717,743">
 <area shape="rect" id="node6" href="../../../tracking/tables/draft_planting_sites.html" target="_top" title="tracking.draft_planting_sites" alt="" coords="444,761,747,878">
 <area shape="rect" id="node7" href="../../../tracking/tables/planting_sites.html" target="_top" title="tracking.planting_sites" alt="" coords="466,895,725,1013">
@@ -493,7 +493,7 @@
 <area shape="rect" id="node3" href="../../tables/sub_locations.html" target="_top" title="sub_locations" alt="" coords="888,216,1076,304">
 <area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="5,417,400,897">
 <area shape="rect" id="node4" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="805,357,1159,563">
-<area shape="rect" id="node6" href="../../tables/species.html" target="_top" title="species" alt="" coords="469,893,721,1128">
+<area shape="rect" id="node6" href="../../tables/species.html" target="_top" title="species" alt="" coords="465,893,726,1128">
 <area shape="rect" id="node7" href="../../tables/seed_treatments.html" target="_top" title="seed_treatments" alt="" coords="488,756,703,844">
 <area shape="rect" id="node10" href="../../tables/seed_storage_behaviors.html" target="_top" title="seed_storage_behaviors" alt="" coords="71,984,335,1072">
 <area shape="rect" id="node8" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="860,75,1104,163">
