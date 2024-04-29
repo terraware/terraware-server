@@ -12,14 +12,18 @@ import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
+import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesEcosystemTypesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesGrowthFormsRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesPlantMaterialSourcingMethodsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesSuccessionalGroupsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.model.ExistingSpeciesModel
@@ -130,8 +134,10 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 organizationId = organizationId,
                 scientificName = "test",
                 growthForms = setOf(GrowthForm.Fern),
+                plantMaterialSourcingMethods = setOf(PlantMaterialSourcingMethod.SeedlingPurchase),
                 rare = false,
                 seedStorageBehavior = SeedStorageBehavior.Orthodox,
+                successionalGroups = setOf(SuccessionalGroup.Pioneer),
             ))
     val originalRow = speciesDao.fetchOneById(originalSpeciesId)!!
 
@@ -146,9 +152,11 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             id = null,
             organizationId = organizationId,
             growthForms = setOf(GrowthForm.Shrub),
+            plantMaterialSourcingMethods = setOf(PlantMaterialSourcingMethod.WildlingHarvest),
             rare = true,
             scientificName = "test",
             seedStorageBehavior = SeedStorageBehavior.Recalcitrant,
+            successionalGroups = setOf(SuccessionalGroup.Mature),
         )
 
     val newInstant = Instant.ofEpochSecond(500)
@@ -178,14 +186,25 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     val expectedEcosystemTypes =
         listOf(SpeciesEcosystemTypesRow(originalSpeciesId, EcosystemType.Tundra))
-
     val actualEcosystemTypes = speciesEcosystemTypesDao.fetchBySpeciesId(originalSpeciesId)
     assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
 
     val expectedGrowthForms = listOf(SpeciesGrowthFormsRow(originalSpeciesId, GrowthForm.Shrub))
-
     val actualGrowthForms = speciesGrowthFormsDao.fetchBySpeciesId(originalSpeciesId)
     assertEquals(expectedGrowthForms, actualGrowthForms)
+
+    val expectedPlantMaterialSourcingMethods =
+        listOf(
+            SpeciesPlantMaterialSourcingMethodsRow(
+                originalSpeciesId, PlantMaterialSourcingMethod.WildlingHarvest))
+    val actualPlantMaterialSourcingMethods =
+        speciesPlantMaterialSourcingMethodsDao.fetchBySpeciesId(originalSpeciesId)
+    assertEquals(expectedPlantMaterialSourcingMethods, actualPlantMaterialSourcingMethods)
+
+    val expectedSuccessionalGroups =
+        listOf(SpeciesSuccessionalGroupsRow(originalSpeciesId, SuccessionalGroup.Mature))
+    val actualSuccessionalGroups = speciesSuccessionalGroupsDao.fetchBySpeciesId(originalSpeciesId)
+    assertEquals(expectedSuccessionalGroups, actualSuccessionalGroups)
   }
 
   @Test
@@ -216,9 +235,11 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             growthForms = setOf(GrowthForm.Shrub),
             id = null,
             organizationId = organizationId,
+            plantMaterialSourcingMethods = setOf(PlantMaterialSourcingMethod.SeedlingPurchase),
             rare = true,
             scientificName = "original scientific",
             seedStorageBehavior = SeedStorageBehavior.Unknown,
+            successionalGroups = setOf(SuccessionalGroup.Pioneer),
         )
     val speciesId = store.createSpecies(initial)
 
@@ -239,9 +260,11 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             id = speciesId,
             initialScientificName = "new initial",
             organizationId = bogusOrganizationId,
+            plantMaterialSourcingMethods = setOf(PlantMaterialSourcingMethod.WildlingHarvest),
             rare = false,
             scientificName = "new scientific",
             seedStorageBehavior = SeedStorageBehavior.Orthodox,
+            successionalGroups = setOf(SuccessionalGroup.Mature),
         )
 
     val expectedSpecies =
@@ -273,14 +296,25 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             SpeciesEcosystemTypesRow(speciesId, EcosystemType.BorealForestsTaiga),
             SpeciesEcosystemTypesRow(speciesId, EcosystemType.Tundra),
         )
-
     val actualEcosystemTypes = speciesEcosystemTypesDao.fetchBySpeciesId(speciesId).toSet()
     assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
 
     val expectedGrowthForms = setOf(SpeciesGrowthFormsRow(speciesId, GrowthForm.Fern))
-
     val actualGrowthForms = speciesGrowthFormsDao.fetchBySpeciesId(speciesId).toSet()
     assertEquals(expectedGrowthForms, actualGrowthForms)
+
+    val expectedPlantMaterialSourcingMethods =
+        listOf(
+            SpeciesPlantMaterialSourcingMethodsRow(
+                speciesId, PlantMaterialSourcingMethod.WildlingHarvest))
+    val actualPlantMaterialSourcingMethods =
+        speciesPlantMaterialSourcingMethodsDao.fetchBySpeciesId(speciesId)
+    assertEquals(expectedPlantMaterialSourcingMethods, actualPlantMaterialSourcingMethods)
+
+    val expectedSuccessionalGroups =
+        listOf(SpeciesSuccessionalGroupsRow(speciesId, SuccessionalGroup.Mature))
+    val actualSuccessionalGroups = speciesSuccessionalGroupsDao.fetchBySpeciesId(speciesId)
+    assertEquals(expectedSuccessionalGroups, actualSuccessionalGroups)
   }
 
   @Test

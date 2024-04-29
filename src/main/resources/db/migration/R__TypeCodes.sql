@@ -198,6 +198,16 @@ VALUES (1, 'User Added to Organization', 1),
 ON CONFLICT (id) DO UPDATE SET name                        = excluded.name,
                                notification_criticality_id = excluded.notification_criticality_id;
 
+INSERT INTO plant_material_sourcing_methods (id, name)
+VALUES (1, 'Seed collection & germination'),
+       (2, 'Seed purchase & germination'),
+       (3, 'Mangrove propagules'),
+       (4, 'Vegetative propagation'),
+       (5, 'Wildling harvest'),
+       (6, 'Seedling purchase'),
+       (7, 'Other')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO tracking.observable_conditions (id, name)
 VALUES (1, 'AnimalDamage'),
        (2, 'FastGrowth'),
@@ -334,6 +344,13 @@ INSERT INTO species_problem_types (id, name)
 VALUES (1, 'Name Misspelled'),
        (2, 'Name Not Found'),
        (3, 'Name Is Synonym')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO successional_groups (id, name)
+VALUES (1, 'Pioneer'),
+       (2, 'Early secondary'),
+       (3, 'Late secondary'),
+       (4, 'Mature')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO regions (id, name)

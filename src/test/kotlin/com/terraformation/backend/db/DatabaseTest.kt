@@ -68,12 +68,14 @@ import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
+import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
@@ -103,7 +105,9 @@ import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesEcosystemTypesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesGrowthFormsDao
+import com.terraformation.backend.db.default_schema.tables.daos.SpeciesPlantMaterialSourcingMethodsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesProblemsDao
+import com.terraformation.backend.db.default_schema.tables.daos.SpeciesSuccessionalGroupsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SubLocationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.default_schema.tables.daos.TimeZonesDao
@@ -131,6 +135,8 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GROWTH_FORMS
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PLANT_MATERIAL_SOURCING_METHODS
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES_SUCCESSIONAL_GROUPS
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
@@ -445,7 +451,10 @@ abstract class DatabaseTest {
   protected val speciesDao: SpeciesDao by lazyDao()
   protected val speciesEcosystemTypesDao: SpeciesEcosystemTypesDao by lazyDao()
   protected val speciesGrowthFormsDao: SpeciesGrowthFormsDao by lazyDao()
+  protected val speciesPlantMaterialSourcingMethodsDao: SpeciesPlantMaterialSourcingMethodsDao by
+      lazyDao()
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
+  protected val speciesSuccessionalGroupsDao: SpeciesSuccessionalGroupsDao by lazyDao()
   protected val subLocationsDao: SubLocationsDao by lazyDao()
   protected val submissionsDao: SubmissionsDao by lazyDao()
   protected val submissionDocumentsDao: SubmissionDocumentsDao by lazyDao()
@@ -810,6 +819,8 @@ abstract class DatabaseTest {
       commonName: String? = null,
       ecosystemTypes: Set<EcosystemType> = emptySet(),
       growthForms: Set<GrowthForm> = emptySet(),
+      plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod> = emptySet(),
+      successionalGroups: Set<SuccessionalGroup> = emptySet(),
   ): SpeciesId {
     val speciesIdWrapper = speciesId?.toIdWrapper { SpeciesId(it) }
     val organizationIdWrapper = organizationId.toIdWrapper { OrganizationId(it) }
@@ -847,6 +858,24 @@ abstract class DatabaseTest {
           .insertInto(SPECIES_GROWTH_FORMS)
           .set(SPECIES_GROWTH_FORMS.SPECIES_ID, actualSpeciesId)
           .set(SPECIES_GROWTH_FORMS.GROWTH_FORM_ID, growthForm)
+          .execute()
+    }
+
+    plantMaterialSourcingMethods.forEach { plantMaterialSourcingMethod ->
+      dslContext
+          .insertInto(SPECIES_PLANT_MATERIAL_SOURCING_METHODS)
+          .set(SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID, actualSpeciesId)
+          .set(
+              SPECIES_PLANT_MATERIAL_SOURCING_METHODS.PLANT_MATERIAL_SOURCING_METHOD_ID,
+              plantMaterialSourcingMethod)
+          .execute()
+    }
+
+    successionalGroups.forEach { successionalGroup ->
+      dslContext
+          .insertInto(SPECIES_SUCCESSIONAL_GROUPS)
+          .set(SPECIES_SUCCESSIONAL_GROUPS.SPECIES_ID, actualSpeciesId)
+          .set(SPECIES_SUCCESSIONAL_GROUPS.SUCCESSIONAL_GROUP_ID, successionalGroup)
           .execute()
     }
 

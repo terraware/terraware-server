@@ -94,6 +94,11 @@ val ENUM_TABLES =
                     "organization_types",
                     listOf("organization_types\\.id", ".*\\.organization_type_id"),
                     isLocalizable = false),
+                EnumTable(
+                    "plant_material_sourcing_methods",
+                    listOf(
+                        "plant_material_sourcing_methods\\.id",
+                        ".*\\.plant_material_sourcing_method_id")),
                 EnumTable("regions", listOf("countries\\.region_id")),
                 EnumTable("report_statuses", listOf("reports\\.status_id"), "ReportStatus"),
                 EnumTable("roles", listOf(".*\\.role_id")),
@@ -103,6 +108,9 @@ val ENUM_TABLES =
                 EnumTable("seed_treatments", listOf(".*\\.treatment_id")),
                 EnumTable("species_problem_fields", listOf("species_problems\\.field_id")),
                 EnumTable("species_problem_types", listOf("species_problems\\.type_id")),
+                EnumTable(
+                    "successional_groups",
+                    listOf("successional_groups\\.id", ".*\\.successional_group_id")),
                 EnumTable(
                     "timeseries_types", listOf("timeseries\\.type_id"), isLocalizable = false),
                 EnumTable(
@@ -344,4 +352,12 @@ val EMBEDDABLES =
             .withName("species_growth_form_id")
             .withTables("public.species_growth_forms")
             .withColumns("species_id", "growth_form_id"),
+        EmbeddableDefinitionType()
+            .withName("species_successional_group_id")
+            .withTables("public.species_successional_groups")
+            .withColumns("species_id", "successional_group_id"),
+        EmbeddableDefinitionType()
+            .withName("species_plant_material_sourcing_method_id")
+            .withTables("public.species_plant_material_sourcing_methods")
+            .withColumns("species_id", "plant_material_sourcing_method_id"),
     )
