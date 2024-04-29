@@ -15,6 +15,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
 import com.terraformation.backend.db.accelerator.tables.references.EVENTS
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.util.MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS
 import jakarta.inject.Named
 import java.net.URI
 import java.time.Duration
@@ -75,12 +76,7 @@ class ModuleEventStore(
     val now = clock.instant()
     val user = currentUser()
 
-    val eventStatus =
-        when {
-          now.isBefore(startTime) -> EventStatus.NotStarted
-          now.isAfter(endTime) -> EventStatus.Ended
-          else -> EventStatus.InProgress
-        }
+    val eventStatus = eventStatusNow(startTime, endTime, now)
 
     val eventsRow =
         EventsRow(
@@ -139,12 +135,7 @@ class ModuleEventStore(
           existing.revision + 1
         }
 
-    val eventStatus =
-        when {
-          now.isBefore(updated.startTime) -> EventStatus.NotStarted
-          now.isAfter(updated.endTime) -> EventStatus.Ended
-          else -> EventStatus.InProgress
-        }
+    val eventStatus = eventStatusNow(updated.startTime, updated.endTime, now)
 
     dslContext.transaction { _ ->
       val rowsUpdated =
@@ -207,6 +198,20 @@ class ModuleEventStore(
 
     if (rowsUpdated < 1) {
       throw EventNotFoundException(eventId)
+    }
+  }
+
+  /**
+   * Return event status based on current time. Every status has a time window, and is inclusive on
+   * start time and exclusive on end time of the window.
+   */
+  private fun eventStatusNow(startTime: Instant, endTime: Instant, now: Instant): EventStatus {
+    val notifyTime = startTime.minus(Duration.ofMinutes(MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS))
+    return when {
+      now.isBefore(notifyTime) -> EventStatus.NotStarted
+      now.isBefore(startTime) -> EventStatus.StartingSoon
+      now.isBefore(endTime) -> EventStatus.InProgress
+      else -> EventStatus.Ended
     }
   }
 }

@@ -13,11 +13,11 @@ import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.isV2Compatible
+import com.terraformation.backend.util.MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS
 import com.terraformation.backend.util.equalsIgnoreScale
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.text.NumberFormat
-import java.time.Duration
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -145,7 +145,6 @@ class Messages {
 
   fun moduleEventStartingNotification(
       eventType: EventType,
-      leadTime: Duration,
       moduleName: String,
   ): NotificationMessage =
       NotificationMessage(
@@ -153,7 +152,7 @@ class Messages {
               getMessage(
                   "notification.module.eventStarting.title",
                   eventType.getDisplayName(currentLocale()),
-                  leadTime.toMinutes().toString()),
+                  MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS.toString()),
           body =
               getMessage(
                   "notification.module.eventStarting.body",

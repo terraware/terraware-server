@@ -16,6 +16,7 @@ import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.pojos.EventProjectsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.util.MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS
 import io.mockk.every
 import java.net.URI
 import java.time.Duration
@@ -32,6 +33,9 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
+
+  private val notificationLeadDuration: Duration =
+      Duration.ofMinutes(MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS)
 
   private val store: ModuleEventStore by lazy {
     ModuleEventStore(clock, dslContext, eventPublisher, eventsDao)
@@ -225,6 +229,9 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       val now = clock.instant
       val twoSecondsLater = clock.instant.plusSeconds(2)
       val threeSecondsLater = clock.instant.plusSeconds(3)
+      val leadDurationLater = clock.instant.plus(notificationLeadDuration)
+      val leadDurationAndTwoSecondsLater = leadDurationLater.plusSeconds(2)
+      val leadDurationAndThreeSecondsLater = leadDurationLater.plusSeconds(3)
 
       val endedEvent =
           store.create(
@@ -236,31 +243,50 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               moduleId, EventType.Workshop, startTime = twoSecondsAgo, endTime = twoSecondsLater)
       val startingEvent =
           store.create(moduleId, EventType.Workshop, startTime = now, endTime = twoSecondsLater)
-      val futureEvent =
+      val startingInSecondsEvent =
           store.create(
               moduleId,
               EventType.Workshop,
               startTime = twoSecondsLater,
               endTime = threeSecondsLater)
+      val startingSoonEvent =
+          store.create(
+              moduleId,
+              EventType.Workshop,
+              startTime = leadDurationLater,
+              endTime = leadDurationAndTwoSecondsLater)
+      val futureEvent =
+          store.create(
+              moduleId,
+              EventType.Workshop,
+              startTime = leadDurationAndTwoSecondsLater,
+              endTime = leadDurationAndThreeSecondsLater)
 
       val results = eventsDao.findAll()
       val statuses = results.associate { it.id to it.eventStatusId }
 
       assertEquals(statuses[endedEvent.id], EventStatus.Ended, "end < now events has Ended status")
-      assertEquals(
-          statuses[endingEvent.id],
-          EventStatus.InProgress,
-          "end = now events has InProgress status")
+      assertEquals(statuses[endingEvent.id], EventStatus.Ended, "end = now events has Ended status")
       assertEquals(
           statuses[inProgressEvent.id],
           EventStatus.InProgress,
           "start < now < end events has InProgress status")
       assertEquals(
-          statuses[startingEvent.id], EventStatus.InProgress, "now = start has InProgress status")
+          statuses[startingEvent.id],
+          EventStatus.InProgress,
+          "now = start events has InProgress status")
+      assertEquals(
+          statuses[startingInSecondsEvent.id],
+          EventStatus.StartingSoon,
+          "start < now < notify events has StartingSoon status")
+      assertEquals(
+          statuses[startingSoonEvent.id],
+          EventStatus.StartingSoon,
+          "now = notify events has StartingSoon status")
       assertEquals(
           statuses[futureEvent.id],
           EventStatus.NotStarted,
-          "now < start events has NotStarted status")
+          "notify < now events has NotStarted status")
     }
 
     @Test
@@ -455,11 +481,16 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       val now = clock.instant
       val twoSecondsLater = clock.instant.plusSeconds(2)
       val threeSecondsLater = clock.instant.plusSeconds(3)
+      val leadDurationLater = clock.instant.plus(notificationLeadDuration)
+      val leadDurationAndTwoSecondsLater = leadDurationLater.plusSeconds(2)
+      val leadDurationAndThreeSecondsLater = leadDurationLater.plusSeconds(3)
 
       val endedEvent = insertEvent(moduleId = moduleId)
       val endingEvent = insertEvent(moduleId = moduleId)
       val inProgressEvent = insertEvent(moduleId = moduleId)
       val startingEvent = insertEvent(moduleId = moduleId)
+      val startingInSecondsEvent = insertEvent(moduleId = moduleId)
+      val startingSoonEvent = insertEvent(moduleId = moduleId)
       val futureEvent = insertEvent(moduleId = moduleId)
 
       store.updateEvent(endedEvent) {
@@ -470,16 +501,22 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
         it.copy(startTime = twoSecondsAgo, endTime = twoSecondsLater)
       }
       store.updateEvent(startingEvent) { it.copy(startTime = now, endTime = twoSecondsLater) }
-      store.updateEvent(futureEvent) {
+      store.updateEvent(startingInSecondsEvent) {
         it.copy(startTime = twoSecondsLater, endTime = threeSecondsLater)
+      }
+      store.updateEvent(startingSoonEvent) {
+        it.copy(startTime = leadDurationLater, endTime = leadDurationAndTwoSecondsLater)
+      }
+      store.updateEvent(futureEvent) {
+        it.copy(
+            startTime = leadDurationAndTwoSecondsLater, endTime = leadDurationAndThreeSecondsLater)
       }
 
       val results = eventsDao.findAll()
       val statuses = results.associate { it.id to it.eventStatusId }
 
       assertEquals(statuses[endedEvent], EventStatus.Ended, "end < now events has Ended status")
-      assertEquals(
-          statuses[endingEvent], EventStatus.InProgress, "end = now events has InProgress status")
+      assertEquals(statuses[endingEvent], EventStatus.Ended, "end = now events has Ended status")
       assertEquals(
           statuses[inProgressEvent],
           EventStatus.InProgress,
@@ -487,7 +524,17 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           statuses[startingEvent], EventStatus.InProgress, "now = start has InProgress status")
       assertEquals(
-          statuses[futureEvent], EventStatus.NotStarted, "now < start events has NotStarted status")
+          statuses[startingInSecondsEvent],
+          EventStatus.StartingSoon,
+          "start < now < notify events has StartingSoon status")
+      assertEquals(
+          statuses[startingSoonEvent],
+          EventStatus.StartingSoon,
+          "now = notify events has StartingSoon status")
+      assertEquals(
+          statuses[futureEvent],
+          EventStatus.NotStarted,
+          "notify < now events has NotStarted status")
     }
   }
 

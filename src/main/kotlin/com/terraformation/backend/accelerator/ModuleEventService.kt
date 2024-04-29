@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.EventNotFoundException
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.util.MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS
 import java.time.Duration
 import java.time.InstantSource
 import javax.inject.Named
@@ -25,9 +26,6 @@ class ModuleEventService(
 ) {
   companion object {
     private val log = perClassLogger()
-
-    /** Notify upcoming events with the given lead time. */
-    val notificationLeadTime: Duration = Duration.ofMinutes(15)
   }
 
   /** Schedules an "event is starting" notification according to preset time. */
@@ -44,7 +42,7 @@ class ModuleEventService(
 
       val now = clock.instant()
       val startTime = moduleEvent.startTime
-      val notifyTime = startTime.minus(notificationLeadTime)
+      val notifyTime = startTime.minus(Duration.ofMinutes(MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS))
       val endTime = moduleEvent.endTime
 
       if (now.isBefore(notifyTime)) {
@@ -98,18 +96,17 @@ class ModuleEventService(
 
   fun updateEventStatusIfEventUpToDate(event: ModuleEventScheduledEvent, status: EventStatus) {
     systemUser.run {
-      val moduleEvent =
-          try {
-            eventStore.fetchOneById(event.eventId)
-          } catch (e: EventNotFoundException) {
-            log.error("Module event ${event.eventId} not found.")
-            return@run
-          }
-
-      if (moduleEvent.revision == event.revision) {
-        eventStore.updateEventStatus(event.eventId, status)
-      } else {
-        log.info("Module event ${event.eventId} has been changed. Not updating status.")
+      try {
+        val moduleEvent = eventStore.fetchOneById(event.eventId)
+        if (moduleEvent.revision == event.revision) {
+          eventStore.updateEventStatus(event.eventId, status)
+        } else {
+          log.info("Module event ${event.eventId} has been changed. Not updating status.")
+        }
+      } catch (e: EventNotFoundException) {
+        log.error("Module event ${event.eventId} not found.")
+      } catch (e: Exception) {
+        log.error("Update status for event ${event.eventId} failed: " + e.message)
       }
     }
   }
