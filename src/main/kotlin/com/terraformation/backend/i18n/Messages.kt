@@ -1,5 +1,6 @@
 package com.terraformation.backend.i18n
 
+import com.terraformation.backend.accelerator.MODULE_EVENT_NOTIFICATION_LEAD_TIME
 import com.terraformation.backend.db.LocalizableEnum
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.default_schema.ConservationCategory
@@ -13,7 +14,6 @@ import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.isV2Compatible
-import com.terraformation.backend.util.MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS
 import com.terraformation.backend.util.equalsIgnoreScale
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -152,7 +152,7 @@ class Messages {
               getMessage(
                   "notification.module.eventStarting.title",
                   eventType.getDisplayName(currentLocale()),
-                  MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS.toString()),
+                  MODULE_EVENT_NOTIFICATION_LEAD_TIME.toMinutes().toString()),
           body =
               getMessage(
                   "notification.module.eventStarting.body",

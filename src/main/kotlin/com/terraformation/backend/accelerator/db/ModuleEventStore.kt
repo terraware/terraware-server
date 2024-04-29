@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.MODULE_EVENT_NOTIFICATION_LEAD_TIME
 import com.terraformation.backend.accelerator.event.ModuleEventScheduledEvent
 import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.accelerator.model.toModel
@@ -15,7 +16,6 @@ import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
 import com.terraformation.backend.db.accelerator.tables.references.EVENTS
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.util.MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS
 import jakarta.inject.Named
 import java.net.URI
 import java.time.Duration
@@ -206,7 +206,7 @@ class ModuleEventStore(
    * start time and exclusive on end time of the window.
    */
   private fun eventStatusNow(startTime: Instant, endTime: Instant, now: Instant): EventStatus {
-    val notifyTime = startTime.minus(Duration.ofMinutes(MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS))
+    val notifyTime = startTime.minus(MODULE_EVENT_NOTIFICATION_LEAD_TIME)
     return when {
       now.isBefore(notifyTime) -> EventStatus.NotStarted
       now.isBefore(startTime) -> EventStatus.StartingSoon

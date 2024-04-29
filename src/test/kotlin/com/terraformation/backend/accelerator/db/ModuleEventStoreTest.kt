@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.MODULE_EVENT_NOTIFICATION_LEAD_TIME
 import com.terraformation.backend.accelerator.event.ModuleEventScheduledEvent
 import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.db.DatabaseTest
@@ -16,7 +17,6 @@ import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.pojos.EventProjectsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.util.MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS
 import io.mockk.every
 import java.net.URI
 import java.time.Duration
@@ -33,9 +33,6 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
-
-  private val notificationLeadDuration: Duration =
-      Duration.ofMinutes(MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS)
 
   private val store: ModuleEventStore by lazy {
     ModuleEventStore(clock, dslContext, eventPublisher, eventsDao)
@@ -229,7 +226,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       val now = clock.instant
       val twoSecondsLater = clock.instant.plusSeconds(2)
       val threeSecondsLater = clock.instant.plusSeconds(3)
-      val leadDurationLater = clock.instant.plus(notificationLeadDuration)
+      val leadDurationLater = clock.instant.plus(MODULE_EVENT_NOTIFICATION_LEAD_TIME)
       val leadDurationAndTwoSecondsLater = leadDurationLater.plusSeconds(2)
       val leadDurationAndThreeSecondsLater = leadDurationLater.plusSeconds(3)
 
@@ -481,7 +478,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       val now = clock.instant
       val twoSecondsLater = clock.instant.plusSeconds(2)
       val threeSecondsLater = clock.instant.plusSeconds(3)
-      val leadDurationLater = clock.instant.plus(notificationLeadDuration)
+      val leadDurationLater = clock.instant.plus(MODULE_EVENT_NOTIFICATION_LEAD_TIME)
       val leadDurationAndTwoSecondsLater = leadDurationLater.plusSeconds(2)
       val leadDurationAndThreeSecondsLater = leadDurationLater.plusSeconds(3)
 

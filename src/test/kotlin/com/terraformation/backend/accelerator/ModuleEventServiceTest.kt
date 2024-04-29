@@ -14,12 +14,10 @@ import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.util.MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS
 import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 import org.jobrunr.jobs.JobId
@@ -38,9 +36,6 @@ class ModuleEventServiceTest : DatabaseTest(), RunsAsUser {
   private val eventStore: ModuleEventStore by lazy {
     ModuleEventStore(clock, dslContext, eventPublisher, eventsDao)
   }
-
-  private val notificationLeadDuration: Duration =
-      Duration.ofMinutes(MODULE_EVENT_NOTIFICATION_LEAD_TIME_MINS)
 
   private val scheduler: JobScheduler = mockk()
 
@@ -80,7 +75,7 @@ class ModuleEventServiceTest : DatabaseTest(), RunsAsUser {
     clock.instant = Instant.EPOCH.plusSeconds(3600)
 
     val notifyTime = clock.instant.plusSeconds(1)
-    val startTime = notifyTime.plus(notificationLeadDuration)
+    val startTime = notifyTime.plus(MODULE_EVENT_NOTIFICATION_LEAD_TIME)
     val endTime = startTime.plusSeconds(3600)
 
     val moduleEventId = insertEvent(revision = 1, startTime = startTime, endTime = endTime)
@@ -98,7 +93,7 @@ class ModuleEventServiceTest : DatabaseTest(), RunsAsUser {
     clock.instant = Instant.EPOCH.plusSeconds(3600)
 
     val notifyTime = clock.instant.minusSeconds(1)
-    val startTime = notifyTime.plus(notificationLeadDuration)
+    val startTime = notifyTime.plus(MODULE_EVENT_NOTIFICATION_LEAD_TIME)
     val endTime = startTime.plusSeconds(3600)
 
     val moduleEventId = insertEvent(revision = 1, startTime = startTime, endTime = endTime)
