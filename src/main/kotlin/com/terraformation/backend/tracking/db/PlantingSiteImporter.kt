@@ -10,10 +10,14 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
+import com.terraformation.backend.tracking.model.NewPlantingSubzoneModel
+import com.terraformation.backend.tracking.model.NewPlantingZoneModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
+import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
+import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -156,6 +160,18 @@ class PlantingSiteImporter(
     val subzonesByZone = getSubzonesByZone(zonesByName, subzonesFile, problems)
     val exclusion = getExclusion(exclusionsFile, problems)
 
+    val newModel =
+        PlantingSiteModel.create(
+            boundary = siteFeature.geometry.toMultiPolygon(),
+            description = description,
+            exclusion = exclusion,
+            name = name,
+            organizationId = organizationId,
+            plantingZones =
+                zonesByName.values.map { zone ->
+                  zone.copy(plantingSubzones = subzonesByZone[zone.name] ?: emptyList())
+                })
+
     if (problems.isNotEmpty()) {
       throw PlantingSiteUploadProblemsException(problems)
     }
@@ -164,72 +180,46 @@ class PlantingSiteImporter(
     val userId = currentUser().userId
 
     return dslContext.transactionResult { _ ->
-      val siteId =
-          plantingSiteStore
-              .createPlantingSite(
-                  PlantingSiteModel.create(
-                      boundary = siteFeature.geometry.toMultiPolygon(),
-                      description = description,
-                      exclusion = exclusion,
-                      name = name,
-                      organizationId = organizationId,
-                  ))
-              .id
+      val siteId = plantingSiteStore.createPlantingSite(newModel).id
 
-      zonesByName.forEach { (zoneName, zoneFeature) ->
-        val targetPlantingDensity =
-            zoneFeature.getProperty(targetPlantingDensityProperties)?.toBigDecimalOrNull()
-                ?: DEFAULT_TARGET_PLANTING_DENSITY
-
-        val numPermanentClusters =
-            zoneFeature.getProperty(permanentClusterCountProperties)?.toIntOrNull()
-                ?: DEFAULT_NUM_PERMANENT_CLUSTERS
-        val numTemporaryPlots =
-            zoneFeature.getProperty(temporaryPlotCountProperies)?.toIntOrNull()
-                ?: DEFAULT_NUM_TEMPORARY_PLOTS
-
+      newModel.plantingZones.forEach { zone ->
         val zonesRow =
             PlantingZonesRow(
-                areaHa = zoneFeature.calculateAreaHectares(),
-                boundary = zoneFeature.geometry,
+                areaHa = zone.areaHa,
+                boundary = zone.boundary,
                 createdBy = userId,
                 createdTime = now,
-                errorMargin = DEFAULT_ERROR_MARGIN,
-                extraPermanentClusters = 0,
+                errorMargin = zone.errorMargin,
+                extraPermanentClusters = zone.extraPermanentClusters,
                 modifiedBy = userId,
                 modifiedTime = now,
-                name = zoneName,
-                numPermanentClusters = numPermanentClusters,
-                numTemporaryPlots = numTemporaryPlots,
+                name = zone.name,
+                numPermanentClusters = zone.numPermanentClusters,
+                numTemporaryPlots = zone.numTemporaryPlots,
                 plantingSiteId = siteId,
-                studentsT = DEFAULT_STUDENTS_T,
-                targetPlantingDensity = targetPlantingDensity,
-                variance = DEFAULT_VARIANCE,
+                studentsT = zone.studentsT,
+                targetPlantingDensity = zone.targetPlantingDensity,
+                variance = zone.variance,
             )
 
         plantingZonesDao.insert(zonesRow)
 
-        subzonesByZone[zoneName]?.let { subzoneFeatures ->
-          subzoneFeatures.forEach { subzoneFeature ->
-            val subzoneName = subzoneFeature.getProperty(subzoneNameProperties)!!
-            val fullSubzoneName = getFullSubzoneName(subzoneFeature)
+        zone.plantingSubzones.forEach { subzone ->
+          val plantingSubzonesRow =
+              PlantingSubzonesRow(
+                  areaHa = subzone.areaHa,
+                  boundary = subzone.boundary,
+                  createdBy = userId,
+                  createdTime = now,
+                  fullName = subzone.fullName,
+                  modifiedBy = userId,
+                  modifiedTime = now,
+                  name = subzone.name,
+                  plantingSiteId = siteId,
+                  plantingZoneId = zonesRow.id,
+              )
 
-            val plantingSubzonesRow =
-                PlantingSubzonesRow(
-                    areaHa = subzoneFeature.calculateAreaHectares(),
-                    boundary = subzoneFeature.geometry,
-                    createdBy = userId,
-                    createdTime = now,
-                    fullName = fullSubzoneName,
-                    modifiedBy = userId,
-                    modifiedTime = now,
-                    name = subzoneName,
-                    plantingSiteId = siteId,
-                    plantingZoneId = zonesRow.id,
-                )
-
-            plantingSubzonesDao.insert(plantingSubzonesRow)
-          }
+          plantingSubzonesDao.insert(plantingSubzonesRow)
         }
       }
 
@@ -320,7 +310,7 @@ class PlantingSiteImporter(
       siteFeature: ShapefileFeature,
       zonesFile: Shapefile,
       problems: MutableList<String>,
-  ): Map<String, ShapefileFeature> {
+  ): Map<String, NewPlantingZoneModel> {
     if (zonesFile.features.isEmpty()) {
       throw IllegalArgumentException("No planting zones defined")
     }
@@ -336,7 +326,7 @@ class PlantingSiteImporter(
         }
 
     zonesFile.features.forEach { feature ->
-      checkCoveredBy(feature, siteFeature, problems) { percent ->
+      checkCoveredBy(feature.geometry, siteFeature.geometry, problems) { percent ->
         val zoneName = feature.getProperty(zoneNameProperties)
 
         "$percent of planting zone $zoneName is not contained within planting site"
@@ -352,32 +342,53 @@ class PlantingSiteImporter(
 
     return zonesFile.features.associate { feature ->
       val name = feature.getProperty(zoneNameProperties)!!
+      val boundary =
+          when (val geometry = feature.geometry) {
+            is MultiPolygon -> {
+              geometry
+            }
+            is Polygon -> {
+              geometry.toMultiPolygon()
+            }
+            else -> {
+              throw IllegalArgumentException(
+                  "Planting zone $name geometry must be a MultiPolygon, not a ${geometry.geometryType}")
+            }
+          }
+      val targetPlantingDensity =
+          feature.getProperty(targetPlantingDensityProperties)?.toBigDecimalOrNull()
+              ?: DEFAULT_TARGET_PLANTING_DENSITY
 
-      when (val geometry = feature.geometry) {
-        is MultiPolygon -> {
-          name to feature
-        }
-        is Polygon -> {
-          problems += "Planting zone $name should be a MultiPolygon, not a Polygon"
-          name to
-              ShapefileFeature(
-                  geometryFactory(feature).createMultiPolygon(arrayOf(geometry)),
-                  feature.properties,
-                  feature.coordinateReferenceSystem)
-        }
-        else -> {
-          throw IllegalArgumentException(
-              "Planting zone $name geometry must be a MultiPolygon, not a ${geometry.geometryType}")
-        }
-      }
+      val numPermanentClusters =
+          feature.getProperty(permanentClusterCountProperties)?.toIntOrNull()
+              ?: DEFAULT_NUM_PERMANENT_CLUSTERS
+      val numTemporaryPlots =
+          feature.getProperty(temporaryPlotCountProperies)?.toIntOrNull()
+              ?: DEFAULT_NUM_TEMPORARY_PLOTS
+
+      name to
+          NewPlantingZoneModel(
+              areaHa = boundary.calculateAreaHectares(feature.coordinateReferenceSystem),
+              boundary = boundary,
+              errorMargin = DEFAULT_ERROR_MARGIN,
+              extraPermanentClusters = 0,
+              id = null,
+              name = name,
+              numPermanentClusters = numPermanentClusters,
+              numTemporaryPlots = numTemporaryPlots,
+              plantingSubzones = emptyList(),
+              studentsT = DEFAULT_STUDENTS_T,
+              targetPlantingDensity = targetPlantingDensity,
+              variance = DEFAULT_VARIANCE,
+          )
     }
   }
 
   private fun getSubzonesByZone(
-      zones: Map<String, ShapefileFeature>,
+      zones: Map<String, PlantingZoneModel<*, *>>,
       subzonesFile: Shapefile,
       problems: MutableList<String>,
-  ): Map<String, List<ShapefileFeature>> {
+  ): Map<String, List<NewPlantingSubzoneModel>> {
     val validSubzones =
         subzonesFile.features.filter { feature ->
           val subzoneName = feature.getProperty(subzoneNameProperties)
@@ -406,7 +417,7 @@ class PlantingSiteImporter(
         validSubzones.groupBy { feature ->
           val zoneName = feature.getProperty(zoneNameProperties)!!
 
-          checkCoveredBy(feature, zones[zoneName]!!, problems) { percent ->
+          checkCoveredBy(feature.geometry, zones[zoneName]!!.boundary, problems) { percent ->
             val subzoneName = feature.getProperty(subzoneNameProperties)!!
 
             "$percent of subzone $subzoneName is not contained within zone $zoneName"
@@ -428,18 +439,31 @@ class PlantingSiteImporter(
       }
     }
 
-    return subzonesByZone
+    return subzonesByZone.mapValues { (zoneName, subzoneFeatures) ->
+      subzoneFeatures.map { subzoneFeature ->
+        val boundary = subzoneFeature.geometry
+        val name = subzoneFeature.getProperty(subzoneNameProperties)!!
+
+        NewPlantingSubzoneModel(
+            areaHa = boundary.calculateAreaHectares(subzoneFeature.coordinateReferenceSystem),
+            boundary = boundary.toMultiPolygon(),
+            id = null,
+            fullName = "$zoneName-$name",
+            name = name,
+        )
+      }
+    }
   }
 
   private fun checkCoveredBy(
-      child: ShapefileFeature,
-      parent: ShapefileFeature,
+      child: Geometry,
+      parent: Geometry,
       problems: MutableList<String>,
       problemFunc: (String) -> String
   ) {
-    if (!child.geometry.coveredBy(parent.geometry)) {
-      val difference = child.geometry.difference(parent.geometry)
-      val childArea = child.geometry.area
+    if (!child.coveredBy(parent)) {
+      val difference = child.difference(parent)
+      val childArea = child.area
       val differenceArea = difference.area
       val uncoveredPercent = differenceArea / childArea * 100.0
 
@@ -448,8 +472,8 @@ class PlantingSiteImporter(
         problems += problem
 
         log.debug(problem)
-        log.debug("Parent: ${parent.geometry}")
-        log.debug("Child: ${child.geometry}")
+        log.debug("Parent: $parent")
+        log.debug("Child: $child")
         log.debug("Difference: $difference")
       }
     }
