@@ -192,3 +192,23 @@ fun Geometry.calculateAreaHectares(originalCrs: CoordinateReferenceSystem? = nul
   return BigDecimal(utmGeometry.area / SQUARE_METERS_PER_HECTARE)
       .setScale(HECTARES_SCALE, RoundingMode.HALF_EVEN)
 }
+
+/** Returns the percentage of this geometry that is covered by another one. */
+fun Geometry.coveragePercent(other: Geometry): Double {
+  return if (coveredBy(other)) {
+    100.0
+  } else {
+    intersection(other).area / area * 100.0
+  }
+}
+
+/**
+ * Determines whether this geometry is nearly covered by another one. This differs from `coveredBy`
+ * in that it allows a small margin of error to account for floating-point inaccuracy.
+ *
+ * @param minCoveragePercent Minimum percentage of this geometry's area that needs to be covered by
+ *   the other geometry. Default is 99.99%.
+ */
+fun Geometry.nearlyCoveredBy(other: Geometry, minCoveragePercent: Double = 99.99): Boolean {
+  return coveredBy(other) || coveragePercent(other) >= minCoveragePercent
+}

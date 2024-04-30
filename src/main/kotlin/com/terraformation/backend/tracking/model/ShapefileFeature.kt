@@ -1,15 +1,16 @@
 package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.SRID
-import com.terraformation.backend.util.calculateAreaHectares
-import java.math.BigDecimal
 import org.geotools.api.feature.simple.SimpleFeature
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem
+import org.geotools.geometry.jts.JTS
+import org.geotools.referencing.CRS
 import org.locationtech.jts.geom.Geometry
 
 /** Simplified representation of the data about a single feature from a shapefile. */
 data class ShapefileFeature(
-    val geometry: Geometry,
+    /** Original geometry from shapefile; may be in any coordinate reference system. */
+    val rawGeometry: Geometry,
     val properties: Map<String, String>,
     val coordinateReferenceSystem: CoordinateReferenceSystem,
 ) {
@@ -21,17 +22,19 @@ data class ShapefileFeature(
   /** Returns true if the feature has any of a number of properties. */
   fun hasProperty(names: Collection<String>): Boolean = names.any { it in properties }
 
-  /**
-   * Calculates the approximate area of a geometry in hectares. If this feature isn't already in a
-   * UTM coordinate system, converts it to the appropriate one first.
-   *
-   * @throws FactoryException The geometry couldn't be converted to UTM.
-   */
-  fun calculateAreaHectares(geom: Geometry = this.geometry): BigDecimal {
-    return geom.calculateAreaHectares(coordinateReferenceSystem)
+  /** Geometry in longitude/latitude coordinates. */
+  val geometry: Geometry by lazy {
+    if (coordinateReferenceSystem == longLatCrs) {
+      rawGeometry
+    } else {
+      val transform = CRS.findMathTransform(coordinateReferenceSystem, longLatCrs)
+      JTS.transform(rawGeometry, transform).also { it.srid = SRID.LONG_LAT }
+    }
   }
 
   companion object {
+    val longLatCrs: CoordinateReferenceSystem by lazy { CRS.decode("EPSG:${SRID.LONG_LAT}", true) }
+
     fun fromGeotools(feature: SimpleFeature): ShapefileFeature {
       val defaultGeometry = feature.defaultGeometry as Geometry
       val crs =

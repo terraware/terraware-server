@@ -20,7 +20,7 @@ internal class ShapefileTest {
     assertNotNull(plantingSite, "Should have found site boundary shapefile")
     assertEquals(
         MultiPolygon::class.java,
-        plantingSite!!.features[0].geometry.javaClass,
+        plantingSite!!.features[0].rawGeometry.javaClass,
         "Site feature type")
   }
 

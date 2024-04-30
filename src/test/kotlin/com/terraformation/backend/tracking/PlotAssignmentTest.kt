@@ -15,6 +15,7 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
+import com.terraformation.backend.util.nearlyCoveredBy
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -144,7 +145,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
 
     observationPlots.forEach { plot ->
       assertEquals(subzone1.fullName, plot.plantingSubzoneName, "Plot in unexpected subzone")
-      if (!plot.boundary.coveredBy(subzone1.boundary)) {
+      if (!plot.boundary.nearlyCoveredBy(subzone1.boundary)) {
         fail("Plot boundary ${plot.boundary} not within subzone boundary ${subzone1.boundary}")
       }
     }

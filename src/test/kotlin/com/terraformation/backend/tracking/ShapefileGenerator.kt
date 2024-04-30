@@ -24,7 +24,7 @@ class ShapefileGenerator(
      */
     private val defaultTemporaryPlots: Int? = null,
 ) {
-  private val crs = CRS.decode("EPSG:$srid")
+  private val crs = CRS.decode("EPSG:$srid", true)
   private val geometryFactory = GeometryFactory(PrecisionModel(), srid)
 
   private var nextSubzoneNumber = 1

@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.createRectangle
 import com.terraformation.backend.util.fixIfNeeded
+import com.terraformation.backend.util.nearlyCoveredBy
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.random.Random
@@ -119,8 +120,9 @@ class UnusedSquareFinder(
    * completely covered by the zone. So instead we test that the polygon is at least 99.99% covered.
    */
   private fun coveredByZone(polygon: Geometry): Boolean {
-    return zoneGeometry.intersection(polygon).area >= polygon.area * 0.9999
+    return polygon.nearlyCoveredBy(zoneGeometry)
   }
+
   /**
    * Attempts to find an available square within a rectangular region of the zone. First tries to
    * pick a few random points, and if none of them works, divides the region into four quadrants and
