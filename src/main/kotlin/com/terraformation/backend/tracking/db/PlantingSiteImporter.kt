@@ -13,10 +13,10 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.NewPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.NewPlantingZoneModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
+import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
-import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
 import java.time.InstantSource
@@ -272,19 +272,13 @@ class PlantingSiteImporter(
               ?: PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS
 
       name to
-          NewPlantingZoneModel(
-              areaHa = boundary.calculateAreaHectares(),
+          PlantingZoneModel.create(
               boundary = boundary,
-              errorMargin = PlantingZoneModel.DEFAULT_ERROR_MARGIN,
-              extraPermanentClusters = 0,
-              id = null,
               name = name,
               numPermanentClusters = numPermanentClusters,
               numTemporaryPlots = numTemporaryPlots,
               plantingSubzones = emptyList(),
-              studentsT = PlantingZoneModel.DEFAULT_STUDENTS_T,
               targetPlantingDensity = targetPlantingDensity,
-              variance = PlantingZoneModel.DEFAULT_VARIANCE,
           )
     }
   }
@@ -326,10 +320,8 @@ class PlantingSiteImporter(
         val boundary = subzoneFeature.geometry
         val name = subzoneFeature.getProperty(subzoneNameProperties)!!
 
-        NewPlantingSubzoneModel(
-            areaHa = boundary.calculateAreaHectares(),
+        PlantingSubzoneModel.create(
             boundary = boundary.toMultiPolygon(),
-            id = null,
             fullName = "$zoneName-$name",
             name = name,
         )

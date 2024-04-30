@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
 import java.time.Instant
@@ -28,6 +29,27 @@ data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
         areaHa.equalsIgnoreScale(other.areaHa) &&
         monitoringPlots.zip(other.monitoringPlots).all { it.first.equals(it.second, tolerance) } &&
         boundary.equalsExact(other.boundary, tolerance)
+  }
+
+  companion object {
+    fun create(
+        boundary: MultiPolygon,
+        fullName: String,
+        name: String,
+        areaHa: BigDecimal = boundary.calculateAreaHectares(),
+        plantingCompletedTime: Instant? = null,
+        monitoringPlots: List<MonitoringPlotModel> = emptyList(),
+    ): NewPlantingSubzoneModel {
+      return NewPlantingSubzoneModel(
+          areaHa = areaHa,
+          boundary = boundary,
+          fullName = fullName,
+          id = null,
+          monitoringPlots = monitoringPlots,
+          name = name,
+          plantingCompletedTime = plantingCompletedTime,
+      )
+    }
   }
 }
 

@@ -191,10 +191,8 @@ class PlantingSiteModelTest {
       name: String = "Zone ${nextZoneNumber++}",
       plantingSubzones: List<NewPlantingSubzoneModel> = emptyList(),
   ): NewPlantingZoneModel {
-    return NewPlantingZoneModel(
-        areaHa = boundary.calculateAreaHectares(),
+    return PlantingZoneModel.create(
         boundary = boundary.toMultiPolygon(),
-        id = null,
         name = name,
         plantingSubzones = plantingSubzones,
     )
@@ -205,11 +203,9 @@ class PlantingSiteModelTest {
       name: String = "Subzone ${nextSubzoneNumber++}",
       fullName: String = "Zone $nextZoneNumber-$name",
   ): NewPlantingSubzoneModel {
-    return NewPlantingSubzoneModel(
-        areaHa = boundary.calculateAreaHectares(),
+    return PlantingSubzoneModel.create(
         boundary = boundary.toMultiPolygon(),
         fullName = fullName,
-        id = null,
         name = name,
     )
   }

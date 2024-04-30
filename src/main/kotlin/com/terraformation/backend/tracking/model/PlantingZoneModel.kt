@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.coveragePercent
 import com.terraformation.backend.util.equalsIgnoreScale
 import com.terraformation.backend.util.nearlyCoveredBy
@@ -402,6 +403,35 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
 
     /** Target planting density to use if not included in zone properties. */
     val DEFAULT_TARGET_PLANTING_DENSITY = BigDecimal(1500)
+
+    fun create(
+        boundary: MultiPolygon,
+        name: String,
+        plantingSubzones: List<NewPlantingSubzoneModel>,
+        areaHa: BigDecimal = boundary.calculateAreaHectares(),
+        errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
+        extraPermanentClusters: Int = 0,
+        numPermanentClusters: Int = DEFAULT_NUM_PERMANENT_CLUSTERS,
+        numTemporaryPlots: Int = DEFAULT_NUM_TEMPORARY_PLOTS,
+        studentsT: BigDecimal = DEFAULT_STUDENTS_T,
+        targetPlantingDensity: BigDecimal = DEFAULT_TARGET_PLANTING_DENSITY,
+        variance: BigDecimal = DEFAULT_VARIANCE,
+    ): NewPlantingZoneModel {
+      return NewPlantingZoneModel(
+          areaHa = areaHa,
+          boundary = boundary,
+          errorMargin = errorMargin,
+          extraPermanentClusters = extraPermanentClusters,
+          id = null,
+          name = name,
+          numPermanentClusters = numPermanentClusters,
+          numTemporaryPlots = numTemporaryPlots,
+          plantingSubzones = plantingSubzones,
+          studentsT = studentsT,
+          targetPlantingDensity = targetPlantingDensity,
+          variance = variance,
+      )
+    }
   }
 }
 
