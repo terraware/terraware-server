@@ -165,16 +165,11 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                     PlantingZoneModel(
                         areaHa = BigDecimal.TEN,
                         boundary = multiPolygon(2.0),
-                        errorMargin = PlantingSiteImporter.DEFAULT_ERROR_MARGIN,
                         extraPermanentClusters = 1,
                         id = plantingZoneId,
                         name = "Z1",
-                        numPermanentClusters = PlantingSiteImporter.DEFAULT_NUM_PERMANENT_CLUSTERS,
-                        numTemporaryPlots = PlantingSiteImporter.DEFAULT_NUM_TEMPORARY_PLOTS,
                         plantingSubzones = emptyList(),
-                        studentsT = PlantingSiteImporter.DEFAULT_STUDENTS_T,
                         targetPlantingDensity = BigDecimal.ONE,
-                        variance = PlantingSiteImporter.DEFAULT_VARIANCE,
                     ),
                 ))
 
@@ -274,15 +269,10 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                     PlantingZoneModel(
                         areaHa = BigDecimal.TEN,
                         boundary = zoneBoundary4326,
-                        errorMargin = PlantingSiteImporter.DEFAULT_ERROR_MARGIN,
                         extraPermanentClusters = 0,
                         id = plantingZoneId,
                         name = "Z1",
-                        numPermanentClusters = PlantingSiteImporter.DEFAULT_NUM_PERMANENT_CLUSTERS,
-                        numTemporaryPlots = PlantingSiteImporter.DEFAULT_NUM_TEMPORARY_PLOTS,
-                        studentsT = PlantingSiteImporter.DEFAULT_STUDENTS_T,
                         targetPlantingDensity = BigDecimal.ONE,
-                        variance = PlantingSiteImporter.DEFAULT_VARIANCE,
                         plantingSubzones =
                             listOf(
                                 PlantingSubzoneModel(
