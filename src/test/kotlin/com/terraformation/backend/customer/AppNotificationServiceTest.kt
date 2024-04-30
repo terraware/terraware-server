@@ -207,7 +207,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         NotificationMessage("nursery title", "nursery body")
     every { messages.facilityIdle() } returns
         NotificationMessage("facility idle title", "facility idle body")
-    every { messages.moduleEventStartingNotification(any(), any(), any()) } returns
+    every { messages.moduleEventStartingNotification(any(), any()) } returns
         NotificationMessage("module event starting title", "module event starting body")
     every { user.canCreateAccession(facilityId) } returns true
     every { user.canCreateAutomation(any()) } returns true

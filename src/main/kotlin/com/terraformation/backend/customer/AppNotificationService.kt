@@ -1,6 +1,5 @@
 package com.terraformation.backend.customer
 
-import com.terraformation.backend.accelerator.ModuleEventNotifier
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
@@ -352,7 +351,6 @@ class AppNotificationService(
       val renderMessage = {
         messages.moduleEventStartingNotification(
             moduleEvent.eventType,
-            ModuleEventNotifier.notificationLeadTime,
             module.name,
         )
       }

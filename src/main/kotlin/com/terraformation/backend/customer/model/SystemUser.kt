@@ -247,6 +247,8 @@ class SystemUser(
 
   override fun canManageModuleEvents(): Boolean = false
 
+  override fun canManageModuleEventStatuses() = true
+
   override fun canManageModules(): Boolean = false
 
   override fun canManageNotifications(): Boolean = true

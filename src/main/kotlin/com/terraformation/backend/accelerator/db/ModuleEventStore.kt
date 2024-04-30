@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.MODULE_EVENT_NOTIFICATION_LEAD_TIME
 import com.terraformation.backend.accelerator.event.ModuleEventScheduledEvent
 import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.accelerator.model.toModel
@@ -7,6 +8,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.EventNotFoundException
 import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.daos.EventsDao
@@ -62,8 +64,8 @@ class ModuleEventStore(
   fun create(
       moduleId: ModuleId,
       eventType: EventType,
-      startTime: Instant? = null,
-      endTime: Instant? = startTime?.plus(Duration.ofHours(1)),
+      startTime: Instant,
+      endTime: Instant = startTime.plus(Duration.ofHours(1)),
       meetingUrl: URI? = null,
       recordingUrl: URI? = null,
       slidesUrl: URI? = null,
@@ -74,9 +76,12 @@ class ModuleEventStore(
     val now = clock.instant()
     val user = currentUser()
 
+    val eventStatus = eventStatusNow(startTime, endTime, now)
+
     val eventsRow =
         EventsRow(
             moduleId = moduleId,
+            eventStatusId = eventStatus,
             eventTypeId = eventType,
             startTime = startTime,
             endTime = endTime,
@@ -99,9 +104,7 @@ class ModuleEventStore(
     }
 
     val model = eventsRow.toModel(projects)
-    startTime?.let {
-      eventPublisher.publishEvent(ModuleEventScheduledEvent(model.id, model.revision))
-    }
+    eventPublisher.publishEvent(ModuleEventScheduledEvent(model.id, model.revision))
 
     return model
   }
@@ -116,6 +119,7 @@ class ModuleEventStore(
     }
   }
 
+  /** Update event details including times, participants and URLs. */
   fun updateEvent(eventId: EventId, updateFunc: (EventModel) -> EventModel) {
     requirePermissions { manageModuleEvents() }
 
@@ -125,11 +129,13 @@ class ModuleEventStore(
     val now = clock.instant()
 
     val revision =
-        if (updated.startTime == existing.startTime) {
+        if (updated.startTime == existing.startTime && updated.endTime == existing.endTime) {
           existing.revision
         } else {
           existing.revision + 1
         }
+
+    val eventStatus = eventStatusNow(updated.startTime, updated.endTime, now)
 
     dslContext.transaction { _ ->
       val rowsUpdated =
@@ -141,6 +147,7 @@ class ModuleEventStore(
                 .set(SLIDES_URL, updated.slidesUrl)
                 .set(START_TIME, updated.startTime)
                 .set(END_TIME, updated.endTime)
+                .set(EVENT_STATUS_ID, eventStatus)
                 .set(REVISION, revision)
                 .set(MODIFIED_BY, userId)
                 .set(MODIFIED_TIME, now)
@@ -173,8 +180,38 @@ class ModuleEventStore(
       }
     }
 
-    if (updated.startTime != existing.startTime) {
+    if (updated.startTime != existing.startTime || updated.endTime != existing.endTime) {
       eventPublisher.publishEvent(ModuleEventScheduledEvent(eventId, revision))
+    }
+  }
+
+  /**
+   * Update event status. Primarily used by job scheduler to update event status at scheduled times.
+   */
+  fun updateEventStatus(eventId: EventId, status: EventStatus) {
+    requirePermissions { manageModuleEventStatuses() }
+
+    val rowsUpdated =
+        with(EVENTS) {
+          dslContext.update(this).set(EVENT_STATUS_ID, status).where(ID.eq(eventId)).execute()
+        }
+
+    if (rowsUpdated < 1) {
+      throw EventNotFoundException(eventId)
+    }
+  }
+
+  /**
+   * Return event status based on current time. Every status has a time window, and is inclusive on
+   * start time and exclusive on end time of the window.
+   */
+  private fun eventStatusNow(startTime: Instant, endTime: Instant, now: Instant): EventStatus {
+    val notifyTime = startTime.minus(MODULE_EVENT_NOTIFICATION_LEAD_TIME)
+    return when {
+      now.isBefore(notifyTime) -> EventStatus.NotStarted
+      now.isBefore(startTime) -> EventStatus.StartingSoon
+      now.isBefore(endTime) -> EventStatus.InProgress
+      else -> EventStatus.Ended
     }
   }
 }

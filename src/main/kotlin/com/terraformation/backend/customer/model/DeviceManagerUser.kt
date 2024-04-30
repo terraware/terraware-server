@@ -259,6 +259,8 @@ data class DeviceManagerUser(
 
   override fun canManageModuleEvents(): Boolean = false
 
+  override fun canManageModuleEventStatuses() = false
+
   override fun canManageModules(): Boolean = false
 
   override fun canManageNotifications(): Boolean = false

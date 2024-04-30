@@ -1,5 +1,6 @@
 package com.terraformation.backend.i18n
 
+import com.terraformation.backend.accelerator.MODULE_EVENT_NOTIFICATION_LEAD_TIME
 import com.terraformation.backend.db.LocalizableEnum
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.default_schema.ConservationCategory
@@ -17,7 +18,6 @@ import com.terraformation.backend.util.equalsIgnoreScale
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.text.NumberFormat
-import java.time.Duration
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -145,7 +145,6 @@ class Messages {
 
   fun moduleEventStartingNotification(
       eventType: EventType,
-      leadTime: Duration,
       moduleName: String,
   ): NotificationMessage =
       NotificationMessage(
@@ -153,7 +152,7 @@ class Messages {
               getMessage(
                   "notification.module.eventStarting.title",
                   eventType.getDisplayName(currentLocale()),
-                  leadTime.toMinutes().toString()),
+                  MODULE_EVENT_NOTIFICATION_LEAD_TIME.toMinutes().toString()),
           body =
               getMessage(
                   "notification.module.eventStarting.body",

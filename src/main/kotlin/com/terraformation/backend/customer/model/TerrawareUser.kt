@@ -201,6 +201,8 @@ interface TerrawareUser : Principal {
 
   fun canManageModuleEvents(): Boolean
 
+  fun canManageModuleEventStatuses(): Boolean
+
   fun canManageModules(): Boolean
 
   fun canManageNotifications(): Boolean
