@@ -20,7 +20,8 @@ class ModulesImporter(
   companion object {
     private const val COLUMN_NAME = 0
     private const val COLUMN_ID = COLUMN_NAME + 1
-    private const val COLUMN_OVERVIEW = COLUMN_ID + 1
+    private const val COLUMN_PHASE = COLUMN_ID + 1
+    private const val COLUMN_OVERVIEW = COLUMN_PHASE + 1
     private const val COLUMN_PREPARATION_MATERIALS = COLUMN_OVERVIEW + 1
     private const val COLUMN_ADDITIONAL_RESOURCES = COLUMN_PREPARATION_MATERIALS + 1
     private const val COLUMN_LIVE_SESSION_INFO = COLUMN_ADDITIONAL_RESOURCES + 1
@@ -43,6 +44,7 @@ class ModulesImporter(
         }
 
         val moduleId = values[COLUMN_ID]?.toLongOrNull()?.let { ModuleId(it) }
+        val phase = values[COLUMN_PHASE]?.toIntOrNull()?.let { CohortPhase.forId(it) }
         val name = values[COLUMN_NAME]
         val overview = values[COLUMN_OVERVIEW]
         val preparationMaterials = values[COLUMN_PREPARATION_MATERIALS]
@@ -64,6 +66,7 @@ class ModulesImporter(
                 .insertInto(MODULES)
                 .set(ID, moduleId)
                 .set(NAME, name)
+                .set(PHASE_ID, phase)
                 .set(OVERVIEW, overview)
                 .set(PREPARATION_MATERIALS, preparationMaterials)
                 .set(ADDITIONAL_RESOURCES, additionalResources)
@@ -78,6 +81,7 @@ class ModulesImporter(
                 .onConflict()
                 .doUpdate()
                 .set(NAME, name)
+                .set(PHASE_ID, phase)
                 .set(OVERVIEW, overview)
                 .set(PREPARATION_MATERIALS, preparationMaterials)
                 .set(ADDITIONAL_RESOURCES, additionalResources)
