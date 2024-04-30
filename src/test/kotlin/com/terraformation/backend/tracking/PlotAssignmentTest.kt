@@ -51,13 +51,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         plantingZonesDao)
   }
   private val plantingSiteImporter: PlantingSiteImporter by lazy {
-    PlantingSiteImporter(
-        clock,
-        dslContext,
-        plantingSiteStore,
-        plantingZonesDao,
-        plantingSubzonesDao,
-    )
+    PlantingSiteImporter(plantingSiteStore)
   }
   private val observationService: ObservationService by lazy {
     ObservationService(

@@ -16,6 +16,7 @@ import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
@@ -34,6 +35,7 @@ import com.terraformation.backend.tracking.model.CannotUpdatePastPlantingSeasonE
 import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
+import com.terraformation.backend.tracking.model.NewPlantingZoneModel
 import com.terraformation.backend.tracking.model.PlantingSeasonTooFarInFutureException
 import com.terraformation.backend.tracking.model.PlantingSeasonTooLongException
 import com.terraformation.backend.tracking.model.PlantingSeasonTooShortException
@@ -388,7 +390,7 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `calculates correct area and grid origin for new site with boundary`() {
+    fun `calculates correct area and grid origin for simple site with boundary`() {
       val gridOrigin = point(1)
       val boundary = Turtle(gridOrigin).makeMultiPolygon { square(150) }
 
@@ -418,6 +420,182 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
           "Planting sites")
 
       assertEquals(emptyList<PlantingZonesRow>(), plantingZonesDao.findAll(), "Planting zones")
+    }
+
+    @Test
+    fun `inserts detailed planting site`() {
+      val gridOrigin = point(1)
+      val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(200, 150) }
+      val zone1Boundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(100, 150) }
+      val subzone11Boundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(100, 75) }
+      val subzone12Boundary =
+          Turtle(gridOrigin).makeMultiPolygon {
+            north(75)
+            rectangle(100, 75)
+          }
+      val zone2Boundary =
+          Turtle(gridOrigin).makeMultiPolygon {
+            east(100)
+            rectangle(100, 150)
+          }
+      val subzone21Boundary =
+          Turtle(gridOrigin).makeMultiPolygon {
+            east(100)
+            rectangle(100, 75)
+          }
+      val subzone22Boundary =
+          Turtle(gridOrigin).makeMultiPolygon {
+            east(100)
+            north(75)
+            rectangle(100, 75)
+          }
+
+      val newModel =
+          PlantingSiteModel.create(
+              boundary = siteBoundary,
+              name = "name",
+              organizationId = organizationId,
+              plantingZones =
+                  listOf(
+                      PlantingZoneModel.create(
+                          areaHa = BigDecimal.ZERO,
+                          boundary = zone1Boundary,
+                          errorMargin = BigDecimal(1),
+                          extraPermanentClusters = 2,
+                          name = "Zone 1",
+                          numPermanentClusters = 3,
+                          numTemporaryPlots = 4,
+                          plantingSubzones =
+                              listOf(
+                                  PlantingSubzoneModel.create(
+                                      areaHa = BigDecimal.ZERO,
+                                      boundary = subzone11Boundary,
+                                      fullName = "Zone 1-Subzone 1",
+                                      name = "Subzone 1",
+                                  ),
+                                  PlantingSubzoneModel.create(
+                                      boundary = subzone12Boundary,
+                                      fullName = "Zone 1-Subzone 2",
+                                      name = "Subzone 2")),
+                          studentsT = BigDecimal(5),
+                          targetPlantingDensity = BigDecimal(6),
+                          variance = BigDecimal(7),
+                      ),
+                      PlantingZoneModel.create(
+                          boundary = zone2Boundary,
+                          name = "Zone 2",
+                          plantingSubzones =
+                              listOf(
+                                  PlantingSubzoneModel.create(
+                                      boundary = subzone21Boundary,
+                                      fullName = "Zone 2-Subzone 1",
+                                      name = "Subzone 1",
+                                  ),
+                                  PlantingSubzoneModel.create(
+                                      boundary = subzone22Boundary,
+                                      fullName = "Zone 2-Subzone 2",
+                                      name = "Subzone 2")))))
+
+      val model = store.createPlantingSite(newModel)
+
+      assertEquals(
+          listOf(
+              PlantingSitesRow(
+                  areaHa = BigDecimal("3.0"),
+                  boundary = siteBoundary,
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  gridOrigin = gridOrigin,
+                  id = model.id,
+                  modifiedBy = user.userId,
+                  modifiedTime = Instant.EPOCH,
+                  name = "name",
+                  organizationId = organizationId,
+              )),
+          plantingSitesDao.findAll(),
+          "Planting sites")
+
+      val commonZonesRow =
+          PlantingZonesRow(
+              areaHa = BigDecimal("1.5"),
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = Instant.EPOCH,
+              plantingSiteId = model.id,
+          )
+
+      val actualZones = plantingZonesDao.findAll().associateBy { it.name!! }
+
+      assertEquals(
+          setOf(
+              commonZonesRow.copy(
+                  boundary = zone1Boundary,
+                  errorMargin = BigDecimal(1),
+                  extraPermanentClusters = 2,
+                  id = actualZones["Zone 1"]?.id,
+                  name = "Zone 1",
+                  numPermanentClusters = 3,
+                  numTemporaryPlots = 4,
+                  studentsT = BigDecimal(5),
+                  targetPlantingDensity = BigDecimal(6),
+                  variance = BigDecimal(7),
+              ),
+              commonZonesRow.copy(
+                  boundary = zone2Boundary,
+                  errorMargin = PlantingZoneModel.DEFAULT_ERROR_MARGIN,
+                  extraPermanentClusters = 0,
+                  id = actualZones["Zone 2"]?.id,
+                  name = "Zone 2",
+                  numPermanentClusters = PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS,
+                  numTemporaryPlots = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+                  studentsT = PlantingZoneModel.DEFAULT_STUDENTS_T,
+                  targetPlantingDensity = PlantingZoneModel.DEFAULT_TARGET_PLANTING_DENSITY,
+                  variance = PlantingZoneModel.DEFAULT_VARIANCE,
+              ),
+          ),
+          actualZones.values.toSet(),
+          "Planting zones")
+
+      val commonSubzonesRow =
+          PlantingSubzonesRow(
+              areaHa = BigDecimal("0.8"),
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = Instant.EPOCH,
+              plantingSiteId = model.id,
+          )
+
+      assertEquals(
+          setOf(
+              commonSubzonesRow.copy(
+                  boundary = subzone11Boundary,
+                  fullName = "Zone 1-Subzone 1",
+                  name = "Subzone 1",
+                  plantingZoneId = actualZones["Zone 1"]?.id,
+              ),
+              commonSubzonesRow.copy(
+                  boundary = subzone12Boundary,
+                  fullName = "Zone 1-Subzone 2",
+                  name = "Subzone 2",
+                  plantingZoneId = actualZones["Zone 1"]?.id,
+              ),
+              commonSubzonesRow.copy(
+                  boundary = subzone21Boundary,
+                  fullName = "Zone 2-Subzone 1",
+                  name = "Subzone 1",
+                  plantingZoneId = actualZones["Zone 2"]?.id,
+              ),
+              commonSubzonesRow.copy(
+                  boundary = subzone22Boundary,
+                  fullName = "Zone 2-Subzone 2",
+                  name = "Subzone 2",
+                  plantingZoneId = actualZones["Zone 2"]?.id,
+              ),
+          ),
+          plantingSubzonesDao.findAll().map { it.copy(id = null) }.toSet(),
+          "Planting subzones")
     }
 
     @Test
@@ -496,6 +674,28 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
                 projectId = projectId,
             ))
       }
+    }
+
+    // Validation rules are tested more comprehensively in PlantingSiteModelTest.
+    @Test
+    fun `rejects invalid planting site maps`() {
+      val boundary = Turtle(point(0)).makeMultiPolygon { square(100) }
+      val newModel =
+          PlantingSiteModel.create(
+              boundary = boundary,
+              name = "name",
+              organizationId = organizationId,
+              plantingZones =
+                  listOf(
+                      NewPlantingZoneModel(
+                          areaHa = BigDecimal.ONE,
+                          boundary = boundary,
+                          name = "name",
+                          id = null,
+                          // Empty subzone list is invalid.
+                          plantingSubzones = emptyList())))
+
+      assertThrows<PlantingSiteMapInvalidException> { store.createPlantingSite(newModel) }
     }
 
     @Test

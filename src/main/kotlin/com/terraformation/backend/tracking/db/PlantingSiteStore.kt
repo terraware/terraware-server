@@ -50,6 +50,8 @@ import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
+import com.terraformation.backend.tracking.model.NewPlantingSubzoneModel
+import com.terraformation.backend.tracking.model.NewPlantingZoneModel
 import com.terraformation.backend.tracking.model.PlantingSeasonsOverlapException
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
@@ -260,6 +262,11 @@ class PlantingSiteStore(
           null
         }
 
+    val problems = newModel.copy(gridOrigin = gridOrigin).validate()
+    if (problems != null) {
+      throw PlantingSiteMapInvalidException(problems)
+    }
+
     val plantingSitesRow =
         PlantingSitesRow(
             areaHa = newModel.boundary?.calculateAreaHectares(),
@@ -277,18 +284,28 @@ class PlantingSiteStore(
             timeZone = newModel.timeZone,
         )
 
-    dslContext.transaction { _ ->
+    return dslContext.transactionResult { _ ->
       plantingSitesDao.insert(plantingSitesRow)
+      val plantingSiteId = plantingSitesRow.id!!
 
-      val effectiveTimeZone =
-          newModel.timeZone ?: parentStore.getEffectiveTimeZone(plantingSitesRow.id!!)
+      newModel.plantingZones.forEach { zone ->
+        val plantingZoneId = createPlantingZone(zone, plantingSiteId, now)
+
+        zone.plantingSubzones.forEach { subzone ->
+          createPlantingSubzone(subzone, plantingSiteId, plantingZoneId, now)
+        }
+      }
+
+      val effectiveTimeZone = newModel.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId)
 
       if (!plantingSeasons.isEmpty()) {
-        updatePlantingSeasons(plantingSitesRow.id!!, plantingSeasons, effectiveTimeZone)
+        updatePlantingSeasons(plantingSiteId, plantingSeasons, effectiveTimeZone)
       }
-    }
 
-    return fetchSiteById(plantingSitesRow.id!!, PlantingSiteDepth.Site)
+      log.info("Created planting site $plantingSiteId for organization ${newModel.organizationId}")
+
+      fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
+    }
   }
 
   fun updatePlantingSite(
@@ -513,6 +530,64 @@ class PlantingSiteStore(
           .where(ID.eq(plantingSubzoneId))
           .execute()
     }
+  }
+
+  private fun createPlantingZone(
+      zone: NewPlantingZoneModel,
+      plantingSiteId: PlantingSiteId,
+      now: Instant = clock.instant()
+  ): PlantingZoneId {
+    val userId = currentUser().userId
+
+    val zonesRow =
+        PlantingZonesRow(
+            areaHa = zone.boundary.calculateAreaHectares(),
+            boundary = zone.boundary,
+            createdBy = userId,
+            createdTime = now,
+            errorMargin = zone.errorMargin,
+            extraPermanentClusters = zone.extraPermanentClusters,
+            modifiedBy = userId,
+            modifiedTime = now,
+            name = zone.name,
+            numPermanentClusters = zone.numPermanentClusters,
+            numTemporaryPlots = zone.numTemporaryPlots,
+            plantingSiteId = plantingSiteId,
+            studentsT = zone.studentsT,
+            targetPlantingDensity = zone.targetPlantingDensity,
+            variance = zone.variance,
+        )
+
+    plantingZonesDao.insert(zonesRow)
+
+    return zonesRow.id!!
+  }
+
+  private fun createPlantingSubzone(
+      subzone: NewPlantingSubzoneModel,
+      plantingSiteId: PlantingSiteId,
+      plantingZoneId: PlantingZoneId,
+      now: Instant = clock.instant()
+  ): PlantingSubzoneId {
+    val userId = currentUser().userId
+
+    val plantingSubzonesRow =
+        PlantingSubzonesRow(
+            areaHa = subzone.boundary.calculateAreaHectares(),
+            boundary = subzone.boundary,
+            createdBy = userId,
+            createdTime = now,
+            fullName = subzone.fullName,
+            modifiedBy = userId,
+            modifiedTime = now,
+            name = subzone.name,
+            plantingSiteId = plantingSiteId,
+            plantingZoneId = plantingZoneId,
+        )
+
+    plantingSubzonesDao.insert(plantingSubzonesRow)
+
+    return plantingSubzonesRow.id!!
   }
 
   private fun setMonitoringPlotCluster(

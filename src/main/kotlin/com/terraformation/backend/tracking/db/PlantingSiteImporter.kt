@@ -1,14 +1,9 @@
 package com.terraformation.backend.tracking.db
 
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
-import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.NewPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.NewPlantingZoneModel
@@ -19,8 +14,7 @@ import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
 import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
-import java.time.InstantSource
-import org.jooq.DSLContext
+import java.math.BigDecimal
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
@@ -28,11 +22,7 @@ import org.locationtech.jts.geom.PrecisionModel
 
 @Named
 class PlantingSiteImporter(
-    private val clock: InstantSource,
-    private val dslContext: DSLContext,
     private val plantingSiteStore: PlantingSiteStore,
-    private val plantingZonesDao: PlantingZonesDao,
-    private val plantingSubzonesDao: PlantingSubzonesDao,
 ) {
   companion object {
     val siteNameProperties = setOf("planting_s", "site")
@@ -112,84 +102,29 @@ class PlantingSiteImporter(
     requirePermissions { createPlantingSite(organizationId) }
 
     val problems = mutableListOf<String>()
-    val siteFeature = getSiteBoundary(siteFile, problems)
 
+    val siteFeature = getSiteBoundary(siteFile, problems)
     val zonesByName = getZones(zonesFile)
     val subzonesByZone = getSubzonesByZone(zonesByName, subzonesFile, problems)
     val exclusion = getExclusion(exclusionsFile, problems)
-
-    val gridOrigin =
-        GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
-            .createPoint(siteFeature.geometry.envelope.coordinates[0])
-
-    val newModel =
-        PlantingSiteModel.create(
-            boundary = siteFeature.geometry.toMultiPolygon(),
-            description = description,
-            exclusion = exclusion,
-            gridOrigin = gridOrigin,
-            name = name,
-            organizationId = organizationId,
-            plantingZones =
-                zonesByName.values.map { zone ->
-                  zone.copy(plantingSubzones = subzonesByZone[zone.name] ?: emptyList())
-                })
-
-    problems.addAll(newModel.validate() ?: emptyList())
 
     if (problems.isNotEmpty()) {
       throw PlantingSiteMapInvalidException(problems)
     }
 
-    val now = clock.instant()
-    val userId = currentUser().userId
-
-    return dslContext.transactionResult { _ ->
-      val siteId = plantingSiteStore.createPlantingSite(newModel).id
-
-      newModel.plantingZones.forEach { zone ->
-        val zonesRow =
-            PlantingZonesRow(
-                areaHa = zone.areaHa,
-                boundary = zone.boundary,
-                createdBy = userId,
-                createdTime = now,
-                errorMargin = zone.errorMargin,
-                extraPermanentClusters = zone.extraPermanentClusters,
-                modifiedBy = userId,
-                modifiedTime = now,
-                name = zone.name,
-                numPermanentClusters = zone.numPermanentClusters,
-                numTemporaryPlots = zone.numTemporaryPlots,
-                plantingSiteId = siteId,
-                studentsT = zone.studentsT,
-                targetPlantingDensity = zone.targetPlantingDensity,
-                variance = zone.variance,
-            )
-
-        plantingZonesDao.insert(zonesRow)
-
-        zone.plantingSubzones.forEach { subzone ->
-          val plantingSubzonesRow =
-              PlantingSubzonesRow(
-                  areaHa = subzone.areaHa,
-                  boundary = subzone.boundary,
-                  createdBy = userId,
-                  createdTime = now,
-                  fullName = subzone.fullName,
-                  modifiedBy = userId,
-                  modifiedTime = now,
-                  name = subzone.name,
-                  plantingSiteId = siteId,
-                  plantingZoneId = zonesRow.id,
-              )
-
-          plantingSubzonesDao.insert(plantingSubzonesRow)
-        }
-      }
-      log.info("Imported planting site $siteId for organization $organizationId")
-      siteId
-    }
+    return plantingSiteStore
+        .createPlantingSite(
+            PlantingSiteModel.create(
+                boundary = siteFeature.geometry.toMultiPolygon(),
+                description = description,
+                exclusion = exclusion,
+                name = name,
+                organizationId = organizationId,
+                plantingZones =
+                    zonesByName.values.map { zone ->
+                      zone.copy(plantingSubzones = subzonesByZone[zone.name] ?: emptyList())
+                    }))
+        .id
   }
 
   private fun getSiteBoundary(
@@ -273,6 +208,7 @@ class PlantingSiteImporter(
 
       name to
           PlantingZoneModel.create(
+              areaHa = BigDecimal.ZERO, // Will be calculated when site is created
               boundary = boundary,
               name = name,
               numPermanentClusters = numPermanentClusters,
@@ -321,6 +257,7 @@ class PlantingSiteImporter(
         val name = subzoneFeature.getProperty(subzoneNameProperties)!!
 
         PlantingSubzoneModel.create(
+            areaHa = BigDecimal.ZERO, // Will be calculated when site is created
             boundary = boundary.toMultiPolygon(),
             fullName = "$zoneName-$name",
             name = name,
