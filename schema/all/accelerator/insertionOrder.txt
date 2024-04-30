@@ -4,6 +4,7 @@ pipelines
 vote_options
 deliverable_categories
 document_stores
+event_statuses
 event_types
 score_categories
 submission_statuses
@@ -23,4 +24,3 @@ deliverable_documents
 submission_documents
 project_scores
 project_votes
-event_statuses

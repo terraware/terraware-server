@@ -1,4 +1,3 @@
-event_statuses
 default_voters
 deliverable_documents
 submission_documents
@@ -18,6 +17,7 @@ modules
 submission_statuses
 score_categories
 event_types
+event_statuses
 document_stores
 deliverable_categories
 vote_options

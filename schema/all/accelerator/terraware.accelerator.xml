@@ -216,7 +216,9 @@
          </index>
       </table>
       <table name="event_statuses" numRows="4" remarks="(Enum) Statuses of events for an accelerator module" schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="event_status_id" foreignKey="events_event_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="events"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="event_statuses_pkey" unique="true">
@@ -252,8 +254,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="meeting_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="slides_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="recording_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="start_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="end_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="start_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="end_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="events_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
@@ -263,6 +265,9 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="11" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="1" digits="0" id="12" name="revision" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="event_status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="events_event_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="event_statuses"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="events_pkey" unique="true">
             <column ascending="true" name="id"/>

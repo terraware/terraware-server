@@ -1,3 +1,6 @@
+2232fcd0dea Updated module importer to also read phase from csv (#1905)
+ec6bd009cdc Updated translations from Phrase (#1899)
+e018b17a84e SW-5303 Added Event status columns and modified store and controllers  (#1895)
 4106f597791 Move migration according to commit orders (#1900)
 8498de1d488 SW-5269 Add other species fields to the database, store, controller, tests (#1893)
 90e8ad1d24f SW-5303 Added Event Status tables and Enums (#1894)

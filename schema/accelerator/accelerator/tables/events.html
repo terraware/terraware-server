@@ -233,7 +233,7 @@
                                     <td><span id="start_time">start_time</span></td>
                                     <td>timestamptz</td>
                                     <td>35,6</td>
-                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
                                     <td title=''></td>
                                     <td>null</td>
                                     <td>
@@ -250,7 +250,7 @@
                                     <td><span id="end_time">end_time</span></td>
                                     <td>timestamptz</td>
                                     <td>35,6</td>
-                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
                                     <td title=''></td>
                                     <td>null</td>
                                     <td>
@@ -348,6 +348,27 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="event_status_id">event_status_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="events.event_status_id references event_statuses.id via events_event_status_id_fkey"><a href='event_statuses.html'>event_statuses</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">events_event_status_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -427,23 +448,25 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/event_projects.html" target="_top" title="event_projects" alt="" coords="703,43,901,165">
-<area shape="rect" id="node2" href="../../tables/events.html" target="_top" title="events" alt="" coords="353,40,659,491">
-<area shape="rect" id="node3" href="../../tables/event_types.html" target="_top" title="event_types" alt="" coords="68,169,247,292">
-<area shape="rect" id="node4" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="5,5,309,152">
+<area shape="rect" id="node1" href="../../tables/event_projects.html" target="_top" title="event_projects" alt="" coords="711,43,909,165">
+<area shape="rect" id="node2" href="../../tables/events.html" target="_top" title="events" alt="" coords="353,40,667,520">
+<area shape="rect" id="node3" href="../../tables/event_statuses.html" target="_top" title="event_statuses" alt="" coords="58,424,257,547">
+<area shape="rect" id="node4" href="../../tables/event_types.html" target="_top" title="event_types" alt="" coords="68,169,247,292">
+<area shape="rect" id="node5" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="5,5,309,152">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/events.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/cohort_modules.html" target="_top" title="cohort_modules" alt="" coords="641,5,848,93">
+<area shape="rect" id="node1" href="../../tables/cohort_modules.html" target="_top" title="cohort_modules" alt="" coords="645,5,852,93">
 <area shape="rect" id="node2" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="244,108,548,255">
-<area shape="rect" id="node8" href="../../tables/cohort_phases.html" target="_top" title="cohort_phases" alt="" coords="5,140,200,228">
-<area shape="rect" id="node3" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="655,111,835,199">
-<area shape="rect" id="node4" href="../../tables/event_projects.html" target="_top" title="event_projects" alt="" coords="941,436,1140,559">
-<area shape="rect" id="node5" href="../../tables/events.html" target="_top" title="events" alt="" coords="592,216,897,667">
-<area shape="rect" id="node6" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="645,684,845,772">
-<area shape="rect" id="node7" href="../../tables/event_types.html" target="_top" title="event_types" alt="" coords="307,277,485,400">
+<area shape="rect" id="node9" href="../../tables/cohort_phases.html" target="_top" title="cohort_phases" alt="" coords="5,140,200,228">
+<area shape="rect" id="node3" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="659,111,839,199">
+<area shape="rect" id="node4" href="../../tables/event_projects.html" target="_top" title="event_projects" alt="" coords="949,451,1148,573">
+<area shape="rect" id="node5" href="../../tables/events.html" target="_top" title="events" alt="" coords="592,216,905,696">
+<area shape="rect" id="node6" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="649,713,849,801">
+<area shape="rect" id="node7" href="../../tables/event_statuses.html" target="_top" title="event_statuses" alt="" coords="297,600,495,723">
+<area shape="rect" id="node8" href="../../tables/event_types.html" target="_top" title="event_types" alt="" coords="307,277,485,400">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/events.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
