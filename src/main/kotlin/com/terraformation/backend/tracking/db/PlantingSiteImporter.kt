@@ -10,10 +10,8 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.NewPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.NewPlantingZoneModel
-import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.Shapefile
@@ -120,11 +118,16 @@ class PlantingSiteImporter(
     val subzonesByZone = getSubzonesByZone(zonesByName, subzonesFile, problems)
     val exclusion = getExclusion(exclusionsFile, problems)
 
+    val gridOrigin =
+        GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+            .createPoint(siteFeature.geometry.envelope.coordinates[0])
+
     val newModel =
         PlantingSiteModel.create(
             boundary = siteFeature.geometry.toMultiPolygon(),
             description = description,
             exclusion = exclusion,
+            gridOrigin = gridOrigin,
             name = name,
             organizationId = organizationId,
             plantingZones =
@@ -184,38 +187,6 @@ class PlantingSiteImporter(
           plantingSubzonesDao.insert(plantingSubzonesRow)
         }
       }
-
-      // Verify that every zone is big enough to fit a permanent cluster and a temporary plot.
-      val plantingSite = plantingSiteStore.fetchSiteById(siteId, PlantingSiteDepth.Subzone)
-      plantingSite.plantingZones.forEach { plantingZone ->
-        // Find 5 squares: 4 for the cluster and one for a temporary plot.
-        val plotBoundaries =
-            plantingZone.findUnusedSquares(
-                count = 5,
-                exclusion = plantingSite.exclusion,
-                gridOrigin = plantingSite.gridOrigin!!,
-            )
-
-        // Make sure we have room for an actual cluster.
-        val clusterBoundaries =
-            plantingZone.findUnusedSquares(
-                count = 1,
-                exclusion = plantingSite.exclusion,
-                gridOrigin = plantingSite.gridOrigin,
-                sizeMeters = MONITORING_PLOT_SIZE * 2,
-            )
-
-        if (clusterBoundaries.isEmpty() || plotBoundaries.size < 5) {
-          problems.add(
-              "Could not create enough monitoring plots in zone ${plantingZone.name} " +
-                  "(is the zone at least 150x75 meters?)")
-        }
-      }
-
-      if (problems.isNotEmpty()) {
-        throw PlantingSiteMapInvalidException(problems)
-      }
-
       log.info("Imported planting site $siteId for organization $organizationId")
       siteId
     }

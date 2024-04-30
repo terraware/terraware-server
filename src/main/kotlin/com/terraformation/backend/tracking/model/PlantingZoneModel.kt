@@ -279,8 +279,31 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
     }
   }
 
-  fun validate(): List<String> {
+  fun validate(newModel: PlantingSiteModel<*, *, *>): List<String> {
     val problems = mutableListOf<String>()
+
+    // Find 5 squares: 4 for the cluster and one for a temporary plot.
+    val plotBoundaries =
+        findUnusedSquares(
+            count = 5,
+            exclusion = newModel.exclusion,
+            gridOrigin = newModel.gridOrigin!!,
+        )
+
+    // Make sure we have room for an actual cluster.
+    val clusterBoundaries =
+        findUnusedSquares(
+            count = 1,
+            exclusion = newModel.exclusion,
+            gridOrigin = newModel.gridOrigin,
+            sizeMeters = MONITORING_PLOT_SIZE * 2,
+        )
+
+    if (clusterBoundaries.isEmpty() || plotBoundaries.size < 5) {
+      problems.add(
+          "Planting zone $name is too small to create minimum number of monitoring plots (is the " +
+              "zone at least 150x75 meters?)")
+    }
 
     plantingSubzones
         .groupBy { it.name.lowercase() }

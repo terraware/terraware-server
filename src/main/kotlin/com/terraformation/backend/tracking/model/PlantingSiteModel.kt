@@ -106,7 +106,7 @@ data class PlantingSiteModel<
           }
         }
 
-        problems.addAll(zone.validate())
+        problems.addAll(zone.validate(this))
       }
     }
 
