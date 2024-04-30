@@ -1,3 +1,4 @@
+207ce62dc0c Add constructor helpers for zone and subzone models (#1909)
 5872d28fc92 SW-5230 Validate zone size in PlantingZoneModel (#1908)
 65d9b25436e Rename exception to be less shapefile-centric (#1907)
 711a453556f SW-5228 Move planting site validation to model classes (#1904)
