@@ -31,8 +31,6 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val importer: PlantingSiteImporter by lazy {
     PlantingSiteImporter(
-        clock,
-        dslContext,
         PlantingSiteStore(
             clock,
             dslContext,
@@ -42,9 +40,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             plantingSeasonsDao,
             plantingSitesDao,
             plantingSubzonesDao,
-            plantingZonesDao),
-        plantingZonesDao,
-        plantingSubzonesDao)
+            plantingZonesDao))
   }
 
   private val resourcesDir = "src/test/resources/tracking"
