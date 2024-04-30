@@ -116,7 +116,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       try {
         importFunc()
         fail("Should have throw exception for validation failure")
-      } catch (e: PlantingSiteUploadProblemsException) {
+      } catch (e: PlantingSiteMapInvalidException) {
         if (e.problems.none { it == expected }) {
           // Assertion failure message will include the list of problems we actually got back.
           assertEquals(
