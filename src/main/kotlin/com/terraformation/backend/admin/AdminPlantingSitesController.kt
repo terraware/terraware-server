@@ -21,8 +21,8 @@ import com.terraformation.backend.time.DatabaseBackedClock
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
+import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
-import com.terraformation.backend.tracking.db.PlantingSiteUploadProblemsException
 import com.terraformation.backend.tracking.mapbox.MapboxService
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewObservationModel
@@ -303,7 +303,7 @@ class AdminPlantingSitesController(
 
         redirectAttributes.successMessage = "Planting site $siteId imported successfully."
       }
-    } catch (e: PlantingSiteUploadProblemsException) {
+    } catch (e: PlantingSiteMapInvalidException) {
       log.warn("Shapefile import failed validation: ${e.problems}")
       redirectAttributes.failureMessage = "Uploaded file failed validation checks"
       redirectAttributes.failureDetails = e.problems
@@ -356,7 +356,7 @@ class AdminPlantingSitesController(
       redirectAttributes.successMessage = "Planting site $siteId imported successfully."
 
       return redirectToPlantingSite(siteId)
-    } catch (e: PlantingSiteUploadProblemsException) {
+    } catch (e: PlantingSiteMapInvalidException) {
       log.warn("Site creation failed", e)
       redirectAttributes.failureMessage = "Creation failed: ${e.problems.joinToString()}"
     } catch (e: Exception) {

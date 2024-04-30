@@ -74,8 +74,8 @@ class PlantingSubzoneNotFoundException(val plantingSubzoneId: PlantingSubzoneId)
 class PlantingZoneNotFoundException(val plantingZoneId: PlantingZoneId) :
     EntityNotFoundException("Planting zone $plantingZoneId not found")
 
-class PlantingSiteUploadProblemsException(val problems: List<String>) :
-    RuntimeException("Found problems in uploaded planting site file") {
+class PlantingSiteMapInvalidException(val problems: List<String>) :
+    RuntimeException("Found problems in planting site map data") {
   constructor(problem: String) : this(listOf(problem))
 }
 

@@ -58,7 +58,7 @@ class PlantingSiteImporter(
     requirePermissions { createPlantingSite(organizationId) }
 
     if (shapefiles.size != 3 && shapefiles.size != 4) {
-      throw PlantingSiteUploadProblemsException(
+      throw PlantingSiteMapInvalidException(
           "Expected 3 or 4 shapefiles (site, zones, subzones, and optionally exclusions) but " +
               "found ${shapefiles.size}")
     }
@@ -70,7 +70,7 @@ class PlantingSiteImporter(
 
     shapefiles.forEach { shapefile ->
       if (shapefile.features.isEmpty()) {
-        throw PlantingSiteUploadProblemsException("Shapefiles must contain geometries")
+        throw PlantingSiteMapInvalidException("Shapefiles must contain geometries")
       }
 
       when {
@@ -87,15 +87,15 @@ class PlantingSiteImporter(
         description,
         organizationId,
         siteFile
-            ?: throw PlantingSiteUploadProblemsException(
+            ?: throw PlantingSiteMapInvalidException(
                 "Planting site shapefile must contain exactly one geometry and one of these properties: " +
                     siteNameProperties.joinToString()),
         zonesFile
-            ?: throw PlantingSiteUploadProblemsException(
+            ?: throw PlantingSiteMapInvalidException(
                 "Planting zones shapefile features must include one of these properties: " +
                     zoneNameProperties.joinToString()),
         subzonesFile
-            ?: throw PlantingSiteUploadProblemsException(
+            ?: throw PlantingSiteMapInvalidException(
                 "Subzones shapefile features must include one of these properties: " +
                     subzoneNameProperties.joinToString()),
         exclusionsFile)
@@ -135,7 +135,7 @@ class PlantingSiteImporter(
     problems.addAll(newModel.validate() ?: emptyList())
 
     if (problems.isNotEmpty()) {
-      throw PlantingSiteUploadProblemsException(problems)
+      throw PlantingSiteMapInvalidException(problems)
     }
 
     val now = clock.instant()
@@ -213,7 +213,7 @@ class PlantingSiteImporter(
       }
 
       if (problems.isNotEmpty()) {
-        throw PlantingSiteUploadProblemsException(problems)
+        throw PlantingSiteMapInvalidException(problems)
       }
 
       log.info("Imported planting site $siteId for organization $organizationId")
@@ -226,8 +226,7 @@ class PlantingSiteImporter(
       problems: MutableList<String>
   ): ShapefileFeature {
     if (siteFile.features.isEmpty()) {
-      throw PlantingSiteUploadProblemsException(
-          "Planting site shapefile does not contain a boundary")
+      throw PlantingSiteMapInvalidException("Planting site shapefile does not contain a boundary")
     }
 
     if (siteFile.features.size > 1) {
@@ -259,7 +258,7 @@ class PlantingSiteImporter(
                     (0 ..< geometry.numGeometries).map { geometry.getGeometryN(it) as Polygon }
                 else -> {
                   problems.add("Exclusion geometries must all be Polygon or MultiPolygon.")
-                  throw PlantingSiteUploadProblemsException(problems)
+                  throw PlantingSiteMapInvalidException(problems)
                 }
               }
             }
