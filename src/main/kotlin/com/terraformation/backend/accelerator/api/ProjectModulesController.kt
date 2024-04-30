@@ -8,6 +8,7 @@ import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -57,11 +58,11 @@ data class ProjectModuleEventSession(
     val recordingUrl: URI?,
     val slidesUrl: URI?,
     val startTime: Instant?,
+    val status: EventStatus,
     val type: EventType,
 ) {
   constructor(
       model: EventModel,
-      type: EventType,
   ) : this(
       endTime = model.endTime,
       id = model.id,
@@ -69,7 +70,8 @@ data class ProjectModuleEventSession(
       recordingUrl = model.recordingUrl,
       slidesUrl = model.slidesUrl,
       startTime = model.startTime,
-      type = type,
+      status = model.eventStatus,
+      type = model.eventType,
   )
 }
 
@@ -104,9 +106,8 @@ data class ProjectModule(
           model.eventDescriptions.map { (eventType, description) ->
             ProjectModuleEvent(
                 description,
-                model.eventSessions[eventType]?.map { event ->
-                  ProjectModuleEventSession(event, eventType)
-                } ?: emptyList(),
+                model.eventSessions[eventType]?.map { event -> ProjectModuleEventSession(event) }
+                    ?: emptyList(),
             )
           })
 }
