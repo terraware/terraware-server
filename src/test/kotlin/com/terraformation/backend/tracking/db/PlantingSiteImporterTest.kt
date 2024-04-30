@@ -91,7 +91,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       val subzoneFeature = gen.subzoneFeature(siteBoundary)
 
       assertHasProblem(
-          "Could not create enough monitoring plots in zone Z1 (is the zone at least 150x75 meters?)",
+          "Planting zone Z1 is too small to create minimum number of monitoring plots (is the zone at least 150x75 meters?)",
           listOf(siteFeature),
           listOf(zoneFeature),
           listOf(subzoneFeature))
@@ -106,7 +106,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       val subzoneFeature = gen.subzoneFeature(siteBoundary)
 
       assertHasProblem(
-          "Could not create enough monitoring plots in zone Z1 (is the zone at least 150x75 meters?)",
+          "Planting zone Z1 is too small to create minimum number of monitoring plots (is the zone at least 150x75 meters?)",
           listOf(siteFeature),
           listOf(zoneFeature),
           listOf(subzoneFeature))

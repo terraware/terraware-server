@@ -9,7 +9,9 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.PrecisionModel
 
 class PlantingSiteModelTest {
   @Nested
@@ -89,6 +91,22 @@ class PlantingSiteModelTest {
     }
 
     @Test
+    fun `checks that zones are big enough for observations`() {
+      val boundary = makeMultiPolygon { square(50) }
+
+      val site =
+          newPlantingSite(
+              boundary = boundary,
+              plantingZones =
+                  listOf(
+                      newPlantingZone(
+                          boundary = boundary,
+                          plantingSubzones = listOf(newPlantingSubzone(boundary = boundary)))))
+
+      assertHasProblem(site, "Planting zone Zone 1 is too small")
+    }
+
+    @Test
     fun `checks for subzones not covered by zone`() {
       val siteBoundary = makeMultiPolygon { square(100) }
       val subzoneBoundary = makeMultiPolygon { square(200) }
@@ -154,9 +172,14 @@ class PlantingSiteModelTest {
       boundary: Geometry,
       plantingZones: List<NewPlantingZoneModel> = emptyList(),
   ): NewPlantingSiteModel {
+    val gridOrigin =
+        GeometryFactory(PrecisionModel(), boundary.srid)
+            .createPoint(boundary.envelope.coordinates[0])
+
     return PlantingSiteModel.create(
         areaHa = boundary.calculateAreaHectares(),
         boundary = boundary.toMultiPolygon(),
+        gridOrigin = gridOrigin,
         name = "Site",
         organizationId = OrganizationId(1),
         plantingZones = plantingZones,
