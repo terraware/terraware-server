@@ -6,6 +6,8 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.PrecisionModel
 
 /** Simplified representation of the data about a single feature from a shapefile. */
 data class ShapefileFeature(
@@ -36,11 +38,12 @@ data class ShapefileFeature(
     val longLatCrs: CoordinateReferenceSystem by lazy { CRS.decode("EPSG:${SRID.LONG_LAT}", true) }
 
     fun fromGeotools(feature: SimpleFeature): ShapefileFeature {
-      val defaultGeometry = feature.defaultGeometry as Geometry
       val crs =
           feature.defaultGeometryProperty.type.coordinateReferenceSystem
               ?: throw IllegalArgumentException("Feature didn't have a coordinate reference system")
-      defaultGeometry.srid = SRID.byCRS(crs)
+      val geometry =
+          GeometryFactory(PrecisionModel(), SRID.byCRS(crs))
+              .createGeometry(feature.defaultGeometry as Geometry)
 
       val properties =
           feature.properties
@@ -51,7 +54,7 @@ data class ShapefileFeature(
               }
               .associate { "${it.name}" to "${it.value}" }
 
-      return ShapefileFeature(defaultGeometry, properties, crs)
+      return ShapefileFeature(geometry, properties, crs)
     }
   }
 }
