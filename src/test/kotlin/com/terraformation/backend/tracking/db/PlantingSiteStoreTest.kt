@@ -423,6 +423,18 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `does not store area for simple site with tiny boundary`() {
+      val boundary = Turtle(point(1)).makeMultiPolygon { square(5) }
+
+      val model =
+          store.createPlantingSite(
+              PlantingSiteModel.create(
+                  boundary = boundary, name = "name", organizationId = organizationId))
+
+      assertNull(plantingSitesDao.fetchOneById(model.id)!!.areaHa, "Planting site area")
+    }
+
+    @Test
     fun `inserts detailed planting site`() {
       val gridOrigin = point(1)
       val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(200, 150) }
