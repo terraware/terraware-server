@@ -10,6 +10,7 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -215,6 +216,9 @@ data class IndividualUser(
 
   override fun canCreateParticipant() = isAcceleratorAdmin()
 
+  override fun canCreateParticipantProjectSpecies(projectId: ProjectId) =
+      isTFExpertOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
+
   override fun canCreatePlantingSite(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
 
@@ -259,6 +263,12 @@ data class IndividualUser(
 
   override fun canDeleteParticipantProject(participantId: ParticipantId, projectId: ProjectId) =
       isAcceleratorAdmin()
+
+  override fun canDeleteParticipantProjectSpecies(
+      participantProjectSpeciesId: ParticipantProjectSpeciesId
+  ) =
+      isTFExpertOrHigher() ||
+          isManagerOrHigher(parentStore.getOrganizationId(participantProjectSpeciesId))
 
   override fun canDeletePlantingSite(plantingSiteId: PlantingSiteId) = isSuperAdmin()
 
@@ -397,6 +407,10 @@ data class IndividualUser(
   }
 
   override fun canReadParticipant(participantId: ParticipantId) = isReadOnlyOrHigher()
+
+  override fun canReadParticipantProjectSpecies(
+      participantProjectSpeciesId: ParticipantProjectSpeciesId
+  ) = isReadOnlyOrHigher() || isMember(parentStore.getOrganizationId(participantProjectSpeciesId))
 
   override fun canReadPlanting(plantingId: PlantingId): Boolean =
       isMember(parentStore.getOrganizationId(plantingId))
@@ -553,6 +567,12 @@ data class IndividualUser(
       isAdminOrHigher(organizationId)
 
   override fun canUpdateParticipant(participantId: ParticipantId) = isAcceleratorAdmin()
+
+  override fun canUpdateParticipantProjectSpecies(
+      participantProjectSpeciesId: ParticipantProjectSpeciesId
+  ) =
+      isTFExpertOrHigher() ||
+          isManagerOrHigher(parentStore.getOrganizationId(participantProjectSpeciesId))
 
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId) =
       isAdminOrHigher(parentStore.getOrganizationId(plantingSiteId))

@@ -19,6 +19,7 @@ import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.accelerator.ScoreCategory
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
@@ -33,6 +34,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.db.accelerator.tables.daos.EventProjectsDao
 import com.terraformation.backend.db.accelerator.tables.daos.EventsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
+import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectSpeciesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectAcceleratorDetailsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectScoresDao
@@ -48,6 +50,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.DeliverablesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.EventProjectsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ModulesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectAcceleratorDetailsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectScoresRow
@@ -432,6 +435,7 @@ abstract class DatabaseTest {
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
   protected val participantsDao: ParticipantsDao by lazyDao()
+  protected val participantProjectSpeciesDao: ParticipantProjectSpeciesDao by lazyDao()
   protected val plantingsDao: PlantingsDao by lazyDao()
   protected val plantingSeasonsDao: PlantingSeasonsDao by lazyDao()
   protected val plantingSiteHistoriesDao: PlantingSiteHistoriesDao by lazyDao()
@@ -2093,6 +2097,30 @@ abstract class DatabaseTest {
     return row.id!!.also { inserted.participantIds.add(it) }
   }
 
+  private var nextParticipantProjectSpeciesNumber = 1
+
+  fun insertParticipantProjectSpecies(
+      feedback: String? = null,
+      id: Any? = null,
+      projectId: Any = inserted.projectId,
+      rationale: String? = null,
+      speciesId: Any = inserted.speciesId,
+      submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted,
+  ): ParticipantProjectSpeciesId {
+    val row =
+        ParticipantProjectSpeciesRow(
+            feedback = feedback,
+            id = id?.toIdWrapper { ParticipantProjectSpeciesId(it) },
+            projectId = projectId.toIdWrapper { ProjectId(it) },
+            rationale = rationale,
+            speciesId = speciesId.toIdWrapper { SpeciesId(it) },
+            submissionStatusId = submissionStatus)
+
+    participantProjectSpeciesDao.insert(row)
+
+    return row.id!!.also { inserted.participantProjectSpeciesIds.add(it) }
+  }
+
   private var nextCohortNumber = 1
 
   fun insertCohort(
@@ -2248,6 +2276,7 @@ abstract class DatabaseTest {
     val observationIds = mutableListOf<ObservationId>()
     val organizationIds = mutableListOf<OrganizationId>()
     val participantIds = mutableListOf<ParticipantId>()
+    val participantProjectSpeciesIds = mutableListOf<ParticipantProjectSpeciesId>()
     val plantingIds = mutableListOf<PlantingId>()
     val plantingSeasonIds = mutableListOf<PlantingSeasonId>()
     val plantingSiteIds = mutableListOf<PlantingSiteId>()

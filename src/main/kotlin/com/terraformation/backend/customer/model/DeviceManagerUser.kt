@@ -8,6 +8,7 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -193,6 +194,8 @@ data class DeviceManagerUser(
 
   override fun canCreateParticipant(): Boolean = false
 
+  override fun canCreateParticipantProjectSpecies(projectId: ProjectId): Boolean = false
+
   override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = false
 
   override fun canCreateProject(organizationId: OrganizationId): Boolean = false
@@ -227,6 +230,10 @@ data class DeviceManagerUser(
   override fun canDeleteParticipantProject(
       participantId: ParticipantId,
       projectId: ProjectId
+  ): Boolean = false
+
+  override fun canDeleteParticipantProjectSpecies(
+      participantProjectSpeciesId: ParticipantProjectSpeciesId
   ): Boolean = false
 
   override fun canDeletePlantingSite(plantingSiteId: PlantingSiteId): Boolean = false
@@ -309,6 +316,10 @@ data class DeviceManagerUser(
       false
 
   override fun canReadParticipant(participantId: ParticipantId): Boolean = false
+
+  override fun canReadParticipantProjectSpecies(
+      participantProjectSpeciesId: ParticipantProjectSpeciesId
+  ): Boolean = false
 
   override fun canReadPlanting(plantingId: PlantingId): Boolean = false
 
@@ -403,6 +414,10 @@ data class DeviceManagerUser(
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = false
 
   override fun canUpdateParticipant(participantId: ParticipantId): Boolean = false
+
+  override fun canUpdateParticipantProjectSpecies(
+      participantProjectSpeciesId: ParticipantProjectSpeciesId
+  ): Boolean = false
 
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = false
 
