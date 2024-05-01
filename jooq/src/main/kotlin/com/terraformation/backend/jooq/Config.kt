@@ -193,6 +193,8 @@ val ID_WRAPPERS =
                 IdWrapper("EventId", listOf("events\\.id", ".*\\.event_id")),
                 IdWrapper("ModuleId", listOf("modules\\.id", ".*\\.module_id")),
                 IdWrapper("ParticipantId", listOf("participants\\.id", ".*\\.participant_id")),
+                IdWrapper(
+                    "ParticipantProjectSpeciesId", listOf("participant_project_species\\.id")),
                 IdWrapper("SubmissionDocumentId", listOf("submission_documents\\.id")),
                 IdWrapper("SubmissionId", listOf("submissions\\.id", ".*\\.submission_id")),
             ),
