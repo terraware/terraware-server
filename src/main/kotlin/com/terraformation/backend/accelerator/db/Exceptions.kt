@@ -7,6 +7,7 @@ import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -28,6 +29,9 @@ class ParticipantHasProjectsException(id: ParticipantId) :
 
 class ParticipantNotFoundException(id: ParticipantId) :
     EntityNotFoundException("Participant $id not found")
+
+class ParticipantProjectSpeciesNotFoundException(id: ParticipantProjectSpeciesId) :
+    EntityNotFoundException("Participant Project Species $id not found")
 
 class ProjectDocumentSettingsNotConfiguredException(id: ProjectId) :
     MismatchedStateException("Project $id document upload settings have not been configured")
