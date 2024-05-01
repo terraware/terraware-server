@@ -1,3 +1,5 @@
+4680b364b3b SW-5240 Add planting site history tables (#1911)
+8c8eabda1b6 Added isActive flag based on date (#1920)
 d84a681626a Fix site size validation on shapefile upload (#1914)
 9f3cc20feed Update dependency software.amazon.awssdk:bom to v2.25.41 (#1913)
 7b44f355b5a SW-5264 Move detailed site creation to PlantingSiteStore (#1910)

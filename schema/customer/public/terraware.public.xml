@@ -849,6 +849,7 @@
             <child column="completed_by" foreignKey="observation_plots_completed_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
             <child column="created_by" foreignKey="observation_plots_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
             <child column="modified_by" foreignKey="observation_plots_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <child column="created_by" foreignKey="planting_site_histories_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_site_histories"/>
             <child column="created_by" foreignKey="planting_sites_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
             <child column="modified_by" foreignKey="planting_sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
             <child column="created_by" foreignKey="plots_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
