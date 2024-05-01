@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
-@RequestMapping("/api/v1/accelerator/projects/{participantProjectSpeciesId}/species")
+@RequestMapping("/api/v1/accelerator/projects/species")
 @RestController
 class ParticipantProjectSpeciesController(
     private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
