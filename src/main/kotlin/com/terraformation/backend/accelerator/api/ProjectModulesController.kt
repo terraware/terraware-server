@@ -12,10 +12,13 @@ import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.i18n.TimeZones
 import io.swagger.v3.oas.annotations.Operation
 import java.net.URI
 import java.time.Instant
+import java.time.InstantSource
 import java.time.LocalDate
+import java.time.ZoneId
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/projects/{projectId}/modules")
 @RestController
 class ProjectModulesController(
+    private val clock: InstantSource,
     private val moduleStore: ModuleStore,
 ) {
   @ApiResponse200
@@ -35,7 +39,8 @@ class ProjectModulesController(
       @PathVariable projectId: ProjectId,
   ): GetProjectModulesResponsePayload {
     val models = moduleStore.fetchModulesForProject(projectId)
-    return GetProjectModulesResponsePayload(models.map { model -> ProjectModule(model) })
+    return GetProjectModulesResponsePayload(
+        models.map { model -> ProjectModule(model, isModuleActive(model)) })
   }
 
   @ApiResponse200
@@ -47,7 +52,20 @@ class ProjectModulesController(
       @PathVariable moduleId: ModuleId,
   ): GetProjectModuleResponsePayload {
     val model = moduleStore.fetchOneByIdForProject(moduleId, projectId)
-    return GetProjectModuleResponsePayload(ProjectModule(model))
+
+    return GetProjectModuleResponsePayload(ProjectModule(model, isModuleActive(model)))
+  }
+
+  /**
+   * Determine if a module is active by checking if today is between start date and end date.
+   * Defaulted to use UTC timezone, but should likely be overridden by cohort timezones.
+   */
+  private fun isModuleActive(model: ModuleModel, zoneId: ZoneId = TimeZones.UTC): Boolean {
+    val today = LocalDate.ofInstant(clock.instant(), zoneId)
+    val startDate = model.cohorts.first().startDate
+    val endDate = model.cohorts.first().endDate
+
+    return today in startDate..endDate
   }
 }
 
@@ -86,19 +104,22 @@ data class ProjectModule(
     val name: String,
     val startDate: LocalDate,
     val endDate: LocalDate,
+    val isActive: Boolean,
     val additionalResources: String?,
     val overview: String?,
     val preparationMaterials: String?,
     val events: List<ProjectModuleEvent>,
 ) {
   constructor(
-      model: ModuleModel
+      model: ModuleModel,
+      isActive: Boolean,
   ) : this(
       id = model.id,
       title = model.cohorts.first().title,
       name = model.name,
       startDate = model.cohorts.first().startDate,
       endDate = model.cohorts.first().endDate,
+      isActive = isActive,
       additionalResources = model.additionalResources,
       overview = model.overview,
       preparationMaterials = model.preparationMaterials,
