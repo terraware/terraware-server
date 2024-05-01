@@ -330,6 +330,10 @@ val EMBEDDABLES =
             .withTables("nursery.batch_withdrawals")
             .withColumns("batch_id", "withdrawal_id"),
         EmbeddableDefinitionType()
+            .withName("cohort_module_id")
+            .withTables("accelerator.cohort_modules")
+            .withColumns("cohort_id", "module_id"),
+        EmbeddableDefinitionType()
             .withName("facility_inventory_id")
             .withTables("nursery.facility_inventories")
             .withColumns("facility_id", "species_id"),

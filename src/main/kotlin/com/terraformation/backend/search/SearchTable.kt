@@ -20,9 +20,11 @@ import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.TextField
 import com.terraformation.backend.search.field.TimestampField
 import com.terraformation.backend.search.field.UpperCaseTextField
+import com.terraformation.backend.search.field.UriField
 import com.terraformation.backend.search.field.WeightField
 import com.terraformation.backend.search.field.ZoneIdField
 import java.math.BigDecimal
+import java.net.URI
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
@@ -291,6 +293,9 @@ abstract class SearchTable {
       databaseField: Field<String?>,
       nullable: Boolean = true
   ) = UpperCaseTextField(fieldName, databaseField, this, nullable)
+
+  fun uriField(fieldName: String, databaseField: Field<URI?>, nullable: Boolean = true) =
+      UriField(fieldName, databaseField, this, nullable)
 
   /**
    * Returns an array of [SearchField]s for a seed quantity: one for each supported weight unit, one

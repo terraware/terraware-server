@@ -2,6 +2,9 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
+import com.terraformation.backend.db.accelerator.tables.references.EVENTS
+import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -35,6 +38,7 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
           countries.asSingleValueSublist("country", PROJECTS.COUNTRY_CODE.eq(COUNTRIES.CODE)),
           draftPlantingSites.asMultiValueSublist(
               "draftPlantingSites", PROJECTS.ID.eq(DRAFT_PLANTING_SITES.PROJECT_ID)),
+          events.asMultiValueSublist("events", eventsCondition),
           organizations.asSingleValueSublist(
               "organization", PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
           participants.asSingleValueSublist(
@@ -80,4 +84,17 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
 
   override val defaultOrderFields: List<OrderField<*>>
     get() = listOf(PROJECTS.ID)
+
+  private val eventsCondition: Condition =
+      DSL.exists(
+          DSL.selectOne()
+              .from(EVENT_PROJECTS)
+              .where(EVENT_PROJECTS.PROJECT_ID.eq(PROJECTS.ID))
+              .and(EVENT_PROJECTS.EVENT_ID.eq(EVENTS.ID)))
+
+  private val cohortModulesCondition: Condition =
+      COHORT_MODULES.COHORT_ID.`in`(
+          DSL.select(PARTICIPANTS.COHORT_ID)
+              .from(PARTICIPANTS)
+              .where(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID)))
 }
