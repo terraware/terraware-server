@@ -18,9 +18,14 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
+import com.terraformation.backend.tracking.model.NewPlantingSiteModel
+import com.terraformation.backend.tracking.model.NewPlantingSubzoneModel
+import com.terraformation.backend.tracking.model.NewPlantingZoneModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
+import com.terraformation.backend.tracking.model.PlantingSubzoneModel
+import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
@@ -103,16 +108,7 @@ class PlantingSitesController(
     val plantingSeasons = payload.plantingSeasons?.map { it.toModel() } ?: emptyList()
 
     val model =
-        plantingSiteStore.createPlantingSite(
-            PlantingSiteModel.create(
-                boundary = payload.boundary?.toMultiPolygon(),
-                description = payload.description,
-                name = payload.name,
-                organizationId = payload.organizationId,
-                projectId = payload.projectId,
-                timeZone = payload.timeZone,
-            ),
-            plantingSeasons = plantingSeasons)
+        plantingSiteStore.createPlantingSite(payload.toModel(), plantingSeasons = plantingSeasons)
     return CreatePlantingSiteResponsePayload(model.id)
   }
 
@@ -288,13 +284,66 @@ data class UpdatedPlantingSeasonPayload(
   fun toModel() = UpdatedPlantingSeasonModel(endDate = endDate, id = id, startDate = startDate)
 }
 
+data class NewPlantingSubzonePayload(
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    val boundary: Geometry,
+    val name: String,
+) {
+  fun validate() {
+    if (boundary !is MultiPolygon && boundary !is Polygon) {
+      throw IllegalArgumentException("Planting subzone boundaries must be Polygon or MultiPolygon")
+    }
+  }
+
+  fun toModel(zoneName: String): NewPlantingSubzoneModel {
+    return PlantingSubzoneModel.create(
+        boundary = boundary.toMultiPolygon(),
+        fullName = "$zoneName-$name",
+        name = name,
+    )
+  }
+}
+
+data class NewPlantingZonePayload(
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    val boundary: Geometry,
+    val name: String,
+    val plantingSubzones: List<NewPlantingSubzonePayload>?,
+    val targetPlantingDensity: BigDecimal?,
+) {
+  fun validate() {
+    if (boundary !is MultiPolygon && boundary !is Polygon) {
+      throw IllegalArgumentException("Planting zone boundaries must be Polygon or MultiPolygon")
+    }
+
+    plantingSubzones?.forEach { it.validate() }
+  }
+
+  fun toModel(): NewPlantingZoneModel {
+    return PlantingZoneModel.create(
+        boundary = boundary.toMultiPolygon(),
+        name = name,
+        targetPlantingDensity =
+            targetPlantingDensity ?: PlantingZoneModel.DEFAULT_TARGET_PLANTING_DENSITY,
+        plantingSubzones = plantingSubzones?.map { it.toModel(name) } ?: emptyList(),
+    )
+  }
+}
+
 data class CreatePlantingSiteRequestPayload(
     @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
     val boundary: Geometry? = null,
     val description: String? = null,
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    val exclusion: Geometry? = null,
     val name: String,
     val organizationId: OrganizationId,
     val plantingSeasons: List<NewPlantingSeasonPayload>? = null,
+    @Schema(
+        description =
+            "List of planting zones to create. If present and not empty, \"boundary\" must also " +
+                "be specified.")
+    val plantingZones: List<NewPlantingZonePayload>? = null,
     val projectId: ProjectId? = null,
     val timeZone: ZoneId?,
 ) {
@@ -302,6 +351,35 @@ data class CreatePlantingSiteRequestPayload(
     if (boundary != null && boundary !is MultiPolygon && boundary !is Polygon) {
       throw IllegalArgumentException("Planting site boundary must be Polygon or MultiPolygon")
     }
+
+    if (exclusion != null && exclusion !is MultiPolygon && exclusion !is Polygon) {
+      throw IllegalArgumentException("Exclusion area must be Polygon or MultiPolygon")
+    }
+
+    if (!plantingZones.isNullOrEmpty()) {
+      if (boundary == null) {
+        throw IllegalArgumentException("Boundary is required if planting zones are defined")
+      }
+
+      plantingZones.forEach { it.validate() }
+    }
+
+    if (exclusion != null && boundary == null) {
+      throw IllegalArgumentException("Boundary is required if exclusion is defined")
+    }
+  }
+
+  fun toModel(): NewPlantingSiteModel {
+    return PlantingSiteModel.create(
+        boundary = boundary?.toMultiPolygon(),
+        description = description,
+        exclusion = exclusion?.toMultiPolygon(),
+        name = name,
+        organizationId = organizationId,
+        projectId = projectId,
+        timeZone = timeZone,
+        plantingZones = plantingZones?.map { it.toModel() } ?: emptyList(),
+    )
   }
 }
 
