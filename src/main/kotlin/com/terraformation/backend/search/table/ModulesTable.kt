@@ -31,7 +31,6 @@ class ModulesTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       listOf(
           textField("additionalResources", MODULES.ADDITIONAL_RESOURCES, nullable = false),
-          timestampField("createdTime", MODULES.CREATED_TIME, nullable = false),
           idWrapperField("id", MODULES.ID) { ModuleId(it) },
           textField("liveSessionDescription", MODULES.LIVE_SESSION_DESCRIPTION, nullable = false),
           textField("name", MODULES.NAME),
