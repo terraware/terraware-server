@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -31,6 +32,12 @@ data class PlantingSiteModel<
     val description: String? = null,
     val exclusion: MultiPolygon? = null,
     val gridOrigin: Point? = null,
+    /**
+     * If this model is associated with a particular history entry, its ID. This property is not
+     * populated when doing a simple fetch of the current site data, nor for planting sites without
+     * maps.
+     */
+    val historyId: PlantingSiteHistoryId? = null,
     val id: PSID,
     val name: String,
     val organizationId: OrganizationId,

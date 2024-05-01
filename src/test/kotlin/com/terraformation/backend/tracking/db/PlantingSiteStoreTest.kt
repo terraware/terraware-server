@@ -15,12 +15,18 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzoneHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingZoneHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
@@ -69,7 +75,15 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-  override val tablesToResetSequences = listOf(PLANTING_SITES, PLANTING_ZONES, PLANTING_SUBZONES)
+  override val tablesToResetSequences =
+      listOf(
+          PLANTING_SITE_HISTORIES,
+          PLANTING_SITES,
+          PLANTING_ZONE_HISTORIES,
+          PLANTING_ZONES,
+          PLANTING_SUBZONE_HISTORIES,
+          PLANTING_SUBZONES,
+      )
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
@@ -386,6 +400,10 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
           plantingSitesDao.findAll(),
           "Planting sites")
 
+      assertEquals(
+          emptyList<PlantingSiteHistoriesRow>(),
+          plantingSiteHistoriesDao.findAll(),
+          "Planting site histories")
       assertEquals(emptyList<PlantingZonesRow>(), plantingZonesDao.findAll(), "Planting zones")
     }
 
@@ -599,6 +617,108 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `creates initial history entry if simple site has a boundary`() {
+      val gridOrigin = point(1)
+      val boundary = Turtle(gridOrigin).makeMultiPolygon { square(150) }
+      val exclusion = Turtle(gridOrigin).makeMultiPolygon { square(10) }
+
+      val model =
+          store.createPlantingSite(
+              PlantingSiteModel.create(
+                  boundary = boundary,
+                  exclusion = exclusion,
+                  name = "name",
+                  organizationId = organizationId,
+              ))
+
+      assertNotNull(model.historyId, "History ID")
+
+      assertEquals(
+          listOf(
+              PlantingSiteHistoriesRow(
+                  model.historyId,
+                  model.id,
+                  user.userId,
+                  clock.instant,
+                  boundary,
+                  gridOrigin,
+                  exclusion,
+              ),
+          ),
+          plantingSiteHistoriesDao.findAll())
+    }
+
+    @Test
+    fun `creates initial history entries for detailed site`() {
+      val gridOrigin = point(1)
+      val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { square(200) }
+      val zoneBoundary = Turtle(gridOrigin).makeMultiPolygon { square(199.9) }
+      val subzoneBoundary = Turtle(gridOrigin).makeMultiPolygon { square(199.8) }
+      val exclusion = Turtle(gridOrigin).makeMultiPolygon { square(5) }
+
+      val model =
+          store.createPlantingSite(
+              PlantingSiteModel.create(
+                  boundary = siteBoundary,
+                  exclusion = exclusion,
+                  name = "site",
+                  organizationId = organizationId,
+                  plantingZones =
+                      listOf(
+                          PlantingZoneModel.create(
+                              boundary = zoneBoundary,
+                              name = "zone",
+                              plantingSubzones =
+                                  listOf(
+                                      PlantingSubzoneModel.create(
+                                          boundary = subzoneBoundary,
+                                          fullName = "zone-subzone",
+                                          name = "subzone"))))))
+
+      assertNotNull(model.historyId, "History ID")
+      assertEquals(
+          listOf(
+              PlantingSiteHistoriesRow(
+                  boundary = siteBoundary,
+                  createdBy = user.userId,
+                  createdTime = clock.instant,
+                  exclusion = exclusion,
+                  gridOrigin = gridOrigin,
+                  id = model.historyId,
+                  plantingSiteId = model.id,
+              ),
+          ),
+          plantingSiteHistoriesDao.findAll(),
+          "Planting site histories")
+
+      val zoneHistories = plantingZoneHistoriesDao.findAll()
+      assertEquals(
+          listOf(
+              PlantingZoneHistoriesRow(
+                  boundary = zoneBoundary,
+                  name = "zone",
+                  plantingSiteHistoryId = model.historyId,
+                  plantingZoneId = model.plantingZones.first().id,
+              ),
+          ),
+          zoneHistories.map { it.copy(id = null) },
+          "Planting zone histories")
+
+      assertEquals(
+          listOf(
+              PlantingSubzoneHistoriesRow(
+                  boundary = subzoneBoundary,
+                  fullName = "zone-subzone",
+                  name = "subzone",
+                  plantingSubzoneId = model.plantingZones.first().plantingSubzones.first().id,
+                  plantingZoneHistoryId = zoneHistories.first().id,
+              ),
+          ),
+          plantingSubzoneHistoriesDao.findAll().map { it.copy(id = null) },
+          "Planting subzone histories")
+    }
+
+    @Test
     fun `inserts initial planting seasons`() {
       clock.instant = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, timeZone).toInstant()
 
@@ -801,6 +921,26 @@ internal class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               )),
           plantingSitesDao.findAll(),
           "Planting sites")
+
+      assertEquals(
+          setOf(
+              PlantingSiteHistoriesRow(
+                  plantingSiteId = initialModel.id,
+                  createdBy = user.userId,
+                  createdTime = createdTime,
+                  boundary = initialModel.boundary,
+                  gridOrigin = initialModel.gridOrigin,
+              ),
+              PlantingSiteHistoriesRow(
+                  plantingSiteId = initialModel.id,
+                  createdBy = user.userId,
+                  createdTime = clock.instant,
+                  boundary = newBoundary,
+                  gridOrigin = initialModel.gridOrigin,
+              ),
+          ),
+          plantingSiteHistoriesDao.findAll().map { it.copy(id = null) }.toSet(),
+          "Planting site histories")
     }
 
     @Test
