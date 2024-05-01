@@ -499,6 +499,8 @@ COMMENT ON TABLE accelerator.events IS 'Events with meeting links and time withi
 
 COMMENT ON TABLE accelerator.modules IS 'Possible steps in the workflow of a cohort phase.';
 
+COMMENT ON TABLE accelerator.participant_project_species IS 'Species that are associated to a participant project';
+
 COMMENT ON TABLE accelerator.participants IS 'Accelerator participant details.';
 
 COMMENT ON TABLE accelerator.pipelines IS '(Enum) Deal pipelines for accelerator projects.';
