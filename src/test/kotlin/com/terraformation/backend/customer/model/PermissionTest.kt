@@ -1421,7 +1421,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *participantProjectSpeciesIds.forOrg1(),
+        *participantProjectSpeciesIds.toTypedArray(),
         deleteParticipantProjectSpecies = true,
         readParticipantProjectSpecies = true,
         updateParticipantProjectSpecies = true,
@@ -1429,8 +1429,8 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.toTypedArray(),
-        createSubmission = true,
         createParticipantProjectSpecies = true,
+        createSubmission = true,
         deleteProject = true,
         readDefaultVoters = true,
         readProject = true,
@@ -3078,6 +3078,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedMonitoringPlots.toTypedArray())
       expect(*uncheckedObservations.toTypedArray())
       expect(*uncheckedOrgs.toTypedArray())
+      expect(*uncheckedParticipantProjectSpecies.toTypedArray())
       expect(*uncheckedPlantings.toTypedArray())
       expect(*uncheckedPlantingSites.toTypedArray())
       expect(*uncheckedPlantingSubzones.toTypedArray())

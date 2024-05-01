@@ -2091,8 +2091,6 @@ abstract class DatabaseTest {
     return row.id!!.also { inserted.participantIds.add(it) }
   }
 
-  private var nextParticipantProjectSpeciesNumber = 1
-
   fun insertParticipantProjectSpecies(
       feedback: String? = null,
       id: Any? = null,
@@ -2337,6 +2335,9 @@ abstract class DatabaseTest {
 
     val participantId
       get() = participantIds.last()
+
+    val participantProjectSpeciesId
+      get() = participantProjectSpeciesIds.last()
 
     val plantingId
       get() = plantingIds.last()
