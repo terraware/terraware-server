@@ -1,3 +1,5 @@
+c54a1442cde Support tiny simple planting site maps (#1915)
+e770b2e2f31 SW-5264 Populate planting site history (#1912)
 4680b364b3b SW-5240 Add planting site history tables (#1911)
 8c8eabda1b6 Added isActive flag based on date (#1920)
 d84a681626a Fix site size validation on shapefile upload (#1914)
