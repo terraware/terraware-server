@@ -3,7 +3,6 @@ package com.terraformation.backend.accelerator.model
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
-import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -34,8 +33,7 @@ data class ParticipantProjectSpeciesModel<ID : ParticipantProjectSpeciesId?>(
 typealias ExistingParticipantProjectSpeciesModel =
     ParticipantProjectSpeciesModel<ParticipantProjectSpeciesId>
 
-typealias NewParticipantProjectSpeciesModel =
-    ParticipantProjectSpeciesModel<Nothing?>
+typealias NewParticipantProjectSpeciesModel = ParticipantProjectSpeciesModel<Nothing?>
 
 fun ParticipantProjectSpeciesRow.toModel(): ExistingParticipantProjectSpeciesModel {
   return ExistingParticipantProjectSpeciesModel(

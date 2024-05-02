@@ -7,10 +7,8 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
-import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -117,14 +115,15 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       every { user.canCreateParticipantProjectSpecies(projectId) } returns true
 
-      val participantProjectSpecies = store.create(NewParticipantProjectSpeciesModel(
-          feedback = "feedback",
-          id = null,
-          projectId = projectId,
-          rationale = "rationale",
-          speciesId = speciesId,
-          submissionStatus = SubmissionStatus.NotSubmitted
-      ))
+      val participantProjectSpecies =
+          store.create(
+              NewParticipantProjectSpeciesModel(
+                  feedback = "feedback",
+                  id = null,
+                  projectId = projectId,
+                  rationale = "rationale",
+                  speciesId = speciesId,
+                  submissionStatus = SubmissionStatus.NotSubmitted))
 
       assertEquals(
           ParticipantProjectSpeciesRow(
@@ -133,8 +132,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               rationale = "rationale",
               speciesId = speciesId,
-              submissionStatusId = SubmissionStatus.NotSubmitted
-          ),
+              submissionStatusId = SubmissionStatus.NotSubmitted),
           participantProjectSpeciesDao.fetchOneById(participantProjectSpecies.id))
     }
 
@@ -146,14 +144,14 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canCreateParticipantProjectSpecies(projectId) } returns true
 
       assertThrows<ProjectNotInParticipantException> {
-        store.create(NewParticipantProjectSpeciesModel(
-            feedback = "feedback",
-            id = null,
-            projectId = projectId,
-            rationale = "rationale",
-            speciesId = speciesId,
-            submissionStatus = SubmissionStatus.NotSubmitted
-        ))
+        store.create(
+            NewParticipantProjectSpeciesModel(
+                feedback = "feedback",
+                id = null,
+                projectId = projectId,
+                rationale = "rationale",
+                speciesId = speciesId,
+                submissionStatus = SubmissionStatus.NotSubmitted))
       }
     }
   }

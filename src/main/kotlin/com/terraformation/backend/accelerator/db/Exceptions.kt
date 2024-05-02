@@ -43,7 +43,7 @@ class ProjectNotInCohortPhaseException(id: ProjectId, phase: CohortPhase) :
     MismatchedStateException("Project $id is not currently in $phase")
 
 class ProjectNotInParticipantException(id: ProjectId) :
-  MismatchedStateException("Project $id is not currently associated to a participant")
+    MismatchedStateException("Project $id is not currently associated to a participant")
 
 class ProjectVoteNotFoundException(
     projectId: ProjectId,
