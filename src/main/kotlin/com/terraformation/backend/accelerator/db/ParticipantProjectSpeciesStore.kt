@@ -7,6 +7,7 @@ import com.terraformation.backend.accelerator.model.toModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
+import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectSpeciesDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
@@ -39,7 +40,7 @@ class ParticipantProjectSpeciesStore(
               projectId = model.projectId,
               rationale = model.rationale,
               speciesId = model.speciesId,
-              submissionStatusId = model.submissionStatus,
+              submissionStatusId = model.submissionStatus?.let { SubmissionStatus.NotSubmitted },
           )
 
       participantProjectSpeciesDao.insert(row)

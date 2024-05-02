@@ -366,6 +366,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun createParticipant() = allow { createParticipant() } ifUser { canCreateParticipant() }
 
+  @Test fun createParticipantProjectSpecies() = allow { createParticipantProjectSpecies(projectId) } ifUser { canCreateParticipantProjectSpecies(projectId) }
+
   @Test
   fun createPlantingSite() =
       allow { createPlantingSite(organizationId) } ifUser { canCreatePlantingSite(organizationId) }

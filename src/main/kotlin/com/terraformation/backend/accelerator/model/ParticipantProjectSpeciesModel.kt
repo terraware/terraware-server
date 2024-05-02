@@ -14,7 +14,7 @@ data class ParticipantProjectSpeciesModel<ID : ParticipantProjectSpeciesId?>(
     val projectId: ProjectId,
     val rationale: String?,
     val speciesId: SpeciesId,
-    val submissionStatus: SubmissionStatus,
+    val submissionStatus: SubmissionStatus?,
 ) {
   companion object {
     fun of(record: Record): ExistingParticipantProjectSpeciesModel {
