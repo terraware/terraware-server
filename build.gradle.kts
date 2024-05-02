@@ -108,7 +108,7 @@ dependencies {
   implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.21")
   implementation("jakarta.inject:jakarta.inject-api:2.0.1")
-  implementation("jakarta.ws.rs:jakarta.ws.rs-api:3.1.0")
+  implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
   implementation("net.coobird:thumbnailator:0.4.20")
   implementation("org.apache.tika:tika-core:2.9.2")
   implementation("org.flywaydb:flyway-core:$flywayVersion")
