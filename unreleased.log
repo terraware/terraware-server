@@ -1,3 +1,4 @@
+e708993d2b5 Move documentation to docs directory (#1925)
 c242be6cb13 Update dependency jakarta.ws.rs:jakarta.ws.rs-api to v4 (#1923)
 9c97dc14277 Update Flyway to v10.12.0 (#1922)
 430c55f1699 SW-5318 ParticipantProjectSpecies store and model (#1918)
