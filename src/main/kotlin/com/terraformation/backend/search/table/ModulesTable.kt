@@ -30,17 +30,14 @@ class ModulesTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          textField("additionalResources", MODULES.ADDITIONAL_RESOURCES, nullable = false),
+          textField("additionalResources", MODULES.ADDITIONAL_RESOURCES),
           idWrapperField("id", MODULES.ID) { ModuleId(it) },
-          textField("liveSessionDescription", MODULES.LIVE_SESSION_DESCRIPTION, nullable = false),
-          textField("name", MODULES.NAME),
-          textField(
-              "oneOnOneSessionDescription",
-              MODULES.ONE_ON_ONE_SESSION_DESCRIPTION,
-              nullable = false),
-          textField("overview", MODULES.OVERVIEW, nullable = false),
-          textField("preparationMaterials", MODULES.PREPARATION_MATERIALS, nullable = false),
-          textField("workshopDescription", MODULES.WORKSHOP_DESCRIPTION, nullable = false),
+          textField("liveSessionDescription", MODULES.LIVE_SESSION_DESCRIPTION),
+          textField("name", MODULES.NAME, nullable = false),
+          textField("oneOnOneSessionDescription", MODULES.ONE_ON_ONE_SESSION_DESCRIPTION),
+          textField("overview", MODULES.OVERVIEW),
+          textField("preparationMaterials", MODULES.PREPARATION_MATERIALS),
+          textField("workshopDescription", MODULES.WORKSHOP_DESCRIPTION),
       )
 
   override fun conditionForVisibility(): Condition =

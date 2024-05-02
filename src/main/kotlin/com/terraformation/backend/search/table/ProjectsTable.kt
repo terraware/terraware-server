@@ -2,7 +2,6 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.InternalTagIds
-import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.EVENTS
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
@@ -91,10 +90,4 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
               .from(EVENT_PROJECTS)
               .where(EVENT_PROJECTS.PROJECT_ID.eq(PROJECTS.ID))
               .and(EVENT_PROJECTS.EVENT_ID.eq(EVENTS.ID)))
-
-  private val cohortModulesCondition: Condition =
-      COHORT_MODULES.COHORT_ID.`in`(
-          DSL.select(PARTICIPANTS.COHORT_ID)
-              .from(PARTICIPANTS)
-              .where(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID)))
 }

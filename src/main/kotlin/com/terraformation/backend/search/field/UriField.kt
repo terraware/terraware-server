@@ -25,16 +25,13 @@ class UriField(
     get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.PhraseMatch)
 
   override fun getCondition(fieldNode: FieldNode): Condition {
-    val valuesWithoutScheme =
-        fieldNode.values.map { it?.removePrefix("https://")?.removePrefix("http://") }
-    val uris = valuesWithoutScheme.mapNotNull { URI("https://$it") }
-
+    val valuesRegex = fieldNode.values.map { "$it" }
     return when (fieldNode.type) {
       SearchFilterType.PhraseMatch,
       SearchFilterType.Exact ->
           DSL.or(
               listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                  .plus(uris.map { databaseField.contains(it) }))
+                  .plus(valuesRegex.map { databaseField.likeRegex(it) }))
       SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw IllegalArgumentException("Fuzzy search is not supported for URI fields")
