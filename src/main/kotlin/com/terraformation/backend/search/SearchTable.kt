@@ -143,12 +143,15 @@ abstract class SearchTable {
   }
   private val sublistsByName: Map<String, SublistField> by lazy { sublists.associateBy { it.name } }
 
-  fun getAllFieldNames(prefix: String = ""): Set<String> {
+  fun getAllFieldNames(prefix: String = "", visited: Set<SearchTable> = emptySet()): Set<String> {
     val myFieldNames = fields.map { prefix + it.fieldName }
     val sublistFieldNames =
         sublistsByName
-            .filterValues { it.isMultiValue }
-            .flatMap { (name, sublist) -> sublist.searchTable.getAllFieldNames("${prefix}$name.") }
+            .filterValues { !visited.contains(it.searchTable) }
+            .flatMap { (name, sublist) ->
+              val table = sublist.searchTable
+              table.getAllFieldNames("${prefix}$name.", visited + table)
+            }
 
     return (myFieldNames + sublistFieldNames).toSet()
   }
@@ -195,15 +198,22 @@ abstract class SearchTable {
         conditionForMultiset = conditionForMultiset)
   }
 
-  private fun resolveTableOrNull(relativePath: String): SearchTable? {
+  private fun resolveTableOrNull(
+      relativePath: String,
+      visited: Set<SearchTable> = emptySet()
+  ): SearchTable? {
     val nextAndRest =
         relativePath.split(NESTED_SUBLIST_DELIMITER, FLATTENED_SUBLIST_DELIMITER, limit = 2)
     val nextTable = sublistsByName[nextAndRest[0]]?.searchTable
 
+    if (nextTable != null && visited.contains(nextTable)) {
+      throw SearchTableRevisitedException(nextTable.name)
+    }
+
     return if (nextAndRest.size == 1) {
       nextTable
     } else {
-      nextTable?.resolveTableOrNull(nextAndRest[1])
+      nextTable?.resolveTableOrNull(nextAndRest[1], visited + nextTable)
     }
   }
 

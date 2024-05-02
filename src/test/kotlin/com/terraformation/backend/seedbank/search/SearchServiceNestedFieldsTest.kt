@@ -801,13 +801,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     val prefix = SearchFieldPrefix(tables.organizations)
     val organizationFieldNames = tables.organizations.getAllFieldNames()
 
-    // getAllFieldNames() doesn't visit single-value sublists since they are usually parent
-    // entities and we want to avoid infinite recursion. But the "user" sublist under
-    // the organization users tables is a special case: a single-value sublist that
-    // refers to a child, not a parent. Include it explicitly.
-    val usersFieldNames = tables.users.getAllFieldNames("members.user.")
-
-    val fields = (organizationFieldNames + usersFieldNames).sorted().map { prefix.resolve(it) }
+    val fields = (organizationFieldNames).sorted().map { prefix.resolve(it) }
 
     // We're querying a mix of nested fields and the old-style fields that put nested values
     // at the top level and return a separate top-level query result for each combination of rows
