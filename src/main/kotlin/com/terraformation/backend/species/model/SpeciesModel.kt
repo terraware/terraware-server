@@ -45,10 +45,10 @@ data class SpeciesModel<ID : SpeciesId?>(
   companion object {
     fun of(
         record: Record,
-        ecosystemTypesMultiset: Field<Set<EcosystemType>>? = null,
-        growthFormsMultiset: Field<Set<GrowthForm>>? = null,
-        plantMaterialSourcingMethodsMultiset: Field<Set<PlantMaterialSourcingMethod>>? = null,
-        successionalGroupsMultiset: Field<Set<SuccessionalGroup>>? = null,
+        ecosystemTypesMultiset: Field<Set<EcosystemType>>,
+        growthFormsMultiset: Field<Set<GrowthForm>>,
+        plantMaterialSourcingMethodsMultiset: Field<Set<PlantMaterialSourcingMethod>>,
+        successionalGroupsMultiset: Field<Set<SuccessionalGroup>>,
     ): ExistingSpeciesModel =
         ExistingSpeciesModel(
             averageWoodDensity = record[SPECIES.AVERAGE_WOOD_DENSITY],
