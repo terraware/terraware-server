@@ -1,4 +1,20 @@
-# Terraware Server
+# Terraware Server Documentation
+
+## Project docs
+
+Crucial docs for getting started:
+
+* [SETUP.md](SETUP.md): how to set the server up for local development. Start here.
+* [KEYCLOAK.md](KEYCLOAK.md): how to set up Keycloak locally or configure the server to use an existing Keycloak instance; you'll need to do this as part of the setup process.
+
+If you're going to be contributing code:
+
+* [CONVENTIONS.md](CONVENTIONS.md): some of the project's coding conventions.
+
+Setup docs for optional parts of the system, only needed if you're working on code related to these features:
+
+* [ATLASSIAN.md](ATLASSIAN.md): how to configure the server to file Jira tasks. Only needed if you're working on features related to customer support.
+* [DROPBOX.md](DROPBOX.md): how to configure Dropbox integration for storing sensitive uploaded dcocuments.
 
 ## Database schema diagrams
 
