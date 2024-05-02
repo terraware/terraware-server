@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.security.access.AccessDeniedException
 
 class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -123,7 +124,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId,
                   rationale = "rationale",
                   speciesId = speciesId,
-                  submissionStatus = SubmissionStatus.NotSubmitted))
+                  submissionStatus = null))
 
       assertEquals(
           ParticipantProjectSpeciesRow(
@@ -151,7 +152,27 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 projectId = projectId,
                 rationale = "rationale",
                 speciesId = speciesId,
-                submissionStatus = SubmissionStatus.NotSubmitted))
+                submissionStatus = null))
+      }
+    }
+
+    @Test
+    fun `throws an exception if no permission to create a participant project species`() {
+      val participantId = insertParticipant()
+      val projectId = insertProject(participantId = participantId)
+      val speciesId = insertSpecies()
+
+      every { user.canCreateParticipantProjectSpecies(projectId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.create(
+            NewParticipantProjectSpeciesModel(
+                feedback = "feedback",
+                id = null,
+                projectId = projectId,
+                rationale = "rationale",
+                speciesId = speciesId,
+                submissionStatus = null))
       }
     }
   }

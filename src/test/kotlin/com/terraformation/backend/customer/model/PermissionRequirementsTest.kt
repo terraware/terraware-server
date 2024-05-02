@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleNotFoundException
 import com.terraformation.backend.accelerator.db.ParticipantNotFoundException
+import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundException
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AutomationNotFoundException
@@ -27,6 +28,7 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
@@ -143,6 +145,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val otherUserId: UserId by readableId(UserNotFoundException::class) { canReadUser(it) }
   private val participantId: ParticipantId by
       readableId(ParticipantNotFoundException::class) { canReadParticipant(it) }
+  private val participantProjectSpeciesId: ParticipantProjectSpeciesId by
+      readableId(ParticipantProjectSpeciesNotFoundException::class) {
+        canReadParticipantProjectSpecies(it)
+      }
   private val plantingId: PlantingId by
       readableId(PlantingNotFoundException::class) { canReadPlanting(it) }
   private val plantingSiteId: PlantingSiteId by
@@ -366,7 +372,12 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun createParticipant() = allow { createParticipant() } ifUser { canCreateParticipant() }
 
-  @Test fun createParticipantProjectSpecies() = allow { createParticipantProjectSpecies(projectId) } ifUser { canCreateParticipantProjectSpecies(projectId) }
+  @Test
+  fun createParticipantProjectSpecies() {
+    grant { user.canReadProject(projectId) }
+    grant { user.canCreateParticipantProjectSpecies(projectId) }
+    requirements.createParticipantProjectSpecies(projectId)
+  }
 
   @Test
   fun createPlantingSite() =
@@ -442,6 +453,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { deleteParticipantProject(participantId, projectId) } ifUser
           {
             canDeleteParticipantProject(participantId, projectId)
+          }
+
+  @Test
+  fun deleteParticipantProjectSpecies() =
+      allow { deleteParticipantProjectSpecies(participantProjectSpeciesId) } ifUser
+          {
+            canDeleteParticipantProjectSpecies(participantProjectSpeciesId)
           }
 
   @Test
@@ -613,6 +631,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test fun readParticipant() = testRead { readParticipant(participantId) }
+
+  @Test
+  fun readParticipantProjectSpecies() = testRead {
+    readParticipantProjectSpecies(participantProjectSpeciesId)
+  }
 
   @Test fun readPlanting() = testRead { readPlanting(plantingId) }
 
@@ -817,6 +840,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun updateParticipant() =
       allow { updateParticipant(participantId) } ifUser { canUpdateParticipant(participantId) }
+
+  @Test
+  fun updateParticipantProjectSpecies() =
+      allow { updateParticipantProjectSpecies(participantProjectSpeciesId) } ifUser
+          {
+            canUpdateParticipantProjectSpecies(participantProjectSpeciesId)
+          }
 
   @Test
   fun updatePlantingSite() =

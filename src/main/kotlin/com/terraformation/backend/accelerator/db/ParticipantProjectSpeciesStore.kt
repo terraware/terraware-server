@@ -40,7 +40,7 @@ class ParticipantProjectSpeciesStore(
               projectId = model.projectId,
               rationale = model.rationale,
               speciesId = model.speciesId,
-              submissionStatusId = model.submissionStatus?.let { SubmissionStatus.NotSubmitted },
+              submissionStatusId = model.submissionStatus ?: SubmissionStatus.NotSubmitted,
           )
 
       participantProjectSpeciesDao.insert(row)

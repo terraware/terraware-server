@@ -42,6 +42,6 @@ fun ParticipantProjectSpeciesRow.toModel(): ExistingParticipantProjectSpeciesMod
       projectId = projectId!!,
       rationale = rationale,
       speciesId = speciesId!!,
-      submissionStatus = submissionStatusId!!,
+      submissionStatus = submissionStatusId,
   )
 }
