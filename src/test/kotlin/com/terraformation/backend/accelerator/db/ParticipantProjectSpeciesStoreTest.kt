@@ -2,11 +2,15 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
+import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -17,7 +21,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val store: ParticipantProjectSpeciesStore by lazy {
-    ParticipantProjectSpeciesStore(dslContext)
+    ParticipantProjectSpeciesStore(dslContext, participantProjectSpeciesDao, projectsDao)
   }
 
   @BeforeEach
@@ -100,6 +104,57 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           emptyList<ParticipantProjectSpeciesId>(),
           store.findAllForProject(projectId2).map { it.id },
           "Participant Project Species IDs")
+    }
+  }
+
+  @Nested
+  inner class Create {
+    @Test
+    fun `creates the entity with the supplied fields`() {
+      val participantId = insertParticipant()
+      val projectId = insertProject(participantId = participantId)
+      val speciesId = insertSpecies()
+
+      every { user.canCreateParticipantProjectSpecies(projectId) } returns true
+
+      val participantProjectSpecies = store.create(NewParticipantProjectSpeciesModel(
+          feedback = "feedback",
+          id = null,
+          projectId = projectId,
+          rationale = "rationale",
+          speciesId = speciesId,
+          submissionStatus = SubmissionStatus.NotSubmitted
+      ))
+
+      assertEquals(
+          ParticipantProjectSpeciesRow(
+              feedback = "feedback",
+              id = participantProjectSpecies.id,
+              projectId = projectId,
+              rationale = "rationale",
+              speciesId = speciesId,
+              submissionStatusId = SubmissionStatus.NotSubmitted
+          ),
+          participantProjectSpeciesDao.fetchOneById(participantProjectSpecies.id))
+    }
+
+    @Test
+    fun `does not create the species association if the project is not associated to a participant`() {
+      val projectId = insertProject()
+      val speciesId = insertSpecies()
+
+      every { user.canCreateParticipantProjectSpecies(projectId) } returns true
+
+      assertThrows<ProjectNotInParticipantException> {
+        store.create(NewParticipantProjectSpeciesModel(
+            feedback = "feedback",
+            id = null,
+            projectId = projectId,
+            rationale = "rationale",
+            speciesId = speciesId,
+            submissionStatus = SubmissionStatus.NotSubmitted
+        ))
+      }
     }
   }
 }

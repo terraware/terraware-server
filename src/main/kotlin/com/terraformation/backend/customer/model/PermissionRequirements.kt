@@ -254,6 +254,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createParticipantProjectSpecies(projectId: ProjectId) {
+    if (!user.canCreateParticipantProjectSpecies(projectId)) {
+      throw AccessDeniedException("No permission to create participant project species")
+    }
+  }
+
   fun createPlantingSite(organizationId: OrganizationId) {
     if (!user.canCreatePlantingSite(organizationId)) {
       readOrganization(organizationId)
