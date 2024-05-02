@@ -285,6 +285,29 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
+      <table name="participant_project_species" numRows="0" remarks="Species that are associated to a participant project" schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="participant_project_species_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="species_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="submission_status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="participant_project_species_submission_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_statuses"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="feedback" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="rationale" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="participant_project_species_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="participant_project_species_project_id_species_id_key" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="species_id"/>
+         </index>
+         <index name="participant_project_species_species_id_idx" unique="false">
+            <column ascending="true" name="species_id"/>
+         </index>
+      </table>
       <table name="participants" numRows="0" remarks="Accelerator participant details." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="participant_id" foreignKey="projects_participant_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
@@ -481,6 +504,7 @@
       </table>
       <table name="submission_statuses" numRows="6" remarks="(Enum) Statuses of submissions of deliverables by specific projects." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="submission_status_id" foreignKey="participant_project_species_submission_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participant_project_species"/>
             <child column="submission_status_id" foreignKey="submissions_submission_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>

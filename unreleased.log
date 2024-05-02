@@ -1,3 +1,6 @@
+430c55f1699 SW-5318 ParticipantProjectSpecies store and model (#1918)
+b6a0408c5f2 SW-5318 Participant Project Species permissions (#1917)
+11de4ebedf0 SW-5318 Create the participant_project_species table (#1916)
 f2cc5b80879 Update dependency software.amazon.awssdk:bom to v2.25.42 (#1921)
 d01c599b3a0 SW-4834 Support creating detailed sites via API (#1686)
 c54a1442cde Support tiny simple planting site maps (#1915)

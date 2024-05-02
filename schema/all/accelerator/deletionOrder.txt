@@ -4,6 +4,7 @@ submission_documents
 deliverable_documents
 project_vote_decisions
 project_accelerator_details
+participant_project_species
 event_projects
 cohort_modules
 default_voters
@@ -14,13 +15,13 @@ deliverables
 modules
 participants
 cohorts
-submission_statuses
 score_categories
 event_types
 event_statuses
 document_stores
 deliverable_categories
 vote_options
+submission_statuses
 pipelines
 deliverable_types
 cohort_phases
