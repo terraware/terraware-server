@@ -6,6 +6,7 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -133,6 +134,8 @@ interface TerrawareUser : Principal {
 
   fun canCreateParticipant(): Boolean
 
+  fun canCreateParticipantProjectSpecies(projectId: ProjectId): Boolean
+
   fun canCreatePlantingSite(organizationId: OrganizationId): Boolean
 
   fun canCreateProject(organizationId: OrganizationId): Boolean
@@ -166,6 +169,10 @@ interface TerrawareUser : Principal {
   fun canDeleteParticipant(participantId: ParticipantId): Boolean
 
   fun canDeleteParticipantProject(participantId: ParticipantId, projectId: ProjectId): Boolean
+
+  fun canDeleteParticipantProjectSpecies(
+      participantProjectSpeciesId: ParticipantProjectSpeciesId
+  ): Boolean
 
   fun canDeletePlantingSite(plantingSiteId: PlantingSiteId): Boolean
 
@@ -262,6 +269,10 @@ interface TerrawareUser : Principal {
   fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean
 
   fun canReadParticipant(participantId: ParticipantId): Boolean
+
+  fun canReadParticipantProjectSpecies(
+      participantProjectSpeciesId: ParticipantProjectSpeciesId
+  ): Boolean
 
   fun canReadPlanting(plantingId: PlantingId): Boolean
 
@@ -364,6 +375,10 @@ interface TerrawareUser : Principal {
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean
 
   fun canUpdateParticipant(participantId: ParticipantId): Boolean
+
+  fun canUpdateParticipantProjectSpecies(
+      participantProjectSpeciesId: ParticipantProjectSpeciesId
+  ): Boolean
 
   fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean
 

@@ -6,10 +6,12 @@ import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
+import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
@@ -130,6 +132,12 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getOrganizationId(observationId: ObservationId): OrganizationId? =
       fetchFieldById(observationId, OBSERVATIONS.ID, OBSERVATIONS.plantingSites.ORGANIZATION_ID)
+
+  fun getOrganizationId(participantProjectSpeciesId: ParticipantProjectSpeciesId): OrganizationId? =
+      fetchFieldById(
+          participantProjectSpeciesId,
+          PARTICIPANT_PROJECT_SPECIES.ID,
+          PARTICIPANT_PROJECT_SPECIES.projects.ORGANIZATION_ID)
 
   fun getOrganizationId(plantingId: PlantingId): OrganizationId? =
       fetchFieldById(plantingId, PLANTINGS.ID, PLANTINGS.plantingSites.ORGANIZATION_ID)

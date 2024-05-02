@@ -12,6 +12,7 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
@@ -181,6 +182,8 @@ internal class PermissionTest : DatabaseTest() {
   private val moduleIds = listOf(1000, 1001, 3000, 4000).map { ModuleId(it.toLong()) }
   private val deliverableIds = listOf(DeliverableId(1000))
   private val submissionIds = projectIds.map { SubmissionId(it.value) }
+  private val participantProjectSpeciesIds =
+      projectIds.map { ParticipantProjectSpeciesId(it.value) }
 
   private inline fun <reified T> List<T>.filterToArray(func: (T) -> Boolean): Array<T> =
       filter(func).toTypedArray()
@@ -393,6 +396,12 @@ internal class PermissionTest : DatabaseTest() {
       )
       insertEventProject(eventId, ProjectId(eventId.value))
     }
+
+    participantProjectSpeciesIds.forEach { participantProjectSpeciesId ->
+      insertParticipantProjectSpecies(
+          id = participantProjectSpeciesId.value,
+          projectId = ProjectId(participantProjectSpeciesId.value))
+    }
   }
 
   @Test
@@ -568,7 +577,15 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *participantProjectSpeciesIds.forOrg1(),
+        deleteParticipantProjectSpecies = true,
+        readParticipantProjectSpecies = true,
+        updateParticipantProjectSpecies = true,
+    )
+
+    permissions.expect(
         *projectIds.forOrg1(),
+        createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
         readProject = true,
@@ -804,7 +821,15 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *participantProjectSpeciesIds.forOrg1(),
+        deleteParticipantProjectSpecies = true,
+        readParticipantProjectSpecies = true,
+        updateParticipantProjectSpecies = true,
+    )
+
+    permissions.expect(
         *projectIds.forOrg1(),
+        createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
         readProject = true,
@@ -961,8 +986,16 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *participantProjectSpeciesIds.forOrg1(),
+        deleteParticipantProjectSpecies = true,
+        readParticipantProjectSpecies = true,
+        updateParticipantProjectSpecies = true,
+    )
+
+    permissions.expect(
         *projectIds.forOrg1(),
         createSubmission = true,
+        createParticipantProjectSpecies = true,
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
@@ -1099,6 +1132,11 @@ internal class PermissionTest : DatabaseTest() {
         *observationIds.forOrg1(),
         readObservation = true,
         updateObservation = true,
+    )
+
+    permissions.expect(
+        *participantProjectSpeciesIds.forOrg1(),
+        readParticipantProjectSpecies = true,
     )
 
     permissions.expect(
@@ -1383,7 +1421,15 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *participantProjectSpeciesIds.toTypedArray(),
+        deleteParticipantProjectSpecies = true,
+        readParticipantProjectSpecies = true,
+        updateParticipantProjectSpecies = true,
+    )
+
+    permissions.expect(
         *projectIds.toTypedArray(),
+        createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
         readDefaultVoters = true,
@@ -1484,7 +1530,15 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *participantProjectSpeciesIds.forOrg1(),
+        deleteParticipantProjectSpecies = true,
+        readParticipantProjectSpecies = true,
+        updateParticipantProjectSpecies = true,
+    )
+
+    permissions.expect(
         *projectIds.forOrg1(),
+        createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
         readDefaultVoters = true,
@@ -1516,6 +1570,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(3000),
         ProjectId(4000),
+        createParticipantProjectSpecies = true,
         createSubmission = true,
         readDefaultVoters = true,
         readProject = true,
@@ -1651,7 +1706,15 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *participantProjectSpeciesIds.forOrg1(),
+        deleteParticipantProjectSpecies = true,
+        readParticipantProjectSpecies = true,
+        updateParticipantProjectSpecies = true,
+    )
+
+    permissions.expect(
         *projectIds.forOrg1(),
+        createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
         readDefaultVoters = true,
@@ -1684,6 +1747,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         ProjectId(3000),
+        createParticipantProjectSpecies = true,
         createSubmission = true,
         readDefaultVoters = true,
         readProjectAcceleratorDetails = true,
@@ -1815,7 +1879,15 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *participantProjectSpeciesIds.forOrg1(),
+        deleteParticipantProjectSpecies = true,
+        readParticipantProjectSpecies = true,
+        updateParticipantProjectSpecies = true,
+    )
+
+    permissions.expect(
         *projectIds.forOrg1(),
+        createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
         readDefaultVoters = true,
@@ -1841,6 +1913,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         ProjectId(4000),
+        createParticipantProjectSpecies = true,
         readDefaultVoters = true,
         readProject = true,
         readProjectAcceleratorDetails = true,
@@ -1978,6 +2051,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
+    )
+
+    permissions.expect(
+        *participantProjectSpeciesIds.forOrg1(),
+        readParticipantProjectSpecies = true,
     )
 
     permissions.expect(
@@ -2143,6 +2221,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedMonitoringPlots = monitoringPlotIds.toMutableSet()
     private val uncheckedObservations = observationIds.toMutableSet()
     private val uncheckedOrgs = organizationIds.toMutableSet()
+    private val uncheckedParticipantProjectSpecies = participantProjectSpeciesIds.toMutableSet()
     private val uncheckedPlantings = plantingIds.toMutableSet()
     private val uncheckedPlantingSites = plantingSiteIds.toMutableSet()
     private val uncheckedPlantingSubzones = plantingSubzoneIds.toMutableSet()
@@ -2812,6 +2891,7 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg projectIds: ProjectId,
+        createParticipantProjectSpecies: Boolean = false,
         createSubmission: Boolean = false,
         deleteProject: Boolean = false,
         readDefaultVoters: Boolean = false,
@@ -2834,6 +2914,10 @@ internal class PermissionTest : DatabaseTest() {
             createSubmission,
             user.canCreateSubmission(projectId),
             "Can create submission for project $projectId")
+        assertEquals(
+            createParticipantProjectSpecies,
+            user.canCreateParticipantProjectSpecies(projectId),
+            "Can create participant project species for project $projectId")
         assertEquals(
             deleteProject, user.canDeleteProject(projectId), "Can delete project $projectId")
         assertEquals(readDefaultVoters, user.canReadDefaultVoters(), "Can read default voters")
@@ -2916,6 +3000,32 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun expect(
+        vararg participantProjectSpeciesIds: ParticipantProjectSpeciesId,
+        deleteParticipantProjectSpecies: Boolean = false,
+        readParticipantProjectSpecies: Boolean = false,
+        updateParticipantProjectSpecies: Boolean = false,
+    ) {
+      participantProjectSpeciesIds.forEach { participantProjectSpeciesId ->
+        assertEquals(
+            deleteParticipantProjectSpecies,
+            user.canDeleteParticipantProjectSpecies(participantProjectSpeciesId),
+            "Can delete participant project species $participantProjectSpeciesId")
+
+        assertEquals(
+            readParticipantProjectSpecies,
+            user.canReadParticipantProjectSpecies(participantProjectSpeciesId),
+            "Can read participant project species $participantProjectSpeciesId")
+
+        assertEquals(
+            updateParticipantProjectSpecies,
+            user.canUpdateParticipantProjectSpecies(participantProjectSpeciesId),
+            "Can update participant project species $participantProjectSpeciesId")
+
+        uncheckedParticipantProjectSpecies.remove(participantProjectSpeciesId)
+      }
+    }
+
+    fun expect(
         vararg submissionIds: SubmissionId,
         readSubmission: Boolean = false,
     ) {
@@ -2968,6 +3078,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedMonitoringPlots.toTypedArray())
       expect(*uncheckedObservations.toTypedArray())
       expect(*uncheckedOrgs.toTypedArray())
+      expect(*uncheckedParticipantProjectSpecies.toTypedArray())
       expect(*uncheckedPlantings.toTypedArray())
       expect(*uncheckedPlantingSites.toTypedArray())
       expect(*uncheckedPlantingSubzones.toTypedArray())

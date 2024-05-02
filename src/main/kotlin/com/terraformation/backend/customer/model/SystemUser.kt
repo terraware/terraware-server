@@ -7,6 +7,7 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -173,6 +174,8 @@ class SystemUser(
 
   override fun canCreateParticipant(): Boolean = true
 
+  override fun canCreateParticipantProjectSpecies(projectId: ProjectId): Boolean = true
+
   override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = true
 
   override fun canCreateProject(organizationId: OrganizationId): Boolean = true
@@ -207,6 +210,10 @@ class SystemUser(
   override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = true
 
   override fun canDeleteParticipant(participantId: ParticipantId): Boolean = true
+
+  override fun canDeleteParticipantProjectSpecies(
+      participantProjectSpeciesId: ParticipantProjectSpeciesId
+  ): Boolean = true
 
   override fun canDeleteParticipantProject(
       participantId: ParticipantId,
@@ -309,6 +316,10 @@ class SystemUser(
       true
 
   override fun canReadParticipant(participantId: ParticipantId): Boolean = true
+
+  override fun canReadParticipantProjectSpecies(
+      participantProjectSpeciesId: ParticipantProjectSpeciesId
+  ): Boolean = true
 
   override fun canReadPlanting(plantingId: PlantingId): Boolean = true
 
@@ -413,6 +424,10 @@ class SystemUser(
   override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = true
 
   override fun canUpdateParticipant(participantId: ParticipantId): Boolean = true
+
+  override fun canUpdateParticipantProjectSpecies(
+      participantProjectSpeciesId: ParticipantProjectSpeciesId
+  ): Boolean = true
 
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
 
