@@ -14,16 +14,16 @@ import org.jooq.Condition
  * @see NestedQueryBuilder
  */
 data class SublistField(
-    /** Name of the sublist as it appears in search field prefixes. */
+  /** Name of the sublist as it appears in search field prefixes. */
     val name: String,
 
-    /**
+  /**
      * Table that the sublist points to. This determines which field names are valid after this
      * sublist in a field path.
      */
     val searchTable: SearchTable,
 
-    /**
+  /**
      * True if this sublist represents a one-to-many relationship such that the search results
      * should include a list of values for this sublist. False if it represents a one-to-one or
      * many-to-one relationship such that the search results should include a single value for this
@@ -36,7 +36,7 @@ data class SublistField(
      */
     val isMultiValue: Boolean,
 
-    /**
+  /**
      * A condition to add to the `WHERE` clause of a multiset subquery to correlate it with the
      * database table for the [SearchTable] that contains this field. This will generally be the
      * condition you would put in the `ON` part of a `LEFT JOIN x ON Y` clause that connects this
@@ -47,7 +47,7 @@ data class SublistField(
      */
     val conditionForMultiset: Condition,
 
-    /**
+  /**
      * If true, the contents of this sublist should be included as if they were fields of the same
      * table where this sublist is located. That is, the contents of the sublist should be pulled up
      * one level so they are not nested any more. If false, this sublist should appear in the search
@@ -57,12 +57,23 @@ data class SublistField(
      */
     val isFlattened: Boolean = false,
 
-    /**
+  /**
      * If true, this sublist always contains a value. For example, this is true for a single-value
      * sublist that represents a parent-child relationship from the child's point of view. It is
      * used to determine whether fields are nullable.
      */
     val isRequired: Boolean = false,
+
+  /**
+     * True if this sublist represents a direct parent-to-child relationship. This value is used to
+     * whether this sublist is traversed when enumerating all possible fields.
+     *
+     * By default, one-to-many relationships are traversed.
+     *
+     * This is similar to the heuristics for an A star search. This gives guidance on the most
+     * direct path to each table.
+     */
+    val isTraversedForGetAllFields: Boolean = isMultiValue,
 ) {
   val delimiter: Char
     get() = if (isFlattened) FLATTENED_SUBLIST_DELIMITER else NESTED_SUBLIST_DELIMITER

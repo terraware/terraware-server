@@ -22,7 +22,8 @@ class EventsTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           modules.asSingleValueSublist("module", MODULES.ID.eq(EVENTS.MODULE_ID)),
-          projects.asMultiValueSublist("projects", eventProjectsCondition))
+          projects.asMultiValueSublist(
+              "projects", eventProjectsCondition, isTraversedForAllFields = false))
     }
   }
 

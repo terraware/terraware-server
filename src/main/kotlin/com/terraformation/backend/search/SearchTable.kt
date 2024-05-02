@@ -143,15 +143,12 @@ abstract class SearchTable {
   }
   private val sublistsByName: Map<String, SublistField> by lazy { sublists.associateBy { it.name } }
 
-  fun getAllFieldNames(prefix: String = "", visited: Set<SearchTable> = emptySet()): Set<String> {
+  fun getAllFieldNames(prefix: String = ""): Set<String> {
     val myFieldNames = fields.map { prefix + it.fieldName }
     val sublistFieldNames =
         sublistsByName
-            .filterValues { !visited.contains(it.searchTable) }
-            .flatMap { (name, sublist) ->
-              val table = sublist.searchTable
-              table.getAllFieldNames("${prefix}$name.", visited + table)
-            }
+            .filterValues { it.isTraversedForGetAllFields }
+            .flatMap { (name, sublist) -> sublist.searchTable.getAllFieldNames("${prefix}$name.") }
 
     return (myFieldNames + sublistFieldNames).toSet()
   }
@@ -171,12 +168,17 @@ abstract class SearchTable {
    * another table and this one. For example, `facilities` is a multi-value sublist of `sites`
    * because each site can have multiple facilities.
    */
-  fun asMultiValueSublist(name: String, conditionForMultiset: Condition): SublistField {
+  fun asMultiValueSublist(
+      name: String,
+      conditionForMultiset: Condition,
+      isTraversedForGetAllFields: Boolean = true,
+  ): SublistField {
     return SublistField(
         name = name,
         searchTable = this,
         isMultiValue = true,
-        conditionForMultiset = conditionForMultiset)
+        conditionForMultiset = conditionForMultiset,
+        isTraversedForGetAllFields = isTraversedForGetAllFields)
   }
 
   /**
@@ -188,14 +190,16 @@ abstract class SearchTable {
   fun asSingleValueSublist(
       name: String,
       conditionForMultiset: Condition,
-      isRequired: Boolean = true
+      isRequired: Boolean = true,
+      isTraversedForGetAllFields: Boolean = false,
   ): SublistField {
     return SublistField(
         name = name,
         searchTable = this,
         isMultiValue = false,
         isRequired = isRequired,
-        conditionForMultiset = conditionForMultiset)
+        conditionForMultiset = conditionForMultiset,
+        isTraversedForGetAllFields = isTraversedForGetAllFields)
   }
 
   private fun resolveTableOrNull(
