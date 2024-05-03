@@ -202,22 +202,15 @@ abstract class SearchTable {
         isTraversedForGetAllFields = isTraversedForGetAllFields)
   }
 
-  private fun resolveTableOrNull(
-      relativePath: String,
-      visited: Set<SearchTable> = emptySet()
-  ): SearchTable? {
+  private fun resolveTableOrNull(relativePath: String): SearchTable? {
     val nextAndRest =
         relativePath.split(NESTED_SUBLIST_DELIMITER, FLATTENED_SUBLIST_DELIMITER, limit = 2)
     val nextTable = sublistsByName[nextAndRest[0]]?.searchTable
 
-    if (nextTable != null && visited.contains(nextTable)) {
-      throw SearchTableRevisitedException(nextTable.name)
-    }
-
     return if (nextAndRest.size == 1) {
       nextTable
     } else {
-      nextTable?.resolveTableOrNull(nextAndRest[1], visited + nextTable)
+      nextTable?.resolveTableOrNull(nextAndRest[1])
     }
   }
 

@@ -1,7 +1,5 @@
 package com.terraformation.backend.search.field
 
-import com.terraformation.backend.db.collation
-import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
