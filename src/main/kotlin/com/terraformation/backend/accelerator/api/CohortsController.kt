@@ -105,6 +105,7 @@ class CohortsController(private val clock: InstantSource, private val cohortStor
 
 data class CohortModule(
     val id: ModuleId,
+    val title: String,
     val startDate: LocalDate,
     val endDate: LocalDate,
     val isActive: Boolean,
@@ -114,6 +115,7 @@ data class CohortModule(
       today: LocalDate,
   ) : this(
       id = model.moduleId,
+      title = model.title,
       startDate = model.startDate,
       endDate = model.endDate,
       isActive = model.isActive(today))
