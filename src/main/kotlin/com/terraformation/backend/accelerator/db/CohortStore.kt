@@ -193,7 +193,10 @@ class CohortStore(
           .apply { condition?.let { where(it) } }
           .orderBy(ID)
           .fetch { CohortModel.of(it, participantIdsField, cohortModulesField) }
-          .filter { user.canReadCohort(it.id) }
+          .filter {
+            user.canReadCohort(it.id) &&
+                (participantIdsField == null || user.canReadCohortParticipants(it.id))
+          }
     }
   }
 }

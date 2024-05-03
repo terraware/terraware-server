@@ -340,7 +340,10 @@ data class IndividualUser(
 
   override fun canReadBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
 
-  override fun canReadCohort(cohortId: CohortId) = isReadOnlyOrHigher()
+  override fun canReadCohort(cohortId: CohortId) =
+      isReadOnlyOrHigher() || parentStore.exists(cohortId, userId)
+
+  override fun canReadCohortParticipants(cohortId: CohortId): Boolean = isReadOnlyOrHigher()
 
   override fun canReadCohorts(): Boolean = isReadOnlyOrHigher()
 
@@ -406,7 +409,8 @@ data class IndividualUser(
     }
   }
 
-  override fun canReadParticipant(participantId: ParticipantId) = isReadOnlyOrHigher()
+  override fun canReadParticipant(participantId: ParticipantId) =
+      isReadOnlyOrHigher() || parentStore.exists(participantId, userId)
 
   override fun canReadParticipantProjectSpecies(
       participantProjectSpeciesId: ParticipantProjectSpeciesId

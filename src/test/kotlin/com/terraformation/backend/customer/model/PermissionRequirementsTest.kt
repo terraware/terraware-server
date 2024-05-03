@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.model
 
+import com.fasterxml.jackson.annotation.JsonProperty.Access
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleNotFoundException
@@ -535,6 +536,21 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readBatch() = testRead { readBatch(batchId) }
 
   @Test fun readCohort() = testRead { readCohort(cohortId) }
+
+  @Test
+  fun readCohortParticipants() {
+    assertThrows<CohortNotFoundException> {
+      requirements.readCohortParticipants(cohortId)
+    }
+
+    grant { user.canReadCohort(cohortId) }
+    assertThrows<AccessDeniedException> {
+      requirements.readCohortParticipants(cohortId)
+    }
+
+    grant { user.canReadCohortParticipants(cohortId) }
+    requirements.readCohortParticipants(cohortId)
+  }
 
   @Test fun readCohorts() = allow { readCohorts() } ifUser { canReadCohorts() }
 

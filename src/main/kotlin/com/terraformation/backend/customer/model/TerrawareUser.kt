@@ -230,6 +230,8 @@ interface TerrawareUser : Principal {
 
   fun canReadCohort(cohortId: CohortId): Boolean
 
+  fun canReadCohortParticipants(cohortId: CohortId): Boolean
+
   fun canReadCohorts(): Boolean
 
   fun canReadDefaultVoters(): Boolean
