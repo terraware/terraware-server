@@ -16,6 +16,10 @@ data class CohortModuleModel(
     val endDate: LocalDate,
     val projects: Set<ProjectId>? = null,
 ) {
+  fun isActive(today: LocalDate): Boolean {
+    return today in startDate..endDate
+  }
+
   companion object {
     fun of(record: Record, projectsField: Field<Set<ProjectId>>? = null): CohortModuleModel {
       return with(COHORT_MODULES) {

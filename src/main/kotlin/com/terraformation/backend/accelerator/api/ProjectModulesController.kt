@@ -18,7 +18,6 @@ import java.net.URI
 import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
-import java.time.ZoneId
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -39,8 +38,8 @@ class ProjectModulesController(
       @PathVariable projectId: ProjectId,
   ): GetProjectModulesResponsePayload {
     val models = moduleStore.fetchModulesForProject(projectId)
-    return GetProjectModulesResponsePayload(
-        models.map { model -> ProjectModule(model, isModuleActive(model)) })
+    val today = LocalDate.ofInstant(clock.instant(), TimeZones.UTC)
+    return GetProjectModulesResponsePayload(models.map { model -> ProjectModule(model, today) })
   }
 
   @ApiResponse200
@@ -52,20 +51,8 @@ class ProjectModulesController(
       @PathVariable moduleId: ModuleId,
   ): GetProjectModuleResponsePayload {
     val model = moduleStore.fetchOneByIdForProject(moduleId, projectId)
-
-    return GetProjectModuleResponsePayload(ProjectModule(model, isModuleActive(model)))
-  }
-
-  /**
-   * Determine if a module is active by checking if today is between start date and end date.
-   * Defaulted to use UTC timezone, but should likely be overridden by cohort timezones.
-   */
-  private fun isModuleActive(model: ModuleModel, zoneId: ZoneId = TimeZones.UTC): Boolean {
-    val today = LocalDate.ofInstant(clock.instant(), zoneId)
-    val startDate = model.cohorts.first().startDate
-    val endDate = model.cohorts.first().endDate
-
-    return today in startDate..endDate
+    val today = LocalDate.ofInstant(clock.instant(), TimeZones.UTC)
+    return GetProjectModuleResponsePayload(ProjectModule(model, today))
   }
 }
 
@@ -112,14 +99,14 @@ data class ProjectModule(
 ) {
   constructor(
       model: ModuleModel,
-      isActive: Boolean,
+      today: LocalDate,
   ) : this(
       id = model.id,
       title = model.cohorts.first().title,
       name = model.name,
       startDate = model.cohorts.first().startDate,
       endDate = model.cohorts.first().endDate,
-      isActive = isActive,
+      isActive = model.cohorts.first().isActive(today),
       additionalResources = model.additionalResources,
       overview = model.overview,
       preparationMaterials = model.preparationMaterials,
