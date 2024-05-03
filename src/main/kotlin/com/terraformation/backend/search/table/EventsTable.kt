@@ -10,6 +10,7 @@ import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import org.jooq.Condition
+import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.TableField
 import org.jooq.impl.DSL
@@ -52,6 +53,8 @@ class EventsTable(tables: SearchTables) : SearchTable() {
               .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)))
     }
   }
+
+  override val defaultOrderFields: List<OrderField<*>> = listOf(EVENTS.START_TIME, EVENTS.ID)
 
   private val eventProjectsCondition =
       DSL.exists(

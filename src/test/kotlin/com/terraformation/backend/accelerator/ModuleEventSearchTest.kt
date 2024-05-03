@@ -17,6 +17,7 @@ import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.table.SearchTables
 import io.mockk.every
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import org.junit.jupiter.api.BeforeEach
@@ -88,6 +89,53 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
             null)
 
     val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
+
+    assertJsonEquals(expected, actual)
+  }
+
+  @Test
+  fun `returns results ordered by start time by default`() {
+    val event1 = insertEvent(startTime = Instant.ofEpochSecond(400))
+    val event2 = insertEvent(startTime = Instant.ofEpochSecond(800))
+    val event3 = insertEvent(startTime = Instant.ofEpochSecond(100))
+
+    val prefix = SearchFieldPrefix(searchTables.events)
+    val fields = listOf("id").map { prefix.resolve(it) }
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf("id" to event3.toString()),
+                mapOf("id" to event1.toString()),
+                mapOf("id" to event2.toString()),
+            ),
+            null)
+
+    val actual = searchService.search(prefix, fields, NoConditionNode())
+
+    assertJsonEquals(expected, actual)
+  }
+
+  @Test
+  fun `can search for parent module`() {
+    val module = inserted.moduleId
+    val event = insertEvent(moduleId = module)
+
+    val otherModule = insertModule()
+    val otherEvent = insertEvent(moduleId = otherModule)
+
+    val prefix = SearchFieldPrefix(searchTables.events)
+    val fields = listOf("id", "module.id").map { prefix.resolve(it) }
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf("id" to event.toString(), "module" to mapOf("id" to module.toString())),
+                mapOf(
+                    "id" to otherEvent.toString(),
+                    "module" to mapOf("id" to otherModule.toString()))),
+            null)
+
+    val actual = searchService.search(prefix, fields, NoConditionNode())
 
     assertJsonEquals(expected, actual)
   }
