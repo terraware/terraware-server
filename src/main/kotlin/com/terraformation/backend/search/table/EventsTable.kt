@@ -23,7 +23,7 @@ class EventsTable(tables: SearchTables) : SearchTable() {
       listOf(
           modules.asSingleValueSublist("module", MODULES.ID.eq(EVENTS.MODULE_ID)),
           projects.asMultiValueSublist(
-              "projects", eventProjectsCondition, isTraversedForAllFields = false))
+              "projects", eventProjectsCondition, isTraversedForGetAllFields = false))
     }
   }
 
