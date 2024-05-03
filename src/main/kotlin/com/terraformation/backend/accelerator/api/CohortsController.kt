@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.db.CohortStore
 import com.terraformation.backend.accelerator.model.CohortDepth
+import com.terraformation.backend.accelerator.model.CohortModuleDepth
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.accelerator.model.NewCohortModel
 import com.terraformation.backend.api.AcceleratorEndpoint
@@ -41,9 +42,10 @@ class CohortsController(private val cohortStore: CohortStore) {
               "If specified, retrieve associated entities to the supplied depth. For example, " +
                   "'participant' depth will return the participants associated to the cohort.")
       @RequestParam
-      depth: CohortDepth = CohortDepth.Cohort
+      cohortDepth: CohortDepth = CohortDepth.Cohort,
+      cohortModuleDepth: CohortModuleDepth = CohortModuleDepth.Cohort,
   ): CohortResponsePayload {
-    val cohort = cohortStore.fetchOneById(cohortId, depth)
+    val cohort = cohortStore.fetchOneById(cohortId, cohortDepth, cohortModuleDepth)
     return CohortResponsePayload(CohortPayload(cohort))
   }
 
@@ -56,9 +58,10 @@ class CohortsController(private val cohortStore: CohortStore) {
               "If specified, retrieve associated entities to the supplied depth. For example, " +
                   "'participant' depth will return the participants associated to the cohort.")
       @RequestParam
-      depth: CohortDepth = CohortDepth.Cohort
+      cohortDepth: CohortDepth = CohortDepth.Cohort,
+      cohortModuleDepth: CohortModuleDepth = CohortModuleDepth.Cohort,
   ): CohortListResponsePayload {
-    val cohortList = cohortStore.findAll(depth)
+    val cohortList = cohortStore.findAll(cohortDepth, cohortModuleDepth)
     return CohortListResponsePayload(cohortList.map { CohortPayload(it) })
   }
 
