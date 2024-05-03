@@ -25,13 +25,13 @@ class UriField(
     get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.PhraseMatch)
 
   override fun getCondition(fieldNode: FieldNode): Condition {
-    val valuesRegex = fieldNode.values.map { "$it" }
+    val nonNullValues = fieldNode.values.filterNotNull()
     return when (fieldNode.type) {
       SearchFilterType.PhraseMatch,
       SearchFilterType.Exact ->
           DSL.or(
               listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                  .plus(valuesRegex.map { databaseField.likeRegex(it) }))
+                  .plus(nonNullValues.map { databaseField.likeRegex(it) }))
       SearchFilterType.ExactOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw IllegalArgumentException("Fuzzy search is not supported for URI fields")
@@ -40,9 +40,6 @@ class UriField(
     }
   }
 
-  override val orderByField: Field<*>
-    get() = databaseField.collate(currentLocale().collation)
-
-  // Text fields are always raw.
+  // URI fields are always raw.
   override fun raw(): SearchField? = null
 }

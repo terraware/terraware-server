@@ -806,6 +806,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     // the organization users tables is a special case: a single-value sublist that
     // refers to a child, not a parent. Include it explicitly.
     val usersFieldNames = tables.users.getAllFieldNames("members.user.")
+
     val fields = (organizationFieldNames + usersFieldNames).sorted().map { prefix.resolve(it) }
 
     // We're querying a mix of nested fields and the old-style fields that put nested values
