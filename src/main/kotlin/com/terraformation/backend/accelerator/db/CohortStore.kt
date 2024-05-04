@@ -39,6 +39,9 @@ class CohortStore(
       cohortDepth: CohortDepth = CohortDepth.Cohort,
       cohortModuleDepth: CohortModuleDepth = CohortModuleDepth.Cohort,
   ): ExistingCohortModel {
+    if (cohortDepth == CohortDepth.Participant) {
+      requirePermissions { readCohortParticipants(cohortId) }
+    }
     return fetch(COHORTS.ID.eq(cohortId), cohortDepth, cohortModuleDepth).firstOrNull()
         ?: throw CohortNotFoundException(cohortId)
   }

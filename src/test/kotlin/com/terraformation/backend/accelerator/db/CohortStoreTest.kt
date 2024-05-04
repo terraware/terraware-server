@@ -39,6 +39,7 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
     insertUser()
 
     every { user.canReadCohort(any()) } returns true
+    every { user.canReadCohortParticipants(any()) } returns true
   }
 
   @Nested
@@ -227,6 +228,23 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<CohortNotFoundException> { store.fetchOneById(cohortId) }
     }
+
+    @Test
+    fun `throws exception if no permission to read cohort participants`() {
+      val cohortId = insertCohort()
+
+      every { user.canReadCohort(cohortId) } returns false
+      every { user.canReadCohortParticipants(cohortId) } returns false
+
+      assertThrows<CohortNotFoundException> {
+        store.fetchOneById(cohortId, cohortDepth = CohortDepth.Participant)
+      }
+
+      every { user.canReadCohort(cohortId) } returns true
+      assertThrows<AccessDeniedException> {
+        store.fetchOneById(cohortId, cohortDepth = CohortDepth.Participant)
+      }
+    }
   }
 
   @Nested
@@ -240,6 +258,20 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadCohort(invisibleCohortId) } returns false
 
       assertEquals(listOf(cohortId1, cohortId2), store.findAll().map { it.id }, "Cohort IDs")
+    }
+
+    @Test
+    fun `only includes cohorts with participants if the user is permitted to read participants`() {
+      val cohortId1 = insertCohort()
+      val cohortId2 = insertCohort()
+      val invisibleCohortId = insertCohort(name = "Not Visible")
+
+      every { user.canReadCohortParticipants(invisibleCohortId) } returns false
+
+      assertEquals(
+          listOf(cohortId1, cohortId2),
+          store.findAll(cohortDepth = CohortDepth.Participant).map { it.id },
+          "Cohort IDs")
     }
   }
 
