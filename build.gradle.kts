@@ -23,7 +23,7 @@ plugins {
   // Uncomment the kapt line in the dependencies block if you enable this.
   // kotlin("kapt")
 
-  id("dev.monosoul.jooq-docker") version "6.0.20"
+  id("dev.monosoul.jooq-docker") version "6.0.21"
   id("com.diffplug.spotless") version "6.19.0"
   id("org.jetbrains.dokka") version "1.9.20"
   id("org.springframework.boot") version "3.2.5"
