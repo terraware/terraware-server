@@ -51,6 +51,7 @@ class VoteServiceTest : DatabaseTest(), RunsAsUser {
     insertDefaultVoter(voter2)
 
     every { user.canReadCohort(any()) } returns true
+    every { user.canReadCohortParticipants(any()) } returns true
     every { user.canReadParticipant(any()) } returns true
     every { user.canUpdateProjectVotes(any()) } returns true
   }
