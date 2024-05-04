@@ -15,7 +15,6 @@ import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
-import com.terraformation.backend.db.accelerator.tables.Participants
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
@@ -2631,7 +2630,10 @@ internal class PermissionTest : DatabaseTest() {
           "Can read all accelerator details")
       assertEquals(readAllDeliverables, user.canReadAllDeliverables(), "Can read all deliverables")
       assertEquals(readCohort, user.canReadCohort(cohortIds[0]), "Can read cohort")
-      assertEquals(readCohortParticipants, user.canReadCohortParticipants(cohortIds[0]), "Can read cohort participants")
+      assertEquals(
+          readCohortParticipants,
+          user.canReadCohortParticipants(cohortIds[0]),
+          "Can read cohort participants")
       assertEquals(readCohorts, user.canReadCohorts(), "Can read all cohorts")
       assertEquals(readGlobalRoles, user.canReadGlobalRoles(), "Can read global roles")
       assertEquals(readInternalTags, user.canReadInternalTags(), "Can read internal tags")
