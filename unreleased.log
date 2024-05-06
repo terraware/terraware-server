@@ -1,3 +1,4 @@
+89fc576df99 SW-5321 Allow organization members to view participants and cohorts they are part of
 a055ee5316d Update plugin io.spring.dependency-management to v1.1.5 (#1930)
 18ef9ba96d6 Update database dependencies (#1929)
 356de0ca749 Update dependency com.dropbox.core:dropbox-core-sdk to v7 (#1926)
