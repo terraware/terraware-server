@@ -1,6 +1,7 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
@@ -34,6 +35,8 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
               "nurseryProjects", SPECIES.ID.eq(SPECIES_PROJECTS.SPECIES_ID)),
           organizations.asSingleValueSublist(
               "organization", SPECIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
+          participantProjectSpecies.asMultiValueSublist(
+              "participantProjectSpecies", SPECIES.ID.eq(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID)),
           speciesEcosystemTypes.asMultiValueSublist(
               "ecosystemTypes", SPECIES.ID.eq(SPECIES_ECOSYSTEM_TYPES.SPECIES_ID)),
           speciesGrowthForms.asMultiValueSublist(

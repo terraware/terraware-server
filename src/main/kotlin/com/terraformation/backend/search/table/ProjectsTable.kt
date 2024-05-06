@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.accelerator.tables.references.EVENTS
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
@@ -42,6 +43,8 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
               "organization", PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)),
           participants.asSingleValueSublist(
               "participant", PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID), isRequired = false),
+          participantProjectSpecies.asMultiValueSublist(
+              "participantProjectSpecies", PROJECTS.ID.eq(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID)),
           plantingSites.asMultiValueSublist(
               "plantingSites", PROJECTS.ID.eq(PLANTING_SITE_SUMMARIES.PROJECT_ID)),
           projectAcceleratorDetails.asSingleValueSublist(
