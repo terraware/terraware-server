@@ -172,5 +172,48 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 speciesId = speciesId))
       }
     }
+
+    @Test
+    fun `creates an entity for each project ID and species ID pairing`() {
+      val participantId = insertParticipant()
+      val projectId1 = insertProject(participantId = participantId)
+      val projectId2 = insertProject(participantId = participantId)
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+
+      every { user.canCreateParticipantProjectSpecies(projectId1) } returns true
+      every { user.canCreateParticipantProjectSpecies(projectId2) } returns true
+
+      // Even though the consumer can pass
+      store.createMany(setOf(projectId1, projectId2), setOf(speciesId1, speciesId2))
+
+      assertEquals(
+          listOf(
+              ParticipantProjectSpeciesRow(
+                  feedback = null,
+                  projectId = projectId1,
+                  rationale = null,
+                  speciesId = speciesId1,
+                  submissionStatusId = SubmissionStatus.NotSubmitted),
+              ParticipantProjectSpeciesRow(
+                  feedback = null,
+                  projectId = projectId1,
+                  rationale = null,
+                  speciesId = speciesId2,
+                  submissionStatusId = SubmissionStatus.NotSubmitted),
+              ParticipantProjectSpeciesRow(
+                  feedback = null,
+                  projectId = projectId2,
+                  rationale = null,
+                  speciesId = speciesId1,
+                  submissionStatusId = SubmissionStatus.NotSubmitted),
+              ParticipantProjectSpeciesRow(
+                  feedback = null,
+                  projectId = projectId2,
+                  rationale = null,
+                  speciesId = speciesId2,
+                  submissionStatusId = SubmissionStatus.NotSubmitted)),
+          participantProjectSpeciesDao.findAll().map { it.copy(id = null) })
+    }
   }
 }

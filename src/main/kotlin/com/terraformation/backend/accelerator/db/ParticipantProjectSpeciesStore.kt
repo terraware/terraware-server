@@ -7,10 +7,12 @@ import com.terraformation.backend.accelerator.model.toModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
+import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectSpeciesDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import jakarta.inject.Named
 import org.jooq.Condition
@@ -44,6 +46,36 @@ class ParticipantProjectSpeciesStore(
     participantProjectSpeciesDao.insert(row)
 
     return row.toModel()
+  }
+
+  fun createMany(projectIds: Set<ProjectId>, speciesIds: Set<SpeciesId>): Unit {
+    // Participant project species can only be associated
+    // to projects that are associated to a participant
+    val projects = projectsDao.fetchById(*projectIds.toTypedArray())
+    projects.forEach {
+      requirePermissions { createParticipantProjectSpecies(it.id!!) }
+
+      if (it.participantId == null) {
+        throw ProjectNotInParticipantException(it.id!!)
+      }
+    }
+
+    dslContext.transactionResult { _ ->
+      projectIds.toSet().forEach { projectId ->
+        speciesIds.toSet().forEach { speciesId ->
+          with(PARTICIPANT_PROJECT_SPECIES) {
+            dslContext
+                .insertInto(PARTICIPANT_PROJECT_SPECIES)
+                .set(PROJECT_ID, projectId)
+                .set(SPECIES_ID, speciesId)
+                .set(SUBMISSION_STATUS_ID, SubmissionStatus.NotSubmitted)
+                .onConflict()
+                .doNothing()
+                .execute()
+          }
+        }
+      }
+    }
   }
 
   fun fetchOneById(
