@@ -30,9 +30,9 @@ class ParticipantProjectSpeciesController(
   @PostMapping("/assign")
   @Operation(
       summary =
-      "Creates a new participant project species entry for every project ID and species ID pairing.")
+          "Creates a new participant project species entry for every project ID and species ID pairing.")
   fun assignParticipantProjectSpecies(
-    @RequestBody payload: AssignParticipantProjectSpeciesPayload
+      @RequestBody payload: AssignParticipantProjectSpeciesPayload
   ): SimpleSuccessResponsePayload {
     participantProjectSpeciesStore.createMany(
         payload.projectIds.toSet(), payload.speciesIds.toSet())
@@ -43,7 +43,7 @@ class ParticipantProjectSpeciesController(
   @PostMapping
   @Operation(summary = "Creates a new participant project species entry.")
   fun createParticipantProjectSpecies(
-    @RequestBody payload: CreateParticipantProjectSpeciesPayload
+      @RequestBody payload: CreateParticipantProjectSpeciesPayload
   ): GetParticipantProjectSpeciesResponsePayload {
     val model =
         participantProjectSpeciesStore.create(
