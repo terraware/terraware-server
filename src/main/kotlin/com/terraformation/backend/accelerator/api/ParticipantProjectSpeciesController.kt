@@ -62,7 +62,7 @@ class ParticipantProjectSpeciesController(
   @DeleteMapping
   @Operation(summary = "Deletes participant project species entries.")
   fun deleteParticipantProjectSpecies(
-    @RequestBody payload: DeleteParticipantProjectSpeciesPayload
+      @RequestBody payload: DeleteParticipantProjectSpeciesPayload
   ): SimpleSuccessResponsePayload {
     participantProjectSpeciesStore.deleteMany(payload.participantProjectSpeciesIds.toSet())
 
