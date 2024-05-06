@@ -58,6 +58,7 @@ class ParticipantProjectSpeciesController(
     return makeGetResponse(model)
   }
 
+  @ApiResponse200
   @ApiResponse404
   @DeleteMapping
   @Operation(summary = "Deletes participant project species entries.")
