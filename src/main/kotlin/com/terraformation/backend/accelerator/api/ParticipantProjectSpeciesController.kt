@@ -73,9 +73,10 @@ class ParticipantProjectSpeciesController(
   @PutMapping("/{participantProjectSpeciesId}")
   @Operation(summary = "Updates a participant project species entry.")
   fun updateParticipantProjectSpecies(
+      @PathVariable participantProjectSpeciesId: ParticipantProjectSpeciesId,
       @RequestBody payload: UpdateParticipantProjectSpeciesPayload
   ): SimpleSuccessResponsePayload {
-    participantProjectSpeciesStore.update(payload.participantProjectSpecies.id) {
+    participantProjectSpeciesStore.update(participantProjectSpeciesId) {
       it.copy(
           feedback = payload.participantProjectSpecies.feedback,
           rationale = payload.participantProjectSpecies.rationale,
