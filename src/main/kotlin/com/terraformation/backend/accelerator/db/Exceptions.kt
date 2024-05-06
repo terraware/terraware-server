@@ -33,6 +33,9 @@ class ParticipantNotFoundException(id: ParticipantId) :
 class ParticipantProjectSpeciesNotFoundException(id: ParticipantProjectSpeciesId) :
     EntityNotFoundException("Participant Project Species $id not found")
 
+class ParticipantProjectSpeciesSetNotFoundException(ids: Set<ParticipantProjectSpeciesId>) :
+    EntityNotFoundException("Participant Project Species ${ids.joinToString { ", " }} not found")
+
 class ProjectDocumentSettingsNotConfiguredException(id: ProjectId) :
     MismatchedStateException("Project $id document upload settings have not been configured")
 

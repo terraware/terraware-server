@@ -11,6 +11,7 @@ import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectSpeciesDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
@@ -74,6 +75,31 @@ class ParticipantProjectSpeciesStore(
                 .execute()
           }
         }
+      }
+    }
+  }
+
+  fun deleteMany(participantProjectSpeciesIds: Set<ParticipantProjectSpeciesId>) {
+    participantProjectSpeciesIds.forEach {
+      requirePermissions { deleteParticipantProjectSpecies(it) }
+    }
+
+    dslContext.transactionResult { _ ->
+      val rowsDeleted =
+          dslContext
+              .deleteFrom(PARTICIPANT_PROJECT_SPECIES)
+              .where(PARTICIPANT_PROJECT_SPECIES.ID.`in`(participantProjectSpeciesIds))
+              .execute()
+
+      if (rowsDeleted != participantProjectSpeciesIds.size) {
+        val failed =
+            dslContext
+                .select(PARTICIPANT_PROJECT_SPECIES.ID)
+                .from(PARTICIPANT_PROJECT_SPECIES)
+                .where(PARTICIPANT_PROJECT_SPECIES.ID.`in`(participantProjectSpeciesIds))
+                .fetchSet(PARTICIPANT_PROJECT_SPECIES.ID.asNonNullable())
+
+        throw ParticipantProjectSpeciesSetNotFoundException(failed)
       }
     }
   }
