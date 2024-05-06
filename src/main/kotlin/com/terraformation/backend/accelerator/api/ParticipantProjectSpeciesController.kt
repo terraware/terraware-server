@@ -27,22 +27,23 @@ class ParticipantProjectSpeciesController(
     private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
 ) {
   @ApiResponse200
-  @ApiResponse404
-  @GetMapping("/{participantProjectSpeciesId}")
-  @Operation(summary = "Gets information about a participant project species.")
-  fun getParticipantProjectSpecies(
-      @PathVariable participantProjectSpeciesId: ParticipantProjectSpeciesId
-  ): GetParticipantProjectSpeciesResponsePayload {
-    val model = participantProjectSpeciesStore.fetchOneById(participantProjectSpeciesId)
-
-    return makeGetResponse(model)
+  @PostMapping("/assign")
+  @Operation(
+      summary =
+      "Creates a new participant project species entry for every project ID and species ID pairing.")
+  fun assignParticipantProjectSpecies(
+    @RequestBody payload: AssignParticipantProjectSpeciesPayload
+  ): SimpleSuccessResponsePayload {
+    participantProjectSpeciesStore.createMany(
+        payload.projectIds.toSet(), payload.speciesIds.toSet())
+    return SimpleSuccessResponsePayload()
   }
 
   @ApiResponse200
   @PostMapping
   @Operation(summary = "Creates a new participant project species entry.")
   fun createParticipantProjectSpecies(
-      @RequestBody payload: CreateParticipantProjectSpeciesPayload
+    @RequestBody payload: CreateParticipantProjectSpeciesPayload
   ): GetParticipantProjectSpeciesResponsePayload {
     val model =
         participantProjectSpeciesStore.create(
@@ -57,16 +58,15 @@ class ParticipantProjectSpeciesController(
   }
 
   @ApiResponse200
-  @PostMapping("/assign")
-  @Operation(
-      summary =
-          "Creates a new participant project species entry for every project ID and species ID pairing.")
-  fun assignParticipantProjectSpecies(
-      @RequestBody payload: AssignParticipantProjectSpeciesPayload
-  ): SimpleSuccessResponsePayload {
-    participantProjectSpeciesStore.createMany(
-        payload.projectIds.toSet(), payload.speciesIds.toSet())
-    return SimpleSuccessResponsePayload()
+  @ApiResponse404
+  @GetMapping("/{participantProjectSpeciesId}")
+  @Operation(summary = "Gets information about a participant project species.")
+  fun getParticipantProjectSpecies(
+      @PathVariable participantProjectSpeciesId: ParticipantProjectSpeciesId
+  ): GetParticipantProjectSpeciesResponsePayload {
+    val model = participantProjectSpeciesStore.fetchOneById(participantProjectSpeciesId)
+
+    return makeGetResponse(model)
   }
 
   private fun makeGetResponse(
