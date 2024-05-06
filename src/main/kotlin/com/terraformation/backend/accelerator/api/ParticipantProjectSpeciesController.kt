@@ -13,6 +13,7 @@ import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import io.swagger.v3.oas.annotations.Operation
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -55,6 +56,17 @@ class ParticipantProjectSpeciesController(
             ))
 
     return makeGetResponse(model)
+  }
+
+  @ApiResponse404
+  @DeleteMapping
+  @Operation(summary = "Deletes participant project species entries.")
+  fun deleteParticipantProjectSpecies(
+    @RequestBody payload: DeleteParticipantProjectSpeciesPayload
+  ): SimpleSuccessResponsePayload {
+    participantProjectSpeciesStore.deleteMany(payload.participantProjectSpeciesIds.toSet())
+
+    return SimpleSuccessResponsePayload()
   }
 
   @ApiResponse200
