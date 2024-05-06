@@ -374,7 +374,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createParticipantProjectSpecies() {
-    grant { user.canReadProject(projectId) }
+    assertThrows<AccessDeniedException> { requirements.createParticipantProjectSpecies(projectId) }
+
     grant { user.canCreateParticipantProjectSpecies(projectId) }
     requirements.createParticipantProjectSpecies(projectId)
   }
