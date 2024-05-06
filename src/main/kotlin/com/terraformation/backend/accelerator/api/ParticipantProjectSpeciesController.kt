@@ -57,7 +57,7 @@ class ParticipantProjectSpeciesController(
   }
 
   @ApiResponse200
-  @PostMapping
+  @PostMapping("/assign")
   @Operation(
       summary =
           "Creates a new participant project species entry for every project ID and species ID pairing.")
