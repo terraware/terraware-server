@@ -1,3 +1,5 @@
+71132bc358d SW-5318 Add create store functionality for ParticipantProjectSeries (#1924)
+8d604708a42 SW-5264 Backfill map history for existing sites (#1931)
 89fc576df99 SW-5321 Allow organization members to view participants and cohorts they are part of
 a055ee5316d Update plugin io.spring.dependency-management to v1.1.5 (#1930)
 18ef9ba96d6 Update database dependencies (#1929)
