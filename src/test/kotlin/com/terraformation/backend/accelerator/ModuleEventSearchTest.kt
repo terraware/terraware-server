@@ -80,8 +80,8 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
                     "id" to "${inserted.eventId}",
                     "status" to EventStatus.NotStarted.getDisplayName(Locales.GIBBERISH),
                     "type" to EventType.Workshop.getDisplayName(Locales.GIBBERISH),
-                    "startTime" to startTime.toString(),
-                    "endTime" to endTime.toString(),
+                    "startTime" to "$startTime",
+                    "endTime" to "$endTime",
                     "meetingUrl" to "https://meet.google.com",
                     "slidesUrl" to "https://slides.google.com",
                     "recordingUrl" to "https://recording.google.com",
@@ -105,9 +105,9 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to event3.toString()),
-                mapOf("id" to event1.toString()),
-                mapOf("id" to event2.toString()),
+                mapOf("id" to "$event3"),
+                mapOf("id" to "$event1"),
+                mapOf("id" to "$event2"),
             ),
             null)
 
@@ -129,10 +129,8 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to event.toString(), "module" to mapOf("id" to module.toString())),
-                mapOf(
-                    "id" to otherEvent.toString(),
-                    "module" to mapOf("id" to otherModule.toString()))),
+                mapOf("id" to "$event", "module" to mapOf("id" to "$module")),
+                mapOf("id" to "$otherEvent", "module" to mapOf("id" to "$otherModule"))),
             null)
 
     val actual = searchService.search(prefix, fields, NoConditionNode())
@@ -165,20 +163,20 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
         SearchResults(
             listOf(
                 mapOf(
-                    "id" to event1.toString(),
+                    "id" to "$event1",
                     "projects" to
                         listOf(
-                            mapOf("id" to project1.toString()),
-                            mapOf("id" to project2.toString()),
-                            mapOf("id" to project3.toString())),
+                            mapOf("id" to "$project1"),
+                            mapOf("id" to "$project2"),
+                            mapOf("id" to "$project3")),
                 ),
                 mapOf(
-                    "id" to event2.toString(),
+                    "id" to "$event2",
                     "projects" to
                         listOf(
-                            mapOf("id" to project4.toString()),
-                            mapOf("id" to project5.toString()),
-                            mapOf("id" to project6.toString())),
+                            mapOf("id" to "$project4"),
+                            mapOf("id" to "$project5"),
+                            mapOf("id" to "$project6")),
                 ),
             ),
             null)
@@ -209,17 +207,16 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
         SearchResults(
             listOf(
                 mapOf(
-                    "id" to project1.toString(),
+                    "id" to "$project1",
                     "events" to
                         listOf(
-                            mapOf("id" to event1.toString()),
-                            mapOf("id" to event2.toString()),
-                            mapOf("id" to event3.toString())),
+                            mapOf("id" to "$event1"),
+                            mapOf("id" to "$event2"),
+                            mapOf("id" to "$event3")),
                 ),
                 mapOf(
-                    "id" to project2.toString(),
-                    "events" to
-                        listOf(mapOf("id" to event3.toString()), mapOf("id" to event4.toString())),
+                    "id" to "$project2",
+                    "events" to listOf(mapOf("id" to "$event3"), mapOf("id" to "$event4")),
                 ),
             ),
             null)
@@ -264,12 +261,12 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
         SearchResults(
             listOf(
                 mapOf(
-                    "id" to userProject.toString(),
+                    "id" to "$userProject",
                     "events" to
                         listOf(
-                            mapOf("id" to event1.toString()),
-                            mapOf("id" to event2.toString()),
-                            mapOf("id" to event3.toString())),
+                            mapOf("id" to "$event1"),
+                            mapOf("id" to "$event2"),
+                            mapOf("id" to "$event3")),
                 ),
             ),
             null)
@@ -279,14 +276,11 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
     val eventFields = listOf("id").map { eventPrefix.resolve(it) }
     val eventExpected =
         SearchResults(
-            listOf(
-                mapOf("id" to event1.toString()),
-                mapOf("id" to event2.toString()),
-                mapOf("id" to event3.toString())),
+            listOf(mapOf("id" to "$event1"), mapOf("id" to "$event2"), mapOf("id" to "$event3")),
             null)
     val eventActual = searchService.search(eventPrefix, eventFields, NoConditionNode())
 
-    assertJsonEquals(projectExpected, projectActual)
-    assertJsonEquals(eventExpected, eventActual)
+    assertJsonEquals(projectExpected, projectActual, "search for events by project prefix")
+    assertJsonEquals(eventExpected, eventActual, "search for events by event prefix")
   }
 }
