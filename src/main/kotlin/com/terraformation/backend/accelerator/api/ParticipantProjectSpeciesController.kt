@@ -70,6 +70,7 @@ class ParticipantProjectSpeciesController(
   }
 
   @ApiResponse200
+  @ApiResponse404
   @PutMapping("/{participantProjectSpeciesId}")
   @Operation(summary = "Updates a participant project species entry.")
   fun updateParticipantProjectSpecies(
