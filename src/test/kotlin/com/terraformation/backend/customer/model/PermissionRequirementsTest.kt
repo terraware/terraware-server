@@ -536,6 +536,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun readCohort() = testRead { readCohort(cohortId) }
 
+  @Test
+  fun readCohortParticipants() {
+    assertThrows<CohortNotFoundException> { requirements.readCohortParticipants(cohortId) }
+
+    grant { user.canReadCohort(cohortId) }
+    assertThrows<AccessDeniedException> { requirements.readCohortParticipants(cohortId) }
+
+    grant { user.canReadCohortParticipants(cohortId) }
+    requirements.readCohortParticipants(cohortId)
+  }
+
   @Test fun readCohorts() = allow { readCohorts() } ifUser { canReadCohorts() }
 
   @Test fun readDelivery() = testRead { readDelivery(deliveryId) }

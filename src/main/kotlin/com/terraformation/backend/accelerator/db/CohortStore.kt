@@ -39,6 +39,9 @@ class CohortStore(
       cohortDepth: CohortDepth = CohortDepth.Cohort,
       cohortModuleDepth: CohortModuleDepth = CohortModuleDepth.Cohort,
   ): ExistingCohortModel {
+    if (cohortDepth == CohortDepth.Participant) {
+      requirePermissions { readCohortParticipants(cohortId) }
+    }
     return fetch(COHORTS.ID.eq(cohortId), cohortDepth, cohortModuleDepth).firstOrNull()
         ?: throw CohortNotFoundException(cohortId)
   }
@@ -193,7 +196,10 @@ class CohortStore(
           .apply { condition?.let { where(it) } }
           .orderBy(ID)
           .fetch { CohortModel.of(it, participantIdsField, cohortModulesField) }
-          .filter { user.canReadCohort(it.id) }
+          .filter {
+            user.canReadCohort(it.id) &&
+                (participantIdsField == null || user.canReadCohortParticipants(it.id))
+          }
     }
   }
 }

@@ -601,6 +601,8 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         deleteSelf = true,
+        readCohort = true,
+        readParticipant = true,
     )
 
     permissions.andNothingElse()
@@ -845,6 +847,8 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         deleteSelf = true,
+        readCohort = true,
+        readParticipant = true,
     )
 
     permissions.andNothingElse()
@@ -1008,6 +1012,8 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         deleteSelf = true,
+        readCohort = true,
+        readParticipant = true,
     )
 
     permissions.andNothingElse()
@@ -1152,6 +1158,8 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         deleteSelf = true,
+        readCohort = true,
+        readParticipant = true,
     )
 
     permissions.andNothingElse()
@@ -1334,6 +1342,7 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
+        readCohortParticipants = true,
         readCohorts = true,
         readGlobalRoles = true,
         readModuleEventParticipants = true,
@@ -1635,6 +1644,7 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
+        readCohortParticipants = true,
         readCohorts = true,
         readGlobalRoles = true,
         readInternalTags = true,
@@ -1809,6 +1819,7 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
+        readCohortParticipants = true,
         readCohorts = true,
         readGlobalRoles = true,
         readInternalTags = true,
@@ -1967,6 +1978,7 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
+        readCohortParticipants = true,
         readCohorts = true,
         readGlobalRoles = false,
         readModuleEventParticipants = true,
@@ -2099,6 +2111,7 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
+        readCohortParticipants = true,
         readCohorts = true,
         readGlobalRoles = false,
         readModuleEventParticipants = true,
@@ -2556,6 +2569,7 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails: Boolean = false,
         readAllDeliverables: Boolean = false,
         readCohort: Boolean = false,
+        readCohortParticipants: Boolean = false,
         readCohorts: Boolean = false,
         readGlobalRoles: Boolean = false,
         readInternalTags: Boolean = false,
@@ -2616,6 +2630,10 @@ internal class PermissionTest : DatabaseTest() {
           "Can read all accelerator details")
       assertEquals(readAllDeliverables, user.canReadAllDeliverables(), "Can read all deliverables")
       assertEquals(readCohort, user.canReadCohort(cohortIds[0]), "Can read cohort")
+      assertEquals(
+          readCohortParticipants,
+          user.canReadCohortParticipants(cohortIds[0]),
+          "Can read cohort participants")
       assertEquals(readCohorts, user.canReadCohorts(), "Can read all cohorts")
       assertEquals(readGlobalRoles, user.canReadGlobalRoles(), "Can read global roles")
       assertEquals(readInternalTags, user.canReadInternalTags(), "Can read internal tags")

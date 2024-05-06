@@ -554,6 +554,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readCohortParticipants(cohortId: CohortId) {
+    if (!user.canReadCohortParticipants(cohortId)) {
+      readCohort(cohortId)
+      throw AccessDeniedException("No permission to read participants for cohort $cohortId")
+    }
+  }
+
   fun readCohorts() {
     if (!user.canReadCohorts()) {
       throw AccessDeniedException("No permission to read cohorts")

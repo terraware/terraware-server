@@ -286,6 +286,8 @@ data class DeviceManagerUser(
 
   override fun canReadCohort(cohortId: CohortId): Boolean = false
 
+  override fun canReadCohortParticipants(cohortId: CohortId): Boolean = false
+
   override fun canReadCohorts(): Boolean = false
 
   override fun canReadDefaultVoters(): Boolean = false
