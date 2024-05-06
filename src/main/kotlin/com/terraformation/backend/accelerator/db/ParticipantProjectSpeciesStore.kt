@@ -7,7 +7,6 @@ import com.terraformation.backend.accelerator.model.toModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
-import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectSpeciesDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
@@ -33,20 +32,18 @@ class ParticipantProjectSpeciesStore(
       throw ProjectNotInParticipantException(model.projectId)
     }
 
-    return dslContext.transactionResult { _ ->
-      val row =
-          ParticipantProjectSpeciesRow(
-              feedback = model.feedback,
-              projectId = model.projectId,
-              rationale = model.rationale,
-              speciesId = model.speciesId,
-              submissionStatusId = model.submissionStatus ?: SubmissionStatus.NotSubmitted,
-          )
+    val row =
+        ParticipantProjectSpeciesRow(
+            feedback = model.feedback,
+            projectId = model.projectId,
+            rationale = model.rationale,
+            speciesId = model.speciesId,
+            submissionStatusId = model.submissionStatus,
+        )
 
-      participantProjectSpeciesDao.insert(row)
+    participantProjectSpeciesDao.insert(row)
 
-      row.toModel()
-    }
+    return row.toModel()
   }
 
   fun fetchOneById(

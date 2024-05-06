@@ -37,7 +37,7 @@ class ParticipantProjectSpeciesController(
             projectId = model.projectId,
             rationale = model.rationale,
             speciesId = model.speciesId,
-            submissionStatus = model.submissionStatus!!,
+            submissionStatus = model.submissionStatus,
         ))
   }
 }

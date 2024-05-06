@@ -10,11 +10,11 @@ import org.jooq.Record
 
 data class ParticipantProjectSpeciesModel<ID : ParticipantProjectSpeciesId?>(
     val id: ID,
-    val feedback: String?,
+    val feedback: String? = null,
     val projectId: ProjectId,
-    val rationale: String?,
+    val rationale: String? = null,
     val speciesId: SpeciesId,
-    val submissionStatus: SubmissionStatus?,
+    val submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted,
 ) {
   companion object {
     fun of(record: Record): ExistingParticipantProjectSpeciesModel {
@@ -42,6 +42,6 @@ fun ParticipantProjectSpeciesRow.toModel(): ExistingParticipantProjectSpeciesMod
       projectId = projectId!!,
       rationale = rationale,
       speciesId = speciesId!!,
-      submissionStatus = submissionStatusId,
+      submissionStatus = submissionStatusId!!,
   )
 }

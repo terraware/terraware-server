@@ -123,8 +123,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   id = null,
                   projectId = projectId,
                   rationale = "rationale",
-                  speciesId = speciesId,
-                  submissionStatus = null))
+                  speciesId = speciesId))
 
       assertEquals(
           ParticipantProjectSpeciesRow(
@@ -151,8 +150,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 id = null,
                 projectId = projectId,
                 rationale = "rationale",
-                speciesId = speciesId,
-                submissionStatus = null))
+                speciesId = speciesId))
       }
     }
 
@@ -171,8 +169,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 id = null,
                 projectId = projectId,
                 rationale = "rationale",
-                speciesId = speciesId,
-                submissionStatus = null))
+                speciesId = speciesId))
       }
     }
   }
