@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -68,6 +69,22 @@ class ParticipantProjectSpeciesController(
     return makeGetResponse(model)
   }
 
+  @ApiResponse200
+  @PutMapping("/{participantProjectSpeciesId}")
+  @Operation(summary = "Updates a participant project species entry.")
+  fun updateParticipantProjectSpecies(
+      @RequestBody payload: UpdateParticipantProjectSpeciesPayload
+  ): SimpleSuccessResponsePayload {
+    participantProjectSpeciesStore.update(payload.participantProjectSpecies.id) {
+      it.copy(
+          feedback = payload.participantProjectSpecies.feedback,
+          rationale = payload.participantProjectSpecies.rationale,
+          submissionStatus = payload.participantProjectSpecies.submissionStatus)
+    }
+
+    return SimpleSuccessResponsePayload()
+  }
+
   private fun makeGetResponse(
       model: ExistingParticipantProjectSpeciesModel
   ): GetParticipantProjectSpeciesResponsePayload =
@@ -105,3 +122,7 @@ data class ParticipantProjectSpeciesPayload(
 data class GetParticipantProjectSpeciesResponsePayload(
     val participantProjectSpecies: ParticipantProjectSpeciesPayload,
 ) : SuccessResponsePayload
+
+data class UpdateParticipantProjectSpeciesPayload(
+    val participantProjectSpecies: ParticipantProjectSpeciesPayload,
+)
