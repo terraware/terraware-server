@@ -23,7 +23,9 @@ class ModulesTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          events.asMultiValueSublist("events", EVENTS.MODULE_ID.eq(MODULES.ID)),
+          cohortModules.asMultiValueSublist(
+              "cohortModules", MODULES.ID.eq(COHORT_MODULES.MODULE_ID)),
+          events.asMultiValueSublist("events", MODULES.ID.eq(EVENTS.MODULE_ID)),
       )
     }
   }
@@ -36,6 +38,7 @@ class ModulesTable(tables: SearchTables) : SearchTable() {
           textField("name", MODULES.NAME, nullable = false),
           textField("oneOnOneSessionDescription", MODULES.ONE_ON_ONE_SESSION_DESCRIPTION),
           textField("overview", MODULES.OVERVIEW),
+          enumField("phase", MODULES.PHASE_ID, nullable = false),
           textField("preparationMaterials", MODULES.PREPARATION_MATERIALS),
           textField("workshopDescription", MODULES.WORKSHOP_DESCRIPTION),
       )

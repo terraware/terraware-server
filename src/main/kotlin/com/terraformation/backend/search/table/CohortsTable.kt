@@ -3,7 +3,9 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
+import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -19,6 +21,8 @@ class CohortsTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
+          cohortModules.asMultiValueSublist(
+              "cohortModules", COHORTS.ID.eq(COHORT_MODULES.COHORT_ID)),
           participants.asMultiValueSublist("participants", COHORTS.ID.eq(PARTICIPANTS.COHORT_ID)),
       )
     }
@@ -42,7 +46,13 @@ class CohortsTable(tables: SearchTables) : SearchTable() {
     return if (currentUser().canReadAllAcceleratorDetails()) {
       DSL.trueCondition()
     } else {
-      DSL.falseCondition()
+      DSL.exists(
+          DSL.selectOne()
+              .from(PARTICIPANTS)
+              .join(PROJECTS)
+              .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+              .where(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
+              .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)))
     }
   }
 }

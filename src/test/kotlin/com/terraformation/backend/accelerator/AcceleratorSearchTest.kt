@@ -354,4 +354,53 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
     assertJsonEquals(expected, actual)
   }
+
+  @Test
+  fun `searches cohorts and participants by organization membership for external users`() {
+    every { user.canReadAllAcceleratorDetails() } returns false
+    every { user.organizationRoles } returns mapOf(inserted.organizationId to Role.Admin)
+
+    // Test setup already inserts a participant+project with no cohort;
+    val cohortId = insertCohort()
+    val participantId = insertParticipant(cohortId = inserted.cohortId)
+    val projectId =
+        insertProject(
+            organizationId = inserted.organizationId, participantId = inserted.participantId)
+
+    val otherUser = insertUser(100)
+    val otherOrganization = insertOrganization(id = 100, createdBy = otherUser)
+    insertOrganizationUser(
+        userId = otherUser, organizationId = otherOrganization, role = Role.Admin)
+    val otherParticipant = insertParticipant(cohortId = inserted.cohortId)
+    insertProject(
+        organizationId = otherOrganization, participantId = otherParticipant, createdBy = otherUser)
+
+    val prefix = SearchFieldPrefix(searchTables.cohorts)
+    val fields =
+        listOf(
+                "id",
+                "participants.id",
+                "participants.projects.id",
+            )
+            .map { prefix.resolve(it) }
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "$cohortId",
+                    "participants" to
+                        listOf(
+                            mapOf(
+                                "id" to "$participantId",
+                                "projects" to listOf(mapOf("id" to "$projectId"))),
+                        ),
+                ),
+            ),
+            null)
+
+    val actual = searchService.search(prefix, fields, NoConditionNode())
+
+    assertJsonEquals(expected, actual)
+  }
 }

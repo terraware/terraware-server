@@ -37,7 +37,11 @@ class ParticipantsTable(tables: SearchTables) : SearchTable() {
     return if (currentUser().canReadAllAcceleratorDetails()) {
       DSL.trueCondition()
     } else {
-      DSL.falseCondition()
+      DSL.exists(
+          DSL.selectOne()
+              .from(PROJECTS)
+              .where(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+              .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)))
     }
   }
 }
