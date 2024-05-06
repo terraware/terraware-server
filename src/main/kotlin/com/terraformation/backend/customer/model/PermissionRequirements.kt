@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.model
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleNotFoundException
 import com.terraformation.backend.accelerator.db.ParticipantNotFoundException
+import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionNotFoundException
 import com.terraformation.backend.db.AccessionNotFoundException
@@ -28,6 +29,7 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -254,6 +256,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createParticipantProjectSpecies(projectId: ProjectId) {
+    if (!user.canCreateParticipantProjectSpecies(projectId)) {
+      throw AccessDeniedException("No permission to create participant project species")
+    }
+  }
+
   fun createPlantingSite(organizationId: OrganizationId) {
     if (!user.canCreatePlantingSite(organizationId)) {
       readOrganization(organizationId)
@@ -375,6 +383,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
       readParticipant(participantId)
       readProject(projectId)
       throw AccessDeniedException("No permission to delete project from participant $participantId")
+    }
+  }
+
+  fun deleteParticipantProjectSpecies(participantProjectSpeciesId: ParticipantProjectSpeciesId) {
+    if (!user.canDeleteParticipantProjectSpecies(participantProjectSpeciesId)) {
+      readParticipantProjectSpecies(participantProjectSpeciesId)
+      throw AccessDeniedException(
+          "No permission to delete participant project species $participantProjectSpeciesId")
     }
   }
 
@@ -682,6 +698,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readParticipant(participantId: ParticipantId) {
     if (!user.canReadParticipant(participantId)) {
       throw ParticipantNotFoundException(participantId)
+    }
+  }
+
+  fun readParticipantProjectSpecies(participantProjectSpeciesId: ParticipantProjectSpeciesId) {
+    if (!user.canReadParticipantProjectSpecies(participantProjectSpeciesId)) {
+      throw ParticipantProjectSpeciesNotFoundException(participantProjectSpeciesId)
     }
   }
 
@@ -1020,6 +1042,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateParticipant(participantId)) {
       readParticipant(participantId)
       throw AccessDeniedException("No permission to update participant $participantId")
+    }
+  }
+
+  fun updateParticipantProjectSpecies(participantProjectSpeciesId: ParticipantProjectSpeciesId) {
+    if (!user.canUpdateParticipantProjectSpecies(participantProjectSpeciesId)) {
+      readParticipantProjectSpecies(participantProjectSpeciesId)
+      throw AccessDeniedException(
+          "No permission to update participant project species $participantProjectSpeciesId")
     }
   }
 

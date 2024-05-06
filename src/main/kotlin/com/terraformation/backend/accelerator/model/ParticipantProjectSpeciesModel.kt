@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -9,11 +10,11 @@ import org.jooq.Record
 
 data class ParticipantProjectSpeciesModel<ID : ParticipantProjectSpeciesId?>(
     val id: ID,
-    val feedback: String?,
+    val feedback: String? = null,
     val projectId: ProjectId,
-    val rationale: String?,
+    val rationale: String? = null,
     val speciesId: SpeciesId,
-    val submissionStatus: SubmissionStatus,
+    val submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted,
 ) {
   companion object {
     fun of(record: Record): ExistingParticipantProjectSpeciesModel {
@@ -31,3 +32,16 @@ data class ParticipantProjectSpeciesModel<ID : ParticipantProjectSpeciesId?>(
 
 typealias ExistingParticipantProjectSpeciesModel =
     ParticipantProjectSpeciesModel<ParticipantProjectSpeciesId>
+
+typealias NewParticipantProjectSpeciesModel = ParticipantProjectSpeciesModel<Nothing?>
+
+fun ParticipantProjectSpeciesRow.toModel(): ExistingParticipantProjectSpeciesModel {
+  return ExistingParticipantProjectSpeciesModel(
+      feedback = feedback,
+      id = id!!,
+      projectId = projectId!!,
+      rationale = rationale,
+      speciesId = speciesId!!,
+      submissionStatus = submissionStatusId!!,
+  )
+}
