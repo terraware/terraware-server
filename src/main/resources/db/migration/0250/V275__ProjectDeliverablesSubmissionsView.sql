@@ -3,6 +3,7 @@ CREATE VIEW accelerator.project_deliverable_summaries AS
 SELECT deliverables.id as deliverable_id,
        deliverables.deliverable_category_id,
        deliverables.deliverable_type_id,
+       deliverables.position,
        deliverables.name,
        deliverables.description_html,
        deliverables.is_required,
