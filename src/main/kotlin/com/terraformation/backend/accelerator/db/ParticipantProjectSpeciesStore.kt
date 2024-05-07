@@ -79,29 +79,15 @@ class ParticipantProjectSpeciesStore(
     }
   }
 
-  fun deleteMany(participantProjectSpeciesIds: Set<ParticipantProjectSpeciesId>) {
+  fun delete(participantProjectSpeciesIds: Set<ParticipantProjectSpeciesId>) {
     participantProjectSpeciesIds.forEach {
       requirePermissions { deleteParticipantProjectSpecies(it) }
     }
 
-    dslContext.transactionResult { _ ->
-      val rowsDeleted =
-          dslContext
-              .deleteFrom(PARTICIPANT_PROJECT_SPECIES)
-              .where(PARTICIPANT_PROJECT_SPECIES.ID.`in`(participantProjectSpeciesIds))
-              .execute()
-
-      if (rowsDeleted != participantProjectSpeciesIds.size) {
-        val failed =
-            dslContext
-                .select(PARTICIPANT_PROJECT_SPECIES.ID)
-                .from(PARTICIPANT_PROJECT_SPECIES)
-                .where(PARTICIPANT_PROJECT_SPECIES.ID.`in`(participantProjectSpeciesIds))
-                .fetchSet(PARTICIPANT_PROJECT_SPECIES.ID.asNonNullable())
-
-        throw ParticipantProjectSpeciesSetNotFoundException(failed)
-      }
-    }
+    dslContext
+        .deleteFrom(PARTICIPANT_PROJECT_SPECIES)
+        .where(PARTICIPANT_PROJECT_SPECIES.ID.`in`(participantProjectSpeciesIds))
+        .execute()
   }
 
   fun fetchOneById(

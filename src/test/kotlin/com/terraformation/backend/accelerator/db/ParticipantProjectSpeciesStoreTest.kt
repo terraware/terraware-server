@@ -284,7 +284,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       every { user.canDeleteParticipantProjectSpecies(any()) } returns true
 
-      store.deleteMany(setOf(participantProjectSpeciesId1, participantProjectSpeciesId2))
+      store.delete(setOf(participantProjectSpeciesId1, participantProjectSpeciesId2))
 
       assertEquals(
           listOf(
@@ -294,33 +294,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId3,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)),
-          participantProjectSpeciesDao.findAll())
-    }
-
-    @Test
-    fun `throws exception if an entry does not exist`() {
-      val participantId = insertParticipant()
-      val projectId = insertProject(participantId = participantId)
-      val speciesId = insertSpecies()
-      val participantProjectSpeciesId =
-          insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
-
-      every { user.canDeleteParticipantProjectSpecies(any()) } returns true
-
-      assertThrows<ParticipantProjectSpeciesSetNotFoundException> {
-        store.deleteMany(setOf(participantProjectSpeciesId, ParticipantProjectSpeciesId(9999)))
-      }
-
-      // If any entity in the list does not exist, the entire delete fails and there are no changes
-      assertEquals(
-          listOf(
-              ParticipantProjectSpeciesRow(
-                  feedback = null,
-                  id = participantProjectSpeciesId,
-                  projectId = projectId,
-                  rationale = null,
-                  speciesId = speciesId,
                   submissionStatusId = SubmissionStatus.NotSubmitted)),
           participantProjectSpeciesDao.findAll())
     }
@@ -339,7 +312,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canDeleteParticipantProjectSpecies(participantProjectSpeciesId1) } returns true
 
       assertThrows<AccessDeniedException> {
-        store.deleteMany(setOf(participantProjectSpeciesId1, participantProjectSpeciesId2))
+        store.delete(setOf(participantProjectSpeciesId1, participantProjectSpeciesId2))
       }
 
       // If the current user does not have permission to delete any entity in the list,

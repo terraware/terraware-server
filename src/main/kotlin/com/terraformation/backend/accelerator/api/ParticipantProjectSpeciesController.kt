@@ -65,7 +65,7 @@ class ParticipantProjectSpeciesController(
   fun deleteParticipantProjectSpecies(
       @RequestBody payload: DeleteParticipantProjectSpeciesPayload
   ): SimpleSuccessResponsePayload {
-    participantProjectSpeciesStore.deleteMany(payload.participantProjectSpeciesIds.toSet())
+    participantProjectSpeciesStore.delete(payload.participantProjectSpeciesIds)
 
     return SimpleSuccessResponsePayload()
   }
@@ -121,7 +121,7 @@ data class CreateParticipantProjectSpeciesPayload(
 )
 
 data class DeleteParticipantProjectSpeciesPayload(
-    val participantProjectSpeciesIds: List<ParticipantProjectSpeciesId>,
+    val participantProjectSpeciesIds: Set<ParticipantProjectSpeciesId>,
 )
 
 data class ParticipantProjectSpeciesPayload(
