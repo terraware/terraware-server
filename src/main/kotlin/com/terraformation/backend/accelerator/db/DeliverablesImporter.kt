@@ -33,7 +33,8 @@ class DeliverablesImporter(
     private const val COLUMN_CATEGORY = COLUMN_MODULE_ID + 1
     private const val COLUMN_SENSITIVE = COLUMN_CATEGORY + 1
     private const val COLUMN_REQUIRED = COLUMN_SENSITIVE + 1
-    private const val NUM_COLUMNS = COLUMN_REQUIRED + 1
+    private const val DELIVERABLE_TYPE = COLUMN_REQUIRED + 1
+    private const val NUM_COLUMNS = DELIVERABLE_TYPE + 1
 
     /** Values we treat as true in boolean columns. */
     private val trueValues = setOf("y", "yes", "true", "t")
@@ -73,6 +74,16 @@ class DeliverablesImporter(
         }
 
         val deliverableId = values[COLUMN_ID]?.toLongOrNull()?.let { DeliverableId(it) }
+        val deliverableType =
+            values[DELIVERABLE_TYPE]?.lowercase()?.let {
+              when (it) {
+                "document" -> DeliverableType.Document
+                "species" -> DeliverableType.Species
+                else ->
+                    throw IllegalArgumentException(
+                        "Invalid Document Type, must be one of: 'Document', 'Species'")
+              }
+            }
         val moduleId = values[COLUMN_MODULE_ID]?.toLongOrNull()?.let { ModuleId(it) }
         val category = values[COLUMN_CATEGORY]?.lowercase()?.let { deliverableCategoriesByName[it] }
         val name = values[COLUMN_NAME]
@@ -119,6 +130,7 @@ class DeliverablesImporter(
         }
 
         if (deliverableId != null &&
+            deliverableType != null &&
             moduleId != null &&
             moduleId in validModuleIds &&
             category != null &&
@@ -128,7 +140,7 @@ class DeliverablesImporter(
                 .insertInto(DELIVERABLES)
                 .set(ID, deliverableId)
                 .set(DELIVERABLE_CATEGORY_ID, category)
-                .set(DELIVERABLE_TYPE_ID, DeliverableType.Document)
+                .set(DELIVERABLE_TYPE_ID, deliverableType)
                 .set(MODULE_ID, moduleId)
                 .set(POSITION, rowNumber)
                 .set(CREATED_BY, userId)
@@ -153,16 +165,18 @@ class DeliverablesImporter(
                 .execute()
           }
 
-          with(DELIVERABLE_DOCUMENTS) {
-            dslContext
-                .insertInto(DELIVERABLE_DOCUMENTS)
-                .set(DELIVERABLE_ID, deliverableId)
-                .set(DELIVERABLE_TYPE_ID, DeliverableType.Document)
-                .set(TEMPLATE_URL, templateUrl)
-                .onConflict()
-                .doUpdate()
-                .set(TEMPLATE_URL, templateUrl)
-                .execute()
+          if (deliverableType == DeliverableType.Document) {
+            with(DELIVERABLE_DOCUMENTS) {
+              dslContext
+                  .insertInto(DELIVERABLE_DOCUMENTS)
+                  .set(DELIVERABLE_ID, deliverableId)
+                  .set(DELIVERABLE_TYPE_ID, DeliverableType.Document)
+                  .set(TEMPLATE_URL, templateUrl)
+                  .onConflict()
+                  .doUpdate()
+                  .set(TEMPLATE_URL, templateUrl)
+                  .execute()
+            }
           }
         }
       }
