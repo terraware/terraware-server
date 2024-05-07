@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.use
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchResults
@@ -187,7 +188,51 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `can search for events by projects`() {
+  fun `can filter events by projects`() {
+    val event1 = insertEvent()
+    val event2 = insertEvent()
+    val event3 = insertEvent()
+    val hiddenEvent = insertEvent()
+
+    val project1 = insertProject(participantId = inserted.participantId)
+    val project2 = insertProject(participantId = inserted.participantId)
+
+    insertEventProject(event1, project1)
+    insertEventProject(event2, project1)
+    insertEventProject(event3, project1)
+    insertEventProject(event3, project2)
+    insertEventProject(hiddenEvent, project2)
+
+    val prefix = SearchFieldPrefix(searchTables.events)
+    val fields = listOf("id", "projects.id").map { prefix.resolve(it) }
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "$event1",
+                    "projects" to listOf(mapOf("id" to "$project1")),
+                ),
+                mapOf(
+                    "id" to "$event2",
+                    "projects" to listOf(mapOf("id" to "$project1")),
+                ),
+                mapOf(
+                    "id" to "$event3",
+                    "projects" to listOf(mapOf("id" to "$project1"), mapOf("id" to "$project2")),
+                ),
+            ),
+            null)
+
+    val actual =
+        searchService.search(
+            prefix, fields, FieldNode(prefix.resolve("projects.id"), listOf("$project1")))
+
+    assertJsonEquals(expected, actual)
+  }
+
+  @Test
+  fun `can search for events sublists using projects as prefix`() {
     val project1 = insertProject(participantId = inserted.participantId)
     val project2 = insertProject(participantId = inserted.participantId)
     val event1 = insertEvent()
