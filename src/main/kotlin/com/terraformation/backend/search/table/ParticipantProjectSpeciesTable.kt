@@ -21,7 +21,7 @@ class ParticipantProjectSpeciesTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           projects.asSingleValueSublist(
-              "projects", PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(PROJECTS.ID)),
+              "project", PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(PROJECTS.ID)),
           species.asSingleValueSublist(
               "species", PARTICIPANT_PROJECT_SPECIES.SPECIES_ID.eq(SPECIES.ID)),
       )
