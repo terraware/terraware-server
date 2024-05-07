@@ -77,7 +77,7 @@ class ParticipantProjectSpeciesController(
       @PathVariable participantProjectSpeciesId: ParticipantProjectSpeciesId,
       @RequestBody payload: UpdateParticipantProjectSpeciesPayload
   ): SimpleSuccessResponsePayload {
-    participantProjectSpeciesStore.update(participantProjectSpeciesId) { payload.applyTo(it) }
+    participantProjectSpeciesStore.update(participantProjectSpeciesId, payload::applyTo)
 
     return SimpleSuccessResponsePayload()
   }
