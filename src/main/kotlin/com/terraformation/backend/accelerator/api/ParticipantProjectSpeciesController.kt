@@ -34,8 +34,7 @@ class ParticipantProjectSpeciesController(
   fun assignParticipantProjectSpecies(
       @RequestBody payload: AssignParticipantProjectSpeciesPayload
   ): SimpleSuccessResponsePayload {
-    participantProjectSpeciesStore.createMany(
-        payload.projectIds, payload.speciesIds)
+    participantProjectSpeciesStore.createMany(payload.projectIds, payload.speciesIds)
     return SimpleSuccessResponsePayload()
   }
 
