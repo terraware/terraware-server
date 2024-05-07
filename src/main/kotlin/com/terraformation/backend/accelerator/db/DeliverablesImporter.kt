@@ -81,7 +81,7 @@ class DeliverablesImporter(
                 "species" -> DeliverableType.Species
                 else ->
                     throw IllegalArgumentException(
-                        "Invalid Document Type, must be one of: 'Document', 'Species'")
+                        "Invalid Document Type on row $rowNumber - $it, must be one of: 'Document', 'Species'")
               }
             }
         val moduleId = values[COLUMN_MODULE_ID]?.toLongOrNull()?.let { ModuleId(it) }
