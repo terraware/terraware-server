@@ -23,8 +23,7 @@ internal class SearchServicePermissionTest : SearchServiceTest() {
             listOf(
                 mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
                 mapOf("id" to "1000", "accessionNumber" to "XYZ"),
-            ),
-            cursor = null)
+            ))
 
     val actual =
         searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
@@ -39,7 +38,7 @@ internal class SearchServicePermissionTest : SearchServiceTest() {
     val fields = listOf(accessionNumberField)
     val sortOrder = fields.map { SearchSortField(it) }
 
-    val expected = SearchResults(emptyList(), cursor = null)
+    val expected = SearchResults(emptyList())
 
     val actual =
         searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)

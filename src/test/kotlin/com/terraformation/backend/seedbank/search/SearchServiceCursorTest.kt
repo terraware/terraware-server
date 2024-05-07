@@ -41,9 +41,7 @@ internal class SearchServiceCursorTest : SearchServiceTest() {
                     "accessionNumber" to "ABCDEFG",
                     "plantsCollectedFrom" to "2",
                     "active" to "Active",
-                ),
-            ),
-            cursor = null)
+                )))
 
     val secondPage =
         searchAccessions(

@@ -37,8 +37,7 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
             listOf(
                 mapOf("id" to "1000", "accessionNumber" to "XYZ", "state" to "Processing"),
                 mapOf("id" to "1001", "accessionNumber" to "ABCDEFG", "state" to "Drying"),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -52,10 +51,7 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
 
     val expected =
         SearchResults(
-            listOf(
-                mapOf("id" to "1000", "accessionNumber" to "XYZ", "state" to "In Storage"),
-            ),
-            cursor = null)
+            listOf(mapOf("id" to "1000", "accessionNumber" to "XYZ", "state" to "In Storage")))
 
     assertEquals(expected, result)
   }
@@ -80,8 +76,7 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
                 mapOf("id" to "1000", "accessionNumber" to "XYZ", "viabilityTests_type" to "Lab"),
                 mapOf(
                     "id" to "1000", "accessionNumber" to "XYZ", "viabilityTests_type" to "Nursery"),
-            ),
-            cursor = null)
+            ))
 
     val actual =
         searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
@@ -112,8 +107,7 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
                     "id" to "1000",
                     "state" to gibberishAwaitingProcessing,
                     "accessionNumber" to "XYZ"),
-            ),
-            cursor = null)
+            ))
 
     val actual =
         Locales.GIBBERISH.use {
@@ -142,8 +136,7 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
                     "active" to gibberishActive,
                     "id" to "1000",
                     "state" to gibberishInStorage,
-                )),
-            cursor = null)
+                )))
 
     val actual = Locales.GIBBERISH.use { searchAccessions(facilityId, fields, criteria = search) }
 

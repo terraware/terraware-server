@@ -43,8 +43,7 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
             listOf("900000 Milligrams", "650,000.000001 Pounds"),
             SearchFilterType.Range)
 
-    val expected =
-        SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")), cursor = null)
+    val expected = SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")))
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
@@ -58,8 +57,7 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(remainingGramsField, listOf("1000"))
 
-    val expected =
-        SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")), cursor = null)
+    val expected = SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")))
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
@@ -100,8 +98,7 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
                     "remainingKilograms" to "1",
                     "remainingMilligrams" to "1,000,000",
                     "remainingOunces" to "35.274",
-                    "remainingPounds" to "2.20462")),
-            cursor = null)
+                    "remainingPounds" to "2.20462")))
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
@@ -119,8 +116,7 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
           val searchNode = FieldNode(remainingPoundsField, listOf("2.205"), SearchFilterType.Fuzzy)
 
           val expected =
-              SearchResults(
-                  listOf(mapOf("accessionNumber" to "ABCDEFG", "id" to "1001")), cursor = null)
+              SearchResults(listOf(mapOf("accessionNumber" to "ABCDEFG", "id" to "1001")))
 
           val result = searchAccessions(facilityId, emptyList(), searchNode)
 
@@ -133,8 +129,7 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
               SearchResults(
                   listOf(
                       mapOf("accessionNumber" to "ABCDEFG", "id" to "1001"),
-                      mapOf("accessionNumber" to "XYZ", "id" to "1000")),
-                  cursor = null)
+                      mapOf("accessionNumber" to "XYZ", "id" to "1000")))
 
           val result = searchAccessions(facilityId, emptyList(), searchNode)
 

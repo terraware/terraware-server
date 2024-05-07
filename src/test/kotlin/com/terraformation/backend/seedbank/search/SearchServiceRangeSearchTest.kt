@@ -25,8 +25,7 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
                 mapOf(
                     "id" to "1001",
                     "accessionNumber" to "ABCDEFG",
-                    "plantsCollectedFrom" to "500")),
-            cursor = null)
+                    "plantsCollectedFrom" to "500")))
 
     assertEquals(expected, result)
   }
@@ -42,8 +41,7 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
 
     val expected =
         SearchResults(
-            listOf(mapOf("id" to "1000", "accessionNumber" to "XYZ", "plantsCollectedFrom" to "1")),
-            cursor = null)
+            listOf(mapOf("id" to "1000", "accessionNumber" to "XYZ", "plantsCollectedFrom" to "1")))
 
     assertEquals(expected, result)
   }
@@ -63,8 +61,7 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
                 mapOf(
                     "id" to "1001",
                     "accessionNumber" to "ABCDEFG",
-                    "plantsCollectedFrom" to "500")),
-            cursor = null)
+                    "plantsCollectedFrom" to "500")))
 
     assertEquals(expected, result)
   }

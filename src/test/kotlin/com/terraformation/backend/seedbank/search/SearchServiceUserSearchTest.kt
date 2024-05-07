@@ -78,8 +78,7 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
                                             listOf(
                                                 mapOf(
                                                     "organization" to
-                                                        mapOf("id" to "$organizationId")))))))),
-            null)
+                                                        mapOf("id" to "$organizationId")))))))))
 
     val actual = searchService.search(organizationsPrefix, fields, NoConditionNode(), sortOrder)
 
@@ -104,8 +103,7 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
                 mapOf(
                     "id" to "$bothOrgsUserId",
                     "organizationMemberships_organization_id" to "$organizationId",
-                )),
-            null)
+                )))
 
     val actual = searchService.search(usersPrefix, fields, NoConditionNode(), sortOrder)
 
@@ -119,8 +117,7 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
     val sortOrder = fields.map { SearchSortField(it) }
 
     val expected =
-        SearchResults(
-            listOf(mapOf("id" to "${user.userId}"), mapOf("id" to "$bothOrgsUserId")), null)
+        SearchResults(listOf(mapOf("id" to "${user.userId}"), mapOf("id" to "$bothOrgsUserId")))
 
     val actual = searchService.search(usersPrefix, fields, NoConditionNode(), sortOrder)
 
@@ -154,8 +151,7 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
                 mapOf(
                     "organization_id" to "$organizationId",
                     "roleName" to Role.Admin.getDisplayName(Locale.ENGLISH),
-                )),
-            null)
+                )))
 
     val actual = searchService.search(membersPrefix, fields, criteria, sortOrder)
     assertEquals(expected, actual)

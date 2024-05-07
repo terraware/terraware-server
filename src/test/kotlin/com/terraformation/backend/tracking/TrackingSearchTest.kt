@@ -286,8 +286,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                             "id" to "$projectId",
                             "modifiedTime" to "1970-01-01T00:00:00Z",
                             "name" to "Project 1"),
-                    "totalPlants" to "6")),
-            null)
+                    "totalPlants" to "6")))
 
     val prefix = SearchFieldPrefix(searchTables.plantingSites)
     val fields =
@@ -363,7 +362,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
 
     val prefix = SearchFieldPrefix(root = searchTables.plantingSubzones)
 
-    val expected = SearchResults(emptyList(), null)
+    val expected = SearchResults(emptyList())
     val actual = searchService.search(prefix, listOf(prefix.resolve("id")), NoConditionNode())
 
     assertEquals(expected, actual)

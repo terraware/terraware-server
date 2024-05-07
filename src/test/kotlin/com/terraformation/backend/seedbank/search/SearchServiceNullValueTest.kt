@@ -23,8 +23,7 @@ internal class SearchServiceNullValueTest : SearchServiceTest() {
             listOf(
                 mapOf("id" to "1001", "accessionNumber" to "ABCDEFG", "processingNotes" to "Notes"),
                 mapOf("id" to "1000", "accessionNumber" to "XYZ"),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -47,8 +46,7 @@ internal class SearchServiceNullValueTest : SearchServiceTest() {
             listOf(
                 mapOf("id" to "1001", "accessionNumber" to "ABCDEFG", "processingNotes" to "Notes"),
                 mapOf("id" to "1", "accessionNumber" to "MISSING"),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -67,8 +65,7 @@ internal class SearchServiceNullValueTest : SearchServiceTest() {
             listOf(
                 mapOf("id" to "1001", "accessionNumber" to "ABCDEFG", "processingNotes" to "Notes"),
                 mapOf("id" to "1000", "accessionNumber" to "XYZ"),
-            ),
-            null),
+            )),
         searchAccessions(facilityId, fields, searchNode))
   }
 }

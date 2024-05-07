@@ -15,7 +15,7 @@ data class SearchResults(
      * Cursor that can be passed to [SearchService.search] to retrieve additional results. If
      * [results] contains the full set of results, this will be null.
      */
-    val cursor: String?
+    val cursor: String? = null,
 ) {
   /**
    * Turns nested field values into CRLF-delimited strings suitable for exporting to a CSV file.

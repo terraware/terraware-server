@@ -53,8 +53,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
                     "bagNumber" to "B",
                     "accessionNumber" to "XYZ",
                 ),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -87,8 +86,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
                     "id" to "1001",
                     "accessionNumber" to "ABCDEFG",
                 ),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -119,8 +117,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
                     "plantsCollectedFrom" to "1",
                     "active" to "Active",
                 ),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -140,8 +137,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
                 mapOf("scientificName" to "Å x"),
                 mapOf("scientificName" to "Kousa Dogwood"),
                 mapOf("scientificName" to "Other Dogwood"),
-            ),
-            cursor = null)
+            ))
 
     val swedishExpected =
         SearchResults(
@@ -150,8 +146,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
                 mapOf("scientificName" to "Kousa Dogwood"),
                 mapOf("scientificName" to "Other Dogwood"),
                 mapOf("scientificName" to "Å x"),
-            ),
-            cursor = null)
+            ))
 
     val englishResult =
         Locale.ENGLISH.use {
@@ -178,8 +173,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
 
     val expected =
         SearchResults(
-            listOf(mapOf("id" to "1000", "accessionNumber" to "XYZ", "state" to "Used Up")),
-            cursor = null)
+            listOf(mapOf("id" to "1000", "accessionNumber" to "XYZ", "state" to "Used Up")))
 
     assertEquals(expected, result)
   }
@@ -197,8 +191,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
-    val expected =
-        SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")), cursor = null)
+    val expected = SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")))
 
     assertEquals(expected, result)
   }
@@ -215,8 +208,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
               countryPrefix, listOf(countryCodeField, countryNameField), searchNode)
         }
 
-    val expected =
-        SearchResults(listOf(mapOf("code" to "US", "name" to gibberishValue)), cursor = null)
+    val expected = SearchResults(listOf(mapOf("code" to "US", "name" to gibberishValue)))
 
     assertEquals(expected, result)
   }
@@ -227,7 +219,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
 
     val result = searchService.search(countryPrefix, listOf(countryNameField), searchNode)
 
-    val expected = SearchResults(listOf(mapOf("name" to "Côte d’Ivoire")), cursor = null)
+    val expected = SearchResults(listOf(mapOf("name" to "Côte d’Ivoire")))
 
     assertEquals(expected, result)
   }
@@ -253,8 +245,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
             listOf(
                 mapOf("name" to unitedStates),
                 mapOf("name" to togo),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -277,8 +268,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
                 mapOf(
                     "id" to "1000",
                     "accessionNumber" to "XYZ",
-                    "species_checkedTime" to checkedTimeString)),
-            cursor = null)
+                    "species_checkedTime" to checkedTimeString)))
 
     assertEquals(expected, result)
   }
@@ -299,8 +289,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
             listOf(
                 mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
                 mapOf("id" to "1000", "accessionNumber" to "XYZ"),
-            ),
-            cursor = null)
+            ))
 
     val actual =
         searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)

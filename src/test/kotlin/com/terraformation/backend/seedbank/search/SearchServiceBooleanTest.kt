@@ -25,8 +25,7 @@ internal class SearchServiceBooleanTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf("id" to "10000", "rare" to "false".toGibberish()),
-                mapOf("id" to "10001", "rare" to "true".toGibberish())),
-            cursor = null)
+                mapOf("id" to "10001", "rare" to "true".toGibberish())))
 
     assertEquals(expected, result)
   }
@@ -39,7 +38,7 @@ internal class SearchServiceBooleanTest : SearchServiceTest() {
 
     val result = Locales.GIBBERISH.use { searchService.search(prefix, fields, criteria) }
 
-    val expected = SearchResults(listOf(mapOf("id" to "10001")), cursor = null)
+    val expected = SearchResults(listOf(mapOf("id" to "10001")))
 
     assertEquals(expected, result)
   }
