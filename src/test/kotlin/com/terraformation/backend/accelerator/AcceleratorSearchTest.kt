@@ -360,7 +360,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAllAcceleratorDetails() } returns false
     every { user.organizationRoles } returns mapOf(inserted.organizationId to Role.Admin)
 
-    // Test setup already inserts a participant+project with no cohort;
+    // Test setup already inserts a participant+project with no cohort
     val cohortId = insertCohort()
     val participantId = insertParticipant(cohortId = inserted.cohortId)
     val projectId =
