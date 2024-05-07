@@ -20,9 +20,9 @@ class ParticipantProjectSpeciesTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          projects.asMultiValueSublist(
+          projects.asSingleValueSublist(
               "projects", PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(PROJECTS.ID)),
-          species.asMultiValueSublist(
+          species.asSingleValueSublist(
               "species", PARTICIPANT_PROJECT_SPECIES.SPECIES_ID.eq(SPECIES.ID)),
       )
     }
