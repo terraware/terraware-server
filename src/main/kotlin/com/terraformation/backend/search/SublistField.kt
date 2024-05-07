@@ -63,6 +63,17 @@ data class SublistField(
      * used to determine whether fields are nullable.
      */
     val isRequired: Boolean = false,
+
+    /**
+     * True if this sublist represents a direct parent-to-child relationship. This value is used to
+     * whether this sublist is traversed when enumerating all possible fields.
+     *
+     * By default, one-to-many relationships are traversed.
+     *
+     * This is similar to the heuristics for an A star search. This gives guidance on the most
+     * direct path to each table.
+     */
+    val isTraversedForGetAllFields: Boolean = isMultiValue,
 ) {
   val delimiter: Char
     get() = if (isFlattened) FLATTENED_SUBLIST_DELIMITER else NESTED_SUBLIST_DELIMITER
