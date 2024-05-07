@@ -11,7 +11,6 @@ import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectSpeciesDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
-import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
