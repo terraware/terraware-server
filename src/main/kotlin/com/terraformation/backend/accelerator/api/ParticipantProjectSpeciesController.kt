@@ -77,12 +77,7 @@ class ParticipantProjectSpeciesController(
       @PathVariable participantProjectSpeciesId: ParticipantProjectSpeciesId,
       @RequestBody payload: UpdateParticipantProjectSpeciesPayload
   ): SimpleSuccessResponsePayload {
-    participantProjectSpeciesStore.update(participantProjectSpeciesId) {
-      it.copy(
-          feedback = payload.participantProjectSpecies.feedback,
-          rationale = payload.participantProjectSpecies.rationale,
-          submissionStatus = payload.participantProjectSpecies.submissionStatus)
-    }
+    participantProjectSpeciesStore.update(participantProjectSpeciesId) { payload.applyTo(it) }
 
     return SimpleSuccessResponsePayload()
   }
@@ -126,5 +121,10 @@ data class GetParticipantProjectSpeciesResponsePayload(
 ) : SuccessResponsePayload
 
 data class UpdateParticipantProjectSpeciesPayload(
-    val participantProjectSpecies: ParticipantProjectSpeciesPayload,
-)
+    val feedback: String?,
+    val rationale: String?,
+    val submissionStatus: SubmissionStatus,
+) {
+  fun applyTo(model: ExistingParticipantProjectSpeciesModel) =
+      model.copy(feedback = feedback, rationale = rationale, submissionStatus = submissionStatus)
+}
