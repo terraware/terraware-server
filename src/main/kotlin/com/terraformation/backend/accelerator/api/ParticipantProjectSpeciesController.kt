@@ -35,7 +35,7 @@ class ParticipantProjectSpeciesController(
       @RequestBody payload: AssignParticipantProjectSpeciesPayload
   ): SimpleSuccessResponsePayload {
     participantProjectSpeciesStore.createMany(
-        payload.projectIds.toSet(), payload.speciesIds.toSet())
+        payload.projectIds, payload.speciesIds)
     return SimpleSuccessResponsePayload()
   }
 
@@ -84,8 +84,8 @@ class ParticipantProjectSpeciesController(
 }
 
 data class AssignParticipantProjectSpeciesPayload(
-    val projectIds: List<ProjectId>,
-    val speciesIds: List<SpeciesId>
+    val projectIds: Set<ProjectId>,
+    val speciesIds: Set<SpeciesId>
 )
 
 data class CreateParticipantProjectSpeciesPayload(
