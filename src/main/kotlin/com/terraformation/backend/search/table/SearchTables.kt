@@ -28,6 +28,7 @@ class SearchTables(clock: Clock) {
   val batches = BatchesTable(this)
   val batchSubLocations = BatchSubLocationsTable(this)
   val batchWithdrawals = BatchWithdrawalsTable(this)
+  val cohortModules = CohortModulesTable(this)
   val cohorts = CohortsTable(this)
   val countries = CountriesTable(this)
   val countrySubdivisions = CountrySubdivisionsTable(this)
