@@ -358,6 +358,10 @@ val EMBEDDABLES =
             .withTables("tracking.planting_subzone_populations")
             .withColumns("planting_subzone_id", "species_id"),
         EmbeddableDefinitionType()
+            .withName("project_deliverable_id")
+            .withTables("project_deliverables")
+            .withColumns("project_id", "deliverable_id"),
+        EmbeddableDefinitionType()
             .withName("project_land_use_model_type_id")
             .withTables("project_land_use_model_types")
             .withColumns("project_id", "land_use_model_type_id"),

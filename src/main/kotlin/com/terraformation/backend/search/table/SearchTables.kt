@@ -59,6 +59,7 @@ class SearchTables(clock: Clock) {
   val plantingSubzonePopulations = PlantingSubzonePopulationsTable(this)
   val plantingSubzones = PlantingSubzonesTable(this)
   val projectAcceleratorDetails = ProjectAcceleratorDetailsTable(this)
+  val projectDeliverables = ProjectDeliverablesTable(this)
   val projectLandUseModelTypes = ProjectLandUseModelTypesTable(this)
   val projects = ProjectsTable(this)
   val reports = ReportsTable(this)
