@@ -216,4 +216,53 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           participantProjectSpeciesDao.findAll().map { it.copy(id = null) })
     }
   }
+
+  @Nested
+  inner class Update {
+    @Test
+    fun `updates the entity with the supplied fields`() {
+      val participantId = insertParticipant()
+      val projectId = insertProject(participantId = participantId)
+      val speciesId = insertSpecies()
+      val participantProjectSpeciesId =
+          insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
+
+      every { user.canUpdateParticipantProjectSpecies(participantProjectSpeciesId) } returns true
+
+      store.update(participantProjectSpeciesId) {
+        it.copy(feedback = "Looks good", submissionStatus = SubmissionStatus.Approved)
+      }
+
+      assertEquals(
+          ParticipantProjectSpeciesRow(
+              feedback = "Looks good",
+              id = participantProjectSpeciesId,
+              projectId = projectId,
+              speciesId = speciesId,
+              submissionStatusId = SubmissionStatus.Approved),
+          participantProjectSpeciesDao.fetchOneById(participantProjectSpeciesId))
+    }
+
+    @Test
+    fun `throws exception if the entry does not exist`() {
+      every { user.canUpdateParticipantProjectSpecies(any()) } returns true
+
+      assertThrows<ParticipantProjectSpeciesNotFoundException> {
+        store.update(ParticipantProjectSpeciesId(1)) { it }
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to update the entry`() {
+      val participantId = insertParticipant()
+      val projectId = insertProject(participantId = participantId)
+      val speciesId = insertSpecies()
+      val participantProjectSpeciesId =
+          insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
+
+      assertThrows<AccessDeniedException> {
+        store.update(participantProjectSpeciesId) { it.copy(feedback = "Needs some work") }
+      }
+    }
+  }
 }

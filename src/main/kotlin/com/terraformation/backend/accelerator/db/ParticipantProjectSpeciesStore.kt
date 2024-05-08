@@ -89,6 +89,33 @@ class ParticipantProjectSpeciesStore(
     return fetch(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(projectId))
   }
 
+  fun update(
+      participantProjectSpeciesId: ParticipantProjectSpeciesId,
+      updateFunc: (ExistingParticipantProjectSpeciesModel) -> ExistingParticipantProjectSpeciesModel
+  ) {
+    requirePermissions { updateParticipantProjectSpecies(participantProjectSpeciesId) }
+
+    val existing = fetchOneById(participantProjectSpeciesId)
+    val updated = updateFunc(existing)
+
+    dslContext.transaction { _ ->
+      val rowsUpdated =
+          with(PARTICIPANT_PROJECT_SPECIES) {
+            dslContext
+                .update(PARTICIPANT_PROJECT_SPECIES)
+                .set(RATIONALE, updated.rationale)
+                .set(FEEDBACK, updated.feedback)
+                .set(SUBMISSION_STATUS_ID, updated.submissionStatus)
+                .where(ID.eq(participantProjectSpeciesId))
+                .execute()
+          }
+
+      if (rowsUpdated < 1) {
+        throw ParticipantProjectSpeciesNotFoundException(participantProjectSpeciesId)
+      }
+    }
+  }
+
   private fun fetch(condition: Condition?): List<ExistingParticipantProjectSpeciesModel> {
     val user = currentUser()
 
