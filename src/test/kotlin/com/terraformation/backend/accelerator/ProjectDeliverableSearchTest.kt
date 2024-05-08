@@ -261,7 +261,8 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
 
     val otherOrganization = insertOrganization(100)
     val otherParticipant = insertParticipant(cohortId = otherCohort)
-    val otherProject = insertProject(participantId = otherParticipant, organizationId = otherOrganization)
+    val otherProject =
+        insertProject(participantId = otherParticipant, organizationId = otherOrganization)
     insertSubmission(
         deliverableId = deliverableWithSubmission,
         projectId = otherProject,
