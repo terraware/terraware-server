@@ -78,6 +78,17 @@ class ParticipantProjectSpeciesStore(
     }
   }
 
+  fun delete(participantProjectSpeciesIds: Set<ParticipantProjectSpeciesId>) {
+    participantProjectSpeciesIds.forEach {
+      requirePermissions { deleteParticipantProjectSpecies(it) }
+    }
+
+    dslContext
+        .deleteFrom(PARTICIPANT_PROJECT_SPECIES)
+        .where(PARTICIPANT_PROJECT_SPECIES.ID.`in`(participantProjectSpeciesIds))
+        .execute()
+  }
+
   fun fetchOneById(
       participantProjectSpeciesId: ParticipantProjectSpeciesId
   ): ExistingParticipantProjectSpeciesModel {

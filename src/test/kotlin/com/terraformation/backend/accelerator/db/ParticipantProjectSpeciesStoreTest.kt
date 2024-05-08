@@ -265,4 +265,75 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       }
     }
   }
+
+  @Nested
+  inner class Delete {
+    @Test
+    fun `deletes the supplied list of entities by ID`() {
+      val participantId = insertParticipant()
+      val projectId = insertProject(participantId = participantId)
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+      val speciesId3 = insertSpecies()
+      val participantProjectSpeciesId1 =
+          insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId1)
+      val participantProjectSpeciesId2 =
+          insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId2)
+      val participantProjectSpeciesId3 =
+          insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId3)
+
+      every { user.canDeleteParticipantProjectSpecies(any()) } returns true
+
+      store.delete(setOf(participantProjectSpeciesId1, participantProjectSpeciesId2))
+
+      assertEquals(
+          listOf(
+              ParticipantProjectSpeciesRow(
+                  feedback = null,
+                  id = participantProjectSpeciesId3,
+                  projectId = projectId,
+                  rationale = null,
+                  speciesId = speciesId3,
+                  submissionStatusId = SubmissionStatus.NotSubmitted)),
+          participantProjectSpeciesDao.findAll())
+    }
+
+    @Test
+    fun `throws exception if no permission to delete an entry`() {
+      val participantId = insertParticipant()
+      val projectId = insertProject(participantId = participantId)
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+      val participantProjectSpeciesId1 =
+          insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId1)
+      val participantProjectSpeciesId2 =
+          insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId2)
+
+      every { user.canDeleteParticipantProjectSpecies(participantProjectSpeciesId1) } returns true
+
+      assertThrows<AccessDeniedException> {
+        store.delete(setOf(participantProjectSpeciesId1, participantProjectSpeciesId2))
+      }
+
+      // If the current user does not have permission to delete any entity in the list,
+      // the entire delete fails and there are no changes
+      assertEquals(
+          listOf(
+              ParticipantProjectSpeciesRow(
+                  feedback = null,
+                  id = participantProjectSpeciesId1,
+                  projectId = projectId,
+                  rationale = null,
+                  speciesId = speciesId1,
+                  submissionStatusId = SubmissionStatus.NotSubmitted),
+              ParticipantProjectSpeciesRow(
+                  feedback = null,
+                  id = participantProjectSpeciesId2,
+                  projectId = projectId,
+                  rationale = null,
+                  speciesId = speciesId2,
+                  submissionStatusId = SubmissionStatus.NotSubmitted)),
+          participantProjectSpeciesDao.findAll())
+    }
+  }
 }
