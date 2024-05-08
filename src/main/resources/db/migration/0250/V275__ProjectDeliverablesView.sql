@@ -1,5 +1,5 @@
 -- View for projects to find deliverables, due dates and their submission statuses
-CREATE VIEW accelerator.project_deliverable_summaries AS
+CREATE VIEW accelerator.project_deliverables AS
 SELECT deliverables.id as deliverable_id,
        deliverables.deliverable_category_id,
        deliverables.deliverable_type_id,
