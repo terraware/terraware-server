@@ -111,14 +111,14 @@
 <polygon fill="#ffffff" stroke="none" points="8,-71.5346 8,-93.5346 158,-93.5346 158,-71.5346 8,-71.5346"/>
 <polygon fill="none" stroke="black" points="8,-71.5346 8,-93.5346 158,-93.5346 158,-71.5346 8,-71.5346"/>
 <text text-anchor="start" x="41" y="-79.7346" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="none" points="8,-53.5346 8,-71.5346 59,-71.5346 59,-53.5346 8,-53.5346"/>
-<polygon fill="none" stroke="black" points="8,-53.5346 8,-71.5346 59,-71.5346 59,-53.5346 8,-53.5346"/>
+<polygon fill="#ffffff" stroke="none" points="8,-53.5346 8,-71.5346 57,-71.5346 57,-53.5346 8,-53.5346"/>
+<polygon fill="none" stroke="black" points="8,-53.5346 8,-71.5346 57,-71.5346 57,-53.5346 8,-53.5346"/>
 <text text-anchor="start" x="11" y="-59.7346" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="59,-53.5346 59,-71.5346 115,-71.5346 115,-53.5346 59,-53.5346"/>
-<polygon fill="none" stroke="black" points="59,-53.5346 59,-71.5346 115,-71.5346 115,-53.5346 59,-53.5346"/>
-<text text-anchor="start" x="81" y="-59.7346" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
-<polygon fill="#ffffff" stroke="none" points="115,-53.5346 115,-71.5346 158,-71.5346 158,-53.5346 115,-53.5346"/>
-<polygon fill="none" stroke="black" points="115,-53.5346 115,-71.5346 158,-71.5346 158,-53.5346 115,-53.5346"/>
+<polygon fill="#ffffff" stroke="none" points="57,-53.5346 57,-71.5346 117,-71.5346 117,-53.5346 57,-53.5346"/>
+<polygon fill="none" stroke="black" points="57,-53.5346 57,-71.5346 117,-71.5346 117,-53.5346 57,-53.5346"/>
+<text text-anchor="start" x="78" y="-59.7346" font-family="Helvetica,sans-Serif" font-size="11.00">2 rows</text>
+<polygon fill="#ffffff" stroke="none" points="117,-53.5346 117,-71.5346 158,-71.5346 158,-53.5346 117,-53.5346"/>
+<polygon fill="none" stroke="black" points="117,-53.5346 117,-71.5346 158,-71.5346 158,-53.5346 117,-53.5346"/>
 <text text-anchor="start" x="138" y="-59.7346" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
 </a>
 </g>

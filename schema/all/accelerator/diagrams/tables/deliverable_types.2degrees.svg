@@ -114,12 +114,12 @@
 <text text-anchor="start" x="197" y="-147.204" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
 <polygon fill="none" stroke="black" points="302,-139.004 302,-161.004 403,-161.004 403,-139.004 302,-139.004"/>
 <text text-anchor="start" x="305" y="-147.204" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
-<polygon fill="#ffffff" stroke="none" points="177,-121.004 177,-139.004 232,-139.004 232,-121.004 177,-121.004"/>
-<polygon fill="none" stroke="black" points="177,-121.004 177,-139.004 232,-139.004 232,-121.004 177,-121.004"/>
+<polygon fill="#ffffff" stroke="none" points="177,-121.004 177,-139.004 230,-139.004 230,-121.004 177,-121.004"/>
+<polygon fill="none" stroke="black" points="177,-121.004 177,-139.004 230,-139.004 230,-121.004 177,-121.004"/>
 <text text-anchor="start" x="180" y="-127.204" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 0</text>
-<polygon fill="#ffffff" stroke="none" points="232,-121.004 232,-139.004 302,-139.004 302,-121.004 232,-121.004"/>
-<polygon fill="none" stroke="black" points="232,-121.004 232,-139.004 302,-139.004 302,-121.004 232,-121.004"/>
-<text text-anchor="start" x="268" y="-127.204" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
+<polygon fill="#ffffff" stroke="none" points="230,-121.004 230,-139.004 302,-139.004 302,-121.004 230,-121.004"/>
+<polygon fill="none" stroke="black" points="230,-121.004 230,-139.004 302,-139.004 302,-121.004 230,-121.004"/>
+<text text-anchor="start" x="263" y="-127.204" font-family="Helvetica,sans-Serif" font-size="11.00">2 rows</text>
 <polygon fill="#ffffff" stroke="none" points="302,-121.004 302,-139.004 403,-139.004 403,-121.004 302,-121.004"/>
 <polygon fill="none" stroke="black" points="302,-121.004 302,-139.004 403,-139.004 403,-121.004 302,-121.004"/>
 <text text-anchor="start" x="383" y="-127.204" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>

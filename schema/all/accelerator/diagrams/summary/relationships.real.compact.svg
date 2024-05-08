@@ -351,14 +351,14 @@
 <polygon fill="#ffffff" stroke="none" points="218,-442 218,-464 368,-464 368,-442 218,-442"/>
 <polygon fill="none" stroke="black" points="218,-442 218,-464 368,-464 368,-442 218,-442"/>
 <text text-anchor="start" x="251" y="-450.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="none" points="218,-424 218,-442 269,-442 269,-424 218,-424"/>
-<polygon fill="none" stroke="black" points="218,-424 218,-442 269,-442 269,-424 218,-424"/>
+<polygon fill="#ffffff" stroke="none" points="218,-424 218,-442 267,-442 267,-424 218,-424"/>
+<polygon fill="none" stroke="black" points="218,-424 218,-442 267,-442 267,-424 218,-424"/>
 <text text-anchor="start" x="221" y="-430.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="269,-424 269,-442 325,-442 325,-424 269,-424"/>
-<polygon fill="none" stroke="black" points="269,-424 269,-442 325,-442 325,-424 269,-424"/>
-<text text-anchor="start" x="291" y="-430.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
-<polygon fill="#ffffff" stroke="none" points="325,-424 325,-442 368,-442 368,-424 325,-424"/>
-<polygon fill="none" stroke="black" points="325,-424 325,-442 368,-442 368,-424 325,-424"/>
+<polygon fill="#ffffff" stroke="none" points="267,-424 267,-442 327,-442 327,-424 267,-424"/>
+<polygon fill="none" stroke="black" points="267,-424 267,-442 327,-442 327,-424 267,-424"/>
+<text text-anchor="start" x="288" y="-430.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 rows</text>
+<polygon fill="#ffffff" stroke="none" points="327,-424 327,-442 368,-442 368,-424 327,-424"/>
+<polygon fill="none" stroke="black" points="327,-424 327,-442 368,-442 368,-424 327,-424"/>
 <text text-anchor="start" x="348" y="-430.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
 </a>
 </g>

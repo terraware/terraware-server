@@ -346,14 +346,14 @@
 <polygon fill="#ffffff" stroke="none" points="218,-740.014 218,-762.014 368,-762.014 368,-740.014 218,-740.014"/>
 <polygon fill="none" stroke="black" points="218,-740.014 218,-762.014 368,-762.014 368,-740.014 218,-740.014"/>
 <text text-anchor="start" x="251" y="-748.214" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="none" points="218,-722.014 218,-740.014 269,-740.014 269,-722.014 218,-722.014"/>
-<polygon fill="none" stroke="black" points="218,-722.014 218,-740.014 269,-740.014 269,-722.014 218,-722.014"/>
+<polygon fill="#ffffff" stroke="none" points="218,-722.014 218,-740.014 267,-740.014 267,-722.014 218,-722.014"/>
+<polygon fill="none" stroke="black" points="218,-722.014 218,-740.014 267,-740.014 267,-722.014 218,-722.014"/>
 <text text-anchor="start" x="221" y="-728.214" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="269,-722.014 269,-740.014 325,-740.014 325,-722.014 269,-722.014"/>
-<polygon fill="none" stroke="black" points="269,-722.014 269,-740.014 325,-740.014 325,-722.014 269,-722.014"/>
-<text text-anchor="start" x="291" y="-728.214" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
-<polygon fill="#ffffff" stroke="none" points="325,-722.014 325,-740.014 368,-740.014 368,-722.014 325,-722.014"/>
-<polygon fill="none" stroke="black" points="325,-722.014 325,-740.014 368,-740.014 368,-722.014 325,-722.014"/>
+<polygon fill="#ffffff" stroke="none" points="267,-722.014 267,-740.014 327,-740.014 327,-722.014 267,-722.014"/>
+<polygon fill="none" stroke="black" points="267,-722.014 267,-740.014 327,-740.014 327,-722.014 267,-722.014"/>
+<text text-anchor="start" x="288" y="-728.214" font-family="Helvetica,sans-Serif" font-size="11.00">2 rows</text>
+<polygon fill="#ffffff" stroke="none" points="327,-722.014 327,-740.014 368,-740.014 368,-722.014 327,-722.014"/>
+<polygon fill="none" stroke="black" points="327,-722.014 327,-740.014 368,-740.014 368,-722.014 327,-722.014"/>
 <text text-anchor="start" x="348" y="-728.214" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
 </a>
 </g>
