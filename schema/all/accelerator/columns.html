@@ -144,7 +144,7 @@
         "comments": ""
     },
     {
-        "tableName": "deliverable_categories",
+        "tableName": "event_statuses",
         "tableType": "Table",
         "keyClass": "indexedColumn",
         "keyTitle": "Indexed",
@@ -157,17 +157,17 @@
         "comments": ""
     },
     {
-        "tableName": "project_votes",
+        "tableName": "submission_documents",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>created_by",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>System-generated filename. The file is stored using this name in the document store. This includes several elements such as the date and description.<\/p>"
     },
     {
         "tableName": "cohort_modules",
@@ -196,11 +196,11 @@
         "comments": ""
     },
     {
-        "tableName": "project_votes",
+        "tableName": "submission_documents",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>project_id",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>submission_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
@@ -261,11 +261,11 @@
         "comments": ""
     },
     {
-        "tableName": "submission_documents",
+        "tableName": "project_votes",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>submission_id",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>user_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
@@ -300,14 +300,14 @@
         "comments": ""
     },
     {
-        "tableName": "participants",
+        "tableName": "document_stores",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>cohort_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "√",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -326,11 +326,11 @@
         "comments": ""
     },
     {
-        "tableName": "project_votes",
+        "tableName": "submission_documents",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>user_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
         "type": "int8",
         "length": 19,
         "nullable": "",
@@ -404,17 +404,17 @@
         "comments": ""
     },
     {
-        "tableName": "project_votes",
+        "tableName": "submission_documents",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "modified_time",
-        "type": "timestamptz",
-        "length": 35,
-        "nullable": "",
+        "name": "original_name",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Original filename as supplied by the client when the document was uploaded. Not required to be unique since the user can upload revised versions of documents.<\/p>"
     },
     {
         "tableName": "event_projects",
@@ -430,7 +430,7 @@
         "comments": ""
     },
     {
-        "tableName": "event_statuses",
+        "tableName": "deliverable_categories",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
@@ -482,14 +482,14 @@
         "comments": "<p>Integer score between -2 to 2. The score can be null to represent not yet scored.<\/p>"
     },
     {
-        "tableName": "project_votes",
+        "tableName": "submission_documents",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "created_time",
-        "type": "timestamptz",
-        "length": 35,
-        "nullable": "",
+        "name": "description",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -625,7 +625,7 @@
         "comments": ""
     },
     {
-        "tableName": "event_statuses",
+        "tableName": "deliverable_categories",
         "tableType": "Table",
         "keyClass": "indexedColumn",
         "keyTitle": "Indexed",
@@ -653,9 +653,9 @@
     {
         "tableName": "participants",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>created_by",
         "type": "int8",
         "length": 19,
         "nullable": "",
@@ -681,10 +681,10 @@
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>modified_by",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>cohort_id",
         "type": "int8",
         "length": 19,
-        "nullable": "",
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -703,11 +703,11 @@
         "comments": ""
     },
     {
-        "tableName": "project_votes",
+        "tableName": "submission_documents",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>phase_id",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>document_store_id",
         "type": "int4",
         "length": 10,
         "nullable": "",
@@ -716,17 +716,17 @@
         "comments": ""
     },
     {
-        "tableName": "submission_documents",
+        "tableName": "project_votes",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "location",
-        "type": "text",
-        "length": 2147483647,
+        "name": "created_time",
+        "type": "timestamptz",
+        "length": 35,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Location of file in the document store identified by <code>document_store_id<\/code>. This is used by the system to generate download links and includes whatever information is needed to generate a link for a given document store; if the document store supports permalinks then this may be a simple URL.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "project_accelerator_details",
@@ -755,13 +755,13 @@
         "comments": ""
     },
     {
-        "tableName": "submission_documents",
+        "tableName": "project_votes",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>project_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "modified_time",
+        "type": "timestamptz",
+        "length": 35,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -820,13 +820,13 @@
         "comments": ""
     },
     {
-        "tableName": "document_stores",
+        "tableName": "participants",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
         "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int4",
-        "length": 10,
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -900,11 +900,11 @@
     {
         "tableName": "participants",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
-        "type": "text",
-        "length": 2147483647,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "created_time",
+        "type": "timestamptz",
+        "length": 35,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -924,7 +924,7 @@
         "comments": ""
     },
     {
-        "tableName": "deliverable_categories",
+        "tableName": "event_statuses",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
@@ -937,14 +937,14 @@
         "comments": ""
     },
     {
-        "tableName": "project_votes",
+        "tableName": "submission_documents",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "conditional_info",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "√",
+        "name": "created_time",
+        "type": "timestamptz",
+        "length": 35,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -1041,14 +1041,14 @@
         "comments": ""
     },
     {
-        "tableName": "submission_documents",
+        "tableName": "project_votes",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "description",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "√",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>created_by",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -1080,13 +1080,13 @@
         "comments": ""
     },
     {
-        "tableName": "submission_documents",
+        "tableName": "project_votes",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>document_store_id",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>project_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -1119,13 +1119,13 @@
         "comments": ""
     },
     {
-        "tableName": "submission_documents",
+        "tableName": "project_votes",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>created_by",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>phase_id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -1574,13 +1574,13 @@
         "comments": ""
     },
     {
-        "tableName": "participants",
+        "tableName": "document_stores",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "modified_time",
-        "type": "timestamptz",
-        "length": 35,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -1643,7 +1643,7 @@
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>created_by",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>modified_by",
         "type": "int8",
         "length": 19,
         "nullable": "",
@@ -1665,17 +1665,17 @@
         "comments": ""
     },
     {
-        "tableName": "project_votes",
+        "tableName": "submission_documents",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>modified_by",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "location",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Location of file in the document store identified by <code>document_store_id<\/code>. This is used by the system to generate download links and includes whatever information is needed to generate a link for a given document store; if the document store supports permalinks then this may be a simple URL.<\/p>"
     },
     {
         "tableName": "events",
@@ -1717,17 +1717,17 @@
         "comments": ""
     },
     {
-        "tableName": "submission_documents",
+        "tableName": "project_votes",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "created_time",
-        "type": "timestamptz",
-        "length": 35,
-        "nullable": "",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>vote_option_id",
+        "type": "int4",
+        "length": 10,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Vote option can be Yes/No/Conditional. The vote can be null to represent not yet voted.<\/p>"
     },
     {
         "tableName": "project_scores",
@@ -1756,17 +1756,17 @@
         "comments": ""
     },
     {
-        "tableName": "submission_documents",
+        "tableName": "project_votes",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "conditional_info",
         "type": "text",
         "length": 2147483647,
-        "nullable": "",
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>System-generated filename. The file is stored using this name in the document store. This includes several elements such as the date and description.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "deliverables",
@@ -1782,7 +1782,7 @@
         "comments": ""
     },
     {
-        "tableName": "document_stores",
+        "tableName": "participants",
         "tableType": "Table",
         "keyClass": "indexedColumn",
         "keyTitle": "Indexed",
@@ -1875,9 +1875,9 @@
     {
         "tableName": "submission_documents",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>project_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
@@ -1925,17 +1925,17 @@
         "comments": ""
     },
     {
-        "tableName": "project_votes",
+        "tableName": "submission_documents",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>vote_option_id",
-        "type": "int4",
-        "length": 10,
-        "nullable": "√",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>created_by",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Vote option can be Yes/No/Conditional. The vote can be null to represent not yet voted.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "project_vote_decisions",
@@ -2046,7 +2046,7 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "created_time",
+        "name": "modified_time",
         "type": "timestamptz",
         "length": 35,
         "nullable": "",
@@ -2094,17 +2094,17 @@
         "comments": ""
     },
     {
-        "tableName": "submission_documents",
+        "tableName": "project_votes",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "original_name",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "√",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>modified_by",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Original filename as supplied by the client when the document was uploaded. Not required to be unique since the user can upload revised versions of documents.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "cohort_modules",

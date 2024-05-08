@@ -1,3 +1,5 @@
+e7b6a2968a0 Add Participant Project Species to Search API (#1937)
+f6b58aa2a04 SW-5318 Add deleteMany functionality to ParticipantProjectSpecies (#1935)
 e192fbcb2cc SW-5318 Add update functionality for ParticipantProjectSpecies (#1934)
 9643950adba SW-5318 Add endpoints for create and assign (create many) for ParticipantProjectSpecies (#1933)
 8405ceec1a3 SW-5318 Add createMany function to ParticipantProjectSpeciesStore (#1932)
