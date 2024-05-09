@@ -101,7 +101,7 @@ class DeliverableStore(
           DeliverableSubmissionModel(
               category = record[DELIVERABLES.DELIVERABLE_CATEGORY_ID]!!,
               deliverableId = record[DELIVERABLES.ID]!!,
-              descriptionHtml = record[DELIVERABLES.DESCRIPTION_HTML]!!,
+              descriptionHtml = record[DELIVERABLES.DESCRIPTION_HTML],
               documents = record[documentsMultiset] ?: emptyList(),
               feedback = record[SUBMISSIONS.FEEDBACK],
               internalComment = record[SUBMISSIONS.INTERNAL_COMMENT],

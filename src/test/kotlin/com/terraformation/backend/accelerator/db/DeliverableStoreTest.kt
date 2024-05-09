@@ -94,7 +94,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           insertDeliverable(
               id = 2, deliverableCategoryId = DeliverableCategory.Compliance, moduleId = 1)
       val moduleId2 = insertModule(id = 2)
-      val deliverableId3 = insertDeliverable(id = 3, moduleId = 2)
+      val deliverableId3 = insertDeliverable(id = 3, moduleId = 2, descriptionHtml = null)
       insertDeliverableDocument(templateUrl = "https://example.com/")
 
       insertCohortModule(cohortId1, moduleId1)
@@ -199,7 +199,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           deliverable2Project1.copy(
               category = DeliverableCategory.FinancialViability,
               deliverableId = deliverableId3,
-              descriptionHtml = "Description 3",
+              descriptionHtml = null,
               name = "Deliverable 3",
               templateUrl = URI("https://example.com/"),
           )
