@@ -86,8 +86,7 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
                     "meetingUrl" to "https://meet.google.com",
                     "slidesUrl" to "https://slides.google.com",
                     "recordingUrl" to "https://recording.google.com",
-                )),
-            null)
+                )))
 
     val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
 
@@ -312,9 +311,7 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
                             mapOf("id" to "$event1"),
                             mapOf("id" to "$event2"),
                             mapOf("id" to "$event3")),
-                ),
-            ),
-            null)
+                )))
     val projectActual = searchService.search(projectPrefix, projectFields, NoConditionNode())
 
     val eventPrefix = SearchFieldPrefix(searchTables.events)

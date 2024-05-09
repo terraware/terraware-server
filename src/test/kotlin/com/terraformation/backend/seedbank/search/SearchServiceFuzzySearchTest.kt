@@ -22,8 +22,7 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
-    val expected =
-        SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")), cursor = null)
+    val expected = SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")))
 
     assertEquals(expected, result)
   }
@@ -42,8 +41,7 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
-    val expected =
-        SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")), cursor = null)
+    val expected = SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")))
 
     assertEquals(expected, result)
   }
@@ -58,8 +56,7 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
         FieldNode(accessionNumberField, listOf("22-1-100"), SearchFilterType.ExactOrFuzzy)
 
     assertEquals(
-        SearchResults(
-            listOf(mapOf("id" to "1000", "accessionNumber" to "22-1-100")), cursor = null),
+        SearchResults(listOf(mapOf("id" to "1000", "accessionNumber" to "22-1-100"))),
         searchAccessions(facilityId, fields, searchNode),
         "Search for value with an exact match")
 
@@ -70,8 +67,7 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
             listOf(
                 mapOf("id" to "1001", "accessionNumber" to "22-1-101"),
                 mapOf("id" to "1000", "accessionNumber" to "22-1-102"),
-            ),
-            null),
+            )),
         searchAccessions(facilityId, fields, searchNode),
         "Search for value without an exact match")
   }
@@ -89,8 +85,7 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
             listOf(
                 mapOf("id" to "1000", "accessionNumber" to "22-1-10"),
                 mapOf("id" to "1001", "accessionNumber" to "22-1-100"),
-            ),
-            null),
+            )),
         searchAccessions(facilityId, fields, searchNode))
   }
 
@@ -106,9 +101,8 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
     assertEquals(
         SearchResults(
             listOf(
-                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG", "processingNotes" to "Notes"),
-            ),
-            null),
+                mapOf(
+                    "id" to "1001", "accessionNumber" to "ABCDEFG", "processingNotes" to "Notes"))),
         searchAccessions(facilityId, fields, searchNode))
   }
 }

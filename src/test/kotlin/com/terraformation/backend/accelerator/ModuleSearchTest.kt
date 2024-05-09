@@ -81,8 +81,7 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
                     "preparationMaterials" to "<i> Preps </i>",
                     "phase" to CohortPhase.Phase1FeasibilityStudy.getDisplayName(Locales.GIBBERISH),
                     "workshopDescription" to "Workshop ideas",
-                )),
-            null)
+                )))
 
     val actual = Locales.GIBBERISH.use { searchService.search(prefix, fields, NoConditionNode()) }
     assertJsonEquals(expected, actual)

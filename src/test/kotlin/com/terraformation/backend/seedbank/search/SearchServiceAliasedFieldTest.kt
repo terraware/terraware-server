@@ -42,8 +42,7 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
                     "id" to "1001",
                     "accessionNumber" to "ABCDEFG",
                 ),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -63,8 +62,7 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
                     "accessionNumber" to "XYZ",
                     "plantsCollectedFromAlias" to "1",
                 ),
-            ),
-            cursor = null)
+            ))
 
     val actual =
         searchAccessions(facilityId, listOf(plantsCollectedFromAlias), criteria = NoConditionNode())
@@ -89,8 +87,7 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
                     "accessionNumber" to "XYZ",
                     "alias(raw)" to "1",
                 ),
-            ),
-            cursor = null)
+            ))
 
     val actual = searchAccessions(facilityId, listOf(rawAlias), criteria = NoConditionNode())
     assertEquals(expected, actual)
@@ -100,12 +97,7 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
   fun `can use aliased field in search criteria`() {
     val criteria = FieldNode(plantsCollectedFromAlias, listOf("2"))
 
-    val expected =
-        SearchResults(
-            listOf(
-                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
-            ),
-            cursor = null)
+    val expected = SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")))
 
     val actual = searchAccessions(facilityId, emptyList(), criteria = criteria)
     assertEquals(expected, actual)
@@ -120,8 +112,7 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
             listOf(
                 mapOf("id" to "1000", "accessionNumber" to "XYZ"),
                 mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
-            ),
-            cursor = null)
+            ))
 
     val actual =
         searchAccessions(

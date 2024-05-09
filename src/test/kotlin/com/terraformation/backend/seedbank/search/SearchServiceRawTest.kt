@@ -22,11 +22,7 @@ internal class SearchServiceRawTest : SearchServiceTest() {
     val result = searchService.search(rootPrefix, fields, criteria)
 
     val expected =
-        SearchResults(
-            listOf(
-                mapOf("estimatedCount" to "12,000", "estimatedCount(raw)" to "12000"),
-            ),
-            cursor = null)
+        SearchResults(listOf(mapOf("estimatedCount" to "12,000", "estimatedCount(raw)" to "12000")))
 
     assertEquals(expected, result)
   }
@@ -74,9 +70,7 @@ internal class SearchServiceRawTest : SearchServiceTest() {
                     "species_rare(raw)" to "false",
                     "state(raw)" to "In Storage",
                     "totalWithdrawnWeightGrams(raw)" to "5000",
-                ),
-            ),
-            cursor = null)
+                )))
 
     assertEquals(expected, result)
   }

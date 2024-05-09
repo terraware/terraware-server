@@ -60,8 +60,8 @@ internal class SearchServiceUriFieldTest : SearchServiceTest() {
     val result3 = searchService.search(prefix, fields, criteria3)
 
     val expected1 = SearchResults(listOf(searchResult1, searchResult2), cursor = null)
-    val expected2 = SearchResults(listOf(searchResult1), cursor = null)
-    val expected3 = SearchResults(listOf(searchResult3), cursor = null)
+    val expected2 = SearchResults(listOf(searchResult1))
+    val expected3 = SearchResults(listOf(searchResult3))
 
     assertEquals(expected1, result1)
     assertEquals(expected2, result2)

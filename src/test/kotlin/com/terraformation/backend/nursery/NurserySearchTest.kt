@@ -200,8 +200,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                                   "totalQuantity" to number(1024 + 2048),
                               ),
                           )),
-              ),
-              null),
+              )),
           results)
     }
 
@@ -267,8 +266,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "totalQuantity" to number(128 + 256),
                       "totalSpecies" to number(1),
                   ),
-              ),
-              null),
+              )),
           results)
     }
 
@@ -299,9 +297,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "germinatingQuantity" to number(64),
                       "notReadyQuantity" to number(128),
                       "readyQuantity" to number(256),
-                      "totalQuantity" to number(128 + 256)),
-              ),
-              null),
+                      "totalQuantity" to number(128 + 256)))),
           results)
     }
 
@@ -401,8 +397,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "addedDate" to "2022-09-03",
                       "version" to number(1),
                   ),
-              ),
-              null),
+              )),
           results)
     }
 
@@ -431,9 +426,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
               listOf(
                   mapOf(
                       "id" to "$nonProjectBatchId",
-                  ),
-              ),
-              null),
+                  ))),
           results)
     }
 
@@ -591,8 +584,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "totalWithdrawn" to number(24),
                       "withdrawnDate" to "2023-03-03",
                   ),
-              ),
-              null)
+              ))
 
       val actual = searchService.search(prefix, fields, NoConditionNode(), orderBy)
 
@@ -639,8 +631,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "totalWithdrawn" to "-1",
                       "undoesWithdrawalDate" to "2024-01-15",
                       "undoesWithdrawalId" to "$withdrawalId",
-                  )),
-              null)
+                  )))
 
       val actual = searchService.search(prefix, fields, NoConditionNode(), orderBy)
 
@@ -674,8 +665,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   mapOf("project_name" to "Project 1"),
                   mapOf("project_name" to "Project 2"),
                   mapOf("project_name" to "Project 3"),
-              ),
-              null)
+              ))
 
       val actual =
           searchService.search(
@@ -703,8 +693,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
               listOf(
                   mapOf("id" to "$speciesId1"),
                   mapOf("id" to "$speciesId2"),
-              ),
-              null)
+              ))
 
       val actual =
           searchService.search(

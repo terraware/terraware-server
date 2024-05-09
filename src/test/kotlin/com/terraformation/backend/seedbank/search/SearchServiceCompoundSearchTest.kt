@@ -87,8 +87,7 @@ internal class SearchServiceCompoundSearchTest : SearchServiceTest() {
               // We create accession numbers 10 through 20 and the ID sequence starts at 1
               val id = value - 9
               mapOf("id" to "$id", "accessionNumber" to "$value")
-            },
-            null)
+            })
     val actual = searchAccessions(facilityId, listOf(accessionNumberField), searchNode)
 
     assertEquals(expected, actual)

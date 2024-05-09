@@ -57,8 +57,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "id" to "$speciesKoaAcacia",
                       "scientificName" to "Koa Acacia",
                   ),
-              ),
-              null)
+              ))
 
       val conditions =
           FieldNode(prefix.resolve("scientificName"), listOf("Koa"), SearchFilterType.Exact)
@@ -92,8 +91,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "id" to "$speciesKoaAcacia",
                       "scientificName" to "Koa Acacia",
                   ),
-              ),
-              null)
+              ))
 
       val conditions =
           FieldNode(prefix.resolve("scientificName"), listOf("Koaa"), SearchFilterType.Fuzzy)
@@ -115,8 +113,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
       val conditions =
           FieldNode(prefix.resolve("scientificName"), listOf(""), SearchFilterType.PhraseMatch)
 
-      assertJsonEquals(
-          SearchResults(emptyList(), null), searchService.search(prefix, fields, conditions))
+      assertJsonEquals(SearchResults(emptyList()), searchService.search(prefix, fields, conditions))
     }
 
     @Test
@@ -141,8 +138,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "id" to "$speciesKoaAcacia",
                       "scientificName" to "Koa Acacia",
                   ),
-              ),
-              null)
+              ))
 
       val conditions =
           FieldNode(prefix.resolve("scientificName"), listOf("Koa"), SearchFilterType.PhraseMatch)
@@ -188,8 +184,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
                       "id" to "$brightRedAppleTreeFarm",
                       "scientificName" to "Bright Red Apple Tree Farm",
                   ),
-              ),
-              null)
+              ))
 
       val conditions =
           FieldNode(

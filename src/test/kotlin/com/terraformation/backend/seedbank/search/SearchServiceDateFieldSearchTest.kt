@@ -23,7 +23,7 @@ internal class SearchServiceDateFieldSearchTest : SearchServiceTest() {
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(receivedDateField, listOf("2021-01-02"), SearchFilterType.Exact)
 
-    val expected = SearchResults(listOf(mapOf("id" to "2", "accessionNumber" to "JAN2")), null)
+    val expected = SearchResults(listOf(mapOf("id" to "2", "accessionNumber" to "JAN2")))
     val actual = searchAccessions(facilityId, fields, searchNode)
 
     assertEquals(expected, actual)
@@ -41,8 +41,7 @@ internal class SearchServiceDateFieldSearchTest : SearchServiceTest() {
                 mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
                 mapOf("id" to "2", "accessionNumber" to "JAN2"),
                 mapOf("id" to "1000", "accessionNumber" to "XYZ"),
-            ),
-            null)
+            ))
     val actual = searchAccessions(facilityId, fields, searchNode)
 
     assertEquals(expected, actual)
@@ -59,8 +58,7 @@ internal class SearchServiceDateFieldSearchTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf("id" to "2", "accessionNumber" to "JAN2"),
-                mapOf("id" to "3", "accessionNumber" to "JAN8")),
-            null)
+                mapOf("id" to "3", "accessionNumber" to "JAN8")))
     val actual = searchAccessions(facilityId, fields, searchNode, sortOrder)
 
     assertEquals(expected, actual)
@@ -73,7 +71,7 @@ internal class SearchServiceDateFieldSearchTest : SearchServiceTest() {
     val searchNode =
         FieldNode(receivedDateField, listOf("2021-01-07", null), SearchFilterType.Range)
 
-    val expected = SearchResults(listOf(mapOf("id" to "3", "accessionNumber" to "JAN8")), null)
+    val expected = SearchResults(listOf(mapOf("id" to "3", "accessionNumber" to "JAN8")))
     val actual = searchAccessions(facilityId, fields, searchNode, sortOrder)
 
     assertEquals(expected, actual)
@@ -90,8 +88,7 @@ internal class SearchServiceDateFieldSearchTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf("id" to "1", "accessionNumber" to "JAN1"),
-                mapOf("id" to "2", "accessionNumber" to "JAN2")),
-            null)
+                mapOf("id" to "2", "accessionNumber" to "JAN2")))
     val actual = searchAccessions(facilityId, fields, searchNode, sortOrder)
 
     assertEquals(expected, actual)

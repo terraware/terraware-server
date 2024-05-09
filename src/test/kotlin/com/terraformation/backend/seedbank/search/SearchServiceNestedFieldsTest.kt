@@ -74,8 +74,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     val result = searchService.search(rootPrefix, listOf(seedsTestedField), NoConditionNode())
 
     val expected =
-        SearchResults(
-            listOf(mapOf("viabilityTests" to listOf(mapOf("seedsTested" to "15")))), cursor = null)
+        SearchResults(listOf(mapOf("viabilityTests" to listOf(mapOf("seedsTested" to "15")))))
 
     assertEquals(expected, result)
   }
@@ -113,8 +112,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                                             "bags" to
                                                 listOf(
                                                     mapOf("number" to "2"),
-                                                    mapOf("number" to "6")))))))),
-            cursor = null)
+                                                    mapOf("number" to "6")))))))))
 
     assertEquals(expected, result)
   }
@@ -138,8 +136,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                             mapOf("bagNumber" to "2"),
                             mapOf("bagNumber" to "5"),
                             mapOf("bagNumber" to "6"),
-                        ))),
-            cursor = null)
+                        ))))
 
     assertEquals(expected, result)
   }
@@ -167,8 +164,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                             mapOf("id" to "1001"),
                             mapOf("id" to "1000"),
                             mapOf("id" to "1001"),
-                        ))),
-            cursor = null)
+                        ))))
 
     assertEquals(expected, result)
   }
@@ -194,8 +190,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf("viabilityTest" to sublistValues, "seedsGerminated" to "5"),
-                mapOf("viabilityTest" to sublistValues, "seedsGerminated" to "10")),
-            cursor = null)
+                mapOf("viabilityTest" to sublistValues, "seedsGerminated" to "10")))
 
     assertEquals(expected, result)
   }
@@ -218,8 +213,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf(flattenedFieldName to orgName, "seedsGerminated" to "5"),
-                mapOf(flattenedFieldName to orgName, "seedsGerminated" to "10")),
-            cursor = null)
+                mapOf(flattenedFieldName to orgName, "seedsGerminated" to "10")))
 
     assertEquals(expected, result)
   }
@@ -236,7 +230,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             listOf(orgNameField),
             FieldNode(orgNameField, listOf("Non-matching organization name")))
 
-    val expected = SearchResults(emptyList(), cursor = null)
+    val expected = SearchResults(emptyList())
 
     assertEquals(expected, result)
   }
@@ -260,9 +254,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                     "id" to "1000",
                     "bags" to listOf(mapOf("number" to "1"), mapOf("number" to "5")),
                     "accessionNumber" to "XYZ",
-                ),
-            ),
-            cursor = null)
+                )))
 
     assertEquals(expected, result)
   }
@@ -291,8 +283,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                     "bags" to listOf(mapOf("number" to "2"), mapOf("number" to "6")),
                     "accessionNumber" to "ABCDEFG",
                 ),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -320,8 +311,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                                 "viabilityTestResults" to
                                     listOf(
                                         mapOf("seedsGerminated" to "10"),
-                                        mapOf("seedsGerminated" to "5")))))),
-            cursor = null)
+                                        mapOf("seedsGerminated" to "5")))))))
 
     assertEquals(expected, result)
   }
@@ -341,8 +331,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf("id" to "1000", "accessionNumber" to "XYZ"),
-                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")),
-            cursor = null)
+                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")))
 
     assertEquals(expected, result)
   }
@@ -372,8 +361,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                                 "viabilityTestResults" to
                                     listOf(
                                         mapOf("seedsGerminated" to "10"),
-                                        mapOf("seedsGerminated" to "5")))))),
-            cursor = null)
+                                        mapOf("seedsGerminated" to "5")))))))
 
     assertEquals(expected, result)
   }
@@ -402,8 +390,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                     "bags" to listOf(mapOf("number" to "5"), mapOf("number" to "1")),
                     "accessionNumber" to "XYZ",
                 ),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -439,8 +426,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                     "id" to "1001",
                     "accessionNumber" to "ABCDEFG",
                 ),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -474,8 +460,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                             ),
                         ),
                 ),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -506,8 +491,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                     "id" to "1001",
                     "accessionNumber" to "ABCDEFG",
                 ),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -537,8 +521,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                     "id" to "1001",
                     "accessionNumber" to "ABCDEFG",
                 ),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -561,8 +544,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             listOf(
                 mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
                 mapOf("id" to "1000", "accessionNumber" to "XYZ"),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -611,8 +593,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                         ),
                     "receivedDate" to "2020-01-01",
                 ),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -634,8 +615,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                 mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
                 // Bag 1
                 mapOf("id" to "1000", "accessionNumber" to "XYZ"),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -675,8 +655,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                                         mapOf("seedsGerminated" to "10")))),
                     "viabilityTests_viabilityTestResults_seedsGerminated" to "10",
                 ),
-            ),
-            cursor = null)
+            ))
 
     assertEquals(expected, result)
   }
@@ -695,8 +674,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                 mapOf(
                     "id" to "1000",
                     "accessionNumber" to "XYZ",
-                    "facility" to mapOf("name" to "Facility $facilityId"))),
-            cursor = null)
+                    "facility" to mapOf("name" to "Facility $facilityId"))))
 
     assertEquals(expected, result)
   }
@@ -728,9 +706,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                                         mapOf("viabilityTest" to mapOf("seedsTested" to "15")),
                                         mapOf("viabilityTest" to mapOf("seedsTested" to "15")),
                                     ))),
-                ),
-            ),
-            cursor = null)
+                )))
 
     assertEquals(expected, result)
   }
@@ -764,9 +740,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                                         mapOf("viabilityTest" to mapOf("seedsTested" to "15")),
                                         mapOf("viabilityTest" to mapOf("seedsTested" to "15")),
                                     ))),
-                ),
-            ),
-            cursor = null)
+                )))
 
     assertEquals(expected, result)
   }
@@ -790,8 +764,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                                     listOf(
                                         mapOf("active" to "Active", "state" to "Processing"),
                                         mapOf("active" to "Active", "state" to "In Storage"),
-                                    ))))),
-            cursor = null)
+                                    ))))))
 
     assertEquals(expected, result)
   }
@@ -1036,8 +1009,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                     "collectors.position" to "0\r\n1\r\n2",
                     "id" to "1000"),
                 mapOf("id" to "1001"),
-            ),
-            cursor = null)
+            ))
 
     val result =
         searchService.search(rootPrefix, fields, NoConditionNode(), sortFields).flattenForCsv()
@@ -1072,8 +1044,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
 
     val expected =
         SearchResults(
-            listOf(mapOf("number" to "5", "accession" to mapOf("accessionNumber" to "XYZ"))),
-            cursor = null)
+            listOf(mapOf("number" to "5", "accession" to mapOf("accessionNumber" to "XYZ"))))
 
     val result = searchService.search(prefix, fields, criteria)
 
@@ -1087,7 +1058,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     val fields = listOf(bagNumberField)
     val criteria = FieldNode(bagNumberField, listOf("5"))
 
-    val expected = SearchResults(listOf(mapOf("number" to "5")), cursor = null)
+    val expected = SearchResults(listOf(mapOf("number" to "5")))
 
     val result = searchService.search(prefix, fields, criteria)
 
@@ -1110,8 +1081,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     accessionsDao.update(
         accessionsDao.fetchOneById(AccessionId(1000))!!.copy(facilityId = otherFacilityId))
 
-    val expected =
-        SearchResults(listOf(mapOf("number" to "2"), mapOf("number" to "6")), cursor = null)
+    val expected = SearchResults(listOf(mapOf("number" to "2"), mapOf("number" to "6")))
 
     val result = searchService.search(prefix, fields, criteria, order)
 
@@ -1145,7 +1115,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             recordingDate = LocalDate.EPOCH,
             seedsGerminated = 8))
 
-    val expected = SearchResults(listOf(mapOf("seedsGerminated" to "8")), cursor = null)
+    val expected = SearchResults(listOf(mapOf("seedsGerminated" to "8")))
 
     val result = searchService.search(prefix, fields, criteria, order)
 
