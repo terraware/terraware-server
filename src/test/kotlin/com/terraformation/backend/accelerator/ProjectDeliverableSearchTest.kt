@@ -157,9 +157,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
                     "id" to "$deliverableId",
                     "project_id" to "$projectId",
                     "module_id" to "${inserted.moduleId}",
-                ),
-            ),
-            null)
+                )))
 
     val actual = searchService.search(prefix, fields, NoConditionNode())
 
@@ -232,9 +230,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
                         listOf(
                             mapOf("id" to "$deliverableWithSubmission"),
                             mapOf("id" to "$deliverableWithoutSubmissions"),
-                        )),
-            ),
-            null)
+                        ))))
 
     val actual = searchService.search(prefix, fields, NoConditionNode())
 

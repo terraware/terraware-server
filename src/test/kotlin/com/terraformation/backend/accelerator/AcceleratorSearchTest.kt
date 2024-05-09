@@ -387,9 +387,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                                 "id" to "$participantId",
                                 "projects" to listOf(mapOf("id" to "$projectId"))),
                         ),
-                ),
-            ),
-            null)
+                )))
 
     val actual = searchService.search(prefix, fields, NoConditionNode())
 
