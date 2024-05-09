@@ -1,3 +1,5 @@
+5e06298b544 Updated translations from Phrase (#1943)
+132cb0d4695 Add default value to SearchResults.cursor (#1938)
 bd76c81a97c Split PlantingSiteStoreTest (#1939)
 701d9b5c316 Add 'Species List' Deliverable Type to deliverable importer (#1942)
 93f385b2a4d SW-5314 Added project deliverables views for search (#1940)
