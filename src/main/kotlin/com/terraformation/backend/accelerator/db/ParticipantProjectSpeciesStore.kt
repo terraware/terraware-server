@@ -1,6 +1,5 @@
 package com.terraformation.backend.accelerator.db
 
-import com.terraformation.backend.accelerator.event.DeliverableSpeciesEditedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.ParticipantProjectSpeciesModel
@@ -127,35 +126,24 @@ class ParticipantProjectSpeciesStore(
     val existing = fetchOneById(participantProjectSpeciesId)
     val updated = updateFunc(existing)
 
-    val participantProjectSpecies =
-        dslContext
-            .selectFrom(PARTICIPANT_PROJECT_SPECIES)
-            .where(PARTICIPANT_PROJECT_SPECIES.ID.eq(participantProjectSpeciesId))
-            .fetchOne()
-            ?: throw ParticipantProjectSpeciesNotFoundException(participantProjectSpeciesId)
-
-    val deliverableSubmission =
-        submissionStore.fetchActiveSpeciesDeliverableSubmission(
-            participantProjectSpecies.projectId!!)
-
-    val oldStatus = participantProjectSpecies.submissionStatusId!!
     val modifiedTime = clock.instant()
 
-    participantProjectSpecies.feedback = updated.feedback
-    participantProjectSpecies.modifiedTime = modifiedTime
-    participantProjectSpecies.rationale = updated.rationale
-    participantProjectSpecies.submissionStatusId = updated.submissionStatus
+    dslContext.transaction { _ ->
+      val rowsUpdated =
+          with(PARTICIPANT_PROJECT_SPECIES) {
+            dslContext
+                .update(PARTICIPANT_PROJECT_SPECIES)
+                .set(FEEDBACK, updated.feedback)
+                .set(MODIFIED_TIME, modifiedTime)
+                .set(RATIONALE, updated.rationale)
+                .set(SUBMISSION_STATUS_ID, updated.submissionStatus)
+                .where(ID.eq(participantProjectSpeciesId))
+                .execute()
+          }
 
-    participantProjectSpecies.store()
-
-    if (oldStatus != updated.submissionStatus) {
-      eventPublisher.publishEvent(
-          DeliverableSpeciesEditedEvent(
-              deliverableId = deliverableSubmission.deliverableId,
-              modifiedTime = modifiedTime,
-              newSubmissionStatus = participantProjectSpecies.submissionStatusId!!,
-              oldSubmissionStatus = oldStatus,
-              projectId = participantProjectSpecies.projectId!!))
+      if (rowsUpdated < 1) {
+        throw ParticipantProjectSpeciesNotFoundException(participantProjectSpeciesId)
+      }
     }
   }
 
