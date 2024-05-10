@@ -42,7 +42,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.canCreateParticipantProjectSpecies(any()) } returns true
     every { user.canCreateSubmission(any()) } returns true
-    every { user.canDeleteParticipantProjectSpecies(any()) } returns true
     every { user.canReadParticipantProjectSpecies(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canReadProjectDeliverables(any()) } returns true
@@ -401,7 +400,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val participantProjectSpeciesId2 =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId2)
 
-      every { user.canDeleteParticipantProjectSpecies(any()) } returns false
+      every { user.canDeleteParticipantProjectSpecies(participantProjectSpeciesId1) } returns true
+      every { user.canDeleteParticipantProjectSpecies(participantProjectSpeciesId2) } returns false
 
       assertThrows<AccessDeniedException> {
         store.delete(setOf(participantProjectSpeciesId1, participantProjectSpeciesId2))
