@@ -375,6 +375,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val participantProjectSpeciesId3 =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId3)
 
+      every { user.canDeleteParticipantProjectSpecies(any()) } returns true
+
       store.delete(setOf(participantProjectSpeciesId1, participantProjectSpeciesId2))
 
       assertEquals(
