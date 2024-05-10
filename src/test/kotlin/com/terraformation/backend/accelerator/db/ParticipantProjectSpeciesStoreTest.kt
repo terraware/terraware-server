@@ -1,17 +1,13 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
-import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
-import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.*
@@ -24,15 +20,8 @@ import org.springframework.security.access.AccessDeniedException
 class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private val clock = TestClock()
-  private val eventPublisher = TestEventPublisher()
-
   private val store: ParticipantProjectSpeciesStore by lazy {
-    ParticipantProjectSpeciesStore(
-        dslContext,
-        participantProjectSpeciesDao,
-        projectsDao,
-        SubmissionStore(clock, dslContext, eventPublisher))
+    ParticipantProjectSpeciesStore(dslContext, participantProjectSpeciesDao, projectsDao)
   }
 
   @BeforeEach
@@ -156,52 +145,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `creates a submission for the project and deliverable if one does not exist for the active module`() {
-      val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(participantId = participantId)
-      val speciesId = insertSpecies()
-      val moduleId = insertModule()
-      val deliverableId =
-          insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
-      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
-
-      val participantProjectSpecies =
-          store.create(
-              NewParticipantProjectSpeciesModel(
-                  feedback = "feedback",
-                  id = null,
-                  projectId = projectId,
-                  rationale = "rationale",
-                  speciesId = speciesId))
-
-      assertEquals(
-          ParticipantProjectSpeciesRow(
-              feedback = "feedback",
-              id = participantProjectSpecies.id,
-              projectId = projectId,
-              rationale = "rationale",
-              speciesId = speciesId,
-              submissionStatusId = SubmissionStatus.NotSubmitted),
-          participantProjectSpeciesDao.fetchOneById(participantProjectSpecies.id))
-
-      val userId = currentUser().userId
-      val now = clock.instant
-
-      assertEquals(
-          listOf(
-              SubmissionsRow(
-                  createdBy = userId,
-                  createdTime = now,
-                  deliverableId = deliverableId,
-                  modifiedBy = userId,
-                  modifiedTime = now,
-                  projectId = projectId,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)),
-          submissionsDao.fetchByDeliverableId(deliverableId).map { it.copy(id = null) })
-    }
-
-    @Test
     fun `does not create the species association if the project is not associated to a participant`() {
       val projectId = insertProject()
       val speciesId = insertSpecies()
@@ -234,75 +177,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 rationale = "rationale",
                 speciesId = speciesId))
       }
-    }
-
-    @Test
-    fun `creates an entity for each project ID and species ID pairing and ensures there is a submission for each project deliverable`() {
-      val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val moduleId = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
-      val deliverableId =
-          insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
-
-      val projectId1 = insertProject(participantId = participantId)
-      val projectId2 = insertProject(participantId = participantId)
-      val speciesId1 = insertSpecies()
-      val speciesId2 = insertSpecies()
-
-      // Even though the consumer can pass
-      store.createMany(setOf(projectId1, projectId2), setOf(speciesId1, speciesId2))
-
-      assertEquals(
-          listOf(
-              ParticipantProjectSpeciesRow(
-                  feedback = null,
-                  projectId = projectId1,
-                  rationale = null,
-                  speciesId = speciesId1,
-                  submissionStatusId = SubmissionStatus.NotSubmitted),
-              ParticipantProjectSpeciesRow(
-                  feedback = null,
-                  projectId = projectId1,
-                  rationale = null,
-                  speciesId = speciesId2,
-                  submissionStatusId = SubmissionStatus.NotSubmitted),
-              ParticipantProjectSpeciesRow(
-                  feedback = null,
-                  projectId = projectId2,
-                  rationale = null,
-                  speciesId = speciesId1,
-                  submissionStatusId = SubmissionStatus.NotSubmitted),
-              ParticipantProjectSpeciesRow(
-                  feedback = null,
-                  projectId = projectId2,
-                  rationale = null,
-                  speciesId = speciesId2,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)),
-          participantProjectSpeciesDao.findAll().map { it.copy(id = null) })
-
-      val userId = currentUser().userId
-      val now = clock.instant
-
-      assertEquals(
-          listOf(
-              SubmissionsRow(
-                  createdBy = userId,
-                  createdTime = now,
-                  deliverableId = deliverableId,
-                  modifiedBy = userId,
-                  modifiedTime = now,
-                  projectId = projectId1,
-                  submissionStatusId = SubmissionStatus.NotSubmitted),
-              SubmissionsRow(
-                  createdBy = userId,
-                  createdTime = now,
-                  deliverableId = deliverableId,
-                  modifiedBy = userId,
-                  modifiedTime = now,
-                  projectId = projectId2,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)),
-          submissionsDao.fetchByDeliverableId(deliverableId).map { it.copy(id = null) })
     }
   }
 

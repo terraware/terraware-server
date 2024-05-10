@@ -23,7 +23,6 @@ class ParticipantProjectSpeciesStore(
     private val dslContext: DSLContext,
     private val participantProjectSpeciesDao: ParticipantProjectSpeciesDao,
     private val projectsDao: ProjectsDao,
-    private val submissionStore: SubmissionStore,
 ) {
   fun create(model: NewParticipantProjectSpeciesModel): ExistingParticipantProjectSpeciesModel {
     requirePermissions { createParticipantProjectSpecies(model.projectId) }
@@ -46,17 +45,10 @@ class ParticipantProjectSpeciesStore(
 
     participantProjectSpeciesDao.insert(row)
 
-    // If a submission doesn't exist for the deliverable, create one
-    val deliverableSubmission =
-        submissionStore.fetchActiveSpeciesDeliverableSubmission(model.projectId)
-    if (deliverableSubmission.submissionId == null) {
-      submissionStore.createSubmission(deliverableSubmission.deliverableId, model.projectId)
-    }
-
     return row.toModel()
   }
 
-  fun createMany(projectIds: Set<ProjectId>, speciesIds: Set<SpeciesId>): Unit {
+  fun create(projectIds: Set<ProjectId>, speciesIds: Set<SpeciesId>): Unit {
     // Participant project species can only be associated
     // to projects that are associated to a participant
     val projects = projectsDao.fetchById(*projectIds.toTypedArray())
@@ -81,13 +73,6 @@ class ParticipantProjectSpeciesStore(
                 .doNothing()
                 .execute()
           }
-        }
-
-        // A submission must exist for every project that is getting a new species assigned
-        val deliverableSubmission =
-            submissionStore.fetchActiveSpeciesDeliverableSubmission(projectId)
-        if (deliverableSubmission.submissionId == null) {
-          submissionStore.createSubmission(deliverableSubmission.deliverableId, projectId)
         }
       }
     }
