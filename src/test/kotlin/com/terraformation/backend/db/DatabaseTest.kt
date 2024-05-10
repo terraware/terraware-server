@@ -2109,6 +2109,7 @@ abstract class DatabaseTest {
         ParticipantProjectSpeciesRow(
             feedback = feedback,
             id = id?.toIdWrapper { ParticipantProjectSpeciesId(it) },
+            modifiedTime = Instant.EPOCH,
             projectId = projectId.toIdWrapper { ProjectId(it) },
             rationale = rationale,
             speciesId = speciesId.toIdWrapper { SpeciesId(it) },

@@ -6,11 +6,13 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProject
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import java.time.Instant
 import org.jooq.Record
 
 data class ParticipantProjectSpeciesModel<ID : ParticipantProjectSpeciesId?>(
     val id: ID,
     val feedback: String? = null,
+    val modifiedTime: Instant? = null,
     val projectId: ProjectId,
     val rationale: String? = null,
     val speciesId: SpeciesId,
@@ -21,6 +23,7 @@ data class ParticipantProjectSpeciesModel<ID : ParticipantProjectSpeciesId?>(
       return ExistingParticipantProjectSpeciesModel(
           feedback = record[PARTICIPANT_PROJECT_SPECIES.FEEDBACK],
           id = record[PARTICIPANT_PROJECT_SPECIES.ID]!!,
+          modifiedTime = record[PARTICIPANT_PROJECT_SPECIES.MODIFIED_TIME]!!,
           projectId = record[PARTICIPANT_PROJECT_SPECIES.PROJECT_ID]!!,
           rationale = record[PARTICIPANT_PROJECT_SPECIES.RATIONALE],
           speciesId = record[PARTICIPANT_PROJECT_SPECIES.SPECIES_ID]!!,
@@ -39,6 +42,7 @@ fun ParticipantProjectSpeciesRow.toModel(): ExistingParticipantProjectSpeciesMod
   return ExistingParticipantProjectSpeciesModel(
       feedback = feedback,
       id = id!!,
+      modifiedTime = modifiedTime!!,
       projectId = projectId!!,
       rationale = rationale,
       speciesId = speciesId!!,

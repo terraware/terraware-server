@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.DeliverableSpeciesEditedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.ParticipantProjectSpeciesModel
@@ -15,11 +16,14 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import jakarta.inject.Named
+import java.time.Instant
+import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
 
 @Named
 class ParticipantProjectSpeciesStore(
+    private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val participantProjectSpeciesDao: ParticipantProjectSpeciesDao,
     private val projectsDao: ProjectsDao,
@@ -37,6 +41,7 @@ class ParticipantProjectSpeciesStore(
     val row =
         ParticipantProjectSpeciesRow(
             feedback = model.feedback,
+            modifiedTime = clock.instant(),
             projectId = model.projectId,
             rationale = model.rationale,
             speciesId = model.speciesId,
@@ -66,6 +71,7 @@ class ParticipantProjectSpeciesStore(
           with(PARTICIPANT_PROJECT_SPECIES) {
             dslContext
                 .insertInto(PARTICIPANT_PROJECT_SPECIES)
+                .set(MODIFIED_TIME, clock.instant())
                 .set(PROJECT_ID, projectId)
                 .set(SPECIES_ID, speciesId)
                 .set(SUBMISSION_STATUS_ID, SubmissionStatus.NotSubmitted)
@@ -89,6 +95,18 @@ class ParticipantProjectSpeciesStore(
         .execute()
   }
 
+  fun fetchLastUpdatedSpeciesTime(projectId: ProjectId): Instant {
+    return with(PARTICIPANT_PROJECT_SPECIES) {
+      dslContext
+          .select(PARTICIPANT_PROJECT_SPECIES.MODIFIED_TIME)
+          .from(PARTICIPANT_PROJECT_SPECIES)
+          .where(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(projectId))
+          .orderBy(ID)
+          .fetchOne(PARTICIPANT_PROJECT_SPECIES.MODIFIED_TIME)
+          ?: throw ParticipantProjectSpeciesProjectNotFoundException(projectId)
+    }
+  }
+
   fun fetchOneById(
       participantProjectSpeciesId: ParticipantProjectSpeciesId
   ): ExistingParticipantProjectSpeciesModel {
@@ -109,21 +127,35 @@ class ParticipantProjectSpeciesStore(
     val existing = fetchOneById(participantProjectSpeciesId)
     val updated = updateFunc(existing)
 
-    dslContext.transaction { _ ->
-      val rowsUpdated =
-          with(PARTICIPANT_PROJECT_SPECIES) {
-            dslContext
-                .update(PARTICIPANT_PROJECT_SPECIES)
-                .set(RATIONALE, updated.rationale)
-                .set(FEEDBACK, updated.feedback)
-                .set(SUBMISSION_STATUS_ID, updated.submissionStatus)
-                .where(ID.eq(participantProjectSpeciesId))
-                .execute()
-          }
+    val participantProjectSpecies =
+        dslContext
+            .selectFrom(PARTICIPANT_PROJECT_SPECIES)
+            .where(PARTICIPANT_PROJECT_SPECIES.ID.eq(participantProjectSpeciesId))
+            .fetchOne()
+            ?: throw ParticipantProjectSpeciesNotFoundException(participantProjectSpeciesId)
 
-      if (rowsUpdated < 1) {
-        throw ParticipantProjectSpeciesNotFoundException(participantProjectSpeciesId)
-      }
+    val deliverableSubmission =
+        submissionStore.fetchActiveSpeciesDeliverableSubmission(
+            participantProjectSpecies.projectId!!)
+
+    val oldStatus = participantProjectSpecies.submissionStatusId!!
+    val modifiedTime = clock.instant()
+
+    participantProjectSpecies.feedback = updated.feedback
+    participantProjectSpecies.modifiedTime = modifiedTime
+    participantProjectSpecies.rationale = updated.rationale
+    participantProjectSpecies.submissionStatusId = updated.submissionStatus
+
+    participantProjectSpecies.store()
+
+    if (oldStatus != updated.submissionStatus) {
+      eventPublisher.publishEvent(
+          DeliverableSpeciesEditedEvent(
+              deliverableId = deliverableSubmission.deliverableId,
+              modifiedTime = modifiedTime,
+              newSubmissionStatus = participantProjectSpecies.submissionStatusId!!,
+              oldSubmissionStatus = oldStatus,
+              projectId = participantProjectSpecies.projectId!!))
     }
   }
 
