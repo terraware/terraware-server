@@ -27,7 +27,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
   private val service: ParticipantProjectSpeciesService by lazy {
     ParticipantProjectSpeciesService(
         dslContext,
-        ParticipantProjectSpeciesStore(clock, dslContext, participantProjectSpeciesDao, projectsDao),
+        ParticipantProjectSpeciesStore(
+            clock, dslContext, participantProjectSpeciesDao, projectsDao),
         SubmissionStore(clock, dslContext, eventPublisher))
   }
 
