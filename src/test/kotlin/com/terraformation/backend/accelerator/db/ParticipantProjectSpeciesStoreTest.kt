@@ -4,7 +4,6 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
@@ -116,13 +115,9 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   inner class Create {
     @Test
     fun `creates the entity with the supplied fields`() {
-      val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
+      val participantId = insertParticipant()
       val projectId = insertProject(participantId = participantId)
       val speciesId = insertSpecies()
-      val moduleId = insertModule()
-      insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
-      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
 
       val participantProjectSpecies =
           store.create(
@@ -178,19 +173,57 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 speciesId = speciesId))
       }
     }
+
+    @Test
+    fun `creates an entity for each project ID and species ID pairing`() {
+      val participantId = insertParticipant()
+      val projectId1 = insertProject(participantId = participantId)
+      val projectId2 = insertProject(participantId = participantId)
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+
+      every { user.canCreateParticipantProjectSpecies(projectId1) } returns true
+      every { user.canCreateParticipantProjectSpecies(projectId2) } returns true
+
+      store.create(setOf(projectId1, projectId2), setOf(speciesId1, speciesId2))
+
+      assertEquals(
+          listOf(
+              ParticipantProjectSpeciesRow(
+                  feedback = null,
+                  projectId = projectId1,
+                  rationale = null,
+                  speciesId = speciesId1,
+                  submissionStatusId = SubmissionStatus.NotSubmitted),
+              ParticipantProjectSpeciesRow(
+                  feedback = null,
+                  projectId = projectId1,
+                  rationale = null,
+                  speciesId = speciesId2,
+                  submissionStatusId = SubmissionStatus.NotSubmitted),
+              ParticipantProjectSpeciesRow(
+                  feedback = null,
+                  projectId = projectId2,
+                  rationale = null,
+                  speciesId = speciesId1,
+                  submissionStatusId = SubmissionStatus.NotSubmitted),
+              ParticipantProjectSpeciesRow(
+                  feedback = null,
+                  projectId = projectId2,
+                  rationale = null,
+                  speciesId = speciesId2,
+                  submissionStatusId = SubmissionStatus.NotSubmitted)),
+          participantProjectSpeciesDao.findAll().map { it.copy(id = null) })
+    }
   }
 
   @Nested
   inner class Update {
     @Test
     fun `updates the entity with the supplied fields`() {
-      val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
+      val participantId = insertParticipant()
       val projectId = insertProject(participantId = participantId)
       val speciesId = insertSpecies()
-      val moduleId = insertModule()
-      insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
-      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
       val participantProjectSpeciesId =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
 

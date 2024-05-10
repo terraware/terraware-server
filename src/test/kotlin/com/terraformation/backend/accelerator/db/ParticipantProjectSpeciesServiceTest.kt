@@ -9,7 +9,6 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
-import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -54,24 +53,13 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
       insertCohortModule(cohortId = cohortId, moduleId = moduleId)
 
-      val participantProjectSpecies =
-          service.create(
-              NewParticipantProjectSpeciesModel(
-                  feedback = "feedback",
-                  id = null,
-                  projectId = projectId,
-                  rationale = "rationale",
-                  speciesId = speciesId))
-
-      assertEquals(
-          ParticipantProjectSpeciesRow(
+      service.create(
+          NewParticipantProjectSpeciesModel(
               feedback = "feedback",
-              id = participantProjectSpecies.id,
+              id = null,
               projectId = projectId,
               rationale = "rationale",
-              speciesId = speciesId,
-              submissionStatusId = SubmissionStatus.NotSubmitted),
-          participantProjectSpeciesDao.fetchOneById(participantProjectSpecies.id))
+              speciesId = speciesId))
 
       val userId = currentUser().userId
       val now = clock.instant
@@ -104,34 +92,6 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       val speciesId2 = insertSpecies()
 
       service.create(setOf(projectId1, projectId2), setOf(speciesId1, speciesId2))
-
-      assertEquals(
-          listOf(
-              ParticipantProjectSpeciesRow(
-                  feedback = null,
-                  projectId = projectId1,
-                  rationale = null,
-                  speciesId = speciesId1,
-                  submissionStatusId = SubmissionStatus.NotSubmitted),
-              ParticipantProjectSpeciesRow(
-                  feedback = null,
-                  projectId = projectId1,
-                  rationale = null,
-                  speciesId = speciesId2,
-                  submissionStatusId = SubmissionStatus.NotSubmitted),
-              ParticipantProjectSpeciesRow(
-                  feedback = null,
-                  projectId = projectId2,
-                  rationale = null,
-                  speciesId = speciesId1,
-                  submissionStatusId = SubmissionStatus.NotSubmitted),
-              ParticipantProjectSpeciesRow(
-                  feedback = null,
-                  projectId = projectId2,
-                  rationale = null,
-                  speciesId = speciesId2,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)),
-          participantProjectSpeciesDao.findAll().map { it.copy(id = null) })
 
       val userId = currentUser().userId
       val now = clock.instant
