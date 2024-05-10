@@ -64,28 +64,37 @@ class SubmissionStore(
 
     val today = LocalDate.ofInstant(clock.instant(), TimeZones.UTC)
 
-    return dslContext
-        .select(DELIVERABLES.ID, SUBMISSIONS.ID)
-        .from(DELIVERABLES)
-        .join(MODULES)
-        .on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
-        .join(COHORT_MODULES)
-        .on(MODULES.ID.eq(COHORT_MODULES.MODULE_ID))
-        .join(PARTICIPANTS)
-        .on(COHORT_MODULES.COHORT_ID.eq(PARTICIPANTS.COHORT_ID))
-        .join(PROJECTS)
-        .on(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID))
-        .fullOuterJoin(SUBMISSIONS)
-        .on(DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID), PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
-        .join(ORGANIZATIONS)
-        .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-        .where(COHORT_MODULES.START_DATE.lessOrEqual(today))
-        .and(COHORT_MODULES.END_DATE.greaterOrEqual(today))
-        .and(PROJECTS.ID.eq(projectId))
-        .and(DELIVERABLES.DELIVERABLE_TYPE_ID.eq(DeliverableType.Species))
-        .orderBy(DELIVERABLES.ID, PROJECTS.ID)
-        .fetchOne { ExistingSpeciesDeliverableSubmissionModel.of(it) }
-        ?: throw SpeciesDeliverableNotFoundException(projectId)
+    val submission =
+        dslContext
+            .select(DELIVERABLES.ID, SUBMISSIONS.ID)
+            .from(DELIVERABLES)
+            .join(MODULES)
+            .on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
+            .join(COHORT_MODULES)
+            .on(MODULES.ID.eq(COHORT_MODULES.MODULE_ID))
+            .join(PARTICIPANTS)
+            .on(COHORT_MODULES.COHORT_ID.eq(PARTICIPANTS.COHORT_ID))
+            .join(PROJECTS)
+            .on(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID))
+            .fullOuterJoin(SUBMISSIONS)
+            .on(
+                DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID),
+                PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
+            .join(ORGANIZATIONS)
+            .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+            .where(COHORT_MODULES.START_DATE.lessOrEqual(today))
+            .and(COHORT_MODULES.END_DATE.greaterOrEqual(today))
+            .and(PROJECTS.ID.eq(projectId))
+            .and(DELIVERABLES.DELIVERABLE_TYPE_ID.eq(DeliverableType.Species))
+            .orderBy(DELIVERABLES.ID, PROJECTS.ID)
+            .fetchOne { ExistingSpeciesDeliverableSubmissionModel.of(it) }
+            ?: throw SpeciesDeliverableNotFoundException(projectId)
+
+    if (submission.submissionId != null) {
+      requirePermissions { readSubmission(submission.submissionId) }
+    }
+
+    return submission
   }
 
   fun updateSubmissionStatus(

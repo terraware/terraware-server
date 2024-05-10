@@ -30,7 +30,6 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertUser()
     insertOrganization()
-    insertModule()
 
     every { user.canReadProject(any()) } returns true
     every { user.canReadSubmission(any()) } returns true
@@ -110,6 +109,36 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
           ),
           store.fetchActiveSpeciesDeliverableSubmission(projectId))
     }
+
+    @Test
+    fun `throws an exception if no permission to read the submission`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId = insertProject(participantId = participantId)
+
+      val moduleId = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      val deliverableId =
+          insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
+      val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
+
+      every { user.canReadSubmission(submissionId) } returns false
+
+      assertThrows<SubmissionNotFoundException> {
+        store.fetchActiveSpeciesDeliverableSubmission(projectId)
+      }
+    }
+
+    @Test
+    fun `throws an exception if no permission to read project deliverables`() {
+      val projectId = insertProject()
+
+      every { user.canReadProjectDeliverables(projectId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.fetchActiveSpeciesDeliverableSubmission(projectId)
+      }
+    }
   }
 
   @Nested
@@ -121,6 +150,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates submission if needed`() {
+      insertModule()
       val projectId = insertProject()
       val deliverableId = insertDeliverable()
 
@@ -143,6 +173,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `updates existing submission`() {
+      insertModule()
       val projectId = insertProject()
       val deliverableId = insertDeliverable()
       val feedback = "This looks great"
@@ -173,6 +204,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `publishes event if status has changed`() {
+      insertModule()
       val projectId = insertProject()
       val deliverableId = insertDeliverable()
       insertSubmission(submissionStatus = SubmissionStatus.InReview)
@@ -191,6 +223,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not publish event if status has not changed`() {
+      insertModule()
       val projectId = insertProject()
       val deliverableId = insertDeliverable()
       insertSubmission(submissionStatus = SubmissionStatus.InReview)
@@ -203,6 +236,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to update submission status`() {
+      insertModule()
       val projectId = insertProject()
       val deliverableId = insertDeliverable()
       insertSubmission()
