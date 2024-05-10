@@ -6,6 +6,8 @@ import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesEditedEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesSubmittedEvent
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
@@ -259,6 +261,60 @@ class AppNotificationService(
         renderMessage,
         observationsUrl,
         setOf(Role.Owner, Role.Admin))
+  }
+
+  @EventListener
+  fun on(event: ParticipantProjectSpeciesSubmittedEvent) {
+    systemUser.run {
+      log.info(
+          "Creating app notifications for participant project species submitted in deliverable ${event.deliverableId} in " +
+              "project ${event.projectId}")
+
+      val project = projectStore.fetchOneById(event.projectId)
+      if (project.participantId == null) {
+        log.error(
+            "Got participant project species submitted notification for non-participant project ${event.projectId}")
+        return@run
+      }
+
+      val participant = participantStore.fetchOneById(project.participantId)
+      val deliverableUrl =
+          webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
+      val renderMessage = { messages.deliverableReadyForReview(participant.name) }
+
+      insertAcceleratorNotification(
+          deliverableUrl,
+          NotificationType.ParticipantProjectSpeciesSubmitted,
+          project.organizationId,
+          renderMessage)
+    }
+  }
+
+  @EventListener
+  fun on(event: ParticipantProjectSpeciesEditedEvent) {
+    systemUser.run {
+      log.info(
+          "Creating app notifications for participant project species edited in deliverable ${event.deliverableId} in " +
+              "project ${event.projectId}")
+
+      val project = projectStore.fetchOneById(event.projectId)
+      if (project.participantId == null) {
+        log.error(
+            "Got participant project species submitted for non-participant project ${event.projectId}")
+        return@run
+      }
+
+      val participant = participantStore.fetchOneById(project.participantId)
+      val deliverableUrl =
+          webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
+      val renderMessage = { messages.deliverableReadyForReview(participant.name) }
+
+      insertAcceleratorNotification(
+          deliverableUrl,
+          NotificationType.ParticipantProjectSpeciesEdited,
+          project.organizationId,
+          renderMessage)
+    }
   }
 
   @EventListener

@@ -384,6 +384,24 @@ class ParticipantProjectAdded(
     get() = "participant/projectAdded"
 }
 
+class ParticipantProjectSpeciesEdited(
+    config: TerrawareServerConfig,
+    val deliverableUrl: String,
+    val participantName: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "participantProjectSpecies/edited"
+}
+
+class ParticipantProjectSpeciesSubmitted(
+    config: TerrawareServerConfig,
+    val deliverableUrl: String,
+    val participantName: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "participantProjectSpecies/submitted"
+}
+
 class ParticipantProjectRemoved(
     config: TerrawareServerConfig,
     val adminName: String,
