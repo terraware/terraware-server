@@ -358,41 +358,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
         store.update(participantProjectSpeciesId) { it.copy(feedback = "Needs some work") }
       }
     }
-
-    //    @Test
-    //    fun `publishes event if status has changed`() {
-    //      val cohortId = insertCohort()
-    //      val participantId = insertParticipant(cohortId = cohortId)
-    //      val projectId = insertProject(participantId = participantId)
-    //      val speciesId = insertSpecies()
-    //      val participantProjectSpeciesId =
-    //          insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
-    //      val moduleId = insertModule()
-    //      val deliverableId = insertDeliverable(moduleId = moduleId)
-    //      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
-    //
-    //      every { user.canUpdateParticipantProjectSpecies(participantProjectSpeciesId) } returns
-    // true
-    //
-    //      store.update(participantProjectSpeciesId) {
-    //        it.copy(submissionStatus = SubmissionStatus.Approved)
-    //      }
-    //
-    //      eventPublisher.assertEventPublished(
-    //          ParticipantProjectSpeciesEditedEvent(deliverableId, projectId))
-    //    }
-
-    //    @Test
-    //    fun `does not publish event if status has not changed`() {
-    //      val projectId = insertProject()
-    //      val deliverableId = insertDeliverable()
-    //      insertSubmission(submissionStatus = SubmissionStatus.InReview)
-    //
-    //      store.updateSubmissionStatus(
-    //          deliverableId, projectId, SubmissionStatus.InReview, null, "This is amazing")
-    //
-    //      eventPublisher.assertNoEventsPublished()
-    //    }
   }
 
   @Nested
