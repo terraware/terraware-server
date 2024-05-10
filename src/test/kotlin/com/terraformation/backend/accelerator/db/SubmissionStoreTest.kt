@@ -110,17 +110,6 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
           ),
           store.fetchActiveSpeciesDeliverableSubmission(projectId))
     }
-
-    //    @Test
-    //    fun `throws exception if no permission to read submissions`() {
-    //      insertProject()
-    //      insertDeliverable()
-    //      val submissionId = insertSubmission()
-    //
-    //      every { user.canReadSubmission(submissionId) } returns false
-    //
-    //      assertThrows<SubmissionNotFoundException> { store.fetchOneById(submissionId) }
-    //    }
   }
 
   @Nested
