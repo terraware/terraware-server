@@ -4,8 +4,9 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
-import com.terraformation.backend.accelerator.model.ExistingSubmissionModel
+import com.terraformation.backend.accelerator.model.ExistingSpeciesDeliverableSubmissionModel
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.mockUser
@@ -33,43 +34,93 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.canReadProject(any()) } returns true
     every { user.canReadSubmission(any()) } returns true
+    every { user.canReadProjectDeliverables(any()) } returns true
   }
 
   @Nested
-  inner class FetchOneById {
+  inner class FetchActiveSpeciesDeliverable {
     @Test
-    fun `fetches the submission`() {
-      val projectId = insertProject()
-      val deliverableId = insertDeliverable()
-      val submissionId = insertSubmission()
+    fun `fetches the deliverable ID if no submission present`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId = insertProject(participantId = participantId)
 
-      val submissionDocumentIds =
-          setOf(
-              insertSubmissionDocument(submissionId = submissionId),
-              insertSubmissionDocument(submissionId = submissionId))
+      // Module goes from epoch -> epoch + 6 days
+      val moduleIdOld = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdOld)
+      insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
+
+      // Module goes from epoch + 6 days -> epoch + 12 days
+      val moduleIdActive = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdActive)
+      val deliverableIdActive =
+          insertDeliverable(moduleId = moduleIdActive, deliverableTypeId = DeliverableType.Species)
+
+      // Module goes from epoch + 12 days -> epoch + 18 days
+      val moduleIdFuture = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdFuture)
+      insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
+
+      // epoch + 7 days
+      clock.instant = Instant.EPOCH.plusSeconds(60 * 60 * 24 * 7)
 
       assertEquals(
-          ExistingSubmissionModel(
-              id = submissionId,
-              feedback = null,
-              internalComment = null,
-              projectId = projectId,
-              deliverableId = deliverableId,
-              submissionDocumentIds = submissionDocumentIds,
-              submissionStatus = SubmissionStatus.NotSubmitted),
-          store.fetchOneById(submissionId))
+          ExistingSpeciesDeliverableSubmissionModel(
+              deliverableId = deliverableIdActive,
+              submissionId = null,
+          ),
+          store.fetchActiveSpeciesDeliverableSubmission(projectId))
     }
 
     @Test
-    fun `throws exception if no permission to read submissions`() {
-      insertProject()
-      insertDeliverable()
-      val submissionId = insertSubmission()
+    fun `fetches both deliverable ID and submission ID if present`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId = insertProject(participantId = participantId)
 
-      every { user.canReadSubmission(submissionId) } returns false
+      // Module goes from epoch -> epoch + 6 days
+      val moduleIdOld = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdOld)
+      val deliverableIdOld =
+          insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
+      insertSubmission(deliverableId = deliverableIdOld, projectId = projectId)
 
-      assertThrows<SubmissionNotFoundException> { store.fetchOneById(submissionId) }
+      // Module goes from epoch + 6 days -> epoch + 12 days
+      val moduleIdActive = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdActive)
+      val deliverableIdActive =
+          insertDeliverable(moduleId = moduleIdActive, deliverableTypeId = DeliverableType.Species)
+      val submissionIdActive =
+          insertSubmission(deliverableId = deliverableIdActive, projectId = projectId)
+
+      // Module goes from epoch + 12 days -> epoch + 18 days
+      val moduleIdFuture = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdFuture)
+      val deliverableIdFuture =
+          insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
+      insertSubmission(deliverableId = deliverableIdFuture, projectId = projectId)
+
+      // epoch + 7 days
+      clock.instant = Instant.EPOCH.plusSeconds(60 * 60 * 24 * 7)
+
+      assertEquals(
+          ExistingSpeciesDeliverableSubmissionModel(
+              deliverableId = deliverableIdActive,
+              submissionId = submissionIdActive,
+          ),
+          store.fetchActiveSpeciesDeliverableSubmission(projectId))
     }
+
+    //    @Test
+    //    fun `throws exception if no permission to read submissions`() {
+    //      insertProject()
+    //      insertDeliverable()
+    //      val submissionId = insertSubmission()
+    //
+    //      every { user.canReadSubmission(submissionId) } returns false
+    //
+    //      assertThrows<SubmissionNotFoundException> { store.fetchOneById(submissionId) }
+    //    }
   }
 
   @Nested

@@ -1,14 +1,20 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -19,8 +25,17 @@ import org.springframework.security.access.AccessDeniedException
 class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
+  private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
+
   private val store: ParticipantProjectSpeciesStore by lazy {
-    ParticipantProjectSpeciesStore(dslContext, participantProjectSpeciesDao, projectsDao)
+    ParticipantProjectSpeciesStore(
+        clock,
+        dslContext,
+        eventPublisher,
+        participantProjectSpeciesDao,
+        projectsDao,
+        SubmissionStore(clock, dslContext, eventPublisher))
   }
 
   @BeforeEach
@@ -28,7 +43,13 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
     insertUser()
     insertOrganization()
 
+    every { user.canCreateParticipantProjectSpecies(any()) } returns true
+    every { user.canCreateSubmission(any()) } returns true
+    every { user.canDeleteParticipantProjectSpecies(any()) } returns true
     every { user.canReadParticipantProjectSpecies(any()) } returns true
+    every { user.canReadProject(any()) } returns true
+    every { user.canReadProjectDeliverables(any()) } returns true
+    every { user.canUpdateParticipantProjectSpecies(any()) } returns true
   }
 
   @Nested
@@ -49,6 +70,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           ExistingParticipantProjectSpeciesModel(
               feedback = "feedback",
               id = participantProjectSpeciesId,
+              modifiedTime = Instant.EPOCH,
               projectId = projectId,
               rationale = "rationale",
               speciesId = speciesId,
@@ -110,11 +132,13 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   inner class Create {
     @Test
     fun `creates the entity with the supplied fields`() {
-      val participantId = insertParticipant()
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
       val projectId = insertProject(participantId = participantId)
       val speciesId = insertSpecies()
-
-      every { user.canCreateParticipantProjectSpecies(projectId) } returns true
+      val moduleId = insertModule()
+      insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
 
       val participantProjectSpecies =
           store.create(
@@ -129,6 +153,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           ParticipantProjectSpeciesRow(
               feedback = "feedback",
               id = participantProjectSpecies.id,
+              modifiedTime = Instant.EPOCH,
               projectId = projectId,
               rationale = "rationale",
               speciesId = speciesId,
@@ -137,11 +162,56 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `creates a submission for the project and deliverable if one does not exist for the active module`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId = insertProject(participantId = participantId)
+      val speciesId = insertSpecies()
+      val moduleId = insertModule()
+      val deliverableId =
+          insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+
+      val participantProjectSpecies =
+          store.create(
+              NewParticipantProjectSpeciesModel(
+                  feedback = "feedback",
+                  id = null,
+                  projectId = projectId,
+                  rationale = "rationale",
+                  speciesId = speciesId))
+
+      assertEquals(
+          ParticipantProjectSpeciesRow(
+              feedback = "feedback",
+              id = participantProjectSpecies.id,
+              modifiedTime = Instant.EPOCH,
+              projectId = projectId,
+              rationale = "rationale",
+              speciesId = speciesId,
+              submissionStatusId = SubmissionStatus.NotSubmitted),
+          participantProjectSpeciesDao.fetchOneById(participantProjectSpecies.id))
+
+      val userId = currentUser().userId
+      val now = clock.instant
+
+      assertEquals(
+          listOf(
+              SubmissionsRow(
+                  createdBy = userId,
+                  createdTime = now,
+                  deliverableId = deliverableId,
+                  modifiedBy = userId,
+                  modifiedTime = now,
+                  projectId = projectId,
+                  submissionStatusId = SubmissionStatus.NotSubmitted)),
+          submissionsDao.fetchByDeliverableId(deliverableId).map { it.copy(id = null) })
+    }
+
+    @Test
     fun `does not create the species association if the project is not associated to a participant`() {
       val projectId = insertProject()
       val speciesId = insertSpecies()
-
-      every { user.canCreateParticipantProjectSpecies(projectId) } returns true
 
       assertThrows<ProjectNotInParticipantException> {
         store.create(
@@ -174,15 +244,18 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `creates an entity for each project ID and species ID pairing`() {
-      val participantId = insertParticipant()
+    fun `creates an entity for each project ID and species ID pairing and ensures there is a submission for each project deliverable`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val moduleId = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      val deliverableId =
+          insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
+
       val projectId1 = insertProject(participantId = participantId)
       val projectId2 = insertProject(participantId = participantId)
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
-
-      every { user.canCreateParticipantProjectSpecies(projectId1) } returns true
-      every { user.canCreateParticipantProjectSpecies(projectId2) } returns true
 
       // Even though the consumer can pass
       store.createMany(setOf(projectId1, projectId2), setOf(speciesId1, speciesId2))
@@ -191,29 +264,56 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               ParticipantProjectSpeciesRow(
                   feedback = null,
+                  modifiedTime = Instant.EPOCH,
                   projectId = projectId1,
                   rationale = null,
                   speciesId = speciesId1,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
               ParticipantProjectSpeciesRow(
                   feedback = null,
+                  modifiedTime = Instant.EPOCH,
                   projectId = projectId1,
                   rationale = null,
                   speciesId = speciesId2,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
               ParticipantProjectSpeciesRow(
                   feedback = null,
+                  modifiedTime = Instant.EPOCH,
                   projectId = projectId2,
                   rationale = null,
                   speciesId = speciesId1,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
               ParticipantProjectSpeciesRow(
                   feedback = null,
+                  modifiedTime = Instant.EPOCH,
                   projectId = projectId2,
                   rationale = null,
                   speciesId = speciesId2,
                   submissionStatusId = SubmissionStatus.NotSubmitted)),
           participantProjectSpeciesDao.findAll().map { it.copy(id = null) })
+
+      val userId = currentUser().userId
+      val now = clock.instant
+
+      assertEquals(
+          listOf(
+              SubmissionsRow(
+                  createdBy = userId,
+                  createdTime = now,
+                  deliverableId = deliverableId,
+                  modifiedBy = userId,
+                  modifiedTime = now,
+                  projectId = projectId1,
+                  submissionStatusId = SubmissionStatus.NotSubmitted),
+              SubmissionsRow(
+                  createdBy = userId,
+                  createdTime = now,
+                  deliverableId = deliverableId,
+                  modifiedBy = userId,
+                  modifiedTime = now,
+                  projectId = projectId2,
+                  submissionStatusId = SubmissionStatus.NotSubmitted)),
+          submissionsDao.fetchByDeliverableId(deliverableId).map { it.copy(id = null) })
     }
   }
 
@@ -221,13 +321,15 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   inner class Update {
     @Test
     fun `updates the entity with the supplied fields`() {
-      val participantId = insertParticipant()
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
       val projectId = insertProject(participantId = participantId)
       val speciesId = insertSpecies()
+      val moduleId = insertModule()
+      insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
       val participantProjectSpeciesId =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
-
-      every { user.canUpdateParticipantProjectSpecies(participantProjectSpeciesId) } returns true
 
       store.update(participantProjectSpeciesId) {
         it.copy(feedback = "Looks good", submissionStatus = SubmissionStatus.Approved)
@@ -237,6 +339,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           ParticipantProjectSpeciesRow(
               feedback = "Looks good",
               id = participantProjectSpeciesId,
+              modifiedTime = Instant.EPOCH,
               projectId = projectId,
               speciesId = speciesId,
               submissionStatusId = SubmissionStatus.Approved),
@@ -260,10 +363,47 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val participantProjectSpeciesId =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
 
+      every { user.canUpdateParticipantProjectSpecies(any()) } returns false
+
       assertThrows<AccessDeniedException> {
         store.update(participantProjectSpeciesId) { it.copy(feedback = "Needs some work") }
       }
     }
+
+    //    @Test
+    //    fun `publishes event if status has changed`() {
+    //      val cohortId = insertCohort()
+    //      val participantId = insertParticipant(cohortId = cohortId)
+    //      val projectId = insertProject(participantId = participantId)
+    //      val speciesId = insertSpecies()
+    //      val participantProjectSpeciesId =
+    //          insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
+    //      val moduleId = insertModule()
+    //      val deliverableId = insertDeliverable(moduleId = moduleId)
+    //      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+    //
+    //      every { user.canUpdateParticipantProjectSpecies(participantProjectSpeciesId) } returns
+    // true
+    //
+    //      store.update(participantProjectSpeciesId) {
+    //        it.copy(submissionStatus = SubmissionStatus.Approved)
+    //      }
+    //
+    //      eventPublisher.assertEventPublished(
+    //          ParticipantProjectSpeciesEditedEvent(deliverableId, projectId))
+    //    }
+
+    //    @Test
+    //    fun `does not publish event if status has not changed`() {
+    //      val projectId = insertProject()
+    //      val deliverableId = insertDeliverable()
+    //      insertSubmission(submissionStatus = SubmissionStatus.InReview)
+    //
+    //      store.updateSubmissionStatus(
+    //          deliverableId, projectId, SubmissionStatus.InReview, null, "This is amazing")
+    //
+    //      eventPublisher.assertNoEventsPublished()
+    //    }
   }
 
   @Nested
@@ -282,8 +422,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val participantProjectSpeciesId3 =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId3)
 
-      every { user.canDeleteParticipantProjectSpecies(any()) } returns true
-
       store.delete(setOf(participantProjectSpeciesId1, participantProjectSpeciesId2))
 
       assertEquals(
@@ -291,6 +429,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               ParticipantProjectSpeciesRow(
                   feedback = null,
                   id = participantProjectSpeciesId3,
+                  modifiedTime = Instant.EPOCH,
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId3,
@@ -309,7 +448,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val participantProjectSpeciesId2 =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId2)
 
-      every { user.canDeleteParticipantProjectSpecies(participantProjectSpeciesId1) } returns true
+      every { user.canDeleteParticipantProjectSpecies(any()) } returns false
 
       assertThrows<AccessDeniedException> {
         store.delete(setOf(participantProjectSpeciesId1, participantProjectSpeciesId2))
@@ -322,6 +461,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               ParticipantProjectSpeciesRow(
                   feedback = null,
                   id = participantProjectSpeciesId1,
+                  modifiedTime = Instant.EPOCH,
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId1,
@@ -329,6 +469,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               ParticipantProjectSpeciesRow(
                   feedback = null,
                   id = participantProjectSpeciesId2,
+                  modifiedTime = Instant.EPOCH,
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId2,
