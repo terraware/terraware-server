@@ -14,7 +14,6 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProject
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -30,9 +29,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
   private val store: ParticipantProjectSpeciesStore by lazy {
     ParticipantProjectSpeciesStore(
-        clock,
         dslContext,
-        eventPublisher,
         participantProjectSpeciesDao,
         projectsDao,
         SubmissionStore(clock, dslContext, eventPublisher))
@@ -70,7 +67,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           ExistingParticipantProjectSpeciesModel(
               feedback = "feedback",
               id = participantProjectSpeciesId,
-              modifiedTime = Instant.EPOCH,
               projectId = projectId,
               rationale = "rationale",
               speciesId = speciesId,
@@ -153,7 +149,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           ParticipantProjectSpeciesRow(
               feedback = "feedback",
               id = participantProjectSpecies.id,
-              modifiedTime = Instant.EPOCH,
               projectId = projectId,
               rationale = "rationale",
               speciesId = speciesId,
@@ -185,7 +180,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           ParticipantProjectSpeciesRow(
               feedback = "feedback",
               id = participantProjectSpecies.id,
-              modifiedTime = Instant.EPOCH,
               projectId = projectId,
               rationale = "rationale",
               speciesId = speciesId,
@@ -264,28 +258,24 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               ParticipantProjectSpeciesRow(
                   feedback = null,
-                  modifiedTime = Instant.EPOCH,
                   projectId = projectId1,
                   rationale = null,
                   speciesId = speciesId1,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
               ParticipantProjectSpeciesRow(
                   feedback = null,
-                  modifiedTime = Instant.EPOCH,
                   projectId = projectId1,
                   rationale = null,
                   speciesId = speciesId2,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
               ParticipantProjectSpeciesRow(
                   feedback = null,
-                  modifiedTime = Instant.EPOCH,
                   projectId = projectId2,
                   rationale = null,
                   speciesId = speciesId1,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
               ParticipantProjectSpeciesRow(
                   feedback = null,
-                  modifiedTime = Instant.EPOCH,
                   projectId = projectId2,
                   rationale = null,
                   speciesId = speciesId2,
@@ -339,7 +329,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           ParticipantProjectSpeciesRow(
               feedback = "Looks good",
               id = participantProjectSpeciesId,
-              modifiedTime = Instant.EPOCH,
               projectId = projectId,
               speciesId = speciesId,
               submissionStatusId = SubmissionStatus.Approved),
@@ -429,7 +418,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               ParticipantProjectSpeciesRow(
                   feedback = null,
                   id = participantProjectSpeciesId3,
-                  modifiedTime = Instant.EPOCH,
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId3,
@@ -461,7 +449,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               ParticipantProjectSpeciesRow(
                   feedback = null,
                   id = participantProjectSpeciesId1,
-                  modifiedTime = Instant.EPOCH,
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId1,
@@ -469,7 +456,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               ParticipantProjectSpeciesRow(
                   feedback = null,
                   id = participantProjectSpeciesId2,
-                  modifiedTime = Instant.EPOCH,
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId2,
