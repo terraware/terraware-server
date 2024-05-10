@@ -2100,6 +2100,7 @@ abstract class DatabaseTest {
   fun insertParticipantProjectSpecies(
       feedback: String? = null,
       id: Any? = null,
+      modifiedTime: Instant = Instant.EPOCH,
       projectId: Any = inserted.projectId,
       rationale: String? = null,
       speciesId: Any = inserted.speciesId,
@@ -2109,7 +2110,7 @@ abstract class DatabaseTest {
         ParticipantProjectSpeciesRow(
             feedback = feedback,
             id = id?.toIdWrapper { ParticipantProjectSpeciesId(it) },
-            modifiedTime = Instant.EPOCH,
+            modifiedTime = modifiedTime,
             projectId = projectId.toIdWrapper { ProjectId(it) },
             rationale = rationale,
             speciesId = speciesId.toIdWrapper { SpeciesId(it) },

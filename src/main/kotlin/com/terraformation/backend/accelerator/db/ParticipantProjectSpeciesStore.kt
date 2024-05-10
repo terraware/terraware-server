@@ -95,15 +95,28 @@ class ParticipantProjectSpeciesStore(
   }
 
   fun fetchLastUpdatedSpeciesTime(projectId: ProjectId): Instant {
-    return with(PARTICIPANT_PROJECT_SPECIES) {
-      dslContext
-          .select(PARTICIPANT_PROJECT_SPECIES.MODIFIED_TIME)
-          .from(PARTICIPANT_PROJECT_SPECIES)
-          .where(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(projectId))
-          .orderBy(ID)
-          .fetchOne(PARTICIPANT_PROJECT_SPECIES.MODIFIED_TIME)
-          ?: throw ParticipantProjectSpeciesProjectNotFoundException(projectId)
+    requirePermissions { readProject(projectId) }
+
+    val user = currentUser()
+
+    val lastUpdatedTime =
+        with(PARTICIPANT_PROJECT_SPECIES) {
+          dslContext
+              .select(ID, MODIFIED_TIME)
+              .from(this)
+              .where(PROJECT_ID.eq(projectId))
+              .orderBy(MODIFIED_TIME.desc())
+              .limit(1)
+              .fetch()
+              .filter { user.canReadParticipantProjectSpecies(it[ID]!!) }
+              .map { it[MODIFIED_TIME]!! }
+        }
+
+    if (lastUpdatedTime.isEmpty()) {
+      throw ParticipantProjectSpeciesProjectNotFoundException(projectId)
     }
+
+    return lastUpdatedTime.first()
   }
 
   fun fetchOneById(

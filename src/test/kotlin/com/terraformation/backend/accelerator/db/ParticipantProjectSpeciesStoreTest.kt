@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
@@ -38,6 +39,56 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadProject(any()) } returns true
     every { user.canReadProjectDeliverables(any()) } returns true
     every { user.canUpdateParticipantProjectSpecies(any()) } returns true
+  }
+
+  @Nested
+  inner class FetchLastUpdatedSpeciesTime {
+    @Test
+    fun `fetches the last updated species time for a given project`() {
+      val participantId = insertParticipant()
+      val projectId = insertProject(participantId = participantId)
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+      val speciesId3 = insertSpecies()
+
+      insertParticipantProjectSpecies(
+          modifiedTime = Instant.EPOCH, projectId = projectId, speciesId = speciesId1)
+      insertParticipantProjectSpecies(
+          modifiedTime = Instant.EPOCH.plusSeconds(2),
+          projectId = projectId,
+          speciesId = speciesId2)
+      insertParticipantProjectSpecies(
+          modifiedTime = Instant.EPOCH.plusSeconds(1),
+          projectId = projectId,
+          speciesId = speciesId3)
+
+      assertEquals(Instant.EPOCH.plusSeconds(2), store.fetchLastUpdatedSpeciesTime(projectId))
+    }
+
+    @Test
+    fun `throws an exception if no permission to read the last modified participant project species`() {
+      val participantId = insertParticipant()
+      val projectId = insertProject(participantId = participantId)
+      val speciesId = insertSpecies()
+
+      val participantProjectSpeciesId =
+          insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
+
+      every { user.canReadParticipantProjectSpecies(participantProjectSpeciesId) } returns false
+
+      assertThrows<ParticipantProjectSpeciesProjectNotFoundException> {
+        store.fetchLastUpdatedSpeciesTime(projectId)
+      }
+    }
+
+    @Test
+    fun `throws an exception if no permission to read the project`() {
+      val projectId = insertProject()
+
+      every { user.canReadProject(projectId) } returns false
+
+      assertThrows<ProjectNotFoundException> { store.fetchLastUpdatedSpeciesTime(projectId) }
+    }
   }
 
   @Nested
