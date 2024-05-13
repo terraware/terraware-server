@@ -2,18 +2,23 @@ package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesStore
 import com.terraformation.backend.accelerator.db.SubmissionStore
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import jakarta.inject.Named
+import java.time.InstantSource
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class ParticipantProjectSpeciesService(
-    private val dslContext: DSLContext,
-    private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
-    private val submissionStore: SubmissionStore,
+  private val clock: InstantSource,
+  private val dslContext: DSLContext,
+  private val eventPublisher: ApplicationEventPublisher,
+  private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
+  private val submissionStore: SubmissionStore,
 ) {
   /** Creates a new participant project species, possibly creating a deliverable submission. */
   fun create(model: NewParticipantProjectSpeciesModel): ExistingParticipantProjectSpeciesModel {
@@ -27,6 +32,13 @@ class ParticipantProjectSpeciesService(
         submissionStore.createSubmission(deliverableSubmission.deliverableId, model.projectId)
       }
 
+      eventPublisher.publishEvent(
+          ParticipantProjectSpeciesAddedEvent(
+              deliverableId = deliverableSubmission.deliverableId,
+              modifiedTime = existingModel.modifiedTime!!,
+              projectId = existingModel.projectId,
+              speciesId = existingModel.speciesId))
+
       existingModel
     }
   }
@@ -39,12 +51,20 @@ class ParticipantProjectSpeciesService(
     dslContext.transaction { _ ->
       participantProjectSpeciesStore.create(projectIds, speciesIds)
 
-      projectIds.forEach {
+      projectIds.forEach { projectId ->
         // A submission must exist for every project that is getting a new species assigned
         val deliverableSubmission = submissionStore.fetchActiveSpeciesDeliverableSubmission(it)
         if (deliverableSubmission.submissionId == null) {
           submissionStore.createSubmission(deliverableSubmission.deliverableId, it)
         }
+
+        speciesIds.forEach { speciesId ->
+          eventPublisher.publishEvent(
+              ParticipantProjectSpeciesAddedEvent(
+                  deliverableId = deliverableSubmission.deliverableId,
+                  modifiedTime = clock.instant(),
+                  projectId = projectId,
+                  speciesId = speciesId))
       }
     }
   }

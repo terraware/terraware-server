@@ -1,2 +1,2 @@
-<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.DeliverableStatusUpdated" -->
-${strings("notification.deliverable.statusUpdated.email.subject")}
+<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.ParticipantProjectSpeciesEdited" -->
+${strings("notification.participantProjectSpecies.edited.subject", participantName)}

@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.ParticipantProjectSpeciesService
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
@@ -26,9 +27,11 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
   private val service: ParticipantProjectSpeciesService by lazy {
     ParticipantProjectSpeciesService(
+        clock,
         dslContext,
+        eventPublisher,
         ParticipantProjectSpeciesStore(
-            clock, dslContext, participantProjectSpeciesDao, projectsDao),
+            clock, dslContext, eventPublisher, participantProjectSpeciesDao, projectsDao),
         SubmissionStore(clock, dslContext, eventPublisher))
   }
 
@@ -80,6 +83,13 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId,
                   submissionStatusId = SubmissionStatus.NotSubmitted)),
           submissionsDao.fetchByDeliverableId(deliverableId).map { it.copy(id = null) })
+
+      eventPublisher.assertEventPublished(
+          ParticipantProjectSpeciesAddedEvent(
+              deliverableId = deliverableId,
+              modifiedTime = Instant.EPOCH,
+              projectId = projectId,
+              speciesId = speciesId))
     }
 
     @Test
@@ -160,6 +170,31 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId2,
                   submissionStatusId = SubmissionStatus.NotSubmitted)),
           submissionsDao.fetchByDeliverableId(deliverableId).map { it.copy(id = null) })
+
+      eventPublisher.assertEventPublished(
+          ParticipantProjectSpeciesAddedEvent(
+              deliverableId = deliverableId,
+              modifiedTime = Instant.EPOCH,
+              projectId = projectId1,
+              speciesId = speciesId1))
+      eventPublisher.assertEventPublished(
+          ParticipantProjectSpeciesAddedEvent(
+              deliverableId = deliverableId,
+              modifiedTime = Instant.EPOCH,
+              projectId = projectId1,
+              speciesId = speciesId2))
+      eventPublisher.assertEventPublished(
+          ParticipantProjectSpeciesAddedEvent(
+              deliverableId = deliverableId,
+              modifiedTime = Instant.EPOCH,
+              projectId = projectId2,
+              speciesId = speciesId1))
+      eventPublisher.assertEventPublished(
+          ParticipantProjectSpeciesAddedEvent(
+              deliverableId = deliverableId,
+              modifiedTime = Instant.EPOCH,
+              projectId = projectId2,
+              speciesId = speciesId2))
     }
   }
 }

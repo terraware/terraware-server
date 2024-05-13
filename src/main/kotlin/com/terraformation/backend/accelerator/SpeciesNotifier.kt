@@ -1,13 +1,14 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesStore
+import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
-import com.terraformation.backend.accelerator.event.DeliverableSpeciesAddedEvent
-import com.terraformation.backend.accelerator.event.DeliverableSpeciesEditedEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesEditedEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesSubmittedEvent
 import com.terraformation.backend.customer.model.SystemUser
-import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.db.accelerator.SubmissionStatus
 import jakarta.inject.Named
 import java.time.Duration
 import java.time.InstantSource
@@ -22,6 +23,7 @@ class SpeciesNotifier(
     private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
     private val eventPublisher: ApplicationEventPublisher,
     @Lazy private val scheduler: JobScheduler,
+    private val submissionStore: SubmissionStore,
     private val systemUser: SystemUser,
 ) {
   companion object {
@@ -33,13 +35,11 @@ class SpeciesNotifier(
      * deliverable.
      */
     private val notificationDelay = Duration.ofMinutes(10)
-
-    private val log = perClassLogger()
   }
 
   /** Schedules a "species added" notification when a new species is added to a project. */
   @EventListener
-  fun on(event: DeliverableSpeciesAddedEvent) {
+  fun on(event: ParticipantProjectSpeciesAddedEvent) {
     scheduler.schedule<SpeciesNotifier>(clock.instant().plus(notificationDelay)) {
       notifyIfNoNewerUpdates(event)
     }
@@ -47,9 +47,14 @@ class SpeciesNotifier(
 
   /** Schedules a "species edited" notification when a species associated to a project is edited. */
   @EventListener
-  fun on(event: DeliverableSpeciesEditedEvent) {
-    scheduler.schedule<SpeciesNotifier>(clock.instant().plus(notificationDelay)) {
-      notifyIfNoNewerUpdates(event)
+  fun on(event: ParticipantProjectSpeciesEditedEvent) {
+    val old = event.oldParticipantProjectSpecies
+    val new = event.newParticipantProjectSpecies
+
+    if (old.submissionStatus == SubmissionStatus.Approved && old != new) {
+      scheduler.schedule<SpeciesNotifier>(clock.instant().plus(notificationDelay)) {
+        notifyIfNoNewerUpdates(event)
+      }
     }
   }
 
@@ -57,26 +62,35 @@ class SpeciesNotifier(
    * Publishes [DeliverableReadyForReviewEvent] if no documents have been uploaded for a submission
    * since the one referenced by the event.
    */
-  fun notifyIfNoNewerUpdates(event: DeliverableSpeciesAddedEvent) {
-    systemUser.run {
-      val lastUpdateTime =
-          participantProjectSpeciesStore.fetchLastUpdatedSpeciesTime(event.projectId)
-
-      if (lastUpdateTime == event.participantProjectSpecies.modifiedTime) {
-        eventPublisher.publishEvent(
-            ParticipantProjectSpeciesSubmittedEvent(event.deliverableId, event.projectId))
-      }
-    }
-  }
-
-  fun notifyIfNoNewerUpdates(event: DeliverableSpeciesEditedEvent) {
+  private fun notifyIfNoNewerUpdates(event: ParticipantProjectSpeciesAddedEvent) {
     systemUser.run {
       val lastUpdateTime =
           participantProjectSpeciesStore.fetchLastUpdatedSpeciesTime(event.projectId)
 
       if (lastUpdateTime == event.modifiedTime) {
         eventPublisher.publishEvent(
-            ParticipantProjectSpeciesEditedEvent(event.deliverableId, event.projectId))
+            ParticipantProjectSpeciesAddedToProjectEvent(
+                deliverableId = event.deliverableId,
+                projectId = event.projectId,
+                speciesId = event.speciesId))
+      }
+    }
+  }
+
+  private fun notifyIfNoNewerUpdates(event: ParticipantProjectSpeciesEditedEvent) {
+    systemUser.run {
+      val lastUpdateTime =
+          participantProjectSpeciesStore.fetchLastUpdatedSpeciesTime(event.projectId)
+
+      if (lastUpdateTime == event.modifiedTime) {
+        val deliverableSubmission =
+            submissionStore.fetchActiveSpeciesDeliverableSubmission(event.projectId)
+
+        eventPublisher.publishEvent(
+            ParticipantProjectSpeciesApprovedSpeciesEditedEvent(
+                deliverableId = deliverableSubmission.deliverableId,
+                projectId = event.projectId,
+                speciesId = event.newParticipantProjectSpecies.speciesId))
       }
     }
   }

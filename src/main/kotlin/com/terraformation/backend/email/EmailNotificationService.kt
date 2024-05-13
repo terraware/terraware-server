@@ -5,6 +5,8 @@ import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEve
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedEvent
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
@@ -51,6 +53,8 @@ import com.terraformation.backend.email.model.ObservationStarted
 import com.terraformation.backend.email.model.ObservationUpcoming
 import com.terraformation.backend.email.model.ParticipantProjectAdded
 import com.terraformation.backend.email.model.ParticipantProjectRemoved
+import com.terraformation.backend.email.model.ParticipantProjectSpeciesAdded
+import com.terraformation.backend.email.model.ParticipantProjectSpeciesEdited
 import com.terraformation.backend.email.model.PlantingSeasonNotScheduled
 import com.terraformation.backend.email.model.PlantingSeasonNotScheduledSupport
 import com.terraformation.backend.email.model.PlantingSeasonRescheduled
@@ -67,6 +71,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
+import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
@@ -97,6 +102,7 @@ class EmailNotificationService(
     private val participantStore: ParticipantStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val projectStore: ProjectStore,
+    private val speciesStore: SpeciesStore,
     private val systemUser: SystemUser,
     private val userStore: UserStore,
     private val webAppUrls: WebAppUrls,
@@ -516,6 +522,41 @@ class EmailNotificationService(
             project.name)
 
     sendToOrganizationContact(organization, model)
+  }
+
+  @EventListener
+  fun on(event: ParticipantProjectSpeciesAddedToProjectEvent) {
+    val project = projectStore.fetchOneById(event.projectId)
+    val participant = participantStore.fetchOneById(project.participantId!!)
+    val species = speciesStore.fetchSpeciesById(event.speciesId)
+
+    sendToAccelerator(
+        project.organizationId,
+        ParticipantProjectSpeciesAdded(
+            config,
+            webAppUrls
+                .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
+                .toString(),
+            participant.name,
+            project.name,
+            species.scientificName))
+  }
+
+  @EventListener
+  fun on(event: ParticipantProjectSpeciesApprovedSpeciesEditedEvent) {
+    val project = projectStore.fetchOneById(event.projectId)
+    val participant = participantStore.fetchOneById(project.participantId!!)
+    val species = speciesStore.fetchSpeciesById(event.speciesId)
+
+    sendToAccelerator(
+        project.organizationId,
+        ParticipantProjectSpeciesEdited(
+            config,
+            webAppUrls
+                .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
+                .toString(),
+            participant.name,
+            species.scientificName))
   }
 
   @EventListener

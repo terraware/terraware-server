@@ -1,4 +1,4 @@
-<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.DeliverableReadyForReview" --> -->
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.ParticipantProjectSpeciesEdited" --> -->
 <mjml>
     <mj-include path="../../head.ftlh.mjml"/>
 
@@ -8,13 +8,13 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                  ${strings("notification.deliverable.statusUpdated.email.title")}
+                  ${strings("notification.participantProjectSpecies.edited.shortBody", speciesName)}
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                  ${strings("notification.deliverable.statusUpdated.email.body")}
+                  ${strings("notification.participantProjectSpecies.edited.longBody", participantName, speciesName)}
                 </mj-text>
                 <mj-button mj-class="btn-productive-primary-md"
-                           href="${deliverableUrl?no_esc}">${strings("notification.deliverable.statusUpdated.email.buttonLabel")}
+                           href="${deliverableUrl?no_esc}">${strings("notification.participantProjectSpecies.edited.ctaLabel")}
                 </mj-button>
                 <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>

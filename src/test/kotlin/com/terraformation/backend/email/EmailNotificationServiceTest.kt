@@ -5,6 +5,8 @@ import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEve
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -40,6 +42,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -60,6 +63,8 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.report.model.ReportMetadata
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
+import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
@@ -112,6 +117,7 @@ internal class EmailNotificationServiceTest {
   private val plantingSiteStore: PlantingSiteStore = mockk()
   private val projectStore: ProjectStore = mockk()
   private val sender: EmailSender = mockk()
+  private val speciesStore: SpeciesStore = mockk()
   private val systemUser: SystemUser = SystemUser(mockk())
   private val user: IndividualUser = mockk()
   private val userStore: UserStore = mockk()
@@ -140,6 +146,7 @@ internal class EmailNotificationServiceTest {
           participantStore,
           plantingSiteStore,
           projectStore,
+          speciesStore,
           systemUser,
           userStore,
           webAppUrls)
@@ -204,6 +211,12 @@ internal class EmailNotificationServiceTest {
           organizationId = organization.id,
           participantId = participant.id,
       )
+  private val species =
+      ExistingSpeciesModel(
+          id = SpeciesId(1),
+          scientificName = "A Species",
+          organizationId = organization.id,
+      )
   private val upcomingObservation =
       ExistingObservationModel(
           endDate = LocalDate.of(2023, 9, 30),
@@ -253,6 +266,7 @@ internal class EmailNotificationServiceTest {
         plantingSite
     every { projectStore.fetchOneById(project.id) } returns project
     every { sender.createMimeMessage() } answers { JavaMailSenderImpl().createMimeMessage() }
+    every { speciesStore.fetchSpeciesById(species.id) } returns species
     every { user.email } returns "user@test.com"
     every { user.emailNotificationsEnabled } returns true
     every { user.fullName } returns "Normal User"
@@ -829,6 +843,86 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("removed from", message = message)
 
     assertRecipientsEqual(setOf("support@terraformation.com"))
+  }
+
+  @Test
+  fun `participantProjectSpeciesAddedToProject without Terraformation contact`() {
+    every { config.support.email } returns "support@terraformation.com"
+
+    val event =
+        ParticipantProjectSpeciesAddedToProjectEvent(DeliverableId(1), project.id, species.id)
+
+    service.on(event)
+
+    assertSentNoContactNotification()
+
+    val message = sentMessageWithSubject("added to")
+    assertSubjectContains(participant.name, message = message)
+    assertBodyContains(participant.name, message = message)
+    assertBodyContains(project.name, message = message)
+    assertBodyContains(species.scientificName, message = message)
+    assertBodyContains("submitted for use", message = message)
+
+    assertRecipientsEqual(setOf("support@terraformation.com"))
+  }
+
+  @Test
+  fun `participantProjectSpeciesAddedToProject with Terraformation contact`() {
+    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+
+    val event =
+        ParticipantProjectSpeciesAddedToProjectEvent(DeliverableId(1), project.id, species.id)
+
+    service.on(event)
+
+    val message = sentMessageWithSubject("added to")
+    assertSubjectContains(participant.name, message = message)
+    assertBodyContains(participant.name, message = message)
+    assertBodyContains(project.name, message = message)
+    assertBodyContains(species.scientificName, message = message)
+    assertBodyContains("submitted for use", message = message)
+
+    assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
+  }
+
+  @Test
+  fun `participantProjectSpeciesEditedToProject without Terraformation contact`() {
+    every { config.support.email } returns "support@terraformation.com"
+
+    val event =
+        ParticipantProjectSpeciesApprovedSpeciesEditedEvent(
+            DeliverableId(1), project.id, species.id)
+
+    service.on(event)
+
+    assertSentNoContactNotification()
+
+    val message = sentMessageWithSubject("has been edited")
+    assertSubjectContains(participant.name, message = message)
+    assertBodyContains(participant.name, message = message)
+    assertBodyContains(species.scientificName, message = message)
+    assertBodyContains("has been edited", message = message)
+
+    assertRecipientsEqual(setOf("support@terraformation.com"))
+  }
+
+  @Test
+  fun `participantProjectSpeciesEditedToProject with Terraformation contact`() {
+    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+
+    val event =
+        ParticipantProjectSpeciesApprovedSpeciesEditedEvent(
+            DeliverableId(1), project.id, species.id)
+
+    service.on(event)
+
+    val message = sentMessageWithSubject("has been edited")
+    assertSubjectContains(participant.name, message = message)
+    assertBodyContains(participant.name, message = message)
+    assertBodyContains(species.scientificName, message = message)
+    assertBodyContains("has been edited", message = message)
+
+    assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
   }
 
   @Test

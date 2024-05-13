@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesEditedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.ParticipantProjectSpeciesModel
@@ -20,11 +21,13 @@ import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class ParticipantProjectSpeciesStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val participantProjectSpeciesDao: ParticipantProjectSpeciesDao,
     private val projectsDao: ProjectsDao,
 ) {
@@ -143,24 +146,33 @@ class ParticipantProjectSpeciesStore(
     val existing = fetchOneById(participantProjectSpeciesId)
     val updated = updateFunc(existing)
 
-    dslContext.transaction { _ ->
-      val rowsUpdated =
-          with(PARTICIPANT_PROJECT_SPECIES) {
-            dslContext
-                .update(PARTICIPANT_PROJECT_SPECIES)
-                .set(FEEDBACK, updated.feedback)
-                .set(MODIFIED_BY, currentUser().userId)
-                .set(MODIFIED_TIME, clock.instant())
-                .set(RATIONALE, updated.rationale)
-                .set(SUBMISSION_STATUS_ID, updated.submissionStatus)
-                .where(ID.eq(participantProjectSpeciesId))
-                .execute()
-          }
+    val modifiedTime = clock.instant()
 
-      if (rowsUpdated < 1) {
-        throw ParticipantProjectSpeciesNotFoundException(participantProjectSpeciesId)
-      }
-    }
+    val participantProjectSpecies =
+        dslContext
+            .selectFrom(PARTICIPANT_PROJECT_SPECIES)
+            .where(PARTICIPANT_PROJECT_SPECIES.ID.eq(participantProjectSpeciesId))
+            .fetchOne()
+            ?: throw ParticipantProjectSpeciesNotFoundException(participantProjectSpeciesId)
+
+    val oldParticipantProjectSpecies =
+        ExistingParticipantProjectSpeciesModel.of(participantProjectSpecies)
+
+    participantProjectSpecies.feedback = updated.feedback
+    participantProjectSpecies.modifiedBy = currentUser().userId
+    participantProjectSpecies.modifiedTime = modifiedTime
+    participantProjectSpecies.rationale = updated.rationale
+    participantProjectSpecies.submissionStatusId = updated.submissionStatus
+
+    participantProjectSpecies.store()
+
+    eventPublisher.publishEvent(
+        ParticipantProjectSpeciesEditedEvent(
+            modifiedTime = modifiedTime,
+            newParticipantProjectSpecies =
+                ExistingParticipantProjectSpeciesModel.of(participantProjectSpecies),
+            oldParticipantProjectSpecies = oldParticipantProjectSpecies,
+            projectId = participantProjectSpecies.projectId!!))
   }
 
   private fun fetch(condition: Condition?): List<ExistingParticipantProjectSpeciesModel> {

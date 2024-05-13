@@ -6,8 +6,8 @@ import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesEditedEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesSubmittedEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedEvent
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
@@ -41,6 +41,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.report.event.ReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
+import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
@@ -69,6 +70,7 @@ class AppNotificationService(
     private val participantStore: ParticipantStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val projectStore: ProjectStore,
+    private val speciesStore: SpeciesStore,
     private val systemUser: SystemUser,
     private val userStore: UserStore,
     private val messages: Messages,
@@ -264,54 +266,65 @@ class AppNotificationService(
   }
 
   @EventListener
-  fun on(event: ParticipantProjectSpeciesSubmittedEvent) {
+  fun on(event: ParticipantProjectSpeciesApprovedSpeciesEditedEvent) {
     systemUser.run {
       log.info(
-          "Creating app notifications for participant project species submitted in deliverable ${event.deliverableId} in " +
+          "Creating app notifications for an approved participant project species being edited in deliverable ${event.deliverableId} in " +
               "project ${event.projectId}")
 
       val project = projectStore.fetchOneById(event.projectId)
       if (project.participantId == null) {
         log.error(
-            "Got participant project species submitted notification for non-participant project ${event.projectId}")
+            "Got approved participant project species edited notification for non-participant project ${event.projectId}")
         return@run
       }
+
+      val species = speciesStore.fetchSpeciesById(event.speciesId)
 
       val participant = participantStore.fetchOneById(project.participantId)
       val deliverableUrl =
           webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
-      val renderMessage = { messages.deliverableReadyForReview(participant.name) }
+      val renderMessage = {
+        messages.participantProjectSpeciesApprovedSpeciesEdited(
+            participantName = participant.name, speciesName = species.scientificName)
+      }
 
       insertAcceleratorNotification(
           deliverableUrl,
-          NotificationType.ParticipantProjectSpeciesSubmitted,
+          NotificationType.ParticipantProjectSpeciesApprovedSpeciesEdited,
           project.organizationId,
           renderMessage)
     }
   }
 
   @EventListener
-  fun on(event: ParticipantProjectSpeciesEditedEvent) {
+  fun on(event: ParticipantProjectSpeciesAddedToProjectEvent) {
     systemUser.run {
       log.info(
-          "Creating app notifications for participant project species edited in deliverable ${event.deliverableId} in " +
-              "project ${event.projectId}")
+          "Creating app notifications for a participant project species being added to project ${event.projectId} ")
 
       val project = projectStore.fetchOneById(event.projectId)
       if (project.participantId == null) {
         log.error(
-            "Got participant project species submitted for non-participant project ${event.projectId}")
+            "Got participant project species added to project notification for non-participant project ${event.projectId}")
         return@run
       }
+
+      val species = speciesStore.fetchSpeciesById(event.speciesId)
 
       val participant = participantStore.fetchOneById(project.participantId)
       val deliverableUrl =
           webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
-      val renderMessage = { messages.deliverableReadyForReview(participant.name) }
+      val renderMessage = {
+        messages.participantProjectSpeciesAddedToProject(
+            participantName = participant.name,
+            projectName = project.name,
+            speciesName = species.scientificName)
+      }
 
       insertAcceleratorNotification(
           deliverableUrl,
-          NotificationType.ParticipantProjectSpeciesEdited,
+          NotificationType.ParticipantProjectSpeciesAddedToProject,
           project.organizationId,
           renderMessage)
     }

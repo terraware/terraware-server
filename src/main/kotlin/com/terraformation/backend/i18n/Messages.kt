@@ -226,6 +226,28 @@ class Messages {
         body = getMessage("notification.deliverable.statusUpdated.app.body"))
   }
 
+  fun participantProjectSpeciesAddedToProject(
+      participantName: String,
+      projectName: String,
+      speciesName: String
+  ): NotificationMessage {
+    return NotificationMessage(
+        title = getMessage("notification.participantProjectSpecies.added.subject", participantName),
+        body =
+            getMessage(
+                "notification.participantProjectSpecies.added.shortBody", speciesName, projectName))
+  }
+
+  fun participantProjectSpeciesApprovedSpeciesEdited(
+      participantName: String,
+      speciesName: String
+  ): NotificationMessage {
+    return NotificationMessage(
+        title =
+            getMessage("notification.participantProjectSpecies.edited.subject", participantName),
+        body = getMessage("notification.participantProjectSpecies.added.shortBody", speciesName))
+  }
+
   fun sensorBoundsAlert(
       device: DevicesRow,
       facilityName: String,

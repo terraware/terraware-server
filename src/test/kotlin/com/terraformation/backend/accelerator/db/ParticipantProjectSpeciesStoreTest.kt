@@ -2,6 +2,8 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesEditedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.db.DatabaseTest
@@ -23,9 +25,11 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   val clock = TestClock()
+  val eventPublisher = TestEventPublisher()
 
   private val store: ParticipantProjectSpeciesStore by lazy {
-    ParticipantProjectSpeciesStore(clock, dslContext, participantProjectSpeciesDao, projectsDao)
+    ParticipantProjectSpeciesStore(
+        clock, dslContext, eventPublisher, participantProjectSpeciesDao, projectsDao)
   }
 
   @BeforeEach
@@ -318,6 +322,26 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               speciesId = speciesId,
               submissionStatusId = SubmissionStatus.Approved),
           participantProjectSpeciesDao.fetchOneById(participantProjectSpeciesId))
+
+      eventPublisher.assertEventPublished(
+          ParticipantProjectSpeciesEditedEvent(
+              modifiedTime = Instant.EPOCH,
+              newParticipantProjectSpecies =
+                  ExistingParticipantProjectSpeciesModel(
+                      id = participantProjectSpeciesId,
+                      feedback = "Looks good",
+                      modifiedTime = Instant.EPOCH,
+                      projectId = projectId,
+                      speciesId = speciesId,
+                      submissionStatus = SubmissionStatus.Approved),
+              oldParticipantProjectSpecies =
+                  ExistingParticipantProjectSpeciesModel(
+                      id = participantProjectSpeciesId,
+                      modifiedTime = Instant.EPOCH,
+                      projectId = projectId,
+                      speciesId = speciesId,
+                      submissionStatus = SubmissionStatus.NotSubmitted),
+              projectId = projectId))
     }
 
     @Test

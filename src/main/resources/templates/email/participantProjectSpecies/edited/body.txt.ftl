@@ -1,7 +1,7 @@
-<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.DeliverableStatusUpdated" -->
-${strings("notification.deliverable.statusUpdated.email.title")}
+<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.ParticipantProjectSpeciesEdited" -->
+${strings("notification.participantProjectSpecies.edited.subject", participantName)}
 
-${strings("notification.deliverable.statusUpdated.email.body")}
+${strings("notification.participantProjectSpecies.edited.shortBody", speciesName)}
 
 ${deliverableUrl}
 
