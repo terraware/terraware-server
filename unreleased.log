@@ -1,3 +1,6 @@
+a005ee252a2 Update ktorVersion to v2.3.11 (#1949)
+4ca76e9c77b Update database dependencies (#1948)
+e6d764cacf9 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v7.1.1 (#1947)
 126bd67fe7c Fix NPE in DeliverableStore (#1944)
 5e06298b544 Updated translations from Phrase (#1943)
 132cb0d4695 Add default value to SearchResults.cursor (#1938)
