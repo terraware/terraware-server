@@ -66,22 +66,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws an exception if no permission to read the last modified participant project species`() {
-      val participantId = insertParticipant()
-      val projectId = insertProject(participantId = participantId)
-      val speciesId = insertSpecies()
-
-      val participantProjectSpeciesId =
-          insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
-
-      every { user.canReadParticipantProjectSpecies(participantProjectSpeciesId) } returns false
-
-      assertThrows<ParticipantProjectSpeciesProjectNotFoundException> {
-        store.fetchLastUpdatedSpeciesTime(projectId)
-      }
-    }
-
-    @Test
     fun `throws an exception if no permission to read the project`() {
       val projectId = insertProject()
 

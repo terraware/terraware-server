@@ -109,8 +109,6 @@ class ParticipantProjectSpeciesStore(
   fun fetchLastUpdatedSpeciesTime(projectId: ProjectId): Instant {
     requirePermissions { readProject(projectId) }
 
-    val user = currentUser()
-
     val lastUpdatedTime =
         with(PARTICIPANT_PROJECT_SPECIES) {
           dslContext
@@ -120,7 +118,6 @@ class ParticipantProjectSpeciesStore(
               .orderBy(MODIFIED_TIME.desc())
               .limit(1)
               .fetch()
-              .filter { user.canReadParticipantProjectSpecies(it[ID]!!) }
               .map { it[MODIFIED_TIME]!! }
         }
 
