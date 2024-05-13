@@ -14,11 +14,11 @@ import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class ParticipantProjectSpeciesService(
-  private val clock: InstantSource,
-  private val dslContext: DSLContext,
-  private val eventPublisher: ApplicationEventPublisher,
-  private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
-  private val submissionStore: SubmissionStore,
+    private val clock: InstantSource,
+    private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
+    private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
+    private val submissionStore: SubmissionStore,
 ) {
   /** Creates a new participant project species, possibly creating a deliverable submission. */
   fun create(model: NewParticipantProjectSpeciesModel): ExistingParticipantProjectSpeciesModel {
@@ -53,9 +53,10 @@ class ParticipantProjectSpeciesService(
 
       projectIds.forEach { projectId ->
         // A submission must exist for every project that is getting a new species assigned
-        val deliverableSubmission = submissionStore.fetchActiveSpeciesDeliverableSubmission(it)
+        val deliverableSubmission =
+            submissionStore.fetchActiveSpeciesDeliverableSubmission(projectId)
         if (deliverableSubmission.submissionId == null) {
-          submissionStore.createSubmission(deliverableSubmission.deliverableId, it)
+          submissionStore.createSubmission(deliverableSubmission.deliverableId, projectId)
         }
 
         speciesIds.forEach { speciesId ->
@@ -65,6 +66,7 @@ class ParticipantProjectSpeciesService(
                   modifiedTime = clock.instant(),
                   projectId = projectId,
                   speciesId = speciesId))
+        }
       }
     }
   }

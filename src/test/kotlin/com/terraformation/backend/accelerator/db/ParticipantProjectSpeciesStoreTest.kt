@@ -328,16 +328,22 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               modifiedTime = Instant.EPOCH,
               newParticipantProjectSpecies =
                   ExistingParticipantProjectSpeciesModel(
+                      createdBy = userId,
+                      createdTime = now,
                       id = participantProjectSpeciesId,
                       feedback = "Looks good",
-                      modifiedTime = Instant.EPOCH,
+                      modifiedBy = userId,
+                      modifiedTime = now,
                       projectId = projectId,
                       speciesId = speciesId,
                       submissionStatus = SubmissionStatus.Approved),
               oldParticipantProjectSpecies =
                   ExistingParticipantProjectSpeciesModel(
+                      createdBy = userId,
+                      createdTime = now,
                       id = participantProjectSpeciesId,
-                      modifiedTime = Instant.EPOCH,
+                      modifiedBy = userId,
+                      modifiedTime = now,
                       projectId = projectId,
                       speciesId = speciesId,
                       submissionStatus = SubmissionStatus.NotSubmitted),

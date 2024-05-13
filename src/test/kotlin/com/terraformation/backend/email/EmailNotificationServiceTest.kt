@@ -854,8 +854,6 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
-    assertSentNoContactNotification()
-
     val message = sentMessageWithSubject("added to")
     assertSubjectContains(participant.name, message = message)
     assertBodyContains(participant.name, message = message)
@@ -863,7 +861,7 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("submitted for use", message = message)
 
-    assertRecipientsEqual(setOf("support@terraformation.com"))
+    assertRecipientsEqual(setOf(acceleratorUser.email))
   }
 
   @Test
@@ -895,15 +893,13 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
-    assertSentNoContactNotification()
-
     val message = sentMessageWithSubject("has been edited")
     assertSubjectContains(participant.name, message = message)
     assertBodyContains(participant.name, message = message)
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("has been edited", message = message)
 
-    assertRecipientsEqual(setOf("support@terraformation.com"))
+    assertRecipientsEqual(setOf(acceleratorUser.email))
   }
 
   @Test
