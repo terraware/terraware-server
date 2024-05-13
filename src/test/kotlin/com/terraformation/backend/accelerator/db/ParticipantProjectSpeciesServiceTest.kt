@@ -25,6 +25,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
   private val service: ParticipantProjectSpeciesService by lazy {
     ParticipantProjectSpeciesService(
+        dslContext,
         ParticipantProjectSpeciesStore(dslContext, participantProjectSpeciesDao, projectsDao),
         SubmissionStore(clock, dslContext, eventPublisher))
   }
@@ -38,6 +39,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateSubmission(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canReadProjectDeliverables(any()) } returns true
+    every { user.canReadSubmission(any()) } returns true
   }
 
   @Nested
@@ -75,6 +77,46 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId,
                   submissionStatusId = SubmissionStatus.NotSubmitted)),
           submissionsDao.fetchByDeliverableId(deliverableId).map { it.copy(id = null) })
+    }
+
+    @Test
+    fun `does not create another submission for a project if a deliverable submission for the active module already exists`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId = insertProject(participantId = participantId)
+      val speciesId = insertSpecies()
+      val moduleId = insertModule()
+      val deliverableId =
+          insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      val submissionId =
+          insertSubmission(
+              deliverableId = deliverableId, feedback = "So far so good", projectId = projectId)
+
+      service.create(
+          NewParticipantProjectSpeciesModel(
+              feedback = "feedback",
+              id = null,
+              projectId = projectId,
+              rationale = "rationale",
+              speciesId = speciesId))
+
+      val userId = currentUser().userId
+      val now = clock.instant
+
+      assertEquals(
+          listOf(
+              SubmissionsRow(
+                  createdBy = userId,
+                  createdTime = now,
+                  deliverableId = deliverableId,
+                  feedback = "So far so good",
+                  id = submissionId,
+                  modifiedBy = userId,
+                  modifiedTime = now,
+                  projectId = projectId,
+                  submissionStatusId = SubmissionStatus.NotSubmitted)),
+          submissionsDao.fetchByDeliverableId(deliverableId))
     }
 
     @Test

@@ -76,7 +76,7 @@ class SubmissionStore(
             .on(COHORT_MODULES.COHORT_ID.eq(PARTICIPANTS.COHORT_ID))
             .join(PROJECTS)
             .on(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID))
-            .fullOuterJoin(SUBMISSIONS)
+            .leftOuterJoin(SUBMISSIONS)
             .on(
                 DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID),
                 PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
@@ -86,7 +86,6 @@ class SubmissionStore(
             .and(COHORT_MODULES.END_DATE.greaterOrEqual(today))
             .and(PROJECTS.ID.eq(projectId))
             .and(DELIVERABLES.DELIVERABLE_TYPE_ID.eq(DeliverableType.Species))
-            .orderBy(DELIVERABLES.ID, PROJECTS.ID)
             .fetchOne { ExistingSpeciesDeliverableSubmissionModel.of(it) }
             ?: throw SpeciesDeliverableNotFoundException(projectId)
 

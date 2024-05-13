@@ -12,14 +12,9 @@ data class ExistingSpeciesDeliverableSubmissionModel(
 ) {
   companion object {
     fun of(record: Record): ExistingSpeciesDeliverableSubmissionModel {
-      if (record[SUBMISSIONS.ID] == null) {
-        return ExistingSpeciesDeliverableSubmissionModel(
-            deliverableId = record[DELIVERABLES.ID]!!, submissionId = null)
-      }
-
       return ExistingSpeciesDeliverableSubmissionModel(
           deliverableId = record[DELIVERABLES.ID]!!,
-          submissionId = record[SUBMISSIONS.ID]!!,
+          submissionId = record[SUBMISSIONS.ID],
       )
     }
   }

@@ -7,24 +7,28 @@ import com.terraformation.backend.accelerator.model.NewParticipantProjectSpecies
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import jakarta.inject.Named
+import org.jooq.DSLContext
 
 @Named
 class ParticipantProjectSpeciesService(
+    private val dslContext: DSLContext,
     private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
     private val submissionStore: SubmissionStore,
 ) {
   /** Creates a new participant project species, possibly creating a deliverable submission. */
   fun create(model: NewParticipantProjectSpeciesModel): ExistingParticipantProjectSpeciesModel {
-    val existingModel = participantProjectSpeciesStore.create(model)
+    return dslContext.transactionResult { _ ->
+      val existingModel = participantProjectSpeciesStore.create(model)
 
-    // If a submission doesn't exist for the deliverable, create one
-    val deliverableSubmission =
-        submissionStore.fetchActiveSpeciesDeliverableSubmission(model.projectId)
-    if (deliverableSubmission.submissionId == null) {
-      submissionStore.createSubmission(deliverableSubmission.deliverableId, model.projectId)
+      // If a submission doesn't exist for the deliverable, create one
+      val deliverableSubmission =
+          submissionStore.fetchActiveSpeciesDeliverableSubmission(model.projectId)
+      if (deliverableSubmission.submissionId == null) {
+        submissionStore.createSubmission(deliverableSubmission.deliverableId, model.projectId)
+      }
+
+      existingModel
     }
-
-    return existingModel
   }
 
   /**
@@ -32,13 +36,15 @@ class ParticipantProjectSpeciesService(
    * species deliverable submission for each project that doesn't have one
    */
   fun create(projectIds: Set<ProjectId>, speciesIds: Set<SpeciesId>): Unit {
-    participantProjectSpeciesStore.create(projectIds, speciesIds)
+    return dslContext.transaction { _ ->
+      participantProjectSpeciesStore.create(projectIds, speciesIds)
 
-    projectIds.forEach {
-      // A submission must exist for every project that is getting a new species assigned
-      val deliverableSubmission = submissionStore.fetchActiveSpeciesDeliverableSubmission(it)
-      if (deliverableSubmission.submissionId == null) {
-        submissionStore.createSubmission(deliverableSubmission.deliverableId, it)
+      projectIds.forEach {
+        // A submission must exist for every project that is getting a new species assigned
+        val deliverableSubmission = submissionStore.fetchActiveSpeciesDeliverableSubmission(it)
+        if (deliverableSubmission.submissionId == null) {
+          submissionStore.createSubmission(deliverableSubmission.deliverableId, it)
+        }
       }
     }
   }

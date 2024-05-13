@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.api
 
+import com.terraformation.backend.accelerator.ParticipantProjectSpeciesService
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesStore
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/accelerator/projects/species")
 @RestController
 class ParticipantProjectSpeciesController(
+    private val participantProjectSpeciesService: ParticipantProjectSpeciesService,
     private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
 ) {
   @ApiResponse200
@@ -36,7 +38,7 @@ class ParticipantProjectSpeciesController(
   fun assignParticipantProjectSpecies(
       @RequestBody payload: AssignParticipantProjectSpeciesPayload
   ): SimpleSuccessResponsePayload {
-    participantProjectSpeciesStore.create(payload.projectIds, payload.speciesIds)
+    participantProjectSpeciesService.create(payload.projectIds, payload.speciesIds)
     return SimpleSuccessResponsePayload()
   }
 
@@ -47,7 +49,7 @@ class ParticipantProjectSpeciesController(
       @RequestBody payload: CreateParticipantProjectSpeciesPayload
   ): GetParticipantProjectSpeciesResponsePayload {
     val model =
-        participantProjectSpeciesStore.create(
+        participantProjectSpeciesService.create(
             NewParticipantProjectSpeciesModel(
                 id = null,
                 projectId = payload.projectId,
