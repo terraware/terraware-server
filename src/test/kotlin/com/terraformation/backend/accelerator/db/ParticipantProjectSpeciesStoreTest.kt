@@ -105,11 +105,17 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               rationale = "rationale",
               speciesId = speciesId)
 
+      val userId = user.userId
+      val now = Instant.EPOCH
+
       assertEquals(
           ExistingParticipantProjectSpeciesModel(
+              createdBy = userId,
+              createdTime = now,
               feedback = "feedback",
               id = participantProjectSpeciesId,
-              modifiedTime = Instant.EPOCH,
+              modifiedBy = userId,
+              modifiedTime = now,
               projectId = projectId,
               rationale = "rationale",
               speciesId = speciesId,
@@ -184,11 +190,17 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   rationale = "rationale",
                   speciesId = speciesId))
 
+      val userId = user.userId
+      val now = Instant.EPOCH
+
       assertEquals(
           ParticipantProjectSpeciesRow(
+              createdBy = userId,
+              createdTime = now,
               feedback = "feedback",
               id = participantProjectSpecies.id,
-              modifiedTime = Instant.EPOCH,
+              modifiedBy = userId,
+              modifiedTime = now,
               projectId = projectId,
               rationale = "rationale",
               speciesId = speciesId,
@@ -244,32 +256,47 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       store.create(setOf(projectId1, projectId2), setOf(speciesId1, speciesId2))
 
+      val userId = user.userId
+      val now = Instant.EPOCH
+
       assertEquals(
           listOf(
               ParticipantProjectSpeciesRow(
+                  createdBy = userId,
+                  createdTime = now,
                   feedback = null,
-                  modifiedTime = Instant.EPOCH,
+                  modifiedBy = userId,
+                  modifiedTime = now,
                   projectId = projectId1,
                   rationale = null,
                   speciesId = speciesId1,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
               ParticipantProjectSpeciesRow(
+                  createdBy = userId,
+                  createdTime = now,
                   feedback = null,
-                  modifiedTime = Instant.EPOCH,
+                  modifiedBy = userId,
+                  modifiedTime = now,
                   projectId = projectId1,
                   rationale = null,
                   speciesId = speciesId2,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
               ParticipantProjectSpeciesRow(
+                  createdBy = userId,
+                  createdTime = now,
                   feedback = null,
-                  modifiedTime = Instant.EPOCH,
+                  modifiedBy = userId,
+                  modifiedTime = now,
                   projectId = projectId2,
                   rationale = null,
                   speciesId = speciesId1,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
               ParticipantProjectSpeciesRow(
+                  createdBy = userId,
+                  createdTime = now,
                   feedback = null,
-                  modifiedTime = Instant.EPOCH,
+                  modifiedBy = userId,
+                  modifiedTime = now,
                   projectId = projectId2,
                   rationale = null,
                   speciesId = speciesId2,
@@ -292,11 +319,17 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
         it.copy(feedback = "Looks good", submissionStatus = SubmissionStatus.Approved)
       }
 
+      val userId = user.userId
+      val now = Instant.EPOCH
+
       assertEquals(
           ParticipantProjectSpeciesRow(
+              createdBy = userId,
+              createdTime = now,
               feedback = "Looks good",
               id = participantProjectSpeciesId,
-              modifiedTime = Instant.EPOCH,
+              modifiedBy = userId,
+              modifiedTime = now,
               projectId = projectId,
               speciesId = speciesId,
               submissionStatusId = SubmissionStatus.Approved),
@@ -348,12 +381,18 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       store.delete(setOf(participantProjectSpeciesId1, participantProjectSpeciesId2))
 
+      val userId = user.userId
+      val now = Instant.EPOCH
+
       assertEquals(
           listOf(
               ParticipantProjectSpeciesRow(
+                  createdBy = userId,
+                  createdTime = now,
                   feedback = null,
                   id = participantProjectSpeciesId3,
-                  modifiedTime = Instant.EPOCH,
+                  modifiedBy = userId,
+                  modifiedTime = now,
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId3,
@@ -379,22 +418,31 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
         store.delete(setOf(participantProjectSpeciesId1, participantProjectSpeciesId2))
       }
 
+      val userId = user.userId
+      val now = Instant.EPOCH
+
       // If the current user does not have permission to delete any entity in the list,
       // the entire delete fails and there are no changes
       assertEquals(
           listOf(
               ParticipantProjectSpeciesRow(
+                  createdBy = userId,
+                  createdTime = now,
                   feedback = null,
                   id = participantProjectSpeciesId1,
-                  modifiedTime = Instant.EPOCH,
+                  modifiedBy = userId,
+                  modifiedTime = now,
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId1,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
               ParticipantProjectSpeciesRow(
+                  createdBy = userId,
+                  createdTime = now,
                   feedback = null,
                   id = participantProjectSpeciesId2,
-                  modifiedTime = Instant.EPOCH,
+                  modifiedBy = userId,
+                  modifiedTime = now,
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId2,

@@ -37,10 +37,16 @@ class ParticipantProjectSpeciesStore(
       throw ProjectNotInParticipantException(model.projectId)
     }
 
+    val userId = currentUser().userId
+    val now = clock.instant()
+
     val row =
         ParticipantProjectSpeciesRow(
+            createdBy = userId,
+            createdTime = now,
             feedback = model.feedback,
-            modifiedTime = clock.instant(),
+            modifiedBy = userId,
+            modifiedTime = now,
             projectId = model.projectId,
             rationale = model.rationale,
             speciesId = model.speciesId,
@@ -64,13 +70,19 @@ class ParticipantProjectSpeciesStore(
       }
     }
 
+    val userId = currentUser().userId
+    val now = clock.instant()
+
     dslContext.transactionResult { _ ->
       projectIds.toSet().forEach { projectId ->
         speciesIds.toSet().forEach { speciesId ->
           with(PARTICIPANT_PROJECT_SPECIES) {
             dslContext
                 .insertInto(PARTICIPANT_PROJECT_SPECIES)
-                .set(MODIFIED_TIME, clock.instant())
+                .set(CREATED_BY, userId)
+                .set(CREATED_TIME, now)
+                .set(MODIFIED_BY, userId)
+                .set(MODIFIED_TIME, now)
                 .set(PROJECT_ID, projectId)
                 .set(SPECIES_ID, speciesId)
                 .set(SUBMISSION_STATUS_ID, SubmissionStatus.NotSubmitted)
@@ -139,15 +151,14 @@ class ParticipantProjectSpeciesStore(
     val existing = fetchOneById(participantProjectSpeciesId)
     val updated = updateFunc(existing)
 
-    val modifiedTime = clock.instant()
-
     dslContext.transaction { _ ->
       val rowsUpdated =
           with(PARTICIPANT_PROJECT_SPECIES) {
             dslContext
                 .update(PARTICIPANT_PROJECT_SPECIES)
                 .set(FEEDBACK, updated.feedback)
-                .set(MODIFIED_TIME, modifiedTime)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, clock.instant())
                 .set(RATIONALE, updated.rationale)
                 .set(SUBMISSION_STATUS_ID, updated.submissionStatus)
                 .where(ID.eq(participantProjectSpeciesId))

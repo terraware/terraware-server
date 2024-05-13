@@ -399,7 +399,9 @@ internal class PermissionTest : DatabaseTest() {
 
     participantProjectSpeciesIds.forEach { participantProjectSpeciesId ->
       insertParticipantProjectSpecies(
+          createdBy = userId,
           id = participantProjectSpeciesId.value,
+          modifiedBy = userId,
           projectId = ProjectId(participantProjectSpeciesId.value))
     }
   }
