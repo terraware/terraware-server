@@ -56,6 +56,8 @@ data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
   }
 }
 
+typealias AnyPlantingSubzoneModel = PlantingSubzoneModel<out PlantingSubzoneId?>
+
 typealias ExistingPlantingSubzoneModel = PlantingSubzoneModel<PlantingSubzoneId>
 
 typealias NewPlantingSubzoneModel = PlantingSubzoneModel<Nothing?>

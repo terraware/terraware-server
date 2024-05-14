@@ -207,6 +207,9 @@ data class PlantingSiteModel<
   }
 }
 
+typealias AnyPlantingSiteModel =
+    PlantingSiteModel<out PlantingSiteId?, out PlantingZoneId?, out PlantingSubzoneId?>
+
 typealias ExistingPlantingSiteModel =
     PlantingSiteModel<PlantingSiteId, PlantingZoneId, PlantingSubzoneId>
 
