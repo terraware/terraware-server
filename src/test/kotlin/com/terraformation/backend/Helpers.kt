@@ -7,6 +7,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.db.SRID
+import com.terraformation.backend.util.Turtle
+import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.locationtech.jts.geom.Coordinate
@@ -78,6 +80,37 @@ fun multiPolygon(polygon: Polygon): MultiPolygon {
 fun multiPolygon(scale: Number): MultiPolygon {
   return multiPolygon(polygon(scale))
 }
+
+/** Returns a rectangular MultiPolygon with position and size in meters. */
+fun rectangle(
+    width: Number,
+    height: Number = width,
+    x: Number = 0,
+    y: Number = 0,
+): MultiPolygon =
+    Turtle(point(1))
+        .makeMultiPolygon {
+          north(y)
+          east(x)
+          rectangle(width, height)
+        }
+        .norm()
+        .toMultiPolygon()
+
+/** Returns a rectangular Polygon with position and size in meters. */
+fun rectanglePolygon(
+    width: Number,
+    height: Number = width,
+    x: Number = 0,
+    y: Number = 0,
+): Polygon =
+    Turtle(point(1))
+        .makePolygon {
+          north(y)
+          east(x)
+          rectangle(width, height)
+        }
+        .norm() as Polygon
 
 /**
  * Returns dummy information about Keycloak. This can be used to test code that generates

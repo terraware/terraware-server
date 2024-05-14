@@ -389,6 +389,20 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
         boundary.equalsExact(other.boundary, tolerance)
   }
 
+  fun toNew(): NewPlantingZoneModel =
+      create(
+          boundary,
+          name,
+          plantingSubzones.map { it.toNew() },
+          areaHa,
+          errorMargin,
+          extraPermanentClusters,
+          numPermanentClusters,
+          numTemporaryPlots,
+          studentsT,
+          targetPlantingDensity,
+          variance)
+
   companion object {
     // Default values of the three parameters that determine how many monitoring plots should be
     // required in each observation. The "Student's t" value is a constant based on an 80%
