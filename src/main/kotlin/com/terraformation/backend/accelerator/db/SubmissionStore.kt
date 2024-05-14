@@ -80,8 +80,6 @@ class SubmissionStore(
             .on(
                 DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID),
                 PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
-            .join(ORGANIZATIONS)
-            .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
             .where(COHORT_MODULES.START_DATE.lessOrEqual(today))
             .and(COHORT_MODULES.END_DATE.greaterOrEqual(today))
             .and(PROJECTS.ID.eq(projectId))

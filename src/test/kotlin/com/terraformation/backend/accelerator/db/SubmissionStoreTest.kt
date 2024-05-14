@@ -12,6 +12,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -60,8 +61,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
       insertCohortModule(cohortId = cohortId, moduleId = moduleIdFuture)
       insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
 
-      // epoch + 7 days
-      clock.instant = Instant.EPOCH.plusSeconds(60 * 60 * 24 * 7)
+      clock.instant = Instant.EPOCH.plus(7, ChronoUnit.DAYS)
 
       assertEquals(
           ExistingSpeciesDeliverableSubmissionModel(
@@ -99,8 +99,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
           insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
       insertSubmission(deliverableId = deliverableIdFuture, projectId = projectId)
 
-      // epoch + 7 days
-      clock.instant = Instant.EPOCH.plusSeconds(60 * 60 * 24 * 7)
+      clock.instant = Instant.EPOCH.plus(7, ChronoUnit.DAYS)
 
       assertEquals(
           ExistingSpeciesDeliverableSubmissionModel(

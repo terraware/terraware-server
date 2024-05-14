@@ -35,8 +35,8 @@ class ParticipantProjectSpeciesService(
    * Creates a participant project species for each projectId - speciesId combination and create a
    * species deliverable submission for each project that doesn't have one
    */
-  fun create(projectIds: Set<ProjectId>, speciesIds: Set<SpeciesId>): Unit {
-    return dslContext.transaction { _ ->
+  fun create(projectIds: Set<ProjectId>, speciesIds: Set<SpeciesId>) {
+    dslContext.transaction { _ ->
       participantProjectSpeciesStore.create(projectIds, speciesIds)
 
       projectIds.forEach {
