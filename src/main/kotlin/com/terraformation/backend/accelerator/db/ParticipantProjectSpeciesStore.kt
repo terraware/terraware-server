@@ -116,7 +116,7 @@ class ParticipantProjectSpeciesStore(
               .select(DSL.max(MODIFIED_TIME))
               .from(this)
               .where(PROJECT_ID.eq(projectId))
-              .fetchOne(MODIFIED_TIME)
+              .fetchOne(DSL.max(MODIFIED_TIME))
               ?: throw ParticipantProjectSpeciesProjectNotFoundException(projectId)
         }
 
