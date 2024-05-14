@@ -19,6 +19,7 @@ import java.time.Instant
 import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 
 @Named
 class ParticipantProjectSpeciesStore(
@@ -112,20 +113,14 @@ class ParticipantProjectSpeciesStore(
     val lastUpdatedTime =
         with(PARTICIPANT_PROJECT_SPECIES) {
           dslContext
-              .select(ID, MODIFIED_TIME)
+              .select(DSL.max(MODIFIED_TIME))
               .from(this)
               .where(PROJECT_ID.eq(projectId))
-              .orderBy(MODIFIED_TIME.desc())
-              .limit(1)
-              .fetch()
-              .map { it[MODIFIED_TIME]!! }
+              .fetchOne(MODIFIED_TIME)
+              ?: throw ParticipantProjectSpeciesProjectNotFoundException(projectId)
         }
 
-    if (lastUpdatedTime.isEmpty()) {
-      throw ParticipantProjectSpeciesProjectNotFoundException(projectId)
-    }
-
-    return lastUpdatedTime.first()
+    return lastUpdatedTime
   }
 
   fun fetchOneById(

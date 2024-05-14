@@ -14,4 +14,3 @@ UPDATE accelerator.participant_project_species SET created_time = NOW();
 UPDATE accelerator.participant_project_species SET modified_time = NOW();
 ALTER TABLE accelerator.participant_project_species ALTER COLUMN created_time SET NOT NULL;
 ALTER TABLE accelerator.participant_project_species ALTER COLUMN modified_time SET NOT NULL;
-
