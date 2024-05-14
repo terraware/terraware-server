@@ -28,7 +28,12 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
     insertUser()
     insertOrganization()
 
+    every { user.canCreateParticipantProjectSpecies(any()) } returns true
+    every { user.canCreateSubmission(any()) } returns true
     every { user.canReadParticipantProjectSpecies(any()) } returns true
+    every { user.canReadProject(any()) } returns true
+    every { user.canReadProjectDeliverables(any()) } returns true
+    every { user.canUpdateParticipantProjectSpecies(any()) } returns true
   }
 
   @Nested
@@ -114,8 +119,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val projectId = insertProject(participantId = participantId)
       val speciesId = insertSpecies()
 
-      every { user.canCreateParticipantProjectSpecies(projectId) } returns true
-
       val participantProjectSpecies =
           store.create(
               NewParticipantProjectSpeciesModel(
@@ -140,8 +143,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
     fun `does not create the species association if the project is not associated to a participant`() {
       val projectId = insertProject()
       val speciesId = insertSpecies()
-
-      every { user.canCreateParticipantProjectSpecies(projectId) } returns true
 
       assertThrows<ProjectNotInParticipantException> {
         store.create(
@@ -184,8 +185,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canCreateParticipantProjectSpecies(projectId1) } returns true
       every { user.canCreateParticipantProjectSpecies(projectId2) } returns true
 
-      // Even though the consumer can pass
-      store.createMany(setOf(projectId1, projectId2), setOf(speciesId1, speciesId2))
+      store.create(setOf(projectId1, projectId2), setOf(speciesId1, speciesId2))
 
       assertEquals(
           listOf(
@@ -227,8 +227,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val participantProjectSpeciesId =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
 
-      every { user.canUpdateParticipantProjectSpecies(participantProjectSpeciesId) } returns true
-
       store.update(participantProjectSpeciesId) {
         it.copy(feedback = "Looks good", submissionStatus = SubmissionStatus.Approved)
       }
@@ -259,6 +257,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val speciesId = insertSpecies()
       val participantProjectSpeciesId =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
+
+      every { user.canUpdateParticipantProjectSpecies(any()) } returns false
 
       assertThrows<AccessDeniedException> {
         store.update(participantProjectSpeciesId) { it.copy(feedback = "Needs some work") }
@@ -310,6 +310,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId2)
 
       every { user.canDeleteParticipantProjectSpecies(participantProjectSpeciesId1) } returns true
+      every { user.canDeleteParticipantProjectSpecies(participantProjectSpeciesId2) } returns false
 
       assertThrows<AccessDeniedException> {
         store.delete(setOf(participantProjectSpeciesId1, participantProjectSpeciesId2))

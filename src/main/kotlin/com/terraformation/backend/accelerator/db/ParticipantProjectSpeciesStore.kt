@@ -48,7 +48,7 @@ class ParticipantProjectSpeciesStore(
     return row.toModel()
   }
 
-  fun createMany(projectIds: Set<ProjectId>, speciesIds: Set<SpeciesId>): Unit {
+  fun create(projectIds: Set<ProjectId>, speciesIds: Set<SpeciesId>): Unit {
     // Participant project species can only be associated
     // to projects that are associated to a participant
     val projects = projectsDao.fetchById(*projectIds.toTypedArray())

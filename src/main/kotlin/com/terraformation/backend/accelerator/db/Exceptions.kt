@@ -33,6 +33,9 @@ class ParticipantNotFoundException(id: ParticipantId) :
 class ParticipantProjectSpeciesNotFoundException(id: ParticipantProjectSpeciesId) :
     EntityNotFoundException("Participant Project Species $id not found")
 
+class ParticipantProjectSpeciesProjectNotFoundException(id: ProjectId) :
+    EntityNotFoundException("Participant Project Species for project $id not found")
+
 class ProjectDocumentSettingsNotConfiguredException(id: ProjectId) :
     MismatchedStateException("Project $id document upload settings have not been configured")
 
@@ -52,6 +55,9 @@ class ProjectVoteNotFoundException(
 ) :
     EntityNotFoundException(
         "Vote not found for project $projectId, phase ${phase?.id}, user $userId")
+
+class SpeciesDeliverableNotFoundException(id: ProjectId) :
+    EntityNotFoundException("Species Deliverable for project $id not found")
 
 class SubmissionDocumentNotFoundException(id: SubmissionDocumentId) :
     EntityNotFoundException("Submission document $id not found")

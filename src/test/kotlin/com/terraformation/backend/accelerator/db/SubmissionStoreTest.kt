@@ -4,13 +4,15 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
-import com.terraformation.backend.accelerator.model.ExistingSubmissionModel
+import com.terraformation.backend.accelerator.model.ExistingSpeciesDeliverableSubmissionModel
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -29,46 +31,112 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertUser()
     insertOrganization()
-    insertModule()
 
     every { user.canReadProject(any()) } returns true
     every { user.canReadSubmission(any()) } returns true
+    every { user.canReadProjectDeliverables(any()) } returns true
   }
 
   @Nested
-  inner class FetchOneById {
+  inner class FetchActiveSpeciesDeliverable {
     @Test
-    fun `fetches the submission`() {
-      val projectId = insertProject()
-      val deliverableId = insertDeliverable()
-      val submissionId = insertSubmission()
+    fun `fetches the deliverable ID if no submission present`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId = insertProject(participantId = participantId)
 
-      val submissionDocumentIds =
-          setOf(
-              insertSubmissionDocument(submissionId = submissionId),
-              insertSubmissionDocument(submissionId = submissionId))
+      // Module goes from epoch -> epoch + 6 days
+      val moduleIdOld = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdOld)
+      insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
+
+      // Module goes from epoch + 6 days -> epoch + 12 days
+      val moduleIdActive = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdActive)
+      val deliverableIdActive =
+          insertDeliverable(moduleId = moduleIdActive, deliverableTypeId = DeliverableType.Species)
+
+      // Module goes from epoch + 12 days -> epoch + 18 days
+      val moduleIdFuture = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdFuture)
+      insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
+
+      clock.instant = Instant.EPOCH.plus(7, ChronoUnit.DAYS)
 
       assertEquals(
-          ExistingSubmissionModel(
-              id = submissionId,
-              feedback = null,
-              internalComment = null,
-              projectId = projectId,
-              deliverableId = deliverableId,
-              submissionDocumentIds = submissionDocumentIds,
-              submissionStatus = SubmissionStatus.NotSubmitted),
-          store.fetchOneById(submissionId))
+          ExistingSpeciesDeliverableSubmissionModel(
+              deliverableId = deliverableIdActive,
+              submissionId = null,
+          ),
+          store.fetchActiveSpeciesDeliverableSubmission(projectId))
     }
 
     @Test
-    fun `throws exception if no permission to read submissions`() {
-      insertProject()
-      insertDeliverable()
-      val submissionId = insertSubmission()
+    fun `fetches both deliverable ID and submission ID if present`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId = insertProject(participantId = participantId)
+
+      // Module goes from epoch -> epoch + 6 days
+      val moduleIdOld = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdOld)
+      val deliverableIdOld =
+          insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
+      insertSubmission(deliverableId = deliverableIdOld, projectId = projectId)
+
+      // Module goes from epoch + 6 days -> epoch + 12 days
+      val moduleIdActive = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdActive)
+      val deliverableIdActive =
+          insertDeliverable(moduleId = moduleIdActive, deliverableTypeId = DeliverableType.Species)
+      val submissionIdActive =
+          insertSubmission(deliverableId = deliverableIdActive, projectId = projectId)
+
+      // Module goes from epoch + 12 days -> epoch + 18 days
+      val moduleIdFuture = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdFuture)
+      val deliverableIdFuture =
+          insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
+      insertSubmission(deliverableId = deliverableIdFuture, projectId = projectId)
+
+      clock.instant = Instant.EPOCH.plus(7, ChronoUnit.DAYS)
+
+      assertEquals(
+          ExistingSpeciesDeliverableSubmissionModel(
+              deliverableId = deliverableIdActive,
+              submissionId = submissionIdActive,
+          ),
+          store.fetchActiveSpeciesDeliverableSubmission(projectId))
+    }
+
+    @Test
+    fun `throws an exception if no permission to read the submission`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId = insertProject(participantId = participantId)
+
+      val moduleId = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      val deliverableId =
+          insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
+      val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
 
       every { user.canReadSubmission(submissionId) } returns false
 
-      assertThrows<SubmissionNotFoundException> { store.fetchOneById(submissionId) }
+      assertThrows<SubmissionNotFoundException> {
+        store.fetchActiveSpeciesDeliverableSubmission(projectId)
+      }
+    }
+
+    @Test
+    fun `throws an exception if no permission to read project deliverables`() {
+      val projectId = insertProject()
+
+      every { user.canReadProjectDeliverables(projectId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.fetchActiveSpeciesDeliverableSubmission(projectId)
+      }
     }
   }
 
@@ -81,6 +149,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates submission if needed`() {
+      insertModule()
       val projectId = insertProject()
       val deliverableId = insertDeliverable()
 
@@ -103,6 +172,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `updates existing submission`() {
+      insertModule()
       val projectId = insertProject()
       val deliverableId = insertDeliverable()
       val feedback = "This looks great"
@@ -133,6 +203,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `publishes event if status has changed`() {
+      insertModule()
       val projectId = insertProject()
       val deliverableId = insertDeliverable()
       insertSubmission(submissionStatus = SubmissionStatus.InReview)
@@ -151,6 +222,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not publish event if status has not changed`() {
+      insertModule()
       val projectId = insertProject()
       val deliverableId = insertDeliverable()
       insertSubmission(submissionStatus = SubmissionStatus.InReview)
@@ -163,6 +235,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to update submission status`() {
+      insertModule()
       val projectId = insertProject()
       val deliverableId = insertDeliverable()
       insertSubmission()
