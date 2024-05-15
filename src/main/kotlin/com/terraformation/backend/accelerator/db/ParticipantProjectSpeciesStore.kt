@@ -15,11 +15,15 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import jakarta.inject.Named
+import java.time.Instant
+import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 
 @Named
 class ParticipantProjectSpeciesStore(
+    private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val participantProjectSpeciesDao: ParticipantProjectSpeciesDao,
     private val projectsDao: ProjectsDao,
@@ -34,9 +38,16 @@ class ParticipantProjectSpeciesStore(
       throw ProjectNotInParticipantException(model.projectId)
     }
 
+    val userId = currentUser().userId
+    val now = clock.instant()
+
     val row =
         ParticipantProjectSpeciesRow(
+            createdBy = userId,
+            createdTime = now,
             feedback = model.feedback,
+            modifiedBy = userId,
+            modifiedTime = now,
             projectId = model.projectId,
             rationale = model.rationale,
             speciesId = model.speciesId,
@@ -60,12 +71,19 @@ class ParticipantProjectSpeciesStore(
       }
     }
 
+    val userId = currentUser().userId
+    val now = clock.instant()
+
     dslContext.transactionResult { _ ->
       projectIds.toSet().forEach { projectId ->
         speciesIds.toSet().forEach { speciesId ->
           with(PARTICIPANT_PROJECT_SPECIES) {
             dslContext
                 .insertInto(PARTICIPANT_PROJECT_SPECIES)
+                .set(CREATED_BY, userId)
+                .set(CREATED_TIME, now)
+                .set(MODIFIED_BY, userId)
+                .set(MODIFIED_TIME, now)
                 .set(PROJECT_ID, projectId)
                 .set(SPECIES_ID, speciesId)
                 .set(SUBMISSION_STATUS_ID, SubmissionStatus.NotSubmitted)
@@ -87,6 +105,22 @@ class ParticipantProjectSpeciesStore(
         .deleteFrom(PARTICIPANT_PROJECT_SPECIES)
         .where(PARTICIPANT_PROJECT_SPECIES.ID.`in`(participantProjectSpeciesIds))
         .execute()
+  }
+
+  fun fetchLastUpdatedSpeciesTime(projectId: ProjectId): Instant {
+    requirePermissions { readProject(projectId) }
+
+    val lastUpdatedTime =
+        with(PARTICIPANT_PROJECT_SPECIES) {
+          dslContext
+              .select(DSL.max(MODIFIED_TIME))
+              .from(this)
+              .where(PROJECT_ID.eq(projectId))
+              .fetchOne(DSL.max(MODIFIED_TIME))
+              ?: throw ParticipantProjectSpeciesProjectNotFoundException(projectId)
+        }
+
+    return lastUpdatedTime
   }
 
   fun fetchOneById(
@@ -114,8 +148,10 @@ class ParticipantProjectSpeciesStore(
           with(PARTICIPANT_PROJECT_SPECIES) {
             dslContext
                 .update(PARTICIPANT_PROJECT_SPECIES)
-                .set(RATIONALE, updated.rationale)
                 .set(FEEDBACK, updated.feedback)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, clock.instant())
+                .set(RATIONALE, updated.rationale)
                 .set(SUBMISSION_STATUS_ID, updated.submissionStatus)
                 .where(ID.eq(participantProjectSpeciesId))
                 .execute()

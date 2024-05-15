@@ -6,11 +6,17 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProject
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.UserId
+import java.time.Instant
 import org.jooq.Record
 
 data class ParticipantProjectSpeciesModel<ID : ParticipantProjectSpeciesId?>(
+    val createdBy: UserId? = null,
+    val createdTime: Instant? = null,
     val id: ID,
     val feedback: String? = null,
+    val modifiedBy: UserId? = null,
+    val modifiedTime: Instant? = null,
     val projectId: ProjectId,
     val rationale: String? = null,
     val speciesId: SpeciesId,
@@ -19,8 +25,12 @@ data class ParticipantProjectSpeciesModel<ID : ParticipantProjectSpeciesId?>(
   companion object {
     fun of(record: Record): ExistingParticipantProjectSpeciesModel {
       return ExistingParticipantProjectSpeciesModel(
+          createdBy = record[PARTICIPANT_PROJECT_SPECIES.CREATED_BY]!!,
+          createdTime = record[PARTICIPANT_PROJECT_SPECIES.CREATED_TIME]!!,
           feedback = record[PARTICIPANT_PROJECT_SPECIES.FEEDBACK],
           id = record[PARTICIPANT_PROJECT_SPECIES.ID]!!,
+          modifiedBy = record[PARTICIPANT_PROJECT_SPECIES.MODIFIED_BY]!!,
+          modifiedTime = record[PARTICIPANT_PROJECT_SPECIES.MODIFIED_TIME]!!,
           projectId = record[PARTICIPANT_PROJECT_SPECIES.PROJECT_ID]!!,
           rationale = record[PARTICIPANT_PROJECT_SPECIES.RATIONALE],
           speciesId = record[PARTICIPANT_PROJECT_SPECIES.SPECIES_ID]!!,
@@ -37,8 +47,12 @@ typealias NewParticipantProjectSpeciesModel = ParticipantProjectSpeciesModel<Not
 
 fun ParticipantProjectSpeciesRow.toModel(): ExistingParticipantProjectSpeciesModel {
   return ExistingParticipantProjectSpeciesModel(
+      createdBy = createdBy!!,
+      createdTime = createdTime!!,
       feedback = feedback,
       id = id!!,
+      modifiedBy = modifiedBy!!,
+      modifiedTime = modifiedTime!!,
       projectId = projectId!!,
       rationale = rationale,
       speciesId = speciesId!!,

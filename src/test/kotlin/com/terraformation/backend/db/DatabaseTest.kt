@@ -2098,8 +2098,12 @@ abstract class DatabaseTest {
   }
 
   fun insertParticipantProjectSpecies(
+      createdBy: Any = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
       feedback: String? = null,
       id: Any? = null,
+      modifiedBy: Any = currentUser().userId,
+      modifiedTime: Instant = Instant.EPOCH,
       projectId: Any = inserted.projectId,
       rationale: String? = null,
       speciesId: Any = inserted.speciesId,
@@ -2107,8 +2111,12 @@ abstract class DatabaseTest {
   ): ParticipantProjectSpeciesId {
     val row =
         ParticipantProjectSpeciesRow(
+            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdTime = createdTime,
             feedback = feedback,
             id = id?.toIdWrapper { ParticipantProjectSpeciesId(it) },
+            modifiedBy = modifiedBy.toIdWrapper { UserId(it) },
+            modifiedTime = modifiedTime,
             projectId = projectId.toIdWrapper { ProjectId(it) },
             rationale = rationale,
             speciesId = speciesId.toIdWrapper { SpeciesId(it) },
