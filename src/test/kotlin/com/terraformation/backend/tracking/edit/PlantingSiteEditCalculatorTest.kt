@@ -364,6 +364,108 @@ class PlantingSiteEditCalculatorTest {
         site.toNew())
   }
 
+  @Test
+  fun `returns deletion and creation of all zones if site has no plants`() {
+    val existing = existingSite {
+      zone(width = 400)
+      zone()
+    }
+
+    // This would be an invalid edit (change of boundaries + splitting) on a site with plants, but
+    // it should be allowed on an unplanted site.
+    val desired =
+        newSite(width = 550) {
+          zone(width = 500)
+          zone(width = 250)
+          zone()
+        }
+
+    assertEditResult(
+        PlantingSiteEdit(
+            BigDecimal("2.5"),
+            desired.boundary!!,
+            null,
+            PlantingSiteId(1),
+            listOf(
+                PlantingZoneEdit.Delete(
+                    areaHaDifference = existing.plantingZones[0].areaHa.negate(),
+                    monitoringPlotsRemoved = emptySet(),
+                    oldName = "Z1",
+                    plantingZoneId = PlantingZoneId(1),
+                    plantingSubzoneEdits =
+                        listOf(
+                            PlantingSubzoneEdit.Delete(
+                                existing.plantingZones[0].areaHa.negate(),
+                                "S1",
+                                PlantingSubzoneId(1),
+                                existing.plantingZones[0].boundary,
+                            )),
+                    removedRegion = existing.plantingZones[0].boundary,
+                ),
+                PlantingZoneEdit.Delete(
+                    areaHaDifference = existing.plantingZones[1].areaHa.negate(),
+                    monitoringPlotsRemoved = emptySet(),
+                    oldName = "Z2",
+                    plantingZoneId = PlantingZoneId(2),
+                    plantingSubzoneEdits =
+                        listOf(
+                            PlantingSubzoneEdit.Delete(
+                                existing.plantingZones[1].areaHa.negate(),
+                                "S2",
+                                PlantingSubzoneId(2),
+                                existing.plantingZones[1].boundary,
+                            )),
+                    removedRegion = existing.plantingZones[1].boundary,
+                ),
+                PlantingZoneEdit.Create(
+                    addedRegion = desired.plantingZones[0].boundary,
+                    areaHaDifference = desired.plantingZones[0].areaHa,
+                    boundary = desired.plantingZones[0].boundary,
+                    newName = "Z1",
+                    numPermanentClustersToAdd = 0,
+                    plantingSubzoneEdits =
+                        listOf(
+                            PlantingSubzoneEdit.Create(
+                                addedRegion = desired.plantingZones[0].boundary,
+                                boundary = desired.plantingZones[0].boundary,
+                                areaHaDifference = desired.plantingZones[0].areaHa,
+                                newName = "S1",
+                            ))),
+                PlantingZoneEdit.Create(
+                    addedRegion = desired.plantingZones[1].boundary,
+                    areaHaDifference = desired.plantingZones[1].areaHa,
+                    boundary = desired.plantingZones[1].boundary,
+                    newName = "Z2",
+                    numPermanentClustersToAdd = 0,
+                    plantingSubzoneEdits =
+                        listOf(
+                            PlantingSubzoneEdit.Create(
+                                addedRegion = desired.plantingZones[1].boundary,
+                                boundary = desired.plantingZones[1].boundary,
+                                areaHaDifference = desired.plantingZones[1].areaHa,
+                                newName = "S2",
+                            ))),
+                PlantingZoneEdit.Create(
+                    addedRegion = desired.plantingZones[2].boundary,
+                    areaHaDifference = desired.plantingZones[2].areaHa,
+                    boundary = desired.plantingZones[2].boundary,
+                    newName = "Z3",
+                    numPermanentClustersToAdd = 0,
+                    plantingSubzoneEdits =
+                        listOf(
+                            PlantingSubzoneEdit.Create(
+                                addedRegion = desired.plantingZones[2].boundary,
+                                boundary = desired.plantingZones[2].boundary,
+                                areaHaDifference = desired.plantingZones[2].areaHa,
+                                newName = "S3",
+                            ))),
+            ),
+        ),
+        existing,
+        desired,
+        emptySet())
+  }
+
   @Nested
   inner class Validation {
     @Test
@@ -445,11 +547,44 @@ class PlantingSiteEditCalculatorTest {
     }
 
     @Test
+    fun `detects attempt to remove planted subzone`() {
+      val existing = existingSite {
+        zone {
+          subzone(width = 100)
+          subzone()
+        }
+      }
+      val desired = newSite(x = 150)
+
+      assertHasProblem(
+          PlantingSiteEditProblem.CannotRemovePlantedSubzone(subzoneName = "S1", zoneName = "Z1"),
+          existing,
+          desired,
+          setOf(existing.plantingZones[0].plantingSubzones[0].id))
+    }
+
+    @Test
+    fun `detects attempt to remove zone with planted subzone`() {
+      val existing = existingSite {
+        zone(width = 100)
+        zone()
+      }
+      val desired = newSite(x = 150)
+
+      assertHasProblem(
+          PlantingSiteEditProblem.CannotRemovePlantedSubzone(subzoneName = "S1", zoneName = "Z1"),
+          existing,
+          desired,
+          setOf(existing.plantingZones[0].plantingSubzones[0].id))
+    }
+
+    @Test
     fun `throws exception if desired site has no boundary`() {
       assertThrows<IllegalArgumentException> {
         PlantingSiteEditCalculator(
                 existingSite(),
                 newSite().copy(boundary = null),
+                emptySet(),
             )
             .calculateSiteEdit()
       }
@@ -458,15 +593,18 @@ class PlantingSiteEditCalculatorTest {
 
   private fun calculateSiteEdit(
       existing: ExistingPlantingSiteModel,
-      desired: AnyPlantingSiteModel
-  ): PlantingSiteEdit = PlantingSiteEditCalculator(existing, desired).calculateSiteEdit()
+      desired: AnyPlantingSiteModel,
+      plantedSubzoneIds: Set<PlantingSubzoneId> = setOf(PlantingSubzoneId(1)),
+  ): PlantingSiteEdit =
+      PlantingSiteEditCalculator(existing, desired, plantedSubzoneIds).calculateSiteEdit()
 
   private fun assertEditResult(
       expected: PlantingSiteEdit,
       existing: ExistingPlantingSiteModel,
-      desired: AnyPlantingSiteModel
+      desired: AnyPlantingSiteModel,
+      plantedSubzoneIds: Set<PlantingSubzoneId> = setOf(PlantingSubzoneId(1)),
   ) {
-    val actual = calculateSiteEdit(existing, desired)
+    val actual = calculateSiteEdit(existing, desired, plantedSubzoneIds)
 
     if (!actual.equalsExact(expected)) {
       assertEquals(expected, actual)
@@ -483,7 +621,8 @@ class PlantingSiteEditCalculatorTest {
       problem: PlantingSiteEditProblem,
       existing: ExistingPlantingSiteModel,
       desired: AnyPlantingSiteModel,
+      plantedSubzoneIds: Set<PlantingSubzoneId> = setOf(PlantingSubzoneId(1)),
   ) {
-    assertHasProblem(problem, calculateSiteEdit(existing, desired))
+    assertHasProblem(problem, calculateSiteEdit(existing, desired, plantedSubzoneIds))
   }
 }
