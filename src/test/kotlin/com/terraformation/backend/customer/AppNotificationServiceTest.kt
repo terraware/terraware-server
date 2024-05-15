@@ -10,8 +10,8 @@ import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.auth.currentUser
@@ -229,12 +229,16 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAutomation(any()) } returns true
     every { user.canReadDevice(any()) } returns true
     every { user.canReadFacility(any()) } returns true
+    every { user.canReadGlobalRoles() } returns true
+    every { user.canReadModule(any()) } returns true
     every { user.canReadModuleEvent(any()) } returns true
     every { user.canReadModuleEventParticipants() } returns true
     every { user.canReadOrganization(organizationId) } returns true
+    every { user.canReadParticipant(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
+    every { user.canReadProject(any()) } returns true
     every { user.canReadProjectModules(any()) } returns true
-    every { user.canReadModule(any()) } returns true
+    every { user.canReadSpecies(any()) } returns true
     every { user.locale } returns Locale.ENGLISH
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
 
@@ -724,7 +728,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
       messages.participantProjectSpeciesAddedToProject("Participant 1", "Project 1", "Species 1")
     } returns NotificationMessage("species added title", "species added body")
 
-    service.on(ParticipantProjectSpeciesAddedToProjectEvent(deliverableId, projectId, speciesId))
+    service.on(
+        ParticipantProjectSpeciesAddedToProjectNotificationDueEvent(
+            deliverableId, projectId, speciesId))
 
     assertNotification(
         type = NotificationType.ParticipantProjectSpeciesAddedToProject,
@@ -749,7 +755,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     } returns NotificationMessage("species edited title", "species edited body")
 
     service.on(
-        ParticipantProjectSpeciesApprovedSpeciesEditedEvent(deliverableId, projectId, speciesId))
+        ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
+            deliverableId, projectId, speciesId))
 
     assertNotification(
         type = NotificationType.ParticipantProjectSpeciesApprovedSpeciesEdited,

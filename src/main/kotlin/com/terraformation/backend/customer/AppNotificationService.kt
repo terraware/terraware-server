@@ -6,8 +6,8 @@ import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.NotificationStore
@@ -266,68 +266,64 @@ class AppNotificationService(
   }
 
   @EventListener
-  fun on(event: ParticipantProjectSpeciesApprovedSpeciesEditedEvent) {
-    systemUser.run {
-      log.info(
-          "Creating app notifications for an approved participant project species being edited in deliverable ${event.deliverableId} in " +
-              "project ${event.projectId}")
+  fun on(event: ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent) {
+    log.info(
+        "Creating app notifications for an approved participant project species being edited in deliverable ${event.deliverableId} in " +
+            "project ${event.projectId}")
 
-      val project = projectStore.fetchOneById(event.projectId)
-      if (project.participantId == null) {
-        log.error(
-            "Got approved participant project species edited notification for non-participant project ${event.projectId}")
-        return@run
-      }
-
-      val species = speciesStore.fetchSpeciesById(event.speciesId)
-
-      val participant = participantStore.fetchOneById(project.participantId)
-      val deliverableUrl =
-          webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
-      val renderMessage = {
-        messages.participantProjectSpeciesApprovedSpeciesEdited(
-            participantName = participant.name, speciesName = species.scientificName)
-      }
-
-      insertAcceleratorNotification(
-          deliverableUrl,
-          NotificationType.ParticipantProjectSpeciesApprovedSpeciesEdited,
-          project.organizationId,
-          renderMessage)
+    val project = projectStore.fetchOneById(event.projectId)
+    if (project.participantId == null) {
+      log.error(
+          "Got approved participant project species edited notification for non-participant project ${event.projectId}")
+      return
     }
+
+    val species = speciesStore.fetchSpeciesById(event.speciesId)
+
+    val participant = participantStore.fetchOneById(project.participantId)
+    val deliverableUrl =
+        webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
+    val renderMessage = {
+      messages.participantProjectSpeciesApprovedSpeciesEdited(
+          participantName = participant.name, speciesName = species.scientificName)
+    }
+
+    insertAcceleratorNotification(
+        deliverableUrl,
+        NotificationType.ParticipantProjectSpeciesApprovedSpeciesEdited,
+        project.organizationId,
+        renderMessage)
   }
 
   @EventListener
-  fun on(event: ParticipantProjectSpeciesAddedToProjectEvent) {
-    systemUser.run {
-      log.info(
-          "Creating app notifications for a participant project species being added to project ${event.projectId} ")
+  fun on(event: ParticipantProjectSpeciesAddedToProjectNotificationDueEvent) {
+    log.info(
+        "Creating app notifications for a participant project species being added to project ${event.projectId} ")
 
-      val project = projectStore.fetchOneById(event.projectId)
-      if (project.participantId == null) {
-        log.error(
-            "Got participant project species added to project notification for non-participant project ${event.projectId}")
-        return@run
-      }
-
-      val species = speciesStore.fetchSpeciesById(event.speciesId)
-
-      val participant = participantStore.fetchOneById(project.participantId)
-      val deliverableUrl =
-          webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
-      val renderMessage = {
-        messages.participantProjectSpeciesAddedToProject(
-            participantName = participant.name,
-            projectName = project.name,
-            speciesName = species.scientificName)
-      }
-
-      insertAcceleratorNotification(
-          deliverableUrl,
-          NotificationType.ParticipantProjectSpeciesAddedToProject,
-          project.organizationId,
-          renderMessage)
+    val project = projectStore.fetchOneById(event.projectId)
+    if (project.participantId == null) {
+      log.error(
+          "Got participant project species added to project notification for non-participant project ${event.projectId}")
+      return
     }
+
+    val species = speciesStore.fetchSpeciesById(event.speciesId)
+
+    val participant = participantStore.fetchOneById(project.participantId)
+    val deliverableUrl =
+        webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
+    val renderMessage = {
+      messages.participantProjectSpeciesAddedToProject(
+          participantName = participant.name,
+          projectName = project.name,
+          speciesName = species.scientificName)
+    }
+
+    insertAcceleratorNotification(
+        deliverableUrl,
+        NotificationType.ParticipantProjectSpeciesAddedToProject,
+        project.organizationId,
+        renderMessage)
   }
 
   @EventListener

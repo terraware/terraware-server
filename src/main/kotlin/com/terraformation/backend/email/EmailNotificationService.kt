@@ -5,8 +5,8 @@ import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEve
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
@@ -525,7 +525,7 @@ class EmailNotificationService(
   }
 
   @EventListener
-  fun on(event: ParticipantProjectSpeciesAddedToProjectEvent) {
+  fun on(event: ParticipantProjectSpeciesAddedToProjectNotificationDueEvent) {
     val project = projectStore.fetchOneById(event.projectId)
     val participant = participantStore.fetchOneById(project.participantId!!)
     val species = speciesStore.fetchSpeciesById(event.speciesId)
@@ -543,7 +543,7 @@ class EmailNotificationService(
   }
 
   @EventListener
-  fun on(event: ParticipantProjectSpeciesApprovedSpeciesEditedEvent) {
+  fun on(event: ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent) {
     val project = projectStore.fetchOneById(event.projectId)
     val participant = participantStore.fetchOneById(project.participantId!!)
     val species = speciesStore.fetchSpeciesById(event.speciesId)

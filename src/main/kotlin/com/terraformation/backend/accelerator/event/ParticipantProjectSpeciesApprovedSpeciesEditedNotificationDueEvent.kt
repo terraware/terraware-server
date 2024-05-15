@@ -5,7 +5,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 
 /** Published when an approved participant project species is edited */
-data class ParticipantProjectSpeciesApprovedSpeciesEditedEvent(
+data class ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
     val deliverableId: DeliverableId,
     val projectId: ProjectId,
     val speciesId: SpeciesId,

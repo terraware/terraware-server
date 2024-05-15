@@ -1,7 +1,7 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.ParticipantProjectSpeciesAdded" -->
-${strings("notification.participantProjectSpecies.added.subject", participantName)}
+${strings("notification.participantProjectSpecies.added.email.subject", participantName)}
 
-${strings("notification.participantProjectSpecies.added.shortBody", speciesName, projectName)}
+${strings("notification.participantProjectSpecies.added.email.body.1", speciesName, projectName)}
 
 ${deliverableUrl}
 

@@ -1,9 +1,10 @@
-package com.terraformation.backend.accelerator.db
+package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.accelerator.ParticipantProjectSpeciesService
+import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesStore
+import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.auth.currentUser
@@ -43,6 +44,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateParticipantProjectSpecies(any()) } returns true
     every { user.canCreateSubmission(any()) } returns true
     every { user.canReadProject(any()) } returns true
+    every { user.canReadParticipantProjectSpecies(any()) } returns true
     every { user.canReadProjectDeliverables(any()) } returns true
     every { user.canReadSubmission(any()) } returns true
   }
@@ -60,14 +62,15 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
       insertCohortModule(cohortId = cohortId, moduleId = moduleId)
 
-      service.create(
-          NewParticipantProjectSpeciesModel(
-              feedback = "feedback",
-              id = null,
-              modifiedTime = Instant.EPOCH,
-              projectId = projectId,
-              rationale = "rationale",
-              speciesId = speciesId))
+      val existingModel =
+          service.create(
+              NewParticipantProjectSpeciesModel(
+                  feedback = "feedback",
+                  id = null,
+                  modifiedTime = Instant.EPOCH,
+                  projectId = projectId,
+                  rationale = "rationale",
+                  speciesId = speciesId))
 
       val userId = currentUser().userId
       val now = clock.instant
@@ -86,10 +89,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
       eventPublisher.assertEventPublished(
           ParticipantProjectSpeciesAddedEvent(
-              deliverableId = deliverableId,
-              modifiedTime = Instant.EPOCH,
-              projectId = projectId,
-              speciesId = speciesId))
+              deliverableId = deliverableId, participantProjectSpecies = existingModel))
     }
 
     @Test
@@ -146,7 +146,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
 
-      service.create(setOf(projectId1, projectId2), setOf(speciesId1, speciesId2))
+      val existingModels =
+          service.create(setOf(projectId1, projectId2), setOf(speciesId1, speciesId2))
 
       val userId = currentUser().userId
       val now = clock.instant
@@ -171,30 +172,11 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                   submissionStatusId = SubmissionStatus.NotSubmitted)),
           submissionsDao.fetchByDeliverableId(deliverableId).map { it.copy(id = null) })
 
-      eventPublisher.assertEventPublished(
-          ParticipantProjectSpeciesAddedEvent(
-              deliverableId = deliverableId,
-              modifiedTime = Instant.EPOCH,
-              projectId = projectId1,
-              speciesId = speciesId1))
-      eventPublisher.assertEventPublished(
-          ParticipantProjectSpeciesAddedEvent(
-              deliverableId = deliverableId,
-              modifiedTime = Instant.EPOCH,
-              projectId = projectId1,
-              speciesId = speciesId2))
-      eventPublisher.assertEventPublished(
-          ParticipantProjectSpeciesAddedEvent(
-              deliverableId = deliverableId,
-              modifiedTime = Instant.EPOCH,
-              projectId = projectId2,
-              speciesId = speciesId1))
-      eventPublisher.assertEventPublished(
-          ParticipantProjectSpeciesAddedEvent(
-              deliverableId = deliverableId,
-              modifiedTime = Instant.EPOCH,
-              projectId = projectId2,
-              speciesId = speciesId2))
+      eventPublisher.assertEventsPublished(
+          existingModels.toSet().map {
+            ParticipantProjectSpeciesAddedEvent(
+                deliverableId = deliverableId, participantProjectSpecies = it)
+          })
     }
   }
 }

@@ -35,9 +35,7 @@ class ParticipantProjectSpeciesService(
       eventPublisher.publishEvent(
           ParticipantProjectSpeciesAddedEvent(
               deliverableId = deliverableSubmission.deliverableId,
-              modifiedTime = existingModel.modifiedTime!!,
-              projectId = existingModel.projectId,
-              speciesId = existingModel.speciesId))
+              participantProjectSpecies = existingModel))
 
       existingModel
     }
@@ -47,27 +45,36 @@ class ParticipantProjectSpeciesService(
    * Creates a participant project species for each projectId - speciesId combination and create a
    * species deliverable submission for each project that doesn't have one
    */
-  fun create(projectIds: Set<ProjectId>, speciesIds: Set<SpeciesId>) {
-    dslContext.transaction { _ ->
-      participantProjectSpeciesStore.create(projectIds, speciesIds)
+  fun create(
+      projectIds: Set<ProjectId>,
+      speciesIds: Set<SpeciesId>
+  ): List<ExistingParticipantProjectSpeciesModel> {
+    return dslContext.transactionResult { _ ->
+      val existingModels = participantProjectSpeciesStore.create(projectIds, speciesIds)
 
-      projectIds.forEach { projectId ->
+      val checkedProjectIds = emptySet<ProjectId>()
+
+      existingModels.forEach {
         // A submission must exist for every project that is getting a new species assigned
-        val deliverableSubmission =
-            submissionStore.fetchActiveSpeciesDeliverableSubmission(projectId)
-        if (deliverableSubmission.submissionId == null) {
-          submissionStore.createSubmission(deliverableSubmission.deliverableId, projectId)
+        if (checkedProjectIds.contains(it.projectId)) {
+          return@forEach
         }
 
-        speciesIds.forEach { speciesId ->
-          eventPublisher.publishEvent(
-              ParticipantProjectSpeciesAddedEvent(
-                  deliverableId = deliverableSubmission.deliverableId,
-                  modifiedTime = clock.instant(),
-                  projectId = projectId,
-                  speciesId = speciesId))
+        val deliverableSubmission =
+            submissionStore.fetchActiveSpeciesDeliverableSubmission(it.projectId)
+        if (deliverableSubmission.submissionId == null) {
+          submissionStore.createSubmission(deliverableSubmission.deliverableId, it.projectId)
         }
+
+        checkedProjectIds.plus(it.projectId)
+
+        eventPublisher.publishEvent(
+            ParticipantProjectSpeciesAddedEvent(
+                deliverableId = deliverableSubmission.deliverableId,
+                participantProjectSpecies = it))
       }
+
+      existingModels
     }
   }
 }

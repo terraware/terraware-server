@@ -5,8 +5,8 @@ import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEve
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -850,7 +850,8 @@ internal class EmailNotificationServiceTest {
     every { config.support.email } returns "support@terraformation.com"
 
     val event =
-        ParticipantProjectSpeciesAddedToProjectEvent(DeliverableId(1), project.id, species.id)
+        ParticipantProjectSpeciesAddedToProjectNotificationDueEvent(
+            DeliverableId(1), project.id, species.id)
 
     service.on(event)
 
@@ -869,7 +870,8 @@ internal class EmailNotificationServiceTest {
     every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
 
     val event =
-        ParticipantProjectSpeciesAddedToProjectEvent(DeliverableId(1), project.id, species.id)
+        ParticipantProjectSpeciesAddedToProjectNotificationDueEvent(
+            DeliverableId(1), project.id, species.id)
 
     service.on(event)
 
@@ -888,7 +890,7 @@ internal class EmailNotificationServiceTest {
     every { config.support.email } returns "support@terraformation.com"
 
     val event =
-        ParticipantProjectSpeciesApprovedSpeciesEditedEvent(
+        ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
             DeliverableId(1), project.id, species.id)
 
     service.on(event)
@@ -907,7 +909,7 @@ internal class EmailNotificationServiceTest {
     every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
 
     val event =
-        ParticipantProjectSpeciesApprovedSpeciesEditedEvent(
+        ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
             DeliverableId(1), project.id, species.id)
 
     service.on(event)

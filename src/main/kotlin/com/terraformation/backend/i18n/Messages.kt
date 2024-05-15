@@ -232,10 +232,11 @@ class Messages {
       speciesName: String
   ): NotificationMessage {
     return NotificationMessage(
-        title = getMessage("notification.participantProjectSpecies.added.subject", participantName),
+        title =
+            getMessage("notification.participantProjectSpecies.added.app.title", participantName),
         body =
             getMessage(
-                "notification.participantProjectSpecies.added.shortBody", speciesName, projectName))
+                "notification.participantProjectSpecies.added.app.body", speciesName, projectName))
   }
 
   fun participantProjectSpeciesApprovedSpeciesEdited(
@@ -244,8 +245,8 @@ class Messages {
   ): NotificationMessage {
     return NotificationMessage(
         title =
-            getMessage("notification.participantProjectSpecies.edited.subject", participantName),
-        body = getMessage("notification.participantProjectSpecies.added.shortBody", speciesName))
+            getMessage("notification.participantProjectSpecies.edited.app.title", participantName),
+        body = getMessage("notification.participantProjectSpecies.edited.app.body", speciesName))
   }
 
   fun sensorBoundsAlert(

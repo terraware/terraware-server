@@ -46,7 +46,37 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class FetchLastUpdatedSpeciesTime {
+  inner class FetchLastCreatedSpeciesTime {
+    @Test
+    fun `fetches the last created species time for a given project`() {
+      val participantId = insertParticipant()
+      val projectId = insertProject(participantId = participantId)
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+      val speciesId3 = insertSpecies()
+
+      insertParticipantProjectSpecies(
+          createdTime = Instant.EPOCH, projectId = projectId, speciesId = speciesId1)
+      insertParticipantProjectSpecies(
+          createdTime = Instant.EPOCH.plusSeconds(2), projectId = projectId, speciesId = speciesId2)
+      insertParticipantProjectSpecies(
+          createdTime = Instant.EPOCH.plusSeconds(1), projectId = projectId, speciesId = speciesId3)
+
+      assertEquals(Instant.EPOCH.plusSeconds(2), store.fetchLastCreatedSpeciesTime(projectId))
+    }
+
+    @Test
+    fun `throws an exception if no permission to read the project`() {
+      val projectId = insertProject()
+
+      every { user.canReadProject(projectId) } returns false
+
+      assertThrows<ProjectNotFoundException> { store.fetchLastCreatedSpeciesTime(projectId) }
+    }
+  }
+
+  @Nested
+  inner class FetchLastModifiedSpeciesTime {
     @Test
     fun `fetches the last updated species time for a given project`() {
       val participantId = insertParticipant()
@@ -66,7 +96,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           projectId = projectId,
           speciesId = speciesId3)
 
-      assertEquals(Instant.EPOCH.plusSeconds(2), store.fetchLastUpdatedSpeciesTime(projectId))
+      assertEquals(Instant.EPOCH.plusSeconds(2), store.fetchLastModifiedSpeciesTime(projectId))
     }
 
     @Test
@@ -75,7 +105,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       every { user.canReadProject(projectId) } returns false
 
-      assertThrows<ProjectNotFoundException> { store.fetchLastUpdatedSpeciesTime(projectId) }
+      assertThrows<ProjectNotFoundException> { store.fetchLastModifiedSpeciesTime(projectId) }
     }
   }
 
@@ -325,7 +355,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       eventPublisher.assertEventPublished(
           ParticipantProjectSpeciesEditedEvent(
-              modifiedTime = Instant.EPOCH,
               newParticipantProjectSpecies =
                   ExistingParticipantProjectSpeciesModel(
                       createdBy = userId,

@@ -8,13 +8,13 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                  ${strings("notification.participantProjectSpecies.edited.shortBody", speciesName)}
+                  ${strings("notification.participantProjectSpecies.edited.email.body.1", speciesName)}
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                  ${strings("notification.participantProjectSpecies.edited.longBody", participantName, speciesName)}
+                  ${strings("notification.participantProjectSpecies.edited.email.body.2", participantName, speciesName)}
                 </mj-text>
                 <mj-button mj-class="btn-productive-primary-md"
-                           href="${deliverableUrl?no_esc}">${strings("notification.participantProjectSpecies.edited.ctaLabel")}
+                           href="${deliverableUrl?no_esc}">${strings("notification.participantProjectSpecies.edited.email.buttonLabel")}
                 </mj-button>
                 <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>

@@ -11,6 +11,7 @@ import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectSpeciesDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
+import com.terraformation.backend.db.accelerator.tables.records.ParticipantProjectSpeciesRecord
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -20,6 +21,7 @@ import java.time.Instant
 import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.TableField
 import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
 
@@ -62,7 +64,10 @@ class ParticipantProjectSpeciesStore(
     return row.toModel()
   }
 
-  fun create(projectIds: Set<ProjectId>, speciesIds: Set<SpeciesId>): Unit {
+  fun create(
+      projectIds: Set<ProjectId>,
+      speciesIds: Set<SpeciesId>
+  ): List<ExistingParticipantProjectSpeciesModel> {
     // Participant project species can only be associated
     // to projects that are associated to a participant
     val projects = projectsDao.fetchById(*projectIds.toTypedArray())
@@ -97,6 +102,10 @@ class ParticipantProjectSpeciesStore(
         }
       }
     }
+
+    return fetch(
+        PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.`in`(projectIds)
+            .and(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID.`in`(speciesIds)))
   }
 
   fun delete(participantProjectSpeciesIds: Set<ParticipantProjectSpeciesId>) {
@@ -110,21 +119,11 @@ class ParticipantProjectSpeciesStore(
         .execute()
   }
 
-  fun fetchLastUpdatedSpeciesTime(projectId: ProjectId): Instant {
-    requirePermissions { readProject(projectId) }
+  fun fetchLastCreatedSpeciesTime(projectId: ProjectId): Instant =
+      fetchLastSpeciesTime(projectId, PARTICIPANT_PROJECT_SPECIES.CREATED_TIME)
 
-    val lastUpdatedTime =
-        with(PARTICIPANT_PROJECT_SPECIES) {
-          dslContext
-              .select(DSL.max(MODIFIED_TIME))
-              .from(this)
-              .where(PROJECT_ID.eq(projectId))
-              .fetchOne(DSL.max(MODIFIED_TIME))
-              ?: throw ParticipantProjectSpeciesProjectNotFoundException(projectId)
-        }
-
-    return lastUpdatedTime
-  }
+  fun fetchLastModifiedSpeciesTime(projectId: ProjectId): Instant =
+      fetchLastSpeciesTime(projectId, PARTICIPANT_PROJECT_SPECIES.MODIFIED_TIME)
 
   fun fetchOneById(
       participantProjectSpeciesId: ParticipantProjectSpeciesId
@@ -146,31 +145,26 @@ class ParticipantProjectSpeciesStore(
     val existing = fetchOneById(participantProjectSpeciesId)
     val updated = updateFunc(existing)
 
-    val modifiedTime = clock.instant()
-
-    val participantProjectSpecies =
-        dslContext
-            .selectFrom(PARTICIPANT_PROJECT_SPECIES)
-            .where(PARTICIPANT_PROJECT_SPECIES.ID.eq(participantProjectSpeciesId))
-            .fetchOne()
-            ?: throw ParticipantProjectSpeciesNotFoundException(participantProjectSpeciesId)
+    val participantProjectSpecies = fetchOneRecordById(participantProjectSpeciesId)
 
     val oldParticipantProjectSpecies =
         ExistingParticipantProjectSpeciesModel.of(participantProjectSpecies)
 
-    participantProjectSpecies.feedback = updated.feedback
-    participantProjectSpecies.modifiedBy = currentUser().userId
-    participantProjectSpecies.modifiedTime = modifiedTime
-    participantProjectSpecies.rationale = updated.rationale
-    participantProjectSpecies.submissionStatusId = updated.submissionStatus
+    with(participantProjectSpecies) {
+      feedback = updated.feedback
+      modifiedBy = currentUser().userId
+      modifiedTime = clock.instant()
+      rationale = updated.rationale
+      submissionStatusId = updated.submissionStatus
 
-    participantProjectSpecies.store()
+      store()
+    }
 
     eventPublisher.publishEvent(
         ParticipantProjectSpeciesEditedEvent(
-            modifiedTime = modifiedTime,
             newParticipantProjectSpecies =
-                ExistingParticipantProjectSpeciesModel.of(participantProjectSpecies),
+                ExistingParticipantProjectSpeciesModel.of(
+                    fetchOneRecordById(participantProjectSpeciesId)),
             oldParticipantProjectSpecies = oldParticipantProjectSpecies,
             projectId = participantProjectSpecies.projectId!!))
   }
@@ -188,4 +182,29 @@ class ParticipantProjectSpeciesStore(
           .filter { user.canReadParticipantProjectSpecies(it.id) }
     }
   }
+
+  private fun fetchLastSpeciesTime(
+      projectId: ProjectId,
+      field: TableField<ParticipantProjectSpeciesRecord, Instant?>
+  ): Instant {
+    requirePermissions { readProject(projectId) }
+
+    return with(PARTICIPANT_PROJECT_SPECIES) {
+      dslContext
+          .select(DSL.max(field))
+          .from(this)
+          .where(PROJECT_ID.eq(projectId))
+          .fetchOne(DSL.max(field))
+          ?: throw ParticipantProjectSpeciesProjectNotFoundException(projectId)
+    }
+  }
+
+  private fun fetchOneRecordById(
+      participantProjectSpeciesId: ParticipantProjectSpeciesId
+  ): ParticipantProjectSpeciesRecord =
+      dslContext
+          .selectFrom(PARTICIPANT_PROJECT_SPECIES)
+          .where(PARTICIPANT_PROJECT_SPECIES.ID.eq(participantProjectSpeciesId))
+          .fetchOne()
+          ?: throw ParticipantProjectSpeciesNotFoundException(participantProjectSpeciesId)
 }

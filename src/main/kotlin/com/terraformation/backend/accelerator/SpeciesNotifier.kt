@@ -2,10 +2,9 @@ package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesStore
 import com.terraformation.backend.accelerator.db.SubmissionStore
-import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesEditedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.accelerator.SubmissionStatus
@@ -59,35 +58,40 @@ class SpeciesNotifier(
   }
 
   /**
-   * Publishes [DeliverableReadyForReviewEvent] if no documents have been uploaded for a submission
-   * since the one referenced by the event.
+   * Publishes [ParticipantProjectSpeciesAddedToProjectNotificationDueEvent] if no species have been
+   * added to a participant project since the one referenced by the event.
    */
-  private fun notifyIfNoNewerUpdates(event: ParticipantProjectSpeciesAddedEvent) {
+  fun notifyIfNoNewerUpdates(event: ParticipantProjectSpeciesAddedEvent) {
     systemUser.run {
-      val lastUpdateTime =
-          participantProjectSpeciesStore.fetchLastUpdatedSpeciesTime(event.projectId)
+      val lastCreatedTime =
+          participantProjectSpeciesStore.fetchLastCreatedSpeciesTime(
+              event.participantProjectSpecies.projectId)
 
-      if (lastUpdateTime == event.modifiedTime) {
+      if (lastCreatedTime == event.participantProjectSpecies.createdTime) {
         eventPublisher.publishEvent(
-            ParticipantProjectSpeciesAddedToProjectEvent(
+            ParticipantProjectSpeciesAddedToProjectNotificationDueEvent(
                 deliverableId = event.deliverableId,
-                projectId = event.projectId,
-                speciesId = event.speciesId))
+                projectId = event.participantProjectSpecies.projectId,
+                speciesId = event.participantProjectSpecies.speciesId))
       }
     }
   }
 
-  private fun notifyIfNoNewerUpdates(event: ParticipantProjectSpeciesEditedEvent) {
+  /**
+   * Publishes [ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent] if no species
+   * have been edited for the participant project since the one referenced by the event.
+   */
+  fun notifyIfNoNewerUpdates(event: ParticipantProjectSpeciesEditedEvent) {
     systemUser.run {
-      val lastUpdateTime =
-          participantProjectSpeciesStore.fetchLastUpdatedSpeciesTime(event.projectId)
+      val lastModifiedTime =
+          participantProjectSpeciesStore.fetchLastModifiedSpeciesTime(event.projectId)
 
-      if (lastUpdateTime == event.modifiedTime) {
+      if (lastModifiedTime == event.newParticipantProjectSpecies.modifiedTime) {
         val deliverableSubmission =
             submissionStore.fetchActiveSpeciesDeliverableSubmission(event.projectId)
 
         eventPublisher.publishEvent(
-            ParticipantProjectSpeciesApprovedSpeciesEditedEvent(
+            ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
                 deliverableId = deliverableSubmission.deliverableId,
                 projectId = event.projectId,
                 speciesId = event.newParticipantProjectSpecies.speciesId))
