@@ -1,6 +1,8 @@
 package com.terraformation.backend.tracking.edit
 
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.tracking.model.AnyPlantingSubzoneModel
+import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
 import com.terraformation.backend.util.equalsIgnoreScale
 import com.terraformation.backend.util.equalsOrBothNull
 import java.math.BigDecimal
@@ -64,6 +66,10 @@ interface PlantingSubzoneEdit {
       override val areaHaDifference: BigDecimal,
       override val newName: String,
   ) : PlantingSubzoneEdit {
+    constructor(
+        model: AnyPlantingSubzoneModel
+    ) : this(model.boundary, model.boundary, model.areaHa, model.name)
+
     override val oldName: String?
       get() = null
 
@@ -80,6 +86,10 @@ interface PlantingSubzoneEdit {
       override val plantingSubzoneId: PlantingSubzoneId,
       override val removedRegion: MultiPolygon,
   ) : PlantingSubzoneEdit {
+    constructor(
+        model: ExistingPlantingSubzoneModel
+    ) : this(model.areaHa.negate(), model.name, model.id, model.boundary)
+
     override val addedRegion: MultiPolygon?
       get() = null
 
