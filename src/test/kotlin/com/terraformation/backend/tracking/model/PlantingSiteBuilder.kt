@@ -121,8 +121,8 @@ private constructor(
   fun zone(
       x: Int = nextZoneX,
       y: Int = 0,
-      width: Int = this.width + this.x - x,
-      height: Int = this.height + this.y - y,
+      width: Int = this.width - (x - this.x),
+      height: Int = this.height - (y - this.y),
       name: String? = null,
       func: ZoneBuilder.() -> Unit = {}
   ): ExistingPlantingZoneModel {
@@ -168,8 +168,8 @@ private constructor(
     fun subzone(
         x: Int = nextSubzoneX,
         y: Int = 0,
-        width: Int = this.width + this.x - x,
-        height: Int = this.height + this.y - y,
+        width: Int = this.width - (x - this.x),
+        height: Int = this.height - (y - this.y),
         name: String? = null,
         func: SubzoneBuilder.() -> Unit = {},
     ): ExistingPlantingSubzoneModel {
