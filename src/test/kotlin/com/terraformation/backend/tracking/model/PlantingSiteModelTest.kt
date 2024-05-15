@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.newSite
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
@@ -78,6 +79,19 @@ class PlantingSiteModelTest {
           }
 
       assertHasProblem(site, "50\\.00% of subzone S1 in zone Z1 overlaps with subzone S2")
+    }
+
+    @Test
+    fun `checks that no subzones are completely covered by exclusion area`() {
+      val site = newSite {
+        exclusion = rectangle(width = 200, height = 500)
+        zone {
+          subzone(width = 150)
+          subzone()
+        }
+      }
+
+      assertHasProblem(site, "Subzone S1 in zone Z1 is inside exclusion area")
     }
 
     private fun assertHasProblem(site: PlantingSiteModel<*, *, *>, problemRegex: String) {
