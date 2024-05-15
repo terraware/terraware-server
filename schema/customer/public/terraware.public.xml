@@ -793,6 +793,8 @@
             <child column="modified_by" foreignKey="events_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="events"/>
             <child column="created_by" foreignKey="modules_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="modules"/>
             <child column="modified_by" foreignKey="modules_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="modules"/>
+            <child column="created_by" foreignKey="participant_project_species_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participant_project_species"/>
+            <child column="modified_by" foreignKey="participant_project_species_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participant_project_species"/>
             <child column="created_by" foreignKey="participants_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participants"/>
             <child column="modified_by" foreignKey="participants_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participants"/>
             <child column="created_by" foreignKey="project_scores_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_scores"/>
