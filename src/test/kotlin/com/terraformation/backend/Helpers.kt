@@ -87,7 +87,10 @@ fun rectangle(
     height: Number = width,
     x: Number = 0,
     y: Number = 0,
-): MultiPolygon =
+): MultiPolygon {
+  return if (width == 0) {
+    GeometryFactory(PrecisionModel(), SRID.LONG_LAT).createMultiPolygon(emptyArray())
+  } else {
     Turtle(point(1))
         .makeMultiPolygon {
           north(y)
@@ -96,6 +99,8 @@ fun rectangle(
         }
         .norm()
         .toMultiPolygon()
+  }
+}
 
 /** Returns a rectangular Polygon with position and size in meters. */
 fun rectanglePolygon(

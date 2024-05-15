@@ -78,7 +78,6 @@ class PlantingSiteEditCalculator(
         existingSite.plantingZones.toSet().minus(existingZonesInUse).map { existingZone ->
           PlantingZoneEdit.Delete(
               areaHaDifference = existingZone.areaHa.negate(),
-              boundary = existingZone.boundary,
               monitoringPlotsRemoved =
                   existingZone.plantingSubzones
                       .flatMap { it.monitoringPlots.map { plot -> plot.id } }
@@ -88,8 +87,7 @@ class PlantingSiteEditCalculator(
               plantingSubzoneEdits =
                   existingZone.plantingSubzones.map { existingSubzone ->
                     PlantingSubzoneEdit.Delete(
-                        areaHaDifference = existingSubzone.areaHa,
-                        boundary = existingSubzone.boundary,
+                        areaHaDifference = existingSubzone.areaHa.negate(),
                         oldName = existingSubzone.name,
                         plantingSubzoneId = existingSubzone.id,
                         removedRegion = existingSubzone.boundary,
@@ -213,7 +211,6 @@ class PlantingSiteEditCalculator(
         existingZone.plantingSubzones.toSet().minus(existingSubzonesInUse).map { existingSubzone ->
           PlantingSubzoneEdit.Delete(
               areaHaDifference = existingSubzone.areaHa.negate(),
-              boundary = existingSubzone.boundary,
               oldName = existingSubzone.name,
               plantingSubzoneId = existingSubzone.id,
               removedRegion = existingSubzone.boundary,
@@ -224,18 +221,20 @@ class PlantingSiteEditCalculator(
         subzoneMappings
             .filterValues { it != null }
             .mapNotNull { (desiredSubzone, existingSubzone) ->
-              if (existingSubzone!!.name == desiredSubzone.name &&
-                  existingSubzone.boundary
-                      .differenceNullable(existingSite.exclusion)
-                      .equalsExact(
-                          desiredSubzone.boundary.differenceNullable(desiredSite.exclusion),
-                          0.00001)) {
+              val desiredUsableBoundary =
+                  desiredSubzone.boundary.differenceNullable(desiredSite.exclusion)
+              val existingUsableBoundary =
+                  existingSubzone!!.boundary.differenceNullable(existingSite.exclusion)
+
+              if (existingSubzone.name == desiredSubzone.name &&
+                  existingSubzone.boundary.equalsExact(desiredSubzone.boundary, 0.00001) &&
+                  existingUsableBoundary.equalsExact(desiredUsableBoundary, 0.00001)) {
                 null
               } else {
                 PlantingSubzoneEdit.Update(
                     addedRegion =
-                        desiredSubzone.boundary
-                            .difference(existingSubzone.boundary)
+                        desiredUsableBoundary
+                            .difference(existingUsableBoundary)
                             .toNormalizedMultiPolygon(),
                     areaHaDifference =
                         calculateAreaHaDifference(
@@ -245,8 +244,8 @@ class PlantingSiteEditCalculator(
                     newName = desiredSubzone.name,
                     plantingSubzoneId = existingSubzone.id,
                     removedRegion =
-                        existingSubzone.boundary
-                            .difference(desiredSubzone.boundary)
+                        existingUsableBoundary
+                            .difference(desiredUsableBoundary)
                             .toNormalizedMultiPolygon(),
                 )
               }

@@ -28,8 +28,11 @@ interface PlantingZoneEdit {
    */
   val areaHaDifference: BigDecimal
 
-  /** New zone boundary. May intersect with the updated site's exclusion areas. */
-  val boundary: MultiPolygon
+  /**
+   * New zone boundary, or null if the zone is being removed. May intersect with the updated site's
+   * exclusion areas.
+   */
+  val boundary: MultiPolygon?
 
   /**
    * IDs of existing monitoring plots that are no longer contained in the zone's usable area and
@@ -100,7 +103,6 @@ interface PlantingZoneEdit {
 
   data class Delete(
       override val areaHaDifference: BigDecimal,
-      override val boundary: MultiPolygon,
       override val monitoringPlotsRemoved: Set<MonitoringPlotId>,
       override val oldName: String,
       override val plantingZoneId: PlantingZoneId,
@@ -108,6 +110,9 @@ interface PlantingZoneEdit {
       override val removedRegion: MultiPolygon,
   ) : PlantingZoneEdit {
     override val addedRegion: MultiPolygon?
+      get() = null
+
+    override val boundary: MultiPolygon?
       get() = null
 
     override val newName: String?

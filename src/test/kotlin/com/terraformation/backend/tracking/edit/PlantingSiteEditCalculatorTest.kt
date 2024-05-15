@@ -1,6 +1,5 @@
 package com.terraformation.backend.tracking.edit
 
-import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -16,13 +15,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.locationtech.jts.geom.GeometryFactory
-import org.locationtech.jts.geom.Polygon
-import org.locationtech.jts.geom.PrecisionModel
 
 class PlantingSiteEditCalculatorTest {
-  private val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
-
   @Test
   fun `returns create edits for newly added zone and subzone`() {
     val newZoneBoundary = rectangle(x = 500, width = 250, height = 500)
@@ -35,8 +29,6 @@ class PlantingSiteEditCalculatorTest {
         }
 
     assertEditResult(
-        existing,
-        desired,
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("12.5"),
             boundary = rectangle(width = 750, height = 500),
@@ -57,7 +49,9 @@ class PlantingSiteEditCalculatorTest {
                                     addedRegion = newZoneBoundary,
                                     boundary = newZoneBoundary,
                                     areaHaDifference = BigDecimal("12.5"),
-                                    newName = "S2"))))))
+                                    newName = "S2"))))),
+        existing,
+        desired)
   }
 
   @Test
@@ -75,8 +69,6 @@ class PlantingSiteEditCalculatorTest {
         }
 
     assertEditResult(
-        existing,
-        desired,
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("12.5"),
             boundary = newSiteBoundary,
@@ -94,14 +86,16 @@ class PlantingSiteEditCalculatorTest {
                             PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * (750 - 500) / 500,
                         oldName = "Z1",
                         plantingZoneId = PlantingZoneId(1),
-                        removedRegion = geometryFactory.createMultiPolygon(emptyArray<Polygon?>()),
+                        removedRegion = rectangle(0),
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Create(
                                     addedRegion = newSubzoneBoundary,
                                     boundary = newSubzoneBoundary,
                                     areaHaDifference = BigDecimal("12.5"),
-                                    newName = "S2"))))))
+                                    newName = "S2"))))),
+        existing,
+        desired)
   }
 
   @Test
@@ -110,8 +104,6 @@ class PlantingSiteEditCalculatorTest {
     val desired = newSite(x = 100, width = 600, height = 500)
 
     assertEditResult(
-        existing,
-        desired,
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("5.0"),
             boundary = desired.boundary!!,
@@ -140,7 +132,133 @@ class PlantingSiteEditCalculatorTest {
                                     oldName = "S1",
                                     plantingSubzoneId = PlantingSubzoneId(1),
                                     removedRegion = rectangle(x = 0, width = 100, height = 500),
-                                ))))))
+                                ))))),
+        existing,
+        desired)
+  }
+
+  @Test
+  fun `treats removal of exclusion area as an expansion of the site`() {
+    val existing =
+        existingSite(x = 0, width = 1000, height = 500) {
+          exclusion = rectangle(width = 300, height = 500)
+        }
+    val desired =
+        newSite(width = 1000, height = 500) { exclusion = rectangle(width = 100, height = 500) }
+
+    assertEditResult(
+        PlantingSiteEdit(
+            areaHaDifference = BigDecimal("10.0"),
+            boundary = desired.boundary!!,
+            exclusion = rectangle(width = 100, height = 500),
+            plantingSiteId = existing.id,
+            plantingZoneEdits =
+                listOf(
+                    PlantingZoneEdit.Update(
+                        addedRegion = rectangle(x = 100, width = 200, height = 500),
+                        areaHaDifference = BigDecimal("10.0"),
+                        boundary = desired.boundary!!,
+                        newName = "Z1",
+                        numPermanentClustersToAdd =
+                            PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * 200 / 500,
+                        oldName = "Z1",
+                        removedRegion = rectangle(0),
+                        monitoringPlotsRemoved = emptySet(),
+                        plantingZoneId = PlantingZoneId(1),
+                        plantingSubzoneEdits =
+                            listOf(
+                                PlantingSubzoneEdit.Update(
+                                    addedRegion = rectangle(x = 100, width = 200, height = 500),
+                                    areaHaDifference = BigDecimal("10.0"),
+                                    boundary = desired.boundary!!,
+                                    newName = "S1",
+                                    oldName = "S1",
+                                    plantingSubzoneId = PlantingSubzoneId(1),
+                                    removedRegion = rectangle(0),
+                                ))))),
+        existing,
+        desired)
+  }
+
+  @Test
+  fun `returns deletion of zone that no longer exists`() {
+    val existing =
+        existingSite(width = 1000) {
+          zone(width = 750)
+          zone(width = 250)
+        }
+    val desired = newSite(width = 750)
+
+    assertEditResult(
+        PlantingSiteEdit(
+            areaHaDifference = BigDecimal("-12.5"),
+            boundary = desired.boundary!!,
+            exclusion = null,
+            plantingSiteId = existing.id,
+            plantingZoneEdits =
+                listOf(
+                    PlantingZoneEdit.Delete(
+                        areaHaDifference = BigDecimal("-12.5"),
+                        oldName = "Z2",
+                        removedRegion = rectangle(x = 750, width = 250, height = 500),
+                        monitoringPlotsRemoved = emptySet(),
+                        plantingZoneId = PlantingZoneId(2),
+                        plantingSubzoneEdits =
+                            listOf(
+                                PlantingSubzoneEdit.Delete(
+                                    areaHaDifference = BigDecimal("-12.5"),
+                                    oldName = "S2",
+                                    plantingSubzoneId = PlantingSubzoneId(2),
+                                    removedRegion = rectangle(x = 750, width = 250, height = 500),
+                                ))))),
+        existing,
+        desired)
+  }
+
+  @Test
+  fun `returns deletion of subzone that no longer exists`() {
+    val existing =
+        existingSite(width = 1000) {
+          zone(width = 500)
+          zone(width = 500) {
+            subzone(width = 250)
+            subzone(width = 250)
+          }
+        }
+    val desired =
+        newSite(width = 750) {
+          zone(width = 500)
+          zone(width = 250)
+        }
+
+    assertEditResult(
+        PlantingSiteEdit(
+            areaHaDifference = BigDecimal("-12.5"),
+            boundary = desired.boundary!!,
+            exclusion = null,
+            plantingSiteId = existing.id,
+            plantingZoneEdits =
+                listOf(
+                    PlantingZoneEdit.Update(
+                        addedRegion = rectangle(0),
+                        areaHaDifference = BigDecimal("-12.5"),
+                        boundary = desired.plantingZones[1].boundary,
+                        newName = "Z2",
+                        numPermanentClustersToAdd = 0,
+                        oldName = "Z2",
+                        removedRegion = rectangle(x = 750, width = 250, height = 500),
+                        monitoringPlotsRemoved = emptySet(),
+                        plantingZoneId = PlantingZoneId(2),
+                        plantingSubzoneEdits =
+                            listOf(
+                                PlantingSubzoneEdit.Delete(
+                                    areaHaDifference = BigDecimal("-12.5"),
+                                    oldName = "S3",
+                                    plantingSubzoneId = PlantingSubzoneId(3),
+                                    removedRegion = rectangle(x = 750, width = 250, height = 500),
+                                ))))),
+        existing,
+        desired)
   }
 
   @Test
@@ -240,10 +358,10 @@ class PlantingSiteEditCalculatorTest {
     val site = existingSite()
 
     assertEditResult(
-        site,
-        site.toNew(),
         PlantingSiteEdit(
-            BigDecimal("0.0"), site.boundary!!, null, PlantingSiteId(1), emptyList(), emptyList()))
+            BigDecimal("0.0"), site.boundary!!, null, PlantingSiteId(1), emptyList(), emptyList()),
+        site,
+        site.toNew())
   }
 
   @Nested
@@ -344,9 +462,9 @@ class PlantingSiteEditCalculatorTest {
   ): PlantingSiteEdit = PlantingSiteEditCalculator(existing, desired).calculateSiteEdit()
 
   private fun assertEditResult(
+      expected: PlantingSiteEdit,
       existing: ExistingPlantingSiteModel,
-      desired: AnyPlantingSiteModel,
-      expected: PlantingSiteEdit
+      desired: AnyPlantingSiteModel
   ) {
     val actual = calculateSiteEdit(existing, desired)
 

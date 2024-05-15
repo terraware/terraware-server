@@ -27,8 +27,11 @@ interface PlantingSubzoneEdit {
    */
   val areaHaDifference: BigDecimal
 
-  /** New subzone boundary. May intersect with the updated site's exclusion areas. */
-  val boundary: MultiPolygon
+  /**
+   * New subzone boundary, or null if the subzone is being removed. May intersect with the updated
+   * site's exclusion areas.
+   */
+  val boundary: MultiPolygon?
 
   /** New subzone name, or null if the subzone is being removed. May be the same as the old name. */
   val newName: String?
@@ -73,12 +76,14 @@ interface PlantingSubzoneEdit {
 
   data class Delete(
       override val areaHaDifference: BigDecimal,
-      override val boundary: MultiPolygon,
       override val oldName: String,
       override val plantingSubzoneId: PlantingSubzoneId,
       override val removedRegion: MultiPolygon,
   ) : PlantingSubzoneEdit {
     override val addedRegion: MultiPolygon?
+      get() = null
+
+    override val boundary: MultiPolygon?
       get() = null
 
     override val newName: String?
