@@ -262,10 +262,10 @@ class PlantingSiteEditCalculatorTest {
           }
 
       assertHasProblem(
-          existing,
-          desired,
           PlantingSiteEditProblem.ZoneBoundaryChanged(
-              conflictsWith = setOf("Z1", "Z2"), zoneName = "Z1"))
+              conflictsWith = setOf("Z1", "Z2"), zoneName = "Z1"),
+          existing,
+          desired)
     }
 
     @Test
@@ -286,10 +286,10 @@ class PlantingSiteEditCalculatorTest {
           }
 
       assertHasProblem(
-          existing,
-          desired,
           PlantingSiteEditProblem.SubzoneBoundaryChanged(
-              conflictsWith = setOf("S1", "S2"), subzoneName = "S1", zoneName = "Z1"))
+              conflictsWith = setOf("S1", "S2"), subzoneName = "S1", zoneName = "Z1"),
+          existing,
+          desired)
     }
 
     @Test
@@ -302,10 +302,10 @@ class PlantingSiteEditCalculatorTest {
           }
 
       assertHasProblem(
-          existing,
-          desired,
           PlantingSiteEditProblem.CannotSplitZone(
-              conflictsWith = setOf("N1", "N2"), zoneName = "Z1"))
+              conflictsWith = setOf("N1", "N2"), zoneName = "Z1"),
+          existing,
+          desired)
     }
 
     @Test
@@ -320,10 +320,10 @@ class PlantingSiteEditCalculatorTest {
           }
 
       assertHasProblem(
-          existing,
-          desired,
           PlantingSiteEditProblem.CannotSplitSubzone(
-              conflictsWith = setOf("N1", "N2"), subzoneName = "S1", zoneName = "Z1"))
+              conflictsWith = setOf("N1", "N2"), subzoneName = "S1", zoneName = "Z1"),
+          existing,
+          desired)
     }
 
     @Test
@@ -355,17 +355,17 @@ class PlantingSiteEditCalculatorTest {
     }
   }
 
-  private fun assertHasProblem(edit: PlantingSiteEdit, problem: PlantingSiteEditProblem) {
+  private fun assertHasProblem(problem: PlantingSiteEditProblem, edit: PlantingSiteEdit) {
     if (edit.problems.none { it == problem }) {
       assertEquals(listOf(problem), edit.problems, "Expected problem not found")
     }
   }
 
   private fun assertHasProblem(
+      problem: PlantingSiteEditProblem,
       existing: ExistingPlantingSiteModel,
       desired: AnyPlantingSiteModel,
-      problem: PlantingSiteEditProblem
   ) {
-    assertHasProblem(calculateSiteEdit(existing, desired), problem)
+    assertHasProblem(problem, calculateSiteEdit(existing, desired))
   }
 }
