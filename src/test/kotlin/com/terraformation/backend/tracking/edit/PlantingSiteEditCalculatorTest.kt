@@ -395,11 +395,10 @@ class PlantingSiteEditCalculatorTest {
                     plantingSubzoneEdits =
                         listOf(
                             PlantingSubzoneEdit.Delete(
-                                existing.plantingZones[0].areaHa.negate(),
-                                "S1",
-                                PlantingSubzoneId(1),
-                                existing.plantingZones[0].boundary,
-                            )),
+                                areaHaDifference = existing.plantingZones[0].areaHa.negate(),
+                                oldName = "S1",
+                                plantingSubzoneId = PlantingSubzoneId(1),
+                                removedRegion = existing.plantingZones[0].boundary)),
                     removedRegion = existing.plantingZones[0].boundary,
                 ),
                 PlantingZoneEdit.Delete(
@@ -410,11 +409,10 @@ class PlantingSiteEditCalculatorTest {
                     plantingSubzoneEdits =
                         listOf(
                             PlantingSubzoneEdit.Delete(
-                                existing.plantingZones[1].areaHa.negate(),
-                                "S2",
-                                PlantingSubzoneId(2),
-                                existing.plantingZones[1].boundary,
-                            )),
+                                areaHaDifference = existing.plantingZones[1].areaHa.negate(),
+                                oldName = "S2",
+                                plantingSubzoneId = PlantingSubzoneId(2),
+                                removedRegion = existing.plantingZones[1].boundary)),
                     removedRegion = existing.plantingZones[1].boundary,
                 ),
                 PlantingZoneEdit.Create(
@@ -429,8 +427,7 @@ class PlantingSiteEditCalculatorTest {
                                 addedRegion = desired.plantingZones[0].boundary,
                                 boundary = desired.plantingZones[0].boundary,
                                 areaHaDifference = desired.plantingZones[0].areaHa,
-                                newName = "S1",
-                            ))),
+                                newName = "S1"))),
                 PlantingZoneEdit.Create(
                     addedRegion = desired.plantingZones[1].boundary,
                     areaHaDifference = desired.plantingZones[1].areaHa,
@@ -443,8 +440,7 @@ class PlantingSiteEditCalculatorTest {
                                 addedRegion = desired.plantingZones[1].boundary,
                                 boundary = desired.plantingZones[1].boundary,
                                 areaHaDifference = desired.plantingZones[1].areaHa,
-                                newName = "S2",
-                            ))),
+                                newName = "S2"))),
                 PlantingZoneEdit.Create(
                     addedRegion = desired.plantingZones[2].boundary,
                     areaHaDifference = desired.plantingZones[2].areaHa,
@@ -457,8 +453,7 @@ class PlantingSiteEditCalculatorTest {
                                 addedRegion = desired.plantingZones[2].boundary,
                                 boundary = desired.plantingZones[2].boundary,
                                 areaHaDifference = desired.plantingZones[2].areaHa,
-                                newName = "S3",
-                            ))),
+                                newName = "S3"))),
             ),
         ),
         existing,
