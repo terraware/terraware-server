@@ -47,14 +47,18 @@ import org.locationtech.jts.geom.PrecisionModel
  *
  * Returns a planting site with:
  * - A boundary of 1000 by 500 meters
- * - Zone Z1 with a boundary of 400 by 500 meters on the west edge of the site
- *     - Subzone S1 with a boundary of 150 by 500 meters on the west edge of the zone
+ * - Zone Z1 with a boundary of 400 by 500 meters whose southwest corner is the southwest corner of
+ *   the site's boundary
+ *     - Subzone S1 with a boundary of 150 by 500 meters whose southwest corner is the southwest
+ *       corner of the zone (and thus of the site)
  *         - Cluster 1 with plots 1, 2, 3, 4 arranged counterclockwise starting at the southwest
- *           corner of the subzone
- *         - Plot 5 immediately to the east of plot 2 (50 meters east of the subzone's SW corner)
+ *           corner of the subzone, that is, at coordinates (0,0), (25,0), (25,25), and (0,25) in
+ *           meters relative to the subzone's southwest corner
+ *         - Plot 5 immediately to the east of plot 2, that is, at coordinates (50,0) relative to
+ *           the subzone's southwest corner
  *     - Subzone S2 with a boundary of 250 by 500 meters, filling the remaining space in Z1
  * - Zone Z2 with a boundary of 600 by 500 meters (filling the remaining space in the site)
- *   immediately east of Z1
+ *   immediately east of Z1, that is at coordinates (400,0) relative to the zone's southwest corner
  *     - Subzone S3 with the same boundary as Z2
  */
 class PlantingSiteBuilder
