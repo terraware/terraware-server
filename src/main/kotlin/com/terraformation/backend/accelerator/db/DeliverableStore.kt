@@ -8,7 +8,9 @@ import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_COHORT_DUE_DATES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_DOCUMENTS
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_PROJECT_DUE_DATES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
@@ -59,6 +61,12 @@ class DeliverableStore(
                     .orderBy(SUBMISSION_DOCUMENTS.ID))
             .convertFrom { result -> result.map { SubmissionDocumentModel.of(it) } }
 
+    val dueDateField =
+        DSL.coalesce(
+            DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE,
+            DELIVERABLE_COHORT_DUE_DATES.DUE_DATE,
+            COHORT_MODULES.END_DATE)
+
     return dslContext
         .select(
             DELIVERABLE_DOCUMENTS.TEMPLATE_URL,
@@ -78,6 +86,7 @@ class DeliverableStore(
             SUBMISSIONS.ID,
             SUBMISSIONS.INTERNAL_COMMENT,
             SUBMISSIONS.SUBMISSION_STATUS_ID,
+            dueDateField,
         )
         .from(DELIVERABLES)
         .join(MODULES)
@@ -95,6 +104,12 @@ class DeliverableStore(
         .leftJoin(SUBMISSIONS)
         .on(DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID))
         .and(PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
+        .leftJoin(DELIVERABLE_COHORT_DUE_DATES)
+        .on(DELIVERABLE_COHORT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID))
+        .and(DELIVERABLE_COHORT_DUE_DATES.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
+        .leftJoin(DELIVERABLE_PROJECT_DUE_DATES)
+        .on(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID))
+        .and(DELIVERABLE_PROJECT_DUE_DATES.PROJECT_ID.eq(PROJECTS.ID))
         .where(conditions)
         .orderBy(DELIVERABLES.ID, PROJECTS.ID)
         .fetch { record ->
@@ -103,6 +118,7 @@ class DeliverableStore(
               deliverableId = record[DELIVERABLES.ID]!!,
               descriptionHtml = record[DELIVERABLES.DESCRIPTION_HTML],
               documents = record[documentsMultiset] ?: emptyList(),
+              dueDate = record[dueDateField]!!,
               feedback = record[SUBMISSIONS.FEEDBACK],
               internalComment = record[SUBMISSIONS.INTERNAL_COMMENT],
               name = record[DELIVERABLES.NAME]!!,

@@ -14,6 +14,7 @@ import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.net.URI
 import java.time.Instant
+import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -97,9 +98,21 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       val deliverableId3 = insertDeliverable(id = 3, moduleId = 2, descriptionHtml = null)
       insertDeliverableDocument(templateUrl = "https://example.com/")
 
-      insertCohortModule(cohortId1, moduleId1)
-      insertCohortModule(cohortId1, moduleId2)
-      insertCohortModule(cohortId2, moduleId2)
+      insertCohortModule(
+          cohortId1,
+          moduleId1,
+          startDate = LocalDate.of(2024, 1, 1),
+          endDate = LocalDate.of(2024, 1, 2))
+      insertCohortModule(
+          cohortId1,
+          moduleId2,
+          startDate = LocalDate.of(2024, 2, 1),
+          endDate = LocalDate.of(2024, 2, 2))
+      insertCohortModule(
+          cohortId2,
+          moduleId2,
+          startDate = LocalDate.of(2024, 3, 1),
+          endDate = LocalDate.of(2024, 3, 2))
 
       val submissionId1 =
           insertSubmission(
@@ -131,6 +144,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
 
       fun DeliverableSubmissionModel.forProject4() =
           copy(
+              dueDate = LocalDate.of(2024, 3, 2),
               organizationId = organizationId2,
               organizationName = "Organization 2",
               participantId = participantId3,
@@ -172,6 +186,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
                           "Original Name 2",
                       ),
                   ),
+              dueDate = LocalDate.of(2024, 1, 2),
               feedback = "feedback",
               internalComment = "comment",
               name = "Deliverable 1",
@@ -200,6 +215,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               category = DeliverableCategory.FinancialViability,
               deliverableId = deliverableId3,
               descriptionHtml = null,
+              dueDate = LocalDate.of(2024, 2, 2),
               name = "Deliverable 3",
               templateUrl = URI("https://example.com/"),
           )

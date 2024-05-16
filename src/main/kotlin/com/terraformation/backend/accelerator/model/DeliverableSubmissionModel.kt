@@ -9,6 +9,7 @@ import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import java.net.URI
+import java.time.LocalDate
 
 /**
  * The combination of a deliverable for a particular project and possibly one of its submissions.
@@ -19,6 +20,7 @@ data class DeliverableSubmissionModel(
     val category: DeliverableCategory,
     val descriptionHtml: String?,
     val documents: List<SubmissionDocumentModel>,
+    val dueDate: LocalDate,
     val feedback: String?,
     val internalComment: String?,
     val name: String,
