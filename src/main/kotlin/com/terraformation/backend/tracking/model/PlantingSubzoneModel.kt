@@ -31,6 +31,9 @@ data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
         boundary.equalsExact(other.boundary, tolerance)
   }
 
+  fun toNew(): NewPlantingSubzoneModel =
+      create(boundary, fullName, name, areaHa, plantingCompletedTime, monitoringPlots)
+
   companion object {
     fun create(
         boundary: MultiPolygon,

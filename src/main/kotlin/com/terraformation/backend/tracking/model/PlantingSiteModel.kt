@@ -135,6 +135,20 @@ data class PlantingSiteModel<
         gridOrigin.equalsOrBothNull(other.gridOrigin)
   }
 
+  fun toNew(): NewPlantingSiteModel =
+      create(
+          areaHa,
+          boundary,
+          description,
+          exclusion,
+          gridOrigin,
+          name,
+          organizationId,
+          plantingSeasons,
+          plantingZones.map { it.toNew() },
+          projectId,
+          timeZone)
+
   companion object {
     /**
      * Maximum percentage of a zone or subzone that can overlap with a neighboring one before
