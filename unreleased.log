@@ -1,3 +1,4 @@
+97b835e994e SW-5370 Added due date to Deliverables API (#1960)
 b8f1dc85b02 SW-5368 Added due dates to deliverable store and deliverableSubmissionModel (#1958)
 bd87033ffac SW-5367 Added deliverable due dates tables (#1957)
 b749905954d SW-5228 Calculate changes to site maps (#1953)
