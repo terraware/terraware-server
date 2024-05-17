@@ -80,6 +80,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
           DeliverableDueDateModel(
               cohortId = cohortId1,
               deliverableId = deliverableId1,
+              moduleId = moduleId1,
               moduleDueDate = cohort1Module1EndDate,
               projectDueDates = emptyMap())
 
@@ -93,6 +94,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       val cohort1Deliverable3 =
           cohort1Deliverable1.copy(
               deliverableId = deliverableId3,
+              moduleId = moduleId2,
               moduleDueDate = cohort1Module2EndDate,
           )
 

@@ -50,6 +50,7 @@ class DeliverableDueDateStore(
         .select(
             COHORT_MODULES.COHORT_ID,
             COHORT_MODULES.END_DATE,
+            COHORT_MODULES.MODULE_ID,
             DELIVERABLES.ID,
             DELIVERABLE_COHORT_DUE_DATES.DUE_DATE,
             projectDueDatesMultiset)
@@ -63,6 +64,7 @@ class DeliverableDueDateStore(
           DeliverableDueDateModel(
               cohortId = record[COHORT_MODULES.COHORT_ID]!!,
               deliverableId = record[DELIVERABLES.ID]!!,
+              moduleId = record[COHORT_MODULES.MODULE_ID]!!,
               cohortDueDate = record[DELIVERABLE_COHORT_DUE_DATES.DUE_DATE],
               moduleDueDate = record[COHORT_MODULES.END_DATE]!!,
               projectDueDates = record[projectDueDatesMultiset])
