@@ -3,11 +3,14 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.model.CohortModuleModel
 import com.terraformation.backend.accelerator.model.EventModel
+import com.terraformation.backend.accelerator.model.ModuleDeliverableModel
 import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.DeliverableCategory
+import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -599,6 +602,73 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
               .find { it.id == moduleId }!!
               .eventSessions[EventType.OneOnOneSession]!!
               .map { it.id })
+    }
+  }
+
+  @Nested
+  inner class FetchModulesWithDeliverables {
+    @Test
+    fun `returns associated deliverables with details ordered by position`() {
+      val moduleId = insertModule()
+      val deliverable1 =
+          insertDeliverable(
+              deliverableCategoryId = DeliverableCategory.Compliance,
+              deliverableTypeId = DeliverableType.Document,
+              descriptionHtml = "Description",
+              isSensitive = true,
+              isRequired = true,
+              moduleId = moduleId,
+              name = "Deliverable name",
+              position = 2)
+
+      val deliverable2 =
+          insertDeliverable(
+              deliverableCategoryId = DeliverableCategory.CarbonEligibility,
+              deliverableTypeId = DeliverableType.Species,
+              descriptionHtml = "Species description",
+              isSensitive = false,
+              isRequired = false,
+              moduleId = moduleId,
+              name = "Species name",
+              position = 1)
+
+      val model1 =
+          ModuleDeliverableModel(
+              id = deliverable1,
+              category = DeliverableCategory.Compliance,
+              descriptionHtml = "Description",
+              moduleId = moduleId,
+              name = "Deliverable name",
+              position = 2,
+              required = true,
+              sensitive = true,
+              type = DeliverableType.Document,
+          )
+
+      val model2 =
+          ModuleDeliverableModel(
+              id = deliverable2,
+              category = DeliverableCategory.CarbonEligibility,
+              descriptionHtml = "Species description",
+              moduleId = moduleId,
+              name = "Species name",
+              position = 1,
+              required = false,
+              sensitive = false,
+              type = DeliverableType.Species,
+          )
+
+      assertEquals(
+          listOf(model2, model1),
+          store.fetchAllModules().firstOrNull()?.deliverables,
+          "Fetch all with deliverables")
+
+      insertCohortModule(cohortId, moduleId)
+
+      assertEquals(
+          listOf(model2, model1),
+          store.fetchModulesForProject(projectId).firstOrNull()?.deliverables,
+          "Fetch by project with deliverables")
     }
   }
 }
