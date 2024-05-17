@@ -30,6 +30,36 @@
         </ul>
     </div>
 
+    <hr>
+    <h3> Deliverables </h3>
+    <table>
+        <thead>
+        <tr>
+            <th>Position</th>
+            <th>ID</th>
+            <th>Category</th>
+            <th>Type</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Required</th>
+            <th>Sensitive</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="deliverable : ${module.deliverables}" class="striped">
+            <td th:text="${deliverable.position}">Deliverable Position</td>
+            <td th:text="${deliverable.id}">Deliverable ID</td>
+            <td th:text="${deliverable.category.getDisplayName(#locale.default)}">Deliverable Category</td>
+            <td th:text="${deliverable.type.getDisplayName(#locale.default)}">Deliverable Type</td>
+            <td th:text="${deliverable.name}">Deliverable Name</td>
+            <td th:utext="${deliverable.descriptionHtml}">Deliverable Description</td>
+            <td><input type="checkbox" th:value="${deliverable.required}" disabled /> </td>
+            <td><input type="checkbox" th:value="${deliverable.sensitive}" disabled /> </td>
+            <td></td>
+        </tr>
+        </tbody>
+    </table>
 
     <th:block th:if="${module.overview}">
         <hr>
