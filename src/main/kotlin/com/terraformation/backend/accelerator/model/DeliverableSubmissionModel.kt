@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.model
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
@@ -23,6 +24,7 @@ data class DeliverableSubmissionModel(
     val dueDate: LocalDate,
     val feedback: String?,
     val internalComment: String?,
+    val moduleId: ModuleId,
     val name: String,
     val organizationId: OrganizationId,
     val organizationName: String,

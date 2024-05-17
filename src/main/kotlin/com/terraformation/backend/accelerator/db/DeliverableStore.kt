@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
@@ -32,6 +33,7 @@ class DeliverableStore(
       participantId: ParticipantId? = null,
       projectId: ProjectId? = null,
       deliverableId: DeliverableId? = null,
+      moduleId: ModuleId? = null,
   ): List<DeliverableSubmissionModel> {
     requirePermissions {
       when {
@@ -51,7 +53,7 @@ class DeliverableStore(
               else -> null
             },
             deliverableId?.let { DELIVERABLES.ID.eq(it) },
-        )
+            moduleId?.let { DELIVERABLES.MODULE_ID.eq(it) })
 
     val documentsMultiset =
         DSL.multiset(
@@ -74,6 +76,7 @@ class DeliverableStore(
             DELIVERABLES.DELIVERABLE_TYPE_ID,
             DELIVERABLES.DESCRIPTION_HTML,
             DELIVERABLES.ID,
+            DELIVERABLES.MODULE_ID,
             DELIVERABLES.NAME,
             documentsMultiset,
             ORGANIZATIONS.ID,
@@ -121,6 +124,7 @@ class DeliverableStore(
               dueDate = record[dueDateField]!!,
               feedback = record[SUBMISSIONS.FEEDBACK],
               internalComment = record[SUBMISSIONS.INTERNAL_COMMENT],
+              moduleId = record[DELIVERABLES.MODULE_ID]!!,
               name = record[DELIVERABLES.NAME]!!,
               organizationId = record[ORGANIZATIONS.ID]!!,
               organizationName = record[ORGANIZATIONS.NAME]!!,
