@@ -150,12 +150,12 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="deliverable_documents.[deliverable_id, deliverable_type_id] references deliverables.[id, deliverable_type_id] via deliverable_documents_deliverable_id_deliverable_type_id_fkey"><a href='deliverables.html'>deliverables</a><span class='relatedKey'>.deliverable_type_id</span></td>
-                                                <td class="constraint detail">deliverable_documents_deliverable_id_deliverable_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="deliverable_documents.deliverable_type_id references deliverable_types.id via deliverable_documents_deliverable_type_id_fkey"><a href='deliverable_types.html'>deliverable_types</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">deliverable_documents_deliverable_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="deliverable_documents.[deliverable_id, deliverable_type_id] references deliverables.[id, deliverable_type_id] via deliverable_documents_deliverable_id_deliverable_type_id_fkey"><a href='deliverables.html'>deliverables</a><span class='relatedKey'>.deliverable_type_id</span></td>
+                                                <td class="constraint detail">deliverable_documents_deliverable_id_deliverable_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -265,13 +265,15 @@
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliverable_documents.html" target="_top" title="deliverable_documents" alt="" coords="809,145,1183,302">
-<area shape="rect" id="node2" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="529,118,765,411">
-<area shape="rect" id="node3" href="../../tables/deliverable_types.html" target="_top" title="deliverable_types" alt="" coords="246,314,467,437">
-<area shape="rect" id="node4" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="5,209,184,297">
-<area shape="rect" id="node5" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="228,103,485,191">
-<area shape="rect" id="node6" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="281,209,432,297">
-<area shape="rect" id="node7" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="907,22,1085,110">
+<area shape="rect" id="node1" href="../../tables/deliverable_cohort_due_dates.html" target="_top" title="deliverable_cohort_due_dates" alt="" coords="840,135,1152,223">
+<area shape="rect" id="node2" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="529,198,765,491">
+<area shape="rect" id="node4" href="../../tables/deliverable_types.html" target="_top" title="deliverable_types" alt="" coords="246,216,467,339">
+<area shape="rect" id="node6" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="5,356,184,444">
+<area shape="rect" id="node7" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="228,111,485,199">
+<area shape="rect" id="node8" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="281,356,432,444">
+<area shape="rect" id="node3" href="../../tables/deliverable_documents.html" target="_top" title="deliverable_documents" alt="" coords="809,346,1183,503">
+<area shape="rect" id="node5" href="../../tables/deliverable_project_due_dates.html" target="_top" title="deliverable_project_due_dates" alt="" coords="837,240,1155,328">
+<area shape="rect" id="node9" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="907,30,1085,118">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/deliverable_documents.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

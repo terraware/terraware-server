@@ -8,14 +8,16 @@ document_stores
 event_statuses
 event_types
 score_categories
-modules
 cohorts
+modules
 participants
 deliverables
 deal_stages
 events
 submissions
 cohort_modules
+deliverable_cohort_due_dates
+deliverable_project_due_dates
 event_projects
 participant_project_species
 project_accelerator_details

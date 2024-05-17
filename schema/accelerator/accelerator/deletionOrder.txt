@@ -7,14 +7,16 @@ project_scores
 project_accelerator_details
 participant_project_species
 event_projects
+deliverable_project_due_dates
+deliverable_cohort_due_dates
 cohort_modules
 submissions
 events
 deal_stages
 deliverables
 participants
-cohorts
 modules
+cohorts
 score_categories
 event_types
 event_statuses

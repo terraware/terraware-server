@@ -6,6 +6,8 @@ deliverable_documents
 project_vote_decisions
 project_accelerator_details
 event_projects
+deliverable_project_due_dates
+deliverable_cohort_due_dates
 cohort_modules
 default_voters
 submissions
