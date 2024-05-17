@@ -29,7 +29,9 @@ import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.daos.CohortModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
 import com.terraformation.backend.db.accelerator.tables.daos.DefaultVotersDao
+import com.terraformation.backend.db.accelerator.tables.daos.DeliverableCohortDueDatesDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableDocumentsDao
+import com.terraformation.backend.db.accelerator.tables.daos.DeliverableProjectDueDatesDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.db.accelerator.tables.daos.EventProjectsDao
 import com.terraformation.backend.db.accelerator.tables.daos.EventsDao
@@ -45,7 +47,9 @@ import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DefaultVotersRow
+import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableCohortDueDatesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableDocumentsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableProjectDueDatesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverablesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.EventProjectsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
@@ -404,7 +408,9 @@ abstract class DatabaseTest {
   protected val countriesDao: CountriesDao by lazyDao()
   protected val countrySubdivisionsDao: CountrySubdivisionsDao by lazyDao()
   protected val defaultVotersDao: DefaultVotersDao by lazyDao()
+  protected val deliverableCohortDueDatesDao: DeliverableCohortDueDatesDao by lazyDao()
   protected val deliverableDocumentsDao: DeliverableDocumentsDao by lazyDao()
+  protected val deliverableProjectDueDatesDao: DeliverableProjectDueDatesDao by lazyDao()
   protected val deliverablesDao: DeliverablesDao by lazyDao()
   protected val deliveriesDao: DeliveriesDao by lazyDao()
   protected val deviceManagersDao: DeviceManagersDao by lazyDao()
@@ -737,6 +743,21 @@ abstract class DatabaseTest {
     return row.id!!.also { inserted.deliverableIds.add(it) }
   }
 
+  protected fun insertDeliverableCohortDueDate(
+      deliverableId: Any = inserted.deliverableId,
+      cohortId: Any = inserted.cohortId,
+      dueDate: LocalDate,
+  ) {
+    val row =
+        DeliverableCohortDueDatesRow(
+            cohortId = cohortId.toIdWrapper { CohortId(it) },
+            deliverableId = deliverableId.toIdWrapper { DeliverableId(it) },
+            dueDate = dueDate,
+        )
+
+    deliverableCohortDueDatesDao.insert(row)
+  }
+
   protected fun insertDeliverableDocument(
       deliverableId: Any = inserted.deliverableId,
       templateUrl: Any? = null,
@@ -749,6 +770,21 @@ abstract class DatabaseTest {
         )
 
     deliverableDocumentsDao.insert(row)
+  }
+
+  protected fun insertDeliverableProjectDueDate(
+      deliverableId: Any = inserted.deliverableId,
+      projectId: Any = inserted.projectId,
+      dueDate: LocalDate,
+  ) {
+    val row =
+        DeliverableProjectDueDatesRow(
+            deliverableId = deliverableId.toIdWrapper { DeliverableId(it) },
+            dueDate = dueDate,
+            projectId = projectId.toIdWrapper { ProjectId(it) },
+        )
+
+    deliverableProjectDueDatesDao.insert(row)
   }
 
   protected fun insertDevice(

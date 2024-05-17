@@ -479,7 +479,11 @@ COMMENT ON TABLE accelerator.default_voters IS 'Users to automatically be assign
 
 COMMENT ON TABLE accelerator.deliverable_categories IS '(Enum) High-level groups for organizing deliverables.';
 
+COMMENT ON TABLE accelerator.deliverable_cohort_due_dates IS 'Deliverable due dates overrides for cohorts. Can be overridden at the project level.';
+
 COMMENT ON TABLE accelerator.deliverable_documents IS 'Information about expected deliverables of type Document that isn''t relevant for other deliverable types.';
+
+COMMENT ON TABLE accelerator.deliverable_project_due_dates IS 'Deliverable due dates overrides for projects.';
 
 COMMENT ON TABLE accelerator.deliverable_types IS '(Enum) Types of deliverables for an accelerator module.';
 

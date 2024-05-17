@@ -238,6 +238,43 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `returns deliverable due date according to cohort or project overrides`() {
+    val projectId = insertProject(participantId = inserted.participantId)
+    val deliverableId = insertDeliverable(moduleId = inserted.moduleId)
+
+    val prefix = SearchFieldPrefix(searchTables.projectDeliverables)
+    val fields = listOf("id", "dueDate").map { prefix.resolve(it) }
+
+    assertJsonEquals(
+        SearchResults(
+            listOf(
+                mapOf("id" to "$deliverableId", "dueDate" to "$moduleEndDate"),
+            )),
+        searchService.search(prefix, fields, NoConditionNode()),
+        "Search project deliverables with module end date")
+
+    val cohortDueDate = moduleEndDate.plusDays(5)
+    insertDeliverableCohortDueDate(deliverableId, inserted.cohortId, cohortDueDate)
+    assertJsonEquals(
+        SearchResults(
+            listOf(
+                mapOf("id" to "$deliverableId", "dueDate" to "$cohortDueDate"),
+            )),
+        searchService.search(prefix, fields, NoConditionNode()),
+        "Search project deliverables with cohort due date override")
+
+    val projectDueDate = moduleEndDate.plusDays(5)
+    insertDeliverableProjectDueDate(deliverableId, projectId, projectDueDate)
+    assertJsonEquals(
+        SearchResults(
+            listOf(
+                mapOf("id" to "$deliverableId", "dueDate" to "$projectDueDate"),
+            )),
+        searchService.search(prefix, fields, NoConditionNode()),
+        "Search project deliverables with project due date override")
+  }
+
+  @Test
   fun `returns only deliverables of projects visible to non-accelerator admin users`() {
     every { user.canReadAllAcceleratorDetails() } returns false
 
