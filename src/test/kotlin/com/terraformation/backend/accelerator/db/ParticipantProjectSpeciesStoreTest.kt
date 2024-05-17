@@ -349,7 +349,11 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
 
       store.update(participantProjectSpeciesId) {
-        it.copy(feedback = "Looks good", internalComment = "We should approve", nativeNonNative = NativeNonNative.Native, submissionStatus = SubmissionStatus.Approved)
+        it.copy(
+            feedback = "Looks good",
+            internalComment = "We should approve",
+            nativeNonNative = NativeNonNative.Native,
+            submissionStatus = SubmissionStatus.Approved)
       }
 
       val userId = user.userId
