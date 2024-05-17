@@ -7,6 +7,7 @@ import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_P
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.NativeNonNative
 import java.time.Instant
 import org.jooq.Record
 
@@ -15,8 +16,10 @@ data class ParticipantProjectSpeciesModel<ID : ParticipantProjectSpeciesId?>(
     val createdTime: Instant? = null,
     val id: ID,
     val feedback: String? = null,
+    val internalComment: String? = null,
     val modifiedBy: UserId? = null,
     val modifiedTime: Instant? = null,
+    val nativeNonNative: NativeNonNative? = null,
     val projectId: ProjectId,
     val rationale: String? = null,
     val speciesId: SpeciesId,
@@ -28,7 +31,9 @@ data class ParticipantProjectSpeciesModel<ID : ParticipantProjectSpeciesId?>(
           createdBy = record[PARTICIPANT_PROJECT_SPECIES.CREATED_BY]!!,
           createdTime = record[PARTICIPANT_PROJECT_SPECIES.CREATED_TIME]!!,
           feedback = record[PARTICIPANT_PROJECT_SPECIES.FEEDBACK],
+          internalComment = record[PARTICIPANT_PROJECT_SPECIES.INTERNAL_COMMENT],
           id = record[PARTICIPANT_PROJECT_SPECIES.ID]!!,
+          nativeNonNative = record[PARTICIPANT_PROJECT_SPECIES.NATIVE_NON_NATIVE_ID],
           modifiedBy = record[PARTICIPANT_PROJECT_SPECIES.MODIFIED_BY]!!,
           modifiedTime = record[PARTICIPANT_PROJECT_SPECIES.MODIFIED_TIME]!!,
           projectId = record[PARTICIPANT_PROJECT_SPECIES.PROJECT_ID]!!,
@@ -50,7 +55,9 @@ fun ParticipantProjectSpeciesRow.toModel(): ExistingParticipantProjectSpeciesMod
       createdBy = createdBy!!,
       createdTime = createdTime!!,
       feedback = feedback,
+      internalComment = internalComment,
       id = id!!,
+      nativeNonNative = nativeNonNativeId,
       modifiedBy = modifiedBy!!,
       modifiedTime = modifiedTime!!,
       projectId = projectId!!,

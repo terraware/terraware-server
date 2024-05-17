@@ -13,6 +13,7 @@ import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.NativeNonNative
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -104,6 +105,8 @@ class ParticipantProjectSpeciesController(
           ParticipantProjectSpeciesPayload(
               feedback = model.feedback,
               id = model.id,
+              internalComment = model.internalComment,
+              nativeNonNative = model.nativeNonNative,
               projectId = model.projectId,
               rationale = model.rationale,
               speciesId = model.speciesId,
@@ -129,6 +132,8 @@ data class DeleteParticipantProjectSpeciesPayload(
 data class ParticipantProjectSpeciesPayload(
     val feedback: String?,
     val id: ParticipantProjectSpeciesId,
+    val internalComment: String?,
+    val nativeNonNative: NativeNonNative?,
     val projectId: ProjectId,
     val rationale: String?,
     val speciesId: SpeciesId,
@@ -141,9 +146,16 @@ data class GetParticipantProjectSpeciesResponsePayload(
 
 data class UpdateParticipantProjectSpeciesPayload(
     val feedback: String?,
+    val internalComment: String?,
+    val nativeNonNative: NativeNonNative?,
     val rationale: String?,
     val submissionStatus: SubmissionStatus,
 ) {
   fun applyTo(model: ExistingParticipantProjectSpeciesModel) =
-      model.copy(feedback = feedback, rationale = rationale, submissionStatus = submissionStatus)
+      model.copy(
+          feedback = feedback,
+          internalComment = internalComment,
+          nativeNonNative = nativeNonNative,
+          rationale = rationale,
+          submissionStatus = submissionStatus)
 }

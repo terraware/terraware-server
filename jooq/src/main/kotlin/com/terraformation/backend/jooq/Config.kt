@@ -74,6 +74,7 @@ val ENUM_TABLES =
                 EnumTable(
                     "land_use_model_types",
                     listOf("land_use_model_types\\.id", ".*\\.land_use_model_type_id")),
+                EnumTable("native_non_native", listOf(".*\\.native_non_native_id")),
                 EnumTable(
                     "notification_criticalities",
                     listOf(".*\\.notification_criticality_id"),

@@ -73,6 +73,7 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.LandUseModelType
+import com.terraformation.backend.db.default_schema.NativeNonNative
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -2134,16 +2135,18 @@ abstract class DatabaseTest {
   }
 
   fun insertParticipantProjectSpecies(
-      createdBy: Any = currentUser().userId,
-      createdTime: Instant = Instant.EPOCH,
-      feedback: String? = null,
-      id: Any? = null,
-      modifiedBy: Any = currentUser().userId,
-      modifiedTime: Instant = Instant.EPOCH,
-      projectId: Any = inserted.projectId,
-      rationale: String? = null,
-      speciesId: Any = inserted.speciesId,
-      submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted,
+    createdBy: Any = currentUser().userId,
+    createdTime: Instant = Instant.EPOCH,
+    feedback: String? = null,
+    id: Any? = null,
+    internalComment: String? = null,
+    nativeNonNative: NativeNonNative? = null,
+    modifiedBy: Any = currentUser().userId,
+    modifiedTime: Instant = Instant.EPOCH,
+    projectId: Any = inserted.projectId,
+    rationale: String? = null,
+    speciesId: Any = inserted.speciesId,
+    submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted,
   ): ParticipantProjectSpeciesId {
     val row =
         ParticipantProjectSpeciesRow(
@@ -2151,6 +2154,8 @@ abstract class DatabaseTest {
             createdTime = createdTime,
             feedback = feedback,
             id = id?.toIdWrapper { ParticipantProjectSpeciesId(it) },
+            internalComment = internalComment,
+            nativeNonNativeId = nativeNonNative,
             modifiedBy = modifiedBy.toIdWrapper { UserId(it) },
             modifiedTime = modifiedTime,
             projectId = projectId.toIdWrapper { ProjectId(it) },
