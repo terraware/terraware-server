@@ -11,9 +11,11 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
+import io.mockk.spyk
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -26,6 +28,10 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
 
+  private val submissionStore: SubmissionStore by lazy {
+    spyk(SubmissionStore(clock, dslContext, eventPublisher))
+  }
+
   private val service: ParticipantProjectSpeciesService by lazy {
     ParticipantProjectSpeciesService(
         clock,
@@ -33,7 +39,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
         eventPublisher,
         ParticipantProjectSpeciesStore(
             clock, dslContext, eventPublisher, participantProjectSpeciesDao, projectsDao),
-        SubmissionStore(clock, dslContext, eventPublisher))
+        submissionStore)
   }
 
   @BeforeEach
@@ -86,6 +92,20 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId,
                   submissionStatusId = SubmissionStatus.NotSubmitted)),
           submissionsDao.fetchByDeliverableId(deliverableId).map { it.copy(id = null) })
+
+      assertEquals(
+          listOf(
+              ParticipantProjectSpeciesRow(
+                  createdBy = userId,
+                  createdTime = now,
+                  feedback = "feedback",
+                  modifiedBy = userId,
+                  modifiedTime = now,
+                  projectId = projectId,
+                  rationale = "rationale",
+                  speciesId = speciesId,
+                  submissionStatusId = SubmissionStatus.NotSubmitted)),
+          participantProjectSpeciesDao.findAll().map { it.copy(id = null) })
 
       eventPublisher.assertEventPublished(
           ParticipantProjectSpeciesAddedEvent(
@@ -177,6 +197,11 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
             ParticipantProjectSpeciesAddedEvent(
                 deliverableId = deliverableId, participantProjectSpecies = it)
           })
+
+      io.mockk.verify(exactly = 1) {
+        submissionStore.fetchActiveSpeciesDeliverableSubmission(projectId1)
+        submissionStore.fetchActiveSpeciesDeliverableSubmission(projectId2)
+      }
     }
   }
 }

@@ -202,9 +202,8 @@ class ParticipantProjectSpeciesStore(
   private fun fetchOneRecordById(
       participantProjectSpeciesId: ParticipantProjectSpeciesId
   ): ParticipantProjectSpeciesRecord =
-      dslContext
-          .selectFrom(PARTICIPANT_PROJECT_SPECIES)
-          .where(PARTICIPANT_PROJECT_SPECIES.ID.eq(participantProjectSpeciesId))
-          .fetchOne()
+      dslContext.fetchOne(
+          PARTICIPANT_PROJECT_SPECIES,
+          PARTICIPANT_PROJECT_SPECIES.ID.eq(participantProjectSpeciesId))
           ?: throw ParticipantProjectSpeciesNotFoundException(participantProjectSpeciesId)
 }

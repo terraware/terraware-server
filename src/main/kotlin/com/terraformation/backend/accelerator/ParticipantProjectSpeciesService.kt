@@ -5,6 +5,7 @@ import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import jakarta.inject.Named
@@ -52,29 +53,42 @@ class ParticipantProjectSpeciesService(
     return dslContext.transactionResult { _ ->
       val existingModels = participantProjectSpeciesStore.create(projectIds, speciesIds)
 
-      val checkedProjectIds = emptySet<ProjectId>()
+      // Used to save relatively expensive queries for projects which we know have submissions
+      val projectDeliverableIds = mutableMapOf<ProjectId, DeliverableId>()
 
-      existingModels.forEach {
-        // A submission must exist for every project that is getting a new species assigned
-        if (checkedProjectIds.contains(it.projectId)) {
+      existingModels.forEach { participantProjectSpecies ->
+        if (projectDeliverableIds.contains(participantProjectSpecies.projectId)) {
+          publishEditEvent(
+              projectDeliverableIds[participantProjectSpecies.projectId]!!,
+              participantProjectSpecies)
           return@forEach
         }
 
+        // A submission must exist for every project that is getting a new species assigned
         val deliverableSubmission =
-            submissionStore.fetchActiveSpeciesDeliverableSubmission(it.projectId)
+            submissionStore.fetchActiveSpeciesDeliverableSubmission(
+                participantProjectSpecies.projectId)
         if (deliverableSubmission.submissionId == null) {
-          submissionStore.createSubmission(deliverableSubmission.deliverableId, it.projectId)
+          submissionStore.createSubmission(
+              deliverableSubmission.deliverableId, participantProjectSpecies.projectId)
         }
 
-        checkedProjectIds.plus(it.projectId)
-
-        eventPublisher.publishEvent(
-            ParticipantProjectSpeciesAddedEvent(
-                deliverableId = deliverableSubmission.deliverableId,
-                participantProjectSpecies = it))
+        projectDeliverableIds[participantProjectSpecies.projectId] =
+            deliverableSubmission.deliverableId
+        publishEditEvent(
+            projectDeliverableIds[participantProjectSpecies.projectId]!!, participantProjectSpecies)
       }
 
       existingModels
     }
+  }
+
+  private fun publishEditEvent(
+      deliverableId: DeliverableId,
+      participantProjectSpecies: ExistingParticipantProjectSpeciesModel
+  ) {
+    eventPublisher.publishEvent(
+        ParticipantProjectSpeciesAddedEvent(
+            deliverableId = deliverableId, participantProjectSpecies = participantProjectSpecies))
   }
 }

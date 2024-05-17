@@ -56,11 +56,20 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val speciesId3 = insertSpecies()
 
       insertParticipantProjectSpecies(
-          createdTime = Instant.EPOCH, projectId = projectId, speciesId = speciesId1)
+          createdTime = Instant.EPOCH,
+          modifiedTime = Instant.EPOCH.plusSeconds(333),
+          projectId = projectId,
+          speciesId = speciesId1)
       insertParticipantProjectSpecies(
-          createdTime = Instant.EPOCH.plusSeconds(2), projectId = projectId, speciesId = speciesId2)
+          createdTime = Instant.EPOCH.plusSeconds(2),
+          modifiedTime = Instant.EPOCH.plusSeconds(331),
+          projectId = projectId,
+          speciesId = speciesId2)
       insertParticipantProjectSpecies(
-          createdTime = Instant.EPOCH.plusSeconds(1), projectId = projectId, speciesId = speciesId3)
+          createdTime = Instant.EPOCH.plusSeconds(1),
+          modifiedTime = Instant.EPOCH.plusSeconds(332),
+          projectId = projectId,
+          speciesId = speciesId3)
 
       assertEquals(Instant.EPOCH.plusSeconds(2), store.fetchLastCreatedSpeciesTime(projectId))
     }
@@ -86,12 +95,17 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val speciesId3 = insertSpecies()
 
       insertParticipantProjectSpecies(
-          modifiedTime = Instant.EPOCH, projectId = projectId, speciesId = speciesId1)
+          createdTime = Instant.EPOCH.plusSeconds(333),
+          modifiedTime = Instant.EPOCH,
+          projectId = projectId,
+          speciesId = speciesId1)
       insertParticipantProjectSpecies(
+          createdTime = Instant.EPOCH.plusSeconds(331),
           modifiedTime = Instant.EPOCH.plusSeconds(2),
           projectId = projectId,
           speciesId = speciesId2)
       insertParticipantProjectSpecies(
+          createdTime = Instant.EPOCH.plusSeconds(332),
           modifiedTime = Instant.EPOCH.plusSeconds(1),
           projectId = projectId,
           speciesId = speciesId3)
