@@ -175,11 +175,6 @@ VALUES (1, 'SeedBank'),
        (3, 'PlantingSite')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO native_non_native (id, name)
-VALUES (1, 'Native'),
-       (2, 'Non-native')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
 INSERT INTO notification_criticalities (id, name)
 VALUES (1, 'Info'),
        (2, 'Warning'),
@@ -355,6 +350,11 @@ VALUES (1, 'Soak'),
        (4, 'Stratification'),
        (5, 'Other'),
        (6, 'Light')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO species_native_categories (id, name)
+VALUES (1, 'Native'),
+       (2, 'Non-native')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO species_problem_fields (id, name)

@@ -153,7 +153,7 @@ class ParticipantProjectSpeciesStore(
     with(participantProjectSpecies) {
       feedback = updated.feedback
       internalComment = updated.internalComment
-      nativeNonNativeId = updated.nativeNonNative
+      speciesNativeCategoryId = updated.speciesNativeCategory
       modifiedBy = currentUser().userId
       modifiedTime = clock.instant()
       rationale = updated.rationale

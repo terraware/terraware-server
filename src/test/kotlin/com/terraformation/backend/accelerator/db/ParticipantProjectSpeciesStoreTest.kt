@@ -11,7 +11,7 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
-import com.terraformation.backend.db.default_schema.NativeNonNative
+import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
@@ -352,7 +352,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
         it.copy(
             feedback = "Looks good",
             internalComment = "We should approve",
-            nativeNonNative = NativeNonNative.Native,
+            speciesNativeCategory = SpeciesNativeCategory.Native,
             submissionStatus = SubmissionStatus.Approved)
       }
 
@@ -366,7 +366,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               feedback = "Looks good",
               id = participantProjectSpeciesId,
               internalComment = "We should approve",
-              nativeNonNativeId = NativeNonNative.Native,
+              speciesNativeCategoryId = SpeciesNativeCategory.Native,
               modifiedBy = userId,
               modifiedTime = now,
               projectId = projectId,
@@ -382,7 +382,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                       createdTime = now,
                       id = participantProjectSpeciesId,
                       internalComment = "We should approve",
-                      nativeNonNative = NativeNonNative.Native,
+                      speciesNativeCategory = SpeciesNativeCategory.Native,
                       feedback = "Looks good",
                       modifiedBy = userId,
                       modifiedTime = now,
@@ -458,7 +458,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   feedback = null,
                   id = participantProjectSpeciesId3,
                   internalComment = null,
-                  nativeNonNativeId = null,
+                  speciesNativeCategoryId = null,
                   modifiedBy = userId,
                   modifiedTime = now,
                   projectId = projectId,
@@ -499,7 +499,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   feedback = null,
                   id = participantProjectSpeciesId1,
                   internalComment = null,
-                  nativeNonNativeId = null,
+                  speciesNativeCategoryId = null,
                   modifiedBy = userId,
                   modifiedTime = now,
                   projectId = projectId,
@@ -512,7 +512,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   feedback = null,
                   id = participantProjectSpeciesId2,
                   internalComment = null,
-                  nativeNonNativeId = null,
+                  speciesNativeCategoryId = null,
                   modifiedBy = userId,
                   modifiedTime = now,
                   projectId = projectId,

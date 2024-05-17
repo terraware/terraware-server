@@ -73,7 +73,6 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.LandUseModelType
-import com.terraformation.backend.db.default_schema.NativeNonNative
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -83,6 +82,7 @@ import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.UploadId
@@ -2140,7 +2140,7 @@ abstract class DatabaseTest {
       feedback: String? = null,
       id: Any? = null,
       internalComment: String? = null,
-      nativeNonNative: NativeNonNative? = null,
+      speciesNativeCategory: SpeciesNativeCategory? = null,
       modifiedBy: Any = currentUser().userId,
       modifiedTime: Instant = Instant.EPOCH,
       projectId: Any = inserted.projectId,
@@ -2155,7 +2155,7 @@ abstract class DatabaseTest {
             feedback = feedback,
             id = id?.toIdWrapper { ParticipantProjectSpeciesId(it) },
             internalComment = internalComment,
-            nativeNonNativeId = nativeNonNative,
+            speciesNativeCategoryId = speciesNativeCategory,
             modifiedBy = modifiedBy.toIdWrapper { UserId(it) },
             modifiedTime = modifiedTime,
             projectId = projectId.toIdWrapper { ProjectId(it) },

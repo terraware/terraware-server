@@ -11,9 +11,9 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
-import com.terraformation.backend.db.default_schema.NativeNonNative
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -106,7 +106,7 @@ class ParticipantProjectSpeciesController(
               feedback = model.feedback,
               id = model.id,
               internalComment = model.internalComment,
-              nativeNonNative = model.nativeNonNative,
+              speciesNativeCategory = model.speciesNativeCategory,
               projectId = model.projectId,
               rationale = model.rationale,
               speciesId = model.speciesId,
@@ -133,7 +133,7 @@ data class ParticipantProjectSpeciesPayload(
     val feedback: String?,
     val id: ParticipantProjectSpeciesId,
     val internalComment: String?,
-    val nativeNonNative: NativeNonNative?,
+    val speciesNativeCategory: SpeciesNativeCategory?,
     val projectId: ProjectId,
     val rationale: String?,
     val speciesId: SpeciesId,
@@ -147,7 +147,7 @@ data class GetParticipantProjectSpeciesResponsePayload(
 data class UpdateParticipantProjectSpeciesPayload(
     val feedback: String?,
     val internalComment: String?,
-    val nativeNonNative: NativeNonNative?,
+    val speciesNativeCategory: SpeciesNativeCategory?,
     val rationale: String?,
     val submissionStatus: SubmissionStatus,
 ) {
@@ -155,7 +155,7 @@ data class UpdateParticipantProjectSpeciesPayload(
       model.copy(
           feedback = feedback,
           internalComment = internalComment,
-          nativeNonNative = nativeNonNative,
+          speciesNativeCategory = speciesNativeCategory,
           rationale = rationale,
           submissionStatus = submissionStatus)
 }
