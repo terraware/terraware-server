@@ -31,6 +31,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.net.URI
 import java.time.Instant
+import java.time.LocalDate
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -165,6 +166,7 @@ data class ListDeliverablesElement(
     val category: DeliverableCategory,
     @Schema(description = "Optional description of the deliverable in HTML form.")
     val descriptionHtml: String?,
+    val dueDate: LocalDate,
     val id: DeliverableId,
     val name: String,
     @Schema(
@@ -186,6 +188,7 @@ data class ListDeliverablesElement(
   ) : this(
       model.category,
       model.descriptionHtml,
+      model.dueDate,
       model.deliverableId,
       model.name,
       model.documents.size,
