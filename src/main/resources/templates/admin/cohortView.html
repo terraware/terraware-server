@@ -24,6 +24,8 @@
         <th>End Date</th>
         <th></th>
         <th></th>
+        <th>Deliverables</th>
+        <th></th>
     </tr>
     </thead>
 
@@ -37,7 +39,7 @@
                    th:form="|update-${module.moduleId}|"
                    th:value="${module.title}" />
         </td>
-        <td th:text="${moduleNames.get(module.moduleId)}">Module ID and Name</td>
+        <td th:text="${modules.get(module.moduleId).name}">Module ID and Name</td>
         <td>
             <input type="date"
                    name="startDate"
@@ -74,6 +76,23 @@
                        value="Delete" />
             </form>
         </td>
+        <td>
+            <select name="deliverableId" th:form="|deliverables-${module.moduleId}|">
+                <option th:each="deliverable : ${modules.get(module.moduleId).deliverables}"
+                        th:text="|(${deliverable.id}) ${deliverable.name}|"
+                        th:value="${deliverable.id}">
+                    (Deliverable ID) Deliverable Name
+                </option>
+            </select>
+        </td>
+        <td>
+            <form method="POST"
+                  th:id="|deliverables-${module.moduleId}|"
+                  th:action="|/admin/cohorts/${cohort.id}/deliverables|">
+                <input type="submit"
+                       value="View" />
+            </form>
+        </td>
     </tr>
     <tr>
         <td>
@@ -86,9 +105,9 @@
         <td>
             <select name="moduleId"
                     form="add-module">
-                <option th:each="moduleId : ${moduleNames.keySet()}"
+                <option th:each="moduleId : ${modules.keySet()}"
                         th:if="${!cohortModules.contains(moduleId)}"
-                        th:text="${moduleNames.get(moduleId)}"
+                        th:text="${modules.get(moduleId).name}"
                         th:disabled="${!canUpdateCohort}"
                         th:value="${moduleId}">
                     Module Name
@@ -119,6 +138,8 @@
                        value="Add" />
             </form>
         </td>
+        <td></td>
+        <td></td>
     </tr>
     </tbody>
 </table>
