@@ -1,17 +1,22 @@
-package com.terraformation.backend.accelerator.db
+package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.accelerator.ParticipantProjectSpeciesService
+import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesStore
+import com.terraformation.backend.accelerator.db.SubmissionStore
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
+import io.mockk.spyk
+import io.mockk.verify
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -24,12 +29,18 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
 
+  private val submissionStore: SubmissionStore by lazy {
+    spyk(SubmissionStore(clock, dslContext, eventPublisher))
+  }
+
   private val service: ParticipantProjectSpeciesService by lazy {
     ParticipantProjectSpeciesService(
+        clock,
         dslContext,
+        eventPublisher,
         ParticipantProjectSpeciesStore(
-            clock, dslContext, participantProjectSpeciesDao, projectsDao),
-        SubmissionStore(clock, dslContext, eventPublisher))
+            clock, dslContext, eventPublisher, participantProjectSpeciesDao, projectsDao),
+        submissionStore)
   }
 
   @BeforeEach
@@ -40,6 +51,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateParticipantProjectSpecies(any()) } returns true
     every { user.canCreateSubmission(any()) } returns true
     every { user.canReadProject(any()) } returns true
+    every { user.canReadParticipantProjectSpecies(any()) } returns true
     every { user.canReadProjectDeliverables(any()) } returns true
     every { user.canReadSubmission(any()) } returns true
   }
@@ -57,14 +69,15 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
       insertCohortModule(cohortId = cohortId, moduleId = moduleId)
 
-      service.create(
-          NewParticipantProjectSpeciesModel(
-              feedback = "feedback",
-              id = null,
-              modifiedTime = Instant.EPOCH,
-              projectId = projectId,
-              rationale = "rationale",
-              speciesId = speciesId))
+      val existingModel =
+          service.create(
+              NewParticipantProjectSpeciesModel(
+                  feedback = "feedback",
+                  id = null,
+                  modifiedTime = Instant.EPOCH,
+                  projectId = projectId,
+                  rationale = "rationale",
+                  speciesId = speciesId))
 
       val userId = currentUser().userId
       val now = clock.instant
@@ -80,6 +93,24 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId,
                   submissionStatusId = SubmissionStatus.NotSubmitted)),
           submissionsDao.fetchByDeliverableId(deliverableId).map { it.copy(id = null) })
+
+      assertEquals(
+          listOf(
+              ParticipantProjectSpeciesRow(
+                  createdBy = userId,
+                  createdTime = now,
+                  feedback = "feedback",
+                  modifiedBy = userId,
+                  modifiedTime = now,
+                  projectId = projectId,
+                  rationale = "rationale",
+                  speciesId = speciesId,
+                  submissionStatusId = SubmissionStatus.NotSubmitted)),
+          participantProjectSpeciesDao.findAll().map { it.copy(id = null) })
+
+      eventPublisher.assertEventPublished(
+          ParticipantProjectSpeciesAddedEvent(
+              deliverableId = deliverableId, participantProjectSpecies = existingModel))
     }
 
     @Test
@@ -136,7 +167,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
 
-      service.create(setOf(projectId1, projectId2), setOf(speciesId1, speciesId2))
+      val existingModels =
+          service.create(setOf(projectId1, projectId2), setOf(speciesId1, speciesId2))
 
       val userId = currentUser().userId
       val now = clock.instant
@@ -160,6 +192,20 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId2,
                   submissionStatusId = SubmissionStatus.NotSubmitted)),
           submissionsDao.fetchByDeliverableId(deliverableId).map { it.copy(id = null) })
+
+      eventPublisher.assertEventsPublished(
+          existingModels.toSet().map {
+            ParticipantProjectSpeciesAddedEvent(
+                deliverableId = deliverableId, participantProjectSpecies = it)
+          })
+
+      // This test is to ensure that we do not over-fetch deliverable submissions for projects
+      // that have multiple species added to them. This does not test for correct-ness of the
+      // create operations
+      verify(exactly = 1) {
+        submissionStore.fetchActiveSpeciesDeliverableSubmission(projectId1)
+        submissionStore.fetchActiveSpeciesDeliverableSubmission(projectId2)
+      }
     }
   }
 }

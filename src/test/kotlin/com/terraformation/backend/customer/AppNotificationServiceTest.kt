@@ -10,6 +10,8 @@ import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
+import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.auth.currentUser
@@ -68,6 +70,7 @@ import com.terraformation.backend.seedbank.db.ViabilityTestStore
 import com.terraformation.backend.seedbank.db.WithdrawalStore
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.seedbank.model.AccessionModel
+import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
@@ -111,6 +114,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var participantStore: ParticipantStore
   private lateinit var plantingSiteStore: PlantingSiteStore
   private lateinit var projectStore: ProjectStore
+  private lateinit var speciesStore: SpeciesStore
   private lateinit var userStore: UserStore
   private lateinit var service: AppNotificationService
   private lateinit var webAppUrls: WebAppUrls
@@ -165,6 +169,14 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             plantingSubzonesDao,
             plantingZonesDao)
     projectStore = ProjectStore(clock, dslContext, publisher, projectsDao)
+    speciesStore =
+        SpeciesStore(
+            clock,
+            dslContext,
+            speciesDao,
+            speciesEcosystemTypesDao,
+            speciesGrowthFormsDao,
+            speciesProblemsDao)
     userStore =
         UserStore(
             clock,
@@ -194,6 +206,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             participantStore,
             plantingSiteStore,
             projectStore,
+            speciesStore,
             SystemUser(usersDao),
             userStore,
             messages,
@@ -216,12 +229,16 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAutomation(any()) } returns true
     every { user.canReadDevice(any()) } returns true
     every { user.canReadFacility(any()) } returns true
+    every { user.canReadGlobalRoles() } returns true
+    every { user.canReadModule(any()) } returns true
     every { user.canReadModuleEvent(any()) } returns true
     every { user.canReadModuleEventParticipants() } returns true
     every { user.canReadOrganization(organizationId) } returns true
+    every { user.canReadParticipant(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
+    every { user.canReadProject(any()) } returns true
     every { user.canReadProjectModules(any()) } returns true
-    every { user.canReadModule(any()) } returns true
+    every { user.canReadSpecies(any()) } returns true
     every { user.locale } returns Locale.ENGLISH
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
 
@@ -696,6 +713,58 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             deliverableId, projectId, SubmissionStatus.NeedsTranslation, SubmissionStatus.InReview))
 
     assertNotifications(emptyList())
+  }
+
+  @Test
+  fun `should store species added to project notification`() {
+    insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
+    val participantId = insertParticipant()
+    val projectId = insertProject(participantId = participantId)
+    val speciesId = insertSpecies()
+    insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
+    val deliverableId = DeliverableId(1)
+
+    every {
+      messages.participantProjectSpeciesAddedToProject("Participant 1", "Project 1", "Species 1")
+    } returns NotificationMessage("species added title", "species added body")
+
+    service.on(
+        ParticipantProjectSpeciesAddedToProjectNotificationDueEvent(
+            deliverableId, projectId, speciesId))
+
+    assertNotification(
+        type = NotificationType.ParticipantProjectSpeciesAddedToProject,
+        title = "species added title",
+        body = "species added body",
+        localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
+        userId = user.userId,
+        organizationId = null)
+  }
+
+  @Test
+  fun `should store species approved species edited notification`() {
+    insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
+    val participantId = insertParticipant()
+    val projectId = insertProject(participantId = participantId)
+    val speciesId = insertSpecies()
+    insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
+    val deliverableId = DeliverableId(1)
+
+    every {
+      messages.participantProjectSpeciesApprovedSpeciesEdited("Participant 1", "Species 1")
+    } returns NotificationMessage("species edited title", "species edited body")
+
+    service.on(
+        ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
+            deliverableId, projectId, speciesId))
+
+    assertNotification(
+        type = NotificationType.ParticipantProjectSpeciesApprovedSpeciesEdited,
+        title = "species edited title",
+        body = "species edited body",
+        localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
+        userId = user.userId,
+        organizationId = null)
   }
 
   @Test
