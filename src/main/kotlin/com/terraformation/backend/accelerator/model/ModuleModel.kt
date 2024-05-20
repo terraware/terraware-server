@@ -14,6 +14,7 @@ data class ModuleModel(
     val phase: CohortPhase,
     val additionalResources: String? = null,
     val cohorts: List<CohortModuleModel> = emptyList(),
+    val deliverables: List<ModuleDeliverableModel> = emptyList(),
     val eventDescriptions: Map<EventType, String> = emptyMap(),
     val eventSessions: Map<EventType, List<EventModel>> = emptyMap(),
     val overview: String? = null,
@@ -22,18 +23,25 @@ data class ModuleModel(
   companion object {
     fun of(
         record: Record,
+        deliverablesField: Field<List<ModuleDeliverableModel>>,
         eventsField: Field<Map<EventType, List<EventModel>>>,
         cohortsField: Field<List<CohortModuleModel>>,
     ): ModuleModel {
-      return of(record, { it[eventsField] ?: emptyMap() }, { it[cohortsField] ?: emptyList() })
+      return of(
+          record,
+          { it[deliverablesField] ?: emptyList() },
+          { it[eventsField] ?: emptyMap() },
+          { it[cohortsField] ?: emptyList() })
     }
 
     fun of(
         record: Record,
+        deliverablesField: Field<List<ModuleDeliverableModel>>,
         eventsField: Field<Map<EventType, List<EventModel>>>,
     ): ModuleModel {
       return of(
           record,
+          { it[deliverablesField] ?: emptyList() },
           { it[eventsField] ?: emptyMap() },
           {
             listOf(
@@ -49,6 +57,7 @@ data class ModuleModel(
 
     private fun of(
         record: Record,
+        getDeliverables: (Record) -> List<ModuleDeliverableModel>,
         getEvents: (Record) -> Map<EventType, List<EventModel>>,
         getCohorts: (Record) -> List<CohortModuleModel>,
     ): ModuleModel {
@@ -58,6 +67,7 @@ data class ModuleModel(
           phase = record[MODULES.PHASE_ID]!!,
           additionalResources = record[MODULES.ADDITIONAL_RESOURCES],
           cohorts = getCohorts(record),
+          deliverables = getDeliverables(record),
           eventDescriptions =
               listOfNotNull(
                       record[MODULES.LIVE_SESSION_DESCRIPTION]?.let { EventType.LiveSession to it },
