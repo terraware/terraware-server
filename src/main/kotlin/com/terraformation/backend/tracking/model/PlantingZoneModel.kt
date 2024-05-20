@@ -11,11 +11,9 @@ import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
-import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
-import org.locationtech.jts.geom.PrecisionModel
 
 data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>(
     val areaHa: BigDecimal,
@@ -211,15 +209,13 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
       exclusion: MultiPolygon? = null,
       searchBoundary: MultiPolygon = this.boundary,
   ): List<Polygon> {
-    val factory = GeometryFactory(PrecisionModel(), searchBoundary.srid)
-
     // For purposes of checking whether or not a particular grid position is available, we treat
     // existing permanent plots as part of the exclusion area.
     var exclusionWithAllocatedSquares =
         getMonitoringPlotExclusions(excludeAllPermanentPlots, excludePlotIds)
     if (exclusion != null) {
       exclusionWithAllocatedSquares =
-          exclusionWithAllocatedSquares?.union(exclusion)?.toMultiPolygon(factory) ?: exclusion
+          exclusionWithAllocatedSquares?.union(exclusion)?.toMultiPolygon() ?: exclusion
     }
 
     return (1..count).mapNotNull { squareNumber ->
@@ -228,12 +224,12 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
 
       if (square != null && squareNumber < count) {
         // Prevent this square from being selected again by excluding an area in the middle of it.
-        val additionalExclusion = middleTriangle(square, factory)
+        val additionalExclusion = middleTriangle(square)
 
         val newCombinedExclusion =
             exclusionWithAllocatedSquares?.union(additionalExclusion) ?: additionalExclusion
 
-        exclusionWithAllocatedSquares = newCombinedExclusion.toMultiPolygon(factory)
+        exclusionWithAllocatedSquares = newCombinedExclusion.toMultiPolygon()
       }
 
       square
@@ -245,12 +241,12 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
    * prevent the square from being selected. Adding the entire square might cause adjoining squares
    * to also be counted as excluded due to rounding errors.
    */
-  private fun middleTriangle(square: Polygon, factory: GeometryFactory): Polygon {
+  private fun middleTriangle(square: Polygon): Polygon {
     val width = (square.coordinates[2].x - square.coordinates[0].x) / 8.0
     val height = (square.coordinates[2].y - square.coordinates[0].y) / 8.0
     val middle = square.centroid
 
-    return factory.createPolygon(
+    return square.factory.createPolygon(
         arrayOf(
             middle.coordinate,
             Coordinate(middle.x + width, middle.y),
@@ -355,8 +351,6 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
       includeAll: Boolean = false,
       excludePlotIds: Set<MonitoringPlotId>,
   ): MultiPolygon? {
-    val factory = GeometryFactory(PrecisionModel(), boundary.srid)
-
     val relevantPlots =
         plantingSubzones
             .flatMap { it.monitoringPlots }
@@ -373,9 +367,9 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
 
     return relevantPlots
         .map { it.boundary }
-        .map { middleTriangle(it, factory) }
+        .map { middleTriangle(it) }
         .reduce { acc: Geometry, polygon: Geometry -> acc.union(polygon) }
-        .toMultiPolygon(factory)
+        .toMultiPolygon()
   }
 
   fun equals(other: Any?, tolerance: Double): Boolean {

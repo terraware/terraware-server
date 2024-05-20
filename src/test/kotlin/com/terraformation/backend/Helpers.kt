@@ -72,8 +72,7 @@ fun polygon(scale: Number): Polygon {
 
 /** Wraps a Polygon in a MultiPolygon. */
 fun multiPolygon(polygon: Polygon): MultiPolygon {
-  val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
-  return geometryFactory.createMultiPolygon(arrayOf(polygon))
+  return polygon.factory.createMultiPolygon(arrayOf(polygon))
 }
 
 /** Creates a simple rectangular MultiPolygon. */

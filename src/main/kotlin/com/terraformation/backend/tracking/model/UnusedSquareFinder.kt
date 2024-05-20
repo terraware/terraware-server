@@ -12,11 +12,9 @@ import org.geotools.referencing.CRS
 import org.geotools.referencing.GeodeticCalculator
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
-import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
-import org.locationtech.jts.geom.PrecisionModel
 
 /** Finds an unused grid-aligned square within a zone boundary. */
 class UnusedSquareFinder(
@@ -26,7 +24,7 @@ class UnusedSquareFinder(
     /** Areas to exclude from the zone, or null if the whole zone is available. */
     exclusion: MultiPolygon? = null,
 ) {
-  private val geometryFactory = GeometryFactory(PrecisionModel())
+  private val geometryFactory = zoneBoundary.factory
   private val boundaryCrs = CRS.decode("EPSG:${zoneBoundary.srid}", true)
   private val calculator = GeodeticCalculator(boundaryCrs)
   private val gridInterval: Double = sizeMeters.toDouble()

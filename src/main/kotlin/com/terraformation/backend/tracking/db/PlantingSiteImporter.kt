@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.log.perClassLogger
@@ -15,10 +14,8 @@ import com.terraformation.backend.tracking.model.ShapefileFeature
 import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
 import java.math.BigDecimal
-import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
-import org.locationtech.jts.geom.PrecisionModel
 
 @Named
 class PlantingSiteImporter(
@@ -169,7 +166,9 @@ class PlantingSiteImporter(
               }
             }
 
-    return GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+    return exclusionsFile.features[0]
+        .geometry
+        .factory
         .createMultiPolygon(allPolygons.toTypedArray())
   }
 

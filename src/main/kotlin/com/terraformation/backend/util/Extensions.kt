@@ -26,7 +26,6 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
-import org.locationtech.jts.geom.PrecisionModel
 import org.locationtech.jts.geom.util.GeometryFixer
 
 // One-off extension functions for third-party classes. Extensions that are only useful in the
@@ -132,9 +131,7 @@ fun GeometryFactory.createRectangle(
  * Returns a MultiPolygon version of a polygonal geometry. If the geometry is already a
  * MultiPolygon, returns it as-is.
  */
-fun Geometry.toMultiPolygon(
-    factory: GeometryFactory = GeometryFactory(PrecisionModel(), srid)
-): MultiPolygon {
+fun Geometry.toMultiPolygon(): MultiPolygon {
   return when (this) {
     is MultiPolygon -> this
     is Polygon -> factory.createMultiPolygon(arrayOf(this))

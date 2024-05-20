@@ -83,11 +83,9 @@ import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
 import org.jooq.impl.DSL
-import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
-import org.locationtech.jts.geom.PrecisionModel
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
@@ -265,8 +263,7 @@ class PlantingSiteStore(
     // southwest corner of the envelope (bounding box) of the site boundary.
     val gridOrigin =
         if (newModel.boundary != null) {
-          GeometryFactory(PrecisionModel(), newModel.boundary.srid)
-              .createPoint(newModel.boundary.envelope.coordinates[0])
+          newModel.boundary.factory.createPoint(newModel.boundary.envelope.coordinates[0])
         } else {
           null
         }
@@ -1034,7 +1031,7 @@ class PlantingSiteStore(
       throw IllegalStateException("Planting site ${plantingSite.id} has no grid origin")
     }
 
-    val geometryFactory = GeometryFactory(PrecisionModel(), plantingSite.gridOrigin.srid)
+    val geometryFactory = plantingSite.gridOrigin.factory
 
     // List of [boundary, cluster number]
     val clusterBoundaries: List<Pair<Polygon, Int>> =
