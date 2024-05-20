@@ -324,6 +324,10 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
                 "zone $name")
       }
 
+      if (newModel.exclusion != null && subzone.boundary.nearlyCoveredBy(newModel.exclusion)) {
+        problems.add("Subzone ${subzone.name} in zone $name is inside exclusion area")
+      }
+
       plantingSubzones.drop(index + 1).forEach { otherSubzone ->
         val overlapPercent = subzone.boundary.coveragePercent(otherSubzone.boundary)
         if (overlapPercent > PlantingSiteModel.REGION_OVERLAP_MAX_PERCENT) {
