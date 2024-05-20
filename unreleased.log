@@ -1,3 +1,4 @@
+8589cd1860a Return deliverables not including submissions as part of module store (#1964)
 71af6daaf54 Added moduleId filter to deliverable submissions (#1963)
 857e8f3bc25 SW-5402 Added DeliverableDueDateStore (#1962)
 ce51d3cd3ab Use zone and subzone models in edits (#1956)
