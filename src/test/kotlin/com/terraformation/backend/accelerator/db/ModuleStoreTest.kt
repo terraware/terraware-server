@@ -610,6 +610,8 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns associated deliverables with details ordered by position`() {
       val moduleId = insertModule()
+      val hiddenModuleId = insertModule(name = "Hidden Module")
+
       val deliverable1 =
           insertDeliverable(
               deliverableCategoryId = DeliverableCategory.Compliance,
@@ -631,6 +633,17 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
               moduleId = moduleId,
               name = "Species name",
               position = 1)
+
+      val hiddenDeliverable =
+          insertDeliverable(
+              deliverableCategoryId = DeliverableCategory.GIS,
+              deliverableTypeId = DeliverableType.Document,
+              descriptionHtml = "Hidden description",
+              isSensitive = false,
+              isRequired = false,
+              moduleId = hiddenModuleId,
+              name = "Hidden name",
+              position = 3)
 
       val model1 =
           ModuleDeliverableModel(
@@ -658,16 +671,29 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
               type = DeliverableType.Species,
           )
 
+      val hiddenModel =
+          ModuleDeliverableModel(
+              id = hiddenDeliverable,
+              category = DeliverableCategory.GIS,
+              descriptionHtml = "Hidden description",
+              moduleId = hiddenModuleId,
+              name = "Hidden name",
+              position = 3,
+              required = false,
+              sensitive = false,
+              type = DeliverableType.Document,
+          )
+
       assertEquals(
-          listOf(model2, model1),
-          store.fetchAllModules().firstOrNull()?.deliverables,
+          listOf(model2, model1, hiddenModel),
+          store.fetchAllModules().flatMap { it.deliverables },
           "Fetch all with deliverables")
 
       insertCohortModule(cohortId, moduleId)
 
       assertEquals(
           listOf(model2, model1),
-          store.fetchModulesForProject(projectId).firstOrNull()?.deliverables,
+          store.fetchModulesForProject(projectId).flatMap { it.deliverables },
           "Fetch by project with deliverables")
     }
   }
