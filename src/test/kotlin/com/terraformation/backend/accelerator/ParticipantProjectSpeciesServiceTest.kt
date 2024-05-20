@@ -16,6 +16,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.spyk
+import io.mockk.verify
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -198,7 +199,10 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                 deliverableId = deliverableId, participantProjectSpecies = it)
           })
 
-      io.mockk.verify(exactly = 1) {
+      // This test is to ensure that we do not over-fetch deliverable submissions for projects
+      // that have multiple species added to them. This does not test for correct-ness of the
+      // create operations
+      verify(exactly = 1) {
         submissionStore.fetchActiveSpeciesDeliverableSubmission(projectId1)
         submissionStore.fetchActiveSpeciesDeliverableSubmission(projectId2)
       }

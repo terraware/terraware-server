@@ -57,10 +57,8 @@ class ParticipantProjectSpeciesService(
       val projectDeliverableIds = mutableMapOf<ProjectId, DeliverableId>()
 
       existingModels.forEach { participantProjectSpecies ->
-        if (projectDeliverableIds.contains(participantProjectSpecies.projectId)) {
-          publishEditEvent(
-              projectDeliverableIds[participantProjectSpecies.projectId]!!,
-              participantProjectSpecies)
+        projectDeliverableIds[participantProjectSpecies.projectId]?.let {
+          publishAddedEvent(it, participantProjectSpecies)
           return@forEach
         }
 
@@ -75,7 +73,7 @@ class ParticipantProjectSpeciesService(
 
         projectDeliverableIds[participantProjectSpecies.projectId] =
             deliverableSubmission.deliverableId
-        publishEditEvent(
+        publishAddedEvent(
             projectDeliverableIds[participantProjectSpecies.projectId]!!, participantProjectSpecies)
       }
 
@@ -83,7 +81,7 @@ class ParticipantProjectSpeciesService(
     }
   }
 
-  private fun publishEditEvent(
+  private fun publishAddedEvent(
       deliverableId: DeliverableId,
       participantProjectSpecies: ExistingParticipantProjectSpeciesModel
   ) {
