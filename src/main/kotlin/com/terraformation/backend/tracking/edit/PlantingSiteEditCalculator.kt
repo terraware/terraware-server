@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.edit
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.AnyPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.AnyPlantingZoneModel
@@ -20,6 +21,7 @@ import org.locationtech.jts.geom.MultiPolygon
 class PlantingSiteEditCalculator(
     private val existingSite: ExistingPlantingSiteModel,
     private val desiredSite: AnyPlantingSiteModel,
+    private val plantedSubzoneIds: Set<PlantingSubzoneId>,
 ) {
   private val problems = mutableListOf<PlantingSiteEditProblem>()
 
@@ -28,7 +30,12 @@ class PlantingSiteEditCalculator(
       throw IllegalArgumentException("Cannot remove map from site")
     }
 
-    val zoneEdits = calculateZoneEdits()
+    val zoneEdits =
+        if (plantedSubzoneIds.isEmpty()) {
+          calculateZoneEditsForUnplantedSite()
+        } else {
+          calculateZoneEdits()
+        }
 
     return PlantingSiteEdit(
         areaHaDifference = calculateAreaHaDifference(existingSite.boundary, desiredSite.boundary),
@@ -76,6 +83,18 @@ class PlantingSiteEditCalculator(
 
     val deleteEdits =
         existingSite.plantingZones.toSet().minus(existingZonesInUse).map { existingZone ->
+          val plantingSubzoneEdits =
+              existingZone.plantingSubzones.map { existingSubzone ->
+                PlantingSubzoneEdit.Delete(
+                    areaHaDifference = existingSubzone.areaHa.negate(),
+                    oldName = existingSubzone.name,
+                    plantingSubzoneId = existingSubzone.id,
+                    removedRegion = existingSubzone.boundary,
+                )
+              }
+
+          checkPlantedSubzoneDeletions(existingZone, plantingSubzoneEdits)
+
           PlantingZoneEdit.Delete(
               areaHaDifference = existingZone.areaHa.negate(),
               monitoringPlotsRemoved =
@@ -84,15 +103,7 @@ class PlantingSiteEditCalculator(
                       .toSet(),
               oldName = existingZone.name,
               plantingZoneId = existingZone.id,
-              plantingSubzoneEdits =
-                  existingZone.plantingSubzones.map { existingSubzone ->
-                    PlantingSubzoneEdit.Delete(
-                        areaHaDifference = existingSubzone.areaHa.negate(),
-                        oldName = existingSubzone.name,
-                        plantingSubzoneId = existingSubzone.id,
-                        removedRegion = existingSubzone.boundary,
-                    )
-                  },
+              plantingSubzoneEdits = plantingSubzoneEdits,
               removedRegion = existingZone.boundary,
           )
         }
@@ -172,7 +183,7 @@ class PlantingSiteEditCalculator(
               }
             }
 
-    return createEdits + deleteEdits + updateEdits
+    return deleteEdits + createEdits + updateEdits
   }
 
   private fun calculateSubzoneEdits(
@@ -251,7 +262,71 @@ class PlantingSiteEditCalculator(
               }
             }
 
-    return createEdits + deleteEdits + updateEdits
+    checkPlantedSubzoneDeletions(existingZone, deleteEdits)
+
+    return deleteEdits + createEdits + updateEdits
+  }
+
+  /**
+   * If a site has no plants, we allow unrestricted editing of its map. This is modeled as deletion
+   * of all its existing zones and subzones and creation of all the desired ones, with none of the
+   * validation checks for things like changes to borders between zones.
+   */
+  private fun calculateZoneEditsForUnplantedSite(): List<PlantingZoneEdit> {
+    val deletions =
+        existingSite.plantingZones.map { existingZone ->
+          PlantingZoneEdit.Delete(
+              areaHaDifference = existingZone.areaHa.negate(),
+              monitoringPlotsRemoved = emptySet(),
+              oldName = existingZone.name,
+              plantingZoneId = existingZone.id,
+              plantingSubzoneEdits =
+                  existingZone.plantingSubzones.map { existingSubzone ->
+                    PlantingSubzoneEdit.Delete(
+                        areaHaDifference = existingSubzone.areaHa.negate(),
+                        oldName = existingSubzone.name,
+                        plantingSubzoneId = existingSubzone.id,
+                        removedRegion = existingSubzone.boundary,
+                    )
+                  },
+              removedRegion = existingZone.boundary,
+          )
+        }
+
+    val creations =
+        desiredSite.plantingZones.map { desiredZone ->
+          PlantingZoneEdit.Create(
+              addedRegion = desiredZone.boundary,
+              areaHaDifference = desiredZone.areaHa,
+              boundary = desiredZone.boundary,
+              newName = desiredZone.name,
+              numPermanentClustersToAdd = 0,
+              plantingSubzoneEdits =
+                  desiredZone.plantingSubzones.map { desiredSubzone ->
+                    PlantingSubzoneEdit.Create(
+                        addedRegion = desiredSubzone.boundary,
+                        boundary = desiredSubzone.boundary,
+                        areaHaDifference = desiredSubzone.areaHa,
+                        newName = desiredSubzone.name,
+                    )
+                  })
+        }
+
+    return deletions + creations
+  }
+
+  private fun checkPlantedSubzoneDeletions(
+      plantingZone: AnyPlantingZoneModel,
+      subzoneEdits: Collection<PlantingSubzoneEdit>
+  ) {
+    subzoneEdits.forEach { subzoneEdit ->
+      if (subzoneEdit is PlantingSubzoneEdit.Delete &&
+          subzoneEdit.plantingSubzoneId in plantedSubzoneIds) {
+        problems.add(
+            PlantingSiteEditProblem.CannotRemovePlantedSubzone(
+                subzoneEdit.oldName, plantingZone.name))
+      }
+    }
   }
 
   private fun findExistingZone(desiredZone: AnyPlantingZoneModel): ExistingPlantingZoneModel? {
