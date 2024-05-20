@@ -8,7 +8,6 @@ import com.terraformation.backend.tracking.model.AnyPlantingZoneModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
-import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.coveragePercent
 import com.terraformation.backend.util.toMultiPolygon
@@ -38,6 +37,7 @@ class PlantingSiteEditCalculator(
         }
 
     return PlantingSiteEdit(
+        areaHa = desiredSite.boundary.calculateAreaHectares(),
         areaHaDifference = calculateAreaHaDifference(existingSite.boundary, desiredSite.boundary),
         boundary = desiredSite.boundary,
         exclusion = desiredSite.exclusion,
@@ -65,11 +65,7 @@ class PlantingSiteEditCalculator(
             .keys
             .map { newZone ->
               PlantingZoneEdit.Create(
-                  addedRegion = newZone.boundary,
-                  areaHaDifference = newZone.areaHa,
-                  boundary = newZone.boundary,
-                  newName = newZone.name,
-                  numPermanentClustersToAdd = PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS,
+                  desiredModel = newZone,
                   plantingSubzoneEdits =
                       newZone.plantingSubzones.map { newSubzone ->
                         PlantingSubzoneEdit.Create(newSubzone)
@@ -86,15 +82,12 @@ class PlantingSiteEditCalculator(
           checkPlantedSubzoneDeletions(existingZone, plantingSubzoneEdits)
 
           PlantingZoneEdit.Delete(
-              areaHaDifference = existingZone.areaHa.negate(),
+              existingModel = existingZone,
               monitoringPlotsRemoved =
                   existingZone.plantingSubzones
                       .flatMap { it.monitoringPlots.map { plot -> plot.id } }
                       .toSet(),
-              oldName = existingZone.name,
-              plantingZoneId = existingZone.id,
               plantingSubzoneEdits = plantingSubzoneEdits,
-              removedRegion = existingZone.boundary,
           )
         }
 
@@ -161,12 +154,10 @@ class PlantingSiteEditCalculator(
                 PlantingZoneEdit.Update(
                     addedRegion = addedRegion,
                     areaHaDifference = areaHaDifference,
-                    boundary = desiredZone.boundary,
+                    desiredModel = desiredZone,
+                    existingModel = existingZone,
                     monitoringPlotsRemoved = monitoringPlotsRemoved,
-                    newName = desiredZone.name,
                     numPermanentClustersToAdd = newClustersThatFitInAddedRegion,
-                    oldName = existingZone.name,
-                    plantingZoneId = existingZone.id,
                     plantingSubzoneEdits = subzoneEdits,
                     removedRegion = removedRegion,
                 )
@@ -228,10 +219,8 @@ class PlantingSiteEditCalculator(
                     areaHaDifference =
                         calculateAreaHaDifference(
                             existingSubzone.boundary, desiredSubzone.boundary),
-                    boundary = desiredSubzone.boundary,
-                    oldName = existingSubzone.name,
-                    newName = desiredSubzone.name,
-                    plantingSubzoneId = existingSubzone.id,
+                    desiredModel = desiredSubzone,
+                    existingModel = existingSubzone,
                     removedRegion =
                         existingUsableBoundary
                             .difference(desiredUsableBoundary)
@@ -254,26 +243,19 @@ class PlantingSiteEditCalculator(
     val deletions =
         existingSite.plantingZones.map { existingZone ->
           PlantingZoneEdit.Delete(
-              areaHaDifference = existingZone.areaHa.negate(),
+              existingModel = existingZone,
               monitoringPlotsRemoved = emptySet(),
-              oldName = existingZone.name,
-              plantingZoneId = existingZone.id,
               plantingSubzoneEdits =
                   existingZone.plantingSubzones.map { existingSubzone ->
                     PlantingSubzoneEdit.Delete(existingSubzone)
                   },
-              removedRegion = existingZone.boundary,
           )
         }
 
     val creations =
         desiredSite.plantingZones.map { desiredZone ->
           PlantingZoneEdit.Create(
-              addedRegion = desiredZone.boundary,
-              areaHaDifference = desiredZone.areaHa,
-              boundary = desiredZone.boundary,
-              newName = desiredZone.name,
-              numPermanentClustersToAdd = 0,
+              desiredModel = desiredZone,
               plantingSubzoneEdits =
                   desiredZone.plantingSubzones.map { desiredSubzone ->
                     PlantingSubzoneEdit.Create(desiredSubzone)
@@ -289,10 +271,10 @@ class PlantingSiteEditCalculator(
   ) {
     subzoneEdits.forEach { subzoneEdit ->
       if (subzoneEdit is PlantingSubzoneEdit.Delete &&
-          subzoneEdit.plantingSubzoneId in plantedSubzoneIds) {
+          subzoneEdit.existingModel.id in plantedSubzoneIds) {
         problems.add(
             PlantingSiteEditProblem.CannotRemovePlantedSubzone(
-                subzoneEdit.oldName, plantingZone.name))
+                subzoneEdit.existingModel.name, plantingZone.name))
       }
     }
   }

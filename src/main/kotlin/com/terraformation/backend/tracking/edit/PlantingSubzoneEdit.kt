@@ -1,6 +1,5 @@
 package com.terraformation.backend.tracking.edit
 
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.tracking.model.AnyPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
 import com.terraformation.backend.util.equalsIgnoreScale
@@ -14,7 +13,7 @@ import org.locationtech.jts.geom.MultiPolygon
  * in existing zones or in newly-added zones), can be missing existing subzones, or can have changes
  * to existing subzones; these are modeled as create, delete, and update operations.
  */
-interface PlantingSubzoneEdit {
+sealed interface PlantingSubzoneEdit {
   /**
    * Usable region that is being added to this subzone. Does not include any areas that are covered
    * by the updated site's exclusion areas.
@@ -29,20 +28,11 @@ interface PlantingSubzoneEdit {
    */
   val areaHaDifference: BigDecimal
 
-  /**
-   * New subzone boundary, or null if the subzone is being removed. May intersect with the updated
-   * site's exclusion areas.
-   */
-  val boundary: MultiPolygon?
+  /** Desired subzone model, or null if the subzone is being removed. */
+  val desiredModel: AnyPlantingSubzoneModel?
 
-  /** New subzone name, or null if the subzone is being removed. May be the same as the old name. */
-  val newName: String?
-
-  /** Old subzone name, or null if the subzone is being newly created. */
-  val oldName: String?
-
-  /** The subzone's ID if it already exists, or null if it is being newly created. */
-  val plantingSubzoneId: PlantingSubzoneId?
+  /** Existing subzone model, or null if the subzone is being created. */
+  val existingModel: ExistingPlantingSubzoneModel?
 
   /**
    * Usable region that is being removed from this subzone. Does not include any areas that are
@@ -54,26 +44,20 @@ interface PlantingSubzoneEdit {
       javaClass == other.javaClass &&
           addedRegion.equalsOrBothNull(other.addedRegion, tolerance) &&
           areaHaDifference.equalsIgnoreScale(other.areaHaDifference) &&
-          boundary.equalsOrBothNull(other.boundary, tolerance) &&
-          newName == other.newName &&
-          oldName == other.oldName &&
-          plantingSubzoneId == other.plantingSubzoneId &&
+          desiredModel == other.desiredModel &&
+          existingModel == other.existingModel &&
           removedRegion.equalsOrBothNull(other.removedRegion, tolerance)
 
   data class Create(
-      override val addedRegion: MultiPolygon,
-      override val boundary: MultiPolygon,
-      override val areaHaDifference: BigDecimal,
-      override val newName: String,
+      override val desiredModel: AnyPlantingSubzoneModel,
   ) : PlantingSubzoneEdit {
-    constructor(
-        model: AnyPlantingSubzoneModel
-    ) : this(model.boundary, model.boundary, model.areaHa, model.name)
+    override val addedRegion: MultiPolygon
+      get() = desiredModel.boundary
 
-    override val oldName: String?
-      get() = null
+    override val areaHaDifference: BigDecimal
+      get() = desiredModel.areaHa
 
-    override val plantingSubzoneId: PlantingSubzoneId?
+    override val existingModel: ExistingPlantingSubzoneModel?
       get() = null
 
     override val removedRegion: MultiPolygon?
@@ -81,32 +65,26 @@ interface PlantingSubzoneEdit {
   }
 
   data class Delete(
-      override val areaHaDifference: BigDecimal,
-      override val oldName: String,
-      override val plantingSubzoneId: PlantingSubzoneId,
-      override val removedRegion: MultiPolygon,
+      override val existingModel: ExistingPlantingSubzoneModel,
   ) : PlantingSubzoneEdit {
-    constructor(
-        model: ExistingPlantingSubzoneModel
-    ) : this(model.areaHa.negate(), model.name, model.id, model.boundary)
-
     override val addedRegion: MultiPolygon?
       get() = null
 
-    override val boundary: MultiPolygon?
+    override val areaHaDifference: BigDecimal
+      get() = existingModel.areaHa.negate()
+
+    override val desiredModel: AnyPlantingSubzoneModel?
       get() = null
 
-    override val newName: String?
-      get() = null
+    override val removedRegion: MultiPolygon
+      get() = existingModel.boundary
   }
 
   data class Update(
       override val addedRegion: MultiPolygon,
       override val areaHaDifference: BigDecimal,
-      override val boundary: MultiPolygon,
-      override val newName: String,
-      override val oldName: String,
-      override val plantingSubzoneId: PlantingSubzoneId,
+      override val desiredModel: AnyPlantingSubzoneModel,
+      override val existingModel: ExistingPlantingSubzoneModel,
       override val removedRegion: MultiPolygon,
   ) : PlantingSubzoneEdit
 }

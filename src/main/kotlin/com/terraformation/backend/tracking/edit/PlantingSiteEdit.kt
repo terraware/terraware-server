@@ -16,6 +16,9 @@ import org.locationtech.jts.geom.MultiPolygon
  * be applied to the site.
  */
 data class PlantingSiteEdit(
+    /** Usable area in the new version of the site. */
+    val areaHa: BigDecimal,
+
     /**
      * Difference in usable area between the old version of the site (if any) and the new one. A
      * positive value means the site has grown; a negative value means it has shrunk. Note that it
@@ -44,6 +47,7 @@ data class PlantingSiteEdit(
 ) {
   fun equalsExact(other: PlantingSiteEdit, tolerance: Double = 0.0000001): Boolean =
       javaClass == other.javaClass &&
+          areaHa.equalsIgnoreScale(other.areaHa) &&
           areaHaDifference.equalsIgnoreScale(other.areaHaDifference) &&
           boundary.equalsOrBothNull(other.boundary, tolerance) &&
           exclusion.equalsOrBothNull(other.exclusion, tolerance) &&
