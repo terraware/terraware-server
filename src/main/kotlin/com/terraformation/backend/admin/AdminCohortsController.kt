@@ -201,6 +201,7 @@ class AdminCohortsController(
               .fetchDeliverableDueDates(cohortId = cohortId, deliverableId = deliverableId)
               .firstOrNull()
         } catch (e: Exception) {
+          log.warn("Fetch deliverable due dates failed", e)
           redirectAttributes.failureMessage = "Error looking up deliverable due date: ${e.message}"
           return redirectToCohort(cohortId)
         }
@@ -230,13 +231,13 @@ class AdminCohortsController(
             .filter { cohortProjects.contains(it.projectId) }
             .sortedBy { it.projectId.value }
 
+    model.addAttribute("canManageDeliverables", currentUser().canManageDeliverables())
     model.addAttribute("cohort", cohort)
     model.addAttribute("cohortModule", cohortModule)
     model.addAttribute("deliverable", deliverable)
     model.addAttribute("dueDates", dueDateModel)
     model.addAttribute("module", module)
     model.addAttribute("submissions", submissions)
-    model.addAttribute("canManageDeliverables", currentUser().canManageDeliverables())
 
     return "/admin/cohortDeliverable"
   }
@@ -259,19 +260,30 @@ class AdminCohortsController(
           return redirectToCohortDeliverable(cohortId, deliverableId)
         }
 
-        if (projectId != null) {
-          deliverableDueDateStore.upsertDeliverableProjectDueDate(deliverableId, projectId, dueDate)
-        } else {
-          deliverableDueDateStore.upsertDeliverableCohortDueDate(deliverableId, cohortId, dueDate)
+        try {
+          if (projectId != null) {
+            deliverableDueDateStore.upsertDeliverableProjectDueDate(
+                deliverableId, projectId, dueDate)
+          } else {
+            deliverableDueDateStore.upsertDeliverableCohortDueDate(deliverableId, cohortId, dueDate)
+          }
+        } catch (e: Exception) {
+          log.warn("Upsert deliverable due date failed", e)
+          redirectAttributes.failureMessage = "Error updating deliverable due date: ${e.message}"
         }
 
         redirectAttributes.successMessage = "Successfully updated due date."
       }
       "remove" -> {
-        if (projectId != null) {
-          deliverableDueDateStore.deleteDeliverableProjectDueDate(deliverableId, projectId)
-        } else {
-          deliverableDueDateStore.deleteDeliverableCohortDueDate(deliverableId, cohortId)
+        try {
+          if (projectId != null) {
+            deliverableDueDateStore.deleteDeliverableProjectDueDate(deliverableId, projectId)
+          } else {
+            deliverableDueDateStore.deleteDeliverableCohortDueDate(deliverableId, cohortId)
+          }
+        } catch (e: Exception) {
+          log.warn("Delete deliverable due date failed", e)
+          redirectAttributes.failureMessage = "Error deleting deliverable due date: ${e.message}"
         }
 
         redirectAttributes.successMessage = "Successfully deleted due date."
