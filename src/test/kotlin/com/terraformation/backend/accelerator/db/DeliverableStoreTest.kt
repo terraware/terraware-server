@@ -189,6 +189,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               dueDate = LocalDate.of(2024, 1, 2),
               feedback = "feedback",
               internalComment = "comment",
+              moduleId = moduleId1,
               name = "Deliverable 1",
               organizationId = organizationId1,
               organizationName = "Organization 1",
@@ -216,6 +217,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               deliverableId = deliverableId3,
               descriptionHtml = null,
               dueDate = LocalDate.of(2024, 2, 2),
+              moduleId = moduleId2,
               name = "Deliverable 3",
               templateUrl = URI("https://example.com/"),
           )
@@ -337,6 +339,46 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           listOf(deliverable1Project3),
           store.fetchDeliverableSubmissions(projectId = projectId3, deliverableId = deliverableId1),
           "Single deliverable with no submissions for project 3")
+
+      assertEquals(
+          listOf(
+              deliverable1Project1,
+              deliverable1Project2,
+              deliverable1Project3,
+              deliverable2Project1,
+              deliverable2Project2,
+              deliverable2Project3,
+          ),
+          store.fetchDeliverableSubmissions(moduleId = moduleId1),
+          "All deliverables by module")
+
+      assertEquals(
+          listOf(
+              deliverable1Project1,
+              deliverable1Project2,
+              deliverable2Project1,
+              deliverable2Project2),
+          store.fetchDeliverableSubmissions(organizationId = organizationId1, moduleId = moduleId1),
+          "Deliverables by module for organization 1")
+
+      assertEquals(
+          listOf(
+              deliverable1Project1,
+              deliverable1Project3,
+              deliverable2Project1,
+              deliverable2Project3),
+          store.fetchDeliverableSubmissions(participantId = participantId1, moduleId = moduleId1),
+          "Deliverables by module for participant 1")
+
+      assertEquals(
+          listOf(deliverable1Project1, deliverable2Project1),
+          store.fetchDeliverableSubmissions(projectId = projectId1, moduleId = moduleId1),
+          "Deliverables by module for project 1")
+
+      assertEquals(
+          emptyList<DeliverableSubmissionModel>(),
+          store.fetchDeliverableSubmissions(moduleId = moduleId1, deliverableId = deliverableId3),
+          "Empty result for single deliverable not in module")
     }
 
     @Test
