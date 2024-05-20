@@ -1255,7 +1255,7 @@
 <text text-anchor="start" x="455" y="-116.143" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
 <polygon fill="#ffffff" stroke="none" points="512,-109.943 512,-127.943 579,-127.943 579,-109.943 512,-109.943"/>
 <polygon fill="none" stroke="black" points="512,-109.943 512,-127.943 579,-127.943 579,-109.943 512,-109.943"/>
-<text text-anchor="start" x="533" y="-116.143" font-family="Helvetica,sans-Serif" font-size="11.00">20 rows</text>
+<text text-anchor="start" x="533" y="-116.143" font-family="Helvetica,sans-Serif" font-size="11.00">22 rows</text>
 <polygon fill="#ffffff" stroke="none" points="579,-109.943 579,-127.943 621,-127.943 621,-109.943 579,-109.943"/>
 <polygon fill="none" stroke="black" points="579,-109.943 579,-127.943 621,-127.943 621,-109.943 579,-109.943"/>
 <text text-anchor="start" x="601" y="-116.143" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>

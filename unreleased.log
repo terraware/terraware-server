@@ -1,3 +1,4 @@
+68802fb215a Send notifications when project species are added or edited (#1951)
 94140f0bf20 Update database dependencies (#1959)
 fe484437e5d Update JamesIves/github-pages-deploy-action action to v4.6.1 (#1971)
 0e861a5a3b1 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v7.1.2 (#1970)
