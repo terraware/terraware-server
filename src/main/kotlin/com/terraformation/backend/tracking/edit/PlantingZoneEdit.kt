@@ -1,7 +1,8 @@
 package com.terraformation.backend.tracking.edit
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.tracking.model.AnyPlantingZoneModel
+import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
 import com.terraformation.backend.util.equalsIgnoreScale
 import com.terraformation.backend.util.equalsOrBothNull
 import java.math.BigDecimal
@@ -13,7 +14,7 @@ import org.locationtech.jts.geom.MultiPolygon
  * existing zones, or can have changes to existing zones; these are modeled as create, delete, and
  * update operations.
  */
-interface PlantingZoneEdit {
+sealed interface PlantingZoneEdit {
   /**
    * Usable region that is being added to this zone. Does not include any areas that are covered by
    * the updated site's exclusion areas.
@@ -28,11 +29,11 @@ interface PlantingZoneEdit {
    */
   val areaHaDifference: BigDecimal
 
-  /**
-   * New zone boundary, or null if the zone is being removed. May intersect with the updated site's
-   * exclusion areas.
-   */
-  val boundary: MultiPolygon?
+  /** Desired zone model, or null if the zone is being removed. */
+  val desiredModel: AnyPlantingZoneModel?
+
+  /** Existing zone model, or null if the zone is being created. */
+  val existingModel: ExistingPlantingZoneModel?
 
   /**
    * IDs of existing monitoring plots that are no longer contained in the zone's usable area and
@@ -40,23 +41,14 @@ interface PlantingZoneEdit {
    */
   val monitoringPlotsRemoved: Set<MonitoringPlotId>
 
-  /** New zone name, or null if the zone is being removed. May be the same as the old name. */
-  val newName: String?
-
   /**
    * Number of permanent clusters to add to the zone. These clusters must all be located in
    * [addedRegion].
    */
-  val numPermanentClustersToAdd: Int?
-
-  /** Old zone name, or null if the zone is being newly created. */
-  val oldName: String?
+  val numPermanentClustersToAdd: Int
 
   /** Edits to this zone's subzones. */
   val plantingSubzoneEdits: List<PlantingSubzoneEdit>
-
-  /** The zone's ID if it already exists, or null if it is being newly created. */
-  val plantingZoneId: PlantingZoneId?
 
   /**
    * Usable region that is being removed from this zone. Does not include any areas that are covered
@@ -68,70 +60,68 @@ interface PlantingZoneEdit {
       javaClass == other.javaClass &&
           addedRegion.equalsOrBothNull(other.addedRegion, tolerance) &&
           areaHaDifference.equalsIgnoreScale(other.areaHaDifference) &&
-          boundary.equalsOrBothNull(other.boundary, tolerance) &&
+          desiredModel == other.desiredModel &&
+          existingModel == other.existingModel &&
           monitoringPlotsRemoved == other.monitoringPlotsRemoved &&
-          newName == other.newName &&
           numPermanentClustersToAdd == other.numPermanentClustersToAdd &&
-          oldName == other.oldName &&
           plantingSubzoneEdits.size == other.plantingSubzoneEdits.size &&
           plantingSubzoneEdits.zip(other.plantingSubzoneEdits).all { (edit, otherEdit) ->
             edit.equalsExact(otherEdit, tolerance)
           } &&
-          plantingZoneId == other.plantingZoneId &&
           removedRegion.equalsOrBothNull(other.removedRegion, tolerance)
 
   data class Create(
-      override val addedRegion: MultiPolygon,
-      override val areaHaDifference: BigDecimal,
-      override val boundary: MultiPolygon,
-      override val newName: String,
-      override val numPermanentClustersToAdd: Int,
+      override val desiredModel: AnyPlantingZoneModel,
       override val plantingSubzoneEdits: List<PlantingSubzoneEdit.Create>,
   ) : PlantingZoneEdit {
+    override val addedRegion: MultiPolygon
+      get() = desiredModel.boundary
+
+    override val areaHaDifference: BigDecimal
+      get() = desiredModel.areaHa
+
+    override val existingModel: ExistingPlantingZoneModel?
+      get() = null
+
     override val monitoringPlotsRemoved: Set<MonitoringPlotId>
       get() = emptySet()
 
-    override val oldName: String?
-      get() = null
-
-    override val plantingZoneId: PlantingZoneId?
-      get() = null
+    override val numPermanentClustersToAdd: Int
+      get() = 0
 
     override val removedRegion: MultiPolygon?
       get() = null
   }
 
   data class Delete(
-      override val areaHaDifference: BigDecimal,
+      override val existingModel: ExistingPlantingZoneModel,
       override val monitoringPlotsRemoved: Set<MonitoringPlotId>,
-      override val oldName: String,
-      override val plantingZoneId: PlantingZoneId,
       override val plantingSubzoneEdits: List<PlantingSubzoneEdit.Delete>,
-      override val removedRegion: MultiPolygon,
   ) : PlantingZoneEdit {
+    override val areaHaDifference: BigDecimal
+      get() = existingModel.areaHa.negate()
+
     override val addedRegion: MultiPolygon?
       get() = null
 
-    override val boundary: MultiPolygon?
-      get() = null
-
-    override val newName: String?
+    override val desiredModel: AnyPlantingZoneModel?
       get() = null
 
     override val numPermanentClustersToAdd: Int
       get() = 0
+
+    override val removedRegion: MultiPolygon
+      get() = existingModel.boundary
   }
 
   data class Update(
       override val addedRegion: MultiPolygon,
       override val areaHaDifference: BigDecimal,
-      override val boundary: MultiPolygon,
+      override val desiredModel: AnyPlantingZoneModel,
+      override val existingModel: ExistingPlantingZoneModel,
       override val monitoringPlotsRemoved: Set<MonitoringPlotId>,
-      override val newName: String,
       override val numPermanentClustersToAdd: Int,
-      override val oldName: String,
       override val plantingSubzoneEdits: List<PlantingSubzoneEdit>,
-      override val plantingZoneId: PlantingZoneId,
       override val removedRegion: MultiPolygon,
   ) : PlantingZoneEdit
 }

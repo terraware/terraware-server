@@ -3,7 +3,6 @@ package com.terraformation.backend.tracking.edit
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -19,8 +18,6 @@ import org.junit.jupiter.api.assertThrows
 class PlantingSiteEditCalculatorTest {
   @Test
   fun `returns create edits for newly added zone and subzone`() {
-    val newZoneBoundary = rectangle(x = 500, width = 250, height = 500)
-
     val existing = existingSite(width = 500)
     val desired =
         newSite(width = 750) {
@@ -30,6 +27,7 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
+            areaHa = BigDecimal("37.5"),
             areaHaDifference = BigDecimal("12.5"),
             boundary = rectangle(width = 750, height = 500),
             exclusion = null,
@@ -37,19 +35,12 @@ class PlantingSiteEditCalculatorTest {
             plantingZoneEdits =
                 listOf(
                     PlantingZoneEdit.Create(
-                        addedRegion = newZoneBoundary,
-                        areaHaDifference = BigDecimal("12.5"),
-                        boundary = newZoneBoundary,
-                        newName = "Z2",
-                        numPermanentClustersToAdd =
-                            PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS,
+                        desiredModel = desired.plantingZones[1],
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Create(
-                                    addedRegion = newZoneBoundary,
-                                    boundary = newZoneBoundary,
-                                    areaHaDifference = BigDecimal("12.5"),
-                                    newName = "S2"))))),
+                                    desiredModel =
+                                        desired.plantingZones[1].plantingSubzones[0]))))),
         existing,
         desired)
   }
@@ -70,6 +61,7 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
+            areaHa = BigDecimal("37.5"),
             areaHaDifference = BigDecimal("12.5"),
             boundary = newSiteBoundary,
             exclusion = null,
@@ -78,22 +70,17 @@ class PlantingSiteEditCalculatorTest {
                 listOf(
                     PlantingZoneEdit.Update(
                         addedRegion = newSubzoneBoundary,
-                        boundary = newSiteBoundary,
                         areaHaDifference = BigDecimal("12.5"),
+                        desiredModel = desired.plantingZones[0],
+                        existingModel = existing.plantingZones[0],
                         monitoringPlotsRemoved = emptySet(),
-                        newName = "Z1",
                         numPermanentClustersToAdd =
                             PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * (750 - 500) / 500,
-                        oldName = "Z1",
-                        plantingZoneId = PlantingZoneId(1),
-                        removedRegion = rectangle(0),
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Create(
-                                    addedRegion = newSubzoneBoundary,
-                                    boundary = newSubzoneBoundary,
-                                    areaHaDifference = BigDecimal("12.5"),
-                                    newName = "S2"))))),
+                                    desiredModel = desired.plantingZones[0].plantingSubzones[1])),
+                        removedRegion = rectangle(0)))),
         existing,
         desired)
   }
@@ -105,6 +92,7 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
+            areaHa = BigDecimal("30.0"),
             areaHaDifference = BigDecimal("5.0"),
             boundary = desired.boundary!!,
             exclusion = null,
@@ -114,25 +102,21 @@ class PlantingSiteEditCalculatorTest {
                     PlantingZoneEdit.Update(
                         addedRegion = rectangle(x = 500, width = 200, height = 500),
                         areaHaDifference = BigDecimal("5.0"),
-                        boundary = desired.boundary!!,
-                        newName = "Z1",
+                        desiredModel = desired.plantingZones[0],
+                        existingModel = existing.plantingZones[0],
+                        monitoringPlotsRemoved = emptySet(),
                         numPermanentClustersToAdd =
                             PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * 200 / 500,
-                        oldName = "Z1",
-                        removedRegion = rectangle(x = 0, width = 100, height = 500),
-                        monitoringPlotsRemoved = emptySet(),
-                        plantingZoneId = PlantingZoneId(1),
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Update(
                                     addedRegion = rectangle(x = 500, width = 200, height = 500),
                                     areaHaDifference = BigDecimal("5.0"),
-                                    boundary = desired.boundary!!,
-                                    newName = "S1",
-                                    oldName = "S1",
-                                    plantingSubzoneId = PlantingSubzoneId(1),
+                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
+                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
                                     removedRegion = rectangle(x = 0, width = 100, height = 500),
-                                ))))),
+                                )),
+                        removedRegion = rectangle(x = 0, width = 100, height = 500)))),
         existing,
         desired)
   }
@@ -148,6 +132,7 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
+            areaHa = BigDecimal("50.0"),
             areaHaDifference = BigDecimal("10.0"),
             boundary = desired.boundary!!,
             exclusion = rectangle(width = 100, height = 500),
@@ -157,25 +142,21 @@ class PlantingSiteEditCalculatorTest {
                     PlantingZoneEdit.Update(
                         addedRegion = rectangle(x = 100, width = 200, height = 500),
                         areaHaDifference = BigDecimal("10.0"),
-                        boundary = desired.boundary!!,
-                        newName = "Z1",
+                        desiredModel = desired.plantingZones[0],
+                        existingModel = existing.plantingZones[0],
+                        monitoringPlotsRemoved = emptySet(),
                         numPermanentClustersToAdd =
                             PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * 200 / 500,
-                        oldName = "Z1",
-                        removedRegion = rectangle(0),
-                        monitoringPlotsRemoved = emptySet(),
-                        plantingZoneId = PlantingZoneId(1),
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Update(
                                     addedRegion = rectangle(x = 100, width = 200, height = 500),
                                     areaHaDifference = BigDecimal("10.0"),
-                                    boundary = desired.boundary!!,
-                                    newName = "S1",
-                                    oldName = "S1",
-                                    plantingSubzoneId = PlantingSubzoneId(1),
+                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
+                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
                                     removedRegion = rectangle(0),
-                                ))))),
+                                )),
+                        removedRegion = rectangle(0)))),
         existing,
         desired)
   }
@@ -191,6 +172,7 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
+            areaHa = BigDecimal("37.5"),
             areaHaDifference = BigDecimal("-12.5"),
             boundary = desired.boundary!!,
             exclusion = null,
@@ -198,18 +180,12 @@ class PlantingSiteEditCalculatorTest {
             plantingZoneEdits =
                 listOf(
                     PlantingZoneEdit.Delete(
-                        areaHaDifference = BigDecimal("-12.5"),
-                        oldName = "Z2",
-                        removedRegion = rectangle(x = 750, width = 250, height = 500),
+                        existingModel = existing.plantingZones[1],
                         monitoringPlotsRemoved = emptySet(),
-                        plantingZoneId = PlantingZoneId(2),
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Delete(
-                                    areaHaDifference = BigDecimal("-12.5"),
-                                    oldName = "S2",
-                                    plantingSubzoneId = PlantingSubzoneId(2),
-                                    removedRegion = rectangle(x = 750, width = 250, height = 500),
+                                    existingModel = existing.plantingZones[1].plantingSubzones[0],
                                 ))))),
         existing,
         desired)
@@ -233,6 +209,7 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
+            areaHa = BigDecimal("37.5"),
             areaHaDifference = BigDecimal("-12.5"),
             boundary = desired.boundary!!,
             exclusion = null,
@@ -242,21 +219,16 @@ class PlantingSiteEditCalculatorTest {
                     PlantingZoneEdit.Update(
                         addedRegion = rectangle(0),
                         areaHaDifference = BigDecimal("-12.5"),
-                        boundary = desired.plantingZones[1].boundary,
-                        newName = "Z2",
-                        numPermanentClustersToAdd = 0,
-                        oldName = "Z2",
-                        removedRegion = rectangle(x = 750, width = 250, height = 500),
+                        desiredModel = desired.plantingZones[1],
+                        existingModel = existing.plantingZones[1],
                         monitoringPlotsRemoved = emptySet(),
-                        plantingZoneId = PlantingZoneId(2),
+                        numPermanentClustersToAdd = 0,
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Delete(
-                                    areaHaDifference = BigDecimal("-12.5"),
-                                    oldName = "S3",
-                                    plantingSubzoneId = PlantingSubzoneId(3),
-                                    removedRegion = rectangle(x = 750, width = 250, height = 500),
-                                ))))),
+                                    existingModel = existing.plantingZones[1].plantingSubzones[1],
+                                )),
+                        removedRegion = rectangle(x = 750, width = 250, height = 500)))),
         existing,
         desired)
   }
@@ -359,7 +331,13 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            BigDecimal("0.0"), site.boundary!!, null, PlantingSiteId(1), emptyList(), emptyList()),
+            BigDecimal("25.0"),
+            BigDecimal("0.0"),
+            site.boundary!!,
+            null,
+            PlantingSiteId(1),
+            emptyList(),
+            emptyList()),
         site,
         site.toNew())
   }
@@ -382,78 +360,46 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
+            BigDecimal("27.5"),
             BigDecimal("2.5"),
             desired.boundary!!,
             null,
             PlantingSiteId(1),
             listOf(
                 PlantingZoneEdit.Delete(
-                    areaHaDifference = existing.plantingZones[0].areaHa.negate(),
+                    existingModel = existing.plantingZones[0],
                     monitoringPlotsRemoved = emptySet(),
-                    oldName = "Z1",
-                    plantingZoneId = PlantingZoneId(1),
                     plantingSubzoneEdits =
                         listOf(
                             PlantingSubzoneEdit.Delete(
-                                areaHaDifference = existing.plantingZones[0].areaHa.negate(),
-                                oldName = "S1",
-                                plantingSubzoneId = PlantingSubzoneId(1),
-                                removedRegion = existing.plantingZones[0].boundary)),
-                    removedRegion = existing.plantingZones[0].boundary,
+                                existing.plantingZones[0].plantingSubzones[0])),
                 ),
                 PlantingZoneEdit.Delete(
-                    areaHaDifference = existing.plantingZones[1].areaHa.negate(),
+                    existingModel = existing.plantingZones[1],
                     monitoringPlotsRemoved = emptySet(),
-                    oldName = "Z2",
-                    plantingZoneId = PlantingZoneId(2),
                     plantingSubzoneEdits =
                         listOf(
                             PlantingSubzoneEdit.Delete(
-                                areaHaDifference = existing.plantingZones[1].areaHa.negate(),
-                                oldName = "S2",
-                                plantingSubzoneId = PlantingSubzoneId(2),
-                                removedRegion = existing.plantingZones[1].boundary)),
-                    removedRegion = existing.plantingZones[1].boundary,
+                                existing.plantingZones[1].plantingSubzones[0])),
                 ),
                 PlantingZoneEdit.Create(
-                    addedRegion = desired.plantingZones[0].boundary,
-                    areaHaDifference = desired.plantingZones[0].areaHa,
-                    boundary = desired.plantingZones[0].boundary,
-                    newName = "Z1",
-                    numPermanentClustersToAdd = 0,
+                    desiredModel = desired.plantingZones[0],
                     plantingSubzoneEdits =
                         listOf(
                             PlantingSubzoneEdit.Create(
-                                addedRegion = desired.plantingZones[0].boundary,
-                                boundary = desired.plantingZones[0].boundary,
-                                areaHaDifference = desired.plantingZones[0].areaHa,
-                                newName = "S1"))),
+                                desired.plantingZones[0].plantingSubzones[0]))),
                 PlantingZoneEdit.Create(
-                    addedRegion = desired.plantingZones[1].boundary,
-                    areaHaDifference = desired.plantingZones[1].areaHa,
-                    boundary = desired.plantingZones[1].boundary,
-                    newName = "Z2",
-                    numPermanentClustersToAdd = 0,
+                    desiredModel = desired.plantingZones[1],
                     plantingSubzoneEdits =
                         listOf(
                             PlantingSubzoneEdit.Create(
-                                addedRegion = desired.plantingZones[1].boundary,
-                                boundary = desired.plantingZones[1].boundary,
-                                areaHaDifference = desired.plantingZones[1].areaHa,
-                                newName = "S2"))),
+                                desired.plantingZones[1].plantingSubzones[0]))),
                 PlantingZoneEdit.Create(
-                    addedRegion = desired.plantingZones[2].boundary,
-                    areaHaDifference = desired.plantingZones[2].areaHa,
-                    boundary = desired.plantingZones[2].boundary,
-                    newName = "Z3",
-                    numPermanentClustersToAdd = 0,
+                    desiredModel = desired.plantingZones[2],
                     plantingSubzoneEdits =
                         listOf(
                             PlantingSubzoneEdit.Create(
-                                addedRegion = desired.plantingZones[2].boundary,
-                                boundary = desired.plantingZones[2].boundary,
-                                areaHaDifference = desired.plantingZones[2].areaHa,
-                                newName = "S3"))),
+                                desired.plantingZones[2].plantingSubzones[0]))),
             ),
         ),
         existing,
