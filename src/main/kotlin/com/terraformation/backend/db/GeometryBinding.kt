@@ -16,6 +16,7 @@ import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.geom.PrecisionModel
 import org.locationtech.jts.io.WKBReader
 
 /**
@@ -42,7 +43,7 @@ class GeometryBinding : Binding<JooqGeometry, Geometry> {
   private val converter = GeometryConverter()
 
   class GeometryConverter : Converter<JooqGeometry, Geometry> {
-    private val geometryFactory = GeometryFactory()
+    private val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
 
     override fun from(databaseObject: JooqGeometry?): Geometry? {
       // Geometry values are returned in WKB (Well Known Binary) form, encoded in hexadecimal.

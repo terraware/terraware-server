@@ -30,12 +30,17 @@ data class ShapefileFeature(
       rawGeometry
     } else {
       val transform = CRS.findMathTransform(coordinateReferenceSystem, longLatCrs)
-      JTS.transform(rawGeometry, transform).also { it.srid = SRID.LONG_LAT }
+      val geometryWithTransformedCoordinates = JTS.transform(rawGeometry, transform)
+
+      // The new geometry has long/lat coordinates, but its SRID is still the original one which
+      // is now incorrect. Clone it using a factory that sets the correct SRID.
+      longLatGeometryFactory.createGeometry(geometryWithTransformedCoordinates)
     }
   }
 
   companion object {
     val longLatCrs: CoordinateReferenceSystem by lazy { CRS.decode("EPSG:${SRID.LONG_LAT}", true) }
+    val longLatGeometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
 
     fun fromGeotools(feature: SimpleFeature): ShapefileFeature {
       val crs =

@@ -615,7 +615,7 @@ class PlantingZoneModelTest {
     return subzones
         .map { it.boundary }
         .reduce { acc: Geometry, subzone: Geometry -> acc.union(subzone) }
-        .toMultiPolygon(geometryFactory)
+        .toMultiPolygon()
   }
 
   private fun plantingZoneModel(
