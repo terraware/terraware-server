@@ -99,8 +99,7 @@ class ParticipantProjectSpeciesController(
       @RequestParam organizationId: OrganizationId
   ): GetParticipantProjectsForSpeciesResponsePayload {
     val results =
-        participantProjectSpeciesStore.fetchParticipantProjectsForSpecies(
-            organizationId, speciesId)
+        participantProjectSpeciesStore.fetchParticipantProjectsForSpecies(organizationId, speciesId)
 
     return GetParticipantProjectsForSpeciesResponsePayload(
         results.map {
