@@ -13,7 +13,6 @@ import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
 import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
-import java.math.BigDecimal
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
 
@@ -101,9 +100,9 @@ class PlantingSiteImporter(
     val problems = mutableListOf<String>()
 
     val siteFeature = getSiteBoundary(siteFile, problems)
-    val zonesByName = getZones(zonesFile)
-    val subzonesByZone = getSubzonesByZone(zonesByName, subzonesFile, problems)
     val exclusion = getExclusion(exclusionsFile, problems)
+    val zonesByName = getZones(zonesFile, exclusion)
+    val subzonesByZone = getSubzonesByZone(zonesByName, subzonesFile, exclusion, problems)
 
     if (problems.isNotEmpty()) {
       throw PlantingSiteMapInvalidException(problems)
@@ -174,6 +173,7 @@ class PlantingSiteImporter(
 
   private fun getZones(
       zonesFile: Shapefile,
+      exclusion: MultiPolygon?,
   ): Map<String, NewPlantingZoneModel> {
     if (zonesFile.features.isEmpty()) {
       throw IllegalArgumentException("No planting zones defined")
@@ -207,8 +207,8 @@ class PlantingSiteImporter(
 
       name to
           PlantingZoneModel.create(
-              areaHa = BigDecimal.ZERO, // Will be calculated when site is created
               boundary = boundary,
+              exclusion = exclusion,
               name = name,
               numPermanentClusters = numPermanentClusters,
               numTemporaryPlots = numTemporaryPlots,
@@ -221,6 +221,7 @@ class PlantingSiteImporter(
   private fun getSubzonesByZone(
       zones: Map<String, PlantingZoneModel<*, *>>,
       subzonesFile: Shapefile,
+      exclusion: MultiPolygon?,
       problems: MutableList<String>,
   ): Map<String, List<NewPlantingSubzoneModel>> {
     val validSubzones =
@@ -256,8 +257,8 @@ class PlantingSiteImporter(
         val name = subzoneFeature.getProperty(subzoneNameProperties)!!
 
         PlantingSubzoneModel.create(
-            areaHa = BigDecimal.ZERO, // Will be calculated when site is created
             boundary = boundary.toMultiPolygon(),
+            exclusion = exclusion,
             fullName = "$zoneName-$name",
             name = name,
         )

@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.util.calculateAreaHectares
+import com.terraformation.backend.util.differenceNullable
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
 import java.time.Instant
@@ -32,17 +33,27 @@ data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
   }
 
   fun toNew(): NewPlantingSubzoneModel =
-      create(boundary, fullName, name, areaHa, plantingCompletedTime, monitoringPlots)
+      NewPlantingSubzoneModel(
+          areaHa = areaHa,
+          boundary = boundary,
+          id = null,
+          fullName = fullName,
+          name = name,
+          plantingCompletedTime = plantingCompletedTime,
+          monitoringPlots = monitoringPlots,
+      )
 
   companion object {
     fun create(
         boundary: MultiPolygon,
         fullName: String,
         name: String,
-        areaHa: BigDecimal = boundary.calculateAreaHectares(),
+        exclusion: MultiPolygon? = null,
         plantingCompletedTime: Instant? = null,
         monitoringPlots: List<MonitoringPlotModel> = emptyList(),
     ): NewPlantingSubzoneModel {
+      val areaHa: BigDecimal = boundary.differenceNullable(exclusion).calculateAreaHectares()
+
       return NewPlantingSubzoneModel(
           areaHa = areaHa,
           boundary = boundary,

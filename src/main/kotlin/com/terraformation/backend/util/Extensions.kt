@@ -163,6 +163,10 @@ fun Geometry.fixIfNeeded(): Geometry {
  * @throws FactoryException The geometry couldn't be converted to UTM.
  */
 fun Geometry.calculateAreaHectares(originalCrs: CoordinateReferenceSystem? = null): BigDecimal {
+  if (isEmpty) {
+    return BigDecimal.ZERO.setScale(1)
+  }
+
   val crs = originalCrs ?: CRS.decode("EPSG:$srid", true)
 
   // Transform to UTM if it isn't already.
@@ -209,3 +213,10 @@ fun Geometry.coveragePercent(other: Geometry): Double {
 fun Geometry.nearlyCoveredBy(other: Geometry, minCoveragePercent: Double = 99.99): Boolean {
   return coveredBy(other) || coveragePercent(other) >= minCoveragePercent
 }
+
+/**
+ * Returns the difference between this geometry and another geometry, or this geometry if the other
+ * one is null.
+ */
+fun Geometry.differenceNullable(other: Geometry?): Geometry =
+    if (other != null) difference(other) else this

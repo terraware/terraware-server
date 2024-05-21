@@ -10,6 +10,7 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.coveragePercent
+import com.terraformation.backend.util.differenceNullable
 import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -334,9 +335,6 @@ class PlantingSiteEditCalculator(
         .groupBy({ it.value!! }, { it.key })
         .filter { it.value.size > 1 }
   }
-
-  private fun Geometry.differenceNullable(other: Geometry?): Geometry =
-      if (other != null) difference(other) else this
 
   private fun MultiPolygon.orEmpty(): MultiPolygon =
       if (isEmpty) factory.createMultiPolygon() else this

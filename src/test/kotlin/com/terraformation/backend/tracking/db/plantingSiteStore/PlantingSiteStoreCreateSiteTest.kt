@@ -156,7 +156,6 @@ internal class PlantingSiteStoreCreateSiteTest : PlantingSiteStoreTest() {
               plantingZones =
                   listOf(
                       PlantingZoneModel.create(
-                          areaHa = BigDecimal.ZERO,
                           boundary = zone1Boundary,
                           errorMargin = BigDecimal(1),
                           extraPermanentClusters = 2,
@@ -166,7 +165,6 @@ internal class PlantingSiteStoreCreateSiteTest : PlantingSiteStoreTest() {
                           plantingSubzones =
                               listOf(
                                   PlantingSubzoneModel.create(
-                                      areaHa = BigDecimal.ZERO,
                                       boundary = subzone11Boundary,
                                       fullName = "Zone 1-Subzone 1",
                                       name = "Subzone 1",
@@ -347,11 +345,13 @@ internal class PlantingSiteStoreCreateSiteTest : PlantingSiteStoreTest() {
                       listOf(
                           PlantingZoneModel.create(
                               boundary = zoneBoundary,
+                              exclusion = exclusion,
                               name = "zone",
                               plantingSubzones =
                                   listOf(
                                       PlantingSubzoneModel.create(
                                           boundary = subzoneBoundary,
+                                          exclusion = exclusion,
                                           fullName = "zone-subzone",
                                           name = "subzone"))))))
 

@@ -5,6 +5,7 @@ import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.coveragePercent
+import com.terraformation.backend.util.differenceNullable
 import com.terraformation.backend.util.equalsIgnoreScale
 import com.terraformation.backend.util.nearlyCoveredBy
 import com.terraformation.backend.util.toMultiPolygon
@@ -388,18 +389,20 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
   }
 
   fun toNew(): NewPlantingZoneModel =
-      create(
-          boundary,
-          name,
-          plantingSubzones.map { it.toNew() },
-          areaHa,
-          errorMargin,
-          extraPermanentClusters,
-          numPermanentClusters,
-          numTemporaryPlots,
-          studentsT,
-          targetPlantingDensity,
-          variance)
+      NewPlantingZoneModel(
+          areaHa = areaHa,
+          boundary = boundary,
+          errorMargin = errorMargin,
+          extraPermanentClusters = extraPermanentClusters,
+          id = null,
+          name = name,
+          numPermanentClusters = numPermanentClusters,
+          numTemporaryPlots = numTemporaryPlots,
+          plantingSubzones = plantingSubzones.map { it.toNew() },
+          studentsT = studentsT,
+          targetPlantingDensity = targetPlantingDensity,
+          variance = variance,
+      )
 
   companion object {
     // Default values of the three parameters that determine how many monitoring plots should be
@@ -420,7 +423,7 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
         boundary: MultiPolygon,
         name: String,
         plantingSubzones: List<NewPlantingSubzoneModel>,
-        areaHa: BigDecimal = boundary.calculateAreaHectares(),
+        exclusion: MultiPolygon? = null,
         errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
         extraPermanentClusters: Int = 0,
         numPermanentClusters: Int = DEFAULT_NUM_PERMANENT_CLUSTERS,
@@ -429,6 +432,8 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
         targetPlantingDensity: BigDecimal = DEFAULT_TARGET_PLANTING_DENSITY,
         variance: BigDecimal = DEFAULT_VARIANCE,
     ): NewPlantingZoneModel {
+      val areaHa: BigDecimal = boundary.differenceNullable(exclusion).calculateAreaHectares()
+
       return NewPlantingZoneModel(
           areaHa = areaHa,
           boundary = boundary,
