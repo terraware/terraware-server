@@ -2,6 +2,7 @@ package com.terraformation.backend.species
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.SpeciesInUseException
@@ -11,7 +12,9 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.species.event.SpeciesEditedEvent
 import com.terraformation.backend.species.model.NewSpeciesModel
+import com.terraformation.backend.species.model.SpeciesModel
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -24,6 +27,7 @@ import org.junit.jupiter.api.assertThrows
 
 internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   override val user: TerrawareUser = mockUser()
 
   private val speciesStore: SpeciesStore by lazy {
@@ -37,7 +41,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
   }
   private val speciesChecker: SpeciesChecker = mockk()
   private val service: SpeciesService by lazy {
-    SpeciesService(dslContext, speciesChecker, speciesStore)
+    SpeciesService(dslContext, eventPublisher, speciesChecker, speciesStore)
   }
 
   @BeforeEach
@@ -80,6 +84,26 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
           match { it.scientificName == "New name" },
       )
     }
+
+    eventPublisher.assertEventPublished(
+        SpeciesEditedEvent(
+            species =
+                SpeciesModel(
+                    averageWoodDensity = null,
+                    checkedTime = null,
+                    commonName = null,
+                    conservationCategory = null,
+                    dbhSource = null,
+                    dbhValue = null,
+                    deletedTime = null,
+                    ecologicalRoleKnown = null,
+                    ecosystemTypes = emptySet(),
+                    familyName = null,
+                    growthForms = emptySet(),
+                    id = inserted.speciesId,
+                    initialScientificName = "Old name",
+                    organizationId = inserted.organizationId,
+                    scientificName = "New name")))
   }
 
   @Test

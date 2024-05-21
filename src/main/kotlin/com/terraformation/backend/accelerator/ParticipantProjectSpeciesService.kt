@@ -5,17 +5,19 @@ import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.species.event.SpeciesEditedEvent
 import jakarta.inject.Named
-import java.time.InstantSource
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.context.event.EventListener
 
 @Named
 class ParticipantProjectSpeciesService(
-    private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
@@ -78,6 +80,33 @@ class ParticipantProjectSpeciesService(
       }
 
       existingModels
+    }
+  }
+
+  /*
+   * When a species is updated, if it belongs to an organization with participants and is associated
+   * to a participant project, we need to update its status to "in review" across all
+   * associated projects. This only applies to users with no accelerator related global roles.
+   */
+  @EventListener
+  fun on(event: SpeciesEditedEvent) {
+    if (currentUser().canReadAllAcceleratorDetails()) {
+      return
+    }
+
+    val projects =
+        participantProjectSpeciesStore.fetchParticipantProjectsForSpecies(
+            event.species.organizationId, event.species.id)
+
+    dslContext.transaction { _ ->
+      projects.forEach { project ->
+        // Set all non "in review" participant project species to "in review" status
+        if (project.participantProjectSpeciesSubmissionStatus !== SubmissionStatus.InReview) {
+          participantProjectSpeciesStore.update(project.participantProjectSpeciesId) {
+            it.copy(submissionStatus = SubmissionStatus.InReview)
+          }
+        }
+      }
     }
   }
 
