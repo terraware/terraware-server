@@ -132,7 +132,7 @@ class ParticipantProjectSpeciesStore(
         .execute()
   }
 
-  fun fetchParticipantProjectsForSpeciesDeliverables(
+  fun fetchParticipantProjectsForSpecies(
       organizationId: OrganizationId,
       speciesId: SpeciesId
   ): List<ParticipantProjectsForSpecies> {

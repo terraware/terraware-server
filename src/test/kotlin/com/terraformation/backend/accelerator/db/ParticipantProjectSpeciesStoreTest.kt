@@ -219,7 +219,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId2,
                   projectName = "Project 2",
                   speciesId = speciesId)),
-          store.fetchParticipantProjectsForSpeciesDeliverables(inserted.organizationId, speciesId))
+          store.fetchParticipantProjectsForSpecies(inserted.organizationId, speciesId))
     }
 
     @Test
@@ -259,7 +259,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId2,
                   projectName = "Project 2",
                   speciesId = speciesId)),
-          store.fetchParticipantProjectsForSpeciesDeliverables(inserted.organizationId, speciesId))
+          store.fetchParticipantProjectsForSpecies(inserted.organizationId, speciesId))
     }
 
     @Test
@@ -297,7 +297,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId2,
                   projectName = "Project 2",
                   speciesId = speciesId)),
-          store.fetchParticipantProjectsForSpeciesDeliverables(inserted.organizationId, speciesId))
+          store.fetchParticipantProjectsForSpecies(inserted.organizationId, speciesId))
     }
 
     @Test
@@ -317,7 +317,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           emptyList<ParticipantProjectsForSpecies>(),
-          store.fetchParticipantProjectsForSpeciesDeliverables(inserted.organizationId, speciesId))
+          store.fetchParticipantProjectsForSpecies(inserted.organizationId, speciesId))
     }
   }
 
