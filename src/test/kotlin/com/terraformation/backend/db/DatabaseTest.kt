@@ -2140,12 +2140,12 @@ abstract class DatabaseTest {
       feedback: String? = null,
       id: Any? = null,
       internalComment: String? = null,
-      speciesNativeCategory: SpeciesNativeCategory? = null,
       modifiedBy: Any = currentUser().userId,
       modifiedTime: Instant = Instant.EPOCH,
       projectId: Any = inserted.projectId,
       rationale: String? = null,
       speciesId: Any = inserted.speciesId,
+      speciesNativeCategory: SpeciesNativeCategory? = null,
       submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted,
   ): ParticipantProjectSpeciesId {
     val row =
@@ -2155,12 +2155,12 @@ abstract class DatabaseTest {
             feedback = feedback,
             id = id?.toIdWrapper { ParticipantProjectSpeciesId(it) },
             internalComment = internalComment,
-            speciesNativeCategoryId = speciesNativeCategory,
             modifiedBy = modifiedBy.toIdWrapper { UserId(it) },
             modifiedTime = modifiedTime,
             projectId = projectId.toIdWrapper { ProjectId(it) },
             rationale = rationale,
             speciesId = speciesId.toIdWrapper { SpeciesId(it) },
+            speciesNativeCategoryId = speciesNativeCategory,
             submissionStatusId = submissionStatus)
 
     participantProjectSpeciesDao.insert(row)

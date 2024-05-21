@@ -106,10 +106,10 @@ class ParticipantProjectSpeciesController(
               feedback = model.feedback,
               id = model.id,
               internalComment = model.internalComment,
-              speciesNativeCategory = model.speciesNativeCategory,
               projectId = model.projectId,
               rationale = model.rationale,
               speciesId = model.speciesId,
+              speciesNativeCategory = model.speciesNativeCategory,
               submissionStatus = model.submissionStatus,
           ))
 }
@@ -133,10 +133,10 @@ data class ParticipantProjectSpeciesPayload(
     val feedback: String?,
     val id: ParticipantProjectSpeciesId,
     val internalComment: String?,
-    val speciesNativeCategory: SpeciesNativeCategory?,
     val projectId: ProjectId,
     val rationale: String?,
     val speciesId: SpeciesId,
+    val speciesNativeCategory: SpeciesNativeCategory?,
     val submissionStatus: SubmissionStatus,
 )
 
@@ -147,15 +147,15 @@ data class GetParticipantProjectSpeciesResponsePayload(
 data class UpdateParticipantProjectSpeciesPayload(
     val feedback: String?,
     val internalComment: String?,
-    val speciesNativeCategory: SpeciesNativeCategory?,
     val rationale: String?,
+    val speciesNativeCategory: SpeciesNativeCategory?,
     val submissionStatus: SubmissionStatus,
 ) {
   fun applyTo(model: ExistingParticipantProjectSpeciesModel) =
       model.copy(
           feedback = feedback,
           internalComment = internalComment,
-          speciesNativeCategory = speciesNativeCategory,
           rationale = rationale,
+          speciesNativeCategory = speciesNativeCategory,
           submissionStatus = submissionStatus)
 }

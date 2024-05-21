@@ -366,11 +366,11 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               feedback = "Looks good",
               id = participantProjectSpeciesId,
               internalComment = "We should approve",
-              speciesNativeCategoryId = SpeciesNativeCategory.Native,
               modifiedBy = userId,
               modifiedTime = now,
               projectId = projectId,
               speciesId = speciesId,
+              speciesNativeCategoryId = SpeciesNativeCategory.Native,
               submissionStatusId = SubmissionStatus.Approved),
           participantProjectSpeciesDao.fetchOneById(participantProjectSpeciesId))
 
@@ -382,12 +382,12 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                       createdTime = now,
                       id = participantProjectSpeciesId,
                       internalComment = "We should approve",
-                      speciesNativeCategory = SpeciesNativeCategory.Native,
                       feedback = "Looks good",
                       modifiedBy = userId,
                       modifiedTime = now,
                       projectId = projectId,
                       speciesId = speciesId,
+                      speciesNativeCategory = SpeciesNativeCategory.Native,
                       submissionStatus = SubmissionStatus.Approved),
               oldParticipantProjectSpecies =
                   ExistingParticipantProjectSpeciesModel(
@@ -458,12 +458,12 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   feedback = null,
                   id = participantProjectSpeciesId3,
                   internalComment = null,
-                  speciesNativeCategoryId = null,
                   modifiedBy = userId,
                   modifiedTime = now,
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId3,
+                  speciesNativeCategoryId = null,
                   submissionStatusId = SubmissionStatus.NotSubmitted)),
           participantProjectSpeciesDao.findAll())
     }
@@ -499,12 +499,12 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   feedback = null,
                   id = participantProjectSpeciesId1,
                   internalComment = null,
-                  speciesNativeCategoryId = null,
                   modifiedBy = userId,
                   modifiedTime = now,
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId1,
+                  speciesNativeCategoryId = null,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
               ParticipantProjectSpeciesRow(
                   createdBy = userId,
@@ -512,12 +512,12 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   feedback = null,
                   id = participantProjectSpeciesId2,
                   internalComment = null,
-                  speciesNativeCategoryId = null,
                   modifiedBy = userId,
                   modifiedTime = now,
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId2,
+                  speciesNativeCategoryId = null,
                   submissionStatusId = SubmissionStatus.NotSubmitted)),
           participantProjectSpeciesDao.findAll())
     }

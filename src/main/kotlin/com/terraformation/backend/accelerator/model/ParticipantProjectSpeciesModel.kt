@@ -33,12 +33,12 @@ data class ParticipantProjectSpeciesModel<ID : ParticipantProjectSpeciesId?>(
           feedback = record[PARTICIPANT_PROJECT_SPECIES.FEEDBACK],
           internalComment = record[PARTICIPANT_PROJECT_SPECIES.INTERNAL_COMMENT],
           id = record[PARTICIPANT_PROJECT_SPECIES.ID]!!,
-          speciesNativeCategory = record[PARTICIPANT_PROJECT_SPECIES.SPECIES_NATIVE_CATEGORY_ID],
           modifiedBy = record[PARTICIPANT_PROJECT_SPECIES.MODIFIED_BY]!!,
           modifiedTime = record[PARTICIPANT_PROJECT_SPECIES.MODIFIED_TIME]!!,
           projectId = record[PARTICIPANT_PROJECT_SPECIES.PROJECT_ID]!!,
           rationale = record[PARTICIPANT_PROJECT_SPECIES.RATIONALE],
           speciesId = record[PARTICIPANT_PROJECT_SPECIES.SPECIES_ID]!!,
+          speciesNativeCategory = record[PARTICIPANT_PROJECT_SPECIES.SPECIES_NATIVE_CATEGORY_ID],
           submissionStatus = record[PARTICIPANT_PROJECT_SPECIES.SUBMISSION_STATUS_ID]!!,
       )
     }
@@ -57,12 +57,12 @@ fun ParticipantProjectSpeciesRow.toModel(): ExistingParticipantProjectSpeciesMod
       feedback = feedback,
       internalComment = internalComment,
       id = id!!,
-      speciesNativeCategory = speciesNativeCategoryId,
       modifiedBy = modifiedBy!!,
       modifiedTime = modifiedTime!!,
       projectId = projectId!!,
       rationale = rationale,
       speciesId = speciesId!!,
+      speciesNativeCategory = speciesNativeCategoryId,
       submissionStatus = submissionStatusId!!,
   )
 }
