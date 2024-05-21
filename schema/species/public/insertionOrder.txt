@@ -3,6 +3,7 @@ conservation_categories
 ecosystem_types
 gbif_taxa
 plant_material_sourcing_methods
+species_native_categories
 species_problem_fields
 species_problem_types
 successional_groups

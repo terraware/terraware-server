@@ -16,6 +16,7 @@ regions
 report_statuses
 roles
 seed_storage_behaviors
+species_native_categories
 species_problem_fields
 species_problem_types
 successional_groups

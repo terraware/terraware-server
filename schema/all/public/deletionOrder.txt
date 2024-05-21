@@ -47,6 +47,7 @@ timeseries_types
 successional_groups
 species_problem_types
 species_problem_fields
+species_native_categories
 seed_storage_behaviors
 roles
 report_statuses

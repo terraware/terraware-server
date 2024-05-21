@@ -960,6 +960,16 @@
             <column ascending="true" name="species_id"/>
          </index>
       </table>
+      <table name="species_native_categories" numRows="2" remarks="(Enum) Categories related to native-ness of a species." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="species_native_category_id" foreignKey="participant_project_species_species_native_category_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participant_project_species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="species_native_categories_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
       <table name="species_plant_material_sourcing_methods" numRows="0" remarks="Sourcing methods for the plant material used to grow a particular species." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="species_plant_material_sourcing_methods_species_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>

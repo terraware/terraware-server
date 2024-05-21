@@ -24,6 +24,6 @@ project_accelerator_details
 project_vote_decisions
 deliverable_documents
 submission_documents
-participant_project_species
 project_scores
+participant_project_species
 project_votes

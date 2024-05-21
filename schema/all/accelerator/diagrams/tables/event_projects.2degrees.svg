@@ -316,7 +316,7 @@
 <text text-anchor="start" x="552" y="-140.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="549,-116 549,-134 635,-134 635,-116 549,-116"/>
 <polygon fill="none" stroke="black" points="549,-116 549,-134 635,-134 635,-116 549,-116"/>
-<text text-anchor="start" x="552" y="-122.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<text text-anchor="start" x="552" y="-122.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 6</text>
 <polygon fill="#ffffff" stroke="none" points="635,-116 635,-134 709,-134 709,-116 635,-116"/>
 <polygon fill="none" stroke="black" points="635,-116 635,-134 709,-134 709,-116 635,-116"/>
 <text text-anchor="start" x="670" y="-122.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
