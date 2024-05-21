@@ -352,6 +352,11 @@ VALUES (1, 'Soak'),
        (6, 'Light')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO species_native_categories (id, name)
+VALUES (1, 'Native'),
+       (2, 'Non-native')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO species_problem_fields (id, name)
 VALUES (1, 'Scientific Name')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;

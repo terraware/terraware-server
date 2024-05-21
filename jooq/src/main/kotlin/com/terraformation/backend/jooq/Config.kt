@@ -108,6 +108,10 @@ val ENUM_TABLES =
                     listOf("seed_storage_behaviors\\.id", ".*\\.seed_storage_behavior_id")),
                 EnumTable("seed_treatments", listOf(".*\\.treatment_id")),
                 EnumTable("species_problem_fields", listOf("species_problems\\.field_id")),
+                EnumTable(
+                    "species_native_categories",
+                    listOf(".*\\.species_native_category_id"),
+                    "SpeciesNativeCategory"),
                 EnumTable("species_problem_types", listOf("species_problems\\.type_id")),
                 EnumTable(
                     "successional_groups",

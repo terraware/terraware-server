@@ -11,6 +11,7 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
+import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
@@ -348,7 +349,11 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
 
       store.update(participantProjectSpeciesId) {
-        it.copy(feedback = "Looks good", submissionStatus = SubmissionStatus.Approved)
+        it.copy(
+            feedback = "Looks good",
+            internalComment = "We should approve",
+            speciesNativeCategory = SpeciesNativeCategory.Native,
+            submissionStatus = SubmissionStatus.Approved)
       }
 
       val userId = user.userId
@@ -360,10 +365,12 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
               createdTime = now,
               feedback = "Looks good",
               id = participantProjectSpeciesId,
+              internalComment = "We should approve",
               modifiedBy = userId,
               modifiedTime = now,
               projectId = projectId,
               speciesId = speciesId,
+              speciesNativeCategoryId = SpeciesNativeCategory.Native,
               submissionStatusId = SubmissionStatus.Approved),
           participantProjectSpeciesDao.fetchOneById(participantProjectSpeciesId))
 
@@ -374,11 +381,13 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                       createdBy = userId,
                       createdTime = now,
                       id = participantProjectSpeciesId,
+                      internalComment = "We should approve",
                       feedback = "Looks good",
                       modifiedBy = userId,
                       modifiedTime = now,
                       projectId = projectId,
                       speciesId = speciesId,
+                      speciesNativeCategory = SpeciesNativeCategory.Native,
                       submissionStatus = SubmissionStatus.Approved),
               oldParticipantProjectSpecies =
                   ExistingParticipantProjectSpeciesModel(
@@ -448,11 +457,13 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = now,
                   feedback = null,
                   id = participantProjectSpeciesId3,
+                  internalComment = null,
                   modifiedBy = userId,
                   modifiedTime = now,
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId3,
+                  speciesNativeCategoryId = null,
                   submissionStatusId = SubmissionStatus.NotSubmitted)),
           participantProjectSpeciesDao.findAll())
     }
@@ -487,22 +498,26 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = now,
                   feedback = null,
                   id = participantProjectSpeciesId1,
+                  internalComment = null,
                   modifiedBy = userId,
                   modifiedTime = now,
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId1,
+                  speciesNativeCategoryId = null,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
               ParticipantProjectSpeciesRow(
                   createdBy = userId,
                   createdTime = now,
                   feedback = null,
                   id = participantProjectSpeciesId2,
+                  internalComment = null,
                   modifiedBy = userId,
                   modifiedTime = now,
                   projectId = projectId,
                   rationale = null,
                   speciesId = speciesId2,
+                  speciesNativeCategoryId = null,
                   submissionStatusId = SubmissionStatus.NotSubmitted)),
           participantProjectSpeciesDao.findAll())
     }

@@ -82,6 +82,7 @@ import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.UploadId
@@ -2138,11 +2139,13 @@ abstract class DatabaseTest {
       createdTime: Instant = Instant.EPOCH,
       feedback: String? = null,
       id: Any? = null,
+      internalComment: String? = null,
       modifiedBy: Any = currentUser().userId,
       modifiedTime: Instant = Instant.EPOCH,
       projectId: Any = inserted.projectId,
       rationale: String? = null,
       speciesId: Any = inserted.speciesId,
+      speciesNativeCategory: SpeciesNativeCategory? = null,
       submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted,
   ): ParticipantProjectSpeciesId {
     val row =
@@ -2151,11 +2154,13 @@ abstract class DatabaseTest {
             createdTime = createdTime,
             feedback = feedback,
             id = id?.toIdWrapper { ParticipantProjectSpeciesId(it) },
+            internalComment = internalComment,
             modifiedBy = modifiedBy.toIdWrapper { UserId(it) },
             modifiedTime = modifiedTime,
             projectId = projectId.toIdWrapper { ProjectId(it) },
             rationale = rationale,
             speciesId = speciesId.toIdWrapper { SpeciesId(it) },
+            speciesNativeCategoryId = speciesNativeCategory,
             submissionStatusId = submissionStatus)
 
     participantProjectSpeciesDao.insert(row)

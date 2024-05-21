@@ -200,6 +200,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "internal_tags" to setOf(ALL, CUSTOMER),
                   "land_use_model_types" to setOf(ALL, ACCELERATOR, CUSTOMER),
                   "managed_location_types" to setOf(ALL, CUSTOMER),
+                  "species_native_categories" to setOf(ALL, SPECIES),
                   "notification_criticalities" to setOf(ALL, CUSTOMER),
                   "notification_types" to setOf(ALL, CUSTOMER),
                   "notifications" to setOf(ALL, CUSTOMER),
