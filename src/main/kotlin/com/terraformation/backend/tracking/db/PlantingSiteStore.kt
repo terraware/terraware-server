@@ -273,14 +273,9 @@ class PlantingSiteStore(
       throw PlantingSiteMapInvalidException(problems)
     }
 
-    // Simple planting sites can be arbitrarily small; if their areas would round down to zero,
-    // treat them as not having areas at all so we don't try to calculate area-based statistics.
-    val areaHa: BigDecimal? =
-        newModel.boundary?.calculateAreaHectares()?.let { if (it.signum() > 0) it else null }
-
     val plantingSitesRow =
         PlantingSitesRow(
-            areaHa = areaHa,
+            areaHa = newModel.areaHa,
             boundary = newModel.boundary,
             createdBy = currentUser().userId,
             createdTime = now,
@@ -578,7 +573,7 @@ class PlantingSiteStore(
 
     val zonesRow =
         PlantingZonesRow(
-            areaHa = zone.boundary.calculateAreaHectares(),
+            areaHa = zone.areaHa,
             boundary = zone.boundary,
             createdBy = userId,
             createdTime = now,
@@ -610,7 +605,7 @@ class PlantingSiteStore(
 
     val plantingSubzonesRow =
         PlantingSubzonesRow(
-            areaHa = subzone.boundary.calculateAreaHectares(),
+            areaHa = subzone.areaHa,
             boundary = subzone.boundary,
             createdBy = userId,
             createdTime = now,

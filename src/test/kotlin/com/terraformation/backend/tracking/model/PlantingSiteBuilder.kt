@@ -9,6 +9,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.rectanglePolygon
 import com.terraformation.backend.util.calculateAreaHectares
+import com.terraformation.backend.util.differenceNullable
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.PrecisionModel
@@ -111,7 +112,7 @@ private constructor(
 
   fun build(): ExistingPlantingSiteModel {
     return ExistingPlantingSiteModel(
-        areaHa = boundary.calculateAreaHectares(),
+        areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
         boundary = boundary,
         exclusion = exclusion,
         gridOrigin = geometryFactory.createPoint(boundary.envelope.coordinates[0]),
@@ -159,10 +160,10 @@ private constructor(
 
     fun build(): ExistingPlantingZoneModel {
       return ExistingPlantingZoneModel(
-          areaHa = boundary.calculateAreaHectares(),
+          areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
           boundary = boundary,
-          name = name,
           id = PlantingZoneId(currentZoneId),
+          name = name,
           numPermanentClusters = numPermanentClusters,
           numTemporaryPlots = numTemporaryPlots,
           plantingSubzones = plantingSubzones.ifEmpty { listOf(subzone()) },
@@ -206,7 +207,7 @@ private constructor(
 
       fun build(): ExistingPlantingSubzoneModel {
         return ExistingPlantingSubzoneModel(
-            areaHa = boundary.calculateAreaHectares(),
+            areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
             boundary = boundary,
             fullName = fullName,
             id = PlantingSubzoneId(currentSubzoneId),

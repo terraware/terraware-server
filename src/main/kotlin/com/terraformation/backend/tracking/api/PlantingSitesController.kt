@@ -295,9 +295,10 @@ data class NewPlantingSubzonePayload(
     }
   }
 
-  fun toModel(zoneName: String): NewPlantingSubzoneModel {
+  fun toModel(zoneName: String, exclusion: MultiPolygon?): NewPlantingSubzoneModel {
     return PlantingSubzoneModel.create(
         boundary = boundary.toMultiPolygon(),
+        exclusion = exclusion,
         fullName = "$zoneName-$name",
         name = name,
     )
@@ -319,13 +320,14 @@ data class NewPlantingZonePayload(
     plantingSubzones?.forEach { it.validate() }
   }
 
-  fun toModel(): NewPlantingZoneModel {
+  fun toModel(exclusion: MultiPolygon?): NewPlantingZoneModel {
     return PlantingZoneModel.create(
         boundary = boundary.toMultiPolygon(),
+        exclusion = exclusion,
         name = name,
         targetPlantingDensity =
             targetPlantingDensity ?: PlantingZoneModel.DEFAULT_TARGET_PLANTING_DENSITY,
-        plantingSubzones = plantingSubzones?.map { it.toModel(name) } ?: emptyList(),
+        plantingSubzones = plantingSubzones?.map { it.toModel(name, exclusion) } ?: emptyList(),
     )
   }
 }
@@ -370,15 +372,17 @@ data class CreatePlantingSiteRequestPayload(
   }
 
   fun toModel(): NewPlantingSiteModel {
+    val exclusionMultiPolygon = exclusion?.toMultiPolygon()
+
     return PlantingSiteModel.create(
         boundary = boundary?.toMultiPolygon(),
         description = description,
-        exclusion = exclusion?.toMultiPolygon(),
+        exclusion = exclusionMultiPolygon,
         name = name,
         organizationId = organizationId,
+        plantingZones = plantingZones?.map { it.toModel(exclusionMultiPolygon) } ?: emptyList(),
         projectId = projectId,
         timeZone = timeZone,
-        plantingZones = plantingZones?.map { it.toModel() } ?: emptyList(),
     )
   }
 }

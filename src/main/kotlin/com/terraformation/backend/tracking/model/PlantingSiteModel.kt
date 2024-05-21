@@ -10,6 +10,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.coveragePercent
+import com.terraformation.backend.util.differenceNullable
 import com.terraformation.backend.util.equalsIgnoreScale
 import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.nearlyCoveredBy
@@ -136,18 +137,20 @@ data class PlantingSiteModel<
   }
 
   fun toNew(): NewPlantingSiteModel =
-      create(
-          areaHa,
-          boundary,
-          description,
-          exclusion,
-          gridOrigin,
-          name,
-          organizationId,
-          plantingSeasons,
-          plantingZones.map { it.toNew() },
-          projectId,
-          timeZone)
+      NewPlantingSiteModel(
+          areaHa = areaHa,
+          boundary = boundary,
+          description = description,
+          exclusion = exclusion,
+          gridOrigin = gridOrigin,
+          id = null,
+          name = name,
+          organizationId = organizationId,
+          plantingSeasons = plantingSeasons,
+          plantingZones = plantingZones.map { it.toNew() },
+          projectId = projectId,
+          timeZone = timeZone,
+      )
 
   companion object {
     /**
@@ -178,7 +181,6 @@ data class PlantingSiteModel<
         )
 
     fun create(
-        areaHa: BigDecimal? = null,
         boundary: MultiPolygon? = null,
         description: String? = null,
         exclusion: MultiPolygon? = null,
@@ -189,21 +191,29 @@ data class PlantingSiteModel<
         plantingZones: List<NewPlantingZoneModel> = emptyList(),
         projectId: ProjectId? = null,
         timeZone: ZoneId? = null,
-    ) =
-        NewPlantingSiteModel(
-            areaHa = areaHa,
-            boundary = boundary,
-            description = description,
-            exclusion = exclusion,
-            gridOrigin = gridOrigin,
-            id = null,
-            name = name,
-            organizationId = organizationId,
-            plantingSeasons = plantingSeasons,
-            plantingZones = plantingZones,
-            projectId = projectId,
-            timeZone = timeZone,
-        )
+    ): NewPlantingSiteModel {
+      // If usable region is so small that its area rounds down to 0 hectares, treat the site as
+      // having no area so we don't try to calculate area-denominated statistics.
+      val areaHa =
+          boundary?.differenceNullable(exclusion)?.calculateAreaHectares()?.let { area ->
+            if (area.signum() > 0) area else null
+          }
+
+      return NewPlantingSiteModel(
+          areaHa = areaHa,
+          boundary = boundary,
+          description = description,
+          exclusion = exclusion,
+          gridOrigin = gridOrigin,
+          id = null,
+          name = name,
+          organizationId = organizationId,
+          plantingSeasons = plantingSeasons,
+          plantingZones = plantingZones,
+          projectId = projectId,
+          timeZone = timeZone,
+      )
+    }
   }
 }
 
