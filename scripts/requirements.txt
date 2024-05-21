@@ -1,5 +1,5 @@
 pyjwt==2.8.0
-requests==2.31.0
+requests==2.32.0
 types-requests==2.31.0.20240406
 
 # Not needed at runtime, but needed for dev/CI
