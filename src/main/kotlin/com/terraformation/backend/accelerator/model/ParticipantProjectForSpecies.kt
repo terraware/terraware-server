@@ -1,0 +1,35 @@
+package com.terraformation.backend.accelerator.model
+
+import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
+import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
+import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import org.jooq.Record
+
+data class ParticipantProjectsForSpecies(
+    val activeDeliverableId: DeliverableId? = null,
+    val participantProjectSpeciesId: ParticipantProjectSpeciesId,
+    val participantProjectSpeciesSubmissionStatus: SubmissionStatus,
+    val projectId: ProjectId,
+    val projectName: String,
+    val speciesId: SpeciesId,
+) {
+  companion object {
+    fun of(record: Record): ParticipantProjectsForSpecies {
+      return ParticipantProjectsForSpecies(
+          activeDeliverableId = record[DELIVERABLES.ID],
+          participantProjectSpeciesId = record[PARTICIPANT_PROJECT_SPECIES.ID]!!,
+          projectId = record[PROJECTS.ID]!!,
+          projectName = record[PROJECTS.NAME]!!,
+          participantProjectSpeciesSubmissionStatus =
+              record[PARTICIPANT_PROJECT_SPECIES.SUBMISSION_STATUS_ID]!!,
+          speciesId = record[SPECIES.ID]!!,
+      )
+    }
+  }
+}

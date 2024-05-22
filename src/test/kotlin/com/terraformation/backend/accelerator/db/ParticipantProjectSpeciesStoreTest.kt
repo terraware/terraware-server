@@ -6,8 +6,11 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesEditedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
+import com.terraformation.backend.accelerator.model.ParticipantProjectsForSpecies
+import com.terraformation.backend.accelerator.model.SpeciesForParticipantProject
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
@@ -15,6 +18,7 @@ import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -174,6 +178,199 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<ParticipantProjectSpeciesNotFoundException> {
         store.fetchOneById(participantProjectSpeciesId)
       }
+    }
+  }
+
+  @Nested
+  inner class FetchParticipantProjectsForSpecies {
+    @Test
+    fun `fetches the projects a species is associated to by species ID with an active deliverable`() {
+      val cohortId = insertCohort()
+      val moduleId = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      val deliverableId =
+          insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
+      // This one should not be returned because it is not a species type deliverable
+      insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Document)
+
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId1 = insertProject(participantId = participantId)
+      val projectId2 = insertProject(participantId = participantId)
+
+      val speciesId = insertSpecies()
+      val participantProjectSpeciesId1 =
+          insertParticipantProjectSpecies(projectId = projectId1, speciesId = speciesId)
+      val participantProjectSpeciesId2 =
+          insertParticipantProjectSpecies(projectId = projectId2, speciesId = speciesId)
+
+      assertEquals(
+          listOf(
+              ParticipantProjectsForSpecies(
+                  activeDeliverableId = deliverableId,
+                  participantProjectSpeciesId = participantProjectSpeciesId1,
+                  participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
+                  projectId = projectId1,
+                  projectName = "Project 1",
+                  speciesId = speciesId),
+              ParticipantProjectsForSpecies(
+                  activeDeliverableId = deliverableId,
+                  participantProjectSpeciesId = participantProjectSpeciesId2,
+                  participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
+                  projectId = projectId2,
+                  projectName = "Project 2",
+                  speciesId = speciesId)),
+          store.fetchParticipantProjectsForSpecies(speciesId))
+    }
+
+    @Test
+    fun `fetches the projects a species is associated to by species ID without an active deliverable`() {
+      val cohortId = insertCohort()
+
+      val moduleIdOld = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdOld)
+      insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
+
+      // Ensure the previously created module is in the past, so there is no active deliverable
+      clock.instant = Instant.EPOCH.plus(7, ChronoUnit.DAYS)
+
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId1 = insertProject(participantId = participantId)
+      val projectId2 = insertProject(participantId = participantId)
+
+      val speciesId = insertSpecies()
+      val participantProjectSpeciesId1 =
+          insertParticipantProjectSpecies(projectId = projectId1, speciesId = speciesId)
+      val participantProjectSpeciesId2 =
+          insertParticipantProjectSpecies(projectId = projectId2, speciesId = speciesId)
+
+      assertEquals(
+          listOf(
+              ParticipantProjectsForSpecies(
+                  activeDeliverableId = null,
+                  participantProjectSpeciesId = participantProjectSpeciesId1,
+                  participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
+                  projectId = projectId1,
+                  projectName = "Project 1",
+                  speciesId = speciesId),
+              ParticipantProjectsForSpecies(
+                  activeDeliverableId = null,
+                  participantProjectSpeciesId = participantProjectSpeciesId2,
+                  participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
+                  projectId = projectId2,
+                  projectName = "Project 2",
+                  speciesId = speciesId)),
+          store.fetchParticipantProjectsForSpecies(speciesId))
+    }
+
+    @Test
+    fun `does not include active deliverable ID if the user does not have permission to view project deliverables`() {
+      val cohortId = insertCohort()
+      val moduleId = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
+
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId1 = insertProject(participantId = participantId)
+      val projectId2 = insertProject(participantId = participantId)
+
+      val speciesId = insertSpecies()
+      val participantProjectSpeciesId1 =
+          insertParticipantProjectSpecies(projectId = projectId1, speciesId = speciesId)
+      val participantProjectSpeciesId2 =
+          insertParticipantProjectSpecies(projectId = projectId2, speciesId = speciesId)
+
+      every { user.canReadProjectDeliverables(any()) } returns false
+
+      assertEquals(
+          listOf(
+              ParticipantProjectsForSpecies(
+                  activeDeliverableId = null,
+                  participantProjectSpeciesId = participantProjectSpeciesId1,
+                  participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
+                  projectId = projectId1,
+                  projectName = "Project 1",
+                  speciesId = speciesId),
+              ParticipantProjectsForSpecies(
+                  activeDeliverableId = null,
+                  participantProjectSpeciesId = participantProjectSpeciesId2,
+                  participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
+                  projectId = projectId2,
+                  projectName = "Project 2",
+                  speciesId = speciesId)),
+          store.fetchParticipantProjectsForSpecies(speciesId))
+    }
+
+    @Test
+    fun `returns an empty list of the user does not have permission to read the project`() {
+      val cohortId = insertCohort()
+      val moduleId = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
+
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId = insertProject(participantId = participantId)
+
+      val speciesId = insertSpecies()
+      insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
+
+      every { user.canReadProject(any()) } returns false
+
+      assertEquals(
+          emptyList<ParticipantProjectsForSpecies>(),
+          store.fetchParticipantProjectsForSpecies(speciesId))
+    }
+  }
+
+  @Nested
+  inner class FetchSpeciesForParticipantProject {
+    @Test
+    fun `fetches the species and participant project species data associated to a participant project`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId = insertProject(participantId = participantId)
+
+      val speciesId1 = insertSpecies(scientificName = "Acacia Kochi")
+      val speciesId2 = insertSpecies(scientificName = "Juniperus scopulorum")
+      val participantProjectSpeciesId1 =
+          insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId1)
+      val participantProjectSpeciesId2 =
+          insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId2)
+
+      assertEquals(
+          listOf(
+              SpeciesForParticipantProject(
+                  participantProjectSpeciesId = participantProjectSpeciesId1,
+                  participantProjectSpeciesRationale = null,
+                  participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
+                  projectId = projectId,
+                  speciesId = speciesId1,
+                  speciesScientificName = "Acacia Kochi",
+                  speciesCommonName = null),
+              SpeciesForParticipantProject(
+                  participantProjectSpeciesId = participantProjectSpeciesId2,
+                  participantProjectSpeciesRationale = null,
+                  participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
+                  projectId = projectId,
+                  speciesId = speciesId2,
+                  speciesScientificName = "Juniperus scopulorum",
+                  speciesCommonName = null)),
+          store.fetchSpeciesForParticipantProjects(projectId))
+    }
+
+    @Test
+    fun `returns an empty list of the user does not have permission to read the project`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId = insertProject(participantId = participantId)
+
+      val speciesId = insertSpecies()
+      insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
+
+      every { user.canReadProject(any()) } returns false
+
+      assertEquals(
+          emptyList<SpeciesForParticipantProject>(),
+          store.fetchSpeciesForParticipantProjects(projectId))
     }
   }
 

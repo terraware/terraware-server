@@ -4,21 +4,32 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesEdi
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.ParticipantProjectSpeciesModel
+import com.terraformation.backend.accelerator.model.ParticipantProjectsForSpecies
+import com.terraformation.backend.accelerator.model.SpeciesForParticipantProject
 import com.terraformation.backend.accelerator.model.toModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectSpeciesDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.records.ParticipantProjectSpeciesRecord
+import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
+import com.terraformation.backend.db.accelerator.tables.references.MODULES
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
+import com.terraformation.backend.i18n.TimeZones
 import jakarta.inject.Named
 import java.time.Instant
 import java.time.InstantSource
+import java.time.LocalDate
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.TableField
@@ -117,6 +128,72 @@ class ParticipantProjectSpeciesStore(
         .deleteFrom(PARTICIPANT_PROJECT_SPECIES)
         .where(PARTICIPANT_PROJECT_SPECIES.ID.`in`(participantProjectSpeciesIds))
         .execute()
+  }
+
+  fun fetchParticipantProjectsForSpecies(
+      speciesId: SpeciesId
+  ): List<ParticipantProjectsForSpecies> {
+    val today = LocalDate.ofInstant(clock.instant(), TimeZones.UTC)
+    val user = currentUser()
+
+    return dslContext
+        .select(
+            DELIVERABLES.ID,
+            PROJECTS.NAME,
+            PROJECTS.ID,
+            PARTICIPANT_PROJECT_SPECIES.ID,
+            PARTICIPANT_PROJECT_SPECIES.SUBMISSION_STATUS_ID,
+            SPECIES.ID)
+        .from(SPECIES)
+        .join(PARTICIPANT_PROJECT_SPECIES)
+        .on(SPECIES.ID.eq(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID))
+        .join(PROJECTS)
+        .on(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(PROJECTS.ID))
+        .join(PARTICIPANTS)
+        .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+        .leftOuterJoin(COHORT_MODULES)
+        .on(
+            COHORT_MODULES.COHORT_ID.eq(PARTICIPANTS.COHORT_ID),
+            COHORT_MODULES.END_DATE.greaterOrEqual(today),
+            COHORT_MODULES.START_DATE.lessOrEqual(today))
+        .leftOuterJoin(MODULES)
+        .on(COHORT_MODULES.MODULE_ID.eq(MODULES.ID))
+        .leftOuterJoin(DELIVERABLES)
+        .on(
+            DELIVERABLES.MODULE_ID.eq(MODULES.ID),
+            DELIVERABLES.DELIVERABLE_TYPE_ID.eq(DeliverableType.Species))
+        .where(SPECIES.ID.eq(speciesId))
+        .fetch { record ->
+          if (user.canReadProjectDeliverables(record[PROJECTS.ID]!!)) {
+            ParticipantProjectsForSpecies.of(record)
+          } else {
+            ParticipantProjectsForSpecies.of(record).copy(activeDeliverableId = null)
+          }
+        }
+        .filter { user.canReadProject(it.projectId) }
+  }
+
+  fun fetchSpeciesForParticipantProjects(projectId: ProjectId): List<SpeciesForParticipantProject> {
+    val user = currentUser()
+
+    return dslContext
+        .select(
+            PROJECTS.NAME,
+            PROJECTS.ID,
+            PARTICIPANT_PROJECT_SPECIES.ID,
+            PARTICIPANT_PROJECT_SPECIES.RATIONALE,
+            PARTICIPANT_PROJECT_SPECIES.SUBMISSION_STATUS_ID,
+            SPECIES.ID,
+            SPECIES.COMMON_NAME,
+            SPECIES.SCIENTIFIC_NAME)
+        .from(SPECIES)
+        .join(PARTICIPANT_PROJECT_SPECIES)
+        .on(SPECIES.ID.eq(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID))
+        .join(PROJECTS)
+        .on(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(PROJECTS.ID))
+        .where(PROJECTS.ID.eq(projectId))
+        .fetch { SpeciesForParticipantProject.of(it) }
+        .filter { user.canReadProject(it.projectId) }
   }
 
   fun fetchLastCreatedSpeciesTime(projectId: ProjectId): Instant =

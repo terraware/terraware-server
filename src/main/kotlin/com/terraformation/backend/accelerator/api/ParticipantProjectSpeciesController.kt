@@ -4,11 +4,14 @@ import com.terraformation.backend.accelerator.ParticipantProjectSpeciesService
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesStore
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
+import com.terraformation.backend.accelerator.model.ParticipantProjectsForSpecies
+import com.terraformation.backend.accelerator.model.SpeciesForParticipantProject
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -25,14 +28,14 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
-@RequestMapping("/api/v1/accelerator/projects/species")
+@RequestMapping("/api/v1/accelerator")
 @RestController
 class ParticipantProjectSpeciesController(
     private val participantProjectSpeciesService: ParticipantProjectSpeciesService,
     private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
 ) {
   @ApiResponse200
-  @PostMapping("/assign")
+  @PostMapping("/projects/species/assign")
   @Operation(
       summary =
           "Creates a new participant project species entry for every project ID and species ID pairing.")
@@ -44,7 +47,7 @@ class ParticipantProjectSpeciesController(
   }
 
   @ApiResponse200
-  @PostMapping
+  @PostMapping("/projects/species")
   @Operation(summary = "Creates a new participant project species entry.")
   fun createParticipantProjectSpecies(
       @RequestBody payload: CreateParticipantProjectSpeciesPayload
@@ -63,7 +66,7 @@ class ParticipantProjectSpeciesController(
 
   @ApiResponse200
   @ApiResponse404
-  @DeleteMapping
+  @DeleteMapping("/projects/species")
   @Operation(summary = "Deletes participant project species entries.")
   fun deleteParticipantProjectSpecies(
       @RequestBody payload: DeleteParticipantProjectSpeciesPayload
@@ -75,7 +78,7 @@ class ParticipantProjectSpeciesController(
 
   @ApiResponse200
   @ApiResponse404
-  @GetMapping("/{participantProjectSpeciesId}")
+  @GetMapping("/projects/species/{participantProjectSpeciesId}")
   @Operation(summary = "Gets information about a participant project species.")
   fun getParticipantProjectSpecies(
       @PathVariable participantProjectSpeciesId: ParticipantProjectSpeciesId
@@ -87,7 +90,35 @@ class ParticipantProjectSpeciesController(
 
   @ApiResponse200
   @ApiResponse404
-  @PutMapping("/{participantProjectSpeciesId}")
+  @GetMapping("/species/{speciesId}/projects")
+  @Operation(
+      summary =
+          "Gets all participant projects associated to a species with active deliverable information if applicable.")
+  fun getProjectsForSpecies(
+      @PathVariable speciesId: SpeciesId
+  ): GetParticipantProjectsForSpeciesResponsePayload {
+    val results = participantProjectSpeciesStore.fetchParticipantProjectsForSpecies(speciesId)
+
+    return GetParticipantProjectsForSpeciesResponsePayload(
+        results.map { ParticipantProjectForSpeciesPayload(it) })
+  }
+
+  @ApiResponse200
+  @ApiResponse404
+  @GetMapping("/projects/{projectId}/species")
+  @Operation(summary = "Gets all species associated to a participant project.")
+  fun getSpeciesForProject(
+      @PathVariable projectId: ProjectId
+  ): GetSpeciesForParticipantProjectsResponsePayload {
+    val results = participantProjectSpeciesStore.fetchSpeciesForParticipantProjects(projectId)
+
+    return GetSpeciesForParticipantProjectsResponsePayload(
+        results.map { SpeciesForParticipantProjectPayload(it) })
+  }
+
+  @ApiResponse200
+  @ApiResponse404
+  @PutMapping("/projects/species/{participantProjectSpeciesId}")
   @Operation(summary = "Updates a participant project species entry.")
   fun updateParticipantProjectSpecies(
       @PathVariable participantProjectSpeciesId: ParticipantProjectSpeciesId,
@@ -142,6 +173,55 @@ data class ParticipantProjectSpeciesPayload(
 
 data class GetParticipantProjectSpeciesResponsePayload(
     val participantProjectSpecies: ParticipantProjectSpeciesPayload,
+) : SuccessResponsePayload
+
+data class ParticipantProjectForSpeciesPayload(
+    val activeDeliverableId: DeliverableId?,
+    val participantProjectSpeciesId: ParticipantProjectSpeciesId,
+    val participantProjectSpeciesSubmissionStatus: SubmissionStatus,
+    val projectId: ProjectId,
+    val projectName: String,
+    val speciesId: SpeciesId,
+) {
+  constructor(
+      model: ParticipantProjectsForSpecies
+  ) : this(
+      activeDeliverableId = model.activeDeliverableId,
+      participantProjectSpeciesId = model.participantProjectSpeciesId,
+      participantProjectSpeciesSubmissionStatus = model.participantProjectSpeciesSubmissionStatus,
+      projectId = model.projectId,
+      projectName = model.projectName,
+      speciesId = model.speciesId)
+}
+
+data class GetParticipantProjectsForSpeciesResponsePayload(
+    val participantProjectsForSpecies: List<ParticipantProjectForSpeciesPayload>,
+) : SuccessResponsePayload
+
+data class SpeciesForParticipantProjectPayload(
+    val participantProjectSpeciesId: ParticipantProjectSpeciesId,
+    val participantProjectSpeciesRationale: String?,
+    val participantProjectSpeciesSubmissionStatus: SubmissionStatus,
+    val projectId: ProjectId,
+    val speciesId: SpeciesId,
+    val speciesCommonName: String?,
+    val speciesScientificName: String,
+) {
+  constructor(
+      model: SpeciesForParticipantProject
+  ) : this(
+      participantProjectSpeciesId = model.participantProjectSpeciesId,
+      participantProjectSpeciesRationale = model.participantProjectSpeciesRationale,
+      participantProjectSpeciesSubmissionStatus = model.participantProjectSpeciesSubmissionStatus,
+      projectId = model.projectId,
+      speciesId = model.speciesId,
+      speciesCommonName = model.speciesCommonName,
+      speciesScientificName = model.speciesScientificName,
+  )
+}
+
+data class GetSpeciesForParticipantProjectsResponsePayload(
+    val speciesForParticipantProjects: List<SpeciesForParticipantProjectPayload>,
 ) : SuccessResponsePayload
 
 data class UpdateParticipantProjectSpeciesPayload(
