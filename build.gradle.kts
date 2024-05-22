@@ -219,6 +219,7 @@ tasks {
         isDaos = true
         isEmbeddables = true
         isJavaTimeTypes = true
+        isKotlinSetterJvmNameAnnotationsOnIsPrefix = false
         isPojos = true
         isPojosAsKotlinDataClasses = true
         isRecords = true
