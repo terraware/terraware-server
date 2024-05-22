@@ -38,11 +38,9 @@ class PlantingSiteEditCalculator(
         }
 
     return PlantingSiteEdit(
-        areaHa = desiredSite.boundary.calculateAreaHectares(),
         areaHaDifference = calculateAreaHaDifference(existingSite.boundary, desiredSite.boundary),
-        boundary = desiredSite.boundary,
-        exclusion = desiredSite.exclusion,
-        plantingSiteId = existingSite.id,
+        desiredModel = desiredSite,
+        existingModel = existingSite,
         plantingZoneEdits = zoneEdits,
         problems = problems,
     )
