@@ -4,6 +4,8 @@ import com.terraformation.backend.accelerator.ParticipantProjectSpeciesService
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesStore
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
+import com.terraformation.backend.accelerator.model.ParticipantProjectsForSpecies
+import com.terraformation.backend.accelerator.model.SpeciesForParticipantProject
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
@@ -12,7 +14,6 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
@@ -24,11 +25,10 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
-@RequestMapping("/api/v1/accelerator/")
+@RequestMapping("/api/v1/accelerator")
 @RestController
 class ParticipantProjectSpeciesController(
     private val participantProjectSpeciesService: ParticipantProjectSpeciesService,
@@ -95,24 +95,12 @@ class ParticipantProjectSpeciesController(
       summary =
           "Gets all participant projects associated to a species with active deliverable information if applicable.")
   fun getProjectsForSpecies(
-      @PathVariable speciesId: SpeciesId,
-      @RequestParam organizationId: OrganizationId
+      @PathVariable speciesId: SpeciesId
   ): GetParticipantProjectsForSpeciesResponsePayload {
-    val results =
-        participantProjectSpeciesStore.fetchParticipantProjectsForSpecies(organizationId, speciesId)
+    val results = participantProjectSpeciesStore.fetchParticipantProjectsForSpecies(speciesId)
 
     return GetParticipantProjectsForSpeciesResponsePayload(
-        results.map {
-          ParticipantProjectForSpeciesPayload(
-              activeDeliverableId = it.activeDeliverableId,
-              participantProjectSpeciesId = it.participantProjectSpeciesId,
-              participantProjectSpeciesSubmissionStatus =
-                  it.participantProjectSpeciesSubmissionStatus,
-              projectId = it.projectId,
-              projectName = it.projectName,
-              speciesId = it.speciesId,
-          )
-        })
+        results.map { ParticipantProjectForSpeciesPayload(it) })
   }
 
   @ApiResponse200
@@ -125,18 +113,7 @@ class ParticipantProjectSpeciesController(
     val results = participantProjectSpeciesStore.fetchSpeciesForParticipantProjects(projectId)
 
     return GetSpeciesForParticipantProjectsResponsePayload(
-        results.map {
-          SpeciesForParticipantProjectPayload(
-              participantProjectSpeciesId = it.participantProjectSpeciesId,
-              participantProjectSpeciesRationale = it.participantProjectSpeciesRationale,
-              participantProjectSpeciesSubmissionStatus =
-                  it.participantProjectSpeciesSubmissionStatus,
-              projectId = it.projectId,
-              speciesId = it.speciesId,
-              speciesCommonName = it.speciesCommonName,
-              speciesScientificName = it.speciesScientificName,
-          )
-        })
+        results.map { SpeciesForParticipantProjectPayload(it) })
   }
 
   @ApiResponse200
@@ -205,7 +182,17 @@ data class ParticipantProjectForSpeciesPayload(
     val projectId: ProjectId,
     val projectName: String,
     val speciesId: SpeciesId,
-)
+) {
+  constructor(
+      model: ParticipantProjectsForSpecies
+  ) : this(
+      activeDeliverableId = model.activeDeliverableId,
+      participantProjectSpeciesId = model.participantProjectSpeciesId,
+      participantProjectSpeciesSubmissionStatus = model.participantProjectSpeciesSubmissionStatus,
+      projectId = model.projectId,
+      projectName = model.projectName,
+      speciesId = model.speciesId)
+}
 
 data class GetParticipantProjectsForSpeciesResponsePayload(
     val participantProjectsForSpecies: List<ParticipantProjectForSpeciesPayload>,
@@ -219,7 +206,19 @@ data class SpeciesForParticipantProjectPayload(
     val speciesId: SpeciesId,
     val speciesCommonName: String?,
     val speciesScientificName: String,
-)
+) {
+  constructor(
+      model: SpeciesForParticipantProject
+  ) : this(
+      participantProjectSpeciesId = model.participantProjectSpeciesId,
+      participantProjectSpeciesRationale = model.participantProjectSpeciesRationale,
+      participantProjectSpeciesSubmissionStatus = model.participantProjectSpeciesSubmissionStatus,
+      projectId = model.projectId,
+      speciesId = model.speciesId,
+      speciesCommonName = model.speciesCommonName,
+      speciesScientificName = model.speciesScientificName,
+  )
+}
 
 data class GetSpeciesForParticipantProjectsResponsePayload(
     val speciesForParticipantProjects: List<SpeciesForParticipantProjectPayload>,

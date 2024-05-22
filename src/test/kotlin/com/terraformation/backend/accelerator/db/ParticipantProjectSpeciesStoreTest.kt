@@ -219,7 +219,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId2,
                   projectName = "Project 2",
                   speciesId = speciesId)),
-          store.fetchParticipantProjectsForSpecies(inserted.organizationId, speciesId))
+          store.fetchParticipantProjectsForSpecies(speciesId))
     }
 
     @Test
@@ -259,7 +259,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId2,
                   projectName = "Project 2",
                   speciesId = speciesId)),
-          store.fetchParticipantProjectsForSpecies(inserted.organizationId, speciesId))
+          store.fetchParticipantProjectsForSpecies(speciesId))
     }
 
     @Test
@@ -297,7 +297,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId2,
                   projectName = "Project 2",
                   speciesId = speciesId)),
-          store.fetchParticipantProjectsForSpecies(inserted.organizationId, speciesId))
+          store.fetchParticipantProjectsForSpecies(speciesId))
     }
 
     @Test
@@ -317,7 +317,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           emptyList<ParticipantProjectsForSpecies>(),
-          store.fetchParticipantProjectsForSpecies(inserted.organizationId, speciesId))
+          store.fetchParticipantProjectsForSpecies(speciesId))
     }
   }
 
@@ -330,7 +330,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val projectId = insertProject(participantId = participantId)
 
       val speciesId1 = insertSpecies(scientificName = "Acacia Kochi")
-      val speciesId2 = insertSpecies(scientificName = "Acacia Koa")
+      val speciesId2 = insertSpecies(scientificName = "Juniperus scopulorum")
       val participantProjectSpeciesId1 =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId1)
       val participantProjectSpeciesId2 =
@@ -352,7 +352,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
                   projectId = projectId,
                   speciesId = speciesId2,
-                  speciesScientificName = "Acacia Koa",
+                  speciesScientificName = "Juniperus scopulorum",
                   speciesCommonName = null)),
           store.fetchSpeciesForParticipantProjects(projectId))
     }

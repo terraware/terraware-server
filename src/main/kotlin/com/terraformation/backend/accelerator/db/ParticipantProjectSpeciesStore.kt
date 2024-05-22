@@ -20,11 +20,9 @@ import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
-import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.i18n.TimeZones
@@ -133,7 +131,6 @@ class ParticipantProjectSpeciesStore(
   }
 
   fun fetchParticipantProjectsForSpecies(
-      organizationId: OrganizationId,
       speciesId: SpeciesId
   ): List<ParticipantProjectsForSpecies> {
     val today = LocalDate.ofInstant(clock.instant(), TimeZones.UTC)
@@ -152,8 +149,6 @@ class ParticipantProjectSpeciesStore(
         .on(SPECIES.ID.eq(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID))
         .join(PROJECTS)
         .on(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(PROJECTS.ID))
-        .join(ORGANIZATIONS)
-        .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
         .join(PARTICIPANTS)
         .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
         .leftOuterJoin(COHORT_MODULES)
@@ -167,14 +162,12 @@ class ParticipantProjectSpeciesStore(
         .on(
             DELIVERABLES.MODULE_ID.eq(MODULES.ID),
             DELIVERABLES.DELIVERABLE_TYPE_ID.eq(DeliverableType.Species))
-        .where(ORGANIZATIONS.ID.eq(organizationId))
-        .and(SPECIES.ID.eq(speciesId))
-        .fetch {
-          if (user.canReadProjectDeliverables(it[PROJECTS.ID]!!)) {
-            ParticipantProjectsForSpecies.of(it)
+        .where(SPECIES.ID.eq(speciesId))
+        .fetch { record ->
+          if (user.canReadProjectDeliverables(record[PROJECTS.ID]!!)) {
+            ParticipantProjectsForSpecies.of(record)
           } else {
-            it[DELIVERABLES.ID] = null
-            ParticipantProjectsForSpecies.of(it)
+            ParticipantProjectsForSpecies.of(record).copy(activeDeliverableId = null)
           }
         }
         .filter { user.canReadProject(it.projectId) }
@@ -198,8 +191,6 @@ class ParticipantProjectSpeciesStore(
         .on(SPECIES.ID.eq(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID))
         .join(PROJECTS)
         .on(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(PROJECTS.ID))
-        .join(PARTICIPANTS)
-        .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
         .where(PROJECTS.ID.eq(projectId))
         .fetch { SpeciesForParticipantProject.of(it) }
         .filter { user.canReadProject(it.projectId) }
