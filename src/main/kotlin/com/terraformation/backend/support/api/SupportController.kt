@@ -1,6 +1,7 @@
 package com.terraformation.backend.support.api
 
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
+import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.SupportEndpoint
 import com.terraformation.backend.support.SupportService
 import com.terraformation.backend.support.atlassian.model.ServiceRequestTypeModel
@@ -50,7 +51,8 @@ data class ServiceRequestType(
   )
 }
 
-data class ListSupportRequestTypesResponsePayload(val types: List<ServiceRequestType>)
+data class ListSupportRequestTypesResponsePayload(val types: List<ServiceRequestType>) :
+    SuccessResponsePayload
 
 data class SubmitSupportRequestPayload(
     val requestTypeId: Int,
