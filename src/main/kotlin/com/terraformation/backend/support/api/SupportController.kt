@@ -1,6 +1,6 @@
 package com.terraformation.backend.support.api
 
-import com.terraformation.backend.api.SimpleSuccessResponsePayload
+import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.SupportEndpoint
 import com.terraformation.backend.support.SupportService
 import com.terraformation.backend.support.atlassian.model.ServiceRequestTypeModel
@@ -30,9 +30,10 @@ class SupportController(private val service: SupportService) {
   @Operation(summary = "Submit support request types.")
   fun submitRequest(
       @RequestBody payload: SubmitSupportRequestPayload
-  ): SimpleSuccessResponsePayload {
-    service.submitServiceRequest(payload.description, payload.summary, payload.requestTypeId)
-    return SimpleSuccessResponsePayload()
+  ): SubmitSupportRequestResponsePayload {
+    val issueKey =
+        service.submitServiceRequest(payload.description, payload.summary, payload.requestTypeId)
+    return SubmitSupportRequestResponsePayload(issueKey)
   }
 }
 
@@ -50,10 +51,13 @@ data class ServiceRequestType(
   )
 }
 
-data class ListSupportRequestTypesResponsePayload(val types: List<ServiceRequestType>)
+data class ListSupportRequestTypesResponsePayload(val types: List<ServiceRequestType>) :
+    SuccessResponsePayload
 
 data class SubmitSupportRequestPayload(
     val requestTypeId: Int,
     val description: String,
     val summary: String,
 )
+
+data class SubmitSupportRequestResponsePayload(val issueKey: String) : SuccessResponsePayload
