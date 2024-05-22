@@ -1,3 +1,4 @@
+1873c0d9be8 SW-5183 Added controller for support requests, integrated with emails (#1975)
 0af216578aa SW-5230 Ignore exclusions in site/zone/subzone areas (#1978)
 803471178c3 Set and use correct factory on geometry objects (#1977)
 c2d2bcb1b43 Update dependency requests to v2.32.0 [SECURITY] (#1973)
