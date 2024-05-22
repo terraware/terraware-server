@@ -19,12 +19,12 @@ class SupportService(
 ) {
   fun submitServiceRequest(description: String, summary: String, requestTypeId: Int) {
     val user = userStore.fetchOneById(currentUser().userId) as IndividualUser
-    val response =
-        atlassianHttpClient.createServiceDeskRequest(
-            description, summary, requestTypeId, user.email)
     val requestType =
         atlassianHttpClient.requestTypes[requestTypeId]
             ?: throw IllegalArgumentException("Request ID type not recognized")
+    val response =
+        atlassianHttpClient.createServiceDeskRequest(
+            description, summary, requestTypeId, user.email)
 
     emailService.sendUserNotification(
         user,
