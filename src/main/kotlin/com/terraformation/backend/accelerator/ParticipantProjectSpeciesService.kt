@@ -95,8 +95,7 @@ class ParticipantProjectSpeciesService(
     }
 
     val projects =
-        participantProjectSpeciesStore.fetchParticipantProjectsForSpecies(
-            event.species.organizationId, event.species.id)
+        participantProjectSpeciesStore.fetchParticipantProjectsForSpecies(event.species.id)
 
     dslContext.transaction { _ ->
       projects.forEach { project ->
