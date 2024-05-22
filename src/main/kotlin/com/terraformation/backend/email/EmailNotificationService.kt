@@ -60,6 +60,7 @@ import com.terraformation.backend.email.model.PlantingSeasonNotScheduledSupport
 import com.terraformation.backend.email.model.PlantingSeasonRescheduled
 import com.terraformation.backend.email.model.PlantingSeasonScheduled
 import com.terraformation.backend.email.model.PlantingSeasonStarted
+import com.terraformation.backend.email.model.PlantingSiteMapEdited
 import com.terraformation.backend.email.model.ReportCreated
 import com.terraformation.backend.email.model.ScheduleObservation
 import com.terraformation.backend.email.model.ScheduleObservationReminder
@@ -84,6 +85,7 @@ import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledSuppo
 import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
+import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -591,6 +593,22 @@ class EmailNotificationService(
                   .toString()),
           roles = setOf(Role.Admin, Role.Manager, Role.Owner))
     }
+  }
+
+  @EventListener
+  fun on(event: PlantingSiteMapEditedEvent) {
+    val organization = organizationStore.fetchOneById(event.edit.existingModel.organizationId)
+
+    sendToOrganizationContact(
+        organization,
+        PlantingSiteMapEdited(
+            config = config,
+            addedToOrRemovedFrom =
+                if (event.edit.areaHaDifference.signum() < 0) "removed from" else "added to",
+            areaHaDifference = event.edit.areaHaDifference.abs().toPlainString(),
+            organizationName = organization.name,
+            plantingSiteName = event.edit.existingModel.name,
+        ))
   }
 
   @EventListener

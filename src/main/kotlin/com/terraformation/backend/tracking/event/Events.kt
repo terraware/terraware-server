@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.event
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import java.time.LocalDate
@@ -98,3 +99,5 @@ data class PlantingSeasonNotScheduledSupportNotificationEvent(
     override val plantingSiteId: PlantingSiteId,
     override val notificationNumber: Int,
 ) : PlantingSeasonSchedulingNotificationEvent
+
+data class PlantingSiteMapEditedEvent(val edit: PlantingSiteEdit)
