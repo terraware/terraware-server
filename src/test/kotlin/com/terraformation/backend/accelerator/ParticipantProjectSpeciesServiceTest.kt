@@ -14,6 +14,8 @@ import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.species.event.SpeciesEditedEvent
+import com.terraformation.backend.species.model.ExistingSpeciesModel
 import io.mockk.every
 import io.mockk.spyk
 import io.mockk.verify
@@ -29,18 +31,19 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
 
+  private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore by lazy {
+    spyk(
+        ParticipantProjectSpeciesStore(
+            clock, dslContext, eventPublisher, participantProjectSpeciesDao, projectsDao))
+  }
+
   private val submissionStore: SubmissionStore by lazy {
     spyk(SubmissionStore(clock, dslContext, eventPublisher))
   }
 
   private val service: ParticipantProjectSpeciesService by lazy {
     ParticipantProjectSpeciesService(
-        clock,
-        dslContext,
-        eventPublisher,
-        ParticipantProjectSpeciesStore(
-            clock, dslContext, eventPublisher, participantProjectSpeciesDao, projectsDao),
-        submissionStore)
+        dslContext, eventPublisher, participantProjectSpeciesStore, submissionStore)
   }
 
   @BeforeEach
@@ -54,6 +57,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadParticipantProjectSpecies(any()) } returns true
     every { user.canReadProjectDeliverables(any()) } returns true
     every { user.canReadSubmission(any()) } returns true
+    every { user.canUpdateParticipantProjectSpecies(any()) } returns true
   }
 
   @Nested
@@ -206,6 +210,77 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
         submissionStore.fetchActiveSpeciesDeliverableSubmission(projectId1)
         submissionStore.fetchActiveSpeciesDeliverableSubmission(projectId2)
       }
+    }
+  }
+
+  @Nested
+  inner class UpdateStatusEvent {
+    @Test
+    fun `updates the status for the participant project species if species fields are edited by non-accelerator-users`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+
+      val projectId1 = insertProject(participantId = participantId)
+      val projectId2 = insertProject(participantId = participantId)
+      val projectId3 = insertProject(participantId = participantId)
+      val speciesId = insertSpecies()
+
+      val participantProjectSpeciesId1 =
+          insertParticipantProjectSpecies(
+              projectId = projectId1,
+              speciesId = speciesId,
+              submissionStatus = SubmissionStatus.Approved)
+      // This one is ignored since it is already "In Review"
+      insertParticipantProjectSpecies(
+          projectId = projectId2,
+          speciesId = speciesId,
+          submissionStatus = SubmissionStatus.InReview)
+      val participantProjectSpeciesId3 =
+          insertParticipantProjectSpecies(
+              projectId = projectId3,
+              speciesId = speciesId,
+              submissionStatus = SubmissionStatus.Rejected)
+
+      every { user.canReadAllAcceleratorDetails() } returns false
+
+      service.on(
+          SpeciesEditedEvent(
+              species =
+                  ExistingSpeciesModel(
+                      id = speciesId,
+                      organizationId = inserted.organizationId,
+                      scientificName = "Species 1")))
+
+      verify(exactly = 1) {
+        participantProjectSpeciesStore.update(participantProjectSpeciesId1, any())
+        participantProjectSpeciesStore.update(participantProjectSpeciesId3, any())
+      }
+    }
+
+    @Test
+    fun `does not update the status of the participant project species if the species fields are edited by accelerator-users`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+
+      val projectId = insertProject(participantId = participantId)
+      val speciesId = insertSpecies()
+
+      insertParticipantProjectSpecies(
+          projectId = projectId,
+          speciesId = speciesId,
+          submissionStatus = SubmissionStatus.Approved)
+
+      every { user.canReadAllAcceleratorDetails() } returns true
+
+      service.on(
+          SpeciesEditedEvent(
+              species =
+                  ExistingSpeciesModel(
+                      id = speciesId,
+                      organizationId = inserted.organizationId,
+                      scientificName = "Species 1")))
+
+      verify(exactly = 0) { participantProjectSpeciesStore.update(any(), any()) }
     }
   }
 }

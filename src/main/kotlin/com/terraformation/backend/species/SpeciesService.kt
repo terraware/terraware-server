@@ -5,14 +5,17 @@ import com.terraformation.backend.db.SpeciesInUseException
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.species.event.SpeciesEditedEvent
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.NewSpeciesModel
 import jakarta.inject.Named
 import org.jooq.DSLContext
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class SpeciesService(
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val speciesChecker: SpeciesChecker,
     private val speciesStore: SpeciesStore,
 ) {
@@ -32,6 +35,8 @@ class SpeciesService(
 
       val updatedRow = speciesStore.updateSpecies(model)
       speciesChecker.recheckSpecies(existingRow, updatedRow)
+
+      eventPublisher.publishEvent(SpeciesEditedEvent(species = updatedRow))
 
       updatedRow
     }
