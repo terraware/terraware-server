@@ -13,6 +13,7 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.tracking.edit.PlantingSiteEditProblem
 import java.time.LocalDate
 
 class CrossDeliveryReassignmentNotAllowedException(
@@ -78,6 +79,9 @@ class PlantingSiteMapInvalidException(val problems: List<String>) :
     RuntimeException("Found problems in planting site map data") {
   constructor(problem: String) : this(listOf(problem))
 }
+
+class PlantingSiteEditInvalidException(val problems: List<PlantingSiteEditProblem>) :
+    RuntimeException("Found problems in planting site edit")
 
 class PlotAlreadyClaimedException(val monitoringPlotId: MonitoringPlotId) :
     MismatchedStateException("Monitoring plot $monitoringPlotId is claimed by another user")

@@ -38,12 +38,16 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_NOTIFICATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.tracking.edit.PlantingSiteEdit
+import com.terraformation.backend.tracking.edit.PlantingSubzoneEdit
+import com.terraformation.backend.tracking.edit.PlantingZoneEdit
 import com.terraformation.backend.tracking.event.PlantingSeasonEndedEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
@@ -393,6 +397,197 @@ class PlantingSiteStore(
       if (initialTimeZone != editedTimeZone) {
         eventPublisher.publishEvent(
             PlantingSiteTimeZoneChangedEvent(edited, initialTimeZone, editedTimeZone))
+      }
+    }
+  }
+
+  fun applyPlantingSiteEdit(plantingSiteEdit: PlantingSiteEdit): ExistingPlantingSiteModel {
+    val plantingSiteId = plantingSiteEdit.existingModel.id
+
+    if (plantingSiteEdit.problems.isNotEmpty()) {
+      throw PlantingSiteEditInvalidException(plantingSiteEdit.problems)
+    }
+
+    requirePermissions { updatePlantingSite(plantingSiteId) }
+
+    return withLockedPlantingSite(plantingSiteId) {
+      val existing = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
+      val now = clock.instant()
+      val userId = currentUser().userId
+
+      if (plantingSiteEdit.plantingZoneEdits.isEmpty() &&
+          existing.boundary.equalsOrBothNull(plantingSiteEdit.desiredModel.boundary, 0.00001) &&
+          existing.exclusion.equalsOrBothNull(plantingSiteEdit.desiredModel.exclusion)) {
+        log.debug("No-op edit for planting site $plantingSiteId")
+        return@withLockedPlantingSite existing
+      }
+
+      with(PLANTING_SITES) {
+        dslContext
+            .update(PLANTING_SITES)
+            .set(AREA_HA, plantingSiteEdit.desiredModel.areaHa)
+            .set(BOUNDARY, plantingSiteEdit.desiredModel.boundary)
+            .set(EXCLUSION, plantingSiteEdit.desiredModel.exclusion)
+            .set(MODIFIED_BY, userId)
+            .set(MODIFIED_TIME, now)
+            .where(ID.eq(plantingSiteId))
+            .execute()
+      }
+
+      val plantingSiteHistoryId =
+          with(PLANTING_SITE_HISTORIES) {
+            dslContext
+                .insertInto(PLANTING_SITE_HISTORIES)
+                .set(BOUNDARY, plantingSiteEdit.desiredModel.boundary)
+                .set(CREATED_BY, userId)
+                .set(CREATED_TIME, now)
+                .set(EXCLUSION, plantingSiteEdit.desiredModel.exclusion)
+                .set(GRID_ORIGIN, existing.gridOrigin)
+                .set(PLANTING_SITE_ID, plantingSiteId)
+                .returning(ID)
+                .fetchOne(ID)!!
+          }
+
+      plantingSiteEdit.plantingZoneEdits.forEach {
+        applyPlantingZoneEdit(it, plantingSiteId, plantingSiteHistoryId, now)
+      }
+      existing.plantingZones.forEach { zone ->
+        if (plantingSiteEdit.plantingZoneEdits.none { it.existingModel?.id == zone.id }) {
+          val plantingZoneHistoryId = insertPlantingZoneHistory(zone, plantingSiteHistoryId)
+          zone.plantingSubzones.forEach { subzone ->
+            insertPlantingSubzoneHistory(subzone, plantingZoneHistoryId)
+          }
+        }
+      }
+
+      fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
+    }
+  }
+
+  private fun applyPlantingZoneEdit(
+      edit: PlantingZoneEdit,
+      plantingSiteId: PlantingSiteId,
+      plantingSiteHistoryId: PlantingSiteHistoryId,
+      now: Instant
+  ) {
+    when (edit) {
+      is PlantingZoneEdit.Create -> {
+        val plantingZoneId = createPlantingZone(edit.desiredModel.toNew(), plantingSiteId, now)
+        val plantingZoneHistoryId =
+            insertPlantingZoneHistory(edit.desiredModel, plantingSiteHistoryId, plantingZoneId)
+        edit.plantingSubzoneEdits.forEach {
+          applyPlantingSubzoneEdit(it, plantingSiteId, plantingZoneId, plantingZoneHistoryId, now)
+        }
+      }
+      is PlantingZoneEdit.Delete -> {
+        // Subzones and plots will be deleted by ON DELETE CASCADE
+        val rowsDeleted =
+            dslContext
+                .deleteFrom(PLANTING_ZONES)
+                .where(PLANTING_ZONES.ID.eq(edit.existingModel.id))
+                .execute()
+        if (rowsDeleted != 1) {
+          throw PlantingZoneNotFoundException(edit.existingModel.id)
+        }
+      }
+      is PlantingZoneEdit.Update -> {
+        with(PLANTING_ZONES) {
+          val rowsUpdated =
+              dslContext
+                  .update(PLANTING_ZONES)
+                  .set(AREA_HA, edit.desiredModel.areaHa)
+                  .set(BOUNDARY, edit.desiredModel.boundary)
+                  .set(
+                      EXTRA_PERMANENT_CLUSTERS,
+                      edit.existingModel.extraPermanentClusters + edit.numPermanentClustersToAdd)
+                  .set(MODIFIED_BY, currentUser().userId)
+                  .set(MODIFIED_TIME, now)
+                  .set(NAME, edit.desiredModel.name)
+                  .set(
+                      NUM_PERMANENT_CLUSTERS,
+                      edit.existingModel.numPermanentClusters + edit.numPermanentClustersToAdd)
+                  .set(TARGET_PLANTING_DENSITY, edit.desiredModel.targetPlantingDensity)
+                  .where(ID.eq(edit.existingModel.id))
+                  .execute()
+          if (rowsUpdated != 1) {
+            throw PlantingZoneNotFoundException(edit.existingModel.id)
+          }
+        }
+        val plantingZoneHistoryId =
+            insertPlantingZoneHistory(
+                edit.desiredModel, plantingSiteHistoryId, edit.existingModel.id)
+
+        edit.plantingSubzoneEdits.forEach {
+          applyPlantingSubzoneEdit(
+              it, plantingSiteId, edit.existingModel.id, plantingZoneHistoryId, now)
+        }
+
+        edit.existingModel.plantingSubzones.forEach { subzone ->
+          if (edit.plantingSubzoneEdits.none { it.existingModel?.id == subzone.id }) {
+            insertPlantingSubzoneHistory(subzone, plantingZoneHistoryId)
+          }
+        }
+
+        if (edit.numPermanentClustersToAdd > 0) {
+          val newClusterNumbers =
+              (1..edit.existingModel.numPermanentClusters + edit.numPermanentClustersToAdd)
+                  .shuffled()
+                  .take(edit.numPermanentClustersToAdd)
+                  .sorted()
+          newClusterNumbers.forEach {
+            insertUnusedPermanentClusterNumber(edit.existingModel.id, it)
+          }
+
+          // Need to create permanent clusters using the updated subzones since we need their IDs.
+          val updatedSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
+          val updatedZone = updatedSite.plantingZones.single { it.id == edit.existingModel.id }
+          createPermanentClusters(updatedSite, updatedZone, newClusterNumbers, edit.addedRegion)
+        }
+      }
+    }
+  }
+
+  private fun applyPlantingSubzoneEdit(
+      edit: PlantingSubzoneEdit,
+      plantingSiteId: PlantingSiteId,
+      plantingZoneId: PlantingZoneId,
+      plantingZoneHistoryId: PlantingZoneHistoryId,
+      now: Instant
+  ) {
+    when (edit) {
+      is PlantingSubzoneEdit.Create -> {
+        val plantingSubzoneId =
+            createPlantingSubzone(edit.desiredModel.toNew(), plantingSiteId, plantingZoneId, now)
+        insertPlantingSubzoneHistory(edit.desiredModel, plantingZoneHistoryId, plantingSubzoneId)
+      }
+      is PlantingSubzoneEdit.Delete -> {
+        // Plots will be deleted by ON DELETE CASCADE. This may legitimately delete 0 rows if the
+        // parent zone has already been deleted.
+        dslContext
+            .deleteFrom(PLANTING_SUBZONES)
+            .where(PLANTING_SUBZONES.ID.eq(edit.existingModel.id))
+            .execute()
+      }
+      is PlantingSubzoneEdit.Update -> {
+        with(PLANTING_SUBZONES) {
+          val rowsUpdated =
+              dslContext
+                  .update(PLANTING_SUBZONES)
+                  .set(AREA_HA, edit.desiredModel.areaHa)
+                  .set(BOUNDARY, edit.desiredModel.boundary)
+                  .set(FULL_NAME, edit.desiredModel.fullName)
+                  .set(MODIFIED_BY, currentUser().userId)
+                  .set(MODIFIED_TIME, now)
+                  .set(NAME, edit.desiredModel.name)
+                  .where(ID.eq(edit.existingModel.id))
+                  .execute()
+          if (rowsUpdated != 1) {
+            throw PlantingSubzoneNotFoundException(edit.existingModel.id)
+          }
+        }
+
+        insertPlantingSubzoneHistory(
+            edit.desiredModel, plantingZoneHistoryId, edit.existingModel.id)
       }
     }
   }
@@ -1008,6 +1203,28 @@ class PlantingSiteStore(
   }
 
   /**
+   * Makes room for a new permanent cluster with a particular number. The numbers of any existing
+   * clusters with the desired number or higher are incremented by 1.
+   */
+  private fun insertUnusedPermanentClusterNumber(
+      plantingZoneId: PlantingZoneId,
+      clusterNumber: Int
+  ) {
+    with(MONITORING_PLOTS) {
+      dslContext
+          .update(MONITORING_PLOTS)
+          .set(PERMANENT_CLUSTER, PERMANENT_CLUSTER.plus(1))
+          .where(
+              PLANTING_SUBZONE_ID.`in`(
+                  DSL.select(PLANTING_SUBZONES.ID)
+                      .from(PLANTING_SUBZONES)
+                      .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(plantingZoneId))))
+          .and(PERMANENT_CLUSTER.ge(clusterNumber))
+          .execute()
+    }
+  }
+
+  /**
    * Creates permanent clusters with a specific set of cluster numbers. The permanent clusters may
    * include a mix of newly-created monitoring plots and plots that exist already but were only used
    * as temporary plots in the past.
@@ -1016,6 +1233,7 @@ class PlantingSiteStore(
       plantingSite: ExistingPlantingSiteModel,
       plantingZone: ExistingPlantingZoneModel,
       clusterNumbers: List<Int>,
+      searchBoundary: MultiPolygon = plantingZone.boundary,
   ): List<MonitoringPlotId> {
     val userId = currentUser().userId
     val now = clock.instant()
@@ -1032,11 +1250,12 @@ class PlantingSiteStore(
     val clusterBoundaries: List<Pair<Polygon, Int>> =
         plantingZone
             .findUnusedSquares(
-                gridOrigin = plantingSite.gridOrigin,
-                sizeMeters = MONITORING_PLOT_SIZE * 2,
                 count = clusterNumbers.size,
                 excludeAllPermanentPlots = true,
                 exclusion = plantingSite.exclusion,
+                gridOrigin = plantingSite.gridOrigin,
+                searchBoundary = searchBoundary,
+                sizeMeters = MONITORING_PLOT_SIZE * 2,
             )
             .zip(clusterNumbers)
 

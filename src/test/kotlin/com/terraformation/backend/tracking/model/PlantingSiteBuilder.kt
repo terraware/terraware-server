@@ -12,6 +12,7 @@ import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.differenceNullable
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.PrecisionModel
 
 /**
@@ -99,13 +100,15 @@ private constructor(
     ): NewPlantingSiteModel = existingSite(x, y, width, height, func).toNew()
   }
 
+  private val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+
   var boundary: MultiPolygon = rectangle(width, height, x, y)
   var exclusion: MultiPolygon? = null
+  var gridOrigin: Point = geometryFactory.createPoint(boundary.envelope.coordinates[0])
   var name: String = "Site"
 
   private var currentSubzoneId: Long = 0
   private var currentZoneId: Long = 0
-  private val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
   private var nextMonitoringPlotId: Long = 1
   private var nextZoneX = x
   private val plantingZones = mutableListOf<ExistingPlantingZoneModel>()
@@ -115,7 +118,7 @@ private constructor(
         areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
         boundary = boundary,
         exclusion = exclusion,
-        gridOrigin = geometryFactory.createPoint(boundary.envelope.coordinates[0]),
+        gridOrigin = gridOrigin,
         id = PlantingSiteId(1),
         name = name,
         organizationId = OrganizationId(1),
@@ -150,6 +153,7 @@ private constructor(
       private val height: Int,
       val name: String,
   ) {
+    var extraPermanentClusters: Int = 0
     var numPermanentClusters: Int = PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS
     var numTemporaryPlots: Int = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS
 
@@ -162,6 +166,7 @@ private constructor(
       return ExistingPlantingZoneModel(
           areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
           boundary = boundary,
+          extraPermanentClusters = extraPermanentClusters,
           id = PlantingZoneId(currentZoneId),
           name = name,
           numPermanentClusters = numPermanentClusters,
