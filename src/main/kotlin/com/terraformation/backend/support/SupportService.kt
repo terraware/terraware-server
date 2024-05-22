@@ -17,7 +17,7 @@ class SupportService(
     private val emailService: EmailService,
     private val userStore: UserStore,
 ) {
-  fun submitServiceRequest(description: String, summary: String, requestTypeId: Int) {
+  fun submitServiceRequest(description: String, summary: String, requestTypeId: Int): String {
     val user = userStore.fetchOneById(currentUser().userId) as IndividualUser
     val requestType =
         atlassianHttpClient.requestTypes[requestTypeId]
@@ -31,6 +31,8 @@ class SupportService(
         SupportRequestSubmitted(config, requestType.name, response.issueKey, summary, description),
         false,
     )
+
+    return response.issueKey
   }
 
   fun listServiceRequestTypes(): List<ServiceRequestTypeModel> {
