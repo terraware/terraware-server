@@ -432,3 +432,14 @@ class DeliverableStatusUpdated(
   override val templateDir: String
     get() = "deliverable/statusUpdated"
 }
+
+class SupportRequestSubmitted(
+    config: TerrawareServerConfig,
+    val type: String,
+    val key: String,
+    val summary: String,
+    val description: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "support/requestSubmitted"
+}

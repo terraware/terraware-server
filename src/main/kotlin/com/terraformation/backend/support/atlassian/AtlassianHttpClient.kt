@@ -31,7 +31,7 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
   private val httpClient: HttpClient by lazy { createHttpClient() }
   private val serviceDesk: ServiceDeskProjectModel by lazy { findServiceDesk() }
 
-  val requestTypes: Set<ServiceRequestTypeModel> by lazy { getServiceRequestTypes() }
+  val requestTypes: Map<Int, ServiceRequestTypeModel> by lazy { getServiceRequestTypes() }
 
   fun deleteIssue(issueId: String) {
     requirePermissions { deleteSupportIssue() }
@@ -45,7 +45,8 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
       reporter: String,
   ): PostServiceDeskRequestResponse {
     // No required permission
-    if (requestTypes.none { it.id == requestTypeId }) {
+
+    if (requestTypes.keys.none { it == requestTypeId }) {
       throw IllegalArgumentException("Request ID type not recognized")
     }
     return makeRequest(
@@ -57,8 +58,8 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
         ))
   }
 
-  private fun getServiceRequestTypes(): Set<ServiceRequestTypeModel> =
-      makeRequest(ListServiceRequestTypesHttpRequest(serviceDesk.id)).values.toSet()
+  private fun getServiceRequestTypes(): Map<Int, ServiceRequestTypeModel> =
+      makeRequest(ListServiceRequestTypesHttpRequest(serviceDesk.id)).values.associateBy { it.id }
 
   private fun findServiceDesk(): ServiceDeskProjectModel =
       makeRequest(ListServiceDesksHttpRequest()).values.firstOrNull {

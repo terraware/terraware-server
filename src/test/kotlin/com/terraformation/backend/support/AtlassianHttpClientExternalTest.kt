@@ -21,7 +21,7 @@ import org.springframework.security.access.AccessDeniedException
 class AtlassianHttpClientExternalTest : RunsAsUser {
   override val user: TerrawareUser = mockUser()
   private lateinit var client: AtlassianHttpClient
-  private lateinit var requestTypes: Set<ServiceRequestTypeModel>
+  private lateinit var requestTypes: Map<Int, ServiceRequestTypeModel>
   private val createdIssueIds: MutableList<String> = mutableListOf()
 
   @BeforeEach
@@ -67,7 +67,7 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
         client.createServiceDeskRequest(
             description = "Description",
             summary = "Summary",
-            requestTypeId = requestTypes.first().id,
+            requestTypeId = requestTypes.keys.first(),
             reporter = "testuser@example.com",
         )
 

@@ -1,0 +1,39 @@
+<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.SupportRequestSubmitted" -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                    ${strings("notification.support.requestSubmitted.email.body.1")}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                    ${strings("notification.support.requestSubmitted.email.body.2")}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                    ${strings("notification.support.requestSubmitted.email.body.3")}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                    ${link("notification.support.requestSubmitted.email.body.4", "https://knowledge.terraformation.com/hc/en-us/categories/19696828903700-Terraware")}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                    ${strings("notification.support.requestSubmitted.email.body.5")}
+                </mj-text>
+                <mj-text mj-class="text-body03-secondary">
+                    ${strings("notification.support.requestSubmitted.email.body.6", key)}
+                </mj-text>
+                <mj-text mj-class="text-body03-secondary">
+                    ${strings("notification.support.requestSubmitted.email.body.7", summary)}
+                </mj-text>
+                <mj-text mj-class="text-body03-secondary">
+                    ${strings("notification.support.requestSubmitted.email.body.8", description)}
+                </mj-text>
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../../footer.ftlh.mjml"/>
+    </mj-body>
+</mjml>

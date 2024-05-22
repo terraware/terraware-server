@@ -24,10 +24,10 @@ A local application yaml file:
 terraware:
   atlassian:
     account: "ATLASSIAN ACCOUNT EMAIL"
-    apiHost = "{your-domain}.atlassian.net"
-    apiToken = "API TOKEN (STEP 1)"
+    apiHost: "{your-domain}.atlassian.net"
+    apiToken: "API TOKEN (STEP 1)"
     enabled: true,
-    serviceDeskKey = "SERVICE DESK ID (STEP 2)"
+    serviceDeskKey: "SERVICE DESK ID (STEP 2)"
 ```
 
 For docker: set the following env

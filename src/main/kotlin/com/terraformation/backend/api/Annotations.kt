@@ -36,6 +36,11 @@ annotation class CustomerEndpoint
 annotation class SearchEndpoint
 
 @Retention(AnnotationRetention.RUNTIME)
+@Tag(name = "Support")
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+annotation class SupportEndpoint
+
+@Retention(AnnotationRetention.RUNTIME)
 @Tag(name = "Tracking")
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 annotation class TrackingEndpoint
