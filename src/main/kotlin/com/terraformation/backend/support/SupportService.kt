@@ -24,7 +24,7 @@ class SupportService(
       summary: String,
       description: String,
       attachmentIds: List<String> = emptyList(),
-      comment: String? = null,
+      attachmentComment: String? = null,
   ): String {
     val user = userStore.fetchOneById(currentUser().userId) as IndividualUser
     val requestType =
@@ -34,7 +34,7 @@ class SupportService(
         atlassianHttpClient.createServiceDeskRequest(
             description, summary, requestTypeId, user.email)
 
-    atlassianHttpClient.createAttachments(response.issueId, attachmentIds, comment)
+    atlassianHttpClient.createAttachments(response.issueId, attachmentIds, attachmentComment)
 
     emailService.sendUserNotification(
         user,

@@ -48,7 +48,7 @@ class SupportController(private val service: SupportService) {
             summary = payload.summary,
             description = payload.description,
             attachmentIds = payload.attachmentIds ?: emptyList(),
-            comment = payload.attachmentComment,
+            attachmentComment = payload.attachmentComment,
         )
     return SubmitSupportRequestResponsePayload(issueKey)
   }
