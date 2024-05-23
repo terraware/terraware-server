@@ -116,4 +116,5 @@ data class TemporaryAttachment(
   ) : this(temporaryAttachmentId = model.temporaryAttachmentId, filename = model.fileName)
 }
 
-data class UploadAttachmentResponsePayload(val attachments: List<TemporaryAttachment>)
+data class UploadAttachmentResponsePayload(val attachments: List<TemporaryAttachment>) :
+    SuccessResponsePayload
