@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking.edit
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
-import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
@@ -27,11 +26,9 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHa = BigDecimal("37.5"),
             areaHaDifference = BigDecimal("12.5"),
-            boundary = rectangle(width = 750, height = 500),
-            exclusion = null,
-            plantingSiteId = existing.id,
+            desiredModel = desired,
+            existingModel = existing,
             plantingZoneEdits =
                 listOf(
                     PlantingZoneEdit.Create(
@@ -48,7 +45,6 @@ class PlantingSiteEditCalculatorTest {
   @Test
   fun `returns zone update and subzone create for expansion of zone with new subzone`() {
     val newSubzoneBoundary = rectangle(x = 500, width = 250, height = 500)
-    val newSiteBoundary = rectangle(width = 750, height = 500)
 
     val existing = existingSite(width = 500)
     val desired =
@@ -61,11 +57,9 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHa = BigDecimal("37.5"),
             areaHaDifference = BigDecimal("12.5"),
-            boundary = newSiteBoundary,
-            exclusion = null,
-            plantingSiteId = existing.id,
+            desiredModel = desired,
+            existingModel = existing,
             plantingZoneEdits =
                 listOf(
                     PlantingZoneEdit.Update(
@@ -92,11 +86,9 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHa = BigDecimal("30.0"),
             areaHaDifference = BigDecimal("5.0"),
-            boundary = desired.boundary!!,
-            exclusion = null,
-            plantingSiteId = existing.id,
+            desiredModel = desired,
+            existingModel = existing,
             plantingZoneEdits =
                 listOf(
                     PlantingZoneEdit.Update(
@@ -132,11 +124,9 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHa = BigDecimal("50.0"),
             areaHaDifference = BigDecimal("10.0"),
-            boundary = desired.boundary!!,
-            exclusion = rectangle(width = 100, height = 500),
-            plantingSiteId = existing.id,
+            desiredModel = desired,
+            existingModel = existing,
             plantingZoneEdits =
                 listOf(
                     PlantingZoneEdit.Update(
@@ -172,11 +162,9 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHa = BigDecimal("37.5"),
             areaHaDifference = BigDecimal("-12.5"),
-            boundary = desired.boundary!!,
-            exclusion = null,
-            plantingSiteId = existing.id,
+            desiredModel = desired,
+            existingModel = existing,
             plantingZoneEdits =
                 listOf(
                     PlantingZoneEdit.Delete(
@@ -209,11 +197,9 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHa = BigDecimal("37.5"),
             areaHaDifference = BigDecimal("-12.5"),
-            boundary = desired.boundary!!,
-            exclusion = null,
-            plantingSiteId = existing.id,
+            desiredModel = desired,
+            existingModel = existing,
             plantingZoneEdits =
                 listOf(
                     PlantingZoneEdit.Update(
@@ -327,19 +313,17 @@ class PlantingSiteEditCalculatorTest {
 
   @Test
   fun `returns empty list of edits if nothing changed`() {
-    val site = existingSite()
+    val existing = existingSite()
+    val desired = existing.toNew()
 
     assertEditResult(
         PlantingSiteEdit(
-            BigDecimal("25.0"),
-            BigDecimal("0.0"),
-            site.boundary!!,
-            null,
-            PlantingSiteId(1),
-            emptyList(),
-            emptyList()),
-        site,
-        site.toNew())
+            areaHaDifference = BigDecimal("0.0"),
+            desiredModel = desired,
+            existingModel = existing,
+            plantingZoneEdits = emptyList()),
+        existing,
+        desired)
   }
 
   @Test
@@ -360,47 +344,46 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            BigDecimal("27.5"),
-            BigDecimal("2.5"),
-            desired.boundary!!,
-            null,
-            PlantingSiteId(1),
-            listOf(
-                PlantingZoneEdit.Delete(
-                    existingModel = existing.plantingZones[0],
-                    monitoringPlotsRemoved = emptySet(),
-                    plantingSubzoneEdits =
-                        listOf(
-                            PlantingSubzoneEdit.Delete(
-                                existing.plantingZones[0].plantingSubzones[0])),
+            areaHaDifference = BigDecimal("2.5"),
+            desiredModel = desired,
+            existingModel = existing,
+            plantingZoneEdits =
+                listOf(
+                    PlantingZoneEdit.Delete(
+                        existingModel = existing.plantingZones[0],
+                        monitoringPlotsRemoved = emptySet(),
+                        plantingSubzoneEdits =
+                            listOf(
+                                PlantingSubzoneEdit.Delete(
+                                    existing.plantingZones[0].plantingSubzones[0])),
+                    ),
+                    PlantingZoneEdit.Delete(
+                        existingModel = existing.plantingZones[1],
+                        monitoringPlotsRemoved = emptySet(),
+                        plantingSubzoneEdits =
+                            listOf(
+                                PlantingSubzoneEdit.Delete(
+                                    existing.plantingZones[1].plantingSubzones[0])),
+                    ),
+                    PlantingZoneEdit.Create(
+                        desiredModel = desired.plantingZones[0],
+                        plantingSubzoneEdits =
+                            listOf(
+                                PlantingSubzoneEdit.Create(
+                                    desired.plantingZones[0].plantingSubzones[0]))),
+                    PlantingZoneEdit.Create(
+                        desiredModel = desired.plantingZones[1],
+                        plantingSubzoneEdits =
+                            listOf(
+                                PlantingSubzoneEdit.Create(
+                                    desired.plantingZones[1].plantingSubzones[0]))),
+                    PlantingZoneEdit.Create(
+                        desiredModel = desired.plantingZones[2],
+                        plantingSubzoneEdits =
+                            listOf(
+                                PlantingSubzoneEdit.Create(
+                                    desired.plantingZones[2].plantingSubzones[0]))),
                 ),
-                PlantingZoneEdit.Delete(
-                    existingModel = existing.plantingZones[1],
-                    monitoringPlotsRemoved = emptySet(),
-                    plantingSubzoneEdits =
-                        listOf(
-                            PlantingSubzoneEdit.Delete(
-                                existing.plantingZones[1].plantingSubzones[0])),
-                ),
-                PlantingZoneEdit.Create(
-                    desiredModel = desired.plantingZones[0],
-                    plantingSubzoneEdits =
-                        listOf(
-                            PlantingSubzoneEdit.Create(
-                                desired.plantingZones[0].plantingSubzones[0]))),
-                PlantingZoneEdit.Create(
-                    desiredModel = desired.plantingZones[1],
-                    plantingSubzoneEdits =
-                        listOf(
-                            PlantingSubzoneEdit.Create(
-                                desired.plantingZones[1].plantingSubzones[0]))),
-                PlantingZoneEdit.Create(
-                    desiredModel = desired.plantingZones[2],
-                    plantingSubzoneEdits =
-                        listOf(
-                            PlantingSubzoneEdit.Create(
-                                desired.plantingZones[2].plantingSubzones[0]))),
-            ),
         ),
         existing,
         desired,

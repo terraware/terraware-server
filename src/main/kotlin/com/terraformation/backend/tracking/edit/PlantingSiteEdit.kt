@@ -1,10 +1,9 @@
 package com.terraformation.backend.tracking.edit
 
-import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
+import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.util.equalsIgnoreScale
-import com.terraformation.backend.util.equalsOrBothNull
 import java.math.BigDecimal
-import org.locationtech.jts.geom.MultiPolygon
 
 /**
  * Represents the changes that need to be made to an existing planting site to make it match an
@@ -16,9 +15,6 @@ import org.locationtech.jts.geom.MultiPolygon
  * be applied to the site.
  */
 data class PlantingSiteEdit(
-    /** Usable area in the new version of the site. */
-    val areaHa: BigDecimal,
-
     /**
      * Difference in usable area between the old version of the site (if any) and the new one. A
      * positive value means the site has grown; a negative value means it has shrunk. Note that it
@@ -27,14 +23,11 @@ data class PlantingSiteEdit(
      */
     val areaHaDifference: BigDecimal,
 
-    /** New site boundary. May intersect with [exclusion]. */
-    val boundary: MultiPolygon,
+    /** Desired planting site model. The intended end result after edits are applied. */
+    val desiredModel: AnyPlantingSiteModel,
 
-    /** New site exclusion areas, if any. */
-    val exclusion: MultiPolygon?,
-
-    /** ID of existing site. */
-    val plantingSiteId: PlantingSiteId,
+    /** Existing planting site model. Edits are based on this version of the site. */
+    val existingModel: ExistingPlantingSiteModel,
 
     /** Edits to this site's planting zones. */
     val plantingZoneEdits: List<PlantingZoneEdit>,
@@ -47,11 +40,9 @@ data class PlantingSiteEdit(
 ) {
   fun equalsExact(other: PlantingSiteEdit, tolerance: Double = 0.0000001): Boolean =
       javaClass == other.javaClass &&
-          areaHa.equalsIgnoreScale(other.areaHa) &&
           areaHaDifference.equalsIgnoreScale(other.areaHaDifference) &&
-          boundary.equalsOrBothNull(other.boundary, tolerance) &&
-          exclusion.equalsOrBothNull(other.exclusion, tolerance) &&
-          plantingSiteId == other.plantingSiteId &&
+          desiredModel.equals(other.desiredModel, tolerance) &&
+          existingModel.equals(other.existingModel, tolerance) &&
           plantingZoneEdits.size == other.plantingZoneEdits.size &&
           plantingZoneEdits.zip(other.plantingZoneEdits).all { (edit, otherEdit) ->
             edit.equalsExact(otherEdit, tolerance)
