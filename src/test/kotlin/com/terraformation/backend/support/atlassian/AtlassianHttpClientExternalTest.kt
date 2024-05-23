@@ -58,8 +58,8 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
 
   @AfterEach
   fun deleteCreatedIssues() {
-    //        createdIssueIds.forEach { client.deleteIssue(it) }
-    //        createdIssueIds.clear()
+    createdIssueIds.forEach { client.deleteIssue(it) }
+    createdIssueIds.clear()
   }
 
   @Test
