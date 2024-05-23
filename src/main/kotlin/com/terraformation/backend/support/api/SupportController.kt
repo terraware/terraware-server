@@ -62,7 +62,7 @@ class SupportController(private val service: SupportService) {
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])])
   fun uploadAttachment(
-      @RequestPart("file") file: MultipartFile,
+      @RequestPart("file", required = true) file: MultipartFile,
   ): UploadAttachmentResponsePayload {
     val sizedInputStream =
         SizedInputStream(
