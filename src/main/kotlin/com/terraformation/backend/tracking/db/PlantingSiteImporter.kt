@@ -3,7 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.tracking.model.NewPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.NewPlantingZoneModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
@@ -28,9 +28,7 @@ class PlantingSiteImporter(
 
     // Optional zone-level properties to set initial plot counts; mostly for testing
     val permanentClusterCountProperties = setOf("permanent")
-    val temporaryPlotCountProperies = setOf("temporary")
-
-    private val log = perClassLogger()
+    val temporaryPlotCountProperties = setOf("temporary")
   }
 
   fun import(
@@ -41,6 +39,17 @@ class PlantingSiteImporter(
   ): PlantingSiteId {
     requirePermissions { createPlantingSite(organizationId) }
 
+    val newModel = shapefilesToModel(shapefiles, name, description, organizationId)
+
+    return plantingSiteStore.createPlantingSite(newModel).id
+  }
+
+  fun shapefilesToModel(
+      shapefiles: Collection<Shapefile>,
+      name: String,
+      description: String?,
+      organizationId: OrganizationId
+  ): NewPlantingSiteModel {
     if (shapefiles.size != 3 && shapefiles.size != 4) {
       throw PlantingSiteMapInvalidException(
           "Expected 3 or 4 shapefiles (site, zones, subzones, and optionally exclusions) but " +
@@ -66,7 +75,7 @@ class PlantingSiteImporter(
       }
     }
 
-    return importShapefiles(
+    return shapefilesToModel(
         name,
         description,
         organizationId,
@@ -85,18 +94,15 @@ class PlantingSiteImporter(
         exclusionsFile)
   }
 
-  /** Imports a planting site from site, zone, and subzone shapefiles. */
-  fun importShapefiles(
+  private fun shapefilesToModel(
       name: String,
-      description: String? = null,
+      description: String?,
       organizationId: OrganizationId,
       siteFile: Shapefile,
       zonesFile: Shapefile,
       subzonesFile: Shapefile,
-      exclusionsFile: Shapefile?,
-  ): PlantingSiteId {
-    requirePermissions { createPlantingSite(organizationId) }
-
+      exclusionsFile: Shapefile?
+  ): NewPlantingSiteModel {
     val problems = mutableListOf<String>()
 
     val siteFeature = getSiteBoundary(siteFile, problems)
@@ -108,19 +114,19 @@ class PlantingSiteImporter(
       throw PlantingSiteMapInvalidException(problems)
     }
 
-    return plantingSiteStore
-        .createPlantingSite(
-            PlantingSiteModel.create(
-                boundary = siteFeature.geometry.toMultiPolygon(),
-                description = description,
-                exclusion = exclusion,
-                name = name,
-                organizationId = organizationId,
-                plantingZones =
-                    zonesByName.values.map { zone ->
-                      zone.copy(plantingSubzones = subzonesByZone[zone.name] ?: emptyList())
-                    }))
-        .id
+    val newModel =
+        PlantingSiteModel.create(
+            boundary = siteFeature.geometry.toMultiPolygon(),
+            description = description,
+            exclusion = exclusion,
+            name = name,
+            organizationId = organizationId,
+            plantingZones =
+                zonesByName.values.map { zone ->
+                  zone.copy(plantingSubzones = subzonesByZone[zone.name] ?: emptyList())
+                },
+        )
+    return newModel
   }
 
   private fun getSiteBoundary(
@@ -202,7 +208,7 @@ class PlantingSiteImporter(
           feature.getProperty(permanentClusterCountProperties)?.toIntOrNull()
               ?: PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS
       val numTemporaryPlots =
-          feature.getProperty(temporaryPlotCountProperies)?.toIntOrNull()
+          feature.getProperty(temporaryPlotCountProperties)?.toIntOrNull()
               ?: PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS
 
       name to

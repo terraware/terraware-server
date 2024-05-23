@@ -139,13 +139,15 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
         exclusions: List<ShapefileFeature>? = null,
     ) {
       assertHasProblem(expected) {
-        importer.importShapefiles(
+        importer.import(
             name = "Test Site",
             organizationId = organizationId,
-            siteFile = Shapefile(siteFeatures),
-            zonesFile = Shapefile(zoneFeatures),
-            subzonesFile = Shapefile(subzoneFeatures),
-            exclusionsFile = exclusions?.let { Shapefile(it) },
+            shapefiles =
+                listOfNotNull(
+                    Shapefile(siteFeatures),
+                    Shapefile(zoneFeatures),
+                    Shapefile(subzoneFeatures),
+                    exclusions?.let { Shapefile(it) }),
         )
       }
     }
