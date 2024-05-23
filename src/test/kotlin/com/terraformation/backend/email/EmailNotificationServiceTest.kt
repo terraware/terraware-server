@@ -66,6 +66,7 @@ import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
@@ -77,10 +78,12 @@ import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledSuppo
 import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
+import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
+import com.terraformation.backend.tracking.model.PlantingSiteBuilder
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import freemarker.template.Configuration
@@ -94,6 +97,7 @@ import jakarta.mail.Multipart
 import jakarta.mail.Part
 import jakarta.mail.internet.MimeMessage
 import jakarta.ws.rs.core.MediaType
+import java.math.BigDecimal
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
@@ -996,6 +1000,35 @@ internal class EmailNotificationServiceTest {
     service.on(event)
 
     assertRecipientsEqual(emptySet())
+  }
+
+  @Test
+  fun plantingSiteMapEdited() {
+    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
+
+    val siteName = "Test Site"
+    val event =
+        PlantingSiteMapEditedEvent(
+            PlantingSiteEdit(
+                areaHaDifference = BigDecimal("-13.2"),
+                desiredModel = PlantingSiteBuilder.newSite { name = siteName },
+                existingModel =
+                    PlantingSiteBuilder.existingSite {
+                      name = siteName
+                      organizationId = organization.id
+                    },
+                plantingZoneEdits = emptyList()))
+
+    service.on(event)
+
+    assertSubjectContains(organization.name)
+    assertSubjectContains(siteName)
+    assertBodyContains("13.2 hectares have been removed from the")
+
+    assertRecipientsEqual(setOf(tfContactEmail))
+
+    assertIsEventListener<PlantingSiteMapEditedEvent>(service)
   }
 
   @Test

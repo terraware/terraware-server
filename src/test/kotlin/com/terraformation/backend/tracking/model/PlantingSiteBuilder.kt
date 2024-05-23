@@ -102,6 +102,7 @@ private constructor(
   var boundary: MultiPolygon = rectangle(width, height, x, y)
   var exclusion: MultiPolygon? = null
   var name: String = "Site"
+  var organizationId: OrganizationId = OrganizationId(1)
 
   private var currentSubzoneId: Long = 0
   private var currentZoneId: Long = 0
@@ -118,7 +119,7 @@ private constructor(
         gridOrigin = geometryFactory.createPoint(boundary.envelope.coordinates[0]),
         id = PlantingSiteId(1),
         name = name,
-        organizationId = OrganizationId(1),
+        organizationId = organizationId,
         plantingZones = plantingZones.ifEmpty { listOf(zone()) },
     )
   }
