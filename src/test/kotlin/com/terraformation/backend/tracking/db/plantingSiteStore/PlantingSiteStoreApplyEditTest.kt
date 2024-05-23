@@ -160,15 +160,46 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
 
     @Test
     fun `uses random cluster numbers for newly added clusters, renumbering existing clusters if needed`() {
-      val existingClusterNumbers = mutableSetOf<Int>()
-      val newClusterNumbers = mutableSetOf<Int>()
+      val clusterNumbersFoundInInitialArea = mutableSetOf<Int>()
+      val clusterNumbersFoundInAddedArea = mutableSetOf<Int>()
       val maxAttempts = 100
       var currentAttempt = 0
       val initialArea = rectangle(x = 0, width = 500, height = 500)
       val addedArea = rectangle(x = 500, width = 500, height = 500)
 
+      // Initially, the site has an existing area with two clusters numbered 1 and 2.
+      //
+      // We're editing it to double its size, which means there should be two new clusters created.
+      // The numbers of those clusters should be random, and the numbers of the initial clusters
+      // should be updated to make room for them. For example, if the newly-added clusters end up
+      // with numbers 1 and 3 randomly, we would end up with a result of
+      //
+      // Cluster 1: first new cluster in added area
+      // Cluster 2: the cluster formerly known as 1, in the initial area, renumbered because the
+      //            first new cluster in the added area was selected to take its position in the
+      //            list.
+      // Cluster 3: second new cluster in added area
+      // Cluster 4: the cluster formerly known as 2, in the initial area, renumbered because there
+      //            were two newly-created clusters with cluster numbers less than or equal to its
+      //            former cluster number.
+      //
+      // If the newly-added clusters end up with numbers 2 and 4 randomly, we'd get
+      //
+      // Cluster 1: the original cluster 1 in the initial area
+      // Cluster 2: first new cluster in added area
+      // Cluster 3: the cluster formerly known as 2, in the initial area, renumbered because we
+      //            needed to insert a new cluster at position 2
+      // Cluster 4: second new cluster in added area
+      //
+      // Each of the two new clusters should be able to appear in any of the four positions. To test
+      // that that's the case, we run the edit a bunch of times until we see that the initial two
+      // clusters have, on various runs, occupied all four possible cluster numbers, and that the
+      // newly-added clusters have done the same. This verifies that (a) the selection isn't the
+      // same each time, and (b) the existing clusters are correctly renumbered as needed.
+
       while (++currentAttempt < maxAttempts &&
-          (newClusterNumbers != setOf(1, 2, 3, 4) || existingClusterNumbers != setOf(1, 2, 3, 4))) {
+          (clusterNumbersFoundInAddedArea != setOf(1, 2, 3, 4) ||
+              clusterNumbersFoundInInitialArea != setOf(1, 2, 3, 4))) {
         val (edited) =
             runScenario(
                 initial =
@@ -203,9 +234,9 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
         monitoringPlots.forEach { plot ->
           plot.permanentCluster?.let { permanentCluster ->
             if (plot.boundary.nearlyCoveredBy(addedArea)) {
-              newClusterNumbers.add(permanentCluster)
+              clusterNumbersFoundInAddedArea.add(permanentCluster)
             } else {
-              existingClusterNumbers.add(permanentCluster)
+              clusterNumbersFoundInInitialArea.add(permanentCluster)
             }
           }
         }
@@ -221,11 +252,11 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
 
       assertEquals(
           setOf(1, 2, 3, 4),
-          newClusterNumbers,
+          clusterNumbersFoundInAddedArea,
           "Cluster numbers assigned to newly-added clusters across all runs")
       assertEquals(
           setOf(1, 2, 3, 4),
-          existingClusterNumbers,
+          clusterNumbersFoundInInitialArea,
           "Cluster numbers assigned to existing clusters after edit across all runs")
     }
 
