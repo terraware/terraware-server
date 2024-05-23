@@ -26,3 +26,16 @@ var RedirectAttributes.successMessage: String?
   set(value) {
     addFlashAttribute("successMessage", value)
   }
+
+var RedirectAttributes.successDetails: List<String>?
+  get() {
+    val attribute = flashAttributes["successDetails"]
+    return if (attribute is List<*>) {
+      attribute.map { "$it" }
+    } else {
+      null
+    }
+  }
+  set(value) {
+    addFlashAttribute("successDetails", value)
+  }
