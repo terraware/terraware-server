@@ -3,6 +3,7 @@ package com.terraformation.backend.support.atlassian
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.support.atlassian.model.ServiceRequestTypeModel
 import io.mockk.every
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
 @EnableConfigurationProperties(TerrawareServerConfig::class)
@@ -56,8 +58,8 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
 
   @AfterEach
   fun deleteCreatedIssues() {
-        createdIssueIds.forEach { client.deleteIssue(it) }
-        createdIssueIds.clear()
+    //        createdIssueIds.forEach { client.deleteIssue(it) }
+    //        createdIssueIds.clear()
   }
 
   @Test
@@ -74,11 +76,14 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
     val issueId = createResponse.issueId
     createdIssueIds.addLast(issueId)
 
-    val filename = "file.txt"
-    val contentType = "text/plain"
-    val fileStream = "abc".byteInputStream()
+    val bytes = "abc".toByteArray()
 
-    val attachTempFilesResponse = client.attachTemporaryFile(fileStream, filename, contentType)
+    val sizedInputStream =
+        SizedInputStream(
+            bytes.inputStream(), bytes.size.toLong(), MediaType.APPLICATION_OCTET_STREAM)
+
+    val filename = "file.txt"
+    val attachTempFilesResponse = client.attachTemporaryFile(sizedInputStream, filename)
 
     assertNotNull(attachTempFilesResponse)
     val attachmentIds =
