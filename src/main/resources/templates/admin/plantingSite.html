@@ -306,6 +306,31 @@
                 </td>
             </tr>
         </table>
+
+        <h3>Upload New Shapefiles</h3>
+
+        <form method="POST" enctype="multipart/form-data" action="/admin/updatePlantingSiteShapefiles">
+            <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
+            <label>
+                Zipfile
+                <input type="file" name="zipfile" required/>
+            </label>
+            <br/>
+            <label>
+                Operation
+                <select name="dryRun">
+                    <option value="true" selected>Dry run (no change to site)</option>
+                    <option value="false">Apply changes to site</option>
+                </select>
+            </label>
+            <br/>
+            <label>
+                Subzone IDs to mark incomplete (comma-separated)
+                <input type="text" name="subzoneIdsToMarkIncomplete"/>
+            </label>
+            <br/>
+            <input type="submit" value="Use Updated Shapefiles"/>
+        </form>
     </th:block>
 
     <h3>Site Details</h3>
@@ -318,6 +343,7 @@
         <tr>
             <th>Zone</th>
             <th>Subzone</th>
+            <th>Subzone ID</th>
             <th>Area<br/>(ha)</th>
             <th>Plots</th>
             <th>Reported<br/>Plants</th>
@@ -325,12 +351,13 @@
 
         <th:block th:each="zone : ${site.plantingZones}">
             <tr>
-                <td colspan="5" th:text="${zone.name}">Zone</td>
+                <td colspan="6" th:text="${zone.name}">Zone</td>
             </tr>
 
             <tr th:each="subzone : ${zone.plantingSubzones}">
                 <td></td>
                 <td th:text="${subzone.name}">Subzone</td>
+                <td th:text="${subzone.id}">999</td>
                 <td th:text="${subzone.areaHa}">123.45</td>
                 <td th:text="${plotCounts[zone.id][subzone.id] ?: 0}">1000</td>
                 <td th:text="${plantCounts[subzone.id] ?: 0}">543</td>

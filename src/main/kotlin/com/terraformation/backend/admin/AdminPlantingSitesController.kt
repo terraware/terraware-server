@@ -23,6 +23,7 @@ import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
 import com.terraformation.backend.tracking.mapbox.MapboxService
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewObservationModel
@@ -394,6 +395,73 @@ class AdminPlantingSitesController(
     } catch (e: Exception) {
       log.warn("Planting site update failed", e)
       redirectAttributes.failureMessage = "Planting site update failed: ${e.message}"
+    }
+
+    return redirectToPlantingSite(plantingSiteId)
+  }
+
+  @PostMapping("/updatePlantingSiteShapefiles", consumes = ["multipart/form-data"])
+  fun updatePlantingSiteShapefiles(
+      @RequestParam plantingSiteId: PlantingSiteId,
+      @RequestParam dryRun: Boolean,
+      @RequestParam subzoneIdsToMarkIncomplete: String?,
+      @RequestPart zipfile: MultipartFile,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      kotlin.io.path.createTempFile(suffix = ".zip").useAndDelete { localZipFile ->
+        zipfile.inputStream.use { inputStream ->
+          Files.copy(inputStream, localZipFile, StandardCopyOption.REPLACE_EXISTING)
+        }
+
+        val existing = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
+        val desired =
+            plantingSiteImporter.shapefilesToModel(
+                Shapefile.fromZipFile(localZipFile),
+                existing.name,
+                existing.description,
+                existing.organizationId)
+        val plantedSubzoneIds = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId).keys
+        val edit =
+            PlantingSiteEditCalculator(existing, desired, plantedSubzoneIds).calculateSiteEdit()
+
+        if (edit.problems.isEmpty()) {
+          if (dryRun) {
+            val zoneChanges =
+                edit.plantingZoneEdits.map { zoneEdit ->
+                  zoneEdit.existingModel?.let { existingModel ->
+                    "Zone ${existingModel.name} change in plantable area: " +
+                        "${zoneEdit.areaHaDifference.toPlainString()}ha"
+                  } ?: "Create zone ${zoneEdit.desiredModel!!.name}"
+                }
+            val changes =
+                listOf(
+                    "Total change in plantable area: ${edit.areaHaDifference.toPlainString()}ha",
+                ) + zoneChanges
+
+            redirectAttributes.successMessage = "Would make the following changes:"
+            redirectAttributes.successDetails = changes
+          } else {
+            plantingSiteStore.applyPlantingSiteEdit(
+                edit,
+                subzoneIdsToMarkIncomplete
+                    ?.split(",")
+                    ?.map { PlantingSubzoneId(it.trim()) }
+                    ?.toSet() ?: emptySet())
+            redirectAttributes.successMessage = "Site map updated."
+          }
+        } else {
+          redirectAttributes.failureMessage = "Edit invalid:"
+          redirectAttributes.failureDetails = edit.problems.map { it.toString() }
+        }
+      }
+    } catch (e: PlantingSiteMapInvalidException) {
+      log.warn("Shapefile import failed validation: ${e.problems}")
+      redirectAttributes.failureMessage = "Uploaded file failed validation checks"
+      redirectAttributes.failureDetails = e.problems
+    } catch (e: Exception) {
+      log.warn("Shapefile import failed", e)
+      redirectAttributes.failureMessage = "Import failed: ${e.message}"
     }
 
     return redirectToPlantingSite(plantingSiteId)
