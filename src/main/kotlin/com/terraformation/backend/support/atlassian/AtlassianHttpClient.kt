@@ -2,10 +2,14 @@ package com.terraformation.backend.support.atlassian
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.support.atlassian.model.ServiceDeskProjectModel
 import com.terraformation.backend.support.atlassian.model.ServiceRequestFieldsModel
 import com.terraformation.backend.support.atlassian.model.ServiceRequestTypeModel
 import com.terraformation.backend.support.atlassian.request.AtlassianHttpRequest
+import com.terraformation.backend.support.atlassian.request.AttachTemporaryFileResponse
+import com.terraformation.backend.support.atlassian.request.AttachTemporaryFilesHttpRequest
+import com.terraformation.backend.support.atlassian.request.CreateAttachmentsHttpRequest
 import com.terraformation.backend.support.atlassian.request.CreateServiceRequestHttpRequest
 import com.terraformation.backend.support.atlassian.request.DeleteIssueHttpRequest
 import com.terraformation.backend.support.atlassian.request.ListServiceDesksHttpRequest
@@ -24,6 +28,7 @@ import io.ktor.http.contentType
 import io.ktor.serialization.jackson.JacksonConverter
 import jakarta.inject.Named
 import kotlinx.coroutines.runBlocking
+import org.springframework.http.MediaType
 
 /** Submits API requests to interact with Atlassian services. */
 @Named
@@ -44,7 +49,7 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
       requestTypeId: Int,
       reporter: String,
   ): PostServiceDeskRequestResponse {
-    // No required permission
+    // No required permissions
 
     if (requestTypes.keys.none { it == requestTypeId }) {
       throw IllegalArgumentException("Request ID type not recognized")
@@ -55,6 +60,37 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
             requestFieldValues = ServiceRequestFieldsModel(summary, description),
             requestTypeId = requestTypeId,
             serviceDeskId = serviceDesk.id,
+        ))
+  }
+
+  fun attachTemporaryFile(
+      sizedInputStream: SizedInputStream,
+      filename: String
+  ): AttachTemporaryFileResponse {
+    // No required permissions
+
+    return makeRequest(
+        AttachTemporaryFilesHttpRequest(
+            inputStream = sizedInputStream,
+            filename = filename,
+            contentType = sizedInputStream.contentType?.let { MediaType.toString(listOf(it)) },
+            fileSize = sizedInputStream.size,
+            serviceDeskId = serviceDesk.id,
+        ))
+  }
+
+  fun createAttachments(
+      issueId: String,
+      attachmentIds: List<String>,
+      comment: String? = null,
+  ) {
+    // No required permissions
+
+    makeRequest(
+        CreateAttachmentsHttpRequest(
+            issueId = issueId,
+            attachmentIds = attachmentIds,
+            comment = comment,
         ))
   }
 
