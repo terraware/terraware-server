@@ -1,7 +1,6 @@
 package com.terraformation.backend.support.atlassian.request
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.support.atlassian.model.TemporaryAttachmentModel
 import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
@@ -16,15 +15,18 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.path
 import io.ktor.util.cio.toByteReadChannel
-import org.springframework.web.multipart.MultipartFile
+import java.io.InputStream
 
-class AttachTemporaryFilesHttpRequest(serviceDeskId: Int, file: MultipartFile) :
-    AtlassianHttpRequest<AttachTemporaryFileResponse> {
-  private val path = "/servicedeskapi/servicedesk/$serviceDeskId/attachTemporaryFile"
+class AttachTemporaryFilesHttpRequest(
+    serviceDeskId: Int,
+    inputStream: InputStream,
+    private val filename: String,
+    private val contentType: String?,
+    private val fileSize: Long?,
+) : AtlassianHttpRequest<AttachTemporaryFileResponse> {
+  private val path = "/rest/servicedeskapi/servicedesk/$serviceDeskId/attachTemporaryFile"
   private val httpMethod = HttpMethod.Post
-  private val byteReadChannel = file.inputStream.toByteReadChannel()
-  private val filename = file.getFilename()
-  private val contentType = file.contentType
+  private val byteReadChannel = inputStream.toByteReadChannel()
 
   override fun buildRequest(requestBuilder: HttpRequestBuilder) {
     val requestBody =
@@ -32,7 +34,7 @@ class AttachTemporaryFilesHttpRequest(serviceDeskId: Int, file: MultipartFile) :
             formData {
               append(
                   "file",
-                  ChannelProvider { byteReadChannel },
+                  ChannelProvider(fileSize) { byteReadChannel },
                   Headers.build {
                     contentType?.let { append(HttpHeaders.ContentType, it) }
                     append(HttpHeaders.ContentDisposition, "filename=\"$filename\"")
@@ -42,7 +44,10 @@ class AttachTemporaryFilesHttpRequest(serviceDeskId: Int, file: MultipartFile) :
     with(requestBuilder) {
       method = httpMethod
       url { path(path) }
-      headers { append("X-ExperimentalApi", "opt-in") }
+      headers {
+        append("X-ExperimentalApi", "opt-in")
+        append("X-Atlassian-Token", "no-check")
+      }
       setBody(requestBody)
     }
   }

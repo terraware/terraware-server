@@ -1,10 +1,9 @@
-package com.terraformation.backend.support
+package com.terraformation.backend.support.atlassian
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.support.atlassian.AtlassianHttpClient
 import com.terraformation.backend.support.atlassian.model.ServiceRequestTypeModel
 import io.mockk.every
 import java.net.URI
@@ -50,20 +49,20 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
                     apiClientUsernamePrefix = "test"))
 
     client = AtlassianHttpClient(config)
-    requestTypes = client.requestTypes
 
+    requestTypes = client.requestTypes
     assertTrue(requestTypes.isNotEmpty())
   }
 
   @AfterEach
   fun deleteCreatedIssues() {
-    createdIssueIds.forEach { client.deleteIssue(it) }
-    createdIssueIds.clear()
+        createdIssueIds.forEach { client.deleteIssue(it) }
+        createdIssueIds.clear()
   }
 
   @Test
-  fun `create new issue`() {
-    val response =
+  fun `create new issue with attachments`() {
+    val createResponse =
         client.createServiceDeskRequest(
             description = "Description",
             summary = "Summary",
@@ -71,8 +70,21 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
             reporter = "testuser@example.com",
         )
 
-    assertNotNull(response)
-    createdIssueIds.addLast(response.issueId)
+    assertNotNull(createResponse)
+    val issueId = createResponse.issueId
+    createdIssueIds.addLast(issueId)
+
+    val filename = "file.txt"
+    val contentType = "text/plain"
+    val fileStream = "abc".byteInputStream()
+
+    val attachTempFilesResponse = client.attachTemporaryFile(fileStream, filename, contentType)
+
+    assertNotNull(attachTempFilesResponse)
+    val attachmentIds =
+        attachTempFilesResponse.temporaryAttachments.map { it.temporaryAttachmentId }
+
+    client.createAttachments(issueId, attachmentIds, "Test attachment uploads.")
   }
 
   @Test

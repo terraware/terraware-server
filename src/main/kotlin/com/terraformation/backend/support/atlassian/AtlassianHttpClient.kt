@@ -6,6 +6,9 @@ import com.terraformation.backend.support.atlassian.model.ServiceDeskProjectMode
 import com.terraformation.backend.support.atlassian.model.ServiceRequestFieldsModel
 import com.terraformation.backend.support.atlassian.model.ServiceRequestTypeModel
 import com.terraformation.backend.support.atlassian.request.AtlassianHttpRequest
+import com.terraformation.backend.support.atlassian.request.AttachTemporaryFileResponse
+import com.terraformation.backend.support.atlassian.request.AttachTemporaryFilesHttpRequest
+import com.terraformation.backend.support.atlassian.request.CreateAttachmentsHttpRequest
 import com.terraformation.backend.support.atlassian.request.CreateServiceRequestHttpRequest
 import com.terraformation.backend.support.atlassian.request.DeleteIssueHttpRequest
 import com.terraformation.backend.support.atlassian.request.ListServiceDesksHttpRequest
@@ -23,6 +26,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.jackson.JacksonConverter
 import jakarta.inject.Named
+import java.io.InputStream
 import kotlinx.coroutines.runBlocking
 
 /** Submits API requests to interact with Atlassian services. */
@@ -44,7 +48,7 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
       requestTypeId: Int,
       reporter: String,
   ): PostServiceDeskRequestResponse {
-    // No required permission
+    // No required permissions
 
     if (requestTypes.keys.none { it == requestTypeId }) {
       throw IllegalArgumentException("Request ID type not recognized")
@@ -55,6 +59,39 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
             requestFieldValues = ServiceRequestFieldsModel(summary, description),
             requestTypeId = requestTypeId,
             serviceDeskId = serviceDesk.id,
+        ))
+  }
+
+  fun attachTemporaryFile(
+      inputStream: InputStream,
+      filename: String,
+      contentType: String? = null,
+      fileSize: Long? = null,
+  ): AttachTemporaryFileResponse {
+    // No required permissions
+
+    return makeRequest(
+        AttachTemporaryFilesHttpRequest(
+            inputStream = inputStream,
+            filename = filename,
+            contentType = contentType,
+            fileSize = fileSize,
+            serviceDeskId = serviceDesk.id,
+        ))
+  }
+
+  fun createAttachments(
+      issueId: String,
+      attachmentIds: List<String>,
+      comment: String? = null,
+  ) {
+    // No required permissions
+
+    makeRequest(
+        CreateAttachmentsHttpRequest(
+            issueId = issueId,
+            attachmentIds = attachmentIds,
+            comment = comment,
         ))
   }
 
