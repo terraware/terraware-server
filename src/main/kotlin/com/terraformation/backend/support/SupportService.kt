@@ -6,8 +6,10 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.email.model.SupportRequestSubmitted
+import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.support.atlassian.AtlassianHttpClient
 import com.terraformation.backend.support.atlassian.model.ServiceRequestTypeModel
+import com.terraformation.backend.support.atlassian.model.TemporaryAttachmentModel
 import jakarta.inject.Named
 
 @Named
@@ -17,7 +19,13 @@ class SupportService(
     private val emailService: EmailService,
     private val userStore: UserStore,
 ) {
-  fun submitServiceRequest(description: String, summary: String, requestTypeId: Int): String {
+  fun submitServiceRequest(
+      requestTypeId: Int,
+      summary: String,
+      description: String,
+      attachmentIds: List<String> = emptyList(),
+      comment: String? = null,
+  ): String {
     val user = userStore.fetchOneById(currentUser().userId) as IndividualUser
     val requestType =
         atlassianHttpClient.requestTypes[requestTypeId]
@@ -25,6 +33,8 @@ class SupportService(
     val response =
         atlassianHttpClient.createServiceDeskRequest(
             description, summary, requestTypeId, user.email)
+
+    atlassianHttpClient.createAttachments(response.issueId, attachmentIds, comment)
 
     emailService.sendUserNotification(
         user,
@@ -37,5 +47,12 @@ class SupportService(
 
   fun listServiceRequestTypes(): List<ServiceRequestTypeModel> {
     return atlassianHttpClient.requestTypes.values.toList()
+  }
+
+  fun attachTemporaryFile(
+      sizedInputStream: SizedInputStream,
+      filename: String
+  ): List<TemporaryAttachmentModel> {
+    return atlassianHttpClient.attachTemporaryFile(sizedInputStream, filename).temporaryAttachments
   }
 }
