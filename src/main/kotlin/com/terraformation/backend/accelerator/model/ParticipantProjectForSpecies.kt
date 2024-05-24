@@ -15,6 +15,7 @@ data class ParticipantProjectsForSpecies(
     val activeDeliverableId: DeliverableId? = null,
     val participantProjectSpeciesId: ParticipantProjectSpeciesId,
     val participantProjectSpeciesSubmissionStatus: SubmissionStatus,
+    val participantProjectSpeciesNativeCategory: SpeciesNativeCategory?,
     val projectId: ProjectId,
     val projectName: String,
     val speciesId: SpeciesId,
@@ -28,6 +29,7 @@ data class ParticipantProjectsForSpecies(
           projectName = record[PROJECTS.NAME]!!,
           participantProjectSpeciesSubmissionStatus =
               record[PARTICIPANT_PROJECT_SPECIES.SUBMISSION_STATUS_ID]!!,
+          participantProjectSpeciesNativeCategory = record[PARTICIPANT_PROJECT_SPECIES.SPECIES_NATIVE_CATEGORY_ID]!!,
           speciesId = record[SPECIES.ID]!!,
       )
     }

@@ -13,6 +13,7 @@ data class SpeciesForParticipantProject(
     val participantProjectSpeciesId: ParticipantProjectSpeciesId,
     val participantProjectSpeciesRationale: String?,
     val participantProjectSpeciesSubmissionStatus: SubmissionStatus,
+    val participantProjectSpeciesNativeCategory: SpeciesNativeCategory?,
     val projectId: ProjectId,
     val speciesId: SpeciesId,
     val speciesCommonName: String?,
@@ -25,6 +26,7 @@ data class SpeciesForParticipantProject(
           participantProjectSpeciesRationale = record[PARTICIPANT_PROJECT_SPECIES.RATIONALE],
           participantProjectSpeciesSubmissionStatus =
               record[PARTICIPANT_PROJECT_SPECIES.SUBMISSION_STATUS_ID]!!,
+          participantProjectSpeciesNativeCategory = record[PARTICIPANT_PROJECT_SPECIES.SPECIES_NATIVE_CATEGORY_ID]!!,
           projectId = record[PROJECTS.ID]!!,
           speciesId = record[SPECIES.ID]!!,
           speciesCommonName = record[SPECIES.COMMON_NAME],

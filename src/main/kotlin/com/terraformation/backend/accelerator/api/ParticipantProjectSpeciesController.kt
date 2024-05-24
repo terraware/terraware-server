@@ -154,6 +154,7 @@ data class CreateParticipantProjectSpeciesPayload(
     val projectId: ProjectId,
     val rationale: String?,
     val speciesId: SpeciesId,
+    val speciesNativeCategory: SpeciesNativeCategory?,
 )
 
 data class DeleteParticipantProjectSpeciesPayload(
@@ -179,6 +180,7 @@ data class ParticipantProjectForSpeciesPayload(
     val activeDeliverableId: DeliverableId?,
     val participantProjectSpeciesId: ParticipantProjectSpeciesId,
     val participantProjectSpeciesSubmissionStatus: SubmissionStatus,
+    val participantProjectSpeciesNativeCategory: SpeciesNativeCategory?,
     val projectId: ProjectId,
     val projectName: String,
     val speciesId: SpeciesId,
@@ -189,6 +191,7 @@ data class ParticipantProjectForSpeciesPayload(
       activeDeliverableId = model.activeDeliverableId,
       participantProjectSpeciesId = model.participantProjectSpeciesId,
       participantProjectSpeciesSubmissionStatus = model.participantProjectSpeciesSubmissionStatus,
+      participantProjectSpeciesNativeCategory = model.participantProjectSpeciesNativeCategory,
       projectId = model.projectId,
       projectName = model.projectName,
       speciesId = model.speciesId)
@@ -202,6 +205,7 @@ data class SpeciesForParticipantProjectPayload(
     val participantProjectSpeciesId: ParticipantProjectSpeciesId,
     val participantProjectSpeciesRationale: String?,
     val participantProjectSpeciesSubmissionStatus: SubmissionStatus,
+    val participantProjectSpeciesNativeCategory: SpeciesNativeCategory?,
     val projectId: ProjectId,
     val speciesId: SpeciesId,
     val speciesCommonName: String?,
@@ -213,6 +217,7 @@ data class SpeciesForParticipantProjectPayload(
       participantProjectSpeciesId = model.participantProjectSpeciesId,
       participantProjectSpeciesRationale = model.participantProjectSpeciesRationale,
       participantProjectSpeciesSubmissionStatus = model.participantProjectSpeciesSubmissionStatus,
+      participantProjectSpeciesNativeCategory = model.participantProjectSpeciesNativeCategory,
       projectId = model.projectId,
       speciesId = model.speciesId,
       speciesCommonName = model.speciesCommonName,
