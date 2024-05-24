@@ -4,15 +4,14 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
-import com.terraformation.backend.tracking.model.NewPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.NewPlantingZoneModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.Shapefile
-import com.terraformation.backend.tracking.model.ShapefileFeature
 import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
+import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
 
@@ -50,14 +49,11 @@ class PlantingSiteImporter(
       description: String?,
       organizationId: OrganizationId
   ): NewPlantingSiteModel {
-    if (shapefiles.size != 3 && shapefiles.size != 4) {
+    if (shapefiles.isEmpty() || shapefiles.size > 2) {
       throw PlantingSiteMapInvalidException(
-          "Expected 3 or 4 shapefiles (site, zones, subzones, and optionally exclusions) but " +
-              "found ${shapefiles.size}")
+          "Expected subzones and optionally exclusions but found ${shapefiles.size} shapefiles")
     }
 
-    var siteFile: Shapefile? = null
-    var zonesFile: Shapefile? = null
     var subzonesFile: Shapefile? = null
     var exclusionsFile: Shapefile? = null
 
@@ -66,12 +62,10 @@ class PlantingSiteImporter(
         throw PlantingSiteMapInvalidException("Shapefiles must contain geometries")
       }
 
-      when {
-        shapefile.features.all { it.hasProperty(subzoneNameProperties) } -> subzonesFile = shapefile
-        shapefile.features.all { it.hasProperty(zoneNameProperties) } -> zonesFile = shapefile
-        shapefile.features.size == 1 && shapefile.features[0].hasProperty(siteNameProperties) ->
-            siteFile = shapefile
-        else -> exclusionsFile = shapefile
+      if (shapefile.features.all { it.hasProperty(subzoneNameProperties) }) {
+        subzonesFile = shapefile
+      } else {
+        exclusionsFile = shapefile
       }
     }
 
@@ -79,14 +73,6 @@ class PlantingSiteImporter(
         name,
         description,
         organizationId,
-        siteFile
-            ?: throw PlantingSiteMapInvalidException(
-                "Planting site shapefile must contain exactly one geometry and one of these properties: " +
-                    siteNameProperties.joinToString()),
-        zonesFile
-            ?: throw PlantingSiteMapInvalidException(
-                "Planting zones shapefile features must include one of these properties: " +
-                    zoneNameProperties.joinToString()),
         subzonesFile
             ?: throw PlantingSiteMapInvalidException(
                 "Subzones shapefile features must include one of these properties: " +
@@ -98,50 +84,30 @@ class PlantingSiteImporter(
       name: String,
       description: String?,
       organizationId: OrganizationId,
-      siteFile: Shapefile,
-      zonesFile: Shapefile,
       subzonesFile: Shapefile,
       exclusionsFile: Shapefile?
   ): NewPlantingSiteModel {
     val problems = mutableListOf<String>()
 
-    val siteFeature = getSiteBoundary(siteFile, problems)
     val exclusion = getExclusion(exclusionsFile, problems)
-    val zonesByName = getZones(zonesFile, exclusion)
-    val subzonesByZone = getSubzonesByZone(zonesByName, subzonesFile, exclusion, problems)
+    val zonesWithSubzones = getZonesWithSubzones(subzonesFile, exclusion, problems)
 
     if (problems.isNotEmpty()) {
       throw PlantingSiteMapInvalidException(problems)
     }
 
+    val siteBoundary = mergeToMultiPolygon(zonesWithSubzones.map { it.boundary })
+
     val newModel =
         PlantingSiteModel.create(
-            boundary = siteFeature.geometry.toMultiPolygon(),
+            boundary = siteBoundary,
             description = description,
             exclusion = exclusion,
             name = name,
             organizationId = organizationId,
-            plantingZones =
-                zonesByName.values.map { zone ->
-                  zone.copy(plantingSubzones = subzonesByZone[zone.name] ?: emptyList())
-                },
+            plantingZones = zonesWithSubzones,
         )
     return newModel
-  }
-
-  private fun getSiteBoundary(
-      siteFile: Shapefile,
-      problems: MutableList<String>
-  ): ShapefileFeature {
-    if (siteFile.features.isEmpty()) {
-      throw PlantingSiteMapInvalidException("Planting site shapefile does not contain a boundary")
-    }
-
-    if (siteFile.features.size > 1) {
-      problems += "Planting site shapefile must contain 1 geometry; found ${siteFile.features.size}"
-    }
-
-    return siteFile.features.first()
   }
 
   /**
@@ -177,59 +143,11 @@ class PlantingSiteImporter(
         .createMultiPolygon(allPolygons.toTypedArray())
   }
 
-  private fun getZones(
-      zonesFile: Shapefile,
-      exclusion: MultiPolygon?,
-  ): Map<String, NewPlantingZoneModel> {
-    if (zonesFile.features.isEmpty()) {
-      throw IllegalArgumentException("No planting zones defined")
-    }
-
-    return zonesFile.features.associate { feature ->
-      val name = feature.getProperty(zoneNameProperties)!!
-      val boundary =
-          when (val geometry = feature.geometry) {
-            is MultiPolygon -> {
-              geometry
-            }
-            is Polygon -> {
-              geometry.toMultiPolygon()
-            }
-            else -> {
-              throw IllegalArgumentException(
-                  "Planting zone $name geometry must be a MultiPolygon, not a ${geometry.geometryType}")
-            }
-          }
-      val targetPlantingDensity =
-          feature.getProperty(targetPlantingDensityProperties)?.toBigDecimalOrNull()
-              ?: PlantingZoneModel.DEFAULT_TARGET_PLANTING_DENSITY
-
-      val numPermanentClusters =
-          feature.getProperty(permanentClusterCountProperties)?.toIntOrNull()
-              ?: PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS
-      val numTemporaryPlots =
-          feature.getProperty(temporaryPlotCountProperties)?.toIntOrNull()
-              ?: PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS
-
-      name to
-          PlantingZoneModel.create(
-              boundary = boundary,
-              exclusion = exclusion,
-              name = name,
-              numPermanentClusters = numPermanentClusters,
-              numTemporaryPlots = numTemporaryPlots,
-              plantingSubzones = emptyList(),
-              targetPlantingDensity = targetPlantingDensity,
-          )
-    }
-  }
-
-  private fun getSubzonesByZone(
-      zones: Map<String, PlantingZoneModel<*, *>>,
+  private fun getZonesWithSubzones(
       subzonesFile: Shapefile,
       exclusion: MultiPolygon?,
       problems: MutableList<String>,
-  ): Map<String, List<NewPlantingSubzoneModel>> {
+  ): List<NewPlantingZoneModel> {
     val validSubzones =
         subzonesFile.features.filter { feature ->
           val subzoneName = feature.getProperty(subzoneNameProperties)
@@ -245,10 +163,6 @@ class PlantingSiteImporter(
                 "Subzone $subzoneName is missing zone name properties: " +
                     zoneNameProperties.joinToString()
             false
-          } else if (zoneName !in zones) {
-            problems +=
-                "Subzone $subzoneName has zone $zoneName which does not appear in zones shapefile"
-            false
           } else {
             true
           }
@@ -257,18 +171,48 @@ class PlantingSiteImporter(
     val subzonesByZone =
         validSubzones.groupBy { feature -> feature.getProperty(zoneNameProperties)!! }
 
-    return subzonesByZone.mapValues { (zoneName, subzoneFeatures) ->
-      subzoneFeatures.map { subzoneFeature ->
-        val boundary = subzoneFeature.geometry
-        val name = subzoneFeature.getProperty(subzoneNameProperties)!!
+    return subzonesByZone.map { (zoneName, subzoneFeatures) ->
+      val subzoneModels =
+          subzoneFeatures.map { subzoneFeature ->
+            val boundary = subzoneFeature.geometry
+            val name = subzoneFeature.getProperty(subzoneNameProperties)!!
 
-        PlantingSubzoneModel.create(
-            boundary = boundary.toMultiPolygon(),
-            exclusion = exclusion,
-            fullName = "$zoneName-$name",
-            name = name,
-        )
-      }
+            PlantingSubzoneModel.create(
+                boundary = boundary.toMultiPolygon(),
+                exclusion = exclusion,
+                fullName = "$zoneName-$name",
+                name = name,
+            )
+          }
+
+      val zoneBoundary = mergeToMultiPolygon(subzoneModels.map { it.boundary })
+
+      // Zone settings only need to appear on one subzone; take the first values we find.
+      val numPermanentClusters =
+          subzoneFeatures.firstNotNullOfOrNull {
+            it.getProperty(permanentClusterCountProperties)?.toIntOrNull()
+          } ?: PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS
+      val numTemporaryPlots =
+          subzoneFeatures.firstNotNullOfOrNull {
+            it.getProperty(temporaryPlotCountProperties)?.toIntOrNull()
+          } ?: PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS
+      val targetPlantingDensity =
+          subzoneFeatures.firstNotNullOfOrNull {
+            it.getProperty(targetPlantingDensityProperties)?.toBigDecimalOrNull()
+          } ?: PlantingZoneModel.DEFAULT_TARGET_PLANTING_DENSITY
+
+      PlantingZoneModel.create(
+          boundary = zoneBoundary,
+          exclusion = exclusion,
+          name = zoneName,
+          numPermanentClusters = numPermanentClusters,
+          numTemporaryPlots = numTemporaryPlots,
+          plantingSubzones = subzoneModels,
+          targetPlantingDensity = targetPlantingDensity,
+      )
     }
   }
+
+  private fun mergeToMultiPolygon(geometries: Collection<Geometry>): MultiPolygon =
+      geometries.reduce { a, b -> a.union(b) }.toMultiPolygon()
 }

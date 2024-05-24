@@ -65,7 +65,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
           "name",
           "description",
           organizationId,
-          Shapefile.fromZipFile(Path("$resourcesDir/TooFewShapefiles.zip")))
+          Shapefile.fromZipFile(Path("$resourcesDir/TwoShapefiles.zip")))
     }
   }
 
@@ -74,22 +74,17 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `detects too few shapefiles`() {
       assertHasProblem(
-          "TooFewShapefiles.zip",
-          "Expected 3 or 4 shapefiles (site, zones, subzones, and optionally exclusions) but found 2")
+          "NoShapefiles.zip", "Expected subzones and optionally exclusions but found 0 shapefiles")
     }
 
     @Test
     fun `detects zone that is big enough for 5 plots but too small for a permanent cluster`() {
       val gen = ShapefileGenerator()
       val siteBoundary = gen.multiRectangle(0 to 0, 200 to 30)
-      val siteFeature = gen.siteFeature(siteBoundary)
-      val zoneFeature = gen.zoneFeature(siteBoundary)
       val subzoneFeature = gen.subzoneFeature(siteBoundary)
 
       assertHasProblem(
           "Planting zone Z1 is too small to create minimum number of monitoring plots (is the zone at least 150x75 meters?)",
-          listOf(siteFeature),
-          listOf(zoneFeature),
           listOf(subzoneFeature))
     }
 
@@ -97,14 +92,10 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
     fun `detects zone that is big enough for a permanent cluster but not also for a temporary plot`() {
       val gen = ShapefileGenerator()
       val siteBoundary = gen.multiRectangle(0 to 0, 60 to 60)
-      val siteFeature = gen.siteFeature(siteBoundary)
-      val zoneFeature = gen.zoneFeature(siteBoundary)
       val subzoneFeature = gen.subzoneFeature(siteBoundary)
 
       assertHasProblem(
           "Planting zone Z1 is too small to create minimum number of monitoring plots (is the zone at least 150x75 meters?)",
-          listOf(siteFeature),
-          listOf(zoneFeature),
           listOf(subzoneFeature))
     }
 
@@ -133,8 +124,6 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
     private fun assertHasProblem(
         expected: String,
-        siteFeatures: List<ShapefileFeature>,
-        zoneFeatures: List<ShapefileFeature>,
         subzoneFeatures: List<ShapefileFeature>,
         exclusions: List<ShapefileFeature>? = null,
     ) {
@@ -143,11 +132,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             name = "Test Site",
             organizationId = organizationId,
             shapefiles =
-                listOfNotNull(
-                    Shapefile(siteFeatures),
-                    Shapefile(zoneFeatures),
-                    Shapefile(subzoneFeatures),
-                    exclusions?.let { Shapefile(it) }),
+                listOfNotNull(Shapefile(subzoneFeatures), exclusions?.let { Shapefile(it) }),
         )
       }
     }
