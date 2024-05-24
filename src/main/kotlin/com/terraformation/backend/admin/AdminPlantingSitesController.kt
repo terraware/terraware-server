@@ -325,7 +325,9 @@ class AdminPlantingSitesController(
   ): String {
     try {
       val boundaryPolygon = objectMapper.readValue<Polygon>(boundary)
-      val siteFile = Shapefile.fromBoundary(boundaryPolygon, emptyMap())
+      val siteFile =
+          Shapefile.fromBoundary(
+              boundaryPolygon, mapOf(PlantingSiteImporter.siteNameProperties.first() to siteName))
 
       val siteId =
           if (siteType == "detailed") {
@@ -340,8 +342,8 @@ class AdminPlantingSitesController(
                         PlantingSiteImporter.zoneNameProperties.first() to "Zone",
                         PlantingSiteImporter.subzoneNameProperties.first() to "Subzone"))
 
-            plantingSiteImporter.importShapefiles(
-                siteName, null, organizationId, siteFile, zonesFile, subzonesFile, null)
+            plantingSiteImporter.import(
+                siteName, null, organizationId, listOf(siteFile, zonesFile, subzonesFile))
           } else {
             plantingSiteStore
                 .createPlantingSite(

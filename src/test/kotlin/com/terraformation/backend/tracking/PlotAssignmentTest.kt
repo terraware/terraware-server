@@ -189,13 +189,15 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
       exclusionFeature: ShapefileFeature? = null,
   ): ExistingPlantingSiteModel {
     val plantingSiteId =
-        plantingSiteImporter.importShapefiles(
+        plantingSiteImporter.import(
             name = "Test Site ${nextPlantingSiteNumber++}",
             organizationId = organizationId,
-            siteFile = Shapefile(listOf(siteFeature)),
-            zonesFile = Shapefile(zoneFeatures),
-            subzonesFile = Shapefile(subzoneFeatures),
-            exclusionsFile = exclusionFeature?.let { Shapefile(listOf(it)) })
+            shapefiles =
+                listOfNotNull(
+                    Shapefile(listOf(siteFeature)),
+                    Shapefile(zoneFeatures),
+                    Shapefile(subzoneFeatures),
+                    exclusionFeature?.let { Shapefile(listOf(it)) }))
 
     val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
