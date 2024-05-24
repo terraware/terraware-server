@@ -12,7 +12,7 @@ internal class ShapefileTest {
 
   @Test
   fun `can read zipfile with multiple shapefiles`() {
-    val shapefiles = Shapefile.fromZipFile(Path("$resourcesDir/TooFewShapefiles.zip"))
+    val shapefiles = Shapefile.fromZipFile(Path("$resourcesDir/TwoShapefiles.zip"))
 
     assertEquals(2, shapefiles.size, "Number of shapefiles loaded")
 

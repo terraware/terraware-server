@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking
 
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.tracking.model.ShapefileFeature
+import java.math.BigDecimal
 import org.geotools.referencing.CRS
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
@@ -28,39 +29,32 @@ class ShapefileGenerator(
   private val geometryFactory = GeometryFactory(PrecisionModel(), srid)
 
   private var nextSubzoneNumber = 1
-  private var nextZoneNumber = 1
 
-  private lateinit var lastZoneName: String
-
-  fun siteFeature(boundary: MultiPolygon): ShapefileFeature =
-      ShapefileFeature(boundary, mapOf("site" to "Test Site"), crs)
-
-  fun zoneFeature(
-      boundary: MultiPolygon,
-      name: String = "Z${nextZoneNumber++}",
-      permanentClusters: Int? = defaultPermanentClusters,
-      temporaryPlots: Int? = defaultTemporaryPlots,
-  ): ShapefileFeature {
-    lastZoneName = name
-
-    val properties =
-        listOfNotNull(
-                "zone" to name,
-                "density" to "1200",
-                permanentClusters?.let { "permanent" to "$it" },
-                temporaryPlots?.let { "temporary" to "$it" },
-            )
-            .toMap()
-
-    return ShapefileFeature(boundary, properties, crs)
-  }
+  private var lastZoneName: String = "Z1"
 
   fun subzoneFeature(
       boundary: MultiPolygon,
       name: String = "S${nextSubzoneNumber++}",
-      zone: String = lastZoneName
+      zone: String = lastZoneName,
+      permanentClusters: Int? = defaultPermanentClusters,
+      temporaryPlots: Int? = defaultTemporaryPlots,
+      targetPlantingDensity: BigDecimal? = null,
   ): ShapefileFeature {
-    return ShapefileFeature(boundary, mapOf("zone" to zone, "subzone" to name), crs)
+    lastZoneName = zone
+
+    return ShapefileFeature(
+        boundary,
+        listOfNotNull(
+                "subzone" to name,
+                "zone" to zone,
+                "density" to "1200",
+                permanentClusters?.let { "permanent" to "$it" },
+                temporaryPlots?.let { "temporary" to "$it" },
+                targetPlantingDensity?.let { "density" to "$it" },
+            )
+            .toMap(),
+        crs,
+    )
   }
 
   fun exclusionFeature(boundary: MultiPolygon): ShapefileFeature {

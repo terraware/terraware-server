@@ -31,6 +31,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
+import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Hidden
 import java.math.BigDecimal
 import java.nio.file.Files
@@ -39,7 +40,6 @@ import java.time.LocalDate
 import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
-import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
@@ -325,31 +325,23 @@ class AdminPlantingSitesController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      val boundaryPolygon = objectMapper.readValue<Polygon>(boundary)
-      val siteFile =
-          Shapefile.fromBoundary(
-              boundaryPolygon, mapOf(PlantingSiteImporter.siteNameProperties.first() to siteName))
+      val siteBoundary = objectMapper.readValue<Polygon>(boundary).toMultiPolygon()
 
       val siteId =
           if (siteType == "detailed") {
-            val zonesFile =
-                Shapefile.fromBoundary(
-                    boundaryPolygon,
-                    mapOf(PlantingSiteImporter.zoneNameProperties.first() to "Zone"))
             val subzonesFile =
                 Shapefile.fromBoundary(
-                    boundaryPolygon,
+                    siteBoundary,
                     mapOf(
                         PlantingSiteImporter.zoneNameProperties.first() to "Zone",
                         PlantingSiteImporter.subzoneNameProperties.first() to "Subzone"))
 
-            plantingSiteImporter.import(
-                siteName, null, organizationId, listOf(siteFile, zonesFile, subzonesFile))
+            plantingSiteImporter.import(siteName, null, organizationId, listOf(subzonesFile))
           } else {
             plantingSiteStore
                 .createPlantingSite(
                     PlantingSiteModel.create(
-                        boundary = siteFile.features.first().geometry as MultiPolygon,
+                        boundary = siteBoundary,
                         name = siteName,
                         organizationId = organizationId,
                     ))

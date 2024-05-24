@@ -103,24 +103,17 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     //     |   |   |   |   |   |   |   |   |   |   |   |   |   | (plot borders)
     //     |       |       |       |       |       |       |     (cluster borders)
 
-    val siteBoundary = gen.multiRectangle(0 to 0, 326 to 101)
-    val zone1Boundary = gen.multiRectangle(0 to 0, 230 to 101)
     val subzone1Boundary = gen.multiRectangle(0 to 0, 130 to 101)
     val subzone2Boundary = gen.multiRectangle(130 to 0, 230 to 101)
     val zone2Boundary = gen.multiRectangle(230 to 0, 326 to 101)
 
-    val siteFeature = gen.siteFeature(siteBoundary)
-    val zone1Feature = gen.zoneFeature(zone1Boundary, permanentClusters = 2, temporaryPlots = 3)
-    val subzone1Feature = gen.subzoneFeature(subzone1Boundary)
+    val subzone1Feature =
+        gen.subzoneFeature(subzone1Boundary, zone = "Z1", permanentClusters = 2, temporaryPlots = 3)
     val subzone2Feature = gen.subzoneFeature(subzone2Boundary)
-    val zone2Feature = gen.zoneFeature(zone2Boundary, permanentClusters = 2, temporaryPlots = 2)
-    val subzone3Feature = gen.subzoneFeature(zone2Boundary)
+    val subzone3Feature =
+        gen.subzoneFeature(zone2Boundary, zone = "Z2", permanentClusters = 2, temporaryPlots = 3)
 
-    val plantingSite =
-        importSite(
-            siteFeature,
-            listOf(zone1Feature, zone2Feature),
-            listOf(subzone1Feature, subzone2Feature, subzone3Feature))
+    val plantingSite = importSite(listOf(subzone1Feature, subzone2Feature, subzone3Feature))
     val subzone1 =
         plantingSite.plantingZones
             .first { it.name == "Z1" }
@@ -183,8 +176,6 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
    * list of inserted IDs so they will be used as default values by [insertDelivery] and such.
    */
   private fun importSite(
-      siteFeature: ShapefileFeature,
-      zoneFeatures: List<ShapefileFeature>,
       subzoneFeatures: List<ShapefileFeature>,
       exclusionFeature: ShapefileFeature? = null,
   ): ExistingPlantingSiteModel {
@@ -194,10 +185,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
             organizationId = organizationId,
             shapefiles =
                 listOfNotNull(
-                    Shapefile(listOf(siteFeature)),
-                    Shapefile(zoneFeatures),
-                    Shapefile(subzoneFeatures),
-                    exclusionFeature?.let { Shapefile(listOf(it)) }))
+                    Shapefile(subzoneFeatures), exclusionFeature?.let { Shapefile(listOf(it)) }))
 
     val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
