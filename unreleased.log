@@ -1,3 +1,4 @@
+b851266448d Upgrade to Kotlin 2.0.0 (#1980)
 288b4321503 SW-5431 Don't require site and zone shapefiles (#1992)
 ddc1d6da398 SW-5230 Add shapefile update to admin UI (#1991)
 40316204124 Show success details in admin UI (#1990)
