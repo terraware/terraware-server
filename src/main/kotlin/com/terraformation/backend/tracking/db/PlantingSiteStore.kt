@@ -420,7 +420,7 @@ class PlantingSiteStore(
       val userId = currentUser().userId
 
       if (plantingSiteEdit.plantingZoneEdits.isEmpty() &&
-          existing.boundary.equalsOrBothNull(plantingSiteEdit.desiredModel.boundary, 0.00001) &&
+          existing.boundary.equalsOrBothNull(plantingSiteEdit.desiredModel.boundary) &&
           existing.exclusion.equalsOrBothNull(plantingSiteEdit.desiredModel.exclusion)) {
         log.debug("No-op edit for planting site $plantingSiteId")
         return@withLockedPlantingSite existing
