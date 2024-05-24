@@ -9,7 +9,9 @@ import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSp
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshotsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -29,6 +31,7 @@ import org.springframework.http.MediaType
 @Named
 class ParticipantProjectSpeciesService(
     private val dslContext: DSLContext,
+    private val deliverablesDao: DeliverablesDao,
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
@@ -135,6 +138,11 @@ class ParticipantProjectSpeciesService(
   @EventListener
   fun on(event: DeliverableStatusUpdatedEvent) {
     if (event.newStatus !== SubmissionStatus.Approved) {
+      return
+    }
+
+    val deliverable = deliverablesDao.fetchOneById(event.deliverableId)
+    if (deliverable == null || deliverable.deliverableTypeId != DeliverableType.Species) {
       return
     }
 

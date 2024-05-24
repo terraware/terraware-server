@@ -57,6 +57,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
   private val service: ParticipantProjectSpeciesService by lazy {
     ParticipantProjectSpeciesService(
         dslContext,
+        deliverablesDao,
         eventPublisher,
         fileService,
         participantProjectSpeciesStore,
@@ -366,6 +367,68 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           "$expectedHeaders\r\n$expectedRow1\r\n$expectedRow2\r\n$expectedRow3\r\n",
           String(stream.readAllBytes()))
+    }
+
+    @Test
+    fun `it does nothing if the submission is not approved`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val moduleId = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      val deliverableId =
+          insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
+
+      val projectId = insertProject(participantId = participantId)
+      val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
+
+      val speciesId = insertSpecies()
+
+      insertParticipantProjectSpecies(
+          projectId = projectId,
+          speciesId = speciesId,
+          speciesNativeCategory = SpeciesNativeCategory.NonNative,
+          submissionStatus = SubmissionStatus.Approved)
+
+      service.on(
+          DeliverableStatusUpdatedEvent(
+              deliverableId = deliverableId,
+              projectId = projectId,
+              oldStatus = SubmissionStatus.NotSubmitted,
+              newStatus = SubmissionStatus.InReview,
+              submissionId = submissionId))
+
+      assertEquals(emptyList<SubmissionSnapshotsRow>(), submissionSnapshotsDao.findAll())
+
+      verify(exactly = 0) {
+        participantProjectSpeciesStore.fetchSpeciesForParticipantProject(projectId)
+      }
+    }
+
+    @Test
+    fun `it does nothing if the submission is not for a species list deliverable`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val moduleId = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      val deliverableId =
+          insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Document)
+
+      val projectId = insertProject(participantId = participantId)
+      val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
+
+      service.on(
+          DeliverableStatusUpdatedEvent(
+              deliverableId = deliverableId,
+              projectId = projectId,
+              oldStatus = SubmissionStatus.InReview,
+              newStatus = SubmissionStatus.Approved,
+              submissionId = submissionId))
+
+      assertEquals(emptyList<SubmissionSnapshotsRow>(), submissionSnapshotsDao.findAll())
+
+      verify(exactly = 0) {
+        participantProjectSpeciesStore.fetchSpeciesForParticipantProject(projectId)
+      }
     }
   }
 }
