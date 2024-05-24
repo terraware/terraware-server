@@ -63,7 +63,7 @@ class ParticipantProjectSpeciesController(
                 speciesId = payload.speciesId,
             ))
 
-    return makeGetResponse(model)
+    return GetParticipantProjectSpeciesResponsePayload(ParticipantProjectSpeciesPayload(model))
   }
 
   @ApiResponse200
@@ -87,7 +87,7 @@ class ParticipantProjectSpeciesController(
   ): GetParticipantProjectSpeciesResponsePayload {
     val model = participantProjectSpeciesStore.fetchOneById(participantProjectSpeciesId)
 
-    return makeGetResponse(model)
+    return GetParticipantProjectSpeciesResponsePayload(ParticipantProjectSpeciesPayload(model))
   }
 
   @ApiResponse200
@@ -130,21 +130,6 @@ class ParticipantProjectSpeciesController(
 
     return SimpleSuccessResponsePayload()
   }
-
-  private fun makeGetResponse(
-      model: ExistingParticipantProjectSpeciesModel
-  ): GetParticipantProjectSpeciesResponsePayload =
-      GetParticipantProjectSpeciesResponsePayload(
-          ParticipantProjectSpeciesPayload(
-              feedback = model.feedback,
-              id = model.id,
-              internalComment = model.internalComment,
-              projectId = model.projectId,
-              rationale = model.rationale,
-              speciesId = model.speciesId,
-              speciesNativeCategory = model.speciesNativeCategory,
-              submissionStatus = model.submissionStatus,
-          ))
 }
 
 data class AssignParticipantProjectSpeciesPayload(
