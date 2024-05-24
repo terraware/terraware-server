@@ -154,6 +154,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "score_categories" to setOf(ALL, ACCELERATOR),
                   "submission_documents" to setOf(ALL, ACCELERATOR),
                   "submission_statuses" to setOf(ALL, ACCELERATOR),
+                  "submission_snapshots" to setOf(ALL, ACCELERATOR),
                   "submissions" to setOf(ALL, ACCELERATOR),
                   "vote_options" to setOf(ALL, ACCELERATOR),
               ),

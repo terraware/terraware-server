@@ -531,6 +531,8 @@ COMMENT ON COLUMN accelerator.submission_documents.name IS 'System-generated fil
 COMMENT ON COLUMN accelerator.submission_documents.location IS 'Location of file in the document store identified by `document_store_id`. This is used by the system to generate download links and includes whatever information is needed to generate a link for a given document store; if the document store supports permalinks then this may be a simple URL.';
 COMMENT ON COLUMN accelerator.submission_documents.original_name IS 'Original filename as supplied by the client when the document was uploaded. Not required to be unique since the user can upload revised versions of documents.';
 
+COMMENT ON TABLE accelerator.submission_snapshots IS 'Snapshot files associated to submissions';
+
 COMMENT ON TABLE accelerator.submission_statuses IS '(Enum) Statuses of submissions of deliverables by specific projects.';
 
 COMMENT ON TABLE accelerator.submissions IS 'Information about the current states of the information supplied by specific projects in response to deliverables.';

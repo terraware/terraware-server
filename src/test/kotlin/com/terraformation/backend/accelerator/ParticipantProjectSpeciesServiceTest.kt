@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesStore
 import com.terraformation.backend.accelerator.db.SubmissionStore
+import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.auth.currentUser
@@ -12,11 +13,17 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
+import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
+import com.terraformation.backend.file.FileService
+import com.terraformation.backend.file.InMemoryFileStore
+import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import java.time.Instant
@@ -31,6 +38,12 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
 
+  private val fileStore = InMemoryFileStore()
+  private val thumbnailStore: ThumbnailStore = mockk()
+  private val fileService: FileService by lazy {
+    FileService(dslContext, clock, mockk(), filesDao, fileStore, thumbnailStore)
+  }
+
   private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore by lazy {
     spyk(
         ParticipantProjectSpeciesStore(
@@ -43,7 +56,12 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
   private val service: ParticipantProjectSpeciesService by lazy {
     ParticipantProjectSpeciesService(
-        dslContext, eventPublisher, participantProjectSpeciesStore, submissionStore)
+        dslContext,
+        eventPublisher,
+        fileService,
+        participantProjectSpeciesStore,
+        submissionSnapshotsDao,
+        submissionStore)
   }
 
   @BeforeEach
@@ -281,6 +299,73 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                       scientificName = "Species 1")))
 
       verify(exactly = 0) { participantProjectSpeciesStore.update(any(), any()) }
+    }
+  }
+
+  @Nested
+  inner class SaveSnapshot {
+    @Test
+    fun `it saves a snapshot of species data if the associated submission is approved`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val moduleId = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      val deliverableId =
+          insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
+
+      val projectId = insertProject(participantId = participantId)
+      val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
+
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+      val speciesId3 = insertSpecies(commonName = "Common name 3")
+
+      insertParticipantProjectSpecies(
+          projectId = projectId,
+          speciesId = speciesId1,
+          speciesNativeCategory = SpeciesNativeCategory.NonNative,
+          submissionStatus = SubmissionStatus.Approved)
+      insertParticipantProjectSpecies(
+          projectId = projectId,
+          rationale = "It is a great tree",
+          speciesId = speciesId2,
+          speciesNativeCategory = SpeciesNativeCategory.Native,
+          submissionStatus = SubmissionStatus.InReview)
+      insertParticipantProjectSpecies(
+          feedback = "Need to know native status",
+          projectId = projectId,
+          speciesId = speciesId3,
+          submissionStatus = SubmissionStatus.Rejected)
+
+      service.on(
+          DeliverableStatusUpdatedEvent(
+              deliverableId = deliverableId,
+              projectId = projectId,
+              oldStatus = SubmissionStatus.InReview,
+              newStatus = SubmissionStatus.Approved,
+              submissionId = submissionId))
+
+      val submissionSnapshot =
+          submissionSnapshotsDao.fetchBySubmissionId(submissionId).firstOrNull()
+
+      assertEquals(
+          SubmissionSnapshotsRow(fileId = null, id = null, submissionId = submissionId),
+          submissionSnapshot.let { it!!.copy(fileId = null, id = null) })
+
+      val stream = fileService.readFile(submissionSnapshot!!.fileId!!)
+
+      val expectedHeaders =
+          "\"Project ID\",\"Species ID\",\"Status\",\"Rationale\",\"Feedback\",\"Internal Comment\",\"Native / Non-Native\",\"Species Scientific Name\",\"Species Common Name\""
+      val expectedRow1 =
+          "\"$projectId\",\"$speciesId1\",\"Approved\",\"\",\"\",\"\",\"Non-native\",\"Species 1\",\"\""
+      val expectedRow2 =
+          "\"$projectId\",\"$speciesId2\",\"In Review\",\"It is a great tree\",\"\",\"\",\"Native\",\"Species 2\",\"\""
+      val expectedRow3 =
+          "\"$projectId\",\"$speciesId3\",\"Rejected\",\"\",\"Need to know native status\",\"\",\"\",\"Species 3\",\"Common name 3\""
+
+      assertEquals(
+          "$expectedHeaders\r\n$expectedRow1\r\n$expectedRow2\r\n$expectedRow3\r\n",
+          String(stream.readAllBytes()))
     }
   }
 }

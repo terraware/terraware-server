@@ -32,6 +32,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
@@ -687,13 +688,18 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser(role = Role.Admin)
     val projectId = insertProject()
     val deliverableId = DeliverableId(1)
+    val submissionId = SubmissionId(1)
 
     every { messages.deliverableStatusUpdated() } returns
         NotificationMessage("status updated title", "status updated body")
 
     service.on(
         DeliverableStatusUpdatedEvent(
-            deliverableId, projectId, SubmissionStatus.NotSubmitted, SubmissionStatus.InReview))
+            deliverableId,
+            projectId,
+            SubmissionStatus.NotSubmitted,
+            SubmissionStatus.InReview,
+            submissionId))
 
     assertNotification(
         type = NotificationType.DeliverableStatusUpdated,
@@ -707,10 +713,15 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser(role = Role.Admin)
     val projectId = insertProject()
     val deliverableId = DeliverableId(1)
+    val submissionId = SubmissionId(1)
 
     service.on(
         DeliverableStatusUpdatedEvent(
-            deliverableId, projectId, SubmissionStatus.NeedsTranslation, SubmissionStatus.InReview))
+            deliverableId,
+            projectId,
+            SubmissionStatus.NeedsTranslation,
+            SubmissionStatus.InReview,
+            submissionId))
 
     assertNotifications(emptyList())
   }

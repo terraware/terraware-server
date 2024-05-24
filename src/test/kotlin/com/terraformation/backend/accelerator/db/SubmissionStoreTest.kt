@@ -206,7 +206,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
       insertModule()
       val projectId = insertProject()
       val deliverableId = insertDeliverable()
-      insertSubmission(submissionStatus = SubmissionStatus.InReview)
+      val submissionId = insertSubmission(submissionStatus = SubmissionStatus.InReview)
 
       store.updateSubmissionStatus(
           deliverableId,
@@ -217,7 +217,11 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
       eventPublisher.assertEventPublished(
           DeliverableStatusUpdatedEvent(
-              deliverableId, projectId, SubmissionStatus.InReview, SubmissionStatus.Rejected))
+              deliverableId,
+              projectId,
+              SubmissionStatus.InReview,
+              SubmissionStatus.Rejected,
+              submissionId))
     }
 
     @Test
