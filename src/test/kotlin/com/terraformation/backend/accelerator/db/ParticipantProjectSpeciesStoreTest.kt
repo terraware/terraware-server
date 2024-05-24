@@ -8,6 +8,8 @@ import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSp
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.ParticipantProjectsForSpecies
 import com.terraformation.backend.accelerator.model.SpeciesForParticipantProject
+import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.DeliverableType
@@ -16,6 +18,7 @@ import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.species.model.ExistingSpeciesModel
 import io.mockk.every
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -342,27 +345,66 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val participantProjectSpeciesId2 =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId2)
 
+      val userId = currentUser().userId
+      val now = Instant.EPOCH
+
       assertEquals(
           listOf(
               SpeciesForParticipantProject(
-                  participantProjectSpeciesId = participantProjectSpeciesId1,
-                  participantProjectSpeciesRationale = null,
-                  participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
-                  participantProjectSpeciesNativeCategory = null,
-                  projectId = projectId,
-                  speciesId = speciesId1,
-                  speciesScientificName = "Acacia Kochi",
-                  speciesCommonName = null),
+                  participantProjectSpecies =
+                      ExistingParticipantProjectSpeciesModel(
+                          createdBy = userId,
+                          createdTime = now,
+                          id = participantProjectSpeciesId1,
+                          modifiedBy = userId,
+                          modifiedTime = now,
+                          projectId = projectId,
+                          speciesId = speciesId1,
+                          submissionStatus = SubmissionStatus.NotSubmitted),
+                  project =
+                      ExistingProjectModel(
+                          createdBy = userId,
+                          createdTime = now,
+                          id = projectId,
+                          modifiedBy = userId,
+                          modifiedTime = now,
+                          name = "Project 1",
+                          organizationId = inserted.organizationId,
+                          participantId = participantId),
+                  species =
+                      ExistingSpeciesModel(
+                          commonName = null,
+                          id = speciesId1,
+                          organizationId = inserted.organizationId,
+                          scientificName = "Acacia Kochi")),
               SpeciesForParticipantProject(
-                  participantProjectSpeciesId = participantProjectSpeciesId2,
-                  participantProjectSpeciesRationale = null,
-                  participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
-                  participantProjectSpeciesNativeCategory = null,
-                  projectId = projectId,
-                  speciesId = speciesId2,
-                  speciesScientificName = "Juniperus scopulorum",
-                  speciesCommonName = null)),
-          store.fetchSpeciesForParticipantProjects(projectId))
+                  participantProjectSpecies =
+                      ExistingParticipantProjectSpeciesModel(
+                          createdBy = userId,
+                          createdTime = now,
+                          id = participantProjectSpeciesId2,
+                          modifiedBy = userId,
+                          modifiedTime = now,
+                          projectId = projectId,
+                          speciesId = speciesId2,
+                          submissionStatus = SubmissionStatus.NotSubmitted),
+                  project =
+                      ExistingProjectModel(
+                          createdBy = userId,
+                          createdTime = now,
+                          id = projectId,
+                          modifiedBy = userId,
+                          modifiedTime = now,
+                          name = "Project 1",
+                          organizationId = inserted.organizationId,
+                          participantId = participantId),
+                  species =
+                      ExistingSpeciesModel(
+                          commonName = null,
+                          id = speciesId2,
+                          organizationId = inserted.organizationId,
+                          scientificName = "Juniperus scopulorum"))),
+          store.fetchSpeciesForParticipantProject(projectId))
     }
 
     @Test
@@ -378,7 +420,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           emptyList<SpeciesForParticipantProject>(),
-          store.fetchSpeciesForParticipantProjects(projectId))
+          store.fetchSpeciesForParticipantProject(projectId))
     }
   }
 

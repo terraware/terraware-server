@@ -11,12 +11,14 @@ import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.customer.api.ProjectPayload
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
+import com.terraformation.backend.species.api.SpeciesResponseElement
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -110,7 +112,7 @@ class ParticipantProjectSpeciesController(
   fun getSpeciesForProject(
       @PathVariable projectId: ProjectId
   ): GetSpeciesForParticipantProjectsResponsePayload {
-    val results = participantProjectSpeciesStore.fetchSpeciesForParticipantProjects(projectId)
+    val results = participantProjectSpeciesStore.fetchSpeciesForParticipantProject(projectId)
 
     return GetSpeciesForParticipantProjectsResponsePayload(
         results.map { SpeciesForParticipantProjectPayload(it) })
@@ -170,7 +172,19 @@ data class ParticipantProjectSpeciesPayload(
     val speciesId: SpeciesId,
     val speciesNativeCategory: SpeciesNativeCategory?,
     val submissionStatus: SubmissionStatus,
-)
+) {
+  constructor(
+      model: ExistingParticipantProjectSpeciesModel
+  ) : this(
+      feedback = model.feedback,
+      id = model.id,
+      internalComment = model.internalComment,
+      projectId = model.projectId,
+      rationale = model.rationale,
+      speciesId = model.speciesId,
+      speciesNativeCategory = model.speciesNativeCategory,
+      submissionStatus = model.submissionStatus)
+}
 
 data class GetParticipantProjectSpeciesResponsePayload(
     val participantProjectSpecies: ParticipantProjectSpeciesPayload,
@@ -200,26 +214,16 @@ data class GetParticipantProjectsForSpeciesResponsePayload(
 ) : SuccessResponsePayload
 
 data class SpeciesForParticipantProjectPayload(
-    val participantProjectSpeciesId: ParticipantProjectSpeciesId,
-    val participantProjectSpeciesRationale: String?,
-    val participantProjectSpeciesSubmissionStatus: SubmissionStatus,
-    val participantProjectSpeciesNativeCategory: SpeciesNativeCategory?,
-    val projectId: ProjectId,
-    val speciesId: SpeciesId,
-    val speciesCommonName: String?,
-    val speciesScientificName: String,
+    val participantProjectSpecies: ParticipantProjectSpeciesPayload,
+    val species: SpeciesResponseElement,
+    val project: ProjectPayload,
 ) {
   constructor(
       model: SpeciesForParticipantProject
   ) : this(
-      participantProjectSpeciesId = model.participantProjectSpeciesId,
-      participantProjectSpeciesRationale = model.participantProjectSpeciesRationale,
-      participantProjectSpeciesSubmissionStatus = model.participantProjectSpeciesSubmissionStatus,
-      participantProjectSpeciesNativeCategory = model.participantProjectSpeciesNativeCategory,
-      projectId = model.projectId,
-      speciesId = model.speciesId,
-      speciesCommonName = model.speciesCommonName,
-      speciesScientificName = model.speciesScientificName,
+      participantProjectSpecies = ParticipantProjectSpeciesPayload(model.participantProjectSpecies),
+      project = ProjectPayload(model.project),
+      species = SpeciesResponseElement(model.species, null),
   )
 }
 

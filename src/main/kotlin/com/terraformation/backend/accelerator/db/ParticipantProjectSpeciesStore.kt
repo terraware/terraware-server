@@ -175,20 +175,11 @@ class ParticipantProjectSpeciesStore(
         .filter { user.canReadProject(it.projectId) }
   }
 
-  fun fetchSpeciesForParticipantProjects(projectId: ProjectId): List<SpeciesForParticipantProject> {
+  fun fetchSpeciesForParticipantProject(projectId: ProjectId): List<SpeciesForParticipantProject> {
     val user = currentUser()
 
     return dslContext
-        .select(
-            PROJECTS.NAME,
-            PROJECTS.ID,
-            PARTICIPANT_PROJECT_SPECIES.ID,
-            PARTICIPANT_PROJECT_SPECIES.RATIONALE,
-            PARTICIPANT_PROJECT_SPECIES.SUBMISSION_STATUS_ID,
-            PARTICIPANT_PROJECT_SPECIES.SPECIES_NATIVE_CATEGORY_ID,
-            SPECIES.ID,
-            SPECIES.COMMON_NAME,
-            SPECIES.SCIENTIFIC_NAME)
+        .select(PROJECTS.asterisk(), PARTICIPANT_PROJECT_SPECIES.asterisk(), SPECIES.asterisk())
         .from(SPECIES)
         .join(PARTICIPANT_PROJECT_SPECIES)
         .on(SPECIES.ID.eq(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID))
@@ -196,7 +187,7 @@ class ParticipantProjectSpeciesStore(
         .on(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(PROJECTS.ID))
         .where(PROJECTS.ID.eq(projectId))
         .fetch { SpeciesForParticipantProject.of(it) }
-        .filter { user.canReadProject(it.projectId) }
+        .filter { user.canReadProject(it.project.id) }
   }
 
   fun fetchLastCreatedSpeciesTime(projectId: ProjectId): Instant =
