@@ -30,12 +30,16 @@
 
 <h1>Placeholder Admin UI</h1>
 
-<p style="background-color: lightgreen;" th:if="${!#strings.isEmpty(successMessage)}"
-   th:text="${successMessage}"></p>
+<div style="background-color: lightgreen;" th:if="${!#strings.isEmpty(successMessage)}">
+    <th:block th:text="${successMessage}"/>
+    <th:ul th:if="${!#lists.isEmpty(successDetails)}">
+        <li th:each="detail : ${successDetails}" th:text="${detail}">Detail</li>
+    </th:ul>
+</div>
 <div style="background-color: red;" th:if="${!#strings.isEmpty(failureMessage)}">
     <th:block th:text="${failureMessage}"/>
     <th:ul th:if="${!#lists.isEmpty(failureDetails)}">
-            <li th:each="detail : ${failureDetails}" th:text="${detail}">Detail</li>
+        <li th:each="detail : ${failureDetails}" th:text="${detail}">Detail</li>
     </th:ul>
 </div>
 </span>
