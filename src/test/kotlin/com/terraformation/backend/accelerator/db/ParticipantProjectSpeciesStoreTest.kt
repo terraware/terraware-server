@@ -212,8 +212,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   participantProjectSpeciesNativeCategory = null,
                   projectId = projectId1,
                   projectName = "Project 1",
-                  speciesId = speciesId,
-              ),
+                  speciesId = speciesId),
               ParticipantProjectsForSpecies(
                   activeDeliverableId = deliverableId,
                   participantProjectSpeciesId = participantProjectSpeciesId2,
