@@ -26,7 +26,8 @@ data class SpeciesForParticipantProject(
           participantProjectSpeciesRationale = record[PARTICIPANT_PROJECT_SPECIES.RATIONALE],
           participantProjectSpeciesSubmissionStatus =
               record[PARTICIPANT_PROJECT_SPECIES.SUBMISSION_STATUS_ID]!!,
-          participantProjectSpeciesNativeCategory = record[PARTICIPANT_PROJECT_SPECIES.SPECIES_NATIVE_CATEGORY_ID]!!,
+          participantProjectSpeciesNativeCategory =
+              record[PARTICIPANT_PROJECT_SPECIES.SPECIES_NATIVE_CATEGORY_ID]!!,
           projectId = record[PROJECTS.ID]!!,
           speciesId = record[SPECIES.ID]!!,
           speciesCommonName = record[SPECIES.COMMON_NAME],
