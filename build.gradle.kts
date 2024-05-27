@@ -33,7 +33,7 @@ plugins {
   id("com.github.johnrengelman.processes") version "0.5.0"
   id("org.springdoc.openapi-gradle-plugin") version "1.8.0"
 
-  id("com.github.jk1.dependency-license-report") version "2.1"
+  id("com.github.jk1.dependency-license-report") version "2.8"
 
   id("terraware-jooq")
 }
