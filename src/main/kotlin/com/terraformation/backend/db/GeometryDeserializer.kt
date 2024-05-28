@@ -24,7 +24,7 @@ class GeometryDeserializer : JsonDeserializer<Geometry>() {
   private fun readGeometry(jp: JsonParser, tree: JsonNode, expectedType: String?): Geometry {
     val type =
         tree.findValuesAsText("type").getOrNull(0)
-            ?: throw JsonParseException(jp, "Missing geometry type", jp.currentLocation)
+            ?: throw JsonParseException(jp, "Missing geometry type", jp.currentLocation())
     if (expectedType != null && expectedType != type) {
       throw JsonParseException(jp, "Expected type $expectedType, was $type")
     }
@@ -62,7 +62,7 @@ class GeometryDeserializer : JsonDeserializer<Geometry>() {
         throw JsonParseException(
             jp,
             "Expected geometry type ${subclass.simpleName}, was ${geom.geometryType}",
-            jp.currentLocation)
+            jp.currentLocation())
       }
     }
   }
