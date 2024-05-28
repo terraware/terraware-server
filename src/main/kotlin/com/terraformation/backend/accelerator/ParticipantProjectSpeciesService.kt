@@ -25,6 +25,8 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
 import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
@@ -86,8 +88,7 @@ class ParticipantProjectSpeciesService(
         // A submission must exist for every project that is getting a new species assigned
         val deliverableSubmission =
             submissionStore.fetchActiveSpeciesDeliverableSubmission(
-                participantProjectSpecies.projectId,
-            )
+                participantProjectSpecies.projectId)
         if (deliverableSubmission.submissionId == null) {
           submissionStore.createSubmission(
               deliverableSubmission.deliverableId,
@@ -139,7 +140,7 @@ class ParticipantProjectSpeciesService(
    */
   @EventListener
   fun on(event: DeliverableStatusUpdatedEvent) {
-    if (event.newStatus !== SubmissionStatus.Approved) {
+    if (event.newStatus != SubmissionStatus.Approved) {
       return
     }
 
@@ -182,7 +183,10 @@ class ParticipantProjectSpeciesService(
         }
 
     val inputStream = ByteArrayInputStream(stream.toByteArray())
-    val filename = "species-list-snapshot-${event.submissionId}-${Instant.now()}.csv"
+    val timestamp =
+        DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")
+            .format(Instant.now().atZone(ZoneId.of("UTC")))
+    val filename = "species-list-snapshot-${event.submissionId}-$timestamp.csv"
     val metadata =
         FileMetadata.of(MediaType.valueOf("text/csv").toString(), filename, stream.size().toLong())
 
