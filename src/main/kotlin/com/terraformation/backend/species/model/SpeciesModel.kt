@@ -45,10 +45,10 @@ data class SpeciesModel<ID : SpeciesId?>(
   companion object {
     fun of(
         record: Record,
-        ecosystemTypesMultiset: Field<Set<EcosystemType>>,
-        growthFormsMultiset: Field<Set<GrowthForm>>,
-        plantMaterialSourcingMethodsMultiset: Field<Set<PlantMaterialSourcingMethod>>,
-        successionalGroupsMultiset: Field<Set<SuccessionalGroup>>,
+        ecosystemTypesMultiset: Field<Set<EcosystemType>>? = null,
+        growthFormsMultiset: Field<Set<GrowthForm>>? = null,
+        plantMaterialSourcingMethodsMultiset: Field<Set<PlantMaterialSourcingMethod>>? = null,
+        successionalGroupsMultiset: Field<Set<SuccessionalGroup>>? = null,
     ): ExistingSpeciesModel =
         ExistingSpeciesModel(
             averageWoodDensity = record[SPECIES.AVERAGE_WOOD_DENSITY],
@@ -59,9 +59,9 @@ data class SpeciesModel<ID : SpeciesId?>(
             dbhValue = record[SPECIES.DBH_VALUE],
             deletedTime = record[SPECIES.DELETED_TIME],
             ecologicalRoleKnown = record[SPECIES.ECOLOGICAL_ROLE_KNOWN],
-            ecosystemTypes = record[ecosystemTypesMultiset] ?: emptySet(),
+            ecosystemTypes = ecosystemTypesMultiset?.let { record[it] } ?: emptySet(),
             familyName = record[SPECIES.FAMILY_NAME],
-            growthForms = record[growthFormsMultiset] ?: emptySet(),
+            growthForms = growthFormsMultiset?.let { record[it] } ?: emptySet(),
             heightAtMaturitySource = record[SPECIES.HEIGHT_AT_MATURITY_SOURCE],
             heightAtMaturityValue = record[SPECIES.HEIGHT_AT_MATURITY_VALUE],
             id = record[SPECIES.ID]!!,
@@ -71,11 +71,11 @@ data class SpeciesModel<ID : SpeciesId?>(
             organizationId = record[SPECIES.ORGANIZATION_ID]!!,
             otherFacts = record[SPECIES.OTHER_FACTS],
             plantMaterialSourcingMethods =
-                record[plantMaterialSourcingMethodsMultiset] ?: emptySet(),
+                plantMaterialSourcingMethodsMultiset?.let { record[it] } ?: emptySet(),
             rare = record[SPECIES.RARE],
             scientificName = record[SPECIES.SCIENTIFIC_NAME]!!,
             seedStorageBehavior = record[SPECIES.SEED_STORAGE_BEHAVIOR_ID],
-            successionalGroups = record[successionalGroupsMultiset] ?: emptySet(),
+            successionalGroups = successionalGroupsMultiset?.let { record[it] } ?: emptySet(),
             woodDensityLevel = record[SPECIES.WOOD_DENSITY_LEVEL_ID],
         )
   }
