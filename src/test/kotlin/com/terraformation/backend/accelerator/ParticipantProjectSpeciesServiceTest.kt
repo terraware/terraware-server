@@ -62,7 +62,6 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
         eventPublisher,
         fileService,
         participantProjectSpeciesStore,
-        submissionSnapshotsDao,
         submissionStore)
   }
 

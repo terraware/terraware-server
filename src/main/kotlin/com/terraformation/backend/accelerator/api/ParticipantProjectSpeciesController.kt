@@ -16,8 +16,6 @@ import com.terraformation.backend.customer.api.ProjectPayload
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
-import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
-import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
@@ -48,7 +46,6 @@ import org.springframework.web.bind.annotation.RestController
 class ParticipantProjectSpeciesController(
     private val participantProjectSpeciesService: ParticipantProjectSpeciesService,
     private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
-    private val submissionsDao: SubmissionsDao
 ) {
   @ApiResponse200
   @PostMapping("/projects/species/assign")
@@ -119,16 +116,9 @@ class ParticipantProjectSpeciesController(
       @PathVariable projectId: ProjectId,
       @PathVariable deliverableId: DeliverableId
   ): ResponseEntity<InputStreamResource> {
-    val submissionRow =
-        submissionsDao
-            .fetch(
-                SUBMISSIONS.PROJECT_ID.eq(projectId)
-                    .and(SUBMISSIONS.DELIVERABLE_ID.eq(deliverableId)))
-            .firstOrNull() ?: throw NotFoundException()
-
     return try {
       participantProjectSpeciesService
-          .readSubmissionSnapshotFile(submissionRow.id!!)
+          .readSubmissionSnapshotFile(projectId, deliverableId)
           .toResponseEntity { contentDisposition = ContentDisposition.attachment().build() }
     } catch (e: NoSuchFileException) {
       throw NotFoundException()

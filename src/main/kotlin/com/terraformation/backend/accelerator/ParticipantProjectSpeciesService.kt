@@ -13,11 +13,10 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
-import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
-import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshotsDao
-import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_SNAPSHOTS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.file.FileService
@@ -25,6 +24,7 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import jakarta.inject.Named
+import jakarta.ws.rs.NotFoundException
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
@@ -44,7 +44,6 @@ class ParticipantProjectSpeciesService(
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
-    private val submissionSnapshotsDao: SubmissionSnapshotsDao,
     private val submissionStore: SubmissionStore,
 ) {
   /** Creates a new participant project species, possibly creating a deliverable submission. */
@@ -194,20 +193,38 @@ class ParticipantProjectSpeciesService(
         FileMetadata.of(MediaType.valueOf("text/csv").toString(), filename, stream.size().toLong())
 
     fileService.storeFile("species-list-deliverable", inputStream, metadata, null) { fileId ->
-      submissionSnapshotsDao.insert(
-          SubmissionSnapshotsRow(submissionId = event.submissionId, fileId = fileId))
+      with(SUBMISSION_SNAPSHOTS) {
+        dslContext
+            .insertInto(this)
+            .set(SUBMISSION_ID, event.submissionId)
+            .set(FILE_ID, fileId)
+            .execute()
+      }
     }
   }
 
-  fun readSubmissionSnapshotFile(submissionId: SubmissionId): SizedInputStream {
+  fun readSubmissionSnapshotFile(
+      projectId: ProjectId,
+      deliverableId: DeliverableId
+  ): SizedInputStream {
+    val submissionRecord =
+        with(SUBMISSIONS) {
+          dslContext.fetchOne(this, PROJECT_ID.eq(projectId).and(DELIVERABLE_ID.eq(deliverableId)))
+              ?: throw NotFoundException()
+        }
+
+    val submissionId = submissionRecord.id!!
+
     requirePermissions { readSubmission(submissionId) }
 
     // Make sure the file belongs to the submission
-    val row =
-        submissionSnapshotsDao.fetchBySubmissionId(submissionId).firstOrNull()
-            ?: throw SubmissionSnapshotNotFoundException(submissionId)
+    val snapshotRecord =
+        with(SUBMISSION_SNAPSHOTS) {
+          dslContext.fetchOne(this, SUBMISSION_ID.eq(submissionId))
+              ?: throw SubmissionSnapshotNotFoundException(submissionId)
+        }
 
-    return fileService.readFile(row.fileId!!)
+    return fileService.readFile(snapshotRecord[SUBMISSION_SNAPSHOTS.FILE_ID]!!)
   }
 
   private fun publishAddedEvent(
