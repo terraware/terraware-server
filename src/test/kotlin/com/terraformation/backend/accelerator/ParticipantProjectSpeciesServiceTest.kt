@@ -354,9 +354,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
       val expected =
           "Project ID,Species ID,Status,Rationale,Feedback,Internal Comment,Native / Non-Native,Species Scientific Name,Species Common Name\r\n" +
-          "$projectId,$speciesId1,Approved,,,,Non-native,Species 1,\r\n" +
-          "$projectId,$speciesId2,In Review,It is a great tree,,,Native,Species 2,\r\n" +
-          "$projectId,$speciesId3,Rejected,,Need to know native status,,,Species 3,Common name 3\r\n"
+              "$projectId,$speciesId1,Approved,,,,Non-native,Species 1,\r\n" +
+              "$projectId,$speciesId2,In Review,It is a great tree,,,Native,Species 2,\r\n" +
+              "$projectId,$speciesId3,Rejected,,Need to know native status,,,Species 3,Common name 3\r\n"
 
       assertEquals(expected, String(stream.readAllBytes()), "CSV contents")
     }
