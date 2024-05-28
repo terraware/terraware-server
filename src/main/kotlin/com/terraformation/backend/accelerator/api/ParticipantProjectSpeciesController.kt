@@ -129,12 +129,7 @@ class ParticipantProjectSpeciesController(
     return try {
       participantProjectSpeciesService
           .readSubmissionSnapshotFile(submissionRow.id!!)
-          .toResponseEntity {
-            contentDisposition =
-                ContentDisposition.attachment()
-                    .filename("submission-snapshot-${submissionRow.id}")
-                    .build()
-          }
+          .toResponseEntity { contentDisposition = ContentDisposition.attachment().build() }
     } catch (e: NoSuchFileException) {
       throw NotFoundException()
     }
