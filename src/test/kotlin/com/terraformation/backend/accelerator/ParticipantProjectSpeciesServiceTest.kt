@@ -350,7 +350,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(submissionId, submissionSnapshot.submissionId, "Submission ID")
 
-      val stream = fileService.readFile(submissionSnapshot!!.fileId!!)
+      val stream = fileService.readFile(submissionSnapshot.fileId!!)
 
       val expected =
           "Project ID,Species ID,Status,Rationale,Feedback,Internal Comment,Native / Non-Native,Species Scientific Name,Species Common Name\r\n" +
