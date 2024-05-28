@@ -68,6 +68,7 @@ class ParticipantProjectSpeciesStore(
             rationale = model.rationale,
             speciesId = model.speciesId,
             submissionStatusId = model.submissionStatus,
+            speciesNativeCategoryId = model.speciesNativeCategory,
         )
 
     participantProjectSpeciesDao.insert(row)
@@ -143,6 +144,7 @@ class ParticipantProjectSpeciesStore(
             PROJECTS.ID,
             PARTICIPANT_PROJECT_SPECIES.ID,
             PARTICIPANT_PROJECT_SPECIES.SUBMISSION_STATUS_ID,
+            PARTICIPANT_PROJECT_SPECIES.SPECIES_NATIVE_CATEGORY_ID,
             SPECIES.ID)
         .from(SPECIES)
         .join(PARTICIPANT_PROJECT_SPECIES)
@@ -183,6 +185,7 @@ class ParticipantProjectSpeciesStore(
             PARTICIPANT_PROJECT_SPECIES.ID,
             PARTICIPANT_PROJECT_SPECIES.RATIONALE,
             PARTICIPANT_PROJECT_SPECIES.SUBMISSION_STATUS_ID,
+            PARTICIPANT_PROJECT_SPECIES.SPECIES_NATIVE_CATEGORY_ID,
             SPECIES.ID,
             SPECIES.COMMON_NAME,
             SPECIES.SCIENTIFIC_NAME)
