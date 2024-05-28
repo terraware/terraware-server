@@ -1,10 +1,10 @@
 # Coding conventions
 
-The code should be written in idiomatic Kotlin and should generally follow the guidelines in the official Kotlin [Coding Conventions](https://kotlinlang.org/docs/reference/coding-conventions.html) document.
+Code should be written in idiomatic Kotlin and should generally follow the guidelines in the official Kotlin [Coding Conventions](https://kotlinlang.org/docs/reference/coding-conventions.html) document.
 
 It runs on the JVM, and thus makes extensive use of Java libraries. There are no plans to support multiplatform builds. If you find a Java library that does just what you need, use it rather than reinventing the wheel!
 
-Currently, the build targets the Java 20 JVM.
+Currently, the build targets the Java 21 JVM. We use the Amazon Corretto JVM and will generally target the most recent Corretto release.
 
 ## Formatting
 
@@ -19,11 +19,149 @@ There isn't currently a way to make IntelliJ's real-time formatting adhere stric
 
 By default, IntelliJ uses wildcard imports for the `java.util` and `javax` packages, and overriding that default in `.editorconfig` doesn't work reliably. You'll want to remove those packages manually from the Kotlin code style preferences ("Auto-Import" tab) in IntelliJ's settings.
 
+## Language features
+
+Strongly prefer non-nullable types over null checks. In general, you only want to use a nullable type if the absence of a value is a normal, expected condition rather than a sign of a problem.
+
+Use nullability instead of Optional. In general, Kotlin’s ?. and ?: operators give you everything Optional does but without the wrapper object or added syntax.
+
+Prefer throwing exceptions over returning explicit error results that the caller has to explicitly check for.
+
+Prefer immutable objects in your public methods. That is, a class with val fields is usually preferable to var. Use mutability when it’s truly the best solution, but it shouldn’t be your default choice.
+
+## Code organization
+
+### Package hierarchy
+
+We generally lay out packages by functional area and then by component type. That is, the package for code related to reading and writing user data in the database will be com.terraformation.xyz.user.db rather than com.terraformation.xyz.db.user.
+
+### Files with multiple classes/functions
+
+It is fine to put multiple top-level declarations in the same source file if they’re closely related.
+
+Payload classes often live in the same file as the controller classes that use them, though if the payloads are especially complex, it sometimes improves readability to move some of them to separate files.
+
+Generally, if a class has a significant amount of code, it’ll live in its own file.
+
+
 ## Database access
 
-The code uses a schema-first, code-generation approach to its data model, as opposed to a code-first approach where the database gets created based on class structure. It uses the [jOOQ](https://jooq.org) library to generate code that provides a fluent, type-safe query building API as well as some basic ORM features.
+We use a schema-first, code-generation approach, as opposed to a code-first approach where the database gets created based on class structure.
 
-To make changes to the data model, add migration scripts. See [src/main/resources/db/migration/README.md](src/main/resources/db/migration/README.md) for more details.
+We use the [jOOQ](https://jooq.org) library to generate code that provides a fluent, type-safe SQL query building API as well as some basic ORM features.
+
+To make changes to the data model, add migration scripts. See the "Database migrations" section below for more details.
+
+### Rows vs. models
+
+jOOQ generates a few classes to represent table data. The one you’ll use most often has a Row suffix, e.g., UsersRow for the users table. These classes are referred to as “POJO” classes by jOOQ itself. (The Record classes will be discussed below.)
+
+We use these classes a lot, both to interact with jOOQ DAOs (see below) and to pass data around internally. You should feel free to use them! However, they do have some downsides:
+
+All the fields are nullable, even if the corresponding database columns aren’t. (This is being addressed in a future jOOQ version but it’s true for now.) So you will end up having to account for nulls, often using !! or ?. constructs, even when you know the value can never actually be null. This can get annoying.
+
+They are representations of individual tables. Sometimes a business object spans multiple tables, and the Row classes have no way to represent it.
+
+There’s no way to customize them. You can define extension methods, but you can’t, e.g., add validation logic or omit fields you don’t care about.
+
+The field names are always derived from the database column names, and idiomatic column names aren’t always idiomatic field names.
+
+So we will often define “model” classes explicitly in the code. Sometimes these look just like the Row classes but with non-nullable fields. Sometimes they are higher-level classes that have lists of child objects. It depends on the context.
+
+Generally, we’ll include a Model suffix on the names of model classes to clearly distinguish them from the Row classes. If a model has child objects that are never accessed except via the parent, the child classes don’t need the Model suffix.
+
+Try to be consistent – for a given table, use models everywhere or use Rows everywhere, not a random mix of the two. (But it’s fine to consistently use models for one table and Rows for another table.)
+
+#### New and Existing models
+
+One tricky situation when you’re trying to be precise about nullability is that there are often values that are guaranteed to exist when you read something from the database, but not needed as input when you write something. IDs are the most common example: every database row has one, but you never know the ID until you insert the row.
+
+Our pattern for this is to declare “new” and “existing” model classes, e.g., NewOrganizationModel and ExistingOrganizationModel, where the fields in question are either nullable or don't exist at all on the "new" classes.
+
+We do this either of two ways: by declaring completely separate classes or by using generics and typealiases.
+
+Separate classes are straightforward:
+
+```kotlin
+data class NewOrganizationModel(
+    val name: String
+)
+
+data class ExistingOrganizationModel(
+    val id: OrganizationId,
+    val name: String
+)
+```
+
+The disadvantage of this approach is that it’s awkward to write code that works with both existing and new objects. So another approach is to use one class:
+
+```kotlin
+data class OrganizationModel<ID : OrganizationId?>(
+    val id: ID,
+    val name: String
+)
+
+typealias NewOrganizationModel = OrganizationModel<Nothing?>
+typealias ExistingOrganizationModel = OrganizationModel<OrganizationId>
+```
+
+In this approach, there is always an id field, but it must always be set to null if you’re using the NewOrganizationModel typealias, and can never be null if you’re using ExistingOrganizationModel. Functions that don’t care which variety of model they’re using can accept OrganizationModel<*> parameters.
+
+### DAOs and stores
+
+jOOQ generates a “DAO” class for each table (other than enum tables). The DAO class gives you a basic set of CRUD operations. It works with the Row classes.
+
+We often use the DAO classes for inserting new rows and fetching single rows; they’re more succinct than constructing SQL statements.
+
+However, we usually don’t call them directly: generally, we define a “store” class and call the DAO from the store.
+
+Why we use store classes:
+
+Permission checks. We want to throw an exception if the current user doesn’t have permission to read or modify a particular object in the database.
+
+Populating mandatory fields. Many tables have fields like “created time” or “modified by user” and the store class can ensure that these are always set to the correct values rather than forcing every caller to remember to set them.
+
+Models. The store classes can accept and return models rather than rows.
+
+Sorting. The DAO classes have methods to fetch multiple rows, but they don’t guarantee a sort order.
+
+More sophisticated operations. Sometimes we want to do things that aren’t trivial single-table CRUD operations.
+
+Stores should not depend on other stores! See the next section for more. But it’s fine for a store to depend on DAOs and low-level helper objects.
+
+### Rows vs. Records
+
+TL;DR: Generally prefer the `Row` classes over the `Record` classes. The rest of this section talks about the differences between the two.
+
+jOOQ generates two different classes to represent a row of data from a table: the Row class discussed above and a Record class.
+
+The `Row` classes are dumb, lightweight data classes that act as simple containers for the data. They have no behavior; they’re just collections of mutable fields. Application code can create and copy them as needed, and they can be passed to the DAO classes for simple CRUD operations.
+
+The `Record` classes are more heavyweight. They keep track of things like which specific fields have been modified, such that when you save them back to the database, jOOQ can generate a more precise UPDATE statement.
+
+Generated `Record` classes are per-table, but they also implement the jOOQ `Record` interface. That means that anything you could do with the results of a `dslContext.select(...).fetch()` call, you can also do with a generated `Record` class. For example, you can look up values by column rather than using the generated properties:
+
+```kotlin
+xyzRecord.someColumnName == xyzRecord[XYZ.SOME_COLUMN_NAME]
+```
+
+In fact, if you look at the implementation, the generated properties are actually implemented as column lookups under the hood. This means they’re much slower than the simple field accesses on a Row class, though the performance difference isn’t usually a problem in our applications.
+
+A `Record` is attached to a database context and knows how to persist itself. To update the database with changes to a `Row` object, you call `xyzDao.update(xyzRow)` but to update the database with changes to a `Record` object that you’ve gotten from a previous database query, you call `xyzRecord.store()`.
+
+The `Record` classes are more flexible and powerful, and we do use them in places, but we generally prefer the `Row` classes for their lower memory footprint, faster field access, and the convenience of the DAO classes.
+
+### Database migrations: where to put the “create table” commands
+
+We use [Flyway](https://flywaydb.org/) to manage database migrations. The migration scripts live in [src/main/resources/db/migration](../src/main/resources/db/migration/) and are organized into subdirectories in groups of 50 to make them easier to navigate.
+
+See [the migration README file](../src/main/resources/db/migration/README.md) for more details about how to write migrations.
+
+## Services
+
+In some cases, we also have “service” classes as a layer above the store classes. These are mostly used in cases where a single operation needs to span data in multiple stores, or needs to interact with stores and with non-store services (e.g., sending email).
+
+We use this pattern rather than having stores talk directly to each other because it reduces the likelihood of circular dependencies and tight coupling where store A calls methods in store B and store B calls methods in store A.
 
 ## Dependency injection
 
