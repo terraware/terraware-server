@@ -15,6 +15,7 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
+import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshotsDao
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_SNAPSHOTS
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -44,6 +45,7 @@ class ParticipantProjectSpeciesService(
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
+    private val submissionSnapshotsDao: SubmissionSnapshotsDao,
     private val submissionStore: SubmissionStore,
 ) {
   /** Creates a new participant project species, possibly creating a deliverable submission. */
@@ -218,13 +220,11 @@ class ParticipantProjectSpeciesService(
     requirePermissions { readSubmission(submissionId) }
 
     // Make sure the file belongs to the submission
-    val snapshotRecord =
-        with(SUBMISSION_SNAPSHOTS) {
-          dslContext.fetchOne(this, SUBMISSION_ID.eq(submissionId))
-              ?: throw SubmissionSnapshotNotFoundException(submissionId)
-        }
+    val snapshotRow =
+        submissionSnapshotsDao.fetchOne(SUBMISSION_SNAPSHOTS.SUBMISSION_ID, submissionId)
+            ?: throw SubmissionSnapshotNotFoundException(submissionId)
 
-    return fileService.readFile(snapshotRecord[SUBMISSION_SNAPSHOTS.FILE_ID]!!)
+    return fileService.readFile(snapshotRow.fileId!!)
   }
 
   private fun publishAddedEvent(
