@@ -1,3 +1,4 @@
+6c77e0c3da0 SW-5414 Added API endpoint for uploading attachments, added attachment IDs to existing endpoint (#1989)
 e1f3c977901 SW-5421 Update the SpeciesForParticipantProject model to include all data (#1993)
 539a80e0292 Update dependency com.google.apis:google-api-services-drive to v3-rev20240521-2.0.0 (#1998)
 10159ad1774 Update geoToolsVersion to v31.1 (#1999)
