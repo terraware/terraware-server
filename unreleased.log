@@ -1,3 +1,7 @@
+539a80e0292 Update dependency com.google.apis:google-api-services-drive to v3-rev20240521-2.0.0 (#1998)
+10159ad1774 Update geoToolsVersion to v31.1 (#1999)
+fd6206f4f9f Update Python dependencies (#1996)
+979b8622b68 SW-5433 Add native category to payloads (#1995)
 b851266448d Upgrade to Kotlin 2.0.0 (#1980)
 288b4321503 SW-5431 Don't require site and zone shapefiles (#1992)
 ddc1d6da398 SW-5230 Add shapefile update to admin UI (#1991)
