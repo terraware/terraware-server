@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator
 
 import com.opencsv.CSVWriter
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesStore
+import com.terraformation.backend.accelerator.db.SubmissionSnapshotNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
@@ -9,8 +10,10 @@ import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSp
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.api.writeNext
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
+import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshotsDao
@@ -18,6 +21,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshot
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.file.FileService
+import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import jakarta.inject.Named
@@ -193,6 +197,17 @@ class ParticipantProjectSpeciesService(
       submissionSnapshotsDao.insert(
           SubmissionSnapshotsRow(submissionId = event.submissionId, fileId = fileId))
     }
+  }
+
+  fun readSubmissionSnapshotFile(submissionId: SubmissionId): SizedInputStream {
+    requirePermissions { readSubmission(submissionId) }
+
+    // Make sure the file belongs to the submission
+    val row =
+        submissionSnapshotsDao.fetchBySubmissionId(submissionId).firstOrNull()
+            ?: throw SubmissionSnapshotNotFoundException(submissionId)
+
+    return fileService.readFile(row.fileId!!)
   }
 
   private fun publishAddedEvent(

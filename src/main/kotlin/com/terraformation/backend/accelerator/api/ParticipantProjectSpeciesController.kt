@@ -11,15 +11,28 @@ import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.customer.api.ProjectPayload
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.species.api.SpeciesResponseElement
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.ws.rs.NotFoundException
+import jakarta.ws.rs.Produces
+import java.nio.file.NoSuchFileException
+import org.springframework.core.io.InputStreamResource
+import org.springframework.http.ContentDisposition
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -35,6 +48,7 @@ import org.springframework.web.bind.annotation.RestController
 class ParticipantProjectSpeciesController(
     private val participantProjectSpeciesService: ParticipantProjectSpeciesService,
     private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
+    private val submissionsDao: SubmissionsDao
 ) {
   @ApiResponse200
   @PostMapping("/projects/species/assign")
@@ -88,6 +102,42 @@ class ParticipantProjectSpeciesController(
     val model = participantProjectSpeciesStore.fetchOneById(participantProjectSpeciesId)
 
     return GetParticipantProjectSpeciesResponsePayload(ParticipantProjectSpeciesPayload(model))
+  }
+
+  @ApiResponse(
+      responseCode = "200",
+      description = "The file was successfully retrieved.",
+      content =
+          [
+              Content(
+                  schema = Schema(type = "string", format = "binary"),
+                  mediaType = MediaType.ALL_VALUE)])
+  @GetMapping("/projects/{projectId}/species/snapshots/{deliverableId}")
+  @Operation(summary = "Creates a new participant project species entry.")
+  @Produces
+  fun getParticipantProjectSpeciesSnapshot(
+      @PathVariable projectId: ProjectId,
+      @PathVariable deliverableId: DeliverableId
+  ): ResponseEntity<InputStreamResource> {
+    val submissionRow =
+        submissionsDao
+            .fetch(
+                SUBMISSIONS.PROJECT_ID.eq(projectId)
+                    .and(SUBMISSIONS.DELIVERABLE_ID.eq(deliverableId)))
+            .firstOrNull() ?: throw NotFoundException()
+
+    return try {
+      participantProjectSpeciesService
+          .readSubmissionSnapshotFile(submissionRow.id!!)
+          .toResponseEntity {
+            contentDisposition =
+                ContentDisposition.attachment()
+                    .filename("submission-snapshot-${submissionRow.id}")
+                    .build()
+          }
+    } catch (e: NoSuchFileException) {
+      throw NotFoundException()
+    }
   }
 
   @ApiResponse200
