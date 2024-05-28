@@ -346,27 +346,19 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
               newStatus = SubmissionStatus.Approved,
               submissionId = submissionId))
 
-      val submissionSnapshot =
-          submissionSnapshotsDao.fetchBySubmissionId(submissionId).firstOrNull()
+      val submissionSnapshot = submissionSnapshotsDao.fetchBySubmissionId(submissionId).first()
 
-      assertEquals(
-          SubmissionSnapshotsRow(fileId = null, id = null, submissionId = submissionId),
-          submissionSnapshot.let { it!!.copy(fileId = null, id = null) })
+      assertEquals(submissionId, submissionSnapshot.submissionId, "Submission ID")
 
       val stream = fileService.readFile(submissionSnapshot!!.fileId!!)
 
-      val expectedHeaders =
-          "\"Project ID\",\"Species ID\",\"Status\",\"Rationale\",\"Feedback\",\"Internal Comment\",\"Native / Non-Native\",\"Species Scientific Name\",\"Species Common Name\""
-      val expectedRow1 =
-          "\"$projectId\",\"$speciesId1\",\"Approved\",\"\",\"\",\"\",\"Non-native\",\"Species 1\",\"\""
-      val expectedRow2 =
-          "\"$projectId\",\"$speciesId2\",\"In Review\",\"It is a great tree\",\"\",\"\",\"Native\",\"Species 2\",\"\""
-      val expectedRow3 =
-          "\"$projectId\",\"$speciesId3\",\"Rejected\",\"\",\"Need to know native status\",\"\",\"\",\"Species 3\",\"Common name 3\""
+      val expected =
+          "Project ID,Species ID,Status,Rationale,Feedback,Internal Comment,Native / Non-Native,Species Scientific Name,Species Common Name\r\n" +
+          "$projectId,$speciesId1,Approved,,,,Non-native,Species 1,\r\n" +
+          "$projectId,$speciesId2,In Review,It is a great tree,,,Native,Species 2,\r\n" +
+          "$projectId,$speciesId3,Rejected,,Need to know native status,,,Species 3,Common name 3\r\n"
 
-      assertEquals(
-          "$expectedHeaders\r\n$expectedRow1\r\n$expectedRow2\r\n$expectedRow3\r\n",
-          String(stream.readAllBytes()))
+      assertEquals(expected, String(stream.readAllBytes()), "CSV contents")
     }
 
     @Test

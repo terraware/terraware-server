@@ -7,6 +7,7 @@ import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEven
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
+import com.terraformation.backend.api.writeNext
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
@@ -23,6 +24,7 @@ import jakarta.inject.Named
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
+import java.time.Instant
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
@@ -148,19 +150,19 @@ class ParticipantProjectSpeciesService(
 
     val speciesData =
         participantProjectSpeciesStore.fetchSpeciesForParticipantProject(event.projectId)
-    val rows: List<List<Pair<String, String>>> =
+    val rows: List<List<Pair<String, String?>>> =
         speciesData.map {
           listOf(
               "Project ID" to it.project.id.toString(),
               "Species ID" to it.species.id.toString(),
               "Status" to it.participantProjectSpecies.submissionStatus.jsonValue,
-              "Rationale" to (it.participantProjectSpecies.rationale ?: ""),
-              "Feedback" to (it.participantProjectSpecies.feedback ?: ""),
-              "Internal Comment" to (it.participantProjectSpecies.internalComment ?: ""),
+              "Rationale" to it.participantProjectSpecies.rationale,
+              "Feedback" to it.participantProjectSpecies.feedback,
+              "Internal Comment" to it.participantProjectSpecies.internalComment,
               "Native / Non-Native" to
-                  (it.participantProjectSpecies.speciesNativeCategory?.jsonValue ?: ""),
+                  it.participantProjectSpecies.speciesNativeCategory?.jsonValue,
               "Species Scientific Name" to it.species.scientificName,
-              "Species Common Name" to (it.species.commonName ?: ""),
+              "Species Common Name" to it.species.commonName,
           )
         }
 
@@ -175,12 +177,12 @@ class ParticipantProjectSpeciesService(
             CSVWriter.RFC4180_LINE_END,
         )
         .use { csvWriter ->
-          csvWriter.writeNext(rows.first().map { it.first }.toTypedArray())
-          rows.forEach { row -> csvWriter.writeNext(row.map { it.second }.toTypedArray()) }
+          csvWriter.writeNext(rows.first().map { it.first })
+          rows.forEach { row -> csvWriter.writeNext(row.map { it.second }) }
         }
 
     val inputStream = ByteArrayInputStream(stream.toByteArray())
-    val filename = "${event.deliverableId}-${event.projectId}"
+    val filename = "species-list-snapshot-${event.submissionId}-${Instant.now()}.csv"
     val metadata =
         FileMetadata.of(MediaType.valueOf("text/csv").toString(), filename, stream.size().toLong())
 

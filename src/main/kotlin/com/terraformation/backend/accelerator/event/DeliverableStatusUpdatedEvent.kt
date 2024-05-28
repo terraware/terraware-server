@@ -11,7 +11,7 @@ data class DeliverableStatusUpdatedEvent(
     val projectId: ProjectId,
     val oldStatus: SubmissionStatus,
     val newStatus: SubmissionStatus,
-    val submissionId: SubmissionId
+    val submissionId: SubmissionId,
 ) {
   /**
    * Returns true if the transition is visible to end users, or false if it is a transition between
