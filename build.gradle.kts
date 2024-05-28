@@ -97,7 +97,7 @@ dependencies {
   implementation("com.dropbox.core:dropbox-core-sdk:7.0.0")
   implementation("com.google.api-client:google-api-client:2.5.1")
   implementation("com.google.auth:google-auth-library-oauth2-http:1.23.0")
-  implementation("com.google.apis:google-api-services-drive:v3-rev20240327-2.0.0")
+  implementation("com.google.apis:google-api-services-drive:v3-rev20240521-2.0.0")
   implementation("com.opencsv:opencsv:5.9")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.8.0")
   implementation("commons-validator:commons-validator:1.8.0")
