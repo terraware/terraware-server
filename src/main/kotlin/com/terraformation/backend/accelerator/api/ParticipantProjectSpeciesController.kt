@@ -179,6 +179,7 @@ data class ParticipantProjectForSpeciesPayload(
     val activeDeliverableId: DeliverableId?,
     val participantProjectSpeciesId: ParticipantProjectSpeciesId,
     val participantProjectSpeciesSubmissionStatus: SubmissionStatus,
+    val participantProjectSpeciesNativeCategory: SpeciesNativeCategory?,
     val projectId: ProjectId,
     val projectName: String,
     val speciesId: SpeciesId,
@@ -189,6 +190,7 @@ data class ParticipantProjectForSpeciesPayload(
       activeDeliverableId = model.activeDeliverableId,
       participantProjectSpeciesId = model.participantProjectSpeciesId,
       participantProjectSpeciesSubmissionStatus = model.participantProjectSpeciesSubmissionStatus,
+      participantProjectSpeciesNativeCategory = model.participantProjectSpeciesNativeCategory,
       projectId = model.projectId,
       projectName = model.projectName,
       speciesId = model.speciesId)
