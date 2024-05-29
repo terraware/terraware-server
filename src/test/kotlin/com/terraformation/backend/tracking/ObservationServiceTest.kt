@@ -27,6 +27,7 @@ import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.onePixelPng
 import com.terraformation.backend.point
+import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
@@ -50,7 +51,6 @@ import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
-import com.terraformation.backend.util.Turtle
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -134,7 +134,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertUser()
     insertOrganization()
-    plantingSiteId = insertPlantingSite(x = 0, width = 11, gridOrigin = point(0))
+    plantingSiteId = insertPlantingSite(x = 0, width = 11, gridOrigin = point(1))
 
     every { user.canCreateObservation(any()) } returns true
     every { user.canManageObservation(any()) } returns true
@@ -201,9 +201,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       insertPlantingZone(
           x = 0, width = 8, height = 2, numPermanentClusters = 2, numTemporaryPlots = 3)
       val subzone1Boundary =
-          Turtle(point(0)).makeMultiPolygon {
-            rectangle(5 * MONITORING_PLOT_SIZE, 2 * MONITORING_PLOT_SIZE)
-          }
+          rectangle(width = 5 * MONITORING_PLOT_SIZE, height = 2 * MONITORING_PLOT_SIZE)
       insertPlantingSubzone(boundary = subzone1Boundary)
       insertPlanting()
       insertCluster(1)
@@ -295,7 +293,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       // In zone 2, the service should create two permanent clusters, but neither of them should
       // be included in the observation since they all lie in an unplanted subzone.
 
-      plantingSiteId = insertPlantingSite(x = 0, width = 14, gridOrigin = point(0))
+      plantingSiteId = insertPlantingSite(x = 0, width = 14, gridOrigin = point(1))
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
       insertWithdrawal()
@@ -304,9 +302,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       insertPlantingZone(
           x = 0, width = 6, height = 2, numPermanentClusters = 1, numTemporaryPlots = 3)
       val subzone1Boundary =
-          Turtle(point(0)).makeMultiPolygon {
-            rectangle(3 * MONITORING_PLOT_SIZE, 2 * MONITORING_PLOT_SIZE)
-          }
+          rectangle(width = 3 * MONITORING_PLOT_SIZE, height = 2 * MONITORING_PLOT_SIZE)
       val subzone1Id = insertPlantingSubzone(boundary = subzone1Boundary)
       insertPlanting()
 
