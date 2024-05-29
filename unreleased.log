@@ -1,3 +1,8 @@
+0725a12e3b1 Fix code docs generation (#2006)
+828bb05c158 SW-5421 Save submission snapshot on approval of species list deliverable (#1994)
+0bd69d7d659 Update dependency commons-validator:commons-validator to v1.9.0 (#2004)
+f57d85561ee Add participantProjectSpeciesNativeCategory to ParticipantProjectForSpeciesPayload (#2005)
+ba0c396404e Update Spring dependencies (#1997)
 e1313dd392a Stop using deprecated Jackson API (#2001)
 6c77e0c3da0 SW-5414 Added API endpoint for uploading attachments, added attachment IDs to existing endpoint (#1989)
 e1f3c977901 SW-5421 Update the SpeciesForParticipantProject model to include all data (#1993)

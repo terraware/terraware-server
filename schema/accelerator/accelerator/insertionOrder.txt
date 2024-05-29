@@ -12,9 +12,10 @@ cohorts
 modules
 participants
 deliverables
+submissions
 deal_stages
 events
-submissions
+submission_snapshots
 cohort_modules
 deliverable_cohort_due_dates
 deliverable_project_due_dates

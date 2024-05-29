@@ -128,6 +128,10 @@
                                                 <td title="submission_documents.submission_id references submissions.id via submission_documents_submission_id_fkey"><a href='submission_documents.html'>submission_documents</a><span class='relatedKey'>.submission_id</span></td>
                                                 <td class="constraint detail">submission_documents_submission_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
+                                            <tr>
+                                                <td title="submission_snapshots.submission_id references submissions.id via submission_snapshots_submission_id_fkey"><a href='submission_snapshots.html'>submission_snapshots</a><span class='relatedKey'>.submission_id</span></td>
+                                                <td class="constraint detail">submission_snapshots_submission_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -380,40 +384,43 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="230,140,466,433">
-<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="5,556,184,644">
-<area shape="rect" id="node3" href="../../tables/submission_documents.html" target="_top" title="submission_documents" alt="" coords="915,256,1177,520">
-<area shape="rect" id="node4" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="248,5,448,123">
-<area shape="rect" id="node5" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="512,283,871,645">
-<area shape="rect" id="node6" href="../../tables/submission_statuses.html" target="_top" title="submission_statuses" alt="" coords="228,451,468,573">
+<area shape="rect" id="node1" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="230,277,466,571">
+<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="5,459,184,547">
+<area shape="rect" id="node3" href="../../tables/submission_documents.html" target="_top" title="submission_documents" alt="" coords="915,5,1177,269">
+<area shape="rect" id="node4" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="248,143,448,260">
+<area shape="rect" id="node5" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="512,420,871,783">
+<area shape="rect" id="node7" href="../../tables/submission_statuses.html" target="_top" title="submission_statuses" alt="" coords="228,588,468,711">
+<area shape="rect" id="node6" href="../../tables/submission_snapshots.html" target="_top" title="submission_snapshots" alt="" coords="919,364,1173,516">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/submissions.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/cohorts.html" target="_top" title="cohorts" alt="" coords="285,734,428,822">
-<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="5,737,184,825">
-<area shape="rect" id="node3" href="../../tables/default_voters.html" target="_top" title="default_voters" alt="" coords="259,346,455,434">
-<area shape="rect" id="node4" href="../../tables/deliverable_cohort_due_dates.html" target="_top" title="deliverable_cohort_due_dates" alt="" coords="809,532,1121,620">
-<area shape="rect" id="node5" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="529,368,765,661">
-<area shape="rect" id="node7" href="../../tables/deliverable_types.html" target="_top" title="deliverable_types" alt="" coords="246,629,467,717">
-<area shape="rect" id="node10" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="228,452,485,540">
-<area shape="rect" id="node11" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="281,241,432,329">
-<area shape="rect" id="node6" href="../../tables/deliverable_documents.html" target="_top" title="deliverable_documents" alt="" coords="833,426,1097,514">
-<area shape="rect" id="node8" href="../../tables/deliverable_project_due_dates.html" target="_top" title="deliverable_project_due_dates" alt="" coords="1186,265,1503,353">
-<area shape="rect" id="node9" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="865,637,1065,754">
-<area shape="rect" id="node16" href="../../tables/participants.html" target="_top" title="participants" alt="" coords="557,792,737,880">
-<area shape="rect" id="node12" href="../../tables/event_projects.html" target="_top" title="event_projects" alt="" coords="1245,160,1444,248">
-<area shape="rect" id="node13" href="../../tables/events.html" target="_top" title="events" alt="" coords="578,160,717,248">
-<area shape="rect" id="node14" href="../../tables/participant_project_species.html" target="_top" title="participant_project_species" alt="" coords="1197,1102,1492,1190">
-<area shape="rect" id="node15" href="../../tables/submission_statuses.html" target="_top" title="submission_statuses" alt="" coords="845,772,1085,894">
-<area shape="rect" id="node17" href="../../tables/project_accelerator_details.html" target="_top" title="project_accelerator_details" alt="" coords="1199,370,1491,458">
-<area shape="rect" id="node18" href="../../tables/project_scores.html" target="_top" title="project_scores" alt="" coords="1247,1244,1442,1332">
-<area shape="rect" id="node19" href="../../tables/project_vote_decisions.html" target="_top" title="project_vote_decisions" alt="" coords="1216,476,1473,564">
-<area shape="rect" id="node20" href="../../tables/project_votes.html" target="_top" title="project_votes" alt="" coords="1251,54,1439,142">
-<area shape="rect" id="node21" href="../../tables/submission_documents.html" target="_top" title="submission_documents" alt="" coords="1568,608,1831,872">
-<area shape="rect" id="node22" href="../../tables/document_stores.html" target="_top" title="document_stores" alt="" coords="1237,581,1453,669">
-<area shape="rect" id="node23" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="1165,722,1524,1085">
+<area shape="rect" id="node1" href="../../tables/cohorts.html" target="_top" title="cohorts" alt="" coords="285,708,428,796">
+<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="5,448,184,536">
+<area shape="rect" id="node3" href="../../tables/default_voters.html" target="_top" title="default_voters" alt="" coords="259,445,455,533">
+<area shape="rect" id="node4" href="../../tables/deliverable_cohort_due_dates.html" target="_top" title="deliverable_cohort_due_dates" alt="" coords="809,747,1121,835">
+<area shape="rect" id="node5" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="529,755,765,1048">
+<area shape="rect" id="node7" href="../../tables/deliverable_types.html" target="_top" title="deliverable_types" alt="" coords="246,996,467,1084">
+<area shape="rect" id="node10" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="228,813,485,901">
+<area shape="rect" id="node11" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="281,603,432,691">
+<area shape="rect" id="node6" href="../../tables/deliverable_documents.html" target="_top" title="deliverable_documents" alt="" coords="833,924,1097,1012">
+<area shape="rect" id="node8" href="../../tables/deliverable_project_due_dates.html" target="_top" title="deliverable_project_due_dates" alt="" coords="1186,815,1503,903">
+<area shape="rect" id="node9" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="865,472,1065,589">
+<area shape="rect" id="node16" href="../../tables/participants.html" target="_top" title="participants" alt="" coords="557,521,737,609">
+<area shape="rect" id="node12" href="../../tables/event_projects.html" target="_top" title="event_projects" alt="" coords="1245,463,1444,551">
+<area shape="rect" id="node13" href="../../tables/events.html" target="_top" title="events" alt="" coords="578,395,717,483">
+<area shape="rect" id="node14" href="../../tables/participant_project_species.html" target="_top" title="participant_project_species" alt="" coords="1197,357,1492,445">
+<area shape="rect" id="node15" href="../../tables/submission_statuses.html" target="_top" title="submission_statuses" alt="" coords="845,607,1085,729">
+<area shape="rect" id="node17" href="../../tables/project_accelerator_details.html" target="_top" title="project_accelerator_details" alt="" coords="1199,604,1491,692">
+<area shape="rect" id="node18" href="../../tables/project_scores.html" target="_top" title="project_scores" alt="" coords="1247,147,1442,235">
+<area shape="rect" id="node19" href="../../tables/project_vote_decisions.html" target="_top" title="project_vote_decisions" alt="" coords="1216,709,1473,797">
+<area shape="rect" id="node20" href="../../tables/project_votes.html" target="_top" title="project_votes" alt="" coords="1251,252,1439,340">
+<area shape="rect" id="node21" href="../../tables/submission_documents.html" target="_top" title="submission_documents" alt="" coords="1568,183,1831,447">
+<area shape="rect" id="node22" href="../../tables/document_stores.html" target="_top" title="document_stores" alt="" coords="1237,5,1453,93">
+<area shape="rect" id="node23" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="1165,920,1524,1283">
+<area shape="rect" id="node24" href="../../tables/submission_snapshots.html" target="_top" title="submission_snapshots" alt="" coords="1573,1065,1826,1217">
+<area shape="rect" id="node25" href="../../../public/tables/files.html" target="_top" title="public.files" alt="" coords="1260,1300,1429,1388">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/submissions.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

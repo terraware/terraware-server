@@ -128,6 +128,10 @@
                                                 <td title="submission_documents.submission_id references submissions.id via submission_documents_submission_id_fkey"><a href='submission_documents.html'>submission_documents</a><span class='relatedKey'>.submission_id</span></td>
                                                 <td class="constraint detail">submission_documents_submission_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
+                                            <tr>
+                                                <td title="submission_snapshots.submission_id references submissions.id via submission_snapshots_submission_id_fkey"><a href='submission_snapshots.html'>submission_snapshots</a><span class='relatedKey'>.submission_id</span></td>
+                                                <td class="constraint detail">submission_snapshots_submission_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -373,10 +377,11 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/submission_documents.html" target="_top" title="submission_documents" alt="" coords="692,5,955,240">
-<area shape="rect" id="node2" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="25,35,225,152">
-<area shape="rect" id="node3" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="289,115,648,477">
-<area shape="rect" id="node4" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="7,172,243,407">
-<area shape="rect" id="node5" href="../../tables/submission_statuses.html" target="_top" title="submission_statuses" alt="" coords="5,424,245,547">
+<area shape="rect" id="node2" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="25,116,225,233">
+<area shape="rect" id="node3" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="289,199,648,561">
+<area shape="rect" id="node5" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="7,256,243,491">
+<area shape="rect" id="node6" href="../../tables/submission_statuses.html" target="_top" title="submission_statuses" alt="" coords="5,508,245,631">
+<area shape="rect" id="node4" href="../../tables/submission_snapshots.html" target="_top" title="submission_snapshots" alt="" coords="697,257,950,409">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/submissions.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
@@ -390,7 +395,7 @@
 <area shape="rect" id="node3" href="../../tables/deliverable_documents.html" target="_top" title="deliverable_documents" alt="" coords="638,111,902,199">
 <area shape="rect" id="node5" href="../../tables/deliverable_project_due_dates.html" target="_top" title="deliverable_project_due_dates" alt="" coords="611,216,929,304">
 <area shape="rect" id="node6" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="327,900,527,1017">
-<area shape="rect" id="node19" href="../../tables/participants.html" target="_top" title="participants" alt="" coords="44,903,224,991">
+<area shape="rect" id="node20" href="../../tables/participants.html" target="_top" title="participants" alt="" coords="44,903,224,991">
 <area shape="rect" id="node9" href="../../tables/event_projects.html" target="_top" title="event_projects" alt="" coords="671,807,869,895">
 <area shape="rect" id="node10" href="../../tables/participant_project_species.html" target="_top" title="participant_project_species" alt="" coords="623,701,917,789">
 <area shape="rect" id="node11" href="../../tables/submission_statuses.html" target="_top" title="submission_statuses" alt="" coords="307,529,547,652">
@@ -401,6 +406,7 @@
 <area shape="rect" id="node16" href="../../tables/submission_documents.html" target="_top" title="submission_documents" alt="" coords="993,1272,1256,1507">
 <area shape="rect" id="node17" href="../../tables/document_stores.html" target="_top" title="document_stores" alt="" coords="662,1333,878,1421">
 <area shape="rect" id="node18" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="591,321,949,684">
+<area shape="rect" id="node19" href="../../tables/submission_snapshots.html" target="_top" title="submission_snapshots" alt="" coords="998,265,1251,417">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/submissions.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

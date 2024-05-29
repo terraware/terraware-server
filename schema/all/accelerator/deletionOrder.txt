@@ -5,14 +5,15 @@ submission_documents
 deliverable_documents
 project_vote_decisions
 project_accelerator_details
+submission_snapshots
 event_projects
 deliverable_project_due_dates
 deliverable_cohort_due_dates
 cohort_modules
 default_voters
-submissions
 events
 deal_stages
+submissions
 deliverables
 modules
 participants

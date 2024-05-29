@@ -583,6 +583,25 @@
             <column ascending="true" name="submission_id"/>
          </index>
       </table>
+      <table name="submission_snapshots" numRows="0" remarks="Snapshot files associated to submissions" schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="submission_snapshots_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="submission_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="submission_snapshots_submission_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="submission_snapshots_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="submission_snapshots_file_id_idx" unique="false">
+            <column ascending="true" name="file_id"/>
+         </index>
+         <index name="submission_snapshots_submission_id_idx" unique="false">
+            <column ascending="true" name="submission_id"/>
+         </index>
+      </table>
       <table name="submission_statuses" numRows="6" remarks="(Enum) Statuses of submissions of deliverables by specific projects." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="submission_status_id" foreignKey="participant_project_species_submission_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participant_project_species"/>
@@ -600,6 +619,7 @@
       <table name="submissions" numRows="0" remarks="Information about the current states of the information supplied by specific projects in response to deliverables." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="submission_id" foreignKey="submission_documents_submission_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_documents"/>
+            <child column="submission_id" foreignKey="submission_snapshots_submission_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_snapshots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="submissions_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
