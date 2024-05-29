@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator
 
 import com.opencsv.CSVWriter
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesStore
+import com.terraformation.backend.accelerator.db.SubmissionForProjectDeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionSnapshotNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
@@ -25,7 +26,6 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import jakarta.inject.Named
-import jakarta.ws.rs.NotFoundException
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
@@ -212,14 +212,14 @@ class ParticipantProjectSpeciesService(
     val submissionRecord =
         with(SUBMISSIONS) {
           dslContext.fetchOne(this, PROJECT_ID.eq(projectId).and(DELIVERABLE_ID.eq(deliverableId)))
-              ?: throw NotFoundException()
+              ?: throw SubmissionForProjectDeliverableNotFoundException(deliverableId, projectId)
         }
 
     val submissionId = submissionRecord.id!!
 
     requirePermissions { readSubmission(submissionId) }
 
-    // Make sure the file belongs to the submission
+    // Get the snapshot that belongs to the submission
     val snapshotRow =
         submissionSnapshotsDao.fetchOne(SUBMISSION_SNAPSHOTS.SUBMISSION_ID, submissionId)
             ?: throw SubmissionSnapshotNotFoundException(submissionId)

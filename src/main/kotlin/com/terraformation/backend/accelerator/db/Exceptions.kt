@@ -65,6 +65,13 @@ class SubmissionDocumentNotFoundException(id: SubmissionDocumentId) :
 class SubmissionNotFoundException(id: SubmissionId) :
     EntityNotFoundException("Submission $id not found")
 
+class SubmissionForProjectDeliverableNotFoundException(
+    deliverableId: DeliverableId,
+    projectId: ProjectId
+) :
+    EntityNotFoundException(
+        "Submission not found for deliverable $deliverableId and project $projectId")
+
 class SubmissionSnapshotNotFoundException(id: SubmissionId) :
     EntityNotFoundException(
         "Participant Project Species snapshot data for submission $id not found")
