@@ -24,8 +24,8 @@ import jakarta.inject.Named
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
-import java.time.Instant
-import java.time.ZoneId
+import java.time.Clock
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
@@ -34,6 +34,7 @@ import org.springframework.http.MediaType
 
 @Named
 class ParticipantProjectSpeciesService(
+    private val clock: Clock,
     private val dslContext: DSLContext,
     private val deliverablesDao: DeliverablesDao,
     private val eventPublisher: ApplicationEventPublisher,
@@ -183,9 +184,7 @@ class ParticipantProjectSpeciesService(
         }
 
     val inputStream = ByteArrayInputStream(stream.toByteArray())
-    val timestamp =
-        DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss")
-            .format(Instant.now().atZone(ZoneId.of("UTC")))
+    val timestamp = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").format(ZonedDateTime.now(clock))
     val filename = "species-list-snapshot-${event.submissionId}-$timestamp.csv"
     val metadata =
         FileMetadata.of(MediaType.valueOf("text/csv").toString(), filename, stream.size().toLong())
