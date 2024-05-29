@@ -100,7 +100,7 @@ dependencies {
   implementation("com.google.apis:google-api-services-drive:v3-rev20240521-2.0.0")
   implementation("com.opencsv:opencsv:5.9")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.8.0")
-  implementation("commons-validator:commons-validator:1.8.0")
+  implementation("commons-validator:commons-validator:1.9.0")
   implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.1.2")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
