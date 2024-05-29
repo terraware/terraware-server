@@ -131,7 +131,8 @@ class SubmissionStore(
 
     if (oldStatus != status) {
       eventPublisher.publishEvent(
-          DeliverableStatusUpdatedEvent(deliverableId, projectId, oldStatus, status))
+          DeliverableStatusUpdatedEvent(
+              deliverableId, projectId, oldStatus, status, submission.id!!))
     }
 
     return submission.id!!

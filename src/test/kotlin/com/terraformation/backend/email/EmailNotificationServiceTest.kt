@@ -30,6 +30,7 @@ import com.terraformation.backend.daily.NotificationJobFinishedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
@@ -978,7 +979,11 @@ internal class EmailNotificationServiceTest {
   fun deliverableStatusUpdated() {
     val event =
         DeliverableStatusUpdatedEvent(
-            DeliverableId(1), project.id, SubmissionStatus.NotSubmitted, SubmissionStatus.NotNeeded)
+            DeliverableId(1),
+            project.id,
+            SubmissionStatus.NotSubmitted,
+            SubmissionStatus.NotNeeded,
+            SubmissionId(1))
 
     service.on(event)
 
@@ -995,7 +1000,8 @@ internal class EmailNotificationServiceTest {
             DeliverableId(1),
             project.id,
             SubmissionStatus.InReview,
-            SubmissionStatus.NeedsTranslation)
+            SubmissionStatus.NeedsTranslation,
+            SubmissionId(1))
 
     service.on(event)
 

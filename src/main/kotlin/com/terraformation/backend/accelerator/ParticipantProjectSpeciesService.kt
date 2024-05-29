@@ -1,26 +1,46 @@
 package com.terraformation.backend.accelerator
 
+import com.opencsv.CSVWriter
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesStore
 import com.terraformation.backend.accelerator.db.SubmissionStore
+import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
+import com.terraformation.backend.api.writeNext
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
+import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshotsDao
+import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.file.FileService
+import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import jakarta.inject.Named
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.OutputStreamWriter
+import java.time.Clock
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
+import org.springframework.http.MediaType
 
 @Named
 class ParticipantProjectSpeciesService(
+    private val clock: Clock,
     private val dslContext: DSLContext,
+    private val deliverablesDao: DeliverablesDao,
     private val eventPublisher: ApplicationEventPublisher,
+    private val fileService: FileService,
     private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore,
+    private val submissionSnapshotsDao: SubmissionSnapshotsDao,
     private val submissionStore: SubmissionStore,
 ) {
   /** Creates a new participant project species, possibly creating a deliverable submission. */
@@ -38,7 +58,9 @@ class ParticipantProjectSpeciesService(
       eventPublisher.publishEvent(
           ParticipantProjectSpeciesAddedEvent(
               deliverableId = deliverableSubmission.deliverableId,
-              participantProjectSpecies = existingModel))
+              participantProjectSpecies = existingModel,
+          ),
+      )
 
       existingModel
     }
@@ -70,13 +92,17 @@ class ParticipantProjectSpeciesService(
                 participantProjectSpecies.projectId)
         if (deliverableSubmission.submissionId == null) {
           submissionStore.createSubmission(
-              deliverableSubmission.deliverableId, participantProjectSpecies.projectId)
+              deliverableSubmission.deliverableId,
+              participantProjectSpecies.projectId,
+          )
         }
 
         projectDeliverableIds[participantProjectSpecies.projectId] =
             deliverableSubmission.deliverableId
         publishAddedEvent(
-            projectDeliverableIds[participantProjectSpecies.projectId]!!, participantProjectSpecies)
+            projectDeliverableIds[participantProjectSpecies.projectId]!!,
+            participantProjectSpecies,
+        )
       }
 
       existingModels
@@ -109,12 +135,75 @@ class ParticipantProjectSpeciesService(
     }
   }
 
+  /**
+   * When a species deliverable status is updated to "approved", we save a snapshot of the species
+   * list and reference it in the deliverable submission
+   */
+  @EventListener
+  fun on(event: DeliverableStatusUpdatedEvent) {
+    if (event.newStatus != SubmissionStatus.Approved) {
+      return
+    }
+
+    val deliverable = deliverablesDao.fetchOneById(event.deliverableId)
+    if (deliverable == null || deliverable.deliverableTypeId != DeliverableType.Species) {
+      return
+    }
+
+    val speciesData =
+        participantProjectSpeciesStore.fetchSpeciesForParticipantProject(event.projectId)
+    val rows: List<List<Pair<String, String?>>> =
+        speciesData.map {
+          listOf(
+              "Project ID" to it.project.id.toString(),
+              "Species ID" to it.species.id.toString(),
+              "Status" to it.participantProjectSpecies.submissionStatus.jsonValue,
+              "Rationale" to it.participantProjectSpecies.rationale,
+              "Feedback" to it.participantProjectSpecies.feedback,
+              "Internal Comment" to it.participantProjectSpecies.internalComment,
+              "Native / Non-Native" to
+                  it.participantProjectSpecies.speciesNativeCategory?.jsonValue,
+              "Species Scientific Name" to it.species.scientificName,
+              "Species Common Name" to it.species.commonName,
+          )
+        }
+
+    val stream = ByteArrayOutputStream()
+    val streamWriter = OutputStreamWriter(stream)
+
+    CSVWriter(
+            streamWriter,
+            CSVWriter.DEFAULT_SEPARATOR,
+            CSVWriter.DEFAULT_QUOTE_CHARACTER,
+            CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+            CSVWriter.RFC4180_LINE_END,
+        )
+        .use { csvWriter ->
+          csvWriter.writeNext(rows.first().map { it.first })
+          rows.forEach { row -> csvWriter.writeNext(row.map { it.second }) }
+        }
+
+    val inputStream = ByteArrayInputStream(stream.toByteArray())
+    val timestamp = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").format(ZonedDateTime.now(clock))
+    val filename = "species-list-snapshot-${event.submissionId}-$timestamp.csv"
+    val metadata =
+        FileMetadata.of(MediaType.valueOf("text/csv").toString(), filename, stream.size().toLong())
+
+    fileService.storeFile("species-list-deliverable", inputStream, metadata, null) { fileId ->
+      submissionSnapshotsDao.insert(
+          SubmissionSnapshotsRow(submissionId = event.submissionId, fileId = fileId))
+    }
+  }
+
   private fun publishAddedEvent(
       deliverableId: DeliverableId,
       participantProjectSpecies: ExistingParticipantProjectSpeciesModel
   ) {
     eventPublisher.publishEvent(
         ParticipantProjectSpeciesAddedEvent(
-            deliverableId = deliverableId, participantProjectSpecies = participantProjectSpecies))
+            deliverableId = deliverableId,
+            participantProjectSpecies = participantProjectSpecies,
+        ),
+    )
   }
 }

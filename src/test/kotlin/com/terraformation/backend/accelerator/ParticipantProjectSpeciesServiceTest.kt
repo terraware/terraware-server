@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesStore
 import com.terraformation.backend.accelerator.db.SubmissionStore
+import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.auth.currentUser
@@ -12,11 +13,17 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
+import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
+import com.terraformation.backend.file.FileService
+import com.terraformation.backend.file.InMemoryFileStore
+import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import java.time.Instant
@@ -31,6 +38,12 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
 
+  private val fileStore = InMemoryFileStore()
+  private val thumbnailStore: ThumbnailStore = mockk()
+  private val fileService: FileService by lazy {
+    FileService(dslContext, clock, mockk(), filesDao, fileStore, thumbnailStore)
+  }
+
   private val participantProjectSpeciesStore: ParticipantProjectSpeciesStore by lazy {
     spyk(
         ParticipantProjectSpeciesStore(
@@ -43,7 +56,14 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
   private val service: ParticipantProjectSpeciesService by lazy {
     ParticipantProjectSpeciesService(
-        dslContext, eventPublisher, participantProjectSpeciesStore, submissionStore)
+        clock,
+        dslContext,
+        deliverablesDao,
+        eventPublisher,
+        fileService,
+        participantProjectSpeciesStore,
+        submissionSnapshotsDao,
+        submissionStore)
   }
 
   @BeforeEach
@@ -281,6 +301,127 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                       scientificName = "Species 1")))
 
       verify(exactly = 0) { participantProjectSpeciesStore.update(any(), any()) }
+    }
+  }
+
+  @Nested
+  inner class SaveSnapshot {
+    @Test
+    fun `it saves a snapshot of species data if the associated submission is approved`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val moduleId = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      val deliverableId =
+          insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
+
+      val projectId = insertProject(participantId = participantId)
+      val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
+
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+      val speciesId3 = insertSpecies(commonName = "Common name 3")
+
+      insertParticipantProjectSpecies(
+          projectId = projectId,
+          speciesId = speciesId1,
+          speciesNativeCategory = SpeciesNativeCategory.NonNative,
+          submissionStatus = SubmissionStatus.Approved)
+      insertParticipantProjectSpecies(
+          projectId = projectId,
+          rationale = "It is a great tree",
+          speciesId = speciesId2,
+          speciesNativeCategory = SpeciesNativeCategory.Native,
+          submissionStatus = SubmissionStatus.InReview)
+      insertParticipantProjectSpecies(
+          feedback = "Need to know native status",
+          projectId = projectId,
+          speciesId = speciesId3,
+          submissionStatus = SubmissionStatus.Rejected)
+
+      service.on(
+          DeliverableStatusUpdatedEvent(
+              deliverableId = deliverableId,
+              projectId = projectId,
+              oldStatus = SubmissionStatus.InReview,
+              newStatus = SubmissionStatus.Approved,
+              submissionId = submissionId))
+
+      val submissionSnapshot = submissionSnapshotsDao.fetchBySubmissionId(submissionId).first()
+
+      assertEquals(submissionId, submissionSnapshot.submissionId, "Submission ID")
+
+      val stream = fileService.readFile(submissionSnapshot.fileId!!)
+
+      val expected =
+          "Project ID,Species ID,Status,Rationale,Feedback,Internal Comment,Native / Non-Native,Species Scientific Name,Species Common Name\r\n" +
+              "$projectId,$speciesId1,Approved,,,,Non-native,Species 1,\r\n" +
+              "$projectId,$speciesId2,In Review,It is a great tree,,,Native,Species 2,\r\n" +
+              "$projectId,$speciesId3,Rejected,,Need to know native status,,,Species 3,Common name 3\r\n"
+
+      assertEquals(expected, String(stream.readAllBytes()), "CSV contents")
+    }
+
+    @Test
+    fun `it does nothing if the submission is not approved`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val moduleId = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      val deliverableId =
+          insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
+
+      val projectId = insertProject(participantId = participantId)
+      val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
+
+      val speciesId = insertSpecies()
+
+      insertParticipantProjectSpecies(
+          projectId = projectId,
+          speciesId = speciesId,
+          speciesNativeCategory = SpeciesNativeCategory.NonNative,
+          submissionStatus = SubmissionStatus.Approved)
+
+      service.on(
+          DeliverableStatusUpdatedEvent(
+              deliverableId = deliverableId,
+              projectId = projectId,
+              oldStatus = SubmissionStatus.NotSubmitted,
+              newStatus = SubmissionStatus.InReview,
+              submissionId = submissionId))
+
+      assertEquals(emptyList<SubmissionSnapshotsRow>(), submissionSnapshotsDao.findAll())
+
+      verify(exactly = 0) {
+        participantProjectSpeciesStore.fetchSpeciesForParticipantProject(projectId)
+      }
+    }
+
+    @Test
+    fun `it does nothing if the submission is not for a species list deliverable`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val moduleId = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      val deliverableId =
+          insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Document)
+
+      val projectId = insertProject(participantId = participantId)
+      val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
+
+      service.on(
+          DeliverableStatusUpdatedEvent(
+              deliverableId = deliverableId,
+              projectId = projectId,
+              oldStatus = SubmissionStatus.InReview,
+              newStatus = SubmissionStatus.Approved,
+              submissionId = submissionId))
+
+      assertEquals(emptyList<SubmissionSnapshotsRow>(), submissionSnapshotsDao.findAll())
+
+      verify(exactly = 0) {
+        participantProjectSpeciesStore.fetchSpeciesForParticipantProject(projectId)
+      }
     }
   }
 }
