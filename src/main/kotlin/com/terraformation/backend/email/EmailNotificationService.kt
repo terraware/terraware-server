@@ -597,17 +597,19 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: PlantingSiteMapEditedEvent) {
-    val organization = organizationStore.fetchOneById(event.edit.existingModel.organizationId)
+    val organization =
+        organizationStore.fetchOneById(event.plantingSiteEdit.existingModel.organizationId)
 
     sendToOrganizationContact(
         organization,
         PlantingSiteMapEdited(
             config = config,
             addedToOrRemovedFrom =
-                if (event.edit.areaHaDifference.signum() < 0) "removed from" else "added to",
-            areaHaDifference = event.edit.areaHaDifference.abs().toPlainString(),
+                if (event.plantingSiteEdit.areaHaDifference.signum() < 0) "removed from"
+                else "added to",
+            areaHaDifference = event.plantingSiteEdit.areaHaDifference.abs().toPlainString(),
             organizationName = organization.name,
-            plantingSiteName = event.edit.existingModel.name,
+            plantingSiteName = event.plantingSiteEdit.existingModel.name,
         ))
   }
 
