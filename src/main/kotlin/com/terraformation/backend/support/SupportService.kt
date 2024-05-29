@@ -34,7 +34,9 @@ class SupportService(
         atlassianHttpClient.createServiceDeskRequest(
             description, summary, requestTypeId, user.email)
 
-    atlassianHttpClient.createAttachments(response.issueId, attachmentIds, attachmentComment)
+    if (attachmentIds.isNotEmpty()) {
+      atlassianHttpClient.createAttachments(response.issueId, attachmentIds, attachmentComment)
+    }
 
     emailService.sendUserNotification(
         user,
