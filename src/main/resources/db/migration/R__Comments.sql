@@ -65,6 +65,69 @@ COMMENT ON TABLE device_templates IS 'Canned device configurations for use in ca
 
 COMMENT ON TABLE devices IS 'Hardware devices managed by the device manager at a facility.';
 
+COMMENT ON TABLE document_producer.document_saved_versions IS 'Saved versions of document variable values. A saved version is conceptually just a reference to a particular point in the edit history of the document; to restore that version, we ignore any later edits.';
+
+COMMENT ON TABLE document_producer.document_statuses IS '(Enum) Current stage of a document''s lifecycle.';
+
+COMMENT ON TABLE document_producer.documents IS 'Top-level information about documents.';
+
+COMMENT ON TABLE document_producer.files IS 'Generic information about individual files. Files are associated with application entities using linking tables.';
+
+COMMENT ON TABLE document_producer.ghost_protection IS 'Maintains a reference to the ghost user to protect it from being accidentally deleted.';
+
+COMMENT ON TABLE document_producer.methodologies IS 'Verra-defined project methodologies. Templates and variables are all per-methodology.';
+
+COMMENT ON TABLE document_producer.thumbnails IS 'Information about scaled-down versions of photos.';
+
+COMMENT ON TABLE document_producer.variable_image_values IS 'Linking table that defines which image files are values of which variables.';
+
+COMMENT ON TABLE document_producer.variable_injection_display_styles IS '(Enum) For injected variables, whether to render them as text fragments that are suitable for including in paragraphs or as separate items on the page. Analogous to the inline/block display styles in CSS. Not applicable to all variable types.';
+
+COMMENT ON TABLE document_producer.variable_link_values IS 'Type-specific details of the values of link variables.';
+
+COMMENT ON TABLE document_producer.variable_manifest_entries IS 'Linking table that defines which variables appear in which manifests and in what order.';
+
+COMMENT ON TABLE document_producer.variable_manifests IS 'A collection of the definitions of the variables for a methodology. This is how we do versioning of variable definitions. Each revision of the variable definitions is represented as a new manifest.';
+
+COMMENT ON TABLE document_producer.variable_numbers IS 'Information about number variables that is not relevant for other variable types.';
+
+COMMENT ON TABLE document_producer.variable_section_recommendations IS 'Which sections recommend using which other variables. Can vary between manifests.';
+
+COMMENT ON TABLE document_producer.variable_section_values IS 'Fragments of the contents of document sections. Each fragment is either a block of text or a usage of a variable; they are assembled in order to render the contents of the section.';
+
+COMMENT ON TABLE document_producer.variable_sections IS 'Hierarchy of sections that define the structure of the rendered document.';
+COMMENT ON COLUMN document_producer.variable_sections.render_heading IS 'If false, the title is not included in the rendered document. False in cases where we want a single section to have multiple content blocks; in that case, we add them as child sections with this flag set to false.';
+
+COMMENT ON TABLE document_producer.variable_select_option_values IS 'The options of a select variable that are selected in a document. Options that are not selected do not appear in this table.';
+
+COMMENT ON TABLE document_producer.variable_select_options IS 'Available options for select variables.';
+COMMENT ON COLUMN document_producer.variable_select_options.rendered_text IS 'What text should be rendered in the document when this option is selected. Null if the option''s name should be rendered.';
+
+COMMENT ON TABLE document_producer.variable_selects IS 'Information about select variables that is not relevant for other variable types. This table only has information about the variable as a whole; the options are in `variable_select_options`.';
+COMMENT ON COLUMN document_producer.variable_selects.is_multiple IS 'If true, allow multiple options to be selected. The list of selected options is considered a single value; do not set `variables.is_list` to true unless you want a list of multiple-select variables.';
+
+COMMENT ON TABLE document_producer.variable_table_columns IS 'The order of the columns in a table. Each column must be a variable whose parent is the table.';
+
+COMMENT ON TABLE document_producer.variable_table_styles IS '(Enum) How a table should be rendered visually in the document.';
+
+COMMENT ON TABLE document_producer.variable_tables IS 'Information about tables that is not relevant for other variable types.';
+
+COMMENT ON TABLE document_producer.variable_text_types IS '(Enum) Types of text stored in a text variable field.';
+
+COMMENT ON TABLE document_producer.variable_texts IS 'Information about text variables that is not relevant for other variable types.';
+
+COMMENT ON TABLE document_producer.variable_types IS '(Enum) Data types that can be assigned to variables.';
+
+COMMENT ON TABLE document_producer.variable_usage_types IS '(Enum) When a variable is used in a section, whether to inject the value of the variable or the location where the value is injected elsewhere in the doc.';
+
+COMMENT ON TABLE document_producer.variable_value_table_rows IS 'Linking table that defines which variable values are in which rows of a table.';
+
+COMMENT ON TABLE document_producer.variable_values IS 'Insert-only table with all historical and current values of all inputs.';
+
+COMMENT ON TABLE document_producer.variables IS 'variables that can be supplied by the user. This table stores the variables themselves, not the values of the variables in a particular document. Type-specific information is in child tables such as `variable_numbers`.';
+COMMENT ON COLUMN document_producer.variables.is_list IS 'True if this variable is a list of values rather than a single value. If the variable is a table, true if the table can contain multiple rows.';
+COMMENT ON COLUMN document_producer.variables.replaces_variable_id IS 'If this is a new version of a variable that existed in a previous manifest version, the ID of the previous version of the variable. This allows the system to automatically migrate values from older variable versions when a document is updated to a new manifest version.';
+
 COMMENT ON TABLE ecosystem_types IS '(Enum) Types of ecosystems in which plants can be found. Based on the World Wildlife Federation''s "Terrestrial Ecoregions of the World" report.';
 
 COMMENT ON TABLE facilities IS 'Physical locations at a site. For example, each seed bank and each nursery is a facility.';
@@ -137,6 +200,8 @@ COMMENT ON TABLE project_report_settings IS 'Which projects require reports to b
 COMMENT ON TABLE projects IS 'Distinguishes among an organization''s projects.';
 
 COMMENT ON TABLE regions IS '(Enum) Parts of the world where countries are located.';
+
+COMMENT ON FUNCTION reject_delete_value() IS 'Trigger function that rejects deletion of `variable_values` rows unless the entire document is being deleted.';
 
 COMMENT ON TABLE report_files IS 'Linking table between `reports` and `files` for non-photo files.';
 

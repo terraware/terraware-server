@@ -1,0 +1,1 @@
+ALTER TABLE document_producer.variable_manifest_entries DROP CONSTRAINT variable_manifest_entries_variable_manifest_id_name_key;
