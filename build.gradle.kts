@@ -335,13 +335,15 @@ licenseReport {
 }
 
 // https://github.com/Kotlin/dokka/issues/3472
-configurations.matching { it.name.startsWith("dokka") }.configureEach {
-  resolutionStrategy.eachDependency {
-    if (requested.group.startsWith("com.fasterxml.jackson")) {
-      useVersion("2.15.3")
+configurations
+    .matching { it.name.startsWith("dokka") }
+    .configureEach {
+      resolutionStrategy.eachDependency {
+        if (requested.group.startsWith("com.fasterxml.jackson")) {
+          useVersion("2.15.3")
+        }
+      }
     }
-  }
-}
 
 tasks.withType<DokkaTask>().configureEach {
   dokkaSourceSets {
