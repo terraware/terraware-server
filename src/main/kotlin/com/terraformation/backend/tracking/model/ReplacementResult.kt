@@ -6,4 +6,13 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 data class ReplacementResult(
     val addedMonitoringPlotIds: Set<MonitoringPlotId>,
     val removedMonitoringPlotIds: Set<MonitoringPlotId>,
-)
+) {
+  companion object {
+    fun merge(results: Collection<ReplacementResult>): ReplacementResult {
+      return ReplacementResult(
+          results.flatMap { it.addedMonitoringPlotIds }.toSet(),
+          results.flatMap { it.removedMonitoringPlotIds }.toSet(),
+      )
+    }
+  }
+}

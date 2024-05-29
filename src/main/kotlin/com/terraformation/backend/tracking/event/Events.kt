@@ -5,7 +5,9 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
+import com.terraformation.backend.tracking.model.ReplacementResult
 import java.time.LocalDate
 
 /** Published when an organization requests that a monitoring plot be replaced in an observation. */
@@ -101,5 +103,7 @@ data class PlantingSeasonNotScheduledSupportNotificationEvent(
 ) : PlantingSeasonSchedulingNotificationEvent
 
 data class PlantingSiteMapEditedEvent(
+    val edited: ExistingPlantingSiteModel,
     val plantingSiteEdit: PlantingSiteEdit,
+    val monitoringPlotReplacements: ReplacementResult,
 )
