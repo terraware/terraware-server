@@ -6,7 +6,7 @@ import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.support.SupportService
-import com.terraformation.backend.support.atlassian.model.ServiceRequestTypeModel
+import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import com.terraformation.backend.support.atlassian.model.TemporaryAttachmentModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -32,8 +32,7 @@ class SupportController(private val service: SupportService) {
   @GetMapping
   @Operation(summary = "Lists support request types.")
   fun listRequestTypes(): ListSupportRequestTypesResponsePayload {
-    return ListSupportRequestTypesResponsePayload(
-        service.listServiceRequestTypes().map { ServiceRequestType(it) })
+    return ListSupportRequestTypesResponsePayload(service.listSupportRequestTypes())
   }
 
   @ApiResponse(responseCode = "200")
@@ -44,7 +43,7 @@ class SupportController(private val service: SupportService) {
   ): SubmitSupportRequestResponsePayload {
     val issueKey =
         service.submitServiceRequest(
-            requestTypeId = payload.requestTypeId,
+            requestType = payload.requestType,
             summary = payload.summary,
             description = payload.description,
             attachmentIds = payload.attachmentIds ?: emptyList(),
@@ -80,25 +79,11 @@ class SupportController(private val service: SupportService) {
   }
 }
 
-data class ServiceRequestType(
-    val requestTypeId: Int,
-    val name: String,
-    val description: String,
-) {
-  constructor(
-      model: ServiceRequestTypeModel
-  ) : this(
-      requestTypeId = model.id,
-      name = model.name,
-      model.description,
-  )
-}
-
-data class ListSupportRequestTypesResponsePayload(val types: List<ServiceRequestType>) :
+data class ListSupportRequestTypesResponsePayload(val types: List<SupportRequestType>) :
     SuccessResponsePayload
 
 data class SubmitSupportRequestPayload(
-    val requestTypeId: Int,
+    val requestType: SupportRequestType,
     val description: String,
     val summary: String,
     val attachmentIds: List<String>?,

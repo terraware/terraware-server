@@ -14,6 +14,7 @@ import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
 import com.terraformation.backend.seedbank.model.isV2Compatible
+import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import com.terraformation.backend.util.equalsIgnoreScale
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -337,6 +338,13 @@ class Messages {
   fun freezerName(number: Int) = getMessage("seedBankFreezerName", number)
 
   fun refrigeratorName(number: Int) = getMessage("seedBankRefrigeratorName", number)
+
+  fun supportRequestTypeName(type: SupportRequestType) =
+      when (type) {
+        SupportRequestType.BugReport -> getMessage("support.requestType.bugReport")
+        SupportRequestType.ContactUs -> getMessage("support.requestType.contactUs")
+        SupportRequestType.FeatureRequest -> getMessage("support.requestType.featureRequest")
+      }
 
   /**
    * Returns the string that should be used to separate items in a list. This is hardwired in the

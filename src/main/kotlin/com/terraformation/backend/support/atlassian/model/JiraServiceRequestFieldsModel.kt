@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
  * ```
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class ServiceRequestFieldsModel(
+data class JiraServiceRequestFieldsModel(
     val summary: String,
     val description: String,
 )
