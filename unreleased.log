@@ -1,3 +1,4 @@
+fcf92629a6e Used enums for request types for Jira tickets (#2011)
 7b4b418836d Update coding conventions docs (#2002)
 42f453d7fa8 Add attachment comment only if not empty (#2007)
 0725a12e3b1 Fix code docs generation (#2006)
