@@ -30,6 +30,7 @@ import java.nio.file.NoSuchFileException
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -109,6 +110,25 @@ class PhotosController(private val photoRepository: PhotoRepository) {
     val elements = photos.map { ListPhotosResponseElement(it) }
 
     return ListPhotosResponsePayload(elements)
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse404("The accession does not exist.")
+  @DeleteMapping("/{photoFilename}")
+  @Operation(summary = "Delete one photo for an accession.")
+  fun deletePhoto(
+      @PathVariable("id") accessionId: AccessionId,
+      @PathVariable photoFilename: String
+  ): SimpleSuccessResponsePayload {
+    try {
+      photoRepository.deletePhoto(accessionId, photoFilename)
+    } catch (e: AccessionNotFoundException) {
+      throw e
+    } catch (e: Exception) {
+      log.error("Unable to delete photo $photoFilename for accession $accessionId", e)
+      throw InternalServerErrorException("Unable to delete the photo.")
+    }
+    return SimpleSuccessResponsePayload()
   }
 }
 

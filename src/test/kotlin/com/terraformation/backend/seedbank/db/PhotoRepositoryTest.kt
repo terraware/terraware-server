@@ -205,6 +205,48 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `deletePhoto deletes one photo`() {
+    every { thumbnailStore.deleteThumbnails(any()) } just Runs
+    every { user.canUpdateAccession(any()) } returns true
+
+    every { random.nextLong() } returns 1L
+    repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata.copy(filename = "1.jpg"))
+
+    every { random.nextLong() } returns 2L
+    repository.storePhoto(accessionId, sixPixelPng.inputStream(), metadata.copy(filename = "6.jpg"))
+
+    val photoRows = filesDao.findAll()
+
+    val onePixelPhotoRow = photoRows.find { it.fileName == "1.jpg" }!!
+    val sixPixelPhotoRow = photoRows.find { it.fileName == "6.jpg" }!!
+
+    val onePixelFileId = onePixelPhotoRow.id!!
+    val onePixelUrl = onePixelPhotoRow.storageUrl!!
+    val sixPixelFileId = sixPixelPhotoRow.id!!
+
+    repository.deletePhoto(accessionId, "1.jpg")
+
+    verify { thumbnailStore.deleteThumbnails(onePixelFileId) }
+    assertThrows<NoSuchFileException>("$onePixelUrl should be deleted") {
+      fileStore.size(onePixelUrl)
+    }
+    assertEquals(listOf(sixPixelPhotoRow), filesDao.findAll(), "File rows after deletion")
+    assertEquals(
+        listOf(AccessionPhotosRow(accessionId, sixPixelFileId)),
+        accessionPhotosDao.findAll(),
+        "Accession photos after deletion")
+  }
+
+  @Test
+  fun `deletePhoto throws exception if user does not have permission to read accession`() {
+    every { user.canReadAccession(accessionId) } returns false
+
+    assertThrows(AccessionNotFoundException::class.java) {
+      repository.deletePhoto(accessionId, filename)
+    }
+  }
+
+  @Test
   fun `deleteAllPhotos deletes multiple photos`() {
     every { thumbnailStore.deleteThumbnails(any()) } just Runs
     every { user.canUpdateAccession(any()) } returns true
@@ -228,6 +270,13 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(emptyList<AccessionPhotosRow>(), accessionPhotosDao.findAll(), "Accession photos")
     assertEquals(emptyList<FilesRow>(), filesDao.findAll(), "Photos")
+  }
+
+  @Test
+  fun `deleteAllPhotos throws exception if user does not have permission to read accession`() {
+    every { user.canReadAccession(accessionId) } returns false
+
+    assertThrows(AccessionNotFoundException::class.java) { repository.deleteAllPhotos(accessionId) }
   }
 
   @Test
