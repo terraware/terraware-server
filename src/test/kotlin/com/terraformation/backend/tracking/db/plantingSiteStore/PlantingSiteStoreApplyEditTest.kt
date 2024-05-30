@@ -17,6 +17,7 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.newSite
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.util.nearlyCoveredBy
 import io.mockk.every
 import java.math.BigDecimal
@@ -439,7 +440,14 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
                 }
               })
 
-      eventPublisher.assertEventPublished(PlantingSiteMapEditedEvent(results.plantingSiteEdit))
+      val monitoringPlotIds =
+          results.edited.plantingZones[0].plantingSubzones[0].monitoringPlots.map { it.id }.toSet()
+
+      eventPublisher.assertEventPublished(
+          PlantingSiteMapEditedEvent(
+              results.edited,
+              results.plantingSiteEdit,
+              ReplacementResult(monitoringPlotIds, emptySet())))
     }
 
     @Test

@@ -87,6 +87,7 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
+import com.terraformation.backend.tracking.model.ReplacementResult
 import freemarker.template.Configuration
 import io.mockk.every
 import io.mockk.mockk
@@ -1014,17 +1015,21 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
 
     val siteName = "Test Site"
+    val existingModel =
+        PlantingSiteBuilder.existingSite {
+          name = siteName
+          organizationId = organization.id
+        }
+
     val event =
         PlantingSiteMapEditedEvent(
+            existingModel,
             PlantingSiteEdit(
                 areaHaDifference = BigDecimal("-13.2"),
                 desiredModel = PlantingSiteBuilder.newSite { name = siteName },
-                existingModel =
-                    PlantingSiteBuilder.existingSite {
-                      name = siteName
-                      organizationId = organization.id
-                    },
-                plantingZoneEdits = emptyList()))
+                existingModel = existingModel,
+                plantingZoneEdits = emptyList()),
+            ReplacementResult(emptySet(), emptySet()))
 
     service.on(event)
 

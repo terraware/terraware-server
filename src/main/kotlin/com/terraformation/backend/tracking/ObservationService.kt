@@ -34,6 +34,7 @@ import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
+import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -256,6 +257,7 @@ class ObservationService(
       monitoringPlotId: MonitoringPlotId,
       justification: String,
       duration: ReplacementDuration,
+      allowCompleted: Boolean = false,
   ): ReplacementResult {
     requirePermissions { replaceObservationPlot(observationId) }
 
@@ -277,7 +279,7 @@ class ObservationService(
           observationPlots.firstOrNull { it.model.monitoringPlotId == monitoringPlotId }
               ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
 
-      if (observationPlot.model.completedTime != null) {
+      if (!allowCompleted && observationPlot.model.completedTime != null) {
         throw PlotAlreadyCompletedException(monitoringPlotId)
       }
 
@@ -388,6 +390,63 @@ class ObservationService(
     deletePhotosWhere(
         OBSERVATION_PHOTOS.monitoringPlots.plantingSubzones.PLANTING_SITE_ID.eq(
             event.plantingSiteId))
+  }
+
+  /** Updates the in-progress observation, if any, when a site's map is edited. */
+  @EventListener
+  fun on(event: PlantingSiteMapEditedEvent) {
+    val plantingSiteId = event.plantingSiteEdit.existingModel.id
+    val observation = observationStore.fetchInProgressObservation(plantingSiteId) ?: return
+    val observationId = observation.id
+    val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
+    val plantedSubzoneIds = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId).keys
+
+    val removedObservationPlots =
+        observationPlots.filter {
+          it.model.monitoringPlotId in event.monitoringPlotReplacements.removedMonitoringPlotIds
+        }
+    val removedPermanentPlots = removedObservationPlots.filter { it.model.isPermanent }
+    val removedTemporaryPlots = removedObservationPlots.filterNot { it.model.isPermanent }
+
+    dslContext.transaction { _ ->
+      observationStore.removePlotsFromObservation(
+          observationId, removedPermanentPlots.map { it.model.monitoringPlotId })
+
+      val newPermanentPlotIds =
+          plantingSiteStore.ensurePermanentClustersExist(plantingSiteId).toSet()
+
+      removedTemporaryPlots.forEach { plot ->
+        replaceMonitoringPlot(
+            observationId,
+            plot.model.monitoringPlotId,
+            "Planting site map edited",
+            ReplacementDuration.LongTerm,
+            true)
+      }
+
+      val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
+
+      plantingSite.plantingZones.forEach { zone ->
+        val clusterNumbersWithPlotsInUnplantedSubzones =
+            zone.plantingSubzones
+                .filterNot { it.id in plantedSubzoneIds }
+                .flatMap { subzone -> subzone.monitoringPlots.mapNotNull { it.permanentCluster } }
+                .toSet()
+
+        val newPlotsInClustersWithoutPlotsInUnplantedSubzones =
+            zone.plantingSubzones
+                .flatMap { subzone ->
+                  subzone.monitoringPlots.filter {
+                    it.id in newPermanentPlotIds &&
+                        it.permanentCluster !in clusterNumbersWithPlotsInUnplantedSubzones
+                  }
+                }
+                .map { it.id }
+
+        observationStore.addPlotsToObservation(
+            observationId, newPlotsInClustersWithoutPlotsInUnplantedSubzones, true)
+      }
+    }
   }
 
   /**

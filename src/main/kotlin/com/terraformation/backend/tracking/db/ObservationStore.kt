@@ -89,6 +89,16 @@ class ObservationStore(
         .fetch { ObservationModel.of(it) }
   }
 
+  fun fetchInProgressObservation(plantingSiteId: PlantingSiteId): ExistingObservationModel? {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return dslContext
+        .selectFrom(OBSERVATIONS)
+        .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .and(OBSERVATIONS.STATE_ID.eq(ObservationState.InProgress))
+        .fetchOne { ObservationModel.of(it) }
+  }
+
   fun fetchObservationsByPlantingSite(
       plantingSiteId: PlantingSiteId
   ): List<ExistingObservationModel> {

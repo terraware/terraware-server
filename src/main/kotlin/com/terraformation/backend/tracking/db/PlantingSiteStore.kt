@@ -418,6 +418,7 @@ class PlantingSiteStore(
       val existing = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
       val now = clock.instant()
       val userId = currentUser().userId
+      val replacementResults = mutableListOf<ReplacementResult>()
 
       if (plantingSiteEdit.plantingZoneEdits.isEmpty() &&
           existing.boundary.equalsOrBothNull(plantingSiteEdit.desiredModel.boundary) &&
@@ -453,8 +454,9 @@ class PlantingSiteStore(
           }
 
       plantingSiteEdit.plantingZoneEdits.forEach {
-        applyPlantingZoneEdit(
-            it, plantingSiteId, plantingSiteHistoryId, subzonesToMarkIncomplete, now)
+        replacementResults.add(
+            applyPlantingZoneEdit(
+                it, plantingSiteId, plantingSiteHistoryId, subzonesToMarkIncomplete, now))
       }
 
       // If any zones weren't edited, we still want to include them and their subzones in the site's
@@ -468,9 +470,13 @@ class PlantingSiteStore(
         }
       }
 
-      eventPublisher.publishEvent(PlantingSiteMapEditedEvent(plantingSiteEdit))
+      val edited = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
-      fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
+      eventPublisher.publishEvent(
+          PlantingSiteMapEditedEvent(
+              edited, plantingSiteEdit, ReplacementResult.merge(replacementResults)))
+
+      edited
     }
   }
 
@@ -480,7 +486,9 @@ class PlantingSiteStore(
       plantingSiteHistoryId: PlantingSiteHistoryId,
       subzonesToMarkIncomplete: Set<PlantingSubzoneId>,
       now: Instant
-  ) {
+  ): ReplacementResult {
+    val replacementResults = mutableListOf<ReplacementResult>()
+
     when (edit) {
       is PlantingZoneEdit.Create -> {
         val plantingZoneId = createPlantingZone(edit.desiredModel.toNew(), plantingSiteId, now)
@@ -492,7 +500,18 @@ class PlantingSiteStore(
         }
       }
       is PlantingZoneEdit.Delete -> {
-        // Subzones and plots will be deleted by ON DELETE CASCADE
+        replacementResults.addAll(
+            edit.plantingSubzoneEdits.map {
+              applyPlantingSubzoneEdit(
+                  edit = it,
+                  plantingSiteId = plantingSiteId,
+                  plantingZoneId = edit.existingModel.id,
+                  plantingZoneHistoryId = null,
+                  subzonesToMarkIncomplete = emptySet(),
+                  now = now,
+              )
+            })
+
         val rowsDeleted =
             dslContext
                 .deleteFrom(PLANTING_ZONES)
@@ -529,16 +548,17 @@ class PlantingSiteStore(
             insertPlantingZoneHistory(
                 edit.desiredModel, plantingSiteHistoryId, edit.existingModel.id)
 
-        edit.plantingSubzoneEdits.forEach { subzoneEdit ->
-          applyPlantingSubzoneEdit(
-              edit = subzoneEdit,
-              plantingSiteId = plantingSiteId,
-              plantingZoneId = edit.existingModel.id,
-              plantingZoneHistoryId = plantingZoneHistoryId,
-              subzonesToMarkIncomplete = subzonesToMarkIncomplete,
-              now = now,
-          )
-        }
+        replacementResults.addAll(
+            edit.plantingSubzoneEdits.map { subzoneEdit ->
+              applyPlantingSubzoneEdit(
+                  edit = subzoneEdit,
+                  plantingSiteId = plantingSiteId,
+                  plantingZoneId = edit.existingModel.id,
+                  plantingZoneHistoryId = plantingZoneHistoryId,
+                  subzonesToMarkIncomplete = subzonesToMarkIncomplete,
+                  now = now,
+              )
+            })
 
         // If any subzones weren't edited, we still want to include them in the site's map history.
         edit.existingModel.plantingSubzones.forEach { subzone ->
@@ -561,22 +581,33 @@ class PlantingSiteStore(
           // Need to create permanent clusters using the updated subzones since we need their IDs.
           val updatedSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
           val updatedZone = updatedSite.plantingZones.single { it.id == edit.existingModel.id }
-          createPermanentClusters(updatedSite, updatedZone, newClusterNumbers, edit.addedRegion)
+          val newPlotIds =
+              createPermanentClusters(updatedSite, updatedZone, newClusterNumbers, edit.addedRegion)
+
+          replacementResults.add(ReplacementResult(newPlotIds.toSet(), emptySet()))
         }
       }
     }
+
+    return ReplacementResult.merge(replacementResults)
   }
 
   private fun applyPlantingSubzoneEdit(
       edit: PlantingSubzoneEdit,
       plantingSiteId: PlantingSiteId,
       plantingZoneId: PlantingZoneId,
-      plantingZoneHistoryId: PlantingZoneHistoryId,
+      plantingZoneHistoryId: PlantingZoneHistoryId?,
       subzonesToMarkIncomplete: Set<PlantingSubzoneId>,
       now: Instant
-  ) {
+  ): ReplacementResult {
+    val replacementResults = mutableListOf<ReplacementResult>()
+
     when (edit) {
       is PlantingSubzoneEdit.Create -> {
+        if (plantingZoneHistoryId == null) {
+          throw IllegalArgumentException("Subzone creation requires planting zone history ID")
+        }
+
         val plantingSubzoneId =
             createPlantingSubzone(edit.desiredModel.toNew(), plantingSiteId, plantingZoneId, now)
         insertPlantingSubzoneHistory(edit.desiredModel, plantingZoneHistoryId, plantingSubzoneId)
@@ -588,8 +619,15 @@ class PlantingSiteStore(
             .deleteFrom(PLANTING_SUBZONES)
             .where(PLANTING_SUBZONES.ID.eq(edit.existingModel.id))
             .execute()
+
+        replacementResults.add(
+            ReplacementResult(emptySet(), edit.existingModel.monitoringPlots.map { it.id }.toSet()))
       }
       is PlantingSubzoneEdit.Update -> {
+        if (plantingZoneHistoryId == null) {
+          throw IllegalArgumentException("Subzone update requires planting zone history ID")
+        }
+
         val plantingSubzoneId = edit.existingModel.id
         val markIncomplete =
             !edit.addedRegion.isEmpty && plantingSubzoneId in subzonesToMarkIncomplete
@@ -614,13 +652,15 @@ class PlantingSiteStore(
 
         edit.existingModel.monitoringPlots.forEach { plot ->
           if (plot.boundary.intersects(edit.removedRegion)) {
-            makePlotUnavailable(plot.id)
+            replacementResults.add(makePlotUnavailable(plot.id))
           }
         }
 
         insertPlantingSubzoneHistory(edit.desiredModel, plantingZoneHistoryId, plantingSubzoneId)
       }
     }
+
+    return ReplacementResult.merge(replacementResults)
   }
 
   fun updatePlantingSeasons(
@@ -1215,14 +1255,16 @@ class PlantingSiteStore(
   /**
    * Ensures that the required number of permanent clusters exists in each of a planting site's
    * zones. There need to be clusters with numbers from 1 to the zone's permanent cluster count.
+   *
+   * @return The IDs of any newly-created monitoring plots.
    */
-  fun ensurePermanentClustersExist(plantingSiteId: PlantingSiteId) {
+  fun ensurePermanentClustersExist(plantingSiteId: PlantingSiteId): List<MonitoringPlotId> {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
-    withLockedPlantingSite(plantingSiteId) {
+    return withLockedPlantingSite(plantingSiteId) {
       val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
-      plantingSite.plantingZones.forEach { plantingZone ->
+      plantingSite.plantingZones.flatMap { plantingZone ->
         val missingClusterNumbers: List<Int> =
             (1..plantingZone.numPermanentClusters).filterNot {
               plantingZone.permanentClusterExists(it)
