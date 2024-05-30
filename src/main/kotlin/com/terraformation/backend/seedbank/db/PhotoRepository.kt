@@ -53,6 +53,7 @@ class PhotoRepository(
         .mapNotNull { it.id }
         .forEach { oldFileId ->
           log.info("Deleting earlier file $oldFileId for accession $accessionId photo $filename")
+          // Deletes all rows and files except for the one with the highest ID.
           fileService.deleteFile(oldFileId) { accessionPhotosDao.deleteById(oldFileId) }
         }
   }
@@ -89,6 +90,17 @@ class PhotoRepository(
         .orderBy(FILES.ID.desc())
         .fetch { record -> FileMetadata.of(record) }
         .distinctBy { it.filename }
+  }
+
+  /** Deletes one photo from an acession by filename */
+  fun deletePhoto(accessionId: AccessionId, filename: String) {
+    requirePermissions { updateAccession(accessionId) }
+
+    fetchFilesRows(accessionId, filename)
+        .mapNotNull { it.id }
+        .forEach { fileId ->
+          fileService.deleteFile(fileId) { accessionPhotosDao.deleteById(fileId) }
+        }
   }
 
   /** Deletes all the photos from an accession. */

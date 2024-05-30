@@ -38,7 +38,6 @@ import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -122,7 +121,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   fun `storePhoto throws exception if user does not have permission to upload photos`() {
     every { user.canUploadPhoto(accessionId) } returns false
 
-    assertThrows(AccessDeniedException::class.java) {
+    assertThrows<AccessDeniedException> {
       repository.storePhoto(accessionId, ByteArray(0).inputStream(), metadata)
     }
   }
@@ -158,16 +157,14 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `readPhoto throws exception on nonexistent file`() {
-    assertThrows(NoSuchFileException::class.java) { repository.readPhoto(accessionId, filename) }
+    assertThrows<NoSuchFileException> { repository.readPhoto(accessionId, filename) }
   }
 
   @Test
   fun `readPhoto throws exception if user does not have permission to read accession`() {
     every { user.canReadAccession(accessionId) } returns false
 
-    assertThrows(AccessionNotFoundException::class.java) {
-      repository.readPhoto(accessionId, filename)
-    }
+    assertThrows<AccessionNotFoundException> { repository.readPhoto(accessionId, filename) }
   }
 
   @Test
@@ -205,6 +202,46 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `deletePhoto deletes one photo`() {
+    every { thumbnailStore.deleteThumbnails(any()) } just Runs
+    every { user.canUpdateAccession(any()) } returns true
+
+    every { random.nextLong() } returns 1L
+    repository.storePhoto(accessionId, onePixelPng.inputStream(), metadata.copy(filename = "1.jpg"))
+
+    every { random.nextLong() } returns 2L
+    repository.storePhoto(accessionId, sixPixelPng.inputStream(), metadata.copy(filename = "6.jpg"))
+
+    val photoRows = filesDao.findAll()
+
+    val onePixelPhotoRow = photoRows.find { it.fileName == "1.jpg" }!!
+    val sixPixelPhotoRow = photoRows.find { it.fileName == "6.jpg" }!!
+
+    val onePixelFileId = onePixelPhotoRow.id!!
+    val onePixelUrl = onePixelPhotoRow.storageUrl!!
+    val sixPixelFileId = sixPixelPhotoRow.id!!
+
+    repository.deletePhoto(accessionId, "1.jpg")
+
+    verify { thumbnailStore.deleteThumbnails(onePixelFileId) }
+    assertThrows<NoSuchFileException>("$onePixelUrl should be deleted") {
+      fileStore.size(onePixelUrl)
+    }
+    assertEquals(listOf(sixPixelPhotoRow), filesDao.findAll(), "File rows after deletion")
+    assertEquals(
+        listOf(AccessionPhotosRow(accessionId, sixPixelFileId)),
+        accessionPhotosDao.findAll(),
+        "Accession photos after deletion")
+  }
+
+  @Test
+  fun `deletePhoto throws exception if user does not have permission to read accession`() {
+    every { user.canReadAccession(accessionId) } returns false
+
+    assertThrows<AccessionNotFoundException> { repository.deletePhoto(accessionId, filename) }
+  }
+
+  @Test
   fun `deleteAllPhotos deletes multiple photos`() {
     every { thumbnailStore.deleteThumbnails(any()) } just Runs
     every { user.canUpdateAccession(any()) } returns true
@@ -228,6 +265,13 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(emptyList<AccessionPhotosRow>(), accessionPhotosDao.findAll(), "Accession photos")
     assertEquals(emptyList<FilesRow>(), filesDao.findAll(), "Photos")
+  }
+
+  @Test
+  fun `deleteAllPhotos throws exception if user does not have permission to read accession`() {
+    every { user.canReadAccession(accessionId) } returns false
+
+    assertThrows<AccessionNotFoundException> { repository.deleteAllPhotos(accessionId) }
   }
 
   @Test
