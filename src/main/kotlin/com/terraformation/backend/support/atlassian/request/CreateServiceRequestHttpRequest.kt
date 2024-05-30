@@ -1,7 +1,7 @@
 package com.terraformation.backend.support.atlassian.request
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.terraformation.backend.support.atlassian.model.ServiceRequestFieldsModel
+import com.terraformation.backend.support.atlassian.model.JiraServiceRequestFieldsModel
 import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.setBody
@@ -19,7 +19,7 @@ import io.ktor.http.path
  */
 class CreateServiceRequestHttpRequest(
     reporter: String? = null,
-    requestFieldValues: ServiceRequestFieldsModel,
+    requestFieldValues: JiraServiceRequestFieldsModel,
     requestTypeId: Int,
     serviceDeskId: Int,
 ) : AtlassianHttpRequest<PostServiceDeskRequestResponse> {
@@ -48,7 +48,7 @@ class CreateServiceRequestHttpRequest(
 
 data class PostServiceDeskRequestBody(
     val raiseOnBehalfOf: String?,
-    val requestFieldValues: ServiceRequestFieldsModel,
+    val requestFieldValues: JiraServiceRequestFieldsModel,
     val requestTypeId: Int,
     val serviceDeskId: Int,
 )

@@ -1,7 +1,7 @@
 package com.terraformation.backend.support.atlassian.request
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.terraformation.backend.support.atlassian.model.ServiceRequestTypeModel
+import com.terraformation.backend.support.atlassian.model.JiraServiceRequestTypeModel
 import io.ktor.client.call.body
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.statement.HttpResponse
@@ -26,4 +26,4 @@ class ListServiceRequestTypesHttpRequest(serviceDeskId: Int) :
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class ListServiceRequestTypesResponse(val values: List<ServiceRequestTypeModel>)
+data class ListServiceRequestTypesResponse(val values: List<JiraServiceRequestTypeModel>)

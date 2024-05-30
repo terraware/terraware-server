@@ -5,7 +5,7 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.support.atlassian.model.ServiceRequestTypeModel
+import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import io.mockk.every
 import java.net.URI
 import org.junit.Assume
@@ -22,7 +22,6 @@ import org.springframework.security.access.AccessDeniedException
 class AtlassianHttpClientExternalTest : RunsAsUser {
   override val user: TerrawareUser = mockUser()
   private lateinit var client: AtlassianHttpClient
-  private lateinit var requestTypes: Map<Int, ServiceRequestTypeModel>
   private val createdIssueIds: MutableList<String> = mutableListOf()
 
   @BeforeEach
@@ -51,9 +50,7 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
                     apiClientUsernamePrefix = "test"))
 
     client = AtlassianHttpClient(config)
-
-    requestTypes = client.requestTypes
-    assertTrue(requestTypes.isNotEmpty())
+    assertTrue(client.requestTypeIds.isNotEmpty())
   }
 
   @AfterEach
@@ -68,7 +65,7 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
         client.createServiceDeskRequest(
             description = "Description",
             summary = "Summary",
-            requestTypeId = requestTypes.keys.first(),
+            requestType = SupportRequestType.ContactUs,
             reporter = "testuser@example.com",
         )
 
@@ -90,18 +87,6 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
         attachTempFilesResponse.temporaryAttachments.map { it.temporaryAttachmentId }
 
     client.createAttachments(issueId, attachmentIds, "Test attachment uploads.")
-  }
-
-  @Test
-  fun `throws exception if request type ID is incorrect`() {
-    assertThrows<IllegalArgumentException> {
-      client.createServiceDeskRequest(
-          description = "Description",
-          summary = "Summary",
-          requestTypeId = -1,
-          reporter = "testuser@example.com",
-      )
-    }
   }
 
   @Test
