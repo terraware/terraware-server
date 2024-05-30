@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.email.model.SupportRequestSubmitted
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.support.atlassian.AtlassianHttpClient
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import com.terraformation.backend.support.atlassian.model.TemporaryAttachmentModel
@@ -17,6 +18,7 @@ class SupportService(
     private val atlassianHttpClient: AtlassianHttpClient,
     private val config: TerrawareServerConfig,
     private val emailService: EmailService,
+    private val messages: Messages,
     private val userStore: UserStore,
 ) {
   fun submitServiceRequest(
@@ -36,7 +38,12 @@ class SupportService(
 
     emailService.sendUserNotification(
         user,
-        SupportRequestSubmitted(config, requestType.name, response.issueKey, summary, description),
+        SupportRequestSubmitted(
+            config,
+            messages.supportRequestTypeName(requestType),
+            response.issueKey,
+            summary,
+            description),
         false,
     )
 
