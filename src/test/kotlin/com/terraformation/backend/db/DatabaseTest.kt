@@ -235,13 +235,12 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
-import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
-import com.terraformation.backend.polygon
+import com.terraformation.backend.rectangle
+import com.terraformation.backend.rectanglePolygon
 import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.PlantingZoneModel
-import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.toInstant
 import jakarta.ws.rs.NotFoundException
 import java.math.BigDecimal
@@ -1408,8 +1407,11 @@ abstract class DatabaseTest {
         when {
           boundary != null -> boundary
           x != null && y != null ->
-              multiPolygon(
-                  polygon(x, y, x.toDouble() + width.toDouble(), y.toDouble() + height.toDouble()))
+              rectangle(
+                  width.toDouble() * MONITORING_PLOT_SIZE,
+                  height.toDouble() * MONITORING_PLOT_SIZE,
+                  x.toDouble() * MONITORING_PLOT_SIZE,
+                  y.toDouble() * MONITORING_PLOT_SIZE)
           else -> null
         }
 
@@ -1494,13 +1496,11 @@ abstract class DatabaseTest {
       height: Number = 2,
       boundary: Geometry =
           row.boundary
-              ?: Turtle(point(0)).makeMultiPolygon {
-                north(y.toDouble() * MONITORING_PLOT_SIZE)
-                east(x.toDouble() * MONITORING_PLOT_SIZE)
-                rectangle(
-                    width.toDouble() * MONITORING_PLOT_SIZE,
-                    height.toDouble() * MONITORING_PLOT_SIZE)
-              },
+              ?: rectangle(
+                  width.toDouble() * MONITORING_PLOT_SIZE,
+                  height.toDouble() * MONITORING_PLOT_SIZE,
+                  x.toDouble() * MONITORING_PLOT_SIZE,
+                  y.toDouble() * MONITORING_PLOT_SIZE),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       errorMargin: BigDecimal = row.errorMargin ?: PlantingZoneModel.DEFAULT_ERROR_MARGIN,
@@ -1555,13 +1555,11 @@ abstract class DatabaseTest {
       height: Number = 2,
       boundary: Geometry =
           row.boundary
-              ?: Turtle(point(0)).makeMultiPolygon {
-                north(y.toDouble() * MONITORING_PLOT_SIZE)
-                east(x.toDouble() * MONITORING_PLOT_SIZE)
-                rectangle(
-                    width.toDouble() * MONITORING_PLOT_SIZE,
-                    height.toDouble() * MONITORING_PLOT_SIZE)
-              },
+              ?: rectangle(
+                  width.toDouble() * MONITORING_PLOT_SIZE,
+                  height.toDouble() * MONITORING_PLOT_SIZE,
+                  x.toDouble() * MONITORING_PLOT_SIZE,
+                  y.toDouble() * MONITORING_PLOT_SIZE),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
@@ -1642,11 +1640,11 @@ abstract class DatabaseTest {
       y: Number = 0,
       boundary: Polygon =
           (row.boundary as? Polygon)
-              ?: Turtle(point(0)).makePolygon {
-                north(y.toDouble() * MONITORING_PLOT_SIZE)
-                east(x.toDouble() * MONITORING_PLOT_SIZE)
-                square(MONITORING_PLOT_SIZE)
-              },
+              ?: rectanglePolygon(
+                  MONITORING_PLOT_SIZE,
+                  MONITORING_PLOT_SIZE,
+                  x.toDouble() * MONITORING_PLOT_SIZE,
+                  y.toDouble() * MONITORING_PLOT_SIZE),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
