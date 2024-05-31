@@ -1,3 +1,4 @@
+e3bff04d4b8 Implement API endpoint to download a submission snapshot (#2003)
 654eb1ab387 Updated translations from Phrase (#2013)
 aaca74d53ab SW-5230 Add observation plots to replace removed ones (#2010)
 90268133c80 Rename field in PlantingSiteMapEditedEvent (#2009)
