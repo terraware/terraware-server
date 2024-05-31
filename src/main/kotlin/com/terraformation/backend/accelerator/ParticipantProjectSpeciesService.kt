@@ -2,6 +2,8 @@ package com.terraformation.backend.accelerator
 
 import com.opencsv.CSVWriter
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesStore
+import com.terraformation.backend.accelerator.db.SubmissionForProjectDeliverableNotFoundException
+import com.terraformation.backend.accelerator.db.SubmissionSnapshotNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
@@ -9,15 +11,18 @@ import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSp
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.api.writeNext
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshotsDao
-import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_SNAPSHOTS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.file.FileService
+import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import jakarta.inject.Named
@@ -190,9 +195,36 @@ class ParticipantProjectSpeciesService(
         FileMetadata.of(MediaType.valueOf("text/csv").toString(), filename, stream.size().toLong())
 
     fileService.storeFile("species-list-deliverable", inputStream, metadata, null) { fileId ->
-      submissionSnapshotsDao.insert(
-          SubmissionSnapshotsRow(submissionId = event.submissionId, fileId = fileId))
+      with(SUBMISSION_SNAPSHOTS) {
+        dslContext
+            .insertInto(this)
+            .set(SUBMISSION_ID, event.submissionId)
+            .set(FILE_ID, fileId)
+            .execute()
+      }
     }
+  }
+
+  fun readSubmissionSnapshotFile(
+      projectId: ProjectId,
+      deliverableId: DeliverableId
+  ): SizedInputStream {
+    val submissionRecord =
+        with(SUBMISSIONS) {
+          dslContext.fetchOne(this, PROJECT_ID.eq(projectId).and(DELIVERABLE_ID.eq(deliverableId)))
+              ?: throw SubmissionForProjectDeliverableNotFoundException(deliverableId, projectId)
+        }
+
+    val submissionId = submissionRecord.id!!
+
+    requirePermissions { readSubmission(submissionId) }
+
+    // Get the snapshot that belongs to the submission
+    val snapshotRow =
+        submissionSnapshotsDao.fetchOne(SUBMISSION_SNAPSHOTS.SUBMISSION_ID, submissionId)
+            ?: throw SubmissionSnapshotNotFoundException(submissionId)
+
+    return fileService.readFile(snapshotRow.fileId!!)
   }
 
   private fun publishAddedEvent(
