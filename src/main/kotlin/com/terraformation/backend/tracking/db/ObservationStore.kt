@@ -6,14 +6,17 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.SpeciesIdConverter
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationIdConverter
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertaintyConverter
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
@@ -939,9 +942,15 @@ class ObservationStore(
       totals: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>,
   ) {
     val table = scopeIdField.table!!
-    val observationIdField = table.field("observation_id", ObservationId::class.java)!!
-    val certaintyField = table.field("certainty_id", RecordedSpeciesCertainty::class.java)!!
-    val speciesIdField = table.field("species_id", SpeciesId::class.java)!!
+    val observationIdField =
+        table.field(
+            "observation_id", SQLDataType.BIGINT.asConvertedDataType(ObservationIdConverter()))!!
+    val certaintyField =
+        table.field(
+            "certainty_id",
+            SQLDataType.INTEGER.asConvertedDataType(RecordedSpeciesCertaintyConverter()))!!
+    val speciesIdField =
+        table.field("species_id", SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()))!!
     val speciesNameField = table.field("species_name", String::class.java)!!
     val totalLiveField = table.field("total_live", Int::class.java)!!
     val totalDeadField = table.field("total_dead", Int::class.java)!!
