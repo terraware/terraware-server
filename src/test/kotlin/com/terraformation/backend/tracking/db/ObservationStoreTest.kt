@@ -1344,6 +1344,58 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `updates cumulative dead across observations`() {
+      val speciesId = insertSpecies()
+      insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+
+      val deadPlantsRow =
+          RecordedPlantsRow(
+              certaintyId = Known,
+              gpsCoordinates = point(1),
+              speciesId = speciesId,
+              statusId = Dead)
+      store.completePlot(
+          observationId, plotId, emptySet(), null, Instant.EPOCH, listOf(deadPlantsRow))
+
+      val observationId2 = insertObservation()
+      insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+
+      store.completePlot(
+          observationId2, plotId, emptySet(), null, Instant.EPOCH, listOf(deadPlantsRow))
+
+      assertEquals(
+          2,
+          with(OBSERVED_PLOT_SPECIES_TOTALS) {
+            dslContext
+                .select(CUMULATIVE_DEAD)
+                .from(this)
+                .where(OBSERVATION_ID.eq(observationId2))
+                .fetchOne(CUMULATIVE_DEAD)
+          },
+          "Plot cumulative dead for second observation")
+      assertEquals(
+          2,
+          with(OBSERVED_ZONE_SPECIES_TOTALS) {
+            dslContext
+                .select(CUMULATIVE_DEAD)
+                .from(this)
+                .where(OBSERVATION_ID.eq(observationId2))
+                .fetchOne(CUMULATIVE_DEAD)
+          },
+          "Zone cumulative dead for second observation")
+      assertEquals(
+          2,
+          with(OBSERVED_SITE_SPECIES_TOTALS) {
+            dslContext
+                .select(CUMULATIVE_DEAD)
+                .from(this)
+                .where(OBSERVATION_ID.eq(observationId2))
+                .fetchOne(CUMULATIVE_DEAD)
+          },
+          "Site cumulative dead for second observation")
+    }
+
+    @Test
     fun `marks observation as completed if this was the last incomplete plot`() {
       insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
 

@@ -1001,7 +1001,7 @@ class ObservationStore(
                   .select(cumulativeDeadField)
                   .from(table)
                   .where(scopeIdField.eq(scopeId))
-                  .and(observationIdField.eq(observationId))
+                  .and(observationIdField.le(observationId))
                   .and(certaintyField.eq(speciesKey.certainty))
                   .and(
                       if (speciesKey.id != null) speciesIdField.eq(speciesKey.id)
@@ -1009,6 +1009,8 @@ class ObservationStore(
                   .and(
                       if (speciesKey.name != null) speciesNameField.eq(speciesKey.name)
                       else speciesNameField.isNull)
+                  .orderBy(observationIdField.desc())
+                  .limit(1)
                   .fetchOne(cumulativeDeadField) ?: 0
         } else {
           permanentDead = 0
