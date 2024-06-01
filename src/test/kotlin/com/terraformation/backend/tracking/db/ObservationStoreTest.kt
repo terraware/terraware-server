@@ -13,7 +13,9 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.RecordedPlantStatus
+import com.terraformation.backend.db.tracking.RecordedPlantStatus.Dead
+import com.terraformation.backend.db.tracking.RecordedPlantStatus.Existing
+import com.terraformation.backend.db.tracking.RecordedPlantStatus.Live
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Other
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Unknown
@@ -942,18 +944,18 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   certaintyId = Known,
                   gpsCoordinates = point(1),
                   speciesId = speciesId,
-                  statusId = RecordedPlantStatus.Live,
+                  statusId = Live,
               ),
               RecordedPlantsRow(
                   certaintyId = Unknown,
                   gpsCoordinates = point(2),
-                  statusId = RecordedPlantStatus.Dead,
+                  statusId = Dead,
               ),
               RecordedPlantsRow(
                   certaintyId = Other,
                   gpsCoordinates = point(3),
                   speciesName = "Who knows",
-                  statusId = RecordedPlantStatus.Existing,
+                  statusId = Existing,
               ),
           )
 
@@ -1036,60 +1038,60 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   certaintyId = Known,
                   gpsCoordinates = point(1),
                   speciesId = speciesId1,
-                  statusId = RecordedPlantStatus.Live,
+                  statusId = Live,
               ),
               RecordedPlantsRow(
                   certaintyId = Known,
                   gpsCoordinates = point(1),
                   speciesId = speciesId1,
-                  statusId = RecordedPlantStatus.Live,
+                  statusId = Live,
               ),
               RecordedPlantsRow(
                   certaintyId = Known,
                   gpsCoordinates = point(1),
                   speciesId = speciesId1,
-                  statusId = RecordedPlantStatus.Dead,
+                  statusId = Dead,
               ),
               RecordedPlantsRow(
                   certaintyId = Known,
                   gpsCoordinates = point(1),
                   speciesId = speciesId1,
-                  statusId = RecordedPlantStatus.Existing,
+                  statusId = Existing,
               ),
               RecordedPlantsRow(
                   certaintyId = Known,
                   gpsCoordinates = point(1),
                   speciesId = speciesId2,
-                  statusId = RecordedPlantStatus.Dead,
+                  statusId = Dead,
               ),
               RecordedPlantsRow(
                   certaintyId = Known,
                   gpsCoordinates = point(1),
                   speciesId = speciesId3,
-                  statusId = RecordedPlantStatus.Existing,
+                  statusId = Existing,
               ),
               RecordedPlantsRow(
                   certaintyId = Other,
                   gpsCoordinates = point(1),
                   speciesName = "Other 1",
-                  statusId = RecordedPlantStatus.Live,
+                  statusId = Live,
               ),
               RecordedPlantsRow(
                   certaintyId = Other,
                   gpsCoordinates = point(1),
                   speciesName = "Other 1",
-                  statusId = RecordedPlantStatus.Dead,
+                  statusId = Dead,
               ),
               RecordedPlantsRow(
                   certaintyId = Other,
                   gpsCoordinates = point(1),
                   speciesName = "Other 2",
-                  statusId = RecordedPlantStatus.Live,
+                  statusId = Live,
               ),
               RecordedPlantsRow(
                   certaintyId = Unknown,
                   gpsCoordinates = point(1),
-                  statusId = RecordedPlantStatus.Live,
+                  statusId = Live,
               ),
           ))
 
@@ -1192,17 +1194,17 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   certaintyId = Known,
                   gpsCoordinates = point(1),
                   speciesId = speciesId1,
-                  statusId = RecordedPlantStatus.Live),
+                  statusId = Live),
               RecordedPlantsRow(
                   certaintyId = Known,
                   gpsCoordinates = point(1),
                   speciesId = speciesId3,
-                  statusId = RecordedPlantStatus.Existing,
+                  statusId = Existing,
               ),
               RecordedPlantsRow(
                   certaintyId = Unknown,
                   gpsCoordinates = point(1),
-                  statusId = RecordedPlantStatus.Live,
+                  statusId = Live,
               ),
           ))
 
@@ -1259,19 +1261,19 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   certaintyId = Known,
                   gpsCoordinates = point(1),
                   speciesId = speciesId1,
-                  statusId = RecordedPlantStatus.Dead,
+                  statusId = Dead,
               ),
               RecordedPlantsRow(
                   certaintyId = Known,
                   gpsCoordinates = point(1),
                   speciesId = speciesId1,
-                  statusId = RecordedPlantStatus.Existing,
+                  statusId = Existing,
               ),
               RecordedPlantsRow(
                   certaintyId = Other,
                   gpsCoordinates = point(1),
                   speciesName = "Other 1",
-                  statusId = RecordedPlantStatus.Live)))
+                  statusId = Live)))
 
       val zone2Plot1Species1Totals =
           ObservedPlotSpeciesTotalsRow(
@@ -1439,7 +1441,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   certaintyId = Other,
                   gpsCoordinates = point(1),
                   speciesName = "Species name",
-                  statusId = RecordedPlantStatus.Dead)))
+                  statusId = Dead)))
 
       val totalsForOtherSite = fetchAllTotals()
 
@@ -1462,7 +1464,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               certaintyId = Other,
               gpsCoordinates = point(1),
               speciesName = "Species name",
-              statusId = RecordedPlantStatus.Dead)
+              statusId = Dead)
 
       insertPlantingSite()
       insertPlantingZone()
@@ -1547,7 +1549,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               certaintyId = Other,
               gpsCoordinates = point(1),
               speciesName = "Species name",
-              statusId = RecordedPlantStatus.Live)
+              statusId = Live)
 
       insertPlantingSite()
       insertPlantingZone()
