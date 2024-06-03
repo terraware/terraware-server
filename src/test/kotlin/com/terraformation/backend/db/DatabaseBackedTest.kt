@@ -319,7 +319,7 @@ abstract class DatabaseBackedTest {
    * List of tables from which sequences are to be reset before each test method. Sequences used
    * here belong to the primary key in the table.
    */
-  protected val tablesToResetSequences: List<Table<out Record>>
+  protected open val tablesToResetSequences: List<Table<out Record>>
     get() = emptyList()
 
   // ID values inserted by insertSiteData(). These are used in most database-backed tests. They are
