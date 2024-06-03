@@ -86,7 +86,6 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
-import com.terraformation.backend.db.default_schema.ThumbnailId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
@@ -135,7 +134,6 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ProjectLandUseM
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSettingsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
-import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeZonesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
@@ -152,59 +150,6 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_SU
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
-import com.terraformation.backend.db.documentproducer.DocumentId
-import com.terraformation.backend.db.documentproducer.DocumentSavedVersionId
-import com.terraformation.backend.db.documentproducer.DocumentStatus
-import com.terraformation.backend.db.documentproducer.MethodologyId
-import com.terraformation.backend.db.documentproducer.VariableId
-import com.terraformation.backend.db.documentproducer.VariableInjectionDisplayStyle
-import com.terraformation.backend.db.documentproducer.VariableManifestId
-import com.terraformation.backend.db.documentproducer.VariableSelectOptionId
-import com.terraformation.backend.db.documentproducer.VariableTableStyle
-import com.terraformation.backend.db.documentproducer.VariableTextType
-import com.terraformation.backend.db.documentproducer.VariableType
-import com.terraformation.backend.db.documentproducer.VariableUsageType
-import com.terraformation.backend.db.documentproducer.VariableValueId
-import com.terraformation.backend.db.documentproducer.tables.daos.DocumentSavedVersionsDao
-import com.terraformation.backend.db.documentproducer.tables.daos.DocumentsDao
-import com.terraformation.backend.db.documentproducer.tables.daos.MethodologiesDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableImageValuesDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableLinkValuesDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableManifestEntriesDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableManifestsDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableNumbersDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableSectionRecommendationsDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableSectionValuesDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableSectionsDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableSelectOptionValuesDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableSelectOptionsDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableSelectsDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableTableColumnsDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableTablesDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableTextsDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableValueTableRowsDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariableValuesDao
-import com.terraformation.backend.db.documentproducer.tables.daos.VariablesDao
-import com.terraformation.backend.db.documentproducer.tables.pojos.DocumentSavedVersionsRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.DocumentsRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.MethodologiesRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableImageValuesRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableLinkValuesRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableManifestEntriesRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableManifestsRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableNumbersRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableSectionRecommendationsRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableSectionValuesRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableSectionsRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableSelectOptionValuesRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableSelectOptionsRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableSelectsRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableTableColumnsRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableTablesRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableTextsRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableValueTableRowsRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariableValuesRow
-import com.terraformation.backend.db.documentproducer.tables.pojos.VariablesRow
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
@@ -290,13 +235,12 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
-import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
-import com.terraformation.backend.polygon
+import com.terraformation.backend.rectangle
+import com.terraformation.backend.rectanglePolygon
 import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.PlantingZoneModel
-import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.toInstant
 import jakarta.ws.rs.NotFoundException
 import java.math.BigDecimal
@@ -327,7 +271,6 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.ComponentScan
-import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.support.TestPropertySourceUtils
@@ -372,15 +315,11 @@ import org.testcontainers.utility.DockerImageName
 abstract class DatabaseBackedTest {
   @Autowired lateinit var dslContext: DSLContext
 
-  protected val cannedDocumentId: DocumentId by lazy { insertDocument() }
-  protected val cannedMethodologyId = MethodologyId(1)
-  protected val cannedVariableManifestId = VariableManifestId(1)
-
   /**
    * List of tables from which sequences are to be reset before each test method. Sequences used
    * here belong to the primary key in the table.
    */
-  protected open val tablesToResetSequences: List<Table<out Record>>
+  protected val tablesToResetSequences: List<Table<out Record>>
     get() = emptyList()
 
   // ID values inserted by insertSiteData(). These are used in most database-backed tests. They are
@@ -412,9 +351,7 @@ abstract class DatabaseBackedTest {
                     PG_GET_SERIAL_SEQUENCE,
                     SQLDataType.VARCHAR,
                     DSL.value(qualifiedName),
-                    DSL.value(field.name),
-                ),
-            )
+                    DSL.value(field.name)))
             .fetchOne()!!
             .value1()
       }
@@ -553,27 +490,6 @@ abstract class DatabaseBackedTest {
   protected val viabilityTestsDao: ViabilityTestsDao by lazyDao()
   protected val withdrawalPhotosDao: WithdrawalPhotosDao by lazyDao()
   protected val withdrawalsDao: WithdrawalsDao by lazyDao()
-
-  protected val variableManifestEntriesDao: VariableManifestEntriesDao by lazyDao()
-  protected val variableManifestsDao: VariableManifestsDao by lazyDao()
-  protected val variableValueTableRowsDao: VariableValueTableRowsDao by lazyDao()
-  protected val variableValuesDao: VariableValuesDao by lazyDao()
-  protected val variableTextsDao: VariableTextsDao by lazyDao()
-  protected val variableTablesDao: VariableTablesDao by lazyDao()
-  protected val variableTableColumnsDao: VariableTableColumnsDao by lazyDao()
-  protected val variableSelectsDao: VariableSelectsDao by lazyDao()
-  protected val variableSelectOptionValuesDao: VariableSelectOptionValuesDao by lazyDao()
-  protected val variableSelectOptionsDao: VariableSelectOptionsDao by lazyDao()
-  protected val variableSectionsDao: VariableSectionsDao by lazyDao()
-  protected val variableSectionRecommendationsDao: VariableSectionRecommendationsDao by lazyDao()
-  protected val variablesDao: VariablesDao by lazyDao()
-  protected val variableSectionValuesDao: VariableSectionValuesDao by lazyDao()
-  protected val documentSavedVersionsDao: DocumentSavedVersionsDao by lazyDao()
-  protected val variableNumbersDao: VariableNumbersDao by lazyDao()
-  protected val methodologiesDao: MethodologiesDao by lazyDao()
-  protected val variableLinkValuesDao: VariableLinkValuesDao by lazyDao()
-  protected val documentsDao: DocumentsDao by lazyDao()
-  protected val variableImageValuesDao: VariableImageValuesDao by lazyDao()
 
   /**
    * Creates a user, organization, project, site, and facility that can be referenced by various
@@ -758,9 +674,7 @@ abstract class DatabaseBackedTest {
     projectLandUseModelTypesDao.insert(
         ProjectLandUseModelTypesRow(
             landUseModelTypeId = landUseModelType,
-            projectId = projectId.toIdWrapper { ProjectId(it) },
-        ),
-    )
+            projectId = projectId.toIdWrapper { ProjectId(it) }))
   }
 
   protected fun insertProjectScore(
@@ -1004,8 +918,7 @@ abstract class DatabaseBackedTest {
           .set(SPECIES_PLANT_MATERIAL_SOURCING_METHODS.SPECIES_ID, actualSpeciesId)
           .set(
               SPECIES_PLANT_MATERIAL_SOURCING_METHODS.PLANT_MATERIAL_SOURCING_METHOD_ID,
-              plantMaterialSourcingMethod,
-          )
+              plantMaterialSourcingMethod)
           .execute()
     }
 
@@ -1125,8 +1038,7 @@ abstract class DatabaseBackedTest {
       role: GlobalRole,
   ) {
     userGlobalRolesDao.insert(
-        UserGlobalRolesRow(globalRoleId = role, userId = userId.toIdWrapper { UserId(it) }),
-    )
+        UserGlobalRolesRow(globalRoleId = role, userId = userId.toIdWrapper { UserId(it) }))
   }
 
   /** Adds a user to an organization. */
@@ -1497,9 +1409,11 @@ abstract class DatabaseBackedTest {
         when {
           boundary != null -> boundary
           x != null && y != null ->
-              multiPolygon(
-                  polygon(x, y, x.toDouble() + width.toDouble(), y.toDouble() + height.toDouble()),
-              )
+              rectangle(
+                  width.toDouble() * MONITORING_PLOT_SIZE,
+                  height.toDouble() * MONITORING_PLOT_SIZE,
+                  x.toDouble() * MONITORING_PLOT_SIZE,
+                  y.toDouble() * MONITORING_PLOT_SIZE)
           else -> null
         }
 
@@ -1584,14 +1498,11 @@ abstract class DatabaseBackedTest {
       height: Number = 2,
       boundary: Geometry =
           row.boundary
-              ?: Turtle(point(0)).makeMultiPolygon {
-                north(y.toDouble() * MONITORING_PLOT_SIZE)
-                east(x.toDouble() * MONITORING_PLOT_SIZE)
-                rectangle(
-                    width.toDouble() * MONITORING_PLOT_SIZE,
-                    height.toDouble() * MONITORING_PLOT_SIZE,
-                )
-              },
+              ?: rectangle(
+                  width.toDouble() * MONITORING_PLOT_SIZE,
+                  height.toDouble() * MONITORING_PLOT_SIZE,
+                  x.toDouble() * MONITORING_PLOT_SIZE,
+                  y.toDouble() * MONITORING_PLOT_SIZE),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       errorMargin: BigDecimal = row.errorMargin ?: PlantingZoneModel.DEFAULT_ERROR_MARGIN,
@@ -1646,14 +1557,11 @@ abstract class DatabaseBackedTest {
       height: Number = 2,
       boundary: Geometry =
           row.boundary
-              ?: Turtle(point(0)).makeMultiPolygon {
-                north(y.toDouble() * MONITORING_PLOT_SIZE)
-                east(x.toDouble() * MONITORING_PLOT_SIZE)
-                rectangle(
-                    width.toDouble() * MONITORING_PLOT_SIZE,
-                    height.toDouble() * MONITORING_PLOT_SIZE,
-                )
-              },
+              ?: rectangle(
+                  width.toDouble() * MONITORING_PLOT_SIZE,
+                  height.toDouble() * MONITORING_PLOT_SIZE,
+                  x.toDouble() * MONITORING_PLOT_SIZE,
+                  y.toDouble() * MONITORING_PLOT_SIZE),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
@@ -1734,11 +1642,11 @@ abstract class DatabaseBackedTest {
       y: Number = 0,
       boundary: Polygon =
           (row.boundary as? Polygon)
-              ?: Turtle(point(0)).makePolygon {
-                north(y.toDouble() * MONITORING_PLOT_SIZE)
-                east(x.toDouble() * MONITORING_PLOT_SIZE)
-                square(MONITORING_PLOT_SIZE)
-              },
+              ?: rectanglePolygon(
+                  MONITORING_PLOT_SIZE,
+                  MONITORING_PLOT_SIZE,
+                  x.toDouble() * MONITORING_PLOT_SIZE,
+                  y.toDouble() * MONITORING_PLOT_SIZE),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       id: Any? = row.id,
@@ -1887,8 +1795,7 @@ abstract class DatabaseBackedTest {
             speciesId = speciesId.toIdWrapper<Any, SpeciesId> { SpeciesId(it) },
             totalPlants = totalPlants,
             plantsSinceLastObservation = plantsSinceLastObservation,
-        ),
-    )
+        ))
   }
 
   fun insertPlantingSubzonePopulation(
@@ -1903,8 +1810,7 @@ abstract class DatabaseBackedTest {
             speciesId = speciesId.toIdWrapper { SpeciesId(it) },
             totalPlants = totalPlants,
             plantsSinceLastObservation = plantsSinceLastObservation,
-        ),
-    )
+        ))
   }
 
   fun insertPlantingZonePopulation(
@@ -1919,8 +1825,7 @@ abstract class DatabaseBackedTest {
             speciesId = speciesId.toIdWrapper { SpeciesId(it) },
             totalPlants = totalPlants,
             plantsSinceLastObservation = plantsSinceLastObservation,
-        ),
-    )
+        ))
   }
 
   fun addPlantingSubzonePopulation(
@@ -1943,8 +1848,7 @@ abstract class DatabaseBackedTest {
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(totalPlants))
           .set(
               PLANTS_SINCE_LAST_OBSERVATION,
-              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation),
-          )
+              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation))
           .execute()
     }
   }
@@ -1969,8 +1873,7 @@ abstract class DatabaseBackedTest {
           .set(TOTAL_PLANTS, TOTAL_PLANTS.plus(totalPlants))
           .set(
               PLANTS_SINCE_LAST_OBSERVATION,
-              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation),
-          )
+              PLANTS_SINCE_LAST_OBSERVATION.plus(plantsSinceLastObservation))
           .execute()
     }
   }
@@ -2205,9 +2108,7 @@ abstract class DatabaseBackedTest {
             internalTagId = tagId,
             organizationId = organizationId.toIdWrapper { OrganizationId(it) },
             createdBy = createdBy.toIdWrapper { UserId(it) },
-            createdTime = createdTime,
-        ),
-    )
+            createdTime = createdTime))
   }
 
   private var nextParticipantNumber = 1
@@ -2262,8 +2163,7 @@ abstract class DatabaseBackedTest {
             rationale = rationale,
             speciesId = speciesId.toIdWrapper { SpeciesId(it) },
             speciesNativeCategoryId = speciesNativeCategory,
-            submissionStatusId = submissionStatus,
-        )
+            submissionStatusId = submissionStatus)
 
     participantProjectSpeciesDao.insert(row)
 
@@ -2357,8 +2257,7 @@ abstract class DatabaseBackedTest {
     val row =
         EventProjectsRow(
             eventId = eventId.toIdWrapper { EventId(it) },
-            projectId = projectId.toIdWrapper { ProjectId(it) },
-        )
+            projectId = projectId.toIdWrapper { ProjectId(it) })
     eventProjectsDao.insert(row)
   }
 
@@ -2408,496 +2307,6 @@ abstract class DatabaseBackedTest {
     return row
   }
 
-  private var nextDocumentSuffix = 0
-
-  protected fun insertDocument(
-      createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
-      methodologyId: MethodologyId = cannedMethodologyId,
-      modifiedBy: UserId = createdBy,
-      modifiedTime: Instant = createdTime,
-      id: Any? = null,
-      name: String = "Document ${nextDocumentSuffix++}",
-      organizationName: String = "Test Org",
-      ownedBy: UserId = createdBy,
-      status: DocumentStatus = DocumentStatus.Draft,
-      variableManifestId: VariableManifestId = cannedVariableManifestId,
-  ): DocumentId {
-    val row =
-        DocumentsRow(
-            createdBy = createdBy,
-            createdTime = createdTime,
-            id = id?.toIdWrapper { DocumentId(it) },
-            methodologyId = methodologyId,
-            modifiedBy = modifiedBy,
-            modifiedTime = modifiedTime,
-            name = name,
-            organizationName = organizationName,
-            ownedBy = ownedBy,
-            statusId = status,
-            variableManifestId = variableManifestId,
-        )
-
-    documentsDao.insert(row)
-
-    return row.id!!.also { inserted.documentIds.add(it) }
-  }
-
-  protected fun insertImageValue(
-      variableId: Any,
-      fileId: Any,
-      listPosition: Int = 0,
-      caption: String? = null,
-      id: Any =
-          insertValue(
-              listPosition = listPosition,
-              variableId = variableId,
-              type = VariableType.Image,
-          ),
-  ): VariableValueId {
-    val row =
-        VariableImageValuesRow(
-            caption = caption,
-            fileId = fileId.toIdWrapper { FileId(it) },
-            variableId = variableId.toIdWrapper { VariableId(it) },
-            variableTypeId = VariableType.Image,
-            variableValueId = id.toIdWrapper { VariableValueId(it) },
-        )
-
-    variableImageValuesDao.insert(row)
-
-    return row.variableValueId!!
-  }
-
-  protected fun insertLinkValue(
-      variableId: Any,
-      listPosition: Int = 0,
-      id: Any =
-          insertValue(
-              listPosition = listPosition,
-              variableId = variableId,
-              type = VariableType.Link,
-          ),
-      url: String,
-      title: String? = null,
-  ): VariableValueId {
-    val row =
-        VariableLinkValuesRow(
-            id.toIdWrapper { VariableValueId(it) },
-            variableId.toIdWrapper { VariableId(it) },
-            VariableType.Link,
-            url,
-            title,
-        )
-
-    variableLinkValuesDao.insert(row)
-
-    return row.variableValueId!!
-  }
-
-  protected fun insertMethodology(
-      id: Any? = null,
-      name: String = "Methodology",
-  ): MethodologyId {
-    val row =
-        MethodologiesRow(
-            id = id?.toIdWrapper { MethodologyId(it) },
-            name = name,
-        )
-
-    methodologiesDao.insert(row)
-
-    return row.id!!.also { inserted.methodologyIds.add(it) }
-  }
-
-  protected fun insertNumberVariable(
-      id: Any = insertVariable(type = VariableType.Number),
-      decimalPlaces: Int = 0,
-      minValue: BigDecimal? = null,
-      maxValue: BigDecimal? = null,
-  ): VariableId {
-    val variableId = id.toIdWrapper { VariableId(it) }
-    val row =
-        VariableNumbersRow(
-            variableId = variableId,
-            variableTypeId = VariableType.Number,
-            decimalPlaces = decimalPlaces,
-            maxValue = maxValue,
-            minValue = minValue,
-        )
-
-    variableNumbersDao.insert(row)
-
-    return variableId
-  }
-
-  protected fun insertSavedVersion(
-      maxValueId: Any,
-      documentId: Any = cannedDocumentId,
-      name: String = "Saved",
-      createdBy: Any = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
-      id: Any? = null,
-      isSubmitted: Boolean = false,
-      variableManifestId: Any = cannedVariableManifestId,
-  ): DocumentSavedVersionId {
-    val row =
-        DocumentSavedVersionsRow(
-            createdBy = createdBy.toIdWrapper { UserId(it) },
-            createdTime = createdTime,
-            documentId = documentId.toIdWrapper { DocumentId(it) },
-            id = id?.toIdWrapper { DocumentSavedVersionId(it) },
-            isSubmitted = isSubmitted,
-            maxVariableValueId = maxValueId.toIdWrapper { VariableValueId(it) },
-            name = name,
-            variableManifestId = variableManifestId.toIdWrapper { VariableManifestId(it) },
-        )
-
-    documentSavedVersionsDao.insert(row)
-
-    return row.id!!
-  }
-
-  protected fun insertSectionValue(
-      variableId: Any,
-      listPosition: Int = 0,
-      documentId: Any = cannedDocumentId,
-      id: Any =
-          insertValue(
-              variableId = variableId,
-              listPosition = listPosition,
-              type = VariableType.Section,
-              documentId = documentId,
-          ),
-      textValue: String? = null,
-      usedVariableId: Any? = null,
-      usageType: VariableUsageType? =
-          if (usedVariableId != null) VariableUsageType.Injection else null,
-      displayStyle: VariableInjectionDisplayStyle? =
-          if (usedVariableId != null) VariableInjectionDisplayStyle.Block else null,
-  ): VariableValueId {
-    val usedVariableIdWrapper = usedVariableId?.toIdWrapper { VariableId(it) }
-    val usedVariableType =
-        usedVariableIdWrapper?.let { variablesDao.fetchOneById(it)!!.variableTypeId!! }
-
-    val row =
-        VariableSectionValuesRow(
-            displayStyleId = displayStyle,
-            textValue = textValue,
-            usageTypeId = usageType,
-            usedVariableId = usedVariableIdWrapper,
-            usedVariableTypeId = usedVariableType,
-            variableId = variableId.toIdWrapper { VariableId(it) },
-            variableTypeId = VariableType.Section,
-            variableValueId = id.toIdWrapper { VariableValueId(it) },
-        )
-
-    variableSectionValuesDao.insert(row)
-
-    return row.variableValueId!!
-  }
-
-  protected fun insertSectionRecommendation(
-      sectionId: Any,
-      recommendedId: Any,
-      manifestId: Any = cannedVariableManifestId,
-  ) {
-    val row =
-        VariableSectionRecommendationsRow(
-            recommendedVariableId = recommendedId.toIdWrapper { VariableId(it) },
-            sectionVariableId = sectionId.toIdWrapper { VariableId(it) },
-            sectionVariableTypeId = VariableType.Section,
-            variableManifestId = manifestId.toIdWrapper { VariableManifestId(it) },
-        )
-
-    variableSectionRecommendationsDao.insert(row)
-  }
-
-  protected fun insertSectionVariable(
-      id: Any = insertVariable(type = VariableType.Section),
-      parentId: Any? = null,
-      renderHeading: Boolean = true,
-  ): VariableId {
-    val variableId = id.toIdWrapper { VariableId(it) }
-    val row =
-        VariableSectionsRow(
-            variableId = variableId,
-            variableTypeId = VariableType.Section,
-            parentVariableId = parentId?.toIdWrapper { VariableId(it) },
-            parentVariableTypeId = if (parentId != null) VariableType.Section else null,
-            renderHeading = renderHeading,
-        )
-
-    variableSectionsDao.insert(row)
-
-    return variableId
-  }
-
-  private var nextSelectOptionPosition = 0
-
-  protected fun insertSelectOption(
-      variableId: Any,
-      name: String,
-      id: Any? = null,
-      position: Int = nextSelectOptionPosition++,
-      description: String? = null,
-      renderedText: String? = null,
-  ): VariableSelectOptionId {
-    val row =
-        VariableSelectOptionsRow(
-            id = id?.toIdWrapper { VariableSelectOptionId(it) },
-            variableId = variableId.toIdWrapper { VariableId(it) },
-            variableTypeId = VariableType.Select,
-            position = position,
-            name = name,
-            renderedText = renderedText,
-            description = description,
-        )
-
-    variableSelectOptionsDao.insert(row)
-
-    return row.id!!
-  }
-
-  protected fun insertSelectValue(
-      variableId: Any,
-      listPosition: Int = 0,
-      id: Any =
-          insertValue(
-              variableId = variableId,
-              type = VariableType.Select,
-          ),
-      optionIds: Set<VariableSelectOptionId>,
-  ): VariableValueId {
-    val variableIdWrapper = variableId.toIdWrapper { VariableId(it) }
-    val valueIdWraper = id.toIdWrapper { VariableValueId(it) }
-
-    optionIds.forEach { optionId ->
-      val row =
-          VariableSelectOptionValuesRow(
-              variableId = variableIdWrapper,
-              variableTypeId = VariableType.Select,
-              optionId = optionId,
-              variableValueId = valueIdWraper,
-          )
-
-      variableSelectOptionValuesDao.insert(row)
-    }
-
-    return valueIdWraper
-  }
-
-  protected fun insertSelectVariable(
-      id: Any = insertVariable(type = VariableType.Select),
-      isMultiple: Boolean = false,
-  ): VariableId {
-    val variableId = id.toIdWrapper { VariableId(it) }
-    val row =
-        VariableSelectsRow(
-            variableId = variableId,
-            variableTypeId = VariableType.Select,
-            isMultiple = isMultiple,
-        )
-
-    variableSelectsDao.insert(row)
-
-    return variableId
-  }
-
-  protected fun insertTableColumn(
-      tableId: Any,
-      columnId: Any,
-      isHeader: Boolean = false,
-  ): VariableId {
-    val row =
-        VariableTableColumnsRow(
-            isHeader = isHeader,
-            tableVariableId = tableId.toIdWrapper { VariableId(it) },
-            tableVariableTypeId = VariableType.Table,
-            variableId = columnId.toIdWrapper { VariableId(it) },
-        )
-
-    variableTableColumnsDao.insert(row)
-
-    return row.variableId!!
-  }
-
-  protected fun insertTableVariable(
-      id: Any = insertVariable(type = VariableType.Table),
-      style: VariableTableStyle = VariableTableStyle.Horizontal,
-  ): VariableId {
-    val variableId = id.toIdWrapper { VariableId(it) }
-    val row =
-        VariableTablesRow(
-            variableId = variableId,
-            variableTypeId = VariableType.Table,
-            tableStyleId = style,
-        )
-
-    variableTablesDao.insert(row)
-
-    return variableId
-  }
-
-  protected fun insertTextVariable(
-      id: Any = insertVariable(type = VariableType.Text),
-      textType: VariableTextType = VariableTextType.SingleLine,
-  ): VariableId {
-    val variableId = id.toIdWrapper { VariableId(it) }
-    val row =
-        VariableTextsRow(
-            variableId = variableId,
-            variableTypeId = VariableType.Text,
-            variableTextTypeId = textType,
-        )
-
-    variableTextsDao.insert(row)
-
-    return variableId
-  }
-
-  protected fun insertThumbnail(
-      contentType: String = MediaType.IMAGE_JPEG_VALUE,
-      createdTime: Instant = Instant.EPOCH,
-      fileId: FileId,
-      id: Any? = null,
-      width: Int = 320,
-      height: Int = 240,
-      size: Number = 1,
-      storageUrl: Any = "https://thumb",
-  ): ThumbnailId {
-    val row =
-        ThumbnailsRow(
-            contentType = contentType,
-            createdTime = createdTime,
-            fileId = fileId,
-            height = height,
-            id = id?.toIdWrapper { ThumbnailId(it) },
-            size = size.toInt(),
-            storageUrl = URI("$storageUrl"),
-            width = width,
-        )
-
-    thumbnailsDao.insert(row)
-
-    return row.id!!
-  }
-
-  protected fun insertValue(
-      id: Any? = null,
-      variableId: Any,
-      listPosition: Int = 0,
-      documentId: Any = cannedDocumentId,
-      isDeleted: Boolean = false,
-      textValue: String? = null,
-      numberValue: BigDecimal? = null,
-      dateValue: LocalDate? = null,
-      type: VariableType? = null,
-      citation: String? = null,
-      createdBy: Any = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
-  ): VariableValueId {
-    val variableIdWrapper = variableId.toIdWrapper { VariableId(it) }
-    val actualType = type ?: variablesDao.fetchOneById(variableIdWrapper)!!.variableTypeId!!
-
-    val row =
-        VariableValuesRow(
-            citation = citation,
-            id = id?.toIdWrapper { VariableValueId(it) },
-            documentId = documentId.toIdWrapper { DocumentId(it) },
-            variableId = variableIdWrapper,
-            variableTypeId = actualType,
-            listPosition = listPosition,
-            createdBy = createdBy.toIdWrapper { UserId(it) },
-            createdTime = createdTime,
-            numberValue = numberValue,
-            textValue = textValue,
-            dateValue = dateValue,
-            isDeleted = isDeleted,
-        )
-
-    variableValuesDao.insert(row)
-
-    return row.id!!
-  }
-
-  protected fun insertValueTableRow(
-      valueId: Any,
-      rowValueId: Any,
-  ) {
-    val row =
-        VariableValueTableRowsRow(
-            variableValueId = valueId.toIdWrapper { VariableValueId(it) },
-            tableRowValueId = rowValueId.toIdWrapper { VariableValueId(it) },
-        )
-
-    variableValueTableRowsDao.insert(row)
-  }
-
-  protected fun insertVariable(
-      id: Any? = null,
-      isList: Boolean = false,
-      replacesVariableId: Any? = null,
-      type: VariableType = VariableType.Text
-  ): VariableId {
-    val row =
-        VariablesRow(
-            id = id?.toIdWrapper { VariableId(it) },
-            isList = isList,
-            replacesVariableId = replacesVariableId?.toIdWrapper { VariableId(it) },
-            variableTypeId = type,
-        )
-
-    variablesDao.insert(row)
-
-    return row.id!!
-  }
-
-  protected fun insertVariableManifest(
-      createdBy: UserId = inserted.userId,
-      createdTime: Instant = Instant.EPOCH,
-      id: Any? = null,
-      methodologyId: MethodologyId = cannedMethodologyId,
-  ): VariableManifestId {
-    val row =
-        VariableManifestsRow(
-            createdBy = createdBy,
-            createdTime = createdTime,
-            id = id?.toIdWrapper { VariableManifestId(it) },
-            methodologyId = methodologyId,
-        )
-
-    variableManifestsDao.insert(row)
-
-    return row.id!!.also { inserted.variableManifestIds.add(it) }
-  }
-
-  private var nextManifestPosition = 0
-
-  protected fun insertVariableManifestEntry(
-      variableId: Any,
-      description: String? = null,
-      manifestId: Any = cannedVariableManifestId,
-      name: String = "Variable $variableId",
-      position: Int = nextManifestPosition++,
-      stableId: String = "$variableId",
-  ): VariableId {
-    val variableIdWrapper = variableId.toIdWrapper { VariableId(it) }
-    val row =
-        VariableManifestEntriesRow(
-            description = description,
-            name = name,
-            position = position,
-            stableId = stableId,
-            variableId = variableIdWrapper,
-            variableManifestId = manifestId.toIdWrapper { VariableManifestId(it) },
-        )
-
-    variableManifestEntriesDao.insert(row)
-
-    return variableIdWrapper
-  }
-
   class Inserted {
     val accessionIds = mutableListOf<AccessionId>()
     val automationIds = mutableListOf<AutomationId>()
@@ -2906,12 +2315,10 @@ abstract class DatabaseBackedTest {
     val deliverableIds = mutableListOf<DeliverableId>()
     val deliveryIds = mutableListOf<DeliveryId>()
     val deviceIds = mutableListOf<DeviceId>()
-    val documentIds = mutableListOf<DocumentId>()
     val draftPlantingSiteIds = mutableListOf<DraftPlantingSiteId>()
     val eventIds = mutableListOf<EventId>()
     val facilityIds = mutableListOf<FacilityId>()
     val fileIds = mutableListOf<FileId>()
-    val methodologyIds = mutableListOf<MethodologyId>()
     val moduleIds = mutableListOf<ModuleId>()
     val monitoringPlotIds = mutableListOf<MonitoringPlotId>()
     val notificationIds = mutableListOf<NotificationId>()
@@ -2933,7 +2340,6 @@ abstract class DatabaseBackedTest {
     val submissionDocumentIds = mutableListOf<SubmissionDocumentId>()
     val uploadIds = mutableListOf<UploadId>()
     val userIds = mutableListOf<UserId>()
-    val variableManifestIds = mutableListOf<VariableManifestId>()
     val withdrawalIds = mutableListOf<WithdrawalId>()
 
     val accessionId
@@ -2957,9 +2363,6 @@ abstract class DatabaseBackedTest {
     val deviceId
       get() = deviceIds.last()
 
-    val documentId
-      get() = documentIds.last()
-
     val draftPlantingSiteId
       get() = draftPlantingSiteIds.last()
 
@@ -2971,9 +2374,6 @@ abstract class DatabaseBackedTest {
 
     val fileId
       get() = fileIds.last()
-
-    val methodologyId
-      get() = methodologyIds.last()
 
     val moduleId
       get() = moduleIds.last()
@@ -3034,9 +2434,6 @@ abstract class DatabaseBackedTest {
 
     val userId
       get() = userIds.last()
-
-    val variableManifestId
-      get() = variableManifestIds.last()
 
     val withdrawalId
       get() = withdrawalIds.last()
