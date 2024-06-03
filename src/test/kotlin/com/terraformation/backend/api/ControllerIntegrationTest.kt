@@ -14,14 +14,12 @@ import org.springframework.test.web.servlet.ResultActionsDsl
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
 
 /**
  * Superclass for tests that exercise controllers and require the application to be fully available.
  */
 @SpringBootTest
-@Transactional
 abstract class ControllerIntegrationTest : DatabaseBackedTest(), RunsAsUser {
   final override val user = mockUser()
 

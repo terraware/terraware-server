@@ -274,6 +274,7 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.support.TestPropertySourceUtils
+import org.springframework.transaction.annotation.Transactional
 import org.testcontainers.containers.Network
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Testcontainers
@@ -311,6 +312,7 @@ import org.testcontainers.utility.DockerImageName
     initializers = [DatabaseBackedTest.DockerPostgresDataSourceInitializer::class])
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 @Testcontainers
+@Transactional
 @ComponentScan(basePackageClasses = [UsersDao::class])
 abstract class DatabaseBackedTest {
   @Autowired lateinit var dslContext: DSLContext
