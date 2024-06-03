@@ -299,7 +299,6 @@ import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.toInstant
 import jakarta.ws.rs.NotFoundException
-import java.lang.annotation.Inherited
 import java.math.BigDecimal
 import java.net.URI
 import java.time.Instant
@@ -332,7 +331,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
 import org.springframework.test.context.support.TestPropertySourceUtils
-import org.springframework.transaction.annotation.Transactional
 import org.testcontainers.containers.Network
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Testcontainers
@@ -366,7 +364,8 @@ import org.testcontainers.utility.DockerImageName
  */
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@ContextConfiguration(initializers = [DatabaseBackedTest.DockerPostgresDataSourceInitializer::class])
+@ContextConfiguration(
+    initializers = [DatabaseBackedTest.DockerPostgresDataSourceInitializer::class])
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 @Testcontainers
 @ComponentScan(basePackageClasses = [UsersDao::class])
@@ -2560,21 +2559,21 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertSectionValue(
-    variableId: Any,
-    listPosition: Int = 0,
-    documentId: Any = cannedDocumentId,
-    id: Any =
+      variableId: Any,
+      listPosition: Int = 0,
+      documentId: Any = cannedDocumentId,
+      id: Any =
           insertValue(
               variableId = variableId,
               listPosition = listPosition,
               type = VariableType.Section,
               documentId = documentId,
           ),
-    textValue: String? = null,
-    usedVariableId: Any? = null,
-    usageType: VariableUsageType? =
+      textValue: String? = null,
+      usedVariableId: Any? = null,
+      usageType: VariableUsageType? =
           if (usedVariableId != null) VariableUsageType.Injection else null,
-    displayStyle: VariableInjectionDisplayStyle? =
+      displayStyle: VariableInjectionDisplayStyle? =
           if (usedVariableId != null) VariableInjectionDisplayStyle.Block else null,
   ): VariableValueId {
     val usedVariableIdWrapper = usedVariableId?.toIdWrapper { VariableId(it) }

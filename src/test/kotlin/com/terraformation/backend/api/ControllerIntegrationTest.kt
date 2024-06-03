@@ -3,17 +3,8 @@ package com.terraformation.backend.api
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseBackedTest
-import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.db.default_schema.UserType
-import com.terraformation.backend.db.default_schema.tables.pojos.UsersRow
-import com.terraformation.backend.db.default_schema.tables.references.USERS
-import com.terraformation.backend.db.documentproducer.tables.references.DOCUMENTS
 import com.terraformation.backend.mockUser
 import jakarta.ws.rs.core.MediaType
-import java.time.Instant
-import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin
@@ -44,9 +35,7 @@ abstract class ControllerIntegrationTest : DatabaseBackedTest(), RunsAsUser {
               MockMvcRequestBuilders.get("")
                   .contentType(MediaType.APPLICATION_JSON)
                   .accept(MediaType.APPLICATION_JSON)
-                  .apply {
-                      with(oidcLogin().idToken { it.subject(currentUser().authId) })
-                  })
+                  .apply { with(oidcLogin().idToken { it.subject(currentUser().authId) }) })
           .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
           .build()
 
