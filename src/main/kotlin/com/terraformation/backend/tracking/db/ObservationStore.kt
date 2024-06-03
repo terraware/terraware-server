@@ -688,9 +688,14 @@ class ObservationStore(
             .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
             .fetchOne() ?: throw PlotNotFoundException(monitoringPlotId)
 
+    data class NegativeCount(
+        val observationId: ObservationId,
+        val isPermanent: Boolean,
+        val plantCountsBySpecies: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>,
+    )
+
     val negativeCountField = DSL.count().neg()
-    val negativeCounts:
-        Map<Pair<ObservationId, Boolean>, Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>> =
+    val negativeCounts: List<NegativeCount> =
         dslContext
             .select(
                 OBSERVATION_PLOTS.OBSERVATION_ID,
@@ -722,33 +727,42 @@ class ObservationStore(
                 RECORDED_PLANTS.STATUS_ID,
             )
             .fetch()
-            .groupBy {
-              it[OBSERVATION_PLOTS.OBSERVATION_ID]!! to it[OBSERVATION_PLOTS.IS_PERMANENT]!!
-            }
-            .mapValues { (_, groups) ->
-              groups
-                  .groupBy {
-                    RecordedSpeciesKey(
-                        it[RECORDED_PLANTS.CERTAINTY_ID]!!,
-                        it[RECORDED_PLANTS.SPECIES_ID],
-                        it[RECORDED_PLANTS.SPECIES_NAME])
-                  }
-                  .mapValues { (_, statusTotals) ->
-                    statusTotals.associate {
-                      it[RECORDED_PLANTS.STATUS_ID]!! to it[negativeCountField]!!
-                    }
-                  }
+            .groupBy { it[OBSERVATION_PLOTS.OBSERVATION_ID]!! }
+            .entries
+            .map { (observationId, records) ->
+              val plantCountsBySpecies =
+                  records
+                      .groupBy {
+                        RecordedSpeciesKey(
+                            it[RECORDED_PLANTS.CERTAINTY_ID]!!,
+                            it[RECORDED_PLANTS.SPECIES_ID],
+                            it[RECORDED_PLANTS.SPECIES_NAME])
+                      }
+                      .mapValues { (_, statusTotals) ->
+                        statusTotals.associate {
+                          it[RECORDED_PLANTS.STATUS_ID]!! to it[negativeCountField]!!
+                        }
+                      }
+
+              NegativeCount(
+                  observationId,
+                  records.first()[OBSERVATION_PLOTS.IS_PERMANENT]!!,
+                  plantCountsBySpecies)
             }
 
-    negativeCounts.forEach { (observationIdAndIsPermanent, plantCountsBySpecies) ->
-      val (observationId, isPermanent) = observationIdAndIsPermanent
-
+    negativeCounts.forEach { negativeCount ->
       log.debug(
           "Subtracting plant counts for plot $monitoringPlotId from site $plantingSiteId and " +
-              "zone $plantingZoneId in observation $observationId: $plantCountsBySpecies")
+              "zone $plantingZoneId in observation ${negativeCount.observationId}: " +
+              "${negativeCount.plantCountsBySpecies}")
 
       updateSpeciesTotals(
-          observationId, plantingSiteId, plantingZoneId, null, isPermanent, plantCountsBySpecies)
+          negativeCount.observationId,
+          plantingSiteId,
+          plantingZoneId,
+          null,
+          negativeCount.isPermanent,
+          negativeCount.plantCountsBySpecies)
     }
   }
 
