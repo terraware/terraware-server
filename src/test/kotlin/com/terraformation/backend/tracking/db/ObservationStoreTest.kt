@@ -1665,8 +1665,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
         val observationId1 = insertObservation()
         insertObservationPlot(monitoringPlotId = plotId1, claimedBy = user.userId)
         insertObservationPlot(monitoringPlotId = plotId2, claimedBy = user.userId)
-        insertObservationPlot(
-            monitoringPlotId = plotId3, claimedBy = user.userId, completedBy = user.userId)
+        insertObservationPlot(monitoringPlotId = plotId3, completedBy = user.userId)
         insertObservationPlot(monitoringPlotId = plotId4)
         insertObservationPlot(monitoringPlotId = plotId5)
 
@@ -1734,8 +1733,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
         val observationId = insertObservation()
         insertObservationPlot(monitoringPlotId = plotId1, claimedBy = user.userId)
         insertObservationPlot(monitoringPlotId = plotId2, claimedBy = user.userId)
-        insertObservationPlot(
-            monitoringPlotId = plotId3, claimedBy = user.userId, completedBy = user.userId)
+        insertObservationPlot(monitoringPlotId = plotId3, completedBy = user.userId)
         insertObservationPlot(monitoringPlotId = plotId4)
         insertObservationPlot(monitoringPlotId = plotId5)
 
@@ -1782,10 +1780,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
         val observationId1 = insertObservation()
         insertObservationPlot(monitoringPlotId = insertMonitoringPlot(), claimedBy = user.userId)
         insertObservationPlot(monitoringPlotId = insertMonitoringPlot(), claimedBy = user.userId)
-        insertObservationPlot(
-            monitoringPlotId = insertMonitoringPlot(),
-            claimedBy = user.userId,
-            completedBy = user.userId)
+        insertObservationPlot(monitoringPlotId = insertMonitoringPlot(), completedBy = user.userId)
         insertObservationPlot(monitoringPlotId = insertMonitoringPlot())
         insertObservationPlot(monitoringPlotId = insertMonitoringPlot())
 
@@ -1852,7 +1847,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       insertPlantingSubzone()
       insertMonitoringPlot()
       insertObservation()
-      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+      insertObservationPlot(completedBy = user.userId)
       insertObservedCoordinates(
           gpsCoordinates = point(1), position = ObservationPlotPosition.NorthwestCorner)
 

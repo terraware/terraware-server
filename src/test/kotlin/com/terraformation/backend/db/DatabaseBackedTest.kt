@@ -2006,11 +2006,11 @@ abstract class DatabaseBackedTest {
 
   fun insertObservationPlot(
       row: ObservationPlotsRow = ObservationPlotsRow(),
-      claimedBy: UserId? = row.claimedBy,
-      claimedTime: Instant? = row.claimedTime ?: if (claimedBy != null) Instant.EPOCH else null,
       completedBy: UserId? = row.completedBy,
       completedTime: Instant? =
           row.completedTime ?: if (completedBy != null) Instant.EPOCH else null,
+      claimedBy: UserId? = row.claimedBy ?: completedBy,
+      claimedTime: Instant? = row.claimedTime ?: if (claimedBy != null) Instant.EPOCH else null,
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       isPermanent: Boolean = row.isPermanent ?: false,
