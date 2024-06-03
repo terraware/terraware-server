@@ -3,11 +3,17 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.RecordedPlantStatus
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
@@ -56,6 +62,49 @@ class ObservationTestHelper(
         .toSet()
   }
 
+  /**
+   * Adds a series of plots to the current observation, each one with some number of recorded plants
+   * for some set of species. The goal is to make the scenarios easy to read in the test code.
+   */
+  fun insertObservationScenario(vararg zones: ObservationZone) {
+    zones.forEach { zone ->
+      zone.plots.forEach { plot ->
+        test.insertObservationPlot(
+            claimedBy = effectiveUserId,
+            isPermanent = plot.isPermanent,
+            monitoringPlotId = plot.plotId)
+
+        val recordedPlantsRows =
+            plot.plants.flatMap { plant ->
+              (List(plant.live) { RecordedPlantStatus.Live } +
+                      List(plant.dead) { RecordedPlantStatus.Dead } +
+                      List(plant.existing) { RecordedPlantStatus.Existing })
+                  .map { status ->
+                    RecordedPlantsRow(
+                        certaintyId =
+                            when {
+                              plant.speciesId != null -> RecordedSpeciesCertainty.Known
+                              plant.speciesName != null -> RecordedSpeciesCertainty.Other
+                              else -> RecordedSpeciesCertainty.Unknown
+                            },
+                        gpsCoordinates = point(1),
+                        speciesId = plant.speciesId,
+                        speciesName = plant.speciesName,
+                        statusId = status)
+                  }
+            }
+
+        observationStore.completePlot(
+            conditions = emptySet(),
+            monitoringPlotId = plot.plotId,
+            notes = null,
+            observationId = test.inserted.observationId,
+            observedTime = Instant.EPOCH,
+            plants = recordedPlantsRows)
+      }
+    }
+  }
+
   /** Inserts the necessary data to represent a planting site with reported plants. */
   fun insertPlantedSite(
       height: Int = 10,
@@ -97,4 +146,41 @@ class ObservationTestHelper(
 
     return plantingSiteId
   }
+
+  data class PlantTotals(
+      val species: Any? = null,
+      val live: Int = 0,
+      val dead: Int = 0,
+      val existing: Int = 0,
+  ) {
+    val speciesId
+      get() = species as? SpeciesId
+
+    val speciesName
+      get() = species as? String
+
+    fun plus(other: PlantTotals): PlantTotals {
+      return if (species == other.species) {
+        PlantTotals(
+            species = species,
+            live = live + other.live,
+            dead = dead + other.dead,
+            existing = existing + other.existing,
+        )
+      } else {
+        throw IllegalArgumentException("Cannot add totals of different species")
+      }
+    }
+  }
+
+  data class ObservationPlot(
+      val plotId: MonitoringPlotId,
+      val plants: List<PlantTotals>,
+      val isPermanent: Boolean = true,
+  )
+
+  data class ObservationZone(
+      val zoneId: PlantingZoneId,
+      val plots: List<ObservationPlot>,
+  )
 }

@@ -392,23 +392,31 @@ class ObservationService(
             event.plantingSiteId))
   }
 
-  /** Updates the in-progress observation, if any, when a site's map is edited. */
+  /** Updates observations, if any, when a site's map is edited. */
   @EventListener
   fun on(event: PlantingSiteMapEditedEvent) {
-    val plantingSiteId = event.plantingSiteEdit.existingModel.id
-    val observation = observationStore.fetchInProgressObservation(plantingSiteId) ?: return
-    val observationId = observation.id
-    val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
-    val plantedSubzoneIds = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId).keys
-
-    val removedObservationPlots =
-        observationPlots.filter {
-          it.model.monitoringPlotId in event.monitoringPlotReplacements.removedMonitoringPlotIds
-        }
-    val removedPermanentPlots = removedObservationPlots.filter { it.model.isPermanent }
-    val removedTemporaryPlots = removedObservationPlots.filterNot { it.model.isPermanent }
-
     dslContext.transaction { _ ->
+      // We no longer want plants from past observations of the removed plots to show up in the
+      // per-species totals.
+      event.monitoringPlotReplacements.removedMonitoringPlotIds.forEach {
+        observationStore.removePlotFromTotals(it)
+      }
+
+      // If there's an observation in progress, try to replace any removed plots with new ones.
+      val plantingSiteId = event.plantingSiteEdit.existingModel.id
+      val observation =
+          observationStore.fetchInProgressObservation(plantingSiteId) ?: return@transaction
+      val observationId = observation.id
+      val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
+      val plantedSubzoneIds = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId).keys
+
+      val removedObservationPlots =
+          observationPlots.filter {
+            it.model.monitoringPlotId in event.monitoringPlotReplacements.removedMonitoringPlotIds
+          }
+      val removedPermanentPlots = removedObservationPlots.filter { it.model.isPermanent }
+      val removedTemporaryPlots = removedObservationPlots.filterNot { it.model.isPermanent }
+
       observationStore.removePlotsFromObservation(
           observationId, removedPermanentPlots.map { it.model.monitoringPlotId })
 
