@@ -113,7 +113,7 @@ dependencies {
   implementation("org.apache.tika:tika-core:2.9.2")
   implementation("org.flywaydb:flyway-core:$flywayVersion")
   implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
-  implementation("org.freemarker:freemarker:2.3.32")
+  implementation("org.freemarker:freemarker:2.3.33")
   implementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
   implementation("org.jobrunr:jobrunr-spring-boot-3-starter:7.1.2")
