@@ -312,7 +312,6 @@ import org.testcontainers.utility.DockerImageName
     initializers = [DatabaseBackedTest.DockerPostgresDataSourceInitializer::class])
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 @Testcontainers
-@Transactional
 @ComponentScan(basePackageClasses = [UsersDao::class])
 abstract class DatabaseBackedTest {
   @Autowired lateinit var dslContext: DSLContext
