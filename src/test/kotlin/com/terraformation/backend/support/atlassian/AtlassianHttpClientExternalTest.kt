@@ -29,9 +29,9 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
     every { user.canDeleteSupportIssue() } returns true
 
     val account = getEnvOrSkipTest("TERRAWARE_ATLASSIAN_ACCOUNT")
-    val apiHostname = getEnvOrSkipTest("TERRAWARE_ATLASSIAN_HOST")
-    val apiToken = getEnvOrSkipTest("TERRAWARE_ATLASSIAN_TOKEN")
-    val serviceDeskKey = getEnvOrSkipTest("TERRAWARE_ATLASSIAN_SERVICE_DESK_KEY")
+    val apiHostname = getEnvOrSkipTest("TERRAWARE_ATLASSIAN_APIHOST")
+    val apiToken = getEnvOrSkipTest("TERRAWARE_ATLASSIAN_APITOKEN")
+    val serviceDeskKey = getEnvOrSkipTest("TERRAWARE_ATLASSIAN_SERVICEDESKKEY")
 
     val config =
         TerrawareServerConfig(
