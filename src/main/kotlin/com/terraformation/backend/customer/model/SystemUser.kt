@@ -26,6 +26,7 @@ import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
+import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -161,6 +162,8 @@ class SystemUser(
 
   override fun canCreateDeviceManager(): Boolean = true
 
+  override fun canCreateDocument(): Boolean = true
+
   override fun canCreateDraftPlantingSite(organizationId: OrganizationId): Boolean = true
 
   override fun canCreateFacility(organizationId: OrganizationId): Boolean = true
@@ -182,6 +185,8 @@ class SystemUser(
 
   override fun canCreateReport(organizationId: OrganizationId): Boolean = true
 
+  override fun canCreateSavedVersion(documentId: DocumentId): Boolean = true
+
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = true
 
   override fun canCreateSubLocation(facilityId: FacilityId): Boolean = true
@@ -189,6 +194,8 @@ class SystemUser(
   override fun canCreateSubmission(projectId: ProjectId): Boolean = true
 
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean = true
+
+  override fun canCreateVariableManifest(): Boolean = true
 
   override fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId): Boolean = true
 
@@ -252,6 +259,8 @@ class SystemUser(
 
   override fun canManageDeliverables(): Boolean = false
 
+  override fun canManageDocumentProducer(): Boolean = false
+
   override fun canManageInternalTags(): Boolean = false
 
   override fun canManageModuleEvents(): Boolean = false
@@ -289,6 +298,8 @@ class SystemUser(
   override fun canReadDevice(deviceId: DeviceId): Boolean = true
 
   override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
+
+  override fun canReadDocument(documentId: DocumentId): Boolean = true
 
   override fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = true
 
@@ -410,6 +421,8 @@ class SystemUser(
   override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
 
   override fun canUpdateDeviceTemplates(): Boolean = true
+
+  override fun canUpdateDocument(documentId: DocumentId): Boolean = true
 
   override fun canUpdateDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = true
 
