@@ -6,12 +6,13 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.email.model.SupportRequestSubmitted
-import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.support.atlassian.AtlassianHttpClient
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import com.terraformation.backend.support.atlassian.model.TemporaryAttachmentModel
 import jakarta.inject.Named
+import jakarta.ws.rs.NotSupportedException
+import java.io.InputStream
 
 @Named
 class SupportService(
@@ -55,9 +56,19 @@ class SupportService(
   }
 
   fun attachTemporaryFile(
-      sizedInputStream: SizedInputStream,
-      filename: String
+      filename: String,
+      inputStream: InputStream,
+      size: Long?,
+      contentType: String?,
   ): List<TemporaryAttachmentModel> {
-    return atlassianHttpClient.attachTemporaryFile(sizedInputStream, filename).temporaryAttachments
+    contentType?.let {
+      !isContentTypeSupported(it) &&
+          throw NotSupportedException(
+              "$it is not a supported content type. Must be one of $SUPPORTED_CONTENT_TYPES_STRING")
+    }
+
+    return atlassianHttpClient
+        .attachTemporaryFile(filename, inputStream, size, contentType)
+        .temporaryAttachments
   }
 }

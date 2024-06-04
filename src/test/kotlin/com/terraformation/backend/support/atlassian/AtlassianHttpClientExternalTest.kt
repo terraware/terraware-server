@@ -3,7 +3,6 @@ package com.terraformation.backend.support.atlassian
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import io.mockk.every
@@ -23,6 +22,9 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
   override val user: TerrawareUser = mockUser()
   private lateinit var client: AtlassianHttpClient
   private val createdIssueIds: MutableList<String> = mutableListOf()
+  private val sixPixelPng: ByteArray by lazy {
+    javaClass.getResourceAsStream("/file/sixPixels.png").use { it.readAllBytes() }
+  }
 
   @BeforeEach
   fun setUp() {
@@ -73,14 +75,13 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
     val issueId = createResponse.issueId
     createdIssueIds.addLast(issueId)
 
-    val bytes = "abc".toByteArray()
-
-    val sizedInputStream =
-        SizedInputStream(
-            bytes.inputStream(), bytes.size.toLong(), MediaType.APPLICATION_OCTET_STREAM)
-
-    val filename = "file.txt"
-    val attachTempFilesResponse = client.attachTemporaryFile(sizedInputStream, filename)
+    val filename = "file.png"
+    val attachTempFilesResponse =
+        client.attachTemporaryFile(
+            filename,
+            sixPixelPng.inputStream(),
+            sixPixelPng.size.toLong(),
+            MediaType.IMAGE_PNG_VALUE)
 
     assertNotNull(attachTempFilesResponse)
     val attachmentIds =

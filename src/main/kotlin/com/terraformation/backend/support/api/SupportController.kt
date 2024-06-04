@@ -1,10 +1,12 @@
 package com.terraformation.backend.support.api
 
+import com.terraformation.backend.api.ApiResponse413
+import com.terraformation.backend.api.ApiResponse415
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.SupportEndpoint
 import com.terraformation.backend.api.getFilename
-import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.support.SUPPORTED_CONTENT_TYPES_STRING
 import com.terraformation.backend.support.SupportService
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import com.terraformation.backend.support.atlassian.model.TemporaryAttachmentModel
@@ -13,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.ws.rs.InternalServerErrorException
+import jakarta.ws.rs.NotSupportedException
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -53,23 +56,29 @@ class SupportController(private val service: SupportService) {
   }
 
   @ApiResponse(responseCode = "200")
+  @ApiResponse413
+  @ApiResponse415
   @Operation(
       summary = "Upload a temporary attachment.",
       description =
           "Uploads an attachment, which can be assigned to a support request during submission.")
   @PostMapping("/attachment", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
-      content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])])
+      content =
+          [
+              Content(
+                  encoding =
+                      [Encoding(name = "file", contentType = SUPPORTED_CONTENT_TYPES_STRING)])])
   fun uploadAttachment(
       @RequestPart("file", required = true) file: MultipartFile,
   ): UploadAttachmentResponsePayload {
-    val sizedInputStream =
-        SizedInputStream(
-            file.inputStream, file.size, file.contentType?.let { MediaType.parseMediaType(it) })
-
     val temporaryAttachments =
         try {
-          service.attachTemporaryFile(sizedInputStream, file.getFilename())
+          service.attachTemporaryFile(
+              file.getFilename(), file.inputStream, file.size, file.contentType)
+        } catch (e: NotSupportedException) {
+          log.error("Unsupported file type ${file.contentType}", e)
+          throw e
         } catch (e: Exception) {
           log.error("Unable to upload ${file.getFilename()}", e)
           throw InternalServerErrorException("Unable to upload the attachment.")
