@@ -14,6 +14,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationIdConverter
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertaintyConverter
@@ -642,26 +643,13 @@ class ObservationStore(
                     .mapValues { (_, rowsForStatus) -> rowsForStatus.size }
               }
 
-      if (plantCountsBySpecies.isNotEmpty()) {
-        updateSpeciesTotals(
-            OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID,
-            observationId,
-            monitoringPlotId,
-            observationPlotsRow.isPermanent!!,
-            plantCountsBySpecies)
-        updateSpeciesTotals(
-            OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID,
-            observationId,
-            plantingZoneId,
-            observationPlotsRow.isPermanent!!,
-            plantCountsBySpecies)
-        updateSpeciesTotals(
-            OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID,
-            observationId,
-            plantingSiteId,
-            observationPlotsRow.isPermanent!!,
-            plantCountsBySpecies)
-      }
+      updateSpeciesTotals(
+          observationId,
+          plantingSiteId,
+          plantingZoneId,
+          monitoringPlotId,
+          observationPlotsRow.isPermanent!!,
+          plantCountsBySpecies)
 
       observationPlotsDao.update(
           observationPlotsRow.copy(
@@ -807,7 +795,7 @@ class ObservationStore(
    * permanent plots.
    *
    * This is called when an observation is started, meaning that the cumulative dead counts are
-   * guaranteed to already be present when a plot is completed; [updateSpeciesTotals] can thus
+   * guaranteed to already be present when a plot is completed; [updateSpeciesTotalsTable] can thus
    * assume that if there aren't already totals present for a given species in a permanent
    * monitoring plot, there must not have been any dead plants in previous observations.
    */
@@ -928,13 +916,49 @@ class ObservationStore(
     }
   }
 
+  /** Updates the tables that hold the aggregated per-species plant totals from observations. */
+  private fun updateSpeciesTotals(
+      observationId: ObservationId,
+      plantingSiteId: PlantingSiteId,
+      plantingZoneId: PlantingZoneId,
+      monitoringPlotId: MonitoringPlotId?,
+      isPermanent: Boolean,
+      plantCountsBySpecies: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>
+  ) {
+    if (plantCountsBySpecies.isNotEmpty()) {
+      if (monitoringPlotId != null) {
+        updateSpeciesTotalsTable(
+            OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID,
+            observationId,
+            monitoringPlotId,
+            isPermanent,
+            plantCountsBySpecies,
+        )
+      }
+      updateSpeciesTotalsTable(
+          OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID,
+          observationId,
+          plantingZoneId,
+          isPermanent,
+          plantCountsBySpecies,
+      )
+      updateSpeciesTotalsTable(
+          OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID,
+          observationId,
+          plantingSiteId,
+          isPermanent,
+          plantCountsBySpecies,
+      )
+    }
+  }
+
   /**
    * Updates one of the tables that holds the aggregated per-species plant totals from observations.
    *
    * These tables are all identical with the exception of one column that identifies the scope of
    * aggregation (monitoring plot, planting zone, or planting site).
    */
-  private fun <ID : Any> updateSpeciesTotals(
+  private fun <ID : Any> updateSpeciesTotalsTable(
       scopeIdField: TableField<*, ID?>,
       observationId: ObservationId,
       scopeId: ID,
