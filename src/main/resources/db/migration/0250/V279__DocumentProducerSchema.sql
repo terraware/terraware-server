@@ -1,1 +1,1 @@
-CREATE SCHEMA IF NOT EXISTS document_producer;
+CREATE SCHEMA IF NOT EXISTS documentproducer;
