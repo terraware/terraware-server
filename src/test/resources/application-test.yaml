@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:tc:postgresql:15:///pdd
+    url: jdbc:tc:postgresql:15:///terraware
   flyway:
     locations:
       - "classpath:db/migration/dev"
