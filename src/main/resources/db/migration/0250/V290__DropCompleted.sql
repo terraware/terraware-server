@@ -1,8 +1,8 @@
-DROP VIEW document_producer.variable_current_values;
+DROP VIEW variable_current_values;
 
-ALTER TABLE document_producer.variable_values DROP COLUMN completed_time;
+ALTER TABLE variable_values DROP COLUMN completed_time;
 
-CREATE VIEW document_producer.variable_current_values AS
+CREATE VIEW variable_current_values AS
     SELECT DISTINCT ON (variable_id, index)
         id,
         pdd_id,
@@ -14,5 +14,5 @@ CREATE VIEW document_producer.variable_current_values AS
         number_value,
         text_value,
         date_value
-    FROM document_producer.variable_values
+    FROM variable_values
     ORDER BY variable_id, index, id DESC;

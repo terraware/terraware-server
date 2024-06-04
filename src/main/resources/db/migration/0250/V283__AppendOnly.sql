@@ -12,7 +12,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION reject_delete_value() RETURNS TRIGGER AS $$
 BEGIN
-    IF EXISTS (SELECT 1 FROM document_producer.pdds WHERE id = OLD.pdd_id) THEN
+    IF EXISTS (SELECT 1 FROM pdds WHERE id = OLD.pdd_id) THEN
         RAISE 'This table does not allow deletes.';
     ELSE
         -- The entire PDD is being deleted.
@@ -38,7 +38,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE FUNCTION reject_delete_value_child() RETURNS TRIGGER AS $$
 BEGIN
-    IF EXISTS (SELECT 1 FROM document_producer.variable_values WHERE id = OLD.variable_value_id) THEN
+    IF EXISTS (SELECT 1 FROM variable_values WHERE id = OLD.variable_value_id) THEN
         RAISE 'This table does not allow deletes.';
     ELSE
         RETURN OLD;
@@ -47,41 +47,41 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER variable_values_no_update
-    BEFORE UPDATE ON document_producer.variable_values
+    BEFORE UPDATE ON variable_values
     FOR EACH ROW EXECUTE FUNCTION reject_update_value();
 
 CREATE TRIGGER variable_values_no_delete
-    BEFORE DELETE ON document_producer.variable_values
+    BEFORE DELETE ON variable_values
     FOR EACH ROW EXECUTE FUNCTION reject_delete_value();
 
 CREATE TRIGGER variable_image_values_no_update
-    BEFORE UPDATE ON document_producer.variable_image_values
+    BEFORE UPDATE ON variable_image_values
     FOR EACH ROW EXECUTE FUNCTION reject_update();
 
 CREATE TRIGGER variable_image_values_no_delete
-    BEFORE DELETE ON document_producer.variable_image_values
+    BEFORE DELETE ON variable_image_values
     FOR EACH ROW EXECUTE FUNCTION reject_delete_value_child();
 
 CREATE TRIGGER variable_section_values_no_update
-    BEFORE UPDATE ON document_producer.variable_section_values
+    BEFORE UPDATE ON variable_section_values
     FOR EACH ROW EXECUTE FUNCTION reject_update();
 
 CREATE TRIGGER variable_section_values_no_delete
-    BEFORE DELETE ON document_producer.variable_section_values
+    BEFORE DELETE ON variable_section_values
     FOR EACH ROW EXECUTE FUNCTION reject_delete_value_child();
 
 CREATE TRIGGER variable_select_option_values_no_update
-    BEFORE UPDATE ON document_producer.variable_select_option_values
+    BEFORE UPDATE ON variable_select_option_values
     FOR EACH ROW EXECUTE FUNCTION reject_update();
 
 CREATE TRIGGER variable_select_option_values_no_delete
-    BEFORE DELETE ON document_producer.variable_select_option_values
+    BEFORE DELETE ON variable_select_option_values
     FOR EACH ROW EXECUTE FUNCTION reject_delete_value_child();
 
 CREATE TRIGGER variables_no_update
-    BEFORE UPDATE ON document_producer.variables
+    BEFORE UPDATE ON variables
     FOR EACH ROW EXECUTE FUNCTION reject_update();
 
 CREATE TRIGGER variables_no_delete
-    BEFORE DELETE ON document_producer.variables
+    BEFORE DELETE ON variables
     FOR EACH ROW EXECUTE FUNCTION reject_delete();

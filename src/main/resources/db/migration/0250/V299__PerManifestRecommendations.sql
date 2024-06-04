@@ -1,2 +1,2 @@
-ALTER TABLE document_producer.variable_section_recommendations DROP CONSTRAINT variable_section_recommendations_pkey;
-ALTER TABLE document_producer.variable_section_recommendations ADD PRIMARY KEY (section_variable_id, variable_manifest_id, recommended_variable_id);
+ALTER TABLE variable_section_recommendations DROP CONSTRAINT variable_section_recommendations_pkey;
+ALTER TABLE variable_section_recommendations ADD PRIMARY KEY (section_variable_id, variable_manifest_id, recommended_variable_id);
