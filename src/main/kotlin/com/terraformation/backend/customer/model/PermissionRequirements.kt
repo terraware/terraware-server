@@ -46,6 +46,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -58,6 +59,7 @@ import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.documentproducer.db.DocumentNotFoundException
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.db.DeliveryNotFoundException
@@ -220,6 +222,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createDocument() {
+    if (!user.canCreateDocument()) {
+      throw AccessDeniedException("No permission to create documents")
+    }
+  }
+
   fun createDraftPlantingSite(organizationId: OrganizationId) {
     if (!user.canCreateDraftPlantingSite(organizationId)) {
       readOrganization(organizationId)
@@ -285,6 +293,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createSavedVersion(documentId: DocumentId) {
+    if (!user.canCreateSavedVersion(documentId)) {
+      throw AccessDeniedException("No permission to create saved versions")
+    }
+  }
+
   fun createSpecies(organizationId: OrganizationId) {
     if (!user.canCreateSpecies(organizationId)) {
       readOrganization(organizationId)
@@ -310,6 +324,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canCreateTimeseries(deviceId)) {
       readDevice(deviceId)
       throw AccessDeniedException("No permission to create timeseries on device $deviceId")
+    }
+  }
+
+  fun createVariableManifest() {
+    if (!user.canCreateVariableManifest()) {
+      throw AccessDeniedException("No permission to create Variable Manifests")
     }
   }
 
@@ -610,6 +630,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readDeviceManager(deviceManagerId: DeviceManagerId) {
     if (!user.canReadDeviceManager(deviceManagerId)) {
       throw DeviceManagerNotFoundException(deviceManagerId)
+    }
+  }
+
+  fun readDocument(documentId: DocumentId) {
+    if (!user.canReadDocument(documentId)) {
+      throw DocumentNotFoundException(documentId)
     }
   }
 
@@ -990,6 +1016,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun updateDeviceTemplates() {
     if (!user.canUpdateDeviceTemplates()) {
       throw AccessDeniedException("No permission to update device templates")
+    }
+  }
+
+  fun updateDocument(documentId: DocumentId) {
+    if (!user.canUpdateDocument(documentId)) {
+      throw AccessDeniedException("No permission to update document")
     }
   }
 

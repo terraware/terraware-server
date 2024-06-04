@@ -28,6 +28,7 @@ The database has some subject-area-specific schemas as well as a default public 
 * [Nursery schema](schema/all/nursery/relationships.html) (`nursery`)
 * [Seed bank schema](schema/all/seedbank/relationships.html) (`seedbank`)
 * [Tracking schema](schema/all/tracking/relationships.html) (`tracking`)
+* Document Producer schema (`docprod`)
 
 ## Code docs
 
