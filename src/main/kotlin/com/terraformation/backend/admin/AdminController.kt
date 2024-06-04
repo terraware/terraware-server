@@ -45,6 +45,7 @@ class AdminController(
     model.addAttribute("canAddAnyOrganizationUser", currentUser().canAddAnyOrganizationUser())
     model.addAttribute("canCreateDeviceManager", currentUser().canCreateDeviceManager())
     model.addAttribute("canImportGlobalSpeciesData", currentUser().canImportGlobalSpeciesData())
+    model.addAttribute("canManageDocumentProducer", currentUser().canManageDocumentProducer())
     model.addAttribute(
         "canManageModules",
         currentUser().canManageModules() || currentUser().canManageDeliverables())

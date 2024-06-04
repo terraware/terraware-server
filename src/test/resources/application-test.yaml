@@ -1,8 +1,24 @@
 spring:
+  datasource:
+    url: jdbc:tc:postgresql:15:///terraware
   flyway:
     locations:
       - "classpath:db/migration/dev"
       - "classpath:db/migration"
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            authorization-grant-type: client_credentials
+            client-id: test
+        provider:
+          keycloak:
+            authorization-uri: http://dummy
+            token-uri: http://dummy
+      resourceserver:
+        jwt:
+          issuer-uri: http://dummy
 
 terraware:
   web-app-url: "http://dummy/"

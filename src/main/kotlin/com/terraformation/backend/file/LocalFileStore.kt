@@ -31,7 +31,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
  */
 @ConditionalOnProperty("terraware.photo-dir", havingValue = "")
 @Named
-@Priority(2) // If both S3 and filesystem storage are configured, prefer S3.
+@Priority(20) // If both S3 and filesystem storage are configured, prefer S3.
 class LocalFileStore(
     private val config: TerrawareServerConfig,
     private val pathGenerator: PathGenerator
