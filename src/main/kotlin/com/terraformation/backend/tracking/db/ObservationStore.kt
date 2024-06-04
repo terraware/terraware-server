@@ -40,6 +40,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
@@ -674,6 +675,97 @@ class ObservationStore(
     }
   }
 
+  fun removePlotFromTotals(monitoringPlotId: MonitoringPlotId) {
+    val (plantingSiteId, plantingZoneId) =
+        dslContext
+            .select(
+                PLANTING_ZONES.PLANTING_SITE_ID.asNonNullable(), PLANTING_ZONES.ID.asNonNullable())
+            .from(MONITORING_PLOTS)
+            .join(PLANTING_SUBZONES)
+            .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+            .join(PLANTING_ZONES)
+            .on(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
+            .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
+            .fetchOne() ?: throw PlotNotFoundException(monitoringPlotId)
+
+    data class NegativeCount(
+        val observationId: ObservationId,
+        val isPermanent: Boolean,
+        val plantCountsBySpecies: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>,
+    )
+
+    val negativeCountField = DSL.count().neg()
+    val negativeCounts: List<NegativeCount> =
+        dslContext
+            .select(
+                OBSERVATION_PLOTS.OBSERVATION_ID,
+                OBSERVATION_PLOTS.IS_PERMANENT,
+                RECORDED_PLANTS.CERTAINTY_ID,
+                RECORDED_PLANTS.SPECIES_ID,
+                RECORDED_PLANTS.SPECIES_NAME,
+                RECORDED_PLANTS.STATUS_ID,
+                negativeCountField,
+            )
+            .from(OBSERVATION_PLOTS)
+            .join(MONITORING_PLOTS)
+            .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+            .join(PLANTING_SUBZONES)
+            .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+            .join(PLANTING_ZONES)
+            .on(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
+            .join(RECORDED_PLANTS)
+            .on(OBSERVATION_PLOTS.OBSERVATION_ID.eq(RECORDED_PLANTS.OBSERVATION_ID))
+            .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(RECORDED_PLANTS.MONITORING_PLOT_ID))
+            .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+            .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull)
+            .groupBy(
+                OBSERVATION_PLOTS.OBSERVATION_ID,
+                OBSERVATION_PLOTS.IS_PERMANENT,
+                RECORDED_PLANTS.CERTAINTY_ID,
+                RECORDED_PLANTS.SPECIES_ID,
+                RECORDED_PLANTS.SPECIES_NAME,
+                RECORDED_PLANTS.STATUS_ID,
+            )
+            .fetch()
+            .groupBy { it[OBSERVATION_PLOTS.OBSERVATION_ID]!! }
+            .entries
+            .map { (observationId, records) ->
+              val plantCountsBySpecies =
+                  records
+                      .groupBy {
+                        RecordedSpeciesKey(
+                            it[RECORDED_PLANTS.CERTAINTY_ID]!!,
+                            it[RECORDED_PLANTS.SPECIES_ID],
+                            it[RECORDED_PLANTS.SPECIES_NAME])
+                      }
+                      .mapValues { (_, statusTotals) ->
+                        statusTotals.associate {
+                          it[RECORDED_PLANTS.STATUS_ID]!! to it[negativeCountField]!!
+                        }
+                      }
+
+              NegativeCount(
+                  observationId,
+                  records.first()[OBSERVATION_PLOTS.IS_PERMANENT]!!,
+                  plantCountsBySpecies)
+            }
+
+    negativeCounts.forEach { negativeCount ->
+      log.debug(
+          "Subtracting plant counts for plot $monitoringPlotId from site $plantingSiteId and " +
+              "zone $plantingZoneId in observation ${negativeCount.observationId}: " +
+              "${negativeCount.plantCountsBySpecies}")
+
+      updateSpeciesTotals(
+          negativeCount.observationId,
+          plantingSiteId,
+          plantingZoneId,
+          null,
+          negativeCount.isPermanent,
+          negativeCount.plantCountsBySpecies)
+    }
+  }
+
   /**
    * Fetches last completed observation for a planting site if there are no other upcoming or in
    * progress observations, otherwise returns most recently updated observation.
@@ -1063,8 +1155,41 @@ class ObservationStore(
                 .execute()
 
         if (rowsInserted == 0) {
-          val mortalityRateDenominatorField =
-              permanentLiveField.plus(cumulativeDeadField).plus(permanentDead + permanentLive)
+          val scopeIdAndSpeciesCondition =
+              scopeIdField
+                  .eq(scopeId)
+                  .and(
+                      if (speciesKey.id != null) speciesIdField.eq(speciesKey.id)
+                      else speciesIdField.isNull)
+                  .and(
+                      if (speciesKey.name != null) speciesNameField.eq(speciesKey.name)
+                      else speciesNameField.isNull)
+
+          // If we are updating a past observation (e.g., when removing a plot due to a map edit),
+          // the cumulative dead counts for the current observation as well as any subsequent ones
+          // need to be updated, as do their mortality rates.
+          if (permanentLive != 0 || permanentDead != 0) {
+            val mortalityRateDenominatorField =
+                permanentLiveField.plus(cumulativeDeadField).plus(permanentDead + permanentLive)
+
+            dslContext
+                .update(table)
+                .set(cumulativeDeadField, cumulativeDeadField.plus(permanentDead))
+                .set(
+                    mortalityRateField,
+                    DSL.case_()
+                        .`when`(mortalityRateDenominatorField.eq(0), 0)
+                        .else_(
+                            (cumulativeDeadField
+                                    .cast(SQLDataType.NUMERIC)
+                                    .plus(permanentDead)
+                                    .times(100)
+                                    .div(mortalityRateDenominatorField))
+                                .cast(SQLDataType.INTEGER)))
+                .where(observationIdField.ge(observationId))
+                .and(scopeIdAndSpeciesCondition)
+                .execute()
+          }
 
           val rowsUpdated =
               dslContext
@@ -1072,27 +1197,9 @@ class ObservationStore(
                   .set(totalLiveField, totalLiveField.plus(totalLive))
                   .set(totalDeadField, totalDeadField.plus(totalDead))
                   .set(totalExistingField, totalExistingField.plus(totalExisting))
-                  .set(cumulativeDeadField, cumulativeDeadField.plus(permanentDead))
                   .set(permanentLiveField, permanentLiveField.plus(permanentLive))
-                  .set(
-                      mortalityRateField,
-                      DSL.case_()
-                          .`when`(mortalityRateDenominatorField.eq(0), 0)
-                          .else_(
-                              (cumulativeDeadField
-                                      .cast(SQLDataType.NUMERIC)
-                                      .plus(permanentDead)
-                                      .times(100)
-                                      .div(mortalityRateDenominatorField))
-                                  .cast(SQLDataType.INTEGER)))
                   .where(observationIdField.eq(observationId))
-                  .and(scopeIdField.eq(scopeId))
-                  .and(
-                      if (speciesKey.id != null) speciesIdField.eq(speciesKey.id)
-                      else speciesIdField.isNull)
-                  .and(
-                      if (speciesKey.name != null) speciesNameField.eq(speciesKey.name)
-                      else speciesNameField.isNull)
+                  .and(scopeIdAndSpeciesCondition)
                   .execute()
 
           if (rowsUpdated != 1) {

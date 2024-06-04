@@ -16,8 +16,12 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
@@ -35,6 +39,9 @@ import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
+import com.terraformation.backend.tracking.db.ObservationTestHelper.ObservationPlot
+import com.terraformation.backend.tracking.db.ObservationTestHelper.ObservationZone
+import com.terraformation.backend.tracking.db.ObservationTestHelper.PlantTotals
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
@@ -1669,6 +1676,53 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
               .map { it.monitoringPlotId }
               .toSet(),
           "IDs of monitoring plots in observation")
+    }
+
+    // Plant total update logic is tested more comprehensively in ObservationStoreTest; this is
+    // just to verify that the event handler actually updates the totals.
+    @Test
+    fun `subtracts removed plot plant counts from totals`() {
+      insertPlantingSubzone(plantingCompletedTime = Instant.EPOCH, width = 3, height = 7)
+      insertPlanting()
+      val observationId = insertObservation()
+      val remainingPlotId = insertMonitoringPlot()
+      val removedPlotId = insertMonitoringPlot()
+
+      val speciesId = inserted.speciesId
+      val plantingZoneId = inserted.plantingZoneId
+
+      helper.insertObservationScenario(
+          ObservationZone(
+              zoneId = plantingZoneId,
+              plots =
+                  listOf(
+                      ObservationPlot(
+                          remainingPlotId,
+                          listOf(PlantTotals(speciesId, live = 3, dead = 2, existing = 1))),
+                      ObservationPlot(
+                          removedPlotId,
+                          listOf(PlantTotals(speciesId, live = 4, dead = 5, existing = 6))))))
+
+      val event =
+          PlantingSiteMapEditedEvent(
+              plantingSite,
+              PlantingSiteEdit(BigDecimal.ONE, plantingSite, plantingSite, listOf()),
+              ReplacementResult(emptySet(), setOf(removedPlotId)))
+
+      service.on(event)
+
+      helper.assertTotals(
+          setOf(
+              ObservedPlotSpeciesTotalsRow(
+                  observationId, removedPlotId, speciesId, null, Known, 4, 5, 6, 56, 5, 4),
+              ObservedPlotSpeciesTotalsRow(
+                  observationId, remainingPlotId, speciesId, null, Known, 3, 2, 1, 40, 2, 3),
+              ObservedZoneSpeciesTotalsRow(
+                  observationId, plantingZoneId, speciesId, null, Known, 3, 2, 1, 40, 2, 3),
+              ObservedSiteSpeciesTotalsRow(
+                  observationId, plantingSiteId, speciesId, null, Known, 3, 2, 1, 40, 2, 3),
+          ),
+          "Totals after removal")
     }
 
     @Test
