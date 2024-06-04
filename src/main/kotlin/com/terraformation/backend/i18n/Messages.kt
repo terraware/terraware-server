@@ -379,6 +379,37 @@ class Messages {
     return values.joinToString(listDelimiter()) { it.getDisplayName(locale) }
   }
 
+  fun manifestCsvColumnName(position: Int): String = getMessage("manifestCsvColumnName.$position")
+
+  fun variablesCsvDataTypeRequired() = getMessage("variablesCsvDataTypeRequired")
+
+  fun variableCsvNameLineBreak() = getMessage("variableCsvNameLineBreak")
+
+  fun variablesCsvNameRequired() = getMessage("variablesCsvNameRequired")
+
+  fun variablesCsvDataTypeRequiresOptions() = getMessage("variablesCsvDataTypeRequiresOptions")
+
+  fun variablesCsvRecommendationNotUnique() = getMessage("variablesCsvRecommendationNotUnique")
+
+  fun variablesCsvSectionParentMustBeSection() =
+      getMessage("variablesCsvSectionParentMustBeSection")
+
+  fun variablesCsvSelectOptionsNotUnique() = getMessage("variablesCsvSelectOptionsNotUnique")
+
+  fun variablesCsvStableIdNotUnique() = getMessage("variablesCsvStableIdNotUnique")
+
+  fun variablesCsvStableIdRequired() = getMessage("variablesCsvStableIdRequired")
+
+  fun variablesCsvTopLevelNameNotUnique() = getMessage("variablesCsvTopLevelNameNotUnique")
+
+  fun variablesCsvVariableNameNotUniqueWithinParent() =
+      getMessage("variablesCsvVariableNameNotUniqueWithinParent")
+
+  fun variablesCsvVariableParentDoesNotExist() =
+      getMessage("variablesCsvVariableParentDoesNotExist")
+
+  fun variablesCsvWrongDataTypeForChild() = getMessage("variablesCsvWrongDataTypeForChild")
+
   private val validAccessionStates
     get() = getEnumValuesList(AccessionState.entries.filter { it.isV2Compatible })
 

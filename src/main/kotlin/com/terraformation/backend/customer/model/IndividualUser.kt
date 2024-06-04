@@ -28,6 +28,7 @@ import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -198,6 +199,8 @@ data class IndividualUser(
 
   override fun canCreateDeviceManager() = isSuperAdmin()
 
+  override fun canCreateDocument() = isTFExpertOrHigher()
+
   override fun canCreateDraftPlantingSite(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
 
@@ -229,6 +232,8 @@ data class IndividualUser(
   // Reports are normally created by the system, but can be created manually by super-admins.
   override fun canCreateReport(organizationId: OrganizationId) = isSuperAdmin()
 
+  override fun canCreateSavedVersion(documentId: DocumentId) = isTFExpertOrHigher()
+
   override fun canCreateSpecies(organizationId: OrganizationId) = isManagerOrHigher(organizationId)
 
   override fun canCreateSubLocation(facilityId: FacilityId) = isAdminOrHigher(facilityId)
@@ -238,6 +243,8 @@ data class IndividualUser(
 
   override fun canCreateTimeseries(deviceId: DeviceId) =
       isAdminOrHigher(parentStore.getFacilityId(deviceId))
+
+  override fun canCreateVariableManifest() = isAcceleratorAdmin()
 
   override fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId) =
       isMember(parentStore.getFacilityId(withdrawalId))
@@ -315,6 +322,8 @@ data class IndividualUser(
 
   override fun canManageDeliverables() = isAcceleratorAdmin()
 
+  override fun canManageDocumentProducer() = isTFExpertOrHigher()
+
   override fun canManageInternalTags() = isSuperAdmin()
 
   override fun canManageModuleEvents() = isAcceleratorAdmin()
@@ -364,6 +373,8 @@ data class IndividualUser(
       parentStore.exists(deviceManagerId)
     }
   }
+
+  override fun canReadDocument(documentId: DocumentId) = isTFExpertOrHigher()
 
   override fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
       isManagerOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
@@ -541,6 +552,8 @@ data class IndividualUser(
   }
 
   override fun canUpdateDeviceTemplates() = isSuperAdmin()
+
+  override fun canUpdateDocument(documentId: DocumentId) = isTFExpertOrHigher()
 
   override fun canUpdateDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
       userId == parentStore.getUserId(draftPlantingSiteId) &&

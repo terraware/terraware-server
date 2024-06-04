@@ -1,5 +1,8 @@
 package com.terraformation.backend.file
 
+import com.terraformation.backend.BeanTestDouble
+import jakarta.annotation.Priority
+import jakarta.inject.Named
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.net.URI
@@ -10,10 +13,19 @@ import java.time.Instant
 import org.junit.jupiter.api.fail
 import org.springframework.http.MediaType
 
-class InMemoryFileStore(private val pathGenerator: PathGenerator? = null) : FileStore {
+@Named
+@Priority(1) // Higher priority than the non-test implementations of FileStore
+class InMemoryFileStore(private val pathGenerator: PathGenerator? = null) :
+    FileStore, BeanTestDouble {
   private var counter = 0
-  private val files = mutableMapOf<URI, ByteArray>()
   private val deletedFiles = mutableSetOf<URI>()
+
+  val files = mutableMapOf<URI, ByteArray>()
+
+  override fun resetState() {
+    files.clear()
+    counter = 0
+  }
 
   fun assertFileNotExists(
       url: URI,
