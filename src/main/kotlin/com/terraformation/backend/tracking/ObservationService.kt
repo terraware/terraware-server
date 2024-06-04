@@ -278,6 +278,8 @@ class ObservationService(
       val observationPlot =
           observationPlots.firstOrNull { it.model.monitoringPlotId == monitoringPlotId }
               ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
+      val plantedSubzoneIds =
+          plantingSiteStore.countReportedPlantsInSubzones(observation.plantingSiteId).keys
 
       if (!allowCompleted && observationPlot.model.completedTime != null) {
         throw PlotAlreadyCompletedException(monitoringPlotId)
@@ -317,7 +319,7 @@ class ObservationService(
                         it.id in replacementResult.addedMonitoringPlotIds
                       }
                     }
-                if (subzones.all { it.plantingCompletedTime != null }) {
+                if (subzones.all { it.id in plantedSubzoneIds }) {
                   log.info(
                       "Replacement permanent cluster's plots are all in subzones that have " +
                           "completed planting; including the cluster in this observation.")
