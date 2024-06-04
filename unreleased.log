@@ -1,3 +1,5 @@
+ba2b8866b84 SW-5230 Update recorded plant totals on site map edit (#2027)
+f363c3416dd Add helper for inserting test planting sites (#2026)
 679a44531cb Reduce mandatory arguments to insertObservationPlot (#2025)
 79846eeca8e Track cumulative dead plants across observations (#2024)
 372f3e8667e Statically import plant statuses in ObservationStoreTest (#2023)
