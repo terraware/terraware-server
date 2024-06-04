@@ -413,7 +413,7 @@ class AdminPlantingSitesController(
                 existing.name,
                 existing.description,
                 existing.organizationId)
-        val plantedSubzoneIds = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId).keys
+        val plantedSubzoneIds = plantingSiteStore.fetchSubzoneIdsWithPastPlantings(plantingSiteId)
         val edit =
             PlantingSiteEditCalculator(existing, desired, plantedSubzoneIds).calculateSiteEdit()
 

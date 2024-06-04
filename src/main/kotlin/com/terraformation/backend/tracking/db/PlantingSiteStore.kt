@@ -180,6 +180,15 @@ class PlantingSiteStore(
         .fetchMap(PLANTING_ZONES.ID.asNonNullable(), countBySubzoneField)
   }
 
+  /**
+   * Returns the number of plants currently known to be planted in the subzones at a planting site.
+   * Subzones that do not currently have any plants are not included in the return value. If subzone
+   * A had a planting but all the plants were late reassigned to subzone B, subzone A will not be
+   * included in the return value.
+   *
+   * To find out which subzones have ever had plantings, even ones that were later reassigned, call
+   * [fetchSubzoneIdsWithPastPlantings].
+   */
   fun countReportedPlantsInSubzones(plantingSiteId: PlantingSiteId): Map<PlantingSubzoneId, Long> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
@@ -246,6 +255,29 @@ class PlantingSiteStore(
               totalSpecies = record[siteTotalSpeciesField] ?: 0,
           )
         } ?: PlantingSiteReportedPlantTotals(plantingSiteId, zoneTotals, 0, 0, 0)
+  }
+
+  /**
+   * Returns a set of the subzone IDs at a planting site that have ever had plantings. This can be
+   * different than the subzones returned by [countReportedPlantsInSubzones]: if a subzone had a
+   * planting that was later reassigned, it will still be returned by this method but will be
+   * omitted by [countReportedPlantsInSubzones].
+   *
+   * This should be used when the goal is to figure out which subzones are referred to by historical
+   * planting records.
+   */
+  fun fetchSubzoneIdsWithPastPlantings(plantingSiteId: PlantingSiteId): Set<PlantingSubzoneId> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return dslContext
+        .select(PLANTING_SUBZONES.ID)
+        .from(PLANTING_SUBZONES)
+        .whereExists(
+            DSL.selectOne()
+                .from(PLANTINGS)
+                .where(PLANTINGS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)))
+        .and(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+        .fetchSet(PLANTING_SUBZONES.ID.asNonNullable())
   }
 
   fun createPlantingSite(
