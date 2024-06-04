@@ -13,7 +13,7 @@ class PlantingSiteModelTest {
     fun `checks for maximum envelope area`() {
       val site = newSite(width = 200000, height = 100000)
 
-      assertHasProblem(site, "Site must be contained within an envelope.*actual envelope")
+      assertHasProblem(site, PlantingSiteValidationFailure.siteTooLarge())
     }
 
     @Test
@@ -23,14 +23,14 @@ class PlantingSiteModelTest {
         zone(width = 250, name = "Duplicate")
       }
 
-      assertHasProblem(site, "Zone name Duplicate appears 2 times")
+      assertHasProblem(site, PlantingSiteValidationFailure.duplicateZoneName("Duplicate"))
     }
 
     @Test
     fun `checks for zones not covered by site`() {
       val site = newSite(width = 100, height = 100) { zone(width = 200, height = 200) }
 
-      assertHasProblem(site, "75\\.00% of planting zone .* is not contained")
+      assertHasProblem(site, PlantingSiteValidationFailure.zoneNotInSite("Z1"))
     }
 
     @Test
@@ -41,7 +41,7 @@ class PlantingSiteModelTest {
             zone(x = 50, width = 150)
           }
 
-      assertHasProblem(site, "50\\.00% of planting zone Z1 overlaps with zone Z2")
+      assertHasProblem(site, PlantingSiteValidationFailure.zoneBoundaryOverlaps(setOf("Z2"), "Z1"))
     }
 
     @Test
@@ -51,21 +51,21 @@ class PlantingSiteModelTest {
           site.copy(
               plantingZones = site.plantingZones.map { it.copy(plantingSubzones = emptyList()) })
 
-      assertHasProblem(siteWithoutSubzones, "Planting zone Z1 has no subzones")
+      assertHasProblem(siteWithoutSubzones, PlantingSiteValidationFailure.zoneHasNoSubzones("Z1"))
     }
 
     @Test
     fun `checks that zones are big enough for observations`() {
       val site = newSite(width = 50, height = 50)
 
-      assertHasProblem(site, "Planting zone Z1 is too small")
+      assertHasProblem(site, PlantingSiteValidationFailure.zoneTooSmall("Z1"))
     }
 
     @Test
     fun `checks for subzones not covered by zone`() {
       val site = newSite(width = 100, height = 100) { zone { subzone(width = 200, height = 200) } }
 
-      assertHasProblem(site, "75\\.00% of planting subzone .* is not contained")
+      assertHasProblem(site, PlantingSiteValidationFailure.subzoneNotInZone("S1", "Z1"))
     }
 
     @Test
@@ -78,7 +78,8 @@ class PlantingSiteModelTest {
             }
           }
 
-      assertHasProblem(site, "50\\.00% of subzone S1 in zone Z1 overlaps with subzone S2")
+      assertHasProblem(
+          site, PlantingSiteValidationFailure.subzoneBoundaryOverlaps(setOf("S2"), "S1", "Z1"))
     }
 
     @Test
@@ -91,17 +92,32 @@ class PlantingSiteModelTest {
         }
       }
 
-      assertHasProblem(site, "Subzone S1 in zone Z1 is inside exclusion area")
+      assertHasProblem(site, PlantingSiteValidationFailure.subzoneInExclusionArea("S1", "Z1"))
     }
 
-    private fun assertHasProblem(site: PlantingSiteModel<*, *, *>, problemRegex: String) {
-      val regex = Regex(problemRegex)
+    @Test
+    fun `checks that zone is big enough for a permanent cluster and a temporary plot`() {
+      assertHasProblem(
+          newSite(width = 51, height = 50),
+          PlantingSiteValidationFailure.zoneTooSmall("Z1"),
+          "Site is big enough for permanent cluster but not also for temporary plot")
 
+      assertHasProblem(
+          newSite(width = 500, height = 30),
+          PlantingSiteValidationFailure.zoneTooSmall("Z1"),
+          "Site is big enough for 5 plots but not a permanent cluster")
+    }
+
+    private fun assertHasProblem(
+        site: PlantingSiteModel<*, *, *>,
+        problem: PlantingSiteValidationFailure,
+        message: String = "Expected problems list to contain entry",
+    ) {
       val problems = site.validate()
       assertNotNull(problems, "Validation returned no problems")
 
-      if (problems!!.none { it.contains(regex) }) {
-        assertEquals(listOf(problemRegex), problems, "Expected problems list to contain entry")
+      if (problems!!.none { it == problem }) {
+        assertEquals(listOf(problem), problems, message)
       }
     }
   }
