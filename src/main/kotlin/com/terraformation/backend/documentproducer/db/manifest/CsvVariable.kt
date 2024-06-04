@@ -1,11 +1,11 @@
-package com.terraformation.pdd.variable.db.manifest
+package com.terraformation.backend.documentproducer.db.manifest
 
-import com.terraformation.pdd.jooq.VariableId
-import com.terraformation.pdd.jooq.VariableTableStyle
-import com.terraformation.pdd.jooq.VariableType
-import com.terraformation.pdd.jooq.embeddables.pojos.VariableManifestEntryId
-import com.terraformation.pdd.jooq.tables.pojos.VariableSelectOptionsRow
-import com.terraformation.pdd.jooq.tables.pojos.VariablesRow
+import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableTableStyle
+import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.db.docprod.embeddables.pojos.VariableManifestEntryId
+import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionsRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
 import java.math.BigDecimal
 
 private const val LOCALIZED_ERROR_KEY_UNKNOWN_DATA_TYPE = "variablesCsvDataTypeUnknown"

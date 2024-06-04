@@ -1,20 +1,26 @@
-package com.terraformation.pdd.variable.api
+package com.terraformation.backend.documentproducer.api
 
-import com.terraformation.pdd.ControllerIntegrationTest
-import com.terraformation.pdd.jooq.DocumentId
-import com.terraformation.pdd.jooq.VariableType
-import com.terraformation.pdd.jooq.VariableValueId
-import com.terraformation.pdd.jooq.tables.pojos.VariableImageValuesRow
-import com.terraformation.pdd.jooq.tables.pojos.VariableValuesRow
+import com.terraformation.backend.api.ControllerIntegrationTest
+import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.docprod.tables.pojos.VariableImageValuesRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableValuesRow
 import java.math.BigDecimal
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 
 class ValuesControllerTest : ControllerIntegrationTest() {
+  @BeforeEach
+  fun setUp() {
+    insertUser()
+  }
+
   private fun path(documentId: DocumentId = cannedDocumentId) = "/api/v1/pdds/$documentId/values"
 
   @Nested

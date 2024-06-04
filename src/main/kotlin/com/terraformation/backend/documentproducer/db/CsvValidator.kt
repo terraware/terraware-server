@@ -1,8 +1,8 @@
-package com.terraformation.backend.document.db
+package com.terraformation.backend.documentproducer.db
 
 import com.opencsv.CSVReader
-import com.terraformation.pdd.i18n.Messages
-import com.terraformation.pdd.i18n.currentLocale
+import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.i18n.currentLocale
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.io.InputStreamReader

@@ -30,7 +30,7 @@ import software.amazon.awssdk.services.s3.model.UploadPartRequest
 
 @ConditionalOnProperty("terraware.s3BucketName", havingValue = "")
 @Named
-@Priority(1) // If both S3 and filesystem storage are configured, prefer S3.
+@Priority(10) // If both S3 and filesystem storage are configured, prefer S3.
 class S3FileStore(config: TerrawareServerConfig, private val pathGenerator: PathGenerator) :
     FileStore {
   private val log = perClassLogger()

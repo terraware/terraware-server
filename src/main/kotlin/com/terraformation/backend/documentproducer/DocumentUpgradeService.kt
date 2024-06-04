@@ -1,11 +1,11 @@
-package com.terraformation.pdd.document
+package com.terraformation.backend.documentproducer
 
-import com.terraformation.pdd.document.db.DocumentStore
-import com.terraformation.pdd.jooq.DocumentId
-import com.terraformation.pdd.jooq.VariableManifestId
-import com.terraformation.pdd.jooq.tables.daos.VariableManifestsDao
-import com.terraformation.pdd.variable.db.VariableStore
-import com.terraformation.pdd.variable.db.VariableValueStore
+import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.VariableManifestId
+import com.terraformation.backend.db.docprod.tables.daos.VariableManifestsDao
+import com.terraformation.backend.documentproducer.db.DocumentStore
+import com.terraformation.backend.documentproducer.db.VariableStore
+import com.terraformation.backend.documentproducer.db.VariableValueStore
 import jakarta.inject.Named
 import org.jooq.DSLContext
 

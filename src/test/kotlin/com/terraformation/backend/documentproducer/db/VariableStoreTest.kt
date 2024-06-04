@@ -1,9 +1,9 @@
-package com.terraformation.pdd.variable.db
+package com.terraformation.backend.documentproducer.db
 
-import com.terraformation.pdd.DatabaseTest
-import com.terraformation.pdd.jooq.VariableType
-import com.terraformation.pdd.variable.model.BaseVariableProperties
-import com.terraformation.pdd.variable.model.SectionVariable
+import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.documentproducer.model.BaseVariableProperties
+import com.terraformation.backend.documentproducer.model.SectionVariable
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

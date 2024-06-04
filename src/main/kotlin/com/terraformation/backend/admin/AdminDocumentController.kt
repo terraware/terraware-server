@@ -1,9 +1,9 @@
 package com.terraformation.backend.admin
 
-import com.terraformation.pdd.jooq.MethodologyId
-import com.terraformation.pdd.jooq.tables.daos.MethodologiesDao
-import com.terraformation.pdd.jooq.tables.pojos.MethodologiesRow
-import com.terraformation.pdd.variable.db.manifest.ManifestImporter
+import com.terraformation.backend.db.docprod.MethodologyId
+import com.terraformation.backend.db.docprod.tables.daos.MethodologiesDao
+import com.terraformation.backend.db.docprod.tables.pojos.MethodologiesRow
+import com.terraformation.backend.documentproducer.db.manifest.ManifestImporter
 import io.swagger.v3.oas.annotations.ExternalDocumentation
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -22,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
-@RequestMapping("/admin")
+@RequestMapping("/admin/document-producer")
 class AdminDocumentController(
     private val manifestImporter: ManifestImporter,
     private val methodologiesDao: MethodologiesDao,

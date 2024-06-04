@@ -1,13 +1,13 @@
-package com.terraformation.pdd.variable.model
+package com.terraformation.backend.documentproducer.model
 
-import com.terraformation.pdd.jooq.DocumentId
-import com.terraformation.pdd.jooq.FileId
-import com.terraformation.pdd.jooq.VariableId
-import com.terraformation.pdd.jooq.VariableInjectionDisplayStyle
-import com.terraformation.pdd.jooq.VariableSelectOptionId
-import com.terraformation.pdd.jooq.VariableType
-import com.terraformation.pdd.jooq.VariableUsageType
-import com.terraformation.pdd.jooq.VariableValueId
+import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
+import com.terraformation.backend.db.docprod.VariableSelectOptionId
+import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.db.docprod.VariableUsageType
+import com.terraformation.backend.db.docprod.VariableValueId
 import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate

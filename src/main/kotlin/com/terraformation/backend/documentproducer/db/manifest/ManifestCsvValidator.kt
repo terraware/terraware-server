@@ -1,7 +1,7 @@
-package com.terraformation.pdd.variable.db.manifest
+package com.terraformation.backend.documentproducer.db.manifest
 
-import com.terraformation.pdd.i18n.Messages
-import com.terraformation.pdd.importer.CsvValidator
+import com.terraformation.backend.documentproducer.db.CsvValidator
+import com.terraformation.backend.i18n.Messages
 
 // Column 1/A
 const val MANIFEST_CSV_COLUMN_INDEX_NAME = 0

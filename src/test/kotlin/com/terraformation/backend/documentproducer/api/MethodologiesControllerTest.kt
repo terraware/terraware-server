@@ -1,12 +1,18 @@
-package com.terraformation.pdd.methodology.api
+package com.terraformation.backend.documentproducer.api
 
-import com.terraformation.pdd.ControllerIntegrationTest
+import com.terraformation.backend.api.ControllerIntegrationTest
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.test.web.servlet.get
 
 class MethodologiesControllerTest : ControllerIntegrationTest() {
   private val path = "/api/v1/methodologies"
+
+  @BeforeEach
+  fun setUp() {
+    insertUser()
+  }
 
   @Nested
   inner class ListMethodologies {
@@ -21,7 +27,7 @@ class MethodologiesControllerTest : ControllerIntegrationTest() {
                 {
                   "methodologies": [
                     {
-                      "id": $cannedMethodologyId,
+                      "id": ${cannedMethodologyId},
                       "name": "Afforestation, Reforestation and Revegetation"
                     },
                     {

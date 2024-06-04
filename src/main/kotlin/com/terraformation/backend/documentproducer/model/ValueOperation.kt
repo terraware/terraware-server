@@ -1,8 +1,8 @@
-package com.terraformation.pdd.variable.model
+package com.terraformation.backend.documentproducer.model
 
-import com.terraformation.pdd.jooq.DocumentId
-import com.terraformation.pdd.jooq.VariableId
-import com.terraformation.pdd.jooq.VariableValueId
+import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableValueId
 
 sealed interface ValueOperation {
   val documentId: DocumentId

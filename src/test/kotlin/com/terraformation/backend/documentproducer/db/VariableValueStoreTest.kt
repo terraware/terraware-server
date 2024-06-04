@@ -1,32 +1,31 @@
-package com.terraformation.pdd.variable.db
+package com.terraformation.backend.documentproducer.db
 
-import com.terraformation.pdd.DatabaseTest
-import com.terraformation.pdd.api.AppUser
-import com.terraformation.pdd.jooq.DocumentId
-import com.terraformation.pdd.jooq.VariableId
-import com.terraformation.pdd.jooq.VariableType
-import com.terraformation.pdd.jooq.VariableValueId
-import com.terraformation.pdd.jooq.tables.references.VARIABLE_VALUES
-import com.terraformation.pdd.util.TestClock
-import com.terraformation.pdd.variable.model.AppendValueOperation
-import com.terraformation.pdd.variable.model.BaseVariableValueProperties
-import com.terraformation.pdd.variable.model.DeleteValueOperation
-import com.terraformation.pdd.variable.model.ExistingDeletedValue
-import com.terraformation.pdd.variable.model.ExistingTableValue
-import com.terraformation.pdd.variable.model.ExistingTextValue
-import com.terraformation.pdd.variable.model.ExistingValue
-import com.terraformation.pdd.variable.model.NewTableValue
-import com.terraformation.pdd.variable.model.NewTextValue
-import org.junit.jupiter.api.AfterEach
+import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
+import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
+import com.terraformation.backend.documentproducer.model.AppendValueOperation
+import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
+import com.terraformation.backend.documentproducer.model.DeleteValueOperation
+import com.terraformation.backend.documentproducer.model.ExistingDeletedValue
+import com.terraformation.backend.documentproducer.model.ExistingTableValue
+import com.terraformation.backend.documentproducer.model.ExistingTextValue
+import com.terraformation.backend.documentproducer.model.ExistingValue
+import com.terraformation.backend.documentproducer.model.NewTableValue
+import com.terraformation.backend.documentproducer.model.NewTextValue
+import com.terraformation.backend.mockUser
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 
-class VariableValueStoreTest : DatabaseTest() {
+class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
+  override val user = mockUser()
+
   override val tablesToResetSequences = listOf(VARIABLE_VALUES)
 
   private val clock = TestClock()
@@ -42,6 +41,11 @@ class VariableValueStoreTest : DatabaseTest() {
         variableSelectOptionValuesDao,
         variableValuesDao,
         variableValueTableRowsDao)
+  }
+
+  @BeforeEach
+  fun setUp() {
+    insertUser()
   }
 
   @Nested
@@ -111,23 +115,6 @@ class VariableValueStoreTest : DatabaseTest() {
 
   @Nested
   inner class UpdateValues {
-    private var oldAuthentication: Authentication? = null
-
-    @BeforeEach
-    fun setUp() {
-      // TODO: Extract this logic
-      val user = AppUser(usersDao.fetchOneById(cannedAdminId)!!)
-      val context = SecurityContextHolder.getContext()
-
-      oldAuthentication = context.authentication
-      context.authentication = PreAuthenticatedAuthenticationToken(user, "N/A", user.authorities)
-    }
-
-    @AfterEach
-    fun tearDown() {
-      SecurityContextHolder.getContext().authentication = oldAuthentication
-    }
-
     @Nested
     inner class AppendValue {
       @Test

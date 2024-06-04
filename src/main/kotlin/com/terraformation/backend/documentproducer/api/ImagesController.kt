@@ -1,17 +1,17 @@
-package com.terraformation.pdd.variable.api
+package com.terraformation.backend.documentproducer.api
 
-import com.terraformation.pdd.api.InternalEndpoint
-import com.terraformation.pdd.api.SuccessResponsePayload
-import com.terraformation.pdd.file.FileMetadata
-import com.terraformation.pdd.file.FileService
-import com.terraformation.pdd.file.SUPPORTED_PHOTO_TYPES
-import com.terraformation.pdd.file.getFilename
-import com.terraformation.pdd.file.getPlainContentType
-import com.terraformation.pdd.file.toResponseEntity
-import com.terraformation.pdd.jooq.DocumentId
-import com.terraformation.pdd.jooq.VariableId
-import com.terraformation.pdd.jooq.VariableValueId
-import com.terraformation.pdd.variable.model.BaseVariableValueProperties
+import com.terraformation.backend.api.InternalEndpoint
+import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.getFilename
+import com.terraformation.backend.api.getPlainContentType
+import com.terraformation.backend.api.toResponseEntity
+import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.documentproducer.DocumentFileService
+import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
+import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
+import com.terraformation.backend.file.model.FileMetadata
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.core.io.InputStreamResource
@@ -30,7 +30,7 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/pdds/{pddId}/images")
 @RestController
 class ImagesController(
-    private val fileService: FileService,
+    private val documentFileService: DocumentFileService,
 ) {
   @GetMapping(
       "/{valueId}",
@@ -66,9 +66,12 @@ class ImagesController(
                   "if needed to preserve the aspect ratio of the original.")
       maxHeight: Int? = null,
   ): ResponseEntity<InputStreamResource> {
-    return fileService.readImageValue(pddId, valueId, maxWidth, maxHeight).toResponseEntity()
+    return documentFileService
+        .readImageValue(pddId, valueId, maxWidth, maxHeight)
+        .toResponseEntity()
   }
 
+  @Operation(summary = "Save an image to a new variable value.")
   @PostMapping
   fun uploadImageValue(
       @PathVariable pddId: DocumentId,
@@ -116,7 +119,7 @@ class ImagesController(
         )
 
     val valueId =
-        fileService.storeImageValue(file.inputStream, newMetadata, base, caption, isAppend)
+        documentFileService.storeImageValue(file.inputStream, newMetadata, base, caption, isAppend)
 
     return UploadImageFileResponsePayload(valueId)
   }

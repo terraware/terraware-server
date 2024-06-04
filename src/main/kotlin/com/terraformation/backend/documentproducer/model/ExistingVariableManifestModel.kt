@@ -1,9 +1,9 @@
-package com.terraformation.pdd.variable.model
+package com.terraformation.backend.documentproducer.model
 
-import com.terraformation.pdd.jooq.MethodologyId
-import com.terraformation.pdd.jooq.UserId
-import com.terraformation.pdd.jooq.VariableManifestId
-import com.terraformation.pdd.jooq.tables.pojos.VariableManifestsRow
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.docprod.MethodologyId
+import com.terraformation.backend.db.docprod.VariableManifestId
+import com.terraformation.backend.db.docprod.tables.pojos.VariableManifestsRow
 import java.time.Instant
 
 data class ExistingVariableManifestModel(

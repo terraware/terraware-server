@@ -1,10 +1,10 @@
-package com.terraformation.backend.document.api
+package com.terraformation.backend.documentproducer.api
 
-import com.terraformation.pdd.api.InternalEndpoint
-import com.terraformation.pdd.api.SuccessResponsePayload
-import com.terraformation.pdd.jooq.MethodologyId
-import com.terraformation.pdd.jooq.tables.daos.MethodologiesDao
-import com.terraformation.pdd.jooq.tables.pojos.MethodologiesRow
+import com.terraformation.backend.api.InternalEndpoint
+import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.docprod.MethodologyId
+import com.terraformation.backend.db.docprod.tables.daos.MethodologiesDao
+import com.terraformation.backend.db.docprod.tables.pojos.MethodologiesRow
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping

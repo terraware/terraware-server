@@ -1,37 +1,79 @@
-package com.terraformation.pdd.document
+package com.terraformation.backend.documentproducer
 
-import com.terraformation.pdd.DatabaseBackedTest
-import com.terraformation.pdd.document.db.DocumentStore
-import com.terraformation.pdd.jooq.DocumentId
-import com.terraformation.pdd.jooq.VariableId
-import com.terraformation.pdd.jooq.VariableInjectionDisplayStyle
-import com.terraformation.pdd.jooq.VariableManifestId
-import com.terraformation.pdd.jooq.VariableType
-import com.terraformation.pdd.jooq.VariableUsageType
-import com.terraformation.pdd.jooq.VariableValueId
-import com.terraformation.pdd.variable.db.VariableStore
-import com.terraformation.pdd.variable.db.VariableValueStore
-import com.terraformation.pdd.variable.model.AppendValueOperation
-import com.terraformation.pdd.variable.model.BaseVariableValueProperties
-import com.terraformation.pdd.variable.model.DeleteValueOperation
-import com.terraformation.pdd.variable.model.ExistingSectionValue
-import com.terraformation.pdd.variable.model.NewNumberValue
-import com.terraformation.pdd.variable.model.NewTableValue
-import com.terraformation.pdd.variable.model.NewTextValue
-import com.terraformation.pdd.variable.model.SectionValueVariable
-import com.terraformation.pdd.variable.model.UpdateValueOperation
-import com.terraformation.pdd.variable.model.ValueOperation
+import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
+import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
+import com.terraformation.backend.db.docprod.VariableManifestId
+import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.db.docprod.VariableUsageType
+import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.documentproducer.db.DocumentStore
+import com.terraformation.backend.documentproducer.db.VariableStore
+import com.terraformation.backend.documentproducer.db.VariableValueStore
+import com.terraformation.backend.documentproducer.model.AppendValueOperation
+import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
+import com.terraformation.backend.documentproducer.model.DeleteValueOperation
+import com.terraformation.backend.documentproducer.model.ExistingSectionValue
+import com.terraformation.backend.documentproducer.model.NewNumberValue
+import com.terraformation.backend.documentproducer.model.NewTableValue
+import com.terraformation.backend.documentproducer.model.NewTextValue
+import com.terraformation.backend.documentproducer.model.SectionValueVariable
+import com.terraformation.backend.documentproducer.model.UpdateValueOperation
+import com.terraformation.backend.documentproducer.model.ValueOperation
+import com.terraformation.backend.mockUser
+import io.mockk.every
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 
-@SpringBootTest
-class DocumentUpgradeCalculatorTest : DatabaseBackedTest() {
-  @Autowired private lateinit var documentStore: DocumentStore
-  @Autowired private lateinit var variableStore: VariableStore
-  @Autowired private lateinit var variableValueStore: VariableValueStore
+class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
+  override val user = mockUser()
+
+  private val clock = TestClock()
+
+  private val documentStore: DocumentStore by lazy {
+    DocumentStore(clock, documentSavedVersionsDao, documentsDao, dslContext, methodologiesDao)
+  }
+  private val variableStore: VariableStore by lazy {
+    VariableStore(
+        dslContext,
+        variableNumbersDao,
+        variablesDao,
+        variableSectionRecommendationsDao,
+        variableSectionsDao,
+        variableSelectsDao,
+        variableSelectOptionsDao,
+        variableTablesDao,
+        variableTableColumnsDao,
+        variableTextsDao)
+  }
+  private val variableValueStore: VariableValueStore by lazy {
+    VariableValueStore(
+        clock,
+        documentsDao,
+        dslContext,
+        variableImageValuesDao,
+        variableLinkValuesDao,
+        variablesDao,
+        variableSectionValuesDao,
+        variableSelectOptionValuesDao,
+        variableValuesDao,
+        variableValueTableRowsDao)
+  }
+
+  @BeforeEach
+  fun setUp() {
+    insertUser()
+    insertMethodology()
+    insertVariableManifest()
+    insertDocument()
+
+    every { user.canReadDocument(any()) } returns true
+  }
 
   @Test
   fun `does not return operations for values that no longer validate`() {

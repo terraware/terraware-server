@@ -1,6 +1,6 @@
-package com.terraformation.pdd.document.model
+package com.terraformation.backend.documentproducer.model
 
-import com.terraformation.pdd.jooq.DocumentId
+import com.terraformation.backend.db.docprod.DocumentId
 
 data class NewSavedVersionModel(
     val documentId: DocumentId,

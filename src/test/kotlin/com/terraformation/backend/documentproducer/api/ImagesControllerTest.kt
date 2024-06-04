@@ -1,12 +1,13 @@
-package com.terraformation.pdd.variable.api
+package com.terraformation.backend.documentproducer.api
 
-import com.terraformation.pdd.ControllerIntegrationTest
-import com.terraformation.pdd.file.InMemoryFileStore
-import com.terraformation.pdd.jooq.VariableType
-import com.terraformation.pdd.jooq.VariableValueId
-import com.terraformation.pdd.jooq.tables.references.VARIABLE_VALUES
+import com.terraformation.backend.api.ControllerIntegrationTest
+import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
+import com.terraformation.backend.file.InMemoryFileStore
 import java.net.URI
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,6 +23,11 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
   @Autowired private lateinit var fileStore: InMemoryFileStore
 
+  @BeforeEach
+  fun setUp() {
+    insertUser()
+  }
+
   @Nested
   inner class GetImageValue {
     @Test
@@ -30,7 +36,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       val uri = URI("https://test")
       val contents = byteArrayOf(1, 2, 3, 4)
-      val fileId = insertFile(size = contents.size, storageUrl = uri)
+      val fileId = insertFile(size = contents.size.toLong(), storageUrl = uri)
       fileStore.write(uri, contents.inputStream())
 
       val imageValueId = insertImageValue(imageVariableId, fileId)
@@ -66,7 +72,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       val uri = URI("https://test")
       val contents = byteArrayOf(1, 2, 3, 4)
-      val fileId = insertFile(size = contents.size, storageUrl = uri)
+      val fileId = insertFile(size = contents.size.toLong(), storageUrl = uri)
       fileStore.write(uri, contents.inputStream())
 
       val imageValueId = insertImageValue(imageVariableId, fileId)
@@ -78,7 +84,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
     @Test
     fun `cannot get nonexistent image`() {
-      mockMvc.get("/api/v1/pdds/$cannedDocumentId/images/1").andExpect { status { isNotFound() } }
+      mockMvc.get("/api/v1/pdds/${cannedDocumentId}/images/1").andExpect { status { isNotFound() } }
     }
   }
 
@@ -165,8 +171,10 @@ class ImagesControllerTest : ControllerIntegrationTest() {
     fun `allocates next available list position if not specified`() {
       val imageVariableId =
           insertVariableManifestEntry(insertVariable(type = VariableType.Image, isList = true))
-      insertImageValue(imageVariableId, insertFile(), listPosition = 0)
-      insertImageValue(imageVariableId, insertFile(), listPosition = 1)
+      insertImageValue(
+          imageVariableId, insertFile(storageUrl = URI("http://dummy1")), listPosition = 0)
+      insertImageValue(
+          imageVariableId, insertFile(storageUrl = URI("http://dummy2")), listPosition = 1)
 
       val caption = "Image caption"
       val fileData = byteArrayOf(1, 2, 3, 4)

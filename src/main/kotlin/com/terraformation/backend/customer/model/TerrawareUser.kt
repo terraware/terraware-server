@@ -24,6 +24,7 @@ import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -124,6 +125,8 @@ interface TerrawareUser : Principal {
 
   fun canCreateDeviceManager(): Boolean
 
+  fun canCreateDocument(): Boolean
+
   fun canCreateDraftPlantingSite(organizationId: OrganizationId): Boolean
 
   fun canCreateFacility(organizationId: OrganizationId): Boolean
@@ -142,6 +145,8 @@ interface TerrawareUser : Principal {
 
   fun canCreateReport(organizationId: OrganizationId): Boolean
 
+  fun canCreateSavedVersion(documentId: DocumentId): Boolean
+
   fun canCreateSpecies(organizationId: OrganizationId): Boolean
 
   fun canCreateSubLocation(facilityId: FacilityId): Boolean
@@ -149,6 +154,8 @@ interface TerrawareUser : Principal {
   fun canCreateSubmission(projectId: ProjectId): Boolean
 
   fun canCreateTimeseries(deviceId: DeviceId): Boolean
+
+  fun canCreateVariableManifest(): Boolean
 
   fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId): Boolean
 
@@ -241,6 +248,8 @@ interface TerrawareUser : Principal {
   fun canReadDevice(deviceId: DeviceId): Boolean
 
   fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean
+
+  fun canReadDocument(documentId: DocumentId): Boolean
 
   fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean
 
@@ -359,6 +368,8 @@ interface TerrawareUser : Principal {
   fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean
 
   fun canUpdateDeviceTemplates(): Boolean
+
+  fun canUpdateDocument(documentId: DocumentId): Boolean
 
   fun canUpdateDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean
 

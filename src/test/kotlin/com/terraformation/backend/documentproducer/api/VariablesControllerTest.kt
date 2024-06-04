@@ -1,15 +1,21 @@
-package com.terraformation.pdd.variable.api
+package com.terraformation.backend.documentproducer.api
 
-import com.terraformation.pdd.ControllerIntegrationTest
-import com.terraformation.pdd.jooq.VariableManifestId
-import com.terraformation.pdd.jooq.VariableTextType
-import com.terraformation.pdd.jooq.VariableType
+import com.terraformation.backend.api.ControllerIntegrationTest
+import com.terraformation.backend.db.docprod.VariableManifestId
+import com.terraformation.backend.db.docprod.VariableTextType
+import com.terraformation.backend.db.docprod.VariableType
 import java.math.BigDecimal
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.test.web.servlet.get
 
 class VariablesControllerTest : ControllerIntegrationTest() {
+  @BeforeEach
+  fun setUp() {
+    insertUser()
+  }
+
   @Nested
   inner class ListVariables {
     private fun path(manifestId: VariableManifestId = cannedVariableManifestId) =

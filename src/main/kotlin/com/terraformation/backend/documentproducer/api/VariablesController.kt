@@ -1,26 +1,27 @@
-package com.terraformation.pdd.variable.api
+package com.terraformation.backend.documentproducer.api
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.terraformation.pdd.api.InternalEndpoint
-import com.terraformation.pdd.api.SuccessResponsePayload
-import com.terraformation.pdd.jooq.VariableId
-import com.terraformation.pdd.jooq.VariableManifestId
-import com.terraformation.pdd.variable.db.VariableStore
-import com.terraformation.pdd.variable.model.DateVariable
-import com.terraformation.pdd.variable.model.ImageVariable
-import com.terraformation.pdd.variable.model.LinkVariable
-import com.terraformation.pdd.variable.model.NumberVariable
-import com.terraformation.pdd.variable.model.SectionVariable
-import com.terraformation.pdd.variable.model.SelectOption
-import com.terraformation.pdd.variable.model.SelectVariable
-import com.terraformation.pdd.variable.model.TableColumn
-import com.terraformation.pdd.variable.model.TableVariable
-import com.terraformation.pdd.variable.model.TextVariable
-import com.terraformation.pdd.variable.model.Variable
+import com.terraformation.backend.api.InternalEndpoint
+import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableManifestId
+import com.terraformation.backend.documentproducer.db.VariableStore
+import com.terraformation.backend.documentproducer.model.DateVariable
+import com.terraformation.backend.documentproducer.model.ImageVariable
+import com.terraformation.backend.documentproducer.model.LinkVariable
+import com.terraformation.backend.documentproducer.model.NumberVariable
+import com.terraformation.backend.documentproducer.model.SectionVariable
+import com.terraformation.backend.documentproducer.model.SelectOption
+import com.terraformation.backend.documentproducer.model.SelectVariable
+import com.terraformation.backend.documentproducer.model.TableColumn
+import com.terraformation.backend.documentproducer.model.TableVariable
+import com.terraformation.backend.documentproducer.model.TextVariable
+import com.terraformation.backend.documentproducer.model.Variable
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController
 class VariablesController(
     private val variableStore: VariableStore,
 ) {
+  @Operation(summary = "List the variables within a given manifest.")
   @GetMapping
   fun listVariables(@RequestParam manifestId: VariableManifestId): ListVariablesResponsePayload {
     val variables = variableStore.fetchManifestVariables(manifestId)

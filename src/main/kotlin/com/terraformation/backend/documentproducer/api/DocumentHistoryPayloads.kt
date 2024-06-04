@@ -1,14 +1,14 @@
-package com.terraformation.pdd.document.api
+package com.terraformation.backend.documentproducer.api
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.terraformation.pdd.document.model.EditHistoryModel
-import com.terraformation.pdd.document.model.ExistingSavedVersionModel
-import com.terraformation.pdd.jooq.DocumentSavedVersionId
-import com.terraformation.pdd.jooq.UserId
-import com.terraformation.pdd.jooq.VariableManifestId
-import com.terraformation.pdd.jooq.VariableValueId
-import com.terraformation.pdd.jooq.tables.pojos.DocumentsRow
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.docprod.DocumentSavedVersionId
+import com.terraformation.backend.db.docprod.VariableManifestId
+import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.docprod.tables.pojos.DocumentsRow
+import com.terraformation.backend.documentproducer.model.EditHistoryModel
+import com.terraformation.backend.documentproducer.model.ExistingSavedVersionModel
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant

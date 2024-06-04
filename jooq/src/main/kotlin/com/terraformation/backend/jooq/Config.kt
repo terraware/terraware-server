@@ -37,6 +37,18 @@ val ENUM_TABLES =
                     "submission_statuses", listOf(".*\\.submission_status_id"), "SubmissionStatus"),
                 EnumTable("vote_options", listOf(".*\\.vote_option_id"), isLocalizable = false),
             ),
+        "docprod" to
+            listOf(
+                EnumTable(
+                    "document_statuses",
+                    listOf("documents\\.status_id"),
+                    enumName = "DocumentStatus"),
+                EnumTable("variable_injection_display_styles", listOf(".*\\.display_style_id")),
+                EnumTable("variable_table_styles", listOf("variable_tables\\.table_style_id")),
+                EnumTable("variable_text_types", listOf(".*\\.variable_text_type_id")),
+                EnumTable("variable_types", listOf(".*variable_type_id")),
+                EnumTable("variable_usage_types", listOf(".*\\.usage_type_id")),
+            ),
         "nursery" to
             listOf(
                 EnumTable(
@@ -84,12 +96,12 @@ val ENUM_TABLES =
                     "notification_types",
                     listOf(".*\\.notification_type_id"),
                     additionalColumns =
-                        listOf(
-                            EnumTableColumnInfo(
-                                "notification_criticality_id",
-                                "NotificationCriticality",
-                                true,
-                            )),
+                    listOf(
+                        EnumTableColumnInfo(
+                            "notification_criticality_id",
+                            "NotificationCriticality",
+                            true,
+                        )),
                     isLocalizable = false),
                 EnumTable(
                     "organization_types",
@@ -201,6 +213,27 @@ val ID_WRAPPERS =
                     "ParticipantProjectSpeciesId", listOf("participant_project_species\\.id")),
                 IdWrapper("SubmissionDocumentId", listOf("submission_documents\\.id")),
                 IdWrapper("SubmissionId", listOf("submissions\\.id", ".*\\.submission_id")),
+            ),
+        "docprod" to
+            listOf(
+                IdWrapper("DocumentId", listOf("documents\\.id", ".*\\.document_id")),
+                IdWrapper("DocumentSavedVersionId", listOf("document_saved_versions\\.id")),
+                IdWrapper("MethodologyId", listOf("methodologies\\.id", ".*\\.methodology_id")),
+                IdWrapper("VariableId", listOf("variables\\.id", ".*variable_id")),
+                IdWrapper(
+                    "VariableManifestId",
+                    listOf("variable_manifests\\.id", ".*\\.variable_manifest_id")),
+                IdWrapper(
+                    "VariableSelectOptionId",
+                    listOf(
+                        "variable_select_options\\.id",
+                        "variable_select_option_values\\.option_id")),
+                IdWrapper("VariableValueCitationId", listOf("variable_value_citations\\.id")),
+                IdWrapper(
+                    "VariableValueId",
+                    listOf(
+                        "variable_values\\.id", ".*variable_value_id", ".*\\.table_row_value_id")),
+                IdWrapper("VariableValueTableRowId", listOf("variable_value_table_rows\\.id")),
             ),
         "nursery" to
             listOf(
@@ -385,4 +418,7 @@ val EMBEDDABLES =
             .withName("species_plant_material_sourcing_method_id")
             .withTables("public.species_plant_material_sourcing_methods")
             .withColumns("species_id", "plant_material_sourcing_method_id"),
-    )
+        EmbeddableDefinitionType()
+            .withName("variable_manifest_entry_id")
+            .withTables("variable_manifest_entries")
+            .withColumns("variable_id", "variable_manifest_id"))

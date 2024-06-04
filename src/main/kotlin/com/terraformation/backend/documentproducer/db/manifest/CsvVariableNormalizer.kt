@@ -1,9 +1,9 @@
-package com.terraformation.pdd.variable.db.manifest
+package com.terraformation.backend.documentproducer.db.manifest
 
 import com.opencsv.CSVReader
-import com.terraformation.pdd.jooq.VariableTableStyle
-import com.terraformation.pdd.jooq.VariableType
-import com.terraformation.pdd.jooq.tables.pojos.VariableSelectOptionsRow
+import com.terraformation.backend.db.docprod.VariableTableStyle
+import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionsRow
 import java.io.InputStreamReader
 import java.math.BigDecimal
 

@@ -1,11 +1,11 @@
-package com.terraformation.pdd.document.model
+package com.terraformation.backend.documentproducer.model
 
-import com.terraformation.pdd.jooq.DocumentId
-import com.terraformation.pdd.jooq.DocumentSavedVersionId
-import com.terraformation.pdd.jooq.UserId
-import com.terraformation.pdd.jooq.VariableManifestId
-import com.terraformation.pdd.jooq.VariableValueId
-import com.terraformation.pdd.jooq.tables.pojos.DocumentSavedVersionsRow
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.DocumentSavedVersionId
+import com.terraformation.backend.db.docprod.VariableManifestId
+import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.docprod.tables.pojos.DocumentSavedVersionsRow
 import java.time.Instant
 
 data class ExistingSavedVersionModel(

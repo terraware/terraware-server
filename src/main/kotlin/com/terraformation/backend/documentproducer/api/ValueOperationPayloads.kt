@@ -1,17 +1,17 @@
-package com.terraformation.pdd.variable.api
+package com.terraformation.backend.documentproducer.api
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.terraformation.pdd.jooq.DocumentId
-import com.terraformation.pdd.jooq.VariableId
-import com.terraformation.pdd.jooq.VariableValueId
-import com.terraformation.pdd.variable.model.AppendValueOperation
-import com.terraformation.pdd.variable.model.BaseVariableValueProperties
-import com.terraformation.pdd.variable.model.DeleteValueOperation
-import com.terraformation.pdd.variable.model.ReplaceValuesOperation
-import com.terraformation.pdd.variable.model.UpdateValueOperation
-import com.terraformation.pdd.variable.model.ValueOperation
+import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.documentproducer.model.AppendValueOperation
+import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
+import com.terraformation.backend.documentproducer.model.DeleteValueOperation
+import com.terraformation.backend.documentproducer.model.ReplaceValuesOperation
+import com.terraformation.backend.documentproducer.model.UpdateValueOperation
+import com.terraformation.backend.documentproducer.model.ValueOperation
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 

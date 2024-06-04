@@ -1,13 +1,13 @@
-package com.terraformation.pdd.variable.api
+package com.terraformation.backend.documentproducer.api
 
-import com.terraformation.pdd.api.InternalEndpoint
-import com.terraformation.pdd.api.SimpleSuccessResponsePayload
-import com.terraformation.pdd.api.SuccessResponsePayload
-import com.terraformation.pdd.jooq.DocumentId
-import com.terraformation.pdd.jooq.VariableId
-import com.terraformation.pdd.jooq.VariableValueId
-import com.terraformation.pdd.variable.VariableValueService
-import com.terraformation.pdd.variable.db.VariableValueStore
+import com.terraformation.backend.api.InternalEndpoint
+import com.terraformation.backend.api.SimpleSuccessResponsePayload
+import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.documentproducer.VariableValueService
+import com.terraformation.backend.documentproducer.db.VariableValueStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema

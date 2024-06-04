@@ -1,7 +1,7 @@
-package com.terraformation.pdd.document.model
+package com.terraformation.backend.documentproducer.model
 
-import com.terraformation.pdd.jooq.MethodologyId
-import com.terraformation.pdd.jooq.UserId
+import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.docprod.MethodologyId
 
 data class NewDocumentModel(
     val methodologyId: MethodologyId,

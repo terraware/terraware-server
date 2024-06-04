@@ -43,6 +43,9 @@ spring:
       jsonColumnType: "JSONB"
       uuidColumnType: "UUID"
 
+  jackson:
+    default-property-inclusion: non_absent
+
   mail:
     # Spring Boot Mail checks for the existence of this option; we want to enable it even if
     # we aren't using SMTP.
@@ -100,6 +103,7 @@ springdoc:
   # internal data model classes we don't actually expose to clients.
   packages-to-scan:
     - "com.terraformation.backend.accelerator.api"
+    - "com.terraformation.backend.documentproducer.api"
     - "com.terraformation.backend.customer.api"
     - "com.terraformation.backend.device.api"
     - "com.terraformation.backend.i18n.api"

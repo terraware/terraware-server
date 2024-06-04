@@ -1,11 +1,14 @@
-package com.terraformation.pdd.document.db
+package com.terraformation.backend.documentproducer.db
 
-import com.terraformation.pdd.db.EntityNotFoundException
-import com.terraformation.pdd.db.MismatchedStateException
-import com.terraformation.pdd.jooq.DocumentId
-import com.terraformation.pdd.jooq.DocumentSavedVersionId
-import com.terraformation.pdd.jooq.MethodologyId
-import com.terraformation.pdd.jooq.VariableManifestId
+import com.terraformation.backend.db.EntityNotFoundException
+import com.terraformation.backend.db.MismatchedStateException
+import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.DocumentSavedVersionId
+import com.terraformation.backend.db.docprod.MethodologyId
+import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableManifestId
+import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.db.docprod.VariableValueId
 
 class CannotSaveEmptyDocumentException(val documentId: DocumentId) :
     MismatchedStateException(
@@ -30,65 +33,55 @@ class UpgradeCannotChangeMethodologyException(
         "Cannot upgrade from manifest $oldManifestId (methodology $oldMethodologyId) to manifest " +
             "$newManifestId which is for a different methodology $newMethodologyId")
 
-package com.terraformation.pdd.variable.db
-
-import com.terraformation.pdd.db.EntityNotFoundException
-import com.terraformation.pdd.db.MismatchedStateException
-import com.terraformation.pdd.jooq.MethodologyId
-import com.terraformation.pdd.jooq.VariableId
-import com.terraformation.pdd.jooq.VariableManifestId
-import com.terraformation.pdd.jooq.VariableType
-import com.terraformation.pdd.jooq.VariableValueId
-
 class CircularReferenceException(val variableIds: Collection<VariableId>) :
-  IllegalStateException("Circular reference detected in variables: $variableIds")
+    IllegalStateException("Circular reference detected in variables: $variableIds")
 
 class NoManifestForMethodologyException(val methodologyId: MethodologyId) :
-  EntityNotFoundException("Methodology $methodologyId has no variable manifest")
+    EntityNotFoundException("Methodology $methodologyId has no variable manifest")
 
 class RowInWrongTableException(val columnVariableId: VariableId, val rowValueId: VariableValueId) :
-  MismatchedStateException(
-      "Row $rowValueId is in a different table than column $columnVariableId")
+    MismatchedStateException(
+        "Row $rowValueId is in a different table than column $columnVariableId")
 
 class VariableIncompleteException(val variableId: VariableId) :
-  IllegalStateException("Variable $variableId missing required configuration data")
+    IllegalStateException("Variable $variableId missing required configuration data")
 
 class VariableInTableException(val variableId: VariableId) :
-  MismatchedStateException(
-      "Variable $variableId is a table column so must be used in a table row")
+    MismatchedStateException(
+        "Variable $variableId is a table column so must be used in a table row")
 
 class VariableManifestNotFoundException(val manifestId: VariableManifestId) :
-  EntityNotFoundException("Variable manifest $manifestId not found")
+    EntityNotFoundException("Variable manifest $manifestId not found")
 
 class VariableNotFoundException(val variableId: VariableId) :
-  EntityNotFoundException("Variable $variableId not found")
+    EntityNotFoundException("Variable $variableId not found")
 
 class VariableNotInManifestException(
-  val variableId: VariableId,
-  val manifestId: VariableManifestId
+    val variableId: VariableId,
+    val manifestId: VariableManifestId
 ) : EntityNotFoundException("Variable $variableId is not in manifest $manifestId")
 
 class VariableNotInTableException(val variableId: VariableId) :
-  MismatchedStateException(
-      "Variable $variableId is not a table column so cannot be used in a table row")
+    MismatchedStateException(
+        "Variable $variableId is not a table column so cannot be used in a table row")
 
 class VariableNotListException(val variableId: VariableId) :
-  MismatchedStateException("Variable $variableId is not a list")
+    MismatchedStateException("Variable $variableId is not a list")
 
 class VariableTypeMismatchException(val variableId: VariableId, val expectedType: VariableType) :
-  MismatchedStateException("Variable $variableId is not of type $expectedType")
+    MismatchedStateException("Variable $variableId is not of type $expectedType")
 
 class VariableValueIncompleteException(val valueId: VariableValueId) :
-  IllegalStateException("Variable value $valueId missing required data")
+    IllegalStateException("Variable value $valueId missing required data")
 
 class VariableValueInvalidException(val variableId: VariableId, val reason: String? = null) :
-  IllegalArgumentException(
-      listOfNotNull("Invalid value for $variableId", reason).joinToString(": "))
+    IllegalArgumentException(
+        listOfNotNull("Invalid value for $variableId", reason).joinToString(": "))
 
 class VariableValueNotFoundException(val valueId: VariableValueId) :
-  EntityNotFoundException("Value $valueId not found")
+    EntityNotFoundException("Value $valueId not found")
 
 class VariableValueTypeMismatchException(
-  val valueId: VariableValueId,
-  val expectedType: VariableType
+    val valueId: VariableValueId,
+    val expectedType: VariableType
 ) : MismatchedStateException("Value $valueId is not of type $expectedType")

@@ -1,26 +1,26 @@
-package com.terraformation.pdd.document.db
+package com.terraformation.backend.documentproducer.db
 
-import com.terraformation.pdd.api.currentUser
-import com.terraformation.pdd.db.asNonNullable
-import com.terraformation.pdd.document.model.EditHistoryModel
-import com.terraformation.pdd.document.model.ExistingDocumentModel
-import com.terraformation.pdd.document.model.ExistingSavedVersionModel
-import com.terraformation.pdd.document.model.NewDocumentModel
-import com.terraformation.pdd.document.model.NewSavedVersionModel
-import com.terraformation.pdd.jooq.DocumentId
-import com.terraformation.pdd.jooq.DocumentSavedVersionId
-import com.terraformation.pdd.jooq.DocumentStatus
-import com.terraformation.pdd.jooq.MethodologyId
-import com.terraformation.pdd.jooq.VariableManifestId
-import com.terraformation.pdd.jooq.tables.daos.DocumentSavedVersionsDao
-import com.terraformation.pdd.jooq.tables.daos.DocumentsDao
-import com.terraformation.pdd.jooq.tables.daos.MethodologiesDao
-import com.terraformation.pdd.jooq.tables.pojos.DocumentSavedVersionsRow
-import com.terraformation.pdd.jooq.tables.pojos.DocumentsRow
-import com.terraformation.pdd.jooq.tables.references.DOCUMENT_SAVED_VERSIONS
-import com.terraformation.pdd.jooq.tables.references.VARIABLE_MANIFESTS
-import com.terraformation.pdd.jooq.tables.references.VARIABLE_VALUES
-import com.terraformation.pdd.user.PermissionChecks
+import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.DocumentSavedVersionId
+import com.terraformation.backend.db.docprod.DocumentStatus
+import com.terraformation.backend.db.docprod.MethodologyId
+import com.terraformation.backend.db.docprod.VariableManifestId
+import com.terraformation.backend.db.docprod.tables.daos.DocumentSavedVersionsDao
+import com.terraformation.backend.db.docprod.tables.daos.DocumentsDao
+import com.terraformation.backend.db.docprod.tables.daos.MethodologiesDao
+import com.terraformation.backend.db.docprod.tables.pojos.DocumentSavedVersionsRow
+import com.terraformation.backend.db.docprod.tables.pojos.DocumentsRow
+import com.terraformation.backend.db.docprod.tables.references.DOCUMENT_SAVED_VERSIONS
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_MANIFESTS
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
+import com.terraformation.backend.documentproducer.model.EditHistoryModel
+import com.terraformation.backend.documentproducer.model.ExistingDocumentModel
+import com.terraformation.backend.documentproducer.model.ExistingSavedVersionModel
+import com.terraformation.backend.documentproducer.model.NewDocumentModel
+import com.terraformation.backend.documentproducer.model.NewSavedVersionModel
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.DSLContext
@@ -34,10 +34,9 @@ class DocumentStore(
     private val documentsDao: DocumentsDao,
     private val dslContext: DSLContext,
     private val methodologiesDao: MethodologiesDao,
-    private val permissionChecks: PermissionChecks,
 ) {
   fun create(newDocumentModel: NewDocumentModel): ExistingDocumentModel {
-    permissionChecks { createDocument() }
+    requirePermissions { createDocument() }
 
     if (!methodologiesDao.existsById(newDocumentModel.methodologyId)) {
       throw IllegalArgumentException("Methodology ${newDocumentModel.methodologyId} does not exist")
@@ -67,7 +66,7 @@ class DocumentStore(
   }
 
   fun createSavedVersion(model: NewSavedVersionModel): ExistingSavedVersionModel {
-    permissionChecks { createSavedVersion(model.documentId) }
+    requirePermissions { createSavedVersion(model.documentId) }
 
     val documentsRow = fetchDocumentById(model.documentId)
 
@@ -100,7 +99,7 @@ class DocumentStore(
   }
 
   fun fetchDocumentById(documentId: DocumentId): DocumentsRow {
-    permissionChecks { readDocument(documentId) }
+    requirePermissions { readDocument(documentId) }
 
     return documentsDao.fetchOneById(documentId) ?: throw DocumentNotFoundException(documentId)
   }
@@ -109,7 +108,7 @@ class DocumentStore(
       documentId: DocumentId,
       versionId: DocumentSavedVersionId
   ): ExistingSavedVersionModel {
-    permissionChecks { readDocument(documentId) }
+    requirePermissions { readDocument(documentId) }
 
     val versionsRow =
         documentSavedVersionsDao.fetchOneById(versionId)
@@ -175,7 +174,7 @@ class DocumentStore(
       documentId: DocumentId,
       applyChanges: (DocumentsRow) -> DocumentsRow
   ): DocumentsRow {
-    permissionChecks { updateDocument(documentId) }
+    requirePermissions { updateDocument(documentId) }
 
     val documentsRow = fetchDocumentById(documentId)
 
@@ -194,7 +193,7 @@ class DocumentStore(
       versionId: DocumentSavedVersionId,
       applyChanges: (DocumentSavedVersionsRow) -> DocumentSavedVersionsRow
   ): DocumentSavedVersionsRow {
-    permissionChecks { updateDocument(documentId) }
+    requirePermissions { updateDocument(documentId) }
 
     val originalRow =
         documentSavedVersionsDao.fetchOneById(versionId)

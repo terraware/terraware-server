@@ -1,29 +1,28 @@
-package com.terraformation.pdd.variable.db
+package com.terraformation.backend.documentproducer.db
 
-import com.terraformation.pdd.DatabaseTest
-import com.terraformation.pdd.api.AppUser
-import com.terraformation.pdd.file.store.SizedInputStream
-import com.terraformation.pdd.i18n.Messages
-import com.terraformation.pdd.jooq.VariableId
-import com.terraformation.pdd.jooq.VariableManifestId
-import com.terraformation.pdd.jooq.VariableTableStyle
-import com.terraformation.pdd.jooq.VariableTextType
-import com.terraformation.pdd.jooq.VariableType
-import com.terraformation.pdd.jooq.tables.pojos.VariableManifestEntriesRow
-import com.terraformation.pdd.jooq.tables.pojos.VariableNumbersRow
-import com.terraformation.pdd.jooq.tables.pojos.VariableSectionRecommendationsRow
-import com.terraformation.pdd.jooq.tables.pojos.VariableSectionsRow
-import com.terraformation.pdd.jooq.tables.pojos.VariableSelectOptionsRow
-import com.terraformation.pdd.jooq.tables.pojos.VariableSelectsRow
-import com.terraformation.pdd.jooq.tables.pojos.VariableTableColumnsRow
-import com.terraformation.pdd.jooq.tables.pojos.VariableTablesRow
-import com.terraformation.pdd.jooq.tables.pojos.VariableTextsRow
-import com.terraformation.pdd.jooq.tables.pojos.VariablesRow
-import com.terraformation.pdd.user.PermissionChecks
-import com.terraformation.pdd.util.TestClock
-import com.terraformation.pdd.variable.db.manifest.ManifestImporter
+import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
+import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableManifestId
+import com.terraformation.backend.db.docprod.VariableTableStyle
+import com.terraformation.backend.db.docprod.VariableTextType
+import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.db.docprod.tables.pojos.VariableManifestEntriesRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableNumbersRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionRecommendationsRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionsRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionsRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectsRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableTableColumnsRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableTablesRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableTextsRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
+import com.terraformation.backend.documentproducer.db.manifest.ManifestImporter
+import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.mockUser
 import io.mockk.every
-import io.mockk.mockk
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -35,21 +34,16 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken
 
-class ManifestImporterTest : DatabaseTest() {
+class ManifestImporterTest : DatabaseTest(), RunsAsUser {
+  override val user = mockUser()
+
   private val messages = Messages()
   private val clock = TestClock()
-  private val permissionChecks: PermissionChecks = mockk()
 
   private val variableManifestStore: VariableManifestStore by lazy {
     VariableManifestStore(
-        clock,
-        dslContext,
-        methodologiesDao,
-        permissionChecks,
-        variableManifestsDao,
-        variableManifestEntriesDao)
+        clock, dslContext, methodologiesDao, variableManifestsDao, variableManifestEntriesDao)
   }
 
   private val variableStore: VariableStore by lazy {
@@ -70,6 +64,11 @@ class ManifestImporterTest : DatabaseTest() {
     ManifestImporter(dslContext, messages, variableManifestStore, variableStore)
   }
 
+  @BeforeEach
+  fun setUp() {
+    insertUser()
+  }
+
   @Nested
   inner class UploadManifest {
     private var oldAuthentication: Authentication? = null
@@ -79,14 +78,9 @@ class ManifestImporterTest : DatabaseTest() {
 
     @BeforeEach
     fun setUp() {
-      val user = AppUser(usersDao.fetchOneById(cannedAdminId)!!)
-      val context = SecurityContextHolder.getContext()
-
-      oldAuthentication = context.authentication
-      context.authentication = PreAuthenticatedAuthenticationToken(user, "N/A", user.authorities)
-
-      every { permissionChecks.canCreateVariableManifest() } returns true
-      every { permissionChecks.invoke(any()) } answers { nothing }
+      every { user.canCreateVariableManifest() } returns true
+      // TODO is this needed?
+      // every { requirePermissions.invoke(any()) } answers { nothing }
     }
 
     @AfterEach

@@ -1,18 +1,18 @@
-package com.terraformation.pdd.variable.db
+package com.terraformation.backend.documentproducer.db
 
-import com.terraformation.pdd.api.currentUser
-import com.terraformation.pdd.jooq.MethodologyId
-import com.terraformation.pdd.jooq.embeddables.pojos.VariableManifestEntryId
-import com.terraformation.pdd.jooq.tables.daos.MethodologiesDao
-import com.terraformation.pdd.jooq.tables.daos.VariableManifestEntriesDao
-import com.terraformation.pdd.jooq.tables.daos.VariableManifestsDao
-import com.terraformation.pdd.jooq.tables.pojos.VariableManifestEntriesRow
-import com.terraformation.pdd.jooq.tables.pojos.VariableManifestsRow
-import com.terraformation.pdd.jooq.tables.references.VARIABLE_MANIFESTS
-import com.terraformation.pdd.log.perClassLogger
-import com.terraformation.pdd.user.PermissionChecks
-import com.terraformation.pdd.variable.model.ExistingVariableManifestModel
-import com.terraformation.pdd.variable.model.NewVariableManifestModel
+import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.docprod.MethodologyId
+import com.terraformation.backend.db.docprod.embeddables.pojos.VariableManifestEntryId
+import com.terraformation.backend.db.docprod.tables.daos.MethodologiesDao
+import com.terraformation.backend.db.docprod.tables.daos.VariableManifestEntriesDao
+import com.terraformation.backend.db.docprod.tables.daos.VariableManifestsDao
+import com.terraformation.backend.db.docprod.tables.pojos.VariableManifestEntriesRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableManifestsRow
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_MANIFESTS
+import com.terraformation.backend.documentproducer.model.ExistingVariableManifestModel
+import com.terraformation.backend.documentproducer.model.NewVariableManifestModel
+import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.DSLContext
@@ -22,7 +22,6 @@ class VariableManifestStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val methodologiesDao: MethodologiesDao,
-    private val permissionChecks: PermissionChecks,
     private val variableManifestsDao: VariableManifestsDao,
     private val variableManifestEntriesDao: VariableManifestEntriesDao
 ) {
@@ -37,7 +36,7 @@ class VariableManifestStore(
           .fetchOneInto(VariableManifestsRow::class.java)
 
   fun create(newVariableManifestModel: NewVariableManifestModel): ExistingVariableManifestModel {
-    permissionChecks { createVariableManifest() }
+    requirePermissions { createVariableManifest() }
 
     if (!methodologiesDao.existsById(newVariableManifestModel.methodologyId)) {
       throw IllegalArgumentException(
