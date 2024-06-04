@@ -20,7 +20,7 @@ data class KeycloakInfo(
 @Configuration
 class KeycloakInfoFactory {
   @Bean
-  @Profile("!apidoc") //
+  @Profile("!apidoc & !test") //
   fun keycloakInfo(clientRegistrationRepository: ClientRegistrationRepository): KeycloakInfo {
     val registration: ClientRegistration =
         clientRegistrationRepository.findByRegistrationId("keycloak")
@@ -40,4 +40,12 @@ class KeycloakInfoFactory {
   @Profile("apidoc")
   fun apiDocKeycloakInfo() =
       KeycloakInfo("example", "example", "https://example.com/realms/example")
+
+  /**
+   * Returns fake Keycloak info for purposes of running tests that interact with API controllers. We
+   * don't want tests to require connectivity to a real Keycloak instance.
+   */
+  @Bean
+  @Profile("test")
+  fun testKeycloakInfo() = KeycloakInfo("test", "test", "https://dummy.com/realms/test")
 }
