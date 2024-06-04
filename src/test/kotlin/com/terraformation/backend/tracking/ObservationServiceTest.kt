@@ -1398,7 +1398,10 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `replaces entire permanent cluster if this is the first observation and there are no completed plots`() {
       insertPlantingZone(numPermanentClusters = 1, width = 2, height = 4)
-      insertPlantingSubzone(width = 2, height = 4, plantingCompletedTime = Instant.EPOCH)
+      insertPlantingSubzone(width = 2, height = 4)
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting()
       val cluster1 = insertCluster(1, isPermanent = true)
       val cluster2 = insertCluster(2)
 
@@ -1424,8 +1427,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `removes permanent cluster if replacement cluster is in an unplanted subzone`() {
       insertPlantingZone(numPermanentClusters = 1, width = 2, height = 4)
-      insertPlantingSubzone(width = 2, height = 2, plantingCompletedTime = Instant.EPOCH)
+      insertPlantingSubzone(width = 2, height = 2)
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting()
       val cluster1 = insertCluster(1, isPermanent = true)
+
       insertPlantingSubzone(y = 2, width = 2, height = 2)
       val cluster2 = insertCluster(2)
 
