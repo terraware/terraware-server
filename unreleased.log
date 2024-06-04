@@ -1,3 +1,5 @@
+679a44531cb Reduce mandatory arguments to insertObservationPlot (#2025)
+79846eeca8e Track cumulative dead plants across observations (#2024)
 372f3e8667e Statically import plant statuses in ObservationStoreTest (#2023)
 1a5bc189249 Extract observed plant totals updates helper function (#2022)
 9d837e4641d Use recommended API for dynamic jOOQ field lookup (#2021)
