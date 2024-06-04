@@ -5,6 +5,7 @@ import com.terraformation.backend.api.ApiResponse415
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.SupportEndpoint
 import com.terraformation.backend.api.getFilename
+import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.support.SUPPORTED_CONTENT_TYPES_STRING
 import com.terraformation.backend.support.SupportService
@@ -72,10 +73,13 @@ class SupportController(private val service: SupportService) {
   fun uploadAttachment(
       @RequestPart("file", required = true) file: MultipartFile,
   ): UploadAttachmentResponsePayload {
+
+    val sizedInputStream =
+        SizedInputStream(
+            file.inputStream, file.size, file.contentType?.let { MediaType.parseMediaType(it) })
     val temporaryAttachments =
         try {
-          service.attachTemporaryFile(
-              file.getFilename(), file.inputStream, file.size, file.contentType)
+          service.attachTemporaryFile(file.getFilename(), sizedInputStream)
         } catch (e: NotSupportedException) {
           log.error("Unsupported file type ${file.contentType}", e)
           throw e

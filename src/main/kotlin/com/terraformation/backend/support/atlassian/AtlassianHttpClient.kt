@@ -2,6 +2,7 @@ package com.terraformation.backend.support.atlassian
 
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.support.atlassian.model.JiraServiceRequestFieldsModel
 import com.terraformation.backend.support.atlassian.model.ServiceDeskProjectModel
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
@@ -26,7 +27,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.jackson.JacksonConverter
 import jakarta.inject.Named
-import java.io.InputStream
 import kotlinx.coroutines.runBlocking
 
 /** Submits API requests to interact with Atlassian services. */
@@ -65,18 +65,16 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
 
   fun attachTemporaryFile(
       filename: String,
-      inputStream: InputStream,
-      size: Long?,
-      contentType: String?,
+      sizedInputStream: SizedInputStream
   ): AttachTemporaryFileResponse {
     // No required permissions
 
     return makeRequest(
         AttachTemporaryFilesHttpRequest(
-            inputStream = inputStream,
+            inputStream = sizedInputStream,
             filename = filename,
-            contentType = contentType,
-            fileSize = size,
+            contentType = sizedInputStream.contentType?.type,
+            fileSize = sizedInputStream.size,
             serviceDeskId = serviceDesk.id,
         ))
   }

@@ -3,6 +3,7 @@ package com.terraformation.backend.support.atlassian
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import io.mockk.every
@@ -76,12 +77,10 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
     createdIssueIds.addLast(issueId)
 
     val filename = "file.png"
-    val attachTempFilesResponse =
-        client.attachTemporaryFile(
-            filename,
-            sixPixelPng.inputStream(),
-            sixPixelPng.size.toLong(),
-            MediaType.IMAGE_PNG_VALUE)
+
+    val sizedInputStream =
+        SizedInputStream(sixPixelPng.inputStream(), sixPixelPng.size.toLong(), MediaType.IMAGE_PNG)
+    val attachTempFilesResponse = client.attachTemporaryFile(filename, sizedInputStream)
 
     assertNotNull(attachTempFilesResponse)
     val attachmentIds =
