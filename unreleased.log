@@ -1,3 +1,5 @@
+471108f309e SW-5472 Allow plot replacement in non-completed subzones (#2035)
+4ded854ba76 Don't allow deletion of subzones with past plantings (#2034)
 ba2b8866b84 SW-5230 Update recorded plant totals on site map edit (#2027)
 f363c3416dd Add helper for inserting test planting sites (#2026)
 679a44531cb Reduce mandatory arguments to insertObservationPlot (#2025)
