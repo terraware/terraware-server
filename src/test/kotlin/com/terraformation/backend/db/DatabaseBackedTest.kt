@@ -328,7 +328,7 @@ abstract class DatabaseBackedTest {
   protected final val facilityId: FacilityId = FacilityId(100)
 
   /** IDs of entities that have been inserted using the `insert` helper methods during this test. */
-  protected val inserted = Inserted()
+  val inserted = Inserted()
 
   @BeforeEach
   fun resetSequencesForTables() {
@@ -529,7 +529,7 @@ abstract class DatabaseBackedTest {
 
   private var nextFacilityNumber = 1
 
-  protected fun insertFacility(
+  fun insertFacility(
       id: Any = this.facilityId,
       organizationId: Any = this.organizationId,
       name: String = "Facility $id",
@@ -856,7 +856,7 @@ abstract class DatabaseBackedTest {
 
   private var nextSpeciesNumber = 1
 
-  protected fun insertSpecies(
+  fun insertSpecies(
       speciesId: Any? = null,
       scientificName: String =
           if (speciesId != null) "Species $speciesId" else "Species ${nextSpeciesNumber++}",

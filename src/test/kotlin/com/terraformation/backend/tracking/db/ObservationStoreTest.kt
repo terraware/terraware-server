@@ -45,7 +45,6 @@ import io.mockk.every
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.ZoneId
 import java.time.ZonedDateTime
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -67,6 +66,9 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
         observationPlotConditionsDao,
         observationPlotsDao,
         recordedPlantsDao)
+  }
+  private val helper: ObservationTestHelper by lazy {
+    ObservationTestHelper(this, store, user.userId)
   }
 
   private lateinit var plantingSiteId: PlantingSiteId
@@ -272,7 +274,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val now = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, timeZone).toInstant()
       clock.instant = now
 
-      insertSiteAndPlanting(timeZone)
+      helper.insertPlantedSite(timeZone = timeZone)
       val startableObservationId =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
@@ -309,28 +311,28 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = zone2))
 
       // Start date is now at a site that inherits its time zone from its organization.
-      insertSiteAndPlanting(null)
+      helper.insertPlantedSite(timeZone = null)
       val observationId1 =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
 
       // Start date is an hour ago.
-      insertSiteAndPlanting(timeZone = zone3)
+      helper.insertPlantedSite(timeZone = zone3)
       val observationId2 =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
 
       // Start date hasn't arrived yet in the site's time zone.
-      insertSiteAndPlanting(timeZone = zone1)
+      helper.insertPlantedSite(timeZone = zone1)
       insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
 
       // Observation already in progress; shouldn't be started
-      insertSiteAndPlanting(timeZone = zone3)
+      helper.insertPlantedSite(timeZone = zone3)
       insertObservation(
           endDate = endDate, startDate = startDate, state = ObservationState.InProgress)
 
       // Start date is still in the future.
-      insertSiteAndPlanting(timeZone = zone3)
+      helper.insertPlantedSite(timeZone = zone3)
       insertObservation(
           endDate = endDate, startDate = startDate.plusDays(1), state = ObservationState.Upcoming)
 
@@ -350,7 +352,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val now = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, timeZone).toInstant()
       clock.instant = now
 
-      val plantingSiteId = insertSiteAndPlanting(timeZone = timeZone)
+      val plantingSiteId = helper.insertPlantedSite(timeZone = timeZone)
       val observationId =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
@@ -382,7 +384,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val now = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, timeZone).toInstant()
       clock.instant = now
 
-      insertSiteAndPlanting(timeZone)
+      helper.insertPlantedSite(timeZone = timeZone)
       insertObservation(
           endDate = endDate,
           startDate = startDate,
@@ -423,7 +425,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val now = ZonedDateTime.of(startDate, LocalTime.MIDNIGHT, timeZone).toInstant()
       clock.instant = now
 
-      insertSiteAndPlanting(timeZone)
+      helper.insertPlantedSite(timeZone = timeZone)
       val startableObservationId =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
@@ -460,19 +462,19 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = zone2))
 
       // Start date is a month from now at a site that inherits its time zone from its organization.
-      insertSiteAndPlanting(null)
+      helper.insertPlantedSite(timeZone = null)
       val observationId1 =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
 
       // Start date plus 1 month is an hour ago.
-      insertSiteAndPlanting(timeZone = zone3)
+      helper.insertPlantedSite(timeZone = zone3)
       val observationId2 =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
 
       // Start date plus 1 month hasn't arrived yet in the site's time zone.
-      insertSiteAndPlanting(timeZone = zone1)
+      helper.insertPlantedSite(timeZone = zone1)
       insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
 
       val expected = setOf(observationId1, observationId2)
@@ -1160,7 +1162,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           ObservedZoneSpeciesTotalsRow(
               observationId, zoneId1, null, null, Unknown, 1, 0, 0, 0, 0, 1)
 
-      assertTotals(
+      helper.assertTotals(
           setOf(
               siteOther1Totals,
               siteOther2Totals,
@@ -1224,7 +1226,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       zone1Species3Totals = zone1Species3Totals.copy(totalExisting = 2)
       zone1UnknownTotals = zone1UnknownTotals.copy(totalLive = 2)
 
-      assertTotals(
+      helper.assertTotals(
           setOf(
               siteOther1Totals,
               siteOther2Totals,
@@ -1296,7 +1298,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               cumulativeDead = 2)
       siteOther1Totals = siteOther1Totals.copy(totalLive = 2, mortalityRate = 33, permanentLive = 2)
 
-      assertTotals(
+      helper.assertTotals(
           setOf(
               siteOther1Totals,
               siteOther2Totals,
@@ -1495,7 +1497,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   speciesName = "Species name",
                   statusId = Dead)))
 
-      val totalsForOtherSite = fetchAllTotals()
+      val totalsForOtherSite = helper.fetchAllTotals()
 
       insertPlantingSite()
       insertPlantingZone()
@@ -1506,7 +1508,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       store.populateCumulativeDead(observationId)
 
-      assertEquals(totalsForOtherSite, fetchAllTotals())
+      assertEquals(totalsForOtherSite, helper.fetchAllTotals())
     }
 
     @Test
@@ -1541,7 +1543,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       store.completePlot(
           previousObservationId, plotId2, emptySet(), null, Instant.EPOCH, listOf(deadPlant))
 
-      val totalsFromPreviousObservation = fetchAllTotals()
+      val totalsFromPreviousObservation = helper.fetchAllTotals()
 
       // In the next observation, plot 2 is no longer permanent.
       val observationId = insertObservation()
@@ -1550,7 +1552,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       store.populateCumulativeDead(observationId)
 
-      val totalsForThisObservation = fetchAllTotals() - totalsFromPreviousObservation
+      val totalsForThisObservation = helper.fetchAllTotals() - totalsFromPreviousObservation
 
       assertEquals(
           setOf(
@@ -1620,14 +1622,14 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           Instant.EPOCH,
           listOf(livePlant))
 
-      val totalsFromPreviousObservation = fetchAllTotals()
+      val totalsFromPreviousObservation = helper.fetchAllTotals()
 
       val observationId = insertObservation()
       insertObservationPlot(isPermanent = true)
 
       store.populateCumulativeDead(observationId)
 
-      assertEquals(totalsFromPreviousObservation, fetchAllTotals())
+      assertEquals(totalsFromPreviousObservation, helper.fetchAllTotals())
     }
 
     @Test
@@ -1867,45 +1869,6 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               ObservationPlotPosition.SoutheastCorner to point(2, 2)),
           observedPlotCoordinatesDao.findAll().associate { it.positionId!! to it.gpsCoordinates!! },
           "Coordinates after update")
-    }
-  }
-
-  private fun insertSiteAndPlanting(timeZone: ZoneId?): PlantingSiteId {
-    val plantingSiteId = insertPlantingSite(timeZone = timeZone)
-    insertPlantingZone()
-    insertPlantingSubzone()
-    insertWithdrawal()
-    insertDelivery()
-    insertPlanting()
-
-    return plantingSiteId
-  }
-
-  private fun fetchAllTotals(): Set<Any> {
-    return (dslContext
-            .selectFrom(OBSERVED_PLOT_SPECIES_TOTALS)
-            .fetchInto(ObservedPlotSpeciesTotalsRow::class.java) +
-            dslContext
-                .selectFrom(OBSERVED_ZONE_SPECIES_TOTALS)
-                .fetchInto(ObservedZoneSpeciesTotalsRow::class.java) +
-            dslContext
-                .selectFrom(OBSERVED_SITE_SPECIES_TOTALS)
-                .fetchInto(ObservedSiteSpeciesTotalsRow::class.java))
-        .toSet()
-  }
-
-  /**
-   * Asserts that the contents of the observed totals tables match an expected set of rows. If
-   * there's a difference, produces a textual assertion failure so the difference is easy to spot in
-   * the test output.
-   */
-  private fun assertTotals(expected: Set<Any>, message: String) {
-    val actual = fetchAllTotals()
-
-    if (expected != actual) {
-      val expectedRows = expected.map { "$it" }.sorted().joinToString("\n")
-      val actualRows = actual.map { "$it" }.sorted().joinToString("\n")
-      assertEquals(expectedRows, actualRows, message)
     }
   }
 }
