@@ -108,6 +108,19 @@ class PlantingSiteModelTest {
           "Site is big enough for 5 plots but not a permanent cluster")
     }
 
+    @Test
+    fun `checks that site has boundary if it has exclusion`() {
+      assertHasProblem(
+          newSite().copy(boundary = null, exclusion = rectangle(1)),
+          PlantingSiteValidationFailure.exclusionWithoutBoundary())
+    }
+
+    @Test
+    fun `checks that site has boundary if it has zones`() {
+      assertHasProblem(
+          newSite().copy(boundary = null), PlantingSiteValidationFailure.zonesWithoutSiteBoundary())
+    }
+
     private fun assertHasProblem(
         site: PlantingSiteModel<*, *, *>,
         problem: PlantingSiteValidationFailure,
