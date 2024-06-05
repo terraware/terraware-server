@@ -50,7 +50,7 @@ class PlantingSiteImporter(
       organizationId: OrganizationId
   ): NewPlantingSiteModel {
     if (shapefiles.isEmpty() || shapefiles.size > 2) {
-      throw PlantingSiteMapInvalidException(
+      throw ShapefilesInvalidException(
           "Expected subzones and optionally exclusions but found ${shapefiles.size} shapefiles")
     }
 
@@ -59,7 +59,7 @@ class PlantingSiteImporter(
 
     shapefiles.forEach { shapefile ->
       if (shapefile.features.isEmpty()) {
-        throw PlantingSiteMapInvalidException("Shapefiles must contain geometries")
+        throw ShapefilesInvalidException("Shapefiles must contain geometries")
       }
 
       if (shapefile.features.all { it.hasProperty(subzoneNameProperties) }) {
@@ -74,7 +74,7 @@ class PlantingSiteImporter(
         description,
         organizationId,
         subzonesFile
-            ?: throw PlantingSiteMapInvalidException(
+            ?: throw ShapefilesInvalidException(
                 "Subzones shapefile features must include one of these properties: " +
                     subzoneNameProperties.joinToString()),
         exclusionsFile)
@@ -93,7 +93,7 @@ class PlantingSiteImporter(
     val zonesWithSubzones = getZonesWithSubzones(subzonesFile, exclusion, problems)
 
     if (problems.isNotEmpty()) {
-      throw PlantingSiteMapInvalidException(problems)
+      throw ShapefilesInvalidException(problems)
     }
 
     val siteBoundary = mergeToMultiPolygon(zonesWithSubzones.map { it.boundary })
@@ -132,7 +132,7 @@ class PlantingSiteImporter(
                     (0 ..< geometry.numGeometries).map { geometry.getGeometryN(it) as Polygon }
                 else -> {
                   problems.add("Exclusion geometries must all be Polygon or MultiPolygon.")
-                  throw PlantingSiteMapInvalidException(problems)
+                  throw ShapefilesInvalidException(problems)
                 }
               }
             }

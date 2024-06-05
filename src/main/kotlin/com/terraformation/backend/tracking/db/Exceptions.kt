@@ -75,12 +75,7 @@ class PlantingSubzoneNotFoundException(val plantingSubzoneId: PlantingSubzoneId)
 class PlantingZoneNotFoundException(val plantingZoneId: PlantingZoneId) :
     EntityNotFoundException("Planting zone $plantingZoneId not found")
 
-class PlantingSiteMapInvalidException(val problems: List<String>) :
-    RuntimeException("Found problems in planting site map data") {
-  constructor(problem: String) : this(listOf(problem))
-}
-
-class PlantingSiteEditInvalidException(val problems: List<PlantingSiteValidationFailure>) :
+class PlantingSiteMapInvalidException(val problems: List<PlantingSiteValidationFailure>) :
     RuntimeException("Found problems in planting site edit")
 
 class PlotAlreadyClaimedException(val monitoringPlotId: MonitoringPlotId) :
@@ -132,6 +127,11 @@ class ObservationRescheduleStateException(val observationId: ObservationId) :
 class ScheduleObservationWithoutPlantsException(val plantingSiteId: PlantingSiteId) :
     IllegalArgumentException(
         "Cannot schedule observation in planting site $plantingSiteId which has no reported plants in subzones")
+
+class ShapefilesInvalidException(val problems: List<String>) :
+    RuntimeException("Found problems in planting site map data") {
+  constructor(problem: String) : this(listOf(problem))
+}
 
 class WithdrawalNotUndoException(val withdrawalId: WithdrawalId) :
     MismatchedStateException("Withdrawal $withdrawalId is not an undo withdrawal")

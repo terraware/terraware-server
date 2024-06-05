@@ -7,7 +7,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzoneHistor
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZoneHistoriesRow
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
-import com.terraformation.backend.tracking.db.PlantingSiteEditInvalidException
+import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorTest
@@ -459,7 +459,7 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
 
     @Test
     fun `throws exception if edit has problems`() {
-      assertThrows<PlantingSiteEditInvalidException> {
+      assertThrows<PlantingSiteMapInvalidException> {
         runScenario(
             newSite(),
             newSite {
