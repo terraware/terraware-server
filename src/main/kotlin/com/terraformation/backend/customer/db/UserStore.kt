@@ -293,9 +293,15 @@ class UserStore(
     // If the country code is set, include it in the locale.
     val newLocale = model.locale?.let { Locale.of(it.language, model.countryCode ?: "") }
 
+    // Retain existing cookie consent if the model doesn't include it.
+    val newCookiesConsented = model.cookiesConsented ?: usersRow.cookiesConsented
+    val newCookiesConsentedTime = model.cookiesConsentedTime ?: usersRow.cookiesConsentedTime
+
     dslContext.transaction { _ ->
       usersDao.update(
           usersRow.copy(
+              cookiesConsented = newCookiesConsented,
+              cookiesConsentedTime = newCookiesConsentedTime,
               countryCode = model.countryCode,
               emailNotificationsEnabled = model.emailNotificationsEnabled,
               firstName = model.firstName,
@@ -626,6 +632,8 @@ class UserStore(
         usersRow.firstName,
         usersRow.lastName,
         usersRow.countryCode,
+        usersRow.cookiesConsented,
+        usersRow.cookiesConsentedTime,
         usersRow.locale,
         usersRow.timeZone,
         usersRow.userTypeId ?: throw IllegalArgumentException("User type should never be null"),

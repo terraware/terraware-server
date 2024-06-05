@@ -19,6 +19,8 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.servlet.http.HttpSession
 import jakarta.ws.rs.ForbiddenException
+import java.time.Instant
+import java.time.InstantSource
 import java.time.ZoneId
 import java.util.Locale
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -33,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController
 @CustomerEndpoint
 @RequestMapping("/api/v1/users")
 @RestController
-class UsersController(private val userStore: UserStore) {
+class UsersController(private val clock: InstantSource, private val userStore: UserStore) {
   @GetMapping("/me")
   @Operation(summary = "Gets information about the current user.")
   fun getMyself(): GetUserResponsePayload {
@@ -75,6 +77,26 @@ class UsersController(private val userStore: UserStore) {
     userStore.deleteSelf()
     session?.invalidate()
     return SimpleSuccessResponsePayload()
+  }
+
+  @PutMapping("/me/cookies")
+  @Operation(summary = "Updates the current user's cookie consent selection.")
+  fun updateCookieConsent(
+      @RequestBody payload: UpdateUserCookieConsentRequestPayload
+  ): SimpleSuccessResponsePayload {
+    val user = currentUser()
+    if (user is IndividualUser) {
+      val model =
+          user.copy(
+              cookiesConsented = payload.cookiesConsented,
+              cookiesConsentedTime = clock.instant(),
+          )
+
+      userStore.updateUser(model)
+      return SimpleSuccessResponsePayload()
+    } else {
+      throw ForbiddenException("Can only update cookie consent for ordinary users")
+    }
   }
 
   @GetMapping("/me/preferences")
@@ -134,6 +156,16 @@ class UsersController(private val userStore: UserStore) {
 }
 
 data class UserProfilePayload(
+    @Schema(
+        description =
+            "If true, the user has consented to the use of analytics cookies. If false, the " +
+                "user has declined. If null, the user has not made a consent selection yet.")
+    val cookiesConsented: Boolean?,
+    @Schema(
+        description =
+            "If the user has selected whether or not to consent to analytics cookies, the date " +
+                "and time of the selection.")
+    val cookiesConsentedTime: Instant?,
     @Schema(description = "Two-letter code of the user's country.", example = "US")
     val countryCode: String?,
     @Schema(
@@ -158,6 +190,8 @@ data class UserProfilePayload(
   constructor(
       user: IndividualUser
   ) : this(
+      user.cookiesConsented,
+      user.cookiesConsentedTime,
       user.countryCode,
       user.userId,
       user.email,
@@ -186,6 +220,13 @@ data class UpdateUserRequestPayload(
     @Schema(description = "IETF locale code containing user's preferred language.", example = "en")
     val locale: String?,
     val timeZone: ZoneId?,
+)
+
+data class UpdateUserCookieConsentRequestPayload(
+    @Schema(
+        description =
+            "If true, the user consents to the use of analytics cookies. If false, they decline.")
+    val cookiesConsented: Boolean,
 )
 
 @JsonInclude(JsonInclude.Include.ALWAYS)

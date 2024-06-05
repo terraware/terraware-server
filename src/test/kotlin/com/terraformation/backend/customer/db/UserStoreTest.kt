@@ -142,11 +142,19 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchByAuthId returns existing user without touching Keycloak`() {
     val timeZone = ZoneId.of("Pacific/Honolulu")
-    insertUser(authId = authId, firstName = "f", lastName = "l", timeZone = timeZone)
+    insertUser(
+        authId = authId,
+        cookiesConsented = false,
+        cookiesConsentedTime = Instant.ofEpochSecond(15),
+        firstName = "f",
+        lastName = "l",
+        timeZone = timeZone)
 
     val actual = userStore.fetchByAuthId(authId) as IndividualUser
 
     assertEquals(authId, actual.authId, "Auth ID")
+    assertEquals(false, actual.cookiesConsented, "Cookies consented")
+    assertEquals(Instant.ofEpochSecond(15), actual.cookiesConsentedTime, "Cookies consented time")
     assertEquals("f", actual.firstName, "First name")
     assertEquals("l", actual.lastName, "Last name")
     assertEquals(timeZone, actual.timeZone, "Time zone")
@@ -392,6 +400,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `updateUser updates profile information`() {
+    val newCookiesConsented = true
+    val newCookiesConsentedTime = Instant.ofEpochSecond(30)
     val newCountryCode = "AR"
     val newFirstName = "Testy"
     val newLastName = "McTestalot"
@@ -408,6 +418,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     val modelWithEdits =
         model.copy(
+            cookiesConsented = newCookiesConsented,
+            cookiesConsentedTime = newCookiesConsentedTime,
             countryCode = newCountryCode,
             email = "newemail@x.com",
             firstName = newFirstName,
@@ -420,6 +432,9 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     val updatedModel = userStore.fetchOneById(model.userId) as IndividualUser
 
+    assertEquals(newCookiesConsented, updatedModel.cookiesConsented, "Cookies consented")
+    assertEquals(
+        newCookiesConsentedTime, updatedModel.cookiesConsentedTime, "Cookies consented time")
     assertEquals(newCountryCode, updatedModel.countryCode, "Country code (DB)")
     assertEquals(oldEmail, updatedModel.email, "Email (DB)")
     assertEquals(newFirstName, updatedModel.firstName, "First name (DB)")
@@ -432,6 +447,28 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(oldEmail, updatedRepresentation?.email, "Email (Keycloak)")
     assertEquals(newFirstName, updatedRepresentation?.firstName, "First name (Keycloak)")
     assertEquals(newLastName, updatedRepresentation?.lastName, "Last name (Keycloak)")
+  }
+
+  @Test
+  fun `updateUser retains existing cookie consent`() {
+    insertUser(
+        authId = userRepresentation.id,
+        cookiesConsented = true,
+        cookiesConsentedTime = Instant.ofEpochSecond(20),
+        email = userRepresentation.email)
+
+    val model = userStore.fetchByEmail(userRepresentation.email)!!
+
+    every { user.userId } returns model.userId
+
+    val modelWithEdits = model.copy(cookiesConsented = null, cookiesConsentedTime = null)
+    userStore.updateUser(modelWithEdits)
+
+    val updatedModel = userStore.fetchOneById(model.userId) as IndividualUser
+
+    assertEquals(true, updatedModel.cookiesConsented, "Cookies consented")
+    assertEquals(
+        Instant.ofEpochSecond(20), updatedModel.cookiesConsentedTime, "Cookies consented time")
   }
 
   @Test
