@@ -28,7 +28,6 @@ import io.ktor.http.contentType
 import io.ktor.serialization.jackson.JacksonConverter
 import jakarta.inject.Named
 import kotlinx.coroutines.runBlocking
-import org.springframework.http.MediaType
 
 /** Submits API requests to interact with Atlassian services. */
 @Named
@@ -65,8 +64,8 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
   }
 
   fun attachTemporaryFile(
-      sizedInputStream: SizedInputStream,
-      filename: String
+      filename: String,
+      sizedInputStream: SizedInputStream
   ): AttachTemporaryFileResponse {
     // No required permissions
 
@@ -74,7 +73,7 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
         AttachTemporaryFilesHttpRequest(
             inputStream = sizedInputStream,
             filename = filename,
-            contentType = sizedInputStream.contentType?.let { MediaType.toString(listOf(it)) },
+            contentType = sizedInputStream.contentType?.type,
             fileSize = sizedInputStream.size,
             serviceDeskId = serviceDesk.id,
         ))

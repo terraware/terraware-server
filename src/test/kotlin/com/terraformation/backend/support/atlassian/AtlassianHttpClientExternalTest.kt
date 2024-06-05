@@ -23,6 +23,9 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
   override val user: TerrawareUser = mockUser()
   private lateinit var client: AtlassianHttpClient
   private val createdIssueIds: MutableList<String> = mutableListOf()
+  private val sixPixelPng: ByteArray by lazy {
+    javaClass.getResourceAsStream("/file/sixPixels.png").use { it.readAllBytes() }
+  }
 
   @BeforeEach
   fun setUp() {
@@ -73,14 +76,11 @@ class AtlassianHttpClientExternalTest : RunsAsUser {
     val issueId = createResponse.issueId
     createdIssueIds.addLast(issueId)
 
-    val bytes = "abc".toByteArray()
+    val filename = "file.png"
 
     val sizedInputStream =
-        SizedInputStream(
-            bytes.inputStream(), bytes.size.toLong(), MediaType.APPLICATION_OCTET_STREAM)
-
-    val filename = "file.txt"
-    val attachTempFilesResponse = client.attachTemporaryFile(sizedInputStream, filename)
+        SizedInputStream(sixPixelPng.inputStream(), sixPixelPng.size.toLong(), MediaType.IMAGE_PNG)
+    val attachTempFilesResponse = client.attachTemporaryFile(filename, sizedInputStream)
 
     assertNotNull(attachTempFilesResponse)
     val attachmentIds =

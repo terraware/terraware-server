@@ -121,6 +121,14 @@ annotation class ApiResponse413(
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
+@ApiResponseSimpleError(responseCode = "415")
+annotation class ApiResponse415(
+    @get:AliasFor(annotation = ApiResponse::class, attribute = "description")
+    val description: String = "The media type is not supported."
+)
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION)
 @ApiResponse(
     responseCode = "200",
     content =
