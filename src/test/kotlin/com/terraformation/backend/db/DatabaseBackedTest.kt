@@ -2090,8 +2090,6 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!
   }
 
-  fun insertTimeZone(timeZone: Any = ZoneId.of("Pacific/Honolulu")): ZoneId = ZoneId.of("$timeZone")
-
   protected fun insertOrganizationInternalTag(
       organizationId: Any = this.organizationId,
       tagId: InternalTagId = InternalTagIds.Reporter,

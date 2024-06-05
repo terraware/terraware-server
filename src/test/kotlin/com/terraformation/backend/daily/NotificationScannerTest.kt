@@ -25,6 +25,7 @@ import io.mockk.mockk
 import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -139,7 +140,7 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
     val notifiedFacilities = mutableSetOf<FacilityId>()
     notifiers.add(FacilityNotifier { facility, _ -> notifiedFacilities.add(facility.id) })
 
-    val earlierTimeZone = insertTimeZone("America/New_York")
+    val earlierTimeZone = ZoneId.of("${"America/New_York"}")
     facilitiesDao.update(
         facilitiesDao
             .fetchOneById(facilityId)!!
@@ -163,14 +164,14 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
 
     // This facility's last notification date is yesterday from the server's (UTC) point of view,
     // but is today in the facility's time zone.
-    val earlierTimeZone = insertTimeZone("America/New_York")
+    val earlierTimeZone = ZoneId.of("${"America/New_York"}")
     val earlierFacilityId = FacilityId(1000)
     insertFacility(
         earlierFacilityId,
         lastNotificationDate = LocalDate.now(clock).minusDays(1),
         timeZone = earlierTimeZone)
 
-    val laterTimeZone = insertTimeZone("Europe/Athens")
+    val laterTimeZone = ZoneId.of("${"Europe/Athens"}")
     val laterFacilityId = FacilityId(1001)
     insertFacility(
         laterFacilityId,

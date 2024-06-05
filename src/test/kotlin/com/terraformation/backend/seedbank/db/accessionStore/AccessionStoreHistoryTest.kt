@@ -20,6 +20,7 @@ import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -58,7 +59,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
 
   @Test
   fun `uses facility time zone to calculate dates`() {
-    val earlierZoneThanUtc = insertTimeZone("America/New_York")
+    val earlierZoneThanUtc = ZoneId.of("${"America/New_York"}")
     facilitiesDao.update(
         facilitiesDao.fetchOneById(facilityId)!!.copy(timeZone = earlierZoneThanUtc))
 
