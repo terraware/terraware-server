@@ -43,7 +43,6 @@ Payload classes often live in the same file as the controller classes that use t
 
 Generally, if a class has a significant amount of code, it’ll live in its own file.
 
-
 ## Database access
 
 We use a schema-first, code-generation approach, as opposed to a code-first approach where the database gets created based on class structure.

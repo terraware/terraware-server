@@ -1,3 +1,4 @@
+a43c76c5404 Add Spotless rules for SQL and Markdown (#2038)
 b2a6f266e6c Move the population of the timezones to a numbered migration file (#2037)
 f46dd816a1e SW-5484 Added file type checker, and responses for invalid file size or types (#2036)
 dbe91b31713 Update dependency gradle to v8.8 (#2031)
