@@ -64,7 +64,7 @@ Since a table is a type of variable, and any type of variable can be a column in
 
 Sections define the contents of the rendered document will be organized. In product discussions, you will hear the terms "template" and "outline" used; those concepts are represented as sections in the database schema.
 
-A section is a variable that can optionally be a child of another section, forming a tree structure. `variable_sections.parent_variable_id` and `variable_sections.position` define the parent-child relationships and the order of the child sections. 
+A section is a variable that can optionally be a child of another section, forming a tree structure. `variable_sections.parent_variable_id` and `variable_sections.position` define the parent-child relationships and the order of the child sections.
 
 By default, the name of each section will be rendered as a numbered header in the document. However, if `variable_sections.render_heading` is false, the section header won't be included. This is to support cases where we want to break textual parts of the document up into a sequence of smaller parts for purposes of editing, but present it as a single contiguous span of text in the finished document. We'd model that by putting child sections under the parent section and setting their `render_heading`s to false.
 
