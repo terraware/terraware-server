@@ -122,14 +122,14 @@
 <text text-anchor="start" x="81" y="-239.665" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="8,-213.465 8,-231.465 120,-231.465 120,-213.465 8,-213.465"/>
 <text text-anchor="start" x="11" y="-219.665" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="8,-195.465 8,-213.465 38,-213.465 38,-195.465 8,-195.465"/>
-<polygon fill="none" stroke="black" points="8,-195.465 8,-213.465 38,-213.465 38,-195.465 8,-195.465"/>
+<polygon fill="#ffffff" stroke="none" points="8,-195.465 8,-213.465 31,-213.465 31,-195.465 8,-195.465"/>
+<polygon fill="none" stroke="black" points="8,-195.465 8,-213.465 31,-213.465 31,-195.465 8,-195.465"/>
 <text text-anchor="start" x="11" y="-201.665" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="38,-195.465 38,-213.465 88,-213.465 88,-195.465 38,-195.465"/>
-<polygon fill="none" stroke="black" points="38,-195.465 38,-213.465 88,-213.465 88,-195.465 38,-195.465"/>
-<text text-anchor="start" x="49" y="-201.665" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="88,-195.465 88,-213.465 120,-213.465 120,-195.465 88,-195.465"/>
-<polygon fill="none" stroke="black" points="88,-195.465 88,-213.465 120,-213.465 120,-195.465 88,-195.465"/>
+<polygon fill="#ffffff" stroke="none" points="31,-195.465 31,-213.465 91,-213.465 91,-195.465 31,-195.465"/>
+<polygon fill="none" stroke="black" points="31,-195.465 31,-213.465 91,-213.465 91,-195.465 31,-195.465"/>
+<text text-anchor="start" x="39" y="-201.665" font-family="Helvetica,sans-Serif" font-size="11.00">604 rows</text>
+<polygon fill="#ffffff" stroke="none" points="91,-195.465 91,-213.465 120,-213.465 120,-195.465 91,-195.465"/>
+<polygon fill="none" stroke="black" points="91,-195.465 91,-213.465 120,-213.465 120,-195.465 91,-195.465"/>
 <text text-anchor="start" x="100" y="-201.665" font-family="Helvetica,sans-Serif" font-size="11.00">5 &gt;</text>
 </a>
 </g>

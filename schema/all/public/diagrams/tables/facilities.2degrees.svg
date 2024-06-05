@@ -123,14 +123,14 @@
 <polygon fill="none" stroke="black" points="8,-524.14 8,-546.14 120,-546.14 120,-524.14 8,-524.14"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13" y="-541.14"/>
 <text text-anchor="start" x="41" y="-532.34" font-family="Helvetica,sans-Serif" font-size="11.00">time_zone</text>
-<polygon fill="#ffffff" stroke="none" points="8,-506.14 8,-524.14 38,-524.14 38,-506.14 8,-506.14"/>
-<polygon fill="none" stroke="black" points="8,-506.14 8,-524.14 38,-524.14 38,-506.14 8,-506.14"/>
+<polygon fill="#ffffff" stroke="none" points="8,-506.14 8,-524.14 31,-524.14 31,-506.14 8,-506.14"/>
+<polygon fill="none" stroke="black" points="8,-506.14 8,-524.14 31,-524.14 31,-506.14 8,-506.14"/>
 <text text-anchor="start" x="11" y="-512.34" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="38,-506.14 38,-524.14 88,-524.14 88,-506.14 38,-506.14"/>
-<polygon fill="none" stroke="black" points="38,-506.14 38,-524.14 88,-524.14 88,-506.14 38,-506.14"/>
-<text text-anchor="start" x="49" y="-512.34" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="88,-506.14 88,-524.14 120,-524.14 120,-506.14 88,-506.14"/>
-<polygon fill="none" stroke="black" points="88,-506.14 88,-524.14 120,-524.14 120,-506.14 88,-506.14"/>
+<polygon fill="#ffffff" stroke="none" points="31,-506.14 31,-524.14 91,-524.14 91,-506.14 31,-506.14"/>
+<polygon fill="none" stroke="black" points="31,-506.14 31,-524.14 91,-524.14 91,-506.14 31,-506.14"/>
+<text text-anchor="start" x="39" y="-512.34" font-family="Helvetica,sans-Serif" font-size="11.00">604 rows</text>
+<polygon fill="#ffffff" stroke="none" points="91,-506.14 91,-524.14 120,-524.14 120,-506.14 91,-506.14"/>
+<polygon fill="none" stroke="black" points="91,-506.14 91,-524.14 120,-524.14 120,-506.14 91,-506.14"/>
 <text text-anchor="start" x="100" y="-512.34" font-family="Helvetica,sans-Serif" font-size="11.00">5 &gt;</text>
 </a>
 </g>

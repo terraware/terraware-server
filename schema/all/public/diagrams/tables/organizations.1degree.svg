@@ -412,14 +412,14 @@
 <polygon fill="none" stroke="black" points="8,-886.209 8,-908.209 120,-908.209 120,-886.209 8,-886.209"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13" y="-903.209"/>
 <text text-anchor="start" x="41" y="-894.409" font-family="Helvetica,sans-Serif" font-size="11.00">time_zone</text>
-<polygon fill="#ffffff" stroke="none" points="8,-868.209 8,-886.209 38,-886.209 38,-868.209 8,-868.209"/>
-<polygon fill="none" stroke="black" points="8,-868.209 8,-886.209 38,-886.209 38,-868.209 8,-868.209"/>
+<polygon fill="#ffffff" stroke="none" points="8,-868.209 8,-886.209 31,-886.209 31,-868.209 8,-868.209"/>
+<polygon fill="none" stroke="black" points="8,-868.209 8,-886.209 31,-886.209 31,-868.209 8,-868.209"/>
 <text text-anchor="start" x="11" y="-874.409" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="38,-868.209 38,-886.209 88,-886.209 88,-868.209 38,-868.209"/>
-<polygon fill="none" stroke="black" points="38,-868.209 38,-886.209 88,-886.209 88,-868.209 38,-868.209"/>
-<text text-anchor="start" x="49" y="-874.409" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="88,-868.209 88,-886.209 120,-886.209 120,-868.209 88,-868.209"/>
-<polygon fill="none" stroke="black" points="88,-868.209 88,-886.209 120,-886.209 120,-868.209 88,-868.209"/>
+<polygon fill="#ffffff" stroke="none" points="31,-868.209 31,-886.209 91,-886.209 91,-868.209 31,-868.209"/>
+<polygon fill="none" stroke="black" points="31,-868.209 31,-886.209 91,-886.209 91,-868.209 31,-868.209"/>
+<text text-anchor="start" x="39" y="-874.409" font-family="Helvetica,sans-Serif" font-size="11.00">604 rows</text>
+<polygon fill="#ffffff" stroke="none" points="91,-868.209 91,-886.209 120,-886.209 120,-868.209 91,-868.209"/>
+<polygon fill="none" stroke="black" points="91,-868.209 91,-886.209 120,-886.209 120,-868.209 91,-868.209"/>
 <text text-anchor="start" x="100" y="-874.409" font-family="Helvetica,sans-Serif" font-size="11.00">5 &gt;</text>
 </a>
 </g>

@@ -178,12 +178,12 @@
 <text text-anchor="start" x="30" y="-342.2" font-family="Helvetica,sans-Serif" font-size="11.00">time_zone</text>
 <polygon fill="none" stroke="black" points="97,-334 97,-356 198,-356 198,-334 97,-334"/>
 <text text-anchor="start" x="100" y="-342.2" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
-<polygon fill="#ffffff" stroke="none" points="10,-316 10,-334 44,-334 44,-316 10,-316"/>
-<polygon fill="none" stroke="black" points="10,-316 10,-334 44,-334 44,-316 10,-316"/>
+<polygon fill="#ffffff" stroke="none" points="10,-316 10,-334 37,-334 37,-316 10,-316"/>
+<polygon fill="none" stroke="black" points="10,-316 10,-334 37,-334 37,-316 10,-316"/>
 <text text-anchor="start" x="13" y="-322.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 0</text>
-<polygon fill="#ffffff" stroke="none" points="44,-316 44,-334 97,-334 97,-316 44,-316"/>
-<polygon fill="none" stroke="black" points="44,-316 44,-334 97,-334 97,-316 44,-316"/>
-<text text-anchor="start" x="58" y="-322.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="37,-316 37,-334 97,-334 97,-316 37,-316"/>
+<polygon fill="none" stroke="black" points="37,-316 37,-334 97,-334 97,-316 37,-316"/>
+<text text-anchor="start" x="45" y="-322.2" font-family="Helvetica,sans-Serif" font-size="11.00">604 rows</text>
 <polygon fill="#ffffff" stroke="none" points="97,-316 97,-334 198,-334 198,-316 97,-316"/>
 <polygon fill="none" stroke="black" points="97,-316 97,-334 198,-334 198,-316 97,-316"/>
 <text text-anchor="start" x="178" y="-322.2" font-family="Helvetica,sans-Serif" font-size="11.00">5 &gt;</text>

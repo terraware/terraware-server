@@ -125,12 +125,12 @@
 <text text-anchor="start" x="30" y="-454.686" font-family="Helvetica,sans-Serif" font-size="11.00">time_zone</text>
 <polygon fill="none" stroke="black" points="97,-446.486 97,-468.486 198,-468.486 198,-446.486 97,-446.486"/>
 <text text-anchor="start" x="100" y="-454.686" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
-<polygon fill="#ffffff" stroke="none" points="10,-428.486 10,-446.486 44,-446.486 44,-428.486 10,-428.486"/>
-<polygon fill="none" stroke="black" points="10,-428.486 10,-446.486 44,-446.486 44,-428.486 10,-428.486"/>
+<polygon fill="#ffffff" stroke="none" points="10,-428.486 10,-446.486 37,-446.486 37,-428.486 10,-428.486"/>
+<polygon fill="none" stroke="black" points="10,-428.486 10,-446.486 37,-446.486 37,-428.486 10,-428.486"/>
 <text text-anchor="start" x="13" y="-434.686" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 0</text>
-<polygon fill="#ffffff" stroke="none" points="44,-428.486 44,-446.486 97,-446.486 97,-428.486 44,-428.486"/>
-<polygon fill="none" stroke="black" points="44,-428.486 44,-446.486 97,-446.486 97,-428.486 44,-428.486"/>
-<text text-anchor="start" x="58" y="-434.686" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="37,-428.486 37,-446.486 97,-446.486 97,-428.486 37,-428.486"/>
+<polygon fill="none" stroke="black" points="37,-428.486 37,-446.486 97,-446.486 97,-428.486 37,-428.486"/>
+<text text-anchor="start" x="45" y="-434.686" font-family="Helvetica,sans-Serif" font-size="11.00">604 rows</text>
 <polygon fill="#ffffff" stroke="none" points="97,-428.486 97,-446.486 198,-446.486 198,-428.486 97,-428.486"/>
 <polygon fill="none" stroke="black" points="97,-428.486 97,-446.486 198,-446.486 198,-428.486 97,-428.486"/>
 <text text-anchor="start" x="178" y="-434.686" font-family="Helvetica,sans-Serif" font-size="11.00">5 &gt;</text>
