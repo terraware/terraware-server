@@ -35,7 +35,7 @@ internal abstract class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertUser()
     insertOrganization()
-    timeZone = ZoneId.of("${ZoneId.of("Pacific/Honolulu")}")
+    timeZone = ZoneId.of("Pacific/Honolulu")
 
     every { user.canCreatePlantingSite(any()) } returns true
     every { user.canMovePlantingSiteToAnyOrg(any()) } returns true

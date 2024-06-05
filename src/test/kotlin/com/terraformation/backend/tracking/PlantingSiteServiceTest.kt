@@ -100,8 +100,8 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
   inner class OnTimeZoneChange {
     @Test
     fun `publishes PlantingSiteTimeZoneChangedEvent when organization time zone changes`() {
-      val oldTimeZone = ZoneId.of("${"America/New_York"}")
-      val newTimeZone = ZoneId.of("${"America/Buenos_Aires"}")
+      val oldTimeZone = ZoneId.of("America/New_York")
+      val newTimeZone = ZoneId.of("America/Buenos_Aires")
 
       insertOrganization(timeZone = oldTimeZone)
       insertPlantingSite(timeZone = oldTimeZone)
@@ -127,8 +127,8 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `updates planting seasons when planting site time zone changes`() {
-      val oldTimeZone = ZoneId.of("${"America/New_York"}")
-      val newTimeZone = ZoneId.of("${"Europe/Paris"}")
+      val oldTimeZone = ZoneId.of("America/New_York")
+      val newTimeZone = ZoneId.of("Europe/Paris")
       val startDate = LocalDate.EPOCH.plusMonths(1)
       val endDate = startDate.plusMonths(3)
 

@@ -271,7 +271,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `only returns observations whose planting sites have plants`() {
-      val timeZone = ZoneId.of("${"America/Denver"}")
+      val timeZone = ZoneId.of("America/Denver")
       val startDate = LocalDate.of(2023, 4, 1)
       val endDate = LocalDate.of(2023, 4, 30)
 
@@ -298,9 +298,9 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `honors planting site time zones`() {
       // Three adjacent time zones, 1 hour apart
-      val zone1 = ZoneId.of("${"America/Los_Angeles"}")
-      val zone2 = ZoneId.of("${"America/Denver"}")
-      val zone3 = ZoneId.of("${"America/Chicago"}")
+      val zone1 = ZoneId.of("America/Los_Angeles")
+      val zone2 = ZoneId.of("America/Denver")
+      val zone3 = ZoneId.of("America/Chicago")
 
       val startDate = LocalDate.of(2023, 4, 1)
       val endDate = LocalDate.of(2023, 4, 30)
@@ -348,7 +348,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `limits results to requested planting site`() {
-      val timeZone = ZoneId.of("${"America/Denver"}")
+      val timeZone = ZoneId.of("America/Denver")
 
       val startDate = LocalDate.of(2023, 4, 1)
       val endDate = LocalDate.of(2023, 4, 30)
@@ -381,7 +381,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not return observations whose notifications have been sent already`() {
-      val timeZone = ZoneId.of("${"America/Denver"}")
+      val timeZone = ZoneId.of("America/Denver")
       val startDate = LocalDate.of(2023, 4, 1)
       val endDate = LocalDate.of(2023, 4, 30)
 
@@ -403,7 +403,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not returns observations whose planting sites have no planted subzones`() {
-      val timeZone = ZoneId.of("${"America/Denver"}")
+      val timeZone = ZoneId.of("America/Denver")
       val startDate = LocalDate.of(2023, 4, 1)
       val endDate = LocalDate.of(2023, 4, 30)
 
@@ -422,7 +422,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `only returns observations whose planting sites have plants`() {
-      val timeZone = ZoneId.of("${"America/Denver"}")
+      val timeZone = ZoneId.of("America/Denver")
       val startDate = LocalDate.of(2023, 4, 1)
       val endDate = LocalDate.of(2023, 4, 30)
 
@@ -449,9 +449,9 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `honors planting site time zones`() {
       // Three adjacent time zones, 1 hour apart
-      val zone1 = ZoneId.of("${"America/Los_Angeles"}")
-      val zone2 = ZoneId.of("${"America/Denver"}")
-      val zone3 = ZoneId.of("${"America/Chicago"}")
+      val zone1 = ZoneId.of("America/Los_Angeles")
+      val zone2 = ZoneId.of("America/Denver")
+      val zone3 = ZoneId.of("America/Chicago")
 
       val startDate = LocalDate.of(2023, 4, 1)
       val endDate = LocalDate.of(2023, 4, 30)
@@ -493,9 +493,9 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `honors planting site time zones`() {
       // Three adjacent time zones, 1 hour apart
-      val zone1 = ZoneId.of("${"America/Los_Angeles"}")
-      val zone2 = ZoneId.of("${"America/Denver"}")
-      val zone3 = ZoneId.of("${"America/Chicago"}")
+      val zone1 = ZoneId.of("America/Los_Angeles")
+      val zone2 = ZoneId.of("America/Denver")
+      val zone3 = ZoneId.of("America/Chicago")
 
       val startDate = LocalDate.of(2023, 3, 1)
       val endDate = LocalDate.of(2023, 3, 31)
@@ -547,7 +547,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `limits results to requested planting site`() {
-      val timeZone = ZoneId.of("${"America/Denver"}")
+      val timeZone = ZoneId.of("America/Denver")
 
       val startDate = LocalDate.of(2023, 4, 1)
       val endDate = LocalDate.of(2023, 4, 30)

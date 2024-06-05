@@ -141,7 +141,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchByAuthId returns existing user without touching Keycloak`() {
-    val timeZone = ZoneId.of("${ZoneId.of("Pacific/Honolulu")}")
+    val timeZone = ZoneId.of("Pacific/Honolulu")
     insertUser(authId = authId, firstName = "f", lastName = "l", timeZone = timeZone)
 
     val actual = userStore.fetchByAuthId(authId) as IndividualUser
@@ -397,7 +397,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     val newLastName = "McTestalot"
     val newLanguage = Locale.forLanguageTag("gx")
     val newLocale = Locale.of(newLanguage.language, newCountryCode)
-    val newTimeZone = ZoneId.of("${ZoneId.of("Pacific/Honolulu")}")
+    val newTimeZone = ZoneId.of("Pacific/Honolulu")
 
     insertUser(authId = userRepresentation.id, email = userRepresentation.email)
 

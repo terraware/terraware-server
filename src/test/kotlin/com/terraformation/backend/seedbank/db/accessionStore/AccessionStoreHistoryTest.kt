@@ -59,7 +59,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
 
   @Test
   fun `uses facility time zone to calculate dates`() {
-    val earlierZoneThanUtc = ZoneId.of("${"America/New_York"}")
+    val earlierZoneThanUtc = ZoneId.of("America/New_York")
     facilitiesDao.update(
         facilitiesDao.fetchOneById(facilityId)!!.copy(timeZone = earlierZoneThanUtc))
 

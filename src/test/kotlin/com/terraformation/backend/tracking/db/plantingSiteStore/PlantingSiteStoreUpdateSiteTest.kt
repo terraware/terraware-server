@@ -34,7 +34,7 @@ internal class PlantingSiteStoreUpdateSiteTest : PlantingSiteStoreTest() {
               ))
 
       val createdTime = clock.instant()
-      val newTimeZone = ZoneId.of("${"Europe/Paris"}")
+      val newTimeZone = ZoneId.of("Europe/Paris")
       val now = createdTime.plusSeconds(1000)
       clock.instant = now
 
@@ -105,7 +105,7 @@ internal class PlantingSiteStoreUpdateSiteTest : PlantingSiteStoreTest() {
     fun `publishes event if time zone updated`() {
       val plantingSiteId = insertPlantingSite(timeZone = timeZone)
       val initialModel = store.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
-      val newTimeZone = ZoneId.of("${"Europe/Paris"}")
+      val newTimeZone = ZoneId.of("Europe/Paris")
 
       store.updatePlantingSite(plantingSiteId, emptyList()) { it.copy(timeZone = newTimeZone) }
 
