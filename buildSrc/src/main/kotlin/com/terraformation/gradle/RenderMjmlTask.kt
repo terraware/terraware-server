@@ -66,12 +66,7 @@ abstract class RenderMjmlTask : DefaultTask() {
         NodeExtension[project],
         NodeExecConfiguration(
             listOf(
-                "mjml",
-                "--config.useMjmlConfigOptions",
-                "true",
-                "-o",
-                "$targetFile",
-                "$mjmlFile")),
+                "mjml", "--config.useMjmlConfigOptions", "true", "-o", "$targetFile", "$mjmlFile")),
         VariantComputer())
   }
 
