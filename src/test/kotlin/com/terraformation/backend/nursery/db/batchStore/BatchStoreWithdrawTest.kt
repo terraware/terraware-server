@@ -264,7 +264,6 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     val withdrawnDate = LocalDate.of(2023, 1, 1)
 
     val newYorkZone = ZoneId.of("America/New_York")
-    insertTimeZone(newYorkZone)
     facilitiesDao.update(facilitiesDao.fetchOneById(facilityId)!!.copy(timeZone = newYorkZone))
 
     val species1Batch1 =

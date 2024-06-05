@@ -40,6 +40,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.Locale
 import org.jooq.JSONB
@@ -140,7 +141,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchByAuthId returns existing user without touching Keycloak`() {
-    val timeZone = insertTimeZone()
+    val timeZone = ZoneId.of("Pacific/Honolulu")
     insertUser(authId = authId, firstName = "f", lastName = "l", timeZone = timeZone)
 
     val actual = userStore.fetchByAuthId(authId) as IndividualUser
@@ -396,7 +397,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     val newLastName = "McTestalot"
     val newLanguage = Locale.forLanguageTag("gx")
     val newLocale = Locale.of(newLanguage.language, newCountryCode)
-    val newTimeZone = insertTimeZone()
+    val newTimeZone = ZoneId.of("Pacific/Honolulu")
 
     insertUser(authId = userRepresentation.id, email = userRepresentation.email)
 

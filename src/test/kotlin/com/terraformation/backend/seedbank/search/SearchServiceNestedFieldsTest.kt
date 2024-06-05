@@ -18,6 +18,7 @@ import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
 import java.time.LocalDate
+import java.time.ZoneId
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
@@ -809,13 +810,11 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     val userTimeZone = "America/Santiago"
 
     organizationsDao.update(
-        organizationsDao
-            .fetchOneById(organizationId)!!
-            .copy(timeZone = insertTimeZone(orgTimeZone)))
+        organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = ZoneId.of("$orgTimeZone")))
     facilitiesDao.update(
-        facilitiesDao.fetchOneById(facilityId)!!.copy(timeZone = insertTimeZone(facilityTimeZone)))
+        facilitiesDao.fetchOneById(facilityId)!!.copy(timeZone = ZoneId.of("$facilityTimeZone")))
     usersDao.update(
-        usersDao.fetchOneById(user.userId)!!.copy(timeZone = insertTimeZone(userTimeZone)))
+        usersDao.fetchOneById(user.userId)!!.copy(timeZone = ZoneId.of("$userTimeZone")))
 
     val cutTestRow =
         ViabilityTestsRow(

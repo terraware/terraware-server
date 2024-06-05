@@ -34,7 +34,6 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertUser()
     insertOrganization()
-    insertTimeZone(timeZone)
 
     every { user.canCreateDraftPlantingSite(any()) } returns true
     every { user.canDeleteDraftPlantingSite(any()) } returns true

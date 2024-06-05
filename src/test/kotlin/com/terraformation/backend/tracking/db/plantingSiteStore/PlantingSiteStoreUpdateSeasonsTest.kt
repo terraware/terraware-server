@@ -261,7 +261,6 @@ internal class PlantingSiteStoreUpdateSeasonsTest : PlantingSiteStoreTest() {
 
     @Test
     fun `updates planting season start and end times when time zone changes`() {
-      insertTimeZone(ZoneOffset.UTC)
       val plantingSiteId = insertPlantingSite(timeZone = ZoneOffset.UTC)
 
       val pastStartDate = LocalDate.of(2020, 1, 1)
