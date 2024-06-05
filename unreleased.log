@@ -1,3 +1,4 @@
+20f9b2bd4fb SW-5485 Don't fail build if staging is down (#2045)
 95df183c153 Fix the timezone migration so it doesn't fail with real databases (#2044)
 a43c76c5404 Add Spotless rules for SQL and Markdown (#2038)
 b2a6f266e6c Move the population of the timezones to a numbered migration file (#2037)
