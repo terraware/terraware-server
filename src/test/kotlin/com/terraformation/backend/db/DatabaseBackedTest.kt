@@ -136,7 +136,6 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSe
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
-import com.terraformation.backend.db.default_schema.tables.pojos.TimeZonesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES

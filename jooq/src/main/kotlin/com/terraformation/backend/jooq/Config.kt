@@ -96,12 +96,12 @@ val ENUM_TABLES =
                     "notification_types",
                     listOf(".*\\.notification_type_id"),
                     additionalColumns =
-                    listOf(
-                        EnumTableColumnInfo(
-                            "notification_criticality_id",
-                            "NotificationCriticality",
-                            true,
-                        )),
+                        listOf(
+                            EnumTableColumnInfo(
+                                "notification_criticality_id",
+                                "NotificationCriticality",
+                                true,
+                            )),
                     isLocalizable = false),
                 EnumTable(
                     "organization_types",
