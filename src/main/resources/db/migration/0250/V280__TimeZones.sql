@@ -602,4 +602,5 @@ VALUES ('Africa/Abidjan'),
        ('W-SU'),
        ('WET'),
        ('Z'),
-       ('Zulu');
+       ('Zulu')
+ON CONFLICT DO NOTHING;
