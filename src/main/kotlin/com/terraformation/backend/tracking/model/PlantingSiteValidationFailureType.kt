@@ -6,6 +6,7 @@ enum class PlantingSiteValidationFailureType {
   CannotSplitZone,
   DuplicateSubzoneName,
   DuplicateZoneName,
+  ExclusionWithoutBoundary,
   SiteTooLarge,
   SubzoneBoundaryChanged,
   SubzoneBoundaryOverlaps,
@@ -16,4 +17,5 @@ enum class PlantingSiteValidationFailureType {
   ZoneHasNoSubzones,
   ZoneNotInSite,
   ZoneTooSmall,
+  ZonesWithoutSiteBoundary,
 }

@@ -31,6 +31,9 @@ data class PlantingSiteValidationFailure(
     fun duplicateZoneName(zoneName: String) =
         PlantingSiteValidationFailure(PlantingSiteValidationFailureType.DuplicateZoneName, zoneName)
 
+    fun exclusionWithoutBoundary() =
+        PlantingSiteValidationFailure(PlantingSiteValidationFailureType.ExclusionWithoutBoundary)
+
     fun siteTooLarge() =
         PlantingSiteValidationFailure(PlantingSiteValidationFailureType.SiteTooLarge)
 
@@ -73,6 +76,9 @@ data class PlantingSiteValidationFailure(
 
     fun zoneNotInSite(zoneName: String) =
         PlantingSiteValidationFailure(PlantingSiteValidationFailureType.ZoneNotInSite, zoneName)
+
+    fun zonesWithoutSiteBoundary() =
+        PlantingSiteValidationFailure(PlantingSiteValidationFailureType.ZonesWithoutSiteBoundary)
 
     fun zoneTooSmall(zoneName: String) =
         PlantingSiteValidationFailure(PlantingSiteValidationFailureType.ZoneTooSmall, zoneName)

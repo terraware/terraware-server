@@ -110,6 +110,13 @@ data class PlantingSiteModel<
 
         problems.addAll(zone.validate(this))
       }
+    } else {
+      if (exclusion != null) {
+        problems.add(PlantingSiteValidationFailure.exclusionWithoutBoundary())
+      }
+      if (plantingZones.isNotEmpty()) {
+        problems.add(PlantingSiteValidationFailure.zonesWithoutSiteBoundary())
+      }
     }
 
     return problems.ifEmpty { null }

@@ -358,17 +358,7 @@ data class CreatePlantingSiteRequestPayload(
       throw IllegalArgumentException("Exclusion area must be Polygon or MultiPolygon")
     }
 
-    if (!plantingZones.isNullOrEmpty()) {
-      if (boundary == null) {
-        throw IllegalArgumentException("Boundary is required if planting zones are defined")
-      }
-
-      plantingZones.forEach { it.validate() }
-    }
-
-    if (exclusion != null && boundary == null) {
-      throw IllegalArgumentException("Boundary is required if exclusion is defined")
-    }
+    plantingZones?.forEach { it.validate() }
   }
 
   fun toModel(): NewPlantingSiteModel {
