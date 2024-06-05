@@ -1,3 +1,8 @@
+f42cbcbc838 SW-4802 Planting site validation API (#2042)
+202c7bc7364 Move site validation from controller to model (#2041)
+48e537621ce Object representation of map validation failures (#2040)
+574dd573d28 Fold edit validation failures into a single class (#2039)
+deffde2bf31 SW-5496 Add user fields for cookie consent (#2043)
 20f9b2bd4fb SW-5485 Don't fail build if staging is down (#2045)
 95df183c153 Fix the timezone migration so it doesn't fail with real databases (#2044)
 a43c76c5404 Add Spotless rules for SQL and Markdown (#2038)

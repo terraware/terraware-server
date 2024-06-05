@@ -1429,6 +1429,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
             <parent column="code" foreignKey="users_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="countries"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="cookies_consented" nullable="true" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="15" name="cookies_consented_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="users_pkey" unique="true">
             <column ascending="true" name="id"/>

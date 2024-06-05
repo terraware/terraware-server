@@ -665,6 +665,40 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="cookies_consented">cookies_consented</span></td>
+                                    <td>bool</td>
+                                    <td>1</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="cookies_consented_time">cookies_consented_time</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -730,16 +764,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>users_last_name_check</td>
-                                    <td>((last_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>users_first_name_check</td>
                                     <td>((first_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
                                     <td>users_auth_id_check</td>
                                     <td>((auth_id !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>users_last_name_check</td>
+                                    <td>((last_name !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -765,7 +799,7 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../accelerator/tables/cohorts.html" target="_top" title="accelerator.cohorts" alt="" coords="740,456,975,603">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,2584,629,3064">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="216,2584,629,3123">
 <area shape="rect" id="node27" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="9,1252,168,1399">
 <area shape="rect" id="node32" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="5,2792,172,2915">
 <area shape="rect" id="node3" href="../../../accelerator/tables/default_voters.html" target="_top" title="accelerator.default_voters" alt="" coords="714,2915,1001,3008">
@@ -815,7 +849,7 @@
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../accelerator/tables/cohorts.html" target="_top" title="accelerator.cohorts" alt="" coords="925,1772,1160,1919">
-<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="401,2946,815,3426">
+<area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="401,2946,815,3484">
 <area shape="rect" id="node29" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="195,499,353,646">
 <area shape="rect" id="node57" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="191,3154,357,3276">
 <area shape="rect" id="node3" href="../../../accelerator/tables/default_voters.html" target="_top" title="accelerator.default_voters" alt="" coords="899,4526,1186,4619">
@@ -832,7 +866,7 @@
 <area shape="rect" id="node13" href="../../../accelerator/tables/project_scores.html" target="_top" title="accelerator.project_scores" alt="" coords="1749,4158,2035,4334">
 <area shape="rect" id="node14" href="../../../accelerator/tables/project_vote_decisions.html" target="_top" title="accelerator.project_vote_decisions" alt="" coords="1718,2463,2066,2551">
 <area shape="rect" id="node15" href="../../../accelerator/tables/project_votes.html" target="_top" title="accelerator.project_votes" alt="" coords="1753,4351,2031,4556">
-<area shape="rect" id="node16" href="../../../accelerator/tables/submission_documents.html" target="_top" title="accelerator.submission_documents" alt="" coords="1715,2898,2069,3044">
+<area shape="rect" id="node16" href="../../../accelerator/tables/submission_documents.html" target="_top" title="accelerator.submission_documents" alt="" coords="1715,2899,2069,3046">
 <area shape="rect" id="node17" href="../../../accelerator/tables/submission_snapshots.html" target="_top" title="accelerator.submission_snapshots" alt="" coords="1285,3371,1629,3459">
 <area shape="rect" id="node18" href="../../tables/files.html" target="_top" title="files" alt="" coords="961,3480,1125,3686">
 <area shape="rect" id="node19" href="../../../accelerator/tables/submissions.html" target="_top" title="accelerator.submissions" alt="" coords="1757,4574,2027,4750">

@@ -41,7 +41,7 @@
 <!-- users -->
 <g id="node2" class="node"><title>users</title>
 <g id="a_node2"><a xlink:href="../../tables/users.html" xlink:title="users" target="_top">
-<polygon fill="#ffffff" stroke="none" points="169,-2153.25 169,-2505.25 463,-2505.25 463,-2153.25 169,-2153.25"/>
+<polygon fill="#ffffff" stroke="none" points="169,-2109.25 169,-2505.25 463,-2505.25 463,-2109.25 169,-2109.25"/>
 <polygon fill="#f5f5f5" stroke="none" points="171,-2481.25 171,-2503.25 461,-2503.25 461,-2481.25 171,-2481.25"/>
 <polygon fill="none" stroke="black" points="171,-2481.25 171,-2503.25 461,-2503.25 461,-2481.25 171,-2481.25"/>
 <text text-anchor="start" x="176" y="-2490.45" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">users</text>
@@ -108,16 +108,24 @@
 <text text-anchor="start" x="191" y="-2181.45" font-family="Helvetica,sans-Serif" font-size="11.00">country_code</text>
 <polygon fill="none" stroke="black" points="359,-2173.25 359,-2195.25 461,-2195.25 461,-2173.25 359,-2173.25"/>
 <text text-anchor="start" x="362" y="-2181.45" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
-<polygon fill="#ffffff" stroke="none" points="171,-2155.25 171,-2173.25 258,-2173.25 258,-2155.25 171,-2155.25"/>
-<polygon fill="none" stroke="black" points="171,-2155.25 171,-2173.25 258,-2173.25 258,-2155.25 171,-2155.25"/>
-<text text-anchor="start" x="174" y="-2161.45" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
-<polygon fill="#ffffff" stroke="none" points="258,-2155.25 258,-2173.25 359,-2173.25 359,-2155.25 258,-2155.25"/>
-<polygon fill="none" stroke="black" points="258,-2155.25 258,-2173.25 359,-2173.25 359,-2155.25 258,-2155.25"/>
-<text text-anchor="start" x="325" y="-2161.45" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
-<polygon fill="#ffffff" stroke="none" points="359,-2155.25 359,-2173.25 461,-2173.25 461,-2155.25 359,-2155.25"/>
-<polygon fill="none" stroke="black" points="359,-2155.25 359,-2173.25 461,-2173.25 461,-2155.25 359,-2155.25"/>
-<text text-anchor="start" x="434" y="-2161.45" font-family="Helvetica,sans-Serif" font-size="11.00">87 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="170,-2154.25 170,-2504.25 462,-2504.25 462,-2154.25 170,-2154.25"/>
+<polygon fill="none" stroke="black" points="171,-2151.25 171,-2173.25 359,-2173.25 359,-2151.25 171,-2151.25"/>
+<text text-anchor="start" x="191" y="-2159.45" font-family="Helvetica,sans-Serif" font-size="11.00">cookies_consented</text>
+<polygon fill="none" stroke="black" points="359,-2151.25 359,-2173.25 461,-2173.25 461,-2151.25 359,-2151.25"/>
+<text text-anchor="start" x="362" y="-2159.45" font-family="Helvetica,sans-Serif" font-size="11.00">bool[1]</text>
+<polygon fill="none" stroke="black" points="171,-2129.25 171,-2151.25 359,-2151.25 359,-2129.25 171,-2129.25"/>
+<text text-anchor="start" x="191" y="-2137.45" font-family="Helvetica,sans-Serif" font-size="11.00">cookies_consented_time</text>
+<polygon fill="none" stroke="black" points="359,-2129.25 359,-2151.25 461,-2151.25 461,-2129.25 359,-2129.25"/>
+<text text-anchor="start" x="362" y="-2137.45" font-family="Helvetica,sans-Serif" font-size="11.00">timestamptz[35,6]</text>
+<polygon fill="#ffffff" stroke="none" points="171,-2111.25 171,-2129.25 258,-2129.25 258,-2111.25 171,-2111.25"/>
+<polygon fill="none" stroke="black" points="171,-2111.25 171,-2129.25 258,-2129.25 258,-2111.25 171,-2111.25"/>
+<text text-anchor="start" x="174" y="-2117.45" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
+<polygon fill="#ffffff" stroke="none" points="258,-2111.25 258,-2129.25 359,-2129.25 359,-2111.25 258,-2111.25"/>
+<polygon fill="none" stroke="black" points="258,-2111.25 258,-2129.25 359,-2129.25 359,-2111.25 258,-2111.25"/>
+<text text-anchor="start" x="325" y="-2117.45" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
+<polygon fill="#ffffff" stroke="none" points="359,-2111.25 359,-2129.25 461,-2129.25 461,-2111.25 359,-2111.25"/>
+<polygon fill="none" stroke="black" points="359,-2111.25 359,-2129.25 461,-2129.25 461,-2111.25 359,-2111.25"/>
+<text text-anchor="start" x="434" y="-2117.45" font-family="Helvetica,sans-Serif" font-size="11.00">87 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="170,-2110.25 170,-2504.25 462,-2504.25 462,-2110.25 170,-2110.25"/>
 </a>
 </g>
 </g>
@@ -1217,9 +1225,9 @@
 </g>
 <!-- organizations&#45;&gt;countries -->
 <g id="edge70" class="edge"><title>organizations:country_code:w&#45;&gt;countries:code:e</title>
-<path fill="none" stroke="black" d="M539.429,-2308.68C479.837,-2294.22 536.774,-2184.01 471,-2143.25 353.886,-2070.68 260.299,-2047.74 161,-2143.25 115.681,-2186.84 179.881,-3274.25 117,-3274.25"/>
-<polygon fill="black" stroke="black" points="546.046,-2309.39 553.614,-2313.83 550.023,-2309.82 554,-2310.25 554,-2310.25 554,-2310.25 550.023,-2309.82 554.386,-2306.67 546.046,-2309.39 546.046,-2309.39"/>
-<ellipse fill="none" stroke="black" cx="542.865" cy="-2309.05" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M539.215,-2308.91C463.729,-2293.67 549.729,-2152.88 471,-2099.25 357.133,-2021.68 260.23,-2003.67 161,-2099.25 113.953,-2144.57 182.324,-3274.25 117,-3274.25"/>
+<polygon fill="black" stroke="black" points="546.033,-2309.53 553.674,-2313.84 550.016,-2309.89 554,-2310.25 554,-2310.25 554,-2310.25 550.016,-2309.89 554.326,-2306.67 546.033,-2309.53 546.033,-2309.53"/>
+<ellipse fill="none" stroke="black" cx="542.846" cy="-2309.24" rx="3.2" ry="3.2"/>
 </g>
 <!-- nursery.withdrawals -->
 <g id="node22" class="node"><title>nursery.withdrawals</title>
