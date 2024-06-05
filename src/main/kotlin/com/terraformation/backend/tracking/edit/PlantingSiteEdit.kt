@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.edit
 
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
+import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.util.equalsIgnoreScale
 import java.math.BigDecimal
 
@@ -36,7 +37,7 @@ data class PlantingSiteEdit(
      * List of problems that prevent the edit from being performed. If this is nonempty, the edit
      * should be considered invalid.
      */
-    val problems: List<PlantingSiteEditProblem> = emptyList(),
+    val problems: List<PlantingSiteValidationFailure> = emptyList(),
 ) {
   fun equalsExact(other: PlantingSiteEdit, tolerance: Double = 0.0000001): Boolean =
       javaClass == other.javaClass &&
