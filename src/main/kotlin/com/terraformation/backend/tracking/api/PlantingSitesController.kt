@@ -24,11 +24,14 @@ import com.terraformation.backend.tracking.model.NewPlantingZoneModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
+import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
+import com.terraformation.backend.tracking.model.PlantingSiteValidationFailureType
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.Instant
@@ -110,6 +113,20 @@ class PlantingSitesController(
     val model =
         plantingSiteStore.createPlantingSite(payload.toModel(), plantingSeasons = plantingSeasons)
     return CreatePlantingSiteResponsePayload(model.id)
+  }
+
+  @Operation(summary = "Validates the definition of a new planting site.")
+  @PostMapping("/validate")
+  fun validatePlantingSite(
+      @RequestBody payload: CreatePlantingSiteRequestPayload
+  ): ValidatePlantingSiteResponsePayload {
+    payload.validate()
+
+    val problems = payload.toModel().validate()
+    val problemPayloads = problems?.map { PlantingSiteValidationProblemPayload(it) } ?: emptyList()
+
+    return ValidatePlantingSiteResponsePayload(
+        isValid = problemPayloads.isEmpty(), problems = problemPayloads)
   }
 
   @Operation(summary = "Updates information about an existing planting site.")
@@ -287,6 +304,11 @@ data class UpdatedPlantingSeasonPayload(
 data class NewPlantingSubzonePayload(
     @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
     val boundary: Geometry,
+    @Schema(
+        description =
+            "Name of this planting subzone. Two subzones in the same planting zone may not have " +
+                "the same name, but using the same subzone name in different planting zones is " +
+                "valid.")
     val name: String,
 ) {
   fun validate() {
@@ -308,6 +330,10 @@ data class NewPlantingSubzonePayload(
 data class NewPlantingZonePayload(
     @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
     val boundary: Geometry,
+    @Schema(
+        description =
+            "Name of this planting zone. Two zones in the same planting site may not have the " +
+                "same name.")
     val name: String,
     val plantingSubzones: List<NewPlantingSubzonePayload>?,
     val targetPlantingDensity: BigDecimal?,
@@ -330,6 +356,30 @@ data class NewPlantingZonePayload(
         plantingSubzones = plantingSubzones?.map { it.toModel(name, exclusion) } ?: emptyList(),
     )
   }
+}
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class PlantingSiteValidationProblemPayload(
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "If the problem is a conflict between two planting zones or two subzones, " +
+                        "the list of the conflicting zone or subzone names."))
+    val conflictsWith: Set<String>?,
+    @Schema(description = "If the problem relates to a particular planting zone, its name.")
+    val plantingZone: String?,
+    @Schema(
+        description =
+            "If the problem relates to a particular subzone, its name. If this is present, " +
+                "plantingZone will also be present and will be the name of the zone that " +
+                "contains this subzone.")
+    val plantingSubzone: String?,
+    val problemType: PlantingSiteValidationFailureType,
+) {
+  constructor(
+      model: PlantingSiteValidationFailure
+  ) : this(model.conflictsWith, model.zoneName, model.subzoneName, model.type)
 }
 
 data class CreatePlantingSiteRequestPayload(
@@ -406,3 +456,14 @@ data class UpdatePlantingSiteRequestPayload(
           timeZone = timeZone,
       )
 }
+
+data class ValidatePlantingSiteResponsePayload(
+    @Schema(description = "True if the request was valid.") //
+    val isValid: Boolean,
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "List of validation problems found, if any. Empty if the request is valid."))
+    val problems: List<PlantingSiteValidationProblemPayload>
+) : SuccessResponsePayload
