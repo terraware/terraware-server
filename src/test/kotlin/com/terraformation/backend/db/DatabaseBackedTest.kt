@@ -2092,9 +2092,10 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertTimeZone(timeZone: Any = ZoneId.of("Pacific/Honolulu")): ZoneId {
-    val zoneId = if (timeZone is ZoneId) timeZone else ZoneId.of("$timeZone")
-    timeZonesDao.insert(TimeZonesRow(zoneId))
-    return zoneId
+    return ZoneId.of("$timeZone")
+//    val zoneId = if (timeZone is ZoneId) timeZone else ZoneId.of("$timeZone")
+//    timeZonesDao.insert(TimeZonesRow(zoneId))
+//    return zoneId
   }
 
   protected fun insertOrganizationInternalTag(
