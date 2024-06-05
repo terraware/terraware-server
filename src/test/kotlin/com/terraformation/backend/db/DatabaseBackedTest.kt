@@ -134,7 +134,6 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ProjectLandUseM
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSettingsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
-import com.terraformation.backend.db.default_schema.tables.pojos.TimeZonesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
@@ -2091,12 +2090,7 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!
   }
 
-  fun insertTimeZone(timeZone: Any = ZoneId.of("Pacific/Honolulu")): ZoneId {
-    return ZoneId.of("$timeZone")
-//    val zoneId = if (timeZone is ZoneId) timeZone else ZoneId.of("$timeZone")
-//    timeZonesDao.insert(TimeZonesRow(zoneId))
-//    return zoneId
-  }
+  fun insertTimeZone(timeZone: Any = ZoneId.of("Pacific/Honolulu")): ZoneId = ZoneId.of("$timeZone")
 
   protected fun insertOrganizationInternalTag(
       organizationId: Any = this.organizationId,
