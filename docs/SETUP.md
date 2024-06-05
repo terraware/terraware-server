@@ -24,7 +24,7 @@ The server will listen on port 8080.
 
 Fetch the API schema to confirm the server is up and running. (This doesn't require authentication.)
 
-    curl http://localhost:8080/v3/api-docs.yaml
+        curl http://localhost:8080/v3/api-docs.yaml
 
 ## Running the server via Docker
 
@@ -99,7 +99,7 @@ Depending on how you set the Keycloak-related environment variables in the initi
 If you need to change some configuration settings in your local development environment, but you don't want to fuss with environment variables, you can put the configuration in YAML files and tell the server to read them.
 
 Copy the file `src/main/resources/application-dev.yaml.sample` to `src/main/resources/application-dev.yaml`. This file will not be included when the code is packaged into a jar, and will be ignored by git.
-It has the necessary Keycloak and Postgres configuration variables stubbed out for you. 
+It has the necessary Keycloak and Postgres configuration variables stubbed out for you.
 
 See the other `application.yaml` files in [`src/main/resources`](src/main/resources) for some examples, but it'll look something like this:
 

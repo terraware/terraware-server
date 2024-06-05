@@ -2,7 +2,7 @@
 
 Sensitive documents submitted in response to deliverables are uploaded to Dropbox rather than to Google Drive. This requires configuring terraware-server with the right Dropbox API credentials.
 
-These instructions can be used to set up a 
+These instructions can be used to set up a
 
 ## Prerequisites
 
@@ -44,7 +44,7 @@ Click the "Submit" link.
 
 This will require manually constructing an OAuth2 URL to get a code. The URL should look like:
 
-    https://www.dropbox.com/oauth2/authorize?client_id=APP_KEY&response_type=code&token_access_type=offline
+        https://www.dropbox.com/oauth2/authorize?client_id=APP_KEY&response_type=code&token_access_type=offline
 
 where `APP_KEY` is the app key from the "Settings" tab of the app's details (from step 2).
 
@@ -56,7 +56,7 @@ After granting permission to the app, you'll get a page with a temporary code, w
 
 This requires sending a POST request to Dropbox. Easiest is to do it from the command line:
 
-     curl -d 'grant_type=authorization_code&client_id=APP_KEY&client_secret=APP_SECRET&code=CODE' https://api.dropbox.com/oauth2/token
+        curl -d 'grant_type=authorization_code&client_id=APP_KEY&client_secret=APP_SECRET&code=CODE' https://api.dropbox.com/oauth2/token
 
 Where `APP_KEY` and `APP_SECRET` are the app key and secret from the settings page (from step 2) and `CODE` is the code from the end of step 4.
 
@@ -81,3 +81,4 @@ For deployment or if you're running terraware-server with a Docker image, you'll
 - `TERRAWARE_DROPBOX_APPSECRET`
 - `TERRAWARE_DROPBOX_ENABLED` (set this to `true`)
 - `TERRAWARE_DROPBOX_REFRESHTOKEN`
+

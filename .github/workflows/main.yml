@@ -31,6 +31,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Fetch tip of main branch to support diffing
+      run: git fetch --depth 1 origin main
+
     - name: Set environment
       run: ./.github/scripts/set-environment.sh
 

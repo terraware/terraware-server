@@ -1,6 +1,6 @@
 # Configuring support tickets with Atlassian
 
-Feature requests and bug reports submitted are triaged as Jira service issues on Atlassian. This requires configuring terraware-server with the right Atlassian API credentials. 
+Feature requests and bug reports submitted are triaged as Jira service issues on Atlassian. This requires configuring terraware-server with the right Atlassian API credentials.
 
 ## Prerequisites
 
@@ -20,6 +20,7 @@ The service desk tag is the project to hold support issues.
 ### Step 3: Add environmental variables
 
 A local application yaml file:
+
 ```
 terraware:
   atlassian:

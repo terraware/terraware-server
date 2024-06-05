@@ -24,7 +24,7 @@ plugins {
   // kotlin("kapt")
 
   id("dev.monosoul.jooq-docker") version "6.0.24"
-  id("com.diffplug.spotless") version "6.19.0"
+  id("com.diffplug.spotless") version "6.25.0"
   id("org.jetbrains.dokka") version "1.9.20"
   id("org.springframework.boot") version "3.3.0"
   id("io.spring.dependency-management") version "1.1.5"
@@ -285,6 +285,19 @@ spotless {
   kotlinGradle {
     ktfmt(ktfmtVersion)
     target("*.gradle.kts", "buildSrc/*.gradle.kts", "jooq/*.gradle.kts")
+  }
+  flexmark {
+    target("*.md", "buildSrc/*.md", "docs/*.md", "src/**/*.md")
+    flexmark()
+  }
+  format("sql") {
+    // Only apply to newly-added SQL files since editing existing ones will cause the checksums
+    // to change which Flyway will detect as invalid edits of already-applied migrations.
+    ratchetFrom("origin/main")
+
+    target("src/**/*.sql")
+    endWithNewline()
+    trimTrailingWhitespace()
   }
 }
 
