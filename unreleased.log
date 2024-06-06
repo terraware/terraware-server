@@ -1,3 +1,5 @@
+bacf51ac4ca Update database dependencies to v10.14.0 (#2047)
+45c54dee1f9 Add MJML bullet list plugin (#2046)
 f42cbcbc838 SW-4802 Planting site validation API (#2042)
 202c7bc7364 Move site validation from controller to model (#2041)
 48e537621ce Object representation of map validation failures (#2040)
