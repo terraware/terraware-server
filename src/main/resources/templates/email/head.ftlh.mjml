@@ -22,13 +22,43 @@
             inner-border-radius="23px"
         />
         <mj-class
+            name="body-wrapper-new"
+            padding="32px"
+            background-color="#FFFFFF"
+            border-top="1px solid #B2AB93"
+            border-bottom="1px solid #B2AB93"
+        />
+        <mj-class
+            name="secondary-wrapper"
+            padding="32px"
+            background-color="#FFFFFF"
+        />
+        <mj-class
+            name="text-header01"
+            font-family="Inter, sans-serif"
+            font-weight="500"
+            font-size="14px"
+            line-height="20px"
+            color="#EF7047"
+            align="center"
+        />
+        <mj-class
+            name="text-headline06-bold-green"
+            font-family="Inter, sans-serif"
+            font-weight="700"
+            font-size="24px"
+            line-height="32px"
+            color="#2C8658"
+            align="center"
+        />
+        <mj-class
             name="text-headline06-bold"
             font-family="Inter, sans-serif"
             font-weight="600"
             font-size="20px"
             line-height="28px"
-            color="#333025"
-            padding="32px 32px 16px 32px"
+            color="#000000"
+            align="center"
         />
         <mj-class
             name="text-body03"

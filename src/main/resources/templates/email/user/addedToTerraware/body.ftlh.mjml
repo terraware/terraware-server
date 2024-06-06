@@ -3,18 +3,44 @@
     <mj-include path="../../head.ftlh.mjml"/>
 
     <mj-body>
-        <mj-include path="../../logo.ftlh.mjml"/>
+        <mj-hero>
+            <mj-image mj-class="logo-img" src="${webAppUrl}/assets/tw-tf-logo.svg">
+            </mj-image>
+        </mj-hero>
+        <mj-section padding="0px">
+            <mj-column>
+                <mj-text mj-class="text-header01">
+                    ${strings("notification.user.addedToOrganization.email.header.1")}</mj-text>
+            </mj-column>
+        </mj-section>
 
         <mj-section padding="0px">
-            <mj-column mj-class="body-wrapper">
+            <mj-column mj-class="body-wrapper-new">
+                <mj-text mj-class="text-headline06-bold-green">
+                    ${strings("notification.user.addedToTerraware.email.body.3")}
+                </mj-text>
                 <mj-text mj-class="text-headline06-bold">
-                ${strings("notification.user.addedToTerraware.email.body.1", organization.name)}</mj-text>
+                    ${strings("notification.user.addedToOrganization.email.body.2", organization.name)}
+                </mj-text>
                 <mj-text mj-class="text-body03">
-                ${strings("notification.user.addedToTerraware.email.body.2", admin.fullName, admin.email)}</mj-text>
+                    ${strings("notification.user.addedToOrganization.email.body.3", admin.fullName, admin.email)}</mj-text>
                 <mj-text mj-class="text-body03">
-                ${strings("notification.registration.organization.email.buttonIntro")}</mj-text>
-                <mj-button mj-class="btn-productive-primary-md" href="${terrawareRegistrationUrl?no_esc}"
-                >${strings("notification.registration.email.buttonLabel")}</mj-button>
+                    ${strings("notification.user.addedToOrganization.email.body.4", organization.name, admin.fullName, admin.email)}</mj-text>
+                <mj-text mj-class="text-body03">
+                    ${strings("notification.user.addedToOrganization.email.body.5")}</mj-text>
+                <mj-button mj-class="btn-productive-primary-md" href="${organizationHomeUrl?no_esc}"
+                >${strings("notification.user.addedToTerraware.email.buttonLabel")}</mj-button>
+            </mj-column>
+            <mj-column mj-class="secondary-wrapper">
+                <mj-text mj-class="text-body03">
+                    ${strings("notification.user.addedToTerraware.email.body.5")}</mj-text>
+                <mj-list>
+                    <mj-li>${strings("notification.user.addedToTerraware.email.body.item.1")}</mj-li>
+                    <mj-li>${strings("notification.user.addedToTerraware.email.body.item.2")}</mj-li>
+                    <mj-li>${strings("notification.user.addedToTerraware.email.body.item.3")}</mj-li>
+                    <mj-li>${strings("notification.user.addedToTerraware.email.body.item.4")}</mj-li>
+                </mj-list>
+                <mj-image src=""></mj-image>
                 <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>
         </mj-section>
