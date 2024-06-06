@@ -14,7 +14,7 @@ If you're going to be contributing code:
 Setup docs for optional parts of the system, only needed if you're working on code related to these features:
 
 * [ATLASSIAN.md](ATLASSIAN.md): how to configure the server to file Jira tasks. Only needed if you're working on features related to customer support.
-* [DROPBOX.md](DROPBOX.md): how to configure Dropbox integration for storing sensitive uploaded dcocuments.
+* [DROPBOX.md](DROPBOX.md): how to configure Dropbox integration for storing sensitive uploaded documents.
 
 ## Database schema diagrams
 
