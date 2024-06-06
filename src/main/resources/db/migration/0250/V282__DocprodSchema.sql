@@ -3,7 +3,7 @@ CREATE SCHEMA IF NOT EXISTS docprod;
 ALTER TABLE documents SET SCHEMA docprod;
 ALTER TABLE document_saved_versions SET SCHEMA docprod;
 ALTER TABLE document_statuses SET SCHEMA docprod;
-ALTER TABLE methodologies SET SCHEMA docprod;
+ALTER TABLE document_templates SET SCHEMA docprod;
 ALTER TABLE variables SET SCHEMA docprod;
 ALTER TABLE variable_image_values SET SCHEMA docprod;
 ALTER TABLE variable_injection_display_styles SET SCHEMA docprod;

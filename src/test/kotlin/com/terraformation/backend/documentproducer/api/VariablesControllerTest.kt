@@ -14,11 +14,14 @@ class VariablesControllerTest : ControllerIntegrationTest() {
   @BeforeEach
   fun setUp() {
     insertUser()
+    insertDocumentTemplate()
+    insertVariableManifest()
+    insertDocument()
   }
 
   @Nested
   inner class ListVariables {
-    private fun path(manifestId: VariableManifestId = cannedVariableManifestId) =
+    private fun path(manifestId: VariableManifestId = inserted.variableManifestId) =
         "/api/v1/variables?manifestId=$manifestId"
 
     @Test

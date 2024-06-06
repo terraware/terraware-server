@@ -154,7 +154,7 @@ import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentSavedVersionId
 import com.terraformation.backend.db.docprod.DocumentStatus
-import com.terraformation.backend.db.docprod.MethodologyId
+import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
 import com.terraformation.backend.db.docprod.VariableManifestId
@@ -165,8 +165,8 @@ import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableUsageType
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.tables.daos.DocumentSavedVersionsDao
+import com.terraformation.backend.db.docprod.tables.daos.DocumentTemplatesDao
 import com.terraformation.backend.db.docprod.tables.daos.DocumentsDao
-import com.terraformation.backend.db.docprod.tables.daos.MethodologiesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableImageValuesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableLinkValuesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableManifestEntriesDao
@@ -185,8 +185,8 @@ import com.terraformation.backend.db.docprod.tables.daos.VariableValueTableRowsD
 import com.terraformation.backend.db.docprod.tables.daos.VariableValuesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariablesDao
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentSavedVersionsRow
+import com.terraformation.backend.db.docprod.tables.pojos.DocumentTemplatesRow
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentsRow
-import com.terraformation.backend.db.docprod.tables.pojos.MethodologiesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableImageValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableLinkValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableManifestEntriesRow
@@ -372,10 +372,6 @@ import org.testcontainers.utility.DockerImageName
 abstract class DatabaseBackedTest {
   @Autowired lateinit var dslContext: DSLContext
 
-  protected val cannedDocumentId: DocumentId by lazy { insertDocument() }
-  protected val cannedMethodologyId = MethodologyId(1)
-  protected val cannedVariableManifestId = VariableManifestId(1)
-
   /**
    * List of tables from which sequences are to be reset before each test method. Sequences used
    * here belong to the primary key in the table.
@@ -489,7 +485,7 @@ abstract class DatabaseBackedTest {
   protected val filesDao: FilesDao by lazyDao()
   protected val geolocationsDao: GeolocationsDao by lazyDao()
   protected val internalTagsDao: InternalTagsDao by lazyDao()
-  protected val methodologiesDao: MethodologiesDao by lazyDao()
+  protected val documentTemplatesDao: DocumentTemplatesDao by lazyDao()
   protected val modulesDao: ModulesDao by lazyDao()
   protected val monitoringPlotsDao: MonitoringPlotsDao by lazyDao()
   protected val notificationsDao: NotificationsDao by lazyDao()
@@ -2387,7 +2383,7 @@ abstract class DatabaseBackedTest {
   protected fun insertDocument(
       createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
-      methodologyId: MethodologyId = cannedMethodologyId,
+      documentTemplateId: DocumentTemplateId = inserted.documentTemplateId,
       modifiedBy: UserId = createdBy,
       modifiedTime: Instant = createdTime,
       id: Any? = null,
@@ -2395,14 +2391,14 @@ abstract class DatabaseBackedTest {
       organizationName: String = "Test Org",
       ownedBy: UserId = createdBy,
       status: DocumentStatus = DocumentStatus.Draft,
-      variableManifestId: VariableManifestId = cannedVariableManifestId,
+      variableManifestId: VariableManifestId = inserted.variableManifestId,
   ): DocumentId {
     val row =
         DocumentsRow(
             createdBy = createdBy,
             createdTime = createdTime,
             id = id?.toIdWrapper { DocumentId(it) },
-            methodologyId = methodologyId,
+            documentTemplateId = documentTemplateId,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
@@ -2468,19 +2464,21 @@ abstract class DatabaseBackedTest {
     return row.variableValueId!!
   }
 
-  protected fun insertMethodology(
+  private var nextDocumentTemplate = 0
+
+  protected fun insertDocumentTemplate(
       id: Any? = null,
-      name: String = "Methodology",
-  ): MethodologyId {
+      name: String = "Document Template ${nextDocumentTemplate++}",
+  ): DocumentTemplateId {
     val row =
-        MethodologiesRow(
-            id = id?.toIdWrapper { MethodologyId(it) },
+        DocumentTemplatesRow(
+            id = id?.toIdWrapper { DocumentTemplateId(it) },
             name = name,
         )
 
-    methodologiesDao.insert(row)
+    documentTemplatesDao.insert(row)
 
-    return row.id!!.also { inserted.methodologyIds.add(it) }
+    return row.id!!.also { inserted.documentTemplateIds.add(it) }
   }
 
   protected fun insertNumberVariable(
@@ -2506,13 +2504,13 @@ abstract class DatabaseBackedTest {
 
   protected fun insertSavedVersion(
       maxValueId: Any,
-      documentId: Any = cannedDocumentId,
+      documentId: Any = inserted.documentId,
       name: String = "Saved",
       createdBy: Any = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
       id: Any? = null,
       isSubmitted: Boolean = false,
-      variableManifestId: Any = cannedVariableManifestId,
+      variableManifestId: Any = inserted.variableManifestId,
   ): DocumentSavedVersionId {
     val row =
         DocumentSavedVersionsRow(
@@ -2534,7 +2532,7 @@ abstract class DatabaseBackedTest {
   protected fun insertSectionValue(
       variableId: Any,
       listPosition: Int = 0,
-      documentId: Any = cannedDocumentId,
+      documentId: Any = inserted.documentId,
       id: Any =
           insertValue(
               variableId = variableId,
@@ -2572,7 +2570,7 @@ abstract class DatabaseBackedTest {
   protected fun insertSectionRecommendation(
       sectionId: Any,
       recommendedId: Any,
-      manifestId: Any = cannedVariableManifestId,
+      manifestId: Any = inserted.variableManifestId,
   ) {
     val row =
         VariableSectionRecommendationsRow(
@@ -2759,7 +2757,7 @@ abstract class DatabaseBackedTest {
       id: Any? = null,
       variableId: Any,
       listPosition: Int = 0,
-      documentId: Any = cannedDocumentId,
+      documentId: Any = inserted.documentId,
       isDeleted: Boolean = false,
       textValue: String? = null,
       numberValue: BigDecimal? = null,
@@ -2829,14 +2827,14 @@ abstract class DatabaseBackedTest {
       createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
       id: Any? = null,
-      methodologyId: MethodologyId = cannedMethodologyId,
+      documentTemplateId: DocumentTemplateId = inserted.documentTemplateId,
   ): VariableManifestId {
     val row =
         VariableManifestsRow(
             createdBy = createdBy,
             createdTime = createdTime,
             id = id?.toIdWrapper { VariableManifestId(it) },
-            methodologyId = methodologyId,
+            documentTemplateId = documentTemplateId,
         )
 
     variableManifestsDao.insert(row)
@@ -2849,7 +2847,7 @@ abstract class DatabaseBackedTest {
   protected fun insertVariableManifestEntry(
       variableId: Any,
       description: String? = null,
-      manifestId: Any = cannedVariableManifestId,
+      manifestId: Any = inserted.variableManifestId,
       name: String = "Variable $variableId",
       position: Int = nextManifestPosition++,
       stableId: String = "$variableId",
@@ -2883,7 +2881,7 @@ abstract class DatabaseBackedTest {
     val eventIds = mutableListOf<EventId>()
     val facilityIds = mutableListOf<FacilityId>()
     val fileIds = mutableListOf<FileId>()
-    val methodologyIds = mutableListOf<MethodologyId>()
+    val documentTemplateIds = mutableListOf<DocumentTemplateId>()
     val moduleIds = mutableListOf<ModuleId>()
     val monitoringPlotIds = mutableListOf<MonitoringPlotId>()
     val notificationIds = mutableListOf<NotificationId>()
@@ -2944,8 +2942,8 @@ abstract class DatabaseBackedTest {
     val fileId
       get() = fileIds.last()
 
-    val methodologyId
-      get() = methodologyIds.last()
+    val documentTemplateId
+      get() = documentTemplateIds.last()
 
     val moduleId
       get() = moduleIds.last()

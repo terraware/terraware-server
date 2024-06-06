@@ -1,6 +1,6 @@
 package com.terraformation.backend.documentproducer.db.manifest
 
-import com.terraformation.backend.db.docprod.MethodologyId
+import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableTextType
@@ -52,7 +52,7 @@ class ManifestImporter(
   fun import(
       inputStream: InputStream,
       fileName: String,
-      methodologyId: MethodologyId
+      documentTemplateId: DocumentTemplateId
   ): ManifestImportResult {
     val inputBytes = inputStream.readAllBytes()
 
@@ -64,7 +64,7 @@ class ManifestImporter(
     }
 
     return try {
-      ImportContext().importCsv(methodologyId, inputBytes)
+      ImportContext().importCsv(documentTemplateId, inputBytes)
     } catch (e: Exception) {
       ManifestImportResult(
           null,
@@ -101,7 +101,10 @@ class ManifestImporter(
     val results = mutableListOf<String>()
     val errors = mutableListOf<String>()
 
-    fun importCsv(methodologyId: MethodologyId, inputBytes: ByteArray): ManifestImportResult {
+    fun importCsv(
+        documentTemplateId: DocumentTemplateId,
+        inputBytes: ByteArray
+    ): ManifestImportResult {
       try {
         csvVariables = csvVariableNormalizer.normalizeFromCsv(inputBytes)
         csvVariableByPath = csvVariables.associateBy { it.variablePath }
@@ -110,10 +113,10 @@ class ManifestImporter(
             csvVariables.filter { it.parentPath != null }.groupBy { it.parentPath!! }
 
         dslContext.transaction { _ ->
-          useExistingVariables(methodologyId)
+          useExistingVariables(documentTemplateId)
 
           val newVariableManifest =
-              variableManifestStore.create(NewVariableManifestModel(methodologyId))
+              variableManifestStore.create(NewVariableManifestModel(documentTemplateId))
           variableManifestId = newVariableManifest.id
 
           // Import tables first
@@ -150,9 +153,10 @@ class ManifestImporter(
       return ManifestImportResult(variableManifestId, "Success", results, errors)
     }
 
-    private fun useExistingVariables(methodologyId: MethodologyId) {
+    private fun useExistingVariables(documentTemplateId: DocumentTemplateId) {
       val existingManifestId =
-          variableManifestStore.fetchVariableManifestByMethodology(methodologyId)?.id ?: return
+          variableManifestStore.fetchVariableManifestByDocumentTemplate(documentTemplateId)?.id
+              ?: return
       val existingVariables = variableStore.fetchManifestVariables(existingManifestId)
 
       // Child variables such as table columns and subsections are not in the top-level list, so we

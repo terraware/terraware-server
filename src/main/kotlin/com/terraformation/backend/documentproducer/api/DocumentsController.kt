@@ -10,7 +10,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentSavedVersionId
 import com.terraformation.backend.db.docprod.DocumentStatus
-import com.terraformation.backend.db.docprod.MethodologyId
+import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentSavedVersionsRow
@@ -131,10 +131,11 @@ class DocumentsController(
   @ApiResponse404(
       description = "The document does not exist or the requested manifest does not exist.")
   @ApiResponse409(
-      description = "The requested manifest is for a different methodology than the current one.")
+      description =
+          "The requested manifest is for a different document template than the current one.")
   @Operation(
       summary = "Upgrades a document to a newer manifest.",
-      description = "The manifest must be for the same methodology as the existing manifest.")
+      description = "The manifest must be for the same document template as the existing manifest.")
   @PostMapping("/{documentId}/upgrade")
   fun upgradeManifest(
       @PathVariable documentId: DocumentId,
@@ -150,7 +151,7 @@ data class PddPayload(
     val createdBy: UserId,
     val createdTime: Instant,
     val id: DocumentId,
-    val methodologyId: MethodologyId,
+    val documentTemplateId: DocumentTemplateId,
     val modifiedBy: UserId,
     val modifiedTime: Instant,
     val name: String,
@@ -165,7 +166,7 @@ data class PddPayload(
       createdBy = model.createdBy,
       createdTime = model.createdTime,
       id = model.id,
-      methodologyId = model.methodologyId,
+      documentTemplateId = model.documentTemplateId,
       modifiedBy = model.modifiedBy,
       modifiedTime = model.modifiedTime,
       name = model.name,
@@ -203,12 +204,12 @@ data class PddSavedVersionPayload(
 }
 
 data class CreatePddRequestPayload(
-    val methodologyId: MethodologyId,
+    val documentTemplateId: DocumentTemplateId,
     val name: String,
     val organizationName: String,
     val ownedBy: UserId,
 ) {
-  fun toModel() = NewDocumentModel(methodologyId, name, organizationName, ownedBy)
+  fun toModel() = NewDocumentModel(documentTemplateId, name, organizationName, ownedBy)
 }
 
 data class CreateSavedPddVersionRequestPayload(
@@ -245,7 +246,7 @@ data class UpgradeManifestRequestPayload(
         description =
             "ID of manifest to upgrade the document to. This must be greater than the document's " +
                 "current manifest ID (downgrades are not supported) and must be for the same " +
-                "methodology as the current manifest.")
+                "document template as the current manifest.")
     val variableManifestId: VariableManifestId
 )
 

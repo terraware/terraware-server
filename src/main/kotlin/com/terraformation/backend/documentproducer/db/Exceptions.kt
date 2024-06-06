@@ -4,7 +4,7 @@ import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentSavedVersionId
-import com.terraformation.backend.db.docprod.MethodologyId
+import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableType
@@ -17,27 +17,28 @@ class CannotSaveEmptyDocumentException(val documentId: DocumentId) :
 class DocumentNotFoundException(documentId: DocumentId) :
     EntityNotFoundException("Document $documentId not found")
 
-class MissingVariableManifestException(val methodologyId: MethodologyId) :
-    MismatchedStateException("No variable manifest defined for methodology $methodologyId")
+class MissingVariableManifestException(val documentTemplateId: DocumentTemplateId) :
+    MismatchedStateException(
+        "No variable manifest defined for document template $documentTemplateId")
 
 class SavedVersionNotFoundException(documentId: DocumentId, versionId: DocumentSavedVersionId) :
     EntityNotFoundException("Document $documentId has no saved version $versionId")
 
-class UpgradeCannotChangeMethodologyException(
+class UpgradeCannotChangeDocumentTemplateException(
     val oldManifestId: VariableManifestId,
-    val oldMethodologyId: MethodologyId,
+    val oldDocumentTemplateId: DocumentTemplateId,
     val newManifestId: VariableManifestId,
-    val newMethodologyId: MethodologyId
+    val newDocumentTemplateId: DocumentTemplateId
 ) :
     MismatchedStateException(
-        "Cannot upgrade from manifest $oldManifestId (methodology $oldMethodologyId) to manifest " +
-            "$newManifestId which is for a different methodology $newMethodologyId")
+        "Cannot upgrade from manifest $oldManifestId (document template $oldDocumentTemplateId) to manifest " +
+            "$newManifestId which is for a different document template $newDocumentTemplateId")
 
 class CircularReferenceException(val variableIds: Collection<VariableId>) :
     IllegalStateException("Circular reference detected in variables: $variableIds")
 
-class NoManifestForMethodologyException(val methodologyId: MethodologyId) :
-    EntityNotFoundException("Methodology $methodologyId has no variable manifest")
+class NoManifestForDocumentTemplateException(val documentTemplateId: DocumentTemplateId) :
+    EntityNotFoundException("Document Template $documentTemplateId has no variable manifest")
 
 class RowInWrongTableException(val columnVariableId: VariableId, val rowValueId: VariableValueId) :
     MismatchedStateException(

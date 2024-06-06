@@ -69,9 +69,9 @@ COMMENT ON TABLE docprod.document_saved_versions IS 'Saved versions of document 
 
 COMMENT ON TABLE docprod.document_statuses IS '(Enum) Current stage of a document''s lifecycle.';
 
-COMMENT ON TABLE docprod.documents IS 'Top-level information about documents.';
+COMMENT ON TABLE docprod.document_templates IS 'Templates for the different types of documents this system can produce.';
 
-COMMENT ON TABLE docprod.methodologies IS 'Verra-defined project methodologies. Templates and variables are all per-methodology.';
+COMMENT ON TABLE docprod.documents IS 'Top-level information about documents.';
 
 COMMENT ON TABLE docprod.variable_image_values IS 'Linking table that defines which image files are values of which variables.';
 
@@ -81,7 +81,7 @@ COMMENT ON TABLE docprod.variable_link_values IS 'Type-specific details of the v
 
 COMMENT ON TABLE docprod.variable_manifest_entries IS 'Linking table that defines which variables appear in which manifests and in what order.';
 
-COMMENT ON TABLE docprod.variable_manifests IS 'A collection of the definitions of the variables for a methodology. This is how we do versioning of variable definitions. Each revision of the variable definitions is represented as a new manifest.';
+COMMENT ON TABLE docprod.variable_manifests IS 'A collection of the definitions of the variables for a document template. This is how we do versioning of variable definitions. Each revision of the variable definitions is represented as a new manifest.';
 
 COMMENT ON TABLE docprod.variable_numbers IS 'Information about number variables that is not relevant for other variable types.';
 

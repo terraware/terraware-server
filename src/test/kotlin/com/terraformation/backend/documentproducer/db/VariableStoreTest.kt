@@ -1,15 +1,20 @@
 package com.terraformation.backend.documentproducer.db
 
+import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.documentproducer.model.BaseVariableProperties
 import com.terraformation.backend.documentproducer.model.SectionVariable
+import com.terraformation.backend.mockUser
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class VariableStoreTest : DatabaseTest() {
+class VariableStoreTest : DatabaseTest(), RunsAsUser {
+  override val user = mockUser()
+
   private val store: VariableStore by lazy {
     VariableStore(
         dslContext,
@@ -22,6 +27,14 @@ class VariableStoreTest : DatabaseTest() {
         variableTablesDao,
         variableTableColumnsDao,
         variableTextsDao)
+  }
+
+  @BeforeEach
+  fun setUp() {
+    insertUser()
+    insertDocumentTemplate()
+    insertVariableManifest()
+    insertDocument()
   }
 
   @Nested
@@ -43,7 +56,7 @@ class VariableStoreTest : DatabaseTest() {
               base =
                   BaseVariableProperties(
                       id = sectionId1,
-                      manifestId = cannedVariableManifestId,
+                      manifestId = inserted.variableManifestId,
                       name = "1",
                       position = 0,
                       stableId = "A",
@@ -54,7 +67,7 @@ class VariableStoreTest : DatabaseTest() {
                       SectionVariable(
                           BaseVariableProperties(
                               id = sectionId2,
-                              manifestId = cannedVariableManifestId,
+                              manifestId = inserted.variableManifestId,
                               name = "1.1",
                               position = 1,
                               stableId = "B",
@@ -65,7 +78,7 @@ class VariableStoreTest : DatabaseTest() {
                                   SectionVariable(
                                       BaseVariableProperties(
                                           id = sectionId3a,
-                                          manifestId = cannedVariableManifestId,
+                                          manifestId = inserted.variableManifestId,
                                           name = "1.1.1",
                                           position = 2,
                                           stableId = "C",
@@ -75,14 +88,14 @@ class VariableStoreTest : DatabaseTest() {
                                   SectionVariable(
                                       BaseVariableProperties(
                                           id = sectionId3b,
-                                          manifestId = cannedVariableManifestId,
+                                          manifestId = inserted.variableManifestId,
                                           name = "1.1.2",
                                           position = 3,
                                           stableId = "D",
                                       ),
                                       renderHeading = false)))))
 
-      val actual = store.fetchVariable(cannedVariableManifestId, sectionId1)
+      val actual = store.fetchVariable(inserted.variableManifestId, sectionId1)
 
       assertEquals(expected, actual)
     }
@@ -102,7 +115,7 @@ class VariableStoreTest : DatabaseTest() {
       insertVariableManifestEntry(variableId = sectionId3)
 
       assertThrows<CircularReferenceException> {
-        store.fetchVariable(cannedVariableManifestId, sectionId1)
+        store.fetchVariable(inserted.variableManifestId, sectionId1)
       }
     }
   }

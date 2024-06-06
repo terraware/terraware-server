@@ -1,8 +1,8 @@
 package com.terraformation.backend.admin
 
-import com.terraformation.backend.db.docprod.MethodologyId
-import com.terraformation.backend.db.docprod.tables.daos.MethodologiesDao
-import com.terraformation.backend.db.docprod.tables.pojos.MethodologiesRow
+import com.terraformation.backend.db.docprod.DocumentTemplateId
+import com.terraformation.backend.db.docprod.tables.daos.DocumentTemplatesDao
+import com.terraformation.backend.db.docprod.tables.pojos.DocumentTemplatesRow
 import com.terraformation.backend.documentproducer.db.manifest.ManifestImporter
 import io.swagger.v3.oas.annotations.ExternalDocumentation
 import io.swagger.v3.oas.annotations.Operation
@@ -25,7 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequestMapping("/admin/document-producer")
 class AdminDocumentController(
     private val manifestImporter: ManifestImporter,
-    private val methodologiesDao: MethodologiesDao,
+    private val documentTemplatesDao: DocumentTemplatesDao,
 ) {
   /** Redirects /admin to /admin/ so relative URLs in the UI will work. */
   @GetMapping
@@ -35,24 +35,25 @@ class AdminDocumentController(
 
   @GetMapping("/")
   fun getIndex(model: Model): String {
-    model.addAttribute("methodologies", methodologiesDao.findAll().sortedBy { it.id?.value })
+    model.addAttribute(
+        "documentTemplates", documentTemplatesDao.findAll().sortedBy { it.id?.value })
 
     return "/admin/index"
   }
 
-  @PostMapping("/createMethodology")
-  fun createMethodology(
+  @PostMapping("/createDocumentTemplate")
+  fun createDocumentTemplate(
       @RequestParam name: String,
       model: Model,
       redirectAttributes: RedirectAttributes
   ): String {
-    val row = MethodologiesRow(name = name)
+    val row = DocumentTemplatesRow(name = name)
 
     try {
-      methodologiesDao.insert(row)
-      redirectAttributes.successMessage = "Methodology ${row.id} added."
+      documentTemplatesDao.insert(row)
+      redirectAttributes.successMessage = "Document Template ${row.id} added."
     } catch (e: Exception) {
-      redirectAttributes.failureMessage = "Failed to add methodology: ${e.message}"
+      redirectAttributes.failureMessage = "Failed to add document template: ${e.message}"
     }
 
     return adminHome()
@@ -75,17 +76,17 @@ class AdminDocumentController(
       @Schema(
           format = "int64",
           type = "integer",
-          description = "The Methodology ID that this manifest is defined for")
-      @RequestPart("methodologyId")
-      methodologyIdString: String,
+          description = "The Document Template ID that this manifest is defined for")
+      @RequestPart("documentTemplateId")
+      documentTemplateIdString: String,
       redirectAttributes: RedirectAttributes,
   ): String {
     val fileName = file.originalFilename ?: "manifest.csv"
-    val methodologyId = MethodologyId(methodologyIdString.toLong())
+    val documentTemplateId = DocumentTemplateId(documentTemplateIdString.toLong())
 
     try {
       file.inputStream.use { uploadStream ->
-        val result = manifestImporter.import(uploadStream, fileName, methodologyId)
+        val result = manifestImporter.import(uploadStream, fileName, documentTemplateId)
         if (result.errors.isEmpty()) {
           redirectAttributes.successMessage = "Imported manifest ${result.newVersion}."
         } else {

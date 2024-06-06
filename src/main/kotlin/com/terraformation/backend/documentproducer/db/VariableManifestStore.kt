@@ -2,9 +2,9 @@ package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.docprod.MethodologyId
+import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.embeddables.pojos.VariableManifestEntryId
-import com.terraformation.backend.db.docprod.tables.daos.MethodologiesDao
+import com.terraformation.backend.db.docprod.tables.daos.DocumentTemplatesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableManifestEntriesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableManifestsDao
 import com.terraformation.backend.db.docprod.tables.pojos.VariableManifestEntriesRow
@@ -21,16 +21,18 @@ import org.jooq.DSLContext
 class VariableManifestStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
-    private val methodologiesDao: MethodologiesDao,
+    private val documentTemplatesDao: DocumentTemplatesDao,
     private val variableManifestsDao: VariableManifestsDao,
     private val variableManifestEntriesDao: VariableManifestEntriesDao
 ) {
   private val log = perClassLogger()
 
-  fun fetchVariableManifestByMethodology(methodologyId: MethodologyId): VariableManifestsRow? =
+  fun fetchVariableManifestByDocumentTemplate(
+      documentTemplateId: DocumentTemplateId
+  ): VariableManifestsRow? =
       dslContext
           .selectFrom(VARIABLE_MANIFESTS)
-          .where(VARIABLE_MANIFESTS.METHODOLOGY_ID.eq(methodologyId))
+          .where(VARIABLE_MANIFESTS.DOCUMENT_TEMPLATE_ID.eq(documentTemplateId))
           .orderBy(VARIABLE_MANIFESTS.ID.desc())
           .limit(1)
           .fetchOneInto(VariableManifestsRow::class.java)
@@ -38,9 +40,9 @@ class VariableManifestStore(
   fun create(newVariableManifestModel: NewVariableManifestModel): ExistingVariableManifestModel {
     requirePermissions { createVariableManifest() }
 
-    if (!methodologiesDao.existsById(newVariableManifestModel.methodologyId)) {
+    if (!documentTemplatesDao.existsById(newVariableManifestModel.documentTemplateId)) {
       throw IllegalArgumentException(
-          "Methodology ${newVariableManifestModel.methodologyId} does not exist")
+          "Document Template ${newVariableManifestModel.documentTemplateId} does not exist")
     }
 
     val currentUserId = currentUser().userId
@@ -50,7 +52,7 @@ class VariableManifestStore(
         VariableManifestsRow(
             createdBy = currentUserId,
             createdTime = now,
-            methodologyId = newVariableManifestModel.methodologyId,
+            documentTemplateId = newVariableManifestModel.documentTemplateId,
         )
 
     variableManifestsDao.insert(row)

@@ -6,11 +6,11 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentSavedVersionId
 import com.terraformation.backend.db.docprod.DocumentStatus
-import com.terraformation.backend.db.docprod.MethodologyId
+import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.tables.daos.DocumentSavedVersionsDao
+import com.terraformation.backend.db.docprod.tables.daos.DocumentTemplatesDao
 import com.terraformation.backend.db.docprod.tables.daos.DocumentsDao
-import com.terraformation.backend.db.docprod.tables.daos.MethodologiesDao
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentSavedVersionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentsRow
 import com.terraformation.backend.db.docprod.tables.references.DOCUMENT_SAVED_VERSIONS
@@ -33,24 +33,25 @@ class DocumentStore(
     private val documentSavedVersionsDao: DocumentSavedVersionsDao,
     private val documentsDao: DocumentsDao,
     private val dslContext: DSLContext,
-    private val methodologiesDao: MethodologiesDao,
+    private val documentTemplatesDao: DocumentTemplatesDao,
 ) {
   fun create(newDocumentModel: NewDocumentModel): ExistingDocumentModel {
     requirePermissions { createDocument() }
 
-    if (!methodologiesDao.existsById(newDocumentModel.methodologyId)) {
-      throw IllegalArgumentException("Methodology ${newDocumentModel.methodologyId} does not exist")
+    if (!documentTemplatesDao.existsById(newDocumentModel.documentTemplateId)) {
+      throw IllegalArgumentException(
+          "Document Template ${newDocumentModel.documentTemplateId} does not exist")
     }
 
     val currentUserId = currentUser().userId
-    val manifestId = getCurrentManifestId(newDocumentModel.methodologyId)
+    val manifestId = getCurrentManifestId(newDocumentModel.documentTemplateId)
     val now = clock.instant()
 
     val row =
         DocumentsRow(
             createdBy = currentUserId,
             createdTime = now,
-            methodologyId = newDocumentModel.methodologyId,
+            documentTemplateId = newDocumentModel.documentTemplateId,
             modifiedBy = currentUserId,
             modifiedTime = now,
             name = newDocumentModel.name,
@@ -209,13 +210,14 @@ class DocumentStore(
     return updatedRow
   }
 
-  private fun getCurrentManifestId(methodologyId: MethodologyId): VariableManifestId {
+  private fun getCurrentManifestId(documentTemplateId: DocumentTemplateId): VariableManifestId {
     return dslContext
         .select(VARIABLE_MANIFESTS.ID)
         .from(VARIABLE_MANIFESTS)
-        .where(VARIABLE_MANIFESTS.METHODOLOGY_ID.eq(methodologyId))
+        .where(VARIABLE_MANIFESTS.DOCUMENT_TEMPLATE_ID.eq(documentTemplateId))
         .orderBy(VARIABLE_MANIFESTS.ID.desc())
         .limit(1)
-        .fetchOne(VARIABLE_MANIFESTS.ID) ?: throw MissingVariableManifestException(methodologyId)
+        .fetchOne(VARIABLE_MANIFESTS.ID)
+        ?: throw MissingVariableManifestException(documentTemplateId)
   }
 }

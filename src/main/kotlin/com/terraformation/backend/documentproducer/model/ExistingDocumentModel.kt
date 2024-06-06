@@ -3,7 +3,7 @@ package com.terraformation.backend.documentproducer.model
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentStatus
-import com.terraformation.backend.db.docprod.MethodologyId
+import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentsRow
 import java.time.Instant
@@ -12,7 +12,7 @@ data class ExistingDocumentModel(
     val createdBy: UserId,
     val createdTime: Instant,
     val id: DocumentId,
-    val methodologyId: MethodologyId,
+    val documentTemplateId: DocumentTemplateId,
     val modifiedBy: UserId,
     val modifiedTime: Instant,
     val name: String,
@@ -27,7 +27,7 @@ data class ExistingDocumentModel(
       createdBy = row.createdBy!!,
       createdTime = row.createdTime!!,
       id = row.id!!,
-      methodologyId = row.methodologyId!!,
+      documentTemplateId = row.documentTemplateId!!,
       modifiedBy = row.modifiedBy!!,
       modifiedTime = row.modifiedTime!!,
       name = row.name!!,

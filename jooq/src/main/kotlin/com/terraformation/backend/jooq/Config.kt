@@ -218,7 +218,9 @@ val ID_WRAPPERS =
             listOf(
                 IdWrapper("DocumentId", listOf("documents\\.id", ".*\\.document_id")),
                 IdWrapper("DocumentSavedVersionId", listOf("document_saved_versions\\.id")),
-                IdWrapper("MethodologyId", listOf("methodologies\\.id", ".*\\.methodology_id")),
+                IdWrapper(
+                    "DocumentTemplateId",
+                    listOf("document_templates\\.id", ".*\\.document_template_id")),
                 IdWrapper("VariableId", listOf("variables\\.id", ".*variable_id")),
                 IdWrapper(
                     "VariableManifestId",

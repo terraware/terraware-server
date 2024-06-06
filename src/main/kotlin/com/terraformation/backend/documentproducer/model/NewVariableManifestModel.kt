@@ -1,7 +1,7 @@
 package com.terraformation.backend.documentproducer.model
 
-import com.terraformation.backend.db.docprod.MethodologyId
+import com.terraformation.backend.db.docprod.DocumentTemplateId
 
 data class NewVariableManifestModel(
-    val methodologyId: MethodologyId,
+    val documentTemplateId: DocumentTemplateId,
 )

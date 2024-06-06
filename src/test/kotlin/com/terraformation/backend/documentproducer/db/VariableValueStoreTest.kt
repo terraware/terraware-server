@@ -46,6 +46,9 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertUser()
+    insertDocumentTemplate()
+    insertVariableManifest()
+    insertDocument()
   }
 
   @Nested
@@ -72,7 +75,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
                   existingValueProps(updatedTextValueId, textVariableId, rowValueId = rowValueId),
                   "New"))
 
-      val actual = store.listValues(cannedDocumentId)
+      val actual = store.listValues(inserted.documentId)
 
       assertEquals(expected, actual)
     }
@@ -91,7 +94,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
               ExistingDeletedValue(
                   existingValueProps(deletedValueId, variableId), VariableType.Text))
 
-      val actual = store.listValues(cannedDocumentId, minValueId = deletedValueId)
+      val actual = store.listValues(inserted.documentId, minValueId = deletedValueId)
 
       assertEquals(expected, actual)
     }
@@ -107,7 +110,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
 
       val expected = emptyList<ExistingValue>()
 
-      val actual = store.listValues(cannedDocumentId)
+      val actual = store.listValues(inserted.documentId)
 
       assertEquals(expected, actual)
     }
@@ -206,9 +209,9 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         val row2ColumnValueId = insertValue(variableId = columnVariableId, textValue = "C")
         insertValueTableRow(row2ColumnValueId, row2Id)
 
-        store.updateValues(listOf(DeleteValueOperation(cannedDocumentId, row0Id)))
+        store.updateValues(listOf(DeleteValueOperation(inserted.documentId, row0Id)))
 
-        val updatedDocument = store.listValues(cannedDocumentId)
+        val updatedDocument = store.listValues(inserted.documentId)
 
         assertEquals(
             2, updatedDocument.count { it.type == VariableType.Table }, "Number of table rows")
@@ -251,10 +254,10 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
 
         store.updateValues(
             listOf(
-                DeleteValueOperation(cannedDocumentId, row1Id),
-                DeleteValueOperation(cannedDocumentId, row0Id)))
+                DeleteValueOperation(inserted.documentId, row1Id),
+                DeleteValueOperation(inserted.documentId, row0Id)))
 
-        val updatedDocument = store.listValues(cannedDocumentId)
+        val updatedDocument = store.listValues(inserted.documentId)
 
         assertEquals(
             1, updatedDocument.count { it.type == VariableType.Table }, "Number of table rows")
@@ -280,10 +283,11 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
                     AppendValueOperation(NewTextValue(newValueProps(variableId), "2"))))
         store.updateValues(
             listOf(
-                DeleteValueOperation(cannedDocumentId, append1Result.first { it.value == "1" }.id),
+                DeleteValueOperation(
+                    inserted.documentId, append1Result.first { it.value == "1" }.id),
                 AppendValueOperation(NewTextValue(newValueProps(variableId), "3"))))
 
-        val round1Values = store.listValues(cannedDocumentId)
+        val round1Values = store.listValues(inserted.documentId)
         assertEquals(
             listOf(0 to "2", 1 to "3"),
             round1Values.map { it.listPosition to it.value },
@@ -291,10 +295,11 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
 
         store.updateValues(
             listOf(
-                DeleteValueOperation(cannedDocumentId, round1Values.first { it.value == "2" }.id),
+                DeleteValueOperation(
+                    inserted.documentId, round1Values.first { it.value == "2" }.id),
                 AppendValueOperation(NewTextValue(newValueProps(variableId), "4"))))
 
-        val round2Values = store.listValues(cannedDocumentId)
+        val round2Values = store.listValues(inserted.documentId)
         assertEquals(
             listOf(0 to "3", 1 to "4"),
             round2Values.map { it.listPosition to it.value },
@@ -312,7 +317,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       insertValue(variableId = variableId, listPosition = 0, textValue = "first")
       insertValue(variableId = variableId, listPosition = 1, textValue = "second")
 
-      assertEquals(2, store.fetchNextListPosition(cannedDocumentId, variableId))
+      assertEquals(2, store.fetchNextListPosition(inserted.documentId, variableId))
     }
 
     @Test
@@ -321,7 +326,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
           insertVariableManifestEntry(
               insertTextVariable(insertVariable(type = VariableType.Text, isList = true)))
 
-      assertEquals(0, store.fetchNextListPosition(cannedDocumentId, variableId))
+      assertEquals(0, store.fetchNextListPosition(inserted.documentId, variableId))
     }
 
     @Test
@@ -329,7 +334,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       val variableId = insertVariableManifestEntry(insertTextVariable())
       insertValue(variableId = variableId, textValue = "text")
 
-      assertEquals(0, store.fetchNextListPosition(cannedDocumentId, variableId))
+      assertEquals(0, store.fetchNextListPosition(inserted.documentId, variableId))
     }
 
     @Test
@@ -340,14 +345,14 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       insertValue(
           variableId = variableId, listPosition = 1, textValue = "deleted", isDeleted = true)
 
-      assertEquals(1, store.fetchNextListPosition(cannedDocumentId, variableId))
+      assertEquals(1, store.fetchNextListPosition(inserted.documentId, variableId))
     }
   }
 
   private fun existingValueProps(
       valueId: Any,
       variableId: Any,
-      documentId: DocumentId = cannedDocumentId,
+      documentId: DocumentId = inserted.documentId,
       position: Int = 0,
       rowValueId: Any? = null,
       citation: String? = null,
@@ -363,7 +368,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
 
   private fun newValueProps(
       variableId: Any,
-      documentId: DocumentId = cannedDocumentId,
+      documentId: DocumentId = inserted.documentId,
       position: Int = 0,
       rowValueId: Any? = null,
       citation: String? = null,

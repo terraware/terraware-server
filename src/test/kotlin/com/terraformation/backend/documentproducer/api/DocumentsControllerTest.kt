@@ -30,16 +30,18 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
   @BeforeEach
   fun setUp() {
     insertUser()
+    insertDocumentTemplate()
+    insertVariableManifest()
   }
 
   @Nested
   inner class CreateDocument {
     @Test
-    fun `fails when methodology does not exist`() {
+    fun `fails when document template does not exist`() {
       val payload =
           """
             {
-              "methodologyId": 12345,
+              "documentTemplateId": 12345,
               "name": "Test",
               "organizationName": "Test",
               "ownedBy": ${inserted.userId}
@@ -54,7 +56,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       val payload =
           """
             {
-              "methodologyId": 1,
+              "documentTemplateId": ${inserted.documentTemplateId},
               "name": "Test document",
               "organizationName": "Org Name",
               "ownedBy": ${inserted.userId}
@@ -88,8 +90,9 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
   inner class ListDocuments {
     @Test
     fun `returns document details`() {
-      val otherMethodologyId = insertMethodology()
-      val otherVariableManifestId = insertVariableManifest(methodologyId = otherMethodologyId)
+      val otherDocumentTemplateId = insertDocumentTemplate()
+      val otherVariableManifestId =
+          insertVariableManifest(documentTemplateId = otherDocumentTemplateId)
       val otherUserId = insertUser(UserId(101))
       val otherCreatedTime = Instant.EPOCH.plusSeconds(100)
       val otherModifiedTime = otherCreatedTime.plusSeconds(1)
@@ -98,7 +101,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
           insertDocument(
               createdBy = inserted.userId,
               createdTime = otherCreatedTime,
-              methodologyId = otherMethodologyId,
+              documentTemplateId = otherDocumentTemplateId,
               modifiedBy = inserted.userId,
               modifiedTime = otherModifiedTime,
               organizationName = "Other Org",
@@ -117,19 +120,19 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                       "createdBy": ${inserted.userId},
                       "createdTime": "${Instant.EPOCH}",
                       "id": $documentId1,
-                      "methodologyId": $cannedMethodologyId,
+                      "documentTemplateId": ${inserted.documentTemplateId},
                       "modifiedBy": ${inserted.userId},
                       "modifiedTime": "${Instant.EPOCH}",
                       "organizationName": "Test Org",
                       "ownedBy": ${inserted.userId},
                       "status": "Draft",
-                      "variableManifestId": $cannedVariableManifestId
+                      "variableManifestId": ${inserted.variableManifestId}
                     },
                     {
                       "createdBy": ${inserted.userId},
                       "createdTime": "$otherCreatedTime",
                       "id": $documentId2,
-                      "methodologyId": $otherMethodologyId,
+                      "documentTemplateId": $otherDocumentTemplateId,
                       "modifiedBy": ${inserted.userId},
                       "modifiedTime": "$otherModifiedTime",
                       "organizationName": "Other Org",
@@ -152,22 +155,23 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
     @Test
     fun `returns a single document by id`() {
+      insertDocument()
       mockMvc
-          .get("$path/$cannedDocumentId")
+          .get("$path/${inserted.documentId}")
           .andExpectJson(
               """
                 {
                   "pdd": {
                     "createdBy": ${inserted.userId},
                     "createdTime": "${Instant.EPOCH}",
-                    "id": $cannedDocumentId,
-                    "methodologyId": $cannedMethodologyId,
+                    "id": ${inserted.documentId},
+                    "documentTemplateId": ${inserted.documentTemplateId},
                     "modifiedBy": ${inserted.userId},
                     "modifiedTime": "${Instant.EPOCH}",
                     "organizationName": "Test Org",
                     "ownedBy": ${inserted.userId},
                     "status": "Draft",
-                    "variableManifestId": $cannedVariableManifestId
+                    "variableManifestId": ${inserted.variableManifestId}
                   }
                 }"""
                   .trimIndent())
@@ -192,8 +196,9 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
     @Test
     fun `updates a document by id`() {
-      val otherMethodologyId = insertMethodology()
-      val otherVariableManifestId = insertVariableManifest(methodologyId = otherMethodologyId)
+      val otherDocumentTemplateId = insertDocumentTemplate()
+      val otherVariableManifestId =
+          insertVariableManifest(documentTemplateId = otherDocumentTemplateId)
       val otherUserId = insertUser(UserId(101))
       val otherCreatedTime = Instant.EPOCH.plusSeconds(100)
       val otherModifiedTime = otherCreatedTime.plusSeconds(1)
@@ -201,7 +206,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
           insertDocument(
               createdBy = inserted.userId,
               createdTime = otherCreatedTime,
-              methodologyId = otherMethodologyId,
+              documentTemplateId = otherDocumentTemplateId,
               modifiedBy = inserted.userId,
               modifiedTime = otherModifiedTime,
               organizationName = "Other Org",
@@ -230,23 +235,24 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
   @Nested
   inner class CreateSavedVersion {
-    private fun versionsPath(documentId: Any = cannedDocumentId) = "$path/$documentId/versions"
+    private fun versionsPath(documentId: Any = inserted.documentId) = "$path/$documentId/versions"
 
     @Test
     fun `saves current maximum value ID and manifest ID`() {
       val payload = """{ "name": "Test" }"""
 
-      val otherdocumentId = insertDocument()
+      val documentId = insertDocument()
+      val otherDocumentId = insertDocument()
       val variableId = insertVariableManifestEntry(insertTextVariable())
 
-      insertValue(documentId = cannedDocumentId, variableId = variableId, textValue = "Value 1")
+      insertValue(documentId = documentId, variableId = variableId, textValue = "Value 1")
       val latestValueId =
-          insertValue(documentId = cannedDocumentId, variableId = variableId, textValue = "Value 2")
+          insertValue(documentId = documentId, variableId = variableId, textValue = "Value 2")
       insertValue(
-          variableId = variableId, documentId = otherdocumentId, textValue = "Other document")
+          variableId = variableId, documentId = otherDocumentId, textValue = "Other document")
 
       mockMvc
-          .post(versionsPath()) { content = payload }
+          .post(versionsPath(documentId)) { content = payload }
           .andExpectJson(
               """
                 {
@@ -256,7 +262,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                     "isSubmitted": false,
                     "maxVariableValueId": $latestValueId,
                     "name": "Test",
-                    "variableManifestId": $cannedVariableManifestId
+                    "variableManifestId": ${inserted.variableManifestId}
                   },
                   "status": "ok"
                 }"""
@@ -268,24 +274,29 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       val payload = """{ "name": "Test" }"""
 
       mockMvc
-          .post(versionsPath(DocumentId(1))) { content = payload }
+          .post(versionsPath(DocumentId(300))) { content = payload }
           .andExpect { status { isNotFound() } }
     }
 
     @Test
     fun `returns conflict error for document with no values`() {
+      val documentId = insertDocument()
       val payload = """{ "name": "Test" }"""
-      mockMvc.post(versionsPath()) { content = payload }.andExpect { status { isConflict() } }
+      mockMvc
+          .post(versionsPath(documentId)) { content = payload }
+          .andExpect { status { isConflict() } }
     }
   }
 
   @Nested
   inner class GetSavedVersion {
-    private fun versionsPath(versionId: Any, documentId: Any = cannedDocumentId) =
+    private fun versionsPath(versionId: Any, documentId: Any = inserted.documentId) =
         "/api/v1/pdds/$documentId/versions/$versionId"
 
     @Test
     fun `returns saved version details`() {
+      insertDocument()
+
       val variableId = insertVariableManifestEntry(insertTextVariable())
       val valueId = insertValue(variableId = variableId, textValue = "Text")
       val versionId = insertSavedVersion(valueId, isSubmitted = true, name = "Test Version")
@@ -301,7 +312,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                     "isSubmitted": true,
                     "maxVariableValueId": $valueId,
                     "name": "Test Version",
-                    "variableManifestId": $cannedVariableManifestId,
+                    "variableManifestId": ${inserted.variableManifestId},
                     "versionId": $versionId
                   },
                   "status": "ok"
@@ -317,25 +328,27 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
     @Test
     fun `returns not found error if version is from a different document`() {
-      val otherdocumentId = insertDocument()
+      val documentId = insertDocument()
+      val otherDocumentId = insertDocument()
       val variableId = insertVariableManifestEntry(insertTextVariable())
       val valueId =
-          insertValue(variableId = variableId, documentId = otherdocumentId, textValue = "Text")
-      val versionId = insertSavedVersion(valueId, otherdocumentId)
+          insertValue(variableId = variableId, documentId = otherDocumentId, textValue = "Text")
+      val versionId = insertSavedVersion(valueId, otherDocumentId)
 
-      mockMvc.get(versionsPath(versionId)).andExpect { status { isNotFound() } }
+      mockMvc.get(versionsPath(versionId, documentId)).andExpect { status { isNotFound() } }
     }
   }
 
   @Nested
   inner class UpdateSavedVersion {
-    private fun versionsPath(versionId: Any, documentId: Any = cannedDocumentId) =
+    private fun versionsPath(versionId: Any, documentId: Any = inserted.documentId) =
         "/api/v1/pdds/$documentId/versions/$versionId"
 
     @Test
     fun `updates saved version details`() {
       val payload = """{ "isSubmitted": true }"""
 
+      insertDocument()
       val variableId = insertVariableManifestEntry(insertTextVariable())
       val valueId = insertValue(variableId = variableId, textValue = "Text")
       val versionId = insertSavedVersion(valueId, isSubmitted = false, name = "Test Version")
@@ -361,6 +374,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
     fun `returns not found error if version is from a different document`() {
       val payload = """{ "isSubmitted": true }"""
 
+      val documentId = insertDocument()
       val otherDocumentId = insertDocument()
       val variableId = insertVariableManifestEntry(insertTextVariable())
       val valueId =
@@ -368,14 +382,15 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       val versionId = insertSavedVersion(valueId, otherDocumentId)
 
       mockMvc
-          .put(versionsPath(versionId)) { content = payload }
+          .put(versionsPath(versionId, documentId)) { content = payload }
           .andExpect { status { isNotFound() } }
     }
   }
 
   @Nested
   inner class GetDocumentHistory {
-    private fun historyPath(documentId: Any = cannedDocumentId) = "/api/v1/pdds/$documentId/history"
+    private fun historyPath(documentId: Any = inserted.documentId) =
+        "/api/v1/pdds/$documentId/history"
 
     @Test
     fun `returns correct sequence of edits and saved versions`() {
@@ -384,6 +399,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
       val userId1 = insertUser(UserId(101))
       val userId2 = insertUser(UserId(102))
+      val documentId = insertDocument(createdBy = userId1)
+      val variableManifestId1 = insertVariableManifest()
       val variableId = insertVariableManifestEntry(insertTextVariable())
 
       fun insertNextValue(duration: Duration, userId: UserId): Instant {
@@ -391,14 +408,14 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
         val instant = timestamp.toInstant()
         lastValueId =
             insertValue(
-                documentId = cannedDocumentId,
+                documentId = inserted.documentId,
                 variableId = variableId,
                 createdBy = userId,
                 createdTime = instant)
         return instant
       }
 
-      // 1970-01-01: Document created by cannedInternalUserId
+      // 1970-01-01: Document created by user 1
 
       // 2023-01-01: two edits by user 1, one edit by user 2, saved by user 2, one edit by user 2.
       // Should collapse the two edits by user 1 and have two entries for user 2, one before and
@@ -456,7 +473,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       val day4User1Timestamp = insertNextValue(Duration.ofSeconds(1), userId1)
 
       mockMvc
-          .get(historyPath())
+          .get(historyPath(documentId))
           .andExpectJson(
               """
                 {
@@ -488,7 +505,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                        "isSubmitted": false,
                        "maxVariableValueId": $day3MaxValueId,
                        "name": "Saved 2",
-                       "variableManifestId": $cannedVariableManifestId,
+                       "variableManifestId": $variableManifestId1,
                        "versionId": $day3SavedVersionId1
                      },
                      {
@@ -508,7 +525,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                        "isSubmitted": false,
                        "maxVariableValueId": $day1MaxValueId,
                        "name": "Saved 1",
-                       "variableManifestId": $cannedVariableManifestId,
+                       "variableManifestId": $variableManifestId1,
                        "versionId": $day1SavedVersionId
                      },
                      {
@@ -523,7 +540,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                      },
                      {
                        "type": "Created",
-                       "createdBy": ${inserted.userId},
+                       "createdBy": ${userId1},
                        "createdTime": "${Instant.EPOCH}"
                      }
                   ],
@@ -540,12 +557,13 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
   @Nested
   inner class UpgradeManifest {
-    private fun path(documentId: Any = cannedDocumentId) = "/api/v1/pdds/$documentId/upgrade"
+    private fun path(documentId: Any = inserted.documentId) = "/api/v1/pdds/$documentId/upgrade"
 
     private fun payload(manifestId: Any) = """{ "variableManifestId": $manifestId }"""
 
     @Test
     fun `upgrades empty document`() {
+      insertDocument()
       insertVariableManifestEntry(insertTextVariable())
       val newManifestId = insertVariableManifest()
       insertVariableManifestEntry(insertTextVariable(), manifestId = newManifestId)
@@ -554,7 +572,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
       assertEquals(
           newManifestId,
-          documentsDao.fetchOneById(cannedDocumentId)?.variableManifestId,
+          documentsDao.fetchOneById(inserted.documentId)?.variableManifestId,
           "Manifest ID")
     }
 
@@ -562,6 +580,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
     // logic for calculating the needed values is tested in DocumentUpgradeCalculatorTest.
     @Test
     fun `inserts new values for replacement variables`() {
+      insertDocument()
       val oldVariableId = insertVariableManifestEntry(insertNumberVariable())
       val newManifestId = insertVariableManifest()
       val newVariableId =
@@ -575,7 +594,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
       assertEquals(
           newManifestId,
-          documentsDao.fetchOneById(cannedDocumentId)?.variableManifestId,
+          documentsDao.fetchOneById(inserted.documentId)?.variableManifestId,
           "Manifest ID")
 
       assertEquals(
@@ -584,7 +603,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                   citation = "citation",
                   createdBy = inserted.userId,
                   createdTime = Instant.EPOCH,
-                  documentId = cannedDocumentId,
+                  documentId = inserted.documentId,
                   isDeleted = false,
                   listPosition = 0,
                   textValue = "1",
@@ -607,19 +626,22 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       val documentId = insertDocument()
 
       mockMvc
-          .post(path(documentId)) { content = payload(cannedVariableManifestId.value + 1) }
+          .post(path(documentId)) { content = payload(inserted.variableManifestId.value + 1) }
           .andExpect { status { isNotFound() } }
     }
 
     @Test
-    fun `returns conflict error if manifest is for different methodology`() {
+    fun `returns conflict error if manifest is for different document template`() {
+      insertDocument()
       insertVariableManifestEntry(insertTextVariable())
-      val otherMethodologyId = insertMethodology()
-      val otherMethodologyManifestId = insertVariableManifest(methodologyId = otherMethodologyId)
-      insertVariableManifestEntry(insertTextVariable(), manifestId = otherMethodologyManifestId)
+      val otherDocumentTemplateId = insertDocumentTemplate()
+      val otherDocumentTemplateManifestId =
+          insertVariableManifest(documentTemplateId = otherDocumentTemplateId)
+      insertVariableManifestEntry(
+          insertTextVariable(), manifestId = otherDocumentTemplateManifestId)
 
       mockMvc
-          .post(path()) { content = payload(otherMethodologyManifestId) }
+          .post(path()) { content = payload(otherDocumentTemplateManifestId) }
           .andExpect { status { isConflict() } }
     }
 

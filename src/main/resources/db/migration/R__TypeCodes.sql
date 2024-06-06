@@ -99,10 +99,6 @@ VALUES (1, 'Draft'),
        (5, 'Submitted')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO docprod.methodologies (id, name)
-VALUES (1, 'Afforestation, Reforestation and Revegetation')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
 INSERT INTO docprod.variable_injection_display_styles (id, name)
 VALUES (1, 'Inline'),
        (2, 'Block')

@@ -36,7 +36,7 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
 
   private val documentStore: DocumentStore by lazy {
-    DocumentStore(clock, documentSavedVersionsDao, documentsDao, dslContext, methodologiesDao)
+    DocumentStore(clock, documentSavedVersionsDao, documentsDao, dslContext, documentTemplatesDao)
   }
   private val variableStore: VariableStore by lazy {
     VariableStore(
@@ -68,7 +68,7 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertUser()
-    insertMethodology()
+    insertDocumentTemplate()
     insertVariableManifest()
     insertDocument()
 
@@ -280,7 +280,7 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
 
   private fun calculateOperations(
       manifestId: VariableManifestId,
-      documentId: DocumentId = cannedDocumentId
+      documentId: DocumentId = inserted.documentId
   ) =
       DocumentUpgradeCalculator(
               documentId,
@@ -293,7 +293,7 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
 
   private fun newValueProps(
       variableId: Any,
-      documentId: DocumentId = cannedDocumentId,
+      documentId: DocumentId = inserted.documentId,
       listPosition: Int = 0,
       rowValueId: Any? = null,
       citation: String? = null,

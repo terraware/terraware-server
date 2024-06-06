@@ -19,9 +19,12 @@ class ValuesControllerTest : ControllerIntegrationTest() {
   @BeforeEach
   fun setUp() {
     insertUser()
+    insertDocumentTemplate()
+    insertVariableManifest()
+    insertDocument()
   }
 
-  private fun path(documentId: DocumentId = cannedDocumentId) = "/api/v1/pdds/$documentId/values"
+  private fun path(documentId: DocumentId = inserted.documentId) = "/api/v1/pdds/$documentId/values"
 
   @Nested
   inner class ListVariableValues {

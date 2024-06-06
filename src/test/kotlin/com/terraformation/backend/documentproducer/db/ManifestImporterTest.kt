@@ -43,7 +43,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
   private val variableManifestStore: VariableManifestStore by lazy {
     VariableManifestStore(
-        clock, dslContext, methodologiesDao, variableManifestsDao, variableManifestEntriesDao)
+        clock, dslContext, documentTemplatesDao, variableManifestsDao, variableManifestEntriesDao)
   }
 
   private val variableStore: VariableStore by lazy {
@@ -67,6 +67,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertUser()
+    insertDocumentTemplate()
   }
 
   @Nested
@@ -90,13 +91,14 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `detects duplicate stable IDs`() {
-      val methodologyId = cannedMethodologyId
+      val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
               "\nName X,Duplicate ID,,Section,Yes,,,,,,,,,," +
               "\nName Y,Duplicate ID,,Section,Yes,,,,,,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "filename.csv", methodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "filename.csv", documentTemplateId)
 
       assertEquals(
           listOf(
@@ -106,7 +108,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `correctly identifies when there is a non-unique top level input name`() {
-      val methodologyId = cannedMethodologyId
+      val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
               "\nProject Details,1,,Section,Yes,,,,,,,,,," +
@@ -114,7 +116,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nSummary Description of the Project,3,,Section,Yes,,Project Details,,,,,,,," +
               "\nIntroduction,4,,Section,Yes,,Summary Description of the Project,,,,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "filename.csv", methodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "filename.csv", documentTemplateId)
 
       assertEquals(
           listOf(
@@ -125,7 +128,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `imports table variables correctly`() {
-      val methodologyId = cannedMethodologyId
+      val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
               "\nProject Proponent Table,1,A table with contact details,Table,No,,,,,,,,,," +
@@ -133,7 +136,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nContact Person,3,,Text (single-line),,,Project Proponent Table,,,,,,,," +
               "\nTitle,4,,Text (single-line),,,Project Proponent Table,,,,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "filename.csv", methodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "filename.csv", documentTemplateId)
 
       val actualTableVariable = getVariableByManifestEntryName("Project Proponent Table")
       val expectedTableVariable =
@@ -182,7 +186,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `imports complex table with select option header column correctly`() {
-      val methodologyId = cannedMethodologyId
+      val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
               "\nAudit history,1,,Table,Yes,,,,,,,,Horizontal,," +
@@ -190,7 +194,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\n- Some other audit type\",,,,,Yes," +
               "\nNumber of years,3,,Number,,,Audit history,,,,,1,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "filename.csv", methodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "filename.csv", documentTemplateId)
 
       val actualTableVariable = getVariableByManifestEntryName("Audit history")
 
@@ -255,7 +260,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `imports section variables correctly`() {
-      val methodologyId = cannedMethodologyId
+      val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
               "\nProject Details,1,,Section,Yes,,,,,,,,,," +
@@ -268,7 +273,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nInformation about the land,8,,Section,Yes,,Project Details,yes,,,,,,," +
               "\nProject Management,9,,Section,Yes,,Summary Description of the Project,,,,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "filename.csv", methodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "filename.csv", documentTemplateId)
 
       // Flatten the section variables into a shape that we can use to easily verify the hierarchy
       val flatVariables =
@@ -351,7 +357,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `ensures that there are no siblings with the same name`() {
-      val methodologyId = cannedMethodologyId
+      val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
               "\nProject Details,1,,Section,Yes,,,,,,,,,," +
@@ -359,7 +365,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nIntroduction,3,,Section,Yes,,Summary Description of the Project,,,,,,,," +
               "\nIntroduction,4,,Section,Yes,,Summary Description of the Project,,,,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "filename.csv", methodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "filename.csv", documentTemplateId)
 
       assertEquals(
           listOf(
@@ -370,14 +377,15 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `ensures that parents exist`() {
-      val methodologyId = cannedMethodologyId
+      val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
               "\nProject Details,1,,Section,Yes,,,,,,,,,," +
               "\nSummary Description of the Project,2,,Section,Yes,,Project Details,,,,,,,," +
               "\nIntroduction,3,,Section,Yes,,NOT Summary Description of the Project,,,,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "filename.csv", methodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "filename.csv", documentTemplateId)
 
       assertEquals(
           listOf(
@@ -388,13 +396,14 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `ensures there are no circular references`() {
-      val methodologyId = cannedMethodologyId
+      val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
               "\nProject Details,1,,Section,Yes,,Summary Description of the Project,,,,,,,," +
               "\nSummary Description of the Project,2,,Section,Yes,,Project Details,,,,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "filename.csv", methodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "filename.csv", documentTemplateId)
 
       assertEquals(
           listOf(
@@ -406,7 +415,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `ensures that single and multi line text are saved into the DB as expected`() {
-      val methodologyId = cannedMethodologyId
+      val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
               "\nOrganization Name,1,,Text (single-line),,,,,,,,,,," +
@@ -414,7 +423,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nPrior Scenario,3,A brief description of the scenario,Text (multi-line),,,,,,,,,,," +
               "\nPrior Scenario As List,4,A brief description of the scenario,Text (multi-line),yes,,,,,,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "filename.csv", methodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "filename.csv", documentTemplateId)
 
       val actualVariableO = getVariableByManifestEntryName("Organization Name")
       val actualVariableTextO = variableTextsDao.fetchOneByVariableId(actualVariableO.id!!)
@@ -466,7 +476,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `ensures that single and multi selects are saved into the DB as expected`() {
-      val methodologyId = cannedMethodologyId
+      val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
               // Single select
@@ -481,7 +491,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\n- Option 4 [[This one has super special rendered text!]]" +
               "\n- Option 5\",,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "filename.csv", methodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "filename.csv", documentTemplateId)
 
       val selectRows = variableSelectsDao.findAll()
       val selectOptionRows = variableSelectOptionsDao.findAll()
@@ -536,7 +547,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `ensures that select options are unique within the select`() {
-      val methodologyId = cannedMethodologyId
+      val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
               "\nEstimated reductions,1,Canned Description,Select (single),,,,,\"- tiny amount" +
@@ -545,7 +556,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\n- medium amount" +
               "\n- large amount\",,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "filename.csv", methodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "filename.csv", documentTemplateId)
 
       assertEquals(
           listOf(
@@ -562,7 +574,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     fun `detects duplicate recommended variables`() {
       val testCsv = "$header\nSection Name,1,,Section,,\"Duplicate\nDuplicate\",,,,,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "test.csv", cannedMethodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "test.csv", inserted.documentTemplateId)
 
       assertEquals(
           listOf(
@@ -574,7 +587,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     fun `detects missing recommended variables`() {
       val testCsv = "$header\nSection Name,1,,Section,,Bogus Recommended,,,,,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "test.csv", cannedMethodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "test.csv", inserted.documentTemplateId)
 
       assertEquals(
           listOf(
@@ -586,7 +600,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     fun `detects newlines in variable names`() {
       val testCsv = "$header\n\"Section\nName\",1,,Section,,Bogus Recommended,,,,,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "test.csv", cannedMethodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "test.csv", inserted.documentTemplateId)
 
       assertEquals(
           listOf(
@@ -601,7 +616,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nMy Table,1,,Table,Yes,,,,,,,,,," +
               "\nMy Section,2,,Section,,,My Table,,,,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "test.csv", cannedMethodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "test.csv", inserted.documentTemplateId)
 
       assertEquals(
           listOf(
@@ -615,7 +631,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val testCsv =
           header + "\nMy Section,1,,Section,Yes,,,,,,,,,," + "\nOther,2,,Table,,,My Section,,,,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "test.csv", cannedMethodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "test.csv", inserted.documentTemplateId)
 
       assertEquals(
           listOf(
@@ -628,7 +645,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     fun `detects missing names`() {
       val testCsv = header + "\n,1,,Section,Yes,,,,,,,,,,"
 
-      val importResult = importer.import(sizedInputStream(testCsv), "test.csv", cannedMethodologyId)
+      val importResult =
+          importer.import(sizedInputStream(testCsv), "test.csv", inserted.documentTemplateId)
 
       assertEquals(
           listOf("Message: Name column is required, Field: Name, Value: null, Position: 2"),
@@ -637,10 +655,10 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `ensures that the current CSV imports without error`() {
-      val methodologyId = cannedMethodologyId
+      val documentTemplateId = inserted.documentTemplateId
       val csvInput = javaClass.getResourceAsStream("/manifest/variable-manifest-rev5.csv")!!
 
-      val importResult = importer.import(csvInput, "variable-manifest-rev5.csv", methodologyId)
+      val importResult = importer.import(csvInput, "variable-manifest-rev5.csv", documentTemplateId)
 
       assertEquals(emptyList<String>(), importResult.errors, "no errors")
     }
@@ -652,9 +670,9 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nSelect Variable,A,,Select (single),,,,,\"- Option 1\n- Option 2\n- Option 3\",,,,,,"
 
       val initialResult =
-          importer.import(sizedInputStream(testCsv), "test.csv", cannedMethodologyId)
+          importer.import(sizedInputStream(testCsv), "test.csv", inserted.documentTemplateId)
       val updatedResult =
-          importer.import(sizedInputStream(testCsv), "test.csv", cannedMethodologyId)
+          importer.import(sizedInputStream(testCsv), "test.csv", inserted.documentTemplateId)
 
       val variablesRows = variablesDao.findAll()
       assertEquals(1, variablesRows.size, "Number of imported variables")
@@ -687,9 +705,9 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val updatedCsv = "$header\nSelect,1,,Select (single),,,,,\"- Option 1\n- Option 2\",,,,,,"
 
       val initialResult =
-          importer.import(sizedInputStream(initialCsv), "test.csv", cannedMethodologyId)
+          importer.import(sizedInputStream(initialCsv), "test.csv", inserted.documentTemplateId)
       val updatedResult =
-          importer.import(sizedInputStream(updatedCsv), "test.csv", cannedMethodologyId)
+          importer.import(sizedInputStream(updatedCsv), "test.csv", inserted.documentTemplateId)
 
       val variablesRows = variablesDao.findAll().sortedBy { it.id!!.value }
       assertEquals(2, variablesRows.size, "Number of imported variables")
@@ -737,13 +755,13 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nMiddle,B,,Section,,,Top,,,,,,,," +
               "\nBottom,C,,Section,,,Middle,yes,,,,,,,"
 
-      importer.import(sizedInputStream(initialCsv), "test.csv", cannedMethodologyId)
+      importer.import(sizedInputStream(initialCsv), "test.csv", inserted.documentTemplateId)
       val initialTop = getVariableByManifestEntryName("Top")
       val initialMiddle = getVariableByManifestEntryName("Middle")
       val initialBottom = getVariableByManifestEntryName("Bottom")
 
       val updatedResult =
-          importer.import(sizedInputStream(updatedCsv), "test.csv", cannedMethodologyId)
+          importer.import(sizedInputStream(updatedCsv), "test.csv", inserted.documentTemplateId)
       val updatedTop = getVariableByManifestEntryName("Top", updatedResult.newVersion)
       val updatedMiddle = getVariableByManifestEntryName("Middle", updatedResult.newVersion)
       val updatedBottom = getVariableByManifestEntryName("Bottom", updatedResult.newVersion)
@@ -796,12 +814,12 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nMiddle,B,,Section,,,Top,,,,,,,," +
               "\nBottom,C,,Section,,,Middle,,,,,,,,"
 
-      importer.import(sizedInputStream(initialCsv), "test.csv", cannedMethodologyId)
+      importer.import(sizedInputStream(initialCsv), "test.csv", inserted.documentTemplateId)
       val initialTop = getVariableByManifestEntryName("Top")
       val initialMiddle = getVariableByManifestEntryName("Middle")
 
       val updatedResult =
-          importer.import(sizedInputStream(updatedCsv), "test.csv", cannedMethodologyId)
+          importer.import(sizedInputStream(updatedCsv), "test.csv", inserted.documentTemplateId)
       val updatedTop = getVariableByManifestEntryName("Top", updatedResult.newVersion)
       val updatedMiddle = getVariableByManifestEntryName("Middle", updatedResult.newVersion)
       val updatedBottom = getVariableByManifestEntryName("Bottom", updatedResult.newVersion)
@@ -851,11 +869,11 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nUpdated Top,A,,Section,,,,,,,,,,," +
               "\nUpdated Bottom,B,,Section,,,Updated Top,,,,,,,,"
 
-      importer.import(sizedInputStream(initialCsv), "test.csv", cannedMethodologyId)
+      importer.import(sizedInputStream(initialCsv), "test.csv", inserted.documentTemplateId)
       val initialTop = getVariableByManifestEntryName("Initial Top")
       val initialBottom = getVariableByManifestEntryName("Initial Bottom")
 
-      importer.import(sizedInputStream(updatedCsv), "test.csv", cannedMethodologyId)
+      importer.import(sizedInputStream(updatedCsv), "test.csv", inserted.documentTemplateId)
       val updatedTop = getVariableByManifestEntryName("Updated Top")
       val updatedBottom = getVariableByManifestEntryName("Updated Bottom")
 
@@ -879,10 +897,10 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nSection 2,D,,Section,,Variable 2,,,,,,,,,"
 
       val initialResult =
-          importer.import(sizedInputStream(initialCsv), "test.csv", cannedMethodologyId)
+          importer.import(sizedInputStream(initialCsv), "test.csv", inserted.documentTemplateId)
       val initialManifestId = initialResult.newVersion
       val updatedResult =
-          importer.import(sizedInputStream(updatedCsv), "test.csv", cannedMethodologyId)
+          importer.import(sizedInputStream(updatedCsv), "test.csv", inserted.documentTemplateId)
 
       val variablesRows = variablesDao.findAll()
       assertEquals(4, variablesRows.size, "Number of variables imported")
@@ -931,14 +949,14 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
           "$header\nUpdated variable,1,Updated description,Text (single-line),,,,,,,,,,,"
 
       val initialResult =
-          importer.import(sizedInputStream(initialCsv), "test.csv", cannedMethodologyId)
+          importer.import(sizedInputStream(initialCsv), "test.csv", inserted.documentTemplateId)
 
       val initialVariables = variablesDao.findAll()
       assertEquals(1, initialVariables.size, "Should have imported 1 variable")
       val initialVariableId = initialVariables.first().id!!
 
       val updateResult =
-          importer.import(sizedInputStream(updatedCsv), "test.csv", cannedMethodologyId)
+          importer.import(sizedInputStream(updatedCsv), "test.csv", inserted.documentTemplateId)
       assertEquals(
           initialVariables, variablesDao.findAll(), "Should not have imported new variables")
 
@@ -970,14 +988,14 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val initialCsv = "$header\nNumber variable,1,,Number,,,,,,10,,,,,"
       val updatedCsv = "$header\nNumber variable,1,,Number,,,,,,20,,,,,"
 
-      importer.import(sizedInputStream(initialCsv), "test.csv", cannedMethodologyId)
+      importer.import(sizedInputStream(initialCsv), "test.csv", inserted.documentTemplateId)
 
       val initialVariables = variablesDao.findAll()
       assertEquals(1, initialVariables.size, "Should have imported 1 variable")
       val initialVariableId = initialVariables.first().id!!
 
       val updateResult =
-          importer.import(sizedInputStream(updatedCsv), "test.csv", cannedMethodologyId)
+          importer.import(sizedInputStream(updatedCsv), "test.csv", inserted.documentTemplateId)
 
       val updatedVariables = variablesDao.findAll()
       assertEquals(2, updatedVariables.size, "Should have imported new copy of variable")
@@ -1013,13 +1031,13 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nRenamed A,2,,Number,,,Table,,,,,,,," +
               "\nRenamed B,3,,Number,,,Table,,,,,,,,"
 
-      importer.import(sizedInputStream(initialCsv), "test.csv", cannedMethodologyId)
+      importer.import(sizedInputStream(initialCsv), "test.csv", inserted.documentTemplateId)
 
       val initialVariables = variablesDao.findAll().sortedBy { it.id!!.value }
       assertEquals(3, initialVariables.size, "Should have imported 3 variables")
 
       val updateResult =
-          importer.import(sizedInputStream(updatedCsv), "test.csv", cannedMethodologyId)
+          importer.import(sizedInputStream(updatedCsv), "test.csv", inserted.documentTemplateId)
 
       val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
       assertEquals(initialVariables, updatedVariables, "Should not have created new variables")
@@ -1065,13 +1083,13 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nColumn A,2,,Number,,,Table,,,,,,,," +
               "\nColumn B,3,,Number,,,Table,,,1,,,,,"
 
-      importer.import(sizedInputStream(initialCsv), "test.csv", cannedMethodologyId)
+      importer.import(sizedInputStream(initialCsv), "test.csv", inserted.documentTemplateId)
 
       val initialVariables = variablesDao.findAll().sortedBy { it.id!!.value }
       assertEquals(3, initialVariables.size, "Should have imported 3 variables")
 
       val updateResult =
-          importer.import(sizedInputStream(updatedCsv), "test.csv", cannedMethodologyId)
+          importer.import(sizedInputStream(updatedCsv), "test.csv", inserted.documentTemplateId)
 
       val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
       assertEquals(6, updatedVariables.size, "Should have imported new copies of all variables")

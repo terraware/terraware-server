@@ -21,10 +21,10 @@ You can think of it a bit like git: commits are immutable, some commits are tagg
 Terminology:
 
 * Variable: Describes a piece of information we need to know about a project.
-* Variable manifest: A list of all the variables for a particular methodology.
+* Variable manifest: A list of all the variables for a particular document template.
 * Variable value: The user-supplied (or calculated) value of a particular variable in a particular document.
 
-`variable_manifests` contains metadata about variable manifests. The manifest with the highest ID for a given methodology is considered the current manifest for that methodology.
+`variable_manifests` contains metadata about variable manifests. The manifest with the highest ID for a given document template is considered the current manifest for that document template.
 
 `variables` contains basic structural information about variables, including how a variable relates to other variables. Inter-variable relationships are described below.
 
@@ -78,7 +78,7 @@ The recommendations are stored in `variable_section_recommendations`. They are p
 
 ## Variable versioning
 
-When a new variable manifest is uploaded, its contents are compared with the current manifest for the same methodology. (How the comparison works is an application implementation detail that doesn't affect the database schema.) For each variable, there are three possible outcomes.
+When a new variable manifest is uploaded, its contents are compared with the current manifest for the same document template. (How the comparison works is an application implementation detail that doesn't affect the database schema.) For each variable, there are three possible outcomes.
 
 If a variable from the current manifest is not present in the new manifest, we skip inserting a `variable_manifest_entries` row for it.
 

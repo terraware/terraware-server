@@ -6,7 +6,7 @@ import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.tables.daos.VariableManifestsDao
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentsRow
 import com.terraformation.backend.documentproducer.db.DocumentStore
-import com.terraformation.backend.documentproducer.db.UpgradeCannotChangeMethodologyException
+import com.terraformation.backend.documentproducer.db.UpgradeCannotChangeDocumentTemplateException
 import com.terraformation.backend.documentproducer.db.VariableManifestNotFoundException
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
@@ -71,9 +71,12 @@ class DocumentUpgradeCalculator(
         variableManifestsDao.fetchOneById(newManifestId)
             ?: throw VariableManifestNotFoundException(newManifestId)
 
-    if (oldManifest.methodologyId != newManifest.methodologyId) {
-      throw UpgradeCannotChangeMethodologyException(
-          oldManifestId, oldManifest.methodologyId!!, newManifestId, newManifest.methodologyId!!)
+    if (oldManifest.documentTemplateId != newManifest.documentTemplateId) {
+      throw UpgradeCannotChangeDocumentTemplateException(
+          oldManifestId,
+          oldManifest.documentTemplateId!!,
+          newManifestId,
+          newManifest.documentTemplateId!!)
     }
 
     newManifestVariables = variableStore.fetchManifestVariables(newManifestId).associateBy { it.id }

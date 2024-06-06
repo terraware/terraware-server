@@ -26,6 +26,9 @@ class ImagesControllerTest : ControllerIntegrationTest() {
   @BeforeEach
   fun setUp() {
     insertUser()
+    insertDocumentTemplate()
+    insertVariableManifest()
+    insertDocument()
   }
 
   @Nested
@@ -41,7 +44,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       val imageValueId = insertImageValue(imageVariableId, fileId)
 
-      mockMvc.get("/api/v1/pdds/$cannedDocumentId/images/$imageValueId").andExpect {
+      mockMvc.get("/api/v1/pdds/${inserted.documentId}/images/$imageValueId").andExpect {
         status { isOk() }
         content { bytes(contents) }
       }
@@ -59,16 +62,17 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       val imageValueId = insertImageValue(imageVariableId, fileId)
 
-      mockMvc.get("/api/v1/pdds/$cannedDocumentId/images/$imageValueId?maxWidth=320").andExpect {
-        status { isOk() }
-        content { bytes(contents) }
-      }
+      mockMvc
+          .get("/api/v1/pdds/${inserted.documentId}/images/$imageValueId?maxWidth=320")
+          .andExpect {
+            status { isOk() }
+            content { bytes(contents) }
+          }
     }
 
     @Test
     fun `image value must be from correct document`() {
       val imageVariableId = insertVariableManifestEntry(insertVariable(type = VariableType.Image))
-      val otherDocumentId = insertDocument()
 
       val uri = URI("https://test")
       val contents = byteArrayOf(1, 2, 3, 4)
@@ -77,6 +81,8 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       val imageValueId = insertImageValue(imageVariableId, fileId)
 
+      val otherDocumentId = insertDocument()
+
       mockMvc.get("/api/v1/pdds/$otherDocumentId/images/$imageValueId").andExpect {
         status { isNotFound() }
       }
@@ -84,7 +90,9 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
     @Test
     fun `cannot get nonexistent image`() {
-      mockMvc.get("/api/v1/pdds/${cannedDocumentId}/images/1").andExpect { status { isNotFound() } }
+      mockMvc.get("/api/v1/pdds/${inserted.documentId}/images/1").andExpect {
+        status { isNotFound() }
+      }
     }
   }
 
@@ -99,7 +107,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
       val filename = "test.jpg"
 
       mockMvc
-          .multipart(HttpMethod.POST, "/api/v1/pdds/$cannedDocumentId/images") {
+          .multipart(HttpMethod.POST, "/api/v1/pdds/${inserted.documentId}/images") {
             file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
             part(MockPart("caption", caption.toByteArray()))
             part(MockPart("variableId", "$imageVariableId".toByteArray()))
@@ -141,7 +149,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
       val listPosition = 1
 
       mockMvc
-          .multipart(HttpMethod.POST, "/api/v1/pdds/$cannedDocumentId/images") {
+          .multipart(HttpMethod.POST, "/api/v1/pdds/${inserted.documentId}/images") {
             file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
             part(MockPart("caption", caption.toByteArray()))
             part(MockPart("variableId", "$imageVariableId".toByteArray()))
@@ -181,7 +189,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
       val filename = "test.jpg"
 
       mockMvc
-          .multipart(HttpMethod.POST, "/api/v1/pdds/$cannedDocumentId/images") {
+          .multipart(HttpMethod.POST, "/api/v1/pdds/${inserted.documentId}/images") {
             file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
             part(MockPart("caption", caption.toByteArray()))
             part(MockPart("variableId", "$imageVariableId".toByteArray()))
@@ -204,7 +212,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
       val textVariableId = insertVariableManifestEntry(insertTextVariable())
 
       mockMvc
-          .multipart(HttpMethod.POST, "/api/v1/pdds/$cannedDocumentId/images") {
+          .multipart(HttpMethod.POST, "/api/v1/pdds/${inserted.documentId}/images") {
             file(MockMultipartFile("file", "dummy", MediaType.IMAGE_JPEG_VALUE, byteArrayOf(1)))
             part(MockPart("caption", "dummy".toByteArray()))
             part(MockPart("variableId", "$textVariableId".toByteArray()))
