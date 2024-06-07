@@ -1,5 +1,7 @@
 package com.terraformation.backend.admin
 
+import com.terraformation.backend.api.RequireGlobalRole
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.tables.daos.DocumentTemplatesDao
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentTemplatesRow
@@ -22,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
+@RequireGlobalRole([GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin])
 @RequestMapping("/admin/document-producer")
 class AdminDocumentController(
     private val manifestImporter: ManifestImporter,

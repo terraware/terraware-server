@@ -80,8 +80,6 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     @BeforeEach
     fun setUp() {
       every { user.canCreateVariableManifest() } returns true
-      // TODO is this needed?
-      // every { requirePermissions.invoke(any()) } answers { nothing }
     }
 
     @AfterEach
