@@ -13,45 +13,45 @@ import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 
-enum class PddHistoryPayloadType {
+enum class DocumentHistoryPayloadType {
   Created,
   Edited,
   Saved
 }
 
 @JsonSubTypes(
-    JsonSubTypes.Type(value = PddHistoryCreatedPayload::class, name = "Created"),
-    JsonSubTypes.Type(value = PddHistoryEditedPayload::class, name = "Edited"),
-    JsonSubTypes.Type(value = PddHistorySavedPayload::class, name = "Saved"),
+    JsonSubTypes.Type(value = DocumentHistoryCreatedPayload::class, name = "Created"),
+    JsonSubTypes.Type(value = DocumentHistoryEditedPayload::class, name = "Edited"),
+    JsonSubTypes.Type(value = DocumentHistorySavedPayload::class, name = "Saved"),
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @Schema(
     discriminatorMapping =
         [
-            DiscriminatorMapping(schema = PddHistoryCreatedPayload::class, value = "Created"),
-            DiscriminatorMapping(schema = PddHistoryEditedPayload::class, value = "Edited"),
-            DiscriminatorMapping(schema = PddHistorySavedPayload::class, value = "Saved"),
+            DiscriminatorMapping(schema = DocumentHistoryCreatedPayload::class, value = "Created"),
+            DiscriminatorMapping(schema = DocumentHistoryEditedPayload::class, value = "Edited"),
+            DiscriminatorMapping(schema = DocumentHistorySavedPayload::class, value = "Saved"),
         ],
     discriminatorProperty = "type")
-sealed interface PddHistoryPayload {
+sealed interface DocumentHistoryPayload {
   val createdBy: UserId
   val createdTime: Instant
-  val type: PddHistoryPayloadType
+  val type: DocumentHistoryPayloadType
 }
 
 @Schema(
     description =
         "History entry about the creation of the document. This is always the last element in " +
             "the reverse-chronological list of history events. It has the same information as " +
-            "the createdBy and createdTime fields in PddPayload.")
-data class PddHistoryCreatedPayload(
+            "the createdBy and createdTime fields in DocumentPayload.")
+data class DocumentHistoryCreatedPayload(
     override val createdBy: UserId,
     override val createdTime: Instant,
-) : PddHistoryPayload {
+) : DocumentHistoryPayload {
   constructor(row: DocumentsRow) : this(row.createdBy!!, row.createdTime!!)
 
-  override val type: PddHistoryPayloadType
-    get() = PddHistoryPayloadType.Created
+  override val type: DocumentHistoryPayloadType
+    get() = DocumentHistoryPayloadType.Created
 }
 
 @Schema(
@@ -59,21 +59,21 @@ data class PddHistoryCreatedPayload(
         "History entry about a document being edited. This represents the most recent edit by " +
             "the given user; if the same user edits the document multiple times in a row, only " +
             "the last edit will be listed in the history.")
-data class PddHistoryEditedPayload(
+data class DocumentHistoryEditedPayload(
     override val createdBy: UserId,
     override val createdTime: Instant,
-) : PddHistoryPayload {
+) : DocumentHistoryPayload {
   constructor(model: EditHistoryModel) : this(model.createdBy, model.createdTime)
 
-  override val type: PddHistoryPayloadType
-    get() = PddHistoryPayloadType.Edited
+  override val type: DocumentHistoryPayloadType
+    get() = DocumentHistoryPayloadType.Edited
 }
 
 @Schema(
     description =
         "History entry about a saved version of a document. The maxVariableValueId and " +
             "variableManifestId may be used to retrieve the contents of the saved version.")
-data class PddHistorySavedPayload(
+data class DocumentHistorySavedPayload(
     override val createdBy: UserId,
     override val createdTime: Instant,
     val isSubmitted: Boolean,
@@ -81,7 +81,7 @@ data class PddHistorySavedPayload(
     val name: String,
     val variableManifestId: VariableManifestId,
     val versionId: DocumentSavedVersionId,
-) : PddHistoryPayload {
+) : DocumentHistoryPayload {
   constructor(
       model: ExistingSavedVersionModel
   ) : this(
@@ -94,6 +94,6 @@ data class PddHistorySavedPayload(
       versionId = model.id,
   )
 
-  override val type: PddHistoryPayloadType
-    get() = PddHistoryPayloadType.Saved
+  override val type: DocumentHistoryPayloadType
+    get() = DocumentHistoryPayloadType.Saved
 }

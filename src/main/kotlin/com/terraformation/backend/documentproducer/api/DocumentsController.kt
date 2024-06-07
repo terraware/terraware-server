@@ -42,32 +42,32 @@ class DocumentsController(
 ) {
   @GetMapping
   @Operation(summary = "Gets a list of all the documents.")
-  fun listPdds(): ListPddsResponsePayload {
+  fun listDocuments(): ListDocumentsResponsePayload {
     val models = documentStore.findAll()
 
-    return ListPddsResponsePayload(models.map { PddPayload(it) })
+    return ListDocumentsResponsePayload(models.map { DocumentPayload(it) })
   }
 
   @Operation(summary = "Creates a new document.")
   @PostMapping
-  fun createPdd(@RequestBody payload: CreatePddRequestPayload): CreatePddResponsePayload {
+  fun createDocument(@RequestBody payload: CreateDocumentRequestPayload): CreateDocumentResponsePayload {
     val model = documentStore.create(payload.toModel())
 
-    return CreatePddResponsePayload(PddPayload(model))
+    return CreateDocumentResponsePayload(DocumentPayload(model))
   }
 
   @Operation(summary = "Gets a document.")
   @GetMapping("/{id}")
-  fun getPdd(@PathVariable("id") id: DocumentId): GetPddResponsePayload {
-    return GetPddResponsePayload(
-        PddPayload(ExistingDocumentModel(documentStore.fetchDocumentById(id))))
+  fun getDocument(@PathVariable("id") id: DocumentId): GetDocumentResponsePayload {
+    return GetDocumentResponsePayload(
+        DocumentPayload(ExistingDocumentModel(documentStore.fetchDocumentById(id))))
   }
 
   @Operation(summary = "Updates a document.")
   @PutMapping("/{id}")
-  fun updatePdd(
+  fun updateDocument(
       @PathVariable("id") id: DocumentId,
-      @RequestBody payload: UpdatePddRequestPayload
+      @RequestBody payload: UpdateDocumentRequestPayload
   ): SimpleSuccessResponsePayload {
     documentStore.updateDocument(id) { payload.applyChanges(it) }
 
@@ -81,9 +81,9 @@ class DocumentsController(
   @GetMapping("/{id}/history")
   fun getDocumentHistory(@PathVariable id: DocumentId): GetDocumentHistoryResponsePayload {
     val document = documentStore.fetchDocumentById(id)
-    val createdEntry = PddHistoryCreatedPayload(document)
-    val savedVersions = documentStore.listSavedVersions(id).map { PddHistorySavedPayload(it) }
-    val editHistory = documentStore.listEditHistory(id).map { PddHistoryEditedPayload(it) }
+    val createdEntry = DocumentHistoryCreatedPayload(document)
+    val savedVersions = documentStore.listSavedVersions(id).map { DocumentHistorySavedPayload(it) }
+    val editHistory = documentStore.listEditHistory(id).map { DocumentHistoryEditedPayload(it) }
 
     val events = (editHistory + savedVersions + createdEntry).sortedByDescending { it.createdTime }
 
@@ -94,35 +94,35 @@ class DocumentsController(
   @ApiResponse404
   @ApiResponse409("The document has no values to save.")
   @Operation(summary = "Saves a version of a document.")
-  @PostMapping("/{pddId}/versions")
-  fun createSavedPddVersion(
-      @PathVariable pddId: DocumentId,
-      @RequestBody payload: CreateSavedPddVersionRequestPayload,
-  ): CreateSavedPddVersionResponsePayload {
-    val model = documentStore.createSavedVersion(payload.toModel(pddId))
+  @PostMapping("/{documentId}/versions")
+  fun createSavedDocumentVersion(
+      @PathVariable documentId: DocumentId,
+      @RequestBody payload: CreateSavedDocumentVersionRequestPayload,
+  ): CreateSavedDocumentVersionResponsePayload {
+    val model = documentStore.createSavedVersion(payload.toModel(documentId))
 
-    return CreateSavedPddVersionResponsePayload(PddSavedVersionPayload(model))
+    return CreateSavedDocumentVersionResponsePayload(DocumentSavedVersionPayload(model))
   }
 
-  @GetMapping("/{pddId}/versions/{versionId}")
+  @GetMapping("/{documentId}/versions/{versionId}")
   @Operation(summary = "Gets details of a specific saved version of a document.")
-  fun getSavedPddVersion(
-      @PathVariable pddId: DocumentId,
+  fun getSavedDocumentVersion(
+      @PathVariable documentId: DocumentId,
       @PathVariable versionId: DocumentSavedVersionId,
-  ): GetSavedPddVersionResponsePayload {
-    val model = documentStore.fetchSavedVersion(pddId, versionId)
+  ): GetSavedDocumentVersionResponsePayload {
+    val model = documentStore.fetchSavedVersion(documentId, versionId)
 
-    return GetSavedPddVersionResponsePayload(PddSavedVersionPayload(model))
+    return GetSavedDocumentVersionResponsePayload(DocumentSavedVersionPayload(model))
   }
 
   @Operation(summary = "Updates a saved version of a document.")
-  @PutMapping("/{pddId}/versions/{versionId}")
-  fun updateSavedPddVersion(
-      @PathVariable pddId: DocumentId,
+  @PutMapping("/{documentId}/versions/{versionId}")
+  fun updateSavedDocumentVersion(
+      @PathVariable documentId: DocumentId,
       @PathVariable versionId: DocumentSavedVersionId,
-      @RequestBody payload: UpdateSavedPddVersionRequestPayload,
+      @RequestBody payload: UpdateSavedDocumentVersionRequestPayload,
   ): SimpleSuccessResponsePayload {
-    documentStore.updateSavedVersion(pddId, versionId, payload::applyChanges)
+    documentStore.updateSavedVersion(documentId, versionId, payload::applyChanges)
 
     return SimpleSuccessResponsePayload()
   }
@@ -147,7 +147,7 @@ class DocumentsController(
   }
 }
 
-data class PddPayload(
+data class DocumentPayload(
     val createdBy: UserId,
     val createdTime: Instant,
     val id: DocumentId,
@@ -181,7 +181,7 @@ data class PddPayload(
     description =
         "Information about a saved version of a document. The maxVariableValueId and " +
             "variableManifestId may be used to retrieve the contents of the saved version.")
-data class PddSavedVersionPayload(
+data class DocumentSavedVersionPayload(
     val createdBy: UserId,
     val createdTime: Instant,
     val isSubmitted: Boolean,
@@ -203,7 +203,7 @@ data class PddSavedVersionPayload(
   )
 }
 
-data class CreatePddRequestPayload(
+data class CreateDocumentRequestPayload(
     val documentTemplateId: DocumentTemplateId,
     val name: String,
     val organizationName: String,
@@ -212,7 +212,7 @@ data class CreatePddRequestPayload(
   fun toModel() = NewDocumentModel(documentTemplateId, name, organizationName, ownedBy)
 }
 
-data class CreateSavedPddVersionRequestPayload(
+data class CreateSavedDocumentVersionRequestPayload(
     @Schema(defaultValue = "false") val isSubmitted: Boolean?,
     val name: String,
 ) {
@@ -224,7 +224,7 @@ data class CreateSavedPddVersionRequestPayload(
       )
 }
 
-data class UpdatePddRequestPayload(
+data class UpdateDocumentRequestPayload(
     val name: String,
     val organizationName: String,
     val ownedBy: UserId,
@@ -237,7 +237,7 @@ data class UpdatePddRequestPayload(
       )
 }
 
-data class UpdateSavedPddVersionRequestPayload(val isSubmitted: Boolean) {
+data class UpdateSavedDocumentVersionRequestPayload(val isSubmitted: Boolean) {
   fun applyChanges(row: DocumentSavedVersionsRow) = row.copy(isSubmitted = isSubmitted)
 }
 
@@ -250,10 +250,10 @@ data class UpgradeManifestRequestPayload(
     val variableManifestId: VariableManifestId
 )
 
-data class CreatePddResponsePayload(val pdd: PddPayload) : SuccessResponsePayload
+data class CreateDocumentResponsePayload(val document: DocumentPayload) : SuccessResponsePayload
 
-data class CreateSavedPddVersionResponsePayload(
-    val version: PddSavedVersionPayload,
+data class CreateSavedDocumentVersionResponsePayload(
+    val version: DocumentSavedVersionPayload,
 ) : SuccessResponsePayload
 
 data class GetDocumentHistoryResponsePayload(
@@ -263,13 +263,13 @@ data class GetDocumentHistoryResponsePayload(
                 description =
                     "List of events in the document's history in reverse chronological order. " +
                         "The last element is always the \"Created\" event."))
-    val history: List<PddHistoryPayload>,
+    val history: List<DocumentHistoryPayload>,
 ) : SuccessResponsePayload
 
-data class GetPddResponsePayload(val pdd: PddPayload) : SuccessResponsePayload
+data class GetDocumentResponsePayload(val document: DocumentPayload) : SuccessResponsePayload
 
-data class GetSavedPddVersionResponsePayload(
-    val version: PddSavedVersionPayload,
+data class GetSavedDocumentVersionResponsePayload(
+    val version: DocumentSavedVersionPayload,
 ) : SuccessResponsePayload
 
-data class ListPddsResponsePayload(val pdds: List<PddPayload>) : SuccessResponsePayload
+data class ListDocumentsResponsePayload(val documents: List<DocumentPayload>) : SuccessResponsePayload

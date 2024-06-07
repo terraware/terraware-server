@@ -70,7 +70,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
           .andExpectJson(
               """
                 {
-                  "pdd": {
+                  "document": {
                     "createdBy": ${inserted.userId},
                     "createdTime": "${Instant.EPOCH}",
                     "id": 1,
@@ -117,7 +117,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
           .andExpectJson(
               """
                 {
-                  "pdds": [
+                  "documents": [
                     {
                       "createdBy": ${inserted.userId},
                       "createdTime": "${Instant.EPOCH}",
@@ -163,7 +163,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
           .andExpectJson(
               """
                 {
-                  "pdd": {
+                  "document": {
                     "createdBy": ${inserted.userId},
                     "createdTime": "${Instant.EPOCH}",
                     "id": ${inserted.documentId},

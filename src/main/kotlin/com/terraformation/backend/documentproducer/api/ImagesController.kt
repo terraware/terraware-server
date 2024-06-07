@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
 @InternalEndpoint
-@RequestMapping("/api/v1/document-producer/documents/{pddId}/images")
+@RequestMapping("/api/v1/document-producer/documents/{documentId}/images")
 @RestController
 class ImagesController(
     private val documentFileService: DocumentFileService,
@@ -47,7 +47,7 @@ class ImagesController(
               "supplied, the other dimension will be computed based on the original image's " +
               "aspect ratio.")
   fun getImageValue(
-      @PathVariable pddId: DocumentId,
+      @PathVariable documentId: DocumentId,
       @PathVariable valueId: VariableValueId,
       @RequestParam
       @Schema(
@@ -67,14 +67,14 @@ class ImagesController(
       maxHeight: Int? = null,
   ): ResponseEntity<InputStreamResource> {
     return documentFileService
-        .readImageValue(pddId, valueId, maxWidth, maxHeight)
+        .readImageValue(documentId, valueId, maxWidth, maxHeight)
         .toResponseEntity()
   }
 
   @Operation(summary = "Save an image to a new variable value.")
   @PostMapping
   fun uploadImageValue(
-      @PathVariable pddId: DocumentId,
+      @PathVariable documentId: DocumentId,
       @RequestPart file: MultipartFile,
       @RequestPart(required = false) caption: String?,
       @RequestPart(required = false) citation: String?,
@@ -109,7 +109,7 @@ class ImagesController(
     val base =
         BaseVariableValueProperties(
             citation = citation,
-            documentId = pddId,
+            documentId = documentId,
             id = null,
             // If list position isn't specified, the value here will be ignored because isAppend
             // will be true.

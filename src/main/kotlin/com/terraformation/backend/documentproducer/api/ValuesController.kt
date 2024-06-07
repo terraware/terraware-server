@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @InternalEndpoint
-@RequestMapping("/api/v1/document-producer/documents/{pddId}/values")
+@RequestMapping("/api/v1/document-producer/documents/{documentId}/values")
 @RestController
 class ValuesController(
     private val variableValueStore: VariableValueStore,
@@ -37,7 +37,7 @@ class ValuesController(
               "values from a saved version (if maxValueId is specified), or to poll for recent " +
               "edits (if minValueId is specified).")
   fun listVariableValues(
-      @PathVariable pddId: DocumentId,
+      @PathVariable documentId: DocumentId,
       @Parameter(
           description =
               "If specified, only return values with this ID or higher. Use this to poll for " +
@@ -53,7 +53,7 @@ class ValuesController(
       maxValueId: VariableValueId? = null,
   ): ListVariableValuesResponsePayload {
     val currentMax =
-        variableValueStore.fetchMaxValueId(pddId)
+        variableValueStore.fetchMaxValueId(documentId)
             ?: return ListVariableValuesResponsePayload(VariableValueId(0), emptyList())
     val nextValueId = VariableValueId(currentMax.value + 1)
 
@@ -62,7 +62,7 @@ class ValuesController(
     // the same time this endpoint is executing.
     val effectiveMax = maxValueId ?: currentMax
     val valuesByVariableId =
-        variableValueStore.listValues(pddId, minValueId, effectiveMax).groupBy {
+        variableValueStore.listValues(documentId, minValueId, effectiveMax).groupBy {
           it.variableId to it.rowValueId
         }
 
@@ -86,7 +86,7 @@ class ValuesController(
               "operations you can perform on values.")
   @PostMapping
   fun updateVariableValues(
-      @PathVariable pddId: DocumentId,
+      @PathVariable documentId: DocumentId,
       @RequestBody payload: UpdateVariableValuesRequestPayload
   ): SimpleSuccessResponsePayload {
     val existingValueIds = payload.operations.mapNotNull { it.getExistingValueId() }
@@ -94,7 +94,7 @@ class ValuesController(
     val operations =
         payload.operations.map { operationPayload ->
           val base = operationPayload.getExistingValueId()?.let { existingBases[it] }
-          operationPayload.toOperationModel(pddId, base)
+          operationPayload.toOperationModel(documentId, base)
         }
 
     variableValueService.validate(operations)
