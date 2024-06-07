@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @InternalEndpoint
-@RequestMapping("/api/v1/variables")
+@RequestMapping("/api/v1/document-producer/variables")
 @RestController
 class VariablesController(
     private val variableStore: VariableStore,

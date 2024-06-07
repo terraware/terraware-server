@@ -26,7 +26,7 @@ import org.springframework.test.web.servlet.put
 class DocumentsControllerTest : ControllerIntegrationTest() {
   override val tablesToResetSequences = listOf(DOCUMENTS)
 
-  private val path = "/api/v1/pdds"
+  private val path = "/api/v1/document-producer/documents"
 
   @BeforeEach
   fun setUp() {
@@ -293,7 +293,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
   @Nested
   inner class GetSavedVersion {
     private fun versionsPath(versionId: Any, documentId: Any = inserted.documentId) =
-        "/api/v1/pdds/$documentId/versions/$versionId"
+        "/api/v1/document-producer/documents/$documentId/versions/$versionId"
 
     @Test
     fun `returns saved version details`() {
@@ -344,7 +344,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
   @Nested
   inner class UpdateSavedVersion {
     private fun versionsPath(versionId: Any, documentId: Any = inserted.documentId) =
-        "/api/v1/pdds/$documentId/versions/$versionId"
+        "/api/v1/document-producer/documents/$documentId/versions/$versionId"
 
     @Test
     fun `updates saved version details`() {
@@ -392,7 +392,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
   @Nested
   inner class GetDocumentHistory {
     private fun historyPath(documentId: Any = inserted.documentId) =
-        "/api/v1/pdds/$documentId/history"
+        "/api/v1/document-producer/documents/$documentId/history"
 
     @Test
     fun `returns correct sequence of edits and saved versions`() {
@@ -559,7 +559,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
   @Nested
   inner class UpgradeManifest {
-    private fun path(documentId: Any = inserted.documentId) = "/api/v1/pdds/$documentId/upgrade"
+    private fun path(documentId: Any = inserted.documentId) = "/api/v1/document-producer/documents/$documentId/upgrade"
 
     private fun payload(manifestId: Any) = """{ "variableManifestId": $manifestId }"""
 

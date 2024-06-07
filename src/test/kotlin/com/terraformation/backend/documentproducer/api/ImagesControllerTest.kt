@@ -44,7 +44,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       val imageValueId = insertImageValue(imageVariableId, fileId)
 
-      mockMvc.get("/api/v1/pdds/${inserted.documentId}/images/$imageValueId").andExpect {
+      mockMvc.get("/api/v1/document-producer/documents/${inserted.documentId}/images/$imageValueId").andExpect {
         status { isOk() }
         content { bytes(contents) }
       }
@@ -63,7 +63,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
       val imageValueId = insertImageValue(imageVariableId, fileId)
 
       mockMvc
-          .get("/api/v1/pdds/${inserted.documentId}/images/$imageValueId?maxWidth=320")
+          .get("/api/v1/document-producer/documents/${inserted.documentId}/images/$imageValueId?maxWidth=320")
           .andExpect {
             status { isOk() }
             content { bytes(contents) }
@@ -83,14 +83,14 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       val otherDocumentId = insertDocument()
 
-      mockMvc.get("/api/v1/pdds/$otherDocumentId/images/$imageValueId").andExpect {
+      mockMvc.get("/api/v1/document-producer/documents/$otherDocumentId/images/$imageValueId").andExpect {
         status { isNotFound() }
       }
     }
 
     @Test
     fun `cannot get nonexistent image`() {
-      mockMvc.get("/api/v1/pdds/${inserted.documentId}/images/1").andExpect {
+      mockMvc.get("/api/v1/document-producer/documents/${inserted.documentId}/images/1").andExpect {
         status { isNotFound() }
       }
     }
@@ -107,7 +107,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
       val filename = "test.jpg"
 
       mockMvc
-          .multipart(HttpMethod.POST, "/api/v1/pdds/${inserted.documentId}/images") {
+          .multipart(HttpMethod.POST, "/api/v1/document-producer/documents/${inserted.documentId}/images") {
             file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
             part(MockPart("caption", caption.toByteArray()))
             part(MockPart("variableId", "$imageVariableId".toByteArray()))
@@ -149,7 +149,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
       val listPosition = 1
 
       mockMvc
-          .multipart(HttpMethod.POST, "/api/v1/pdds/${inserted.documentId}/images") {
+          .multipart(HttpMethod.POST, "/api/v1/document-producer/documents/${inserted.documentId}/images") {
             file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
             part(MockPart("caption", caption.toByteArray()))
             part(MockPart("variableId", "$imageVariableId".toByteArray()))
@@ -189,7 +189,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
       val filename = "test.jpg"
 
       mockMvc
-          .multipart(HttpMethod.POST, "/api/v1/pdds/${inserted.documentId}/images") {
+          .multipart(HttpMethod.POST, "/api/v1/document-producer/documents/${inserted.documentId}/images") {
             file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
             part(MockPart("caption", caption.toByteArray()))
             part(MockPart("variableId", "$imageVariableId".toByteArray()))
@@ -212,7 +212,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
       val textVariableId = insertVariableManifestEntry(insertTextVariable())
 
       mockMvc
-          .multipart(HttpMethod.POST, "/api/v1/pdds/${inserted.documentId}/images") {
+          .multipart(HttpMethod.POST, "/api/v1/document-producer/documents/${inserted.documentId}/images") {
             file(MockMultipartFile("file", "dummy", MediaType.IMAGE_JPEG_VALUE, byteArrayOf(1)))
             part(MockPart("caption", "dummy".toByteArray()))
             part(MockPart("variableId", "$textVariableId".toByteArray()))

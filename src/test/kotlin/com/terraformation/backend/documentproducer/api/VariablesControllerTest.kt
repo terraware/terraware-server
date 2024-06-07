@@ -22,7 +22,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
   @Nested
   inner class ListVariables {
     private fun path(manifestId: VariableManifestId = inserted.variableManifestId) =
-        "/api/v1/variables?manifestId=$manifestId"
+        "/api/v1/document-producer/variables?manifestId=$manifestId"
 
     @Test
     fun `only lists variables for requested manifest`() {

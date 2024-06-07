@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @InternalEndpoint
-@RequestMapping("/api/v1/pdds/{pddId}/values")
+@RequestMapping("/api/v1/document-producer/documents/{pddId}/values")
 @RestController
 class ValuesController(
     private val variableValueStore: VariableValueStore,

@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
 @InternalEndpoint
-@RequestMapping("/api/v1/pdds/{pddId}/images")
+@RequestMapping("/api/v1/document-producer/documents/{pddId}/images")
 @RestController
 class ImagesController(
     private val documentFileService: DocumentFileService,

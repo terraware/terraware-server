@@ -34,7 +34,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @InternalEndpoint
-@RequestMapping("/api/v1/pdds")
+@RequestMapping("/api/v1/document-producer/documents")
 @RestController
 class DocumentsController(
     private val documentStore: DocumentStore,

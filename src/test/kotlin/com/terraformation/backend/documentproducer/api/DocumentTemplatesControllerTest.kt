@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.test.web.servlet.get
 
 class DocumentTemplatesControllerTest : ControllerIntegrationTest() {
-  private val path = "/api/v1/document-templates"
+  private val path = "/api/v1/document-producer/document-templates"
 
   @BeforeEach
   fun setUp() {
