@@ -277,8 +277,8 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
     }
   }
 
-  fun validate(newModel: PlantingSiteModel<*, *, *>): List<String> {
-    val problems = mutableListOf<String>()
+  fun validate(newModel: PlantingSiteModel<*, *, *>): List<PlantingSiteValidationFailure> {
+    val problems = mutableListOf<PlantingSiteValidationFailure>()
 
     // Find 5 squares: 4 for the cluster and one for a temporary plot.
     val plotBoundaries =
@@ -298,40 +298,36 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
         )
 
     if (clusterBoundaries.isEmpty() || plotBoundaries.size < 5) {
-      problems.add(
-          "Planting zone $name is too small to create minimum number of monitoring plots (is the " +
-              "zone at least 150x75 meters?)")
+      problems.add(PlantingSiteValidationFailure.zoneTooSmall(name))
     }
 
     plantingSubzones
         .groupBy { it.name.lowercase() }
         .values
         .filter { it.size > 1 }
-        .forEach { problems.add("Zone $name has two subzones named ${it[0].name}") }
+        .forEach {
+          problems.add(PlantingSiteValidationFailure.duplicateSubzoneName(it[0].name, name))
+        }
 
     if (plantingSubzones.isEmpty()) {
-      problems.add("Planting zone $name has no subzones")
+      problems.add(PlantingSiteValidationFailure.zoneHasNoSubzones(name))
     }
 
     plantingSubzones.forEachIndexed { index, subzone ->
       if (!subzone.boundary.nearlyCoveredBy(boundary)) {
-        val percent = "%.02f%%".format(100.0 - subzone.boundary.coveragePercent(boundary))
-        problems.add(
-            "$percent of planting subzone ${subzone.name} is not contained within planting " +
-                "zone $name")
+        problems.add(PlantingSiteValidationFailure.subzoneNotInZone(subzone.name, name))
       }
 
       if (newModel.exclusion != null && subzone.boundary.nearlyCoveredBy(newModel.exclusion)) {
-        problems.add("Subzone ${subzone.name} in zone $name is inside exclusion area")
+        problems.add(PlantingSiteValidationFailure.subzoneInExclusionArea(subzone.name, name))
       }
 
       plantingSubzones.drop(index + 1).forEach { otherSubzone ->
         val overlapPercent = subzone.boundary.coveragePercent(otherSubzone.boundary)
         if (overlapPercent > PlantingSiteModel.REGION_OVERLAP_MAX_PERCENT) {
-          val overlapPercentText = "%.02f%%".format(overlapPercent)
           problems.add(
-              "$overlapPercentText of subzone ${subzone.name} in zone $name overlaps with " +
-                  "subzone ${otherSubzone.name}")
+              PlantingSiteValidationFailure.subzoneBoundaryOverlaps(
+                  setOf(otherSubzone.name), subzone.name, name))
         }
       }
     }

@@ -88,6 +88,8 @@ data class IndividualUser(
     val firstName: String?,
     val lastName: String?,
     val countryCode: String?,
+    val cookiesConsented: Boolean?,
+    val cookiesConsentedTime: Instant?,
     override val locale: Locale?,
     override val timeZone: ZoneId?,
     override val userType: UserType,

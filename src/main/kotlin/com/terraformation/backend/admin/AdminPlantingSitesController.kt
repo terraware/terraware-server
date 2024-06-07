@@ -23,6 +23,7 @@ import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.db.ShapefilesInvalidException
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
 import com.terraformation.backend.tracking.mapbox.MapboxService
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -307,6 +308,10 @@ class AdminPlantingSitesController(
     } catch (e: PlantingSiteMapInvalidException) {
       log.warn("Shapefile import failed validation: ${e.problems}")
       redirectAttributes.failureMessage = "Uploaded file failed validation checks"
+      redirectAttributes.failureDetails = e.problems.map { "$it" }
+    } catch (e: ShapefilesInvalidException) {
+      log.warn("Shapefile import failed validation: ${e.problems}")
+      redirectAttributes.failureMessage = "Uploaded file failed validation checks"
       redirectAttributes.failureDetails = e.problems
     } catch (e: Exception) {
       log.warn("Shapefile import failed", e)
@@ -352,6 +357,9 @@ class AdminPlantingSitesController(
 
       return redirectToPlantingSite(siteId)
     } catch (e: PlantingSiteMapInvalidException) {
+      log.warn("Site creation failed", e)
+      redirectAttributes.failureMessage = "Creation failed: ${e.problems.joinToString()}"
+    } catch (e: ShapefilesInvalidException) {
       log.warn("Site creation failed", e)
       redirectAttributes.failureMessage = "Creation failed: ${e.problems.joinToString()}"
     } catch (e: Exception) {
@@ -448,6 +456,10 @@ class AdminPlantingSitesController(
         }
       }
     } catch (e: PlantingSiteMapInvalidException) {
+      log.warn("Shapefile import failed validation: ${e.problems}")
+      redirectAttributes.failureMessage = "Uploaded file failed validation checks"
+      redirectAttributes.failureDetails = e.problems.map { "$it" }
+    } catch (e: ShapefilesInvalidException) {
       log.warn("Shapefile import failed validation: ${e.problems}")
       redirectAttributes.failureMessage = "Uploaded file failed validation checks"
       redirectAttributes.failureDetails = e.problems

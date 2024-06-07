@@ -1089,6 +1089,8 @@ abstract class DatabaseBackedTest {
       emailNotificationsEnabled: Boolean = false,
       timeZone: ZoneId? = null,
       locale: Locale? = null,
+      cookiesConsented: Boolean? = null,
+      cookiesConsentedTime: Instant? = if (cookiesConsented != null) Instant.EPOCH else null,
   ): UserId {
     val userIdWrapper = userId?.toIdWrapper { UserId(it) }
 
@@ -1097,6 +1099,8 @@ abstract class DatabaseBackedTest {
           dslContext
               .insertInto(USERS)
               .set(AUTH_ID, authId)
+              .set(COOKIES_CONSENTED, cookiesConsented)
+              .set(COOKIES_CONSENTED_TIME, cookiesConsentedTime)
               .set(CREATED_TIME, Instant.EPOCH)
               .set(EMAIL, email)
               .set(EMAIL_NOTIFICATIONS_ENABLED, emailNotificationsEnabled)
