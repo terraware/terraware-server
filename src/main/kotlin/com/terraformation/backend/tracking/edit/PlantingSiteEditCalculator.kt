@@ -8,6 +8,7 @@ import com.terraformation.backend.tracking.model.AnyPlantingZoneModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
+import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.coveragePercent
 import com.terraformation.backend.util.differenceNullable
@@ -23,7 +24,7 @@ class PlantingSiteEditCalculator(
     private val desiredSite: AnyPlantingSiteModel,
     private val plantedSubzoneIds: Set<PlantingSubzoneId>,
 ) {
-  private val problems = mutableListOf<PlantingSiteEditProblem>()
+  private val problems = mutableListOf<PlantingSiteValidationFailure>()
 
   fun calculateSiteEdit(): PlantingSiteEdit {
     if (desiredSite.boundary == null) {
@@ -54,7 +55,7 @@ class PlantingSiteEditCalculator(
     // If more than one desired zone maps to the same existing zone, it's an attempt to split.
     findDuplicateValues(zoneMappings).forEach { (existingZone, desiredZones) ->
       problems.add(
-          PlantingSiteEditProblem.CannotSplitZone(
+          PlantingSiteValidationFailure.cannotSplitZone(
               conflictsWith = desiredZones.map { it.name }.toSet(), zoneName = existingZone.name))
     }
 
@@ -179,7 +180,7 @@ class PlantingSiteEditCalculator(
     // If more than one desired subzone maps to the same existing subzone, it's an attempt to split.
     findDuplicateValues(subzoneMappings).forEach { (existingSubzone, desiredSubzones) ->
       problems.add(
-          PlantingSiteEditProblem.CannotSplitSubzone(
+          PlantingSiteValidationFailure.cannotSplitSubzone(
               conflictsWith = desiredSubzones.map { it.name }.toSet(),
               subzoneName = existingSubzone.name,
               zoneName = existingZone.name))
@@ -272,7 +273,7 @@ class PlantingSiteEditCalculator(
       if (subzoneEdit is PlantingSubzoneEdit.Delete &&
           subzoneEdit.existingModel.id in plantedSubzoneIds) {
         problems.add(
-            PlantingSiteEditProblem.CannotRemovePlantedSubzone(
+            PlantingSiteValidationFailure.cannotRemovePlantedSubzone(
                 subzoneEdit.existingModel.name, plantingZone.name))
       }
     }
@@ -290,7 +291,7 @@ class PlantingSiteEditCalculator(
       overlappingZones.first()
     } else {
       problems.add(
-          PlantingSiteEditProblem.ZoneBoundaryChanged(
+          PlantingSiteValidationFailure.zoneBoundaryChanged(
               overlappingZones.map { it.name }.toSet(), desiredZone.name))
       null
     }
@@ -312,7 +313,7 @@ class PlantingSiteEditCalculator(
       overlappingSubzones.first()
     } else {
       problems.add(
-          PlantingSiteEditProblem.SubzoneBoundaryChanged(
+          PlantingSiteValidationFailure.subzoneBoundaryChanged(
               overlappingSubzones.map { it.name }.toSet(), desiredSubzone.name, desiredZone.name))
       null
     }

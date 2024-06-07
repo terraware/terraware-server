@@ -79,42 +79,43 @@ data class PlantingSiteModel<
    *
    * @return A list of validation problems, or null if the site is valid.
    */
-  fun validate(): List<String>? {
-    val problems = mutableListOf<String>()
+  fun validate(): List<PlantingSiteValidationFailure>? {
+    val problems = mutableListOf<PlantingSiteValidationFailure>()
 
     if (boundary != null) {
       val envelopeAreaHa = boundary.envelope.calculateAreaHectares()
       if (envelopeAreaHa > MAX_SITE_ENVELOPE_AREA_HA) {
-        problems.add(
-            "Site must be contained within an envelope (rectangular area) of no more than " +
-                "$MAX_SITE_ENVELOPE_AREA_HA hectares; actual envelope area was $envelopeAreaHa " +
-                "hectares.")
+        problems.add(PlantingSiteValidationFailure.siteTooLarge())
       }
 
       plantingZones
           .groupBy { it.name.lowercase() }
           .values
           .filter { it.size > 1 }
-          .forEach { problems.add("Zone name ${it[0].name} appears ${it.size} times") }
+          .forEach { problems.add(PlantingSiteValidationFailure.duplicateZoneName(it[0].name)) }
 
       plantingZones.forEachIndexed { index, zone ->
         if (!zone.boundary.nearlyCoveredBy(boundary)) {
-          val percent = "%.02f%%".format(100.0 - zone.boundary.coveragePercent(boundary))
-          problems.add(
-              "$percent of planting zone ${zone.name} is not contained within planting site")
+          problems.add(PlantingSiteValidationFailure.zoneNotInSite(zone.name))
         }
 
         plantingZones.drop(index + 1).forEach { otherZone ->
           val overlapPercent = zone.boundary.coveragePercent(otherZone.boundary)
           if (overlapPercent > REGION_OVERLAP_MAX_PERCENT) {
-            val overlapPercentText = "%.02f%%".format(overlapPercent)
             problems.add(
-                "$overlapPercentText of planting zone ${zone.name} overlaps with " +
-                    "zone ${otherZone.name}")
+                PlantingSiteValidationFailure.zoneBoundaryOverlaps(
+                    setOf(otherZone.name), zone.name))
           }
         }
 
         problems.addAll(zone.validate(this))
+      }
+    } else {
+      if (exclusion != null) {
+        problems.add(PlantingSiteValidationFailure.exclusionWithoutBoundary())
+      }
+      if (plantingZones.isNotEmpty()) {
+        problems.add(PlantingSiteValidationFailure.zonesWithoutSiteBoundary())
       }
     }
 

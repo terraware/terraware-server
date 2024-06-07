@@ -441,7 +441,7 @@ class PlantingSiteStore(
     val plantingSiteId = plantingSiteEdit.existingModel.id
 
     if (plantingSiteEdit.problems.isNotEmpty()) {
-      throw PlantingSiteEditInvalidException(plantingSiteEdit.problems)
+      throw PlantingSiteMapInvalidException(plantingSiteEdit.problems)
     }
 
     requirePermissions { updatePlantingSite(plantingSiteId) }
