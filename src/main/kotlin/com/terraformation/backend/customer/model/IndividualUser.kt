@@ -199,7 +199,7 @@ data class IndividualUser(
 
   override fun canCreateDeviceManager() = isSuperAdmin()
 
-  override fun canCreateDocument() = true
+  override fun canCreateDocument() = isAcceleratorAdmin()
 
   override fun canCreateDraftPlantingSite(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
@@ -232,7 +232,7 @@ data class IndividualUser(
   // Reports are normally created by the system, but can be created manually by super-admins.
   override fun canCreateReport(organizationId: OrganizationId) = isSuperAdmin()
 
-  override fun canCreateSavedVersion(documentId: DocumentId) = true
+  override fun canCreateSavedVersion(documentId: DocumentId) = isAcceleratorAdmin()
 
   override fun canCreateSpecies(organizationId: OrganizationId) = isManagerOrHigher(organizationId)
 
@@ -372,7 +372,7 @@ data class IndividualUser(
     }
   }
 
-  override fun canReadDocument(documentId: DocumentId) = true
+  override fun canReadDocument(documentId: DocumentId) = isAcceleratorAdmin()
 
   override fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
       isManagerOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
@@ -551,7 +551,7 @@ data class IndividualUser(
 
   override fun canUpdateDeviceTemplates() = isSuperAdmin()
 
-  override fun canUpdateDocument(documentId: DocumentId) = true
+  override fun canUpdateDocument(documentId: DocumentId) = isAcceleratorAdmin()
 
   override fun canUpdateDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
       userId == parentStore.getUserId(draftPlantingSiteId) &&
