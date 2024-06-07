@@ -50,7 +50,9 @@ class DocumentsController(
 
   @Operation(summary = "Creates a new document.")
   @PostMapping
-  fun createDocument(@RequestBody payload: CreateDocumentRequestPayload): CreateDocumentResponsePayload {
+  fun createDocument(
+      @RequestBody payload: CreateDocumentRequestPayload
+  ): CreateDocumentResponsePayload {
     val model = documentStore.create(payload.toModel())
 
     return CreateDocumentResponsePayload(DocumentPayload(model))
@@ -272,4 +274,5 @@ data class GetSavedDocumentVersionResponsePayload(
     val version: DocumentSavedVersionPayload,
 ) : SuccessResponsePayload
 
-data class ListDocumentsResponsePayload(val documents: List<DocumentPayload>) : SuccessResponsePayload
+data class ListDocumentsResponsePayload(val documents: List<DocumentPayload>) :
+    SuccessResponsePayload

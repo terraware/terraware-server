@@ -26,7 +26,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
     insertDocument()
   }
 
-  private fun path(documentId: DocumentId = inserted.documentId) = "/api/v1/document-producer/documents/$documentId/values"
+  private fun path(documentId: DocumentId = inserted.documentId) =
+      "/api/v1/document-producer/documents/$documentId/values"
 
   @Nested
   inner class ListVariableValues {

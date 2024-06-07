@@ -559,7 +559,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
   @Nested
   inner class UpgradeManifest {
-    private fun path(documentId: Any = inserted.documentId) = "/api/v1/document-producer/documents/$documentId/upgrade"
+    private fun path(documentId: Any = inserted.documentId) =
+        "/api/v1/document-producer/documents/$documentId/upgrade"
 
     private fun payload(manifestId: Any) = """{ "variableManifestId": $manifestId }"""
 
