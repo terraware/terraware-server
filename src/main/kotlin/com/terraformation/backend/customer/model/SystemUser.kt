@@ -257,6 +257,8 @@ class SystemUser(
 
   override fun canManageDeliverables(): Boolean = false
 
+  override fun canManageDocumentProducer(): Boolean = false
+
   override fun canManageInternalTags(): Boolean = false
 
   override fun canManageModuleEvents(): Boolean = false

@@ -211,6 +211,8 @@ interface TerrawareUser : Principal {
 
   fun canManageDeliverables(): Boolean
 
+  fun canManageDocumentProducer(): Boolean
+
   fun canManageInternalTags(): Boolean
 
   fun canManageModuleEvents(): Boolean

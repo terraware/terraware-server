@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
-import io.swagger.v3.oas.annotations.parameters.RequestBody
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -24,16 +23,16 @@ import org.springframework.web.multipart.MultipartFile
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
-@RequireGlobalRole([GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin])
+@RequireGlobalRole([GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert])
 @RequestMapping("/admin/document-producer")
-class AdminDocumentController(
+class AdminDocumentProducerController(
     private val manifestImporter: ManifestImporter,
     private val documentTemplatesDao: DocumentTemplatesDao,
 ) {
   /** Redirects /admin to /admin/ so relative URLs in the UI will work. */
   @GetMapping
   fun redirectToTrailingSlash(): String {
-    return adminHome()
+    return documentProducerAdminHome()
   }
 
   @GetMapping("/")
@@ -41,7 +40,7 @@ class AdminDocumentController(
     model.addAttribute(
         "documentTemplates", documentTemplatesDao.findAll().sortedBy { it.id?.value })
 
-    return "/admin/index"
+    return "/admin/documentProducer"
   }
 
   @PostMapping("/createDocumentTemplate")
@@ -59,7 +58,7 @@ class AdminDocumentController(
       redirectAttributes.failureMessage = "Failed to add document template: ${e.message}"
     }
 
-    return adminHome()
+    return documentProducerAdminHome()
   }
 
   @Operation(
@@ -101,7 +100,7 @@ class AdminDocumentController(
       redirectAttributes.failureMessage = "Error attempting to import manifest: $e"
     }
 
-    return adminHome()
+    return documentProducerAdminHome()
   }
 
   private var RedirectAttributes.failureMessage: String?
@@ -134,5 +133,5 @@ class AdminDocumentController(
 
   // Convenience methods to redirect to the GET endpoint for each kind of thing.
 
-  private fun adminHome() = redirect("/")
+  private fun documentProducerAdminHome() = redirect("/document-producer/")
 }

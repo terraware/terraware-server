@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<h2>Document Templates</h2>
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+    </tr>
+    <tr th:each="documentTemplate: ${documentTemplates}">
+        <td th:text="${documentTemplate.id}">1</td>
+        <td th:text="${documentTemplate.name}">Name</td>
+    </tr>
+</table>
+
+<form method="POST" action="/admin/document-producer/createDocumentTemplate">
+    <label for="newDocumentTemplateName">Name</label>
+    <input type="text" id="newDocumentTemplateName" name="name" minlength="1"/>
+    <input type="submit" value="Create Document Template"/>
+</form>
+
+<h2>Import Variable Manifest CSV</h2>
+
+<form method="POST" action="/admin/document-producer/uploadManifest" enctype="multipart/form-data">
+    <label for="uploadManifestCsv">CSV</label>
+    <input type="file" id="uploadManifestCsv" name="file" minlength="1"/>
+    <br>
+    <label for="uploadManifestDocumentTemplateName">Document Template ID</label>
+    <select id="uploadManifestDocumentTemplateName" name="documentTemplateId">
+        <option th:each="documentTemplate: ${documentTemplates}" th:value="${documentTemplate.id}"
+                th:text="${documentTemplate.name}"/>
+    </select>
+    <br>
+    <input type="submit" value="Import"/>
+</form>
+
+</body>
+</html>

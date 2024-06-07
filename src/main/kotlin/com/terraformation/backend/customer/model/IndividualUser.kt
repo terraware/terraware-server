@@ -322,6 +322,8 @@ data class IndividualUser(
 
   override fun canManageDeliverables() = isAcceleratorAdmin()
 
+  override fun canManageDocumentProducer() = isTFExpertOrHigher()
+
   override fun canManageInternalTags() = isSuperAdmin()
 
   override fun canManageModuleEvents() = isAcceleratorAdmin()
