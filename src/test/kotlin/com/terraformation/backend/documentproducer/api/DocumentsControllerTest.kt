@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.api
 
 import com.terraformation.backend.api.ControllerIntegrationTest
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentStatus
@@ -29,7 +30,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
+    val userId = insertUser()
+    insertUserGlobalRole(userId = userId, GlobalRole.TFExpert)
     insertDocumentTemplate()
     insertVariableManifest()
   }
