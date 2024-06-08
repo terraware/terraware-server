@@ -155,7 +155,8 @@ VALUES (1, 'Tree'),
        (11, 'Shrub/Tree'),
        (12, 'Subshrub'),
        (13, 'Multiple Forms'),
-       (14, 'Mangrove')
+       (14, 'Mangrove'),
+       (15, 'Herb')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO land_use_model_types (id, name)
@@ -340,7 +341,10 @@ VALUES (1, 'Orthodox'),
        (4, 'Unknown'),
        (5, 'Likely Orthodox'),
        (6, 'Likely Recalcitrant'),
-       (7, 'Likely Intermediate')
+       (7, 'Likely Intermediate'),
+       (8, 'Intermediate - Cool Temperature Sensitive'),
+       (9, 'Intermediate - Partial Desiccation Tolerant'),
+       (10, 'Intermediate - Short Lived')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO seed_treatments (id, name)
