@@ -444,21 +444,27 @@ class ObservationService(
                 .flatMap { subzone -> subzone.monitoringPlots.mapNotNull { it.permanentCluster } }
                 .toSet()
 
-        val newPlotsInClustersWithoutPlotsInUnplantedSubzones =
+        val newPermanentPlotsInClustersWithoutPlotsInUnplantedSubzones =
             zone.plantingSubzones
                 .flatMap { subzone ->
-                  subzone.monitoringPlots.filter {
-                    it.isAvailable &&
-                        it.id !in existingPermanentPlotIds &&
-                        it.permanentCluster != null &&
-                        it.permanentCluster <= zone.numPermanentClusters &&
-                        it.permanentCluster !in clusterNumbersWithPlotsInUnplantedSubzones
+                  subzone.monitoringPlots.filter { plot ->
+                    val plotNotAlreadyInObservation = plot.id !in existingPermanentPlotIds
+                    val clusterNumberIsCandidateForObservation =
+                        plot.permanentCluster != null &&
+                            plot.permanentCluster <= zone.numPermanentClusters
+                    val allPlotsInClusterAreInPlantedSubzones =
+                        plot.permanentCluster !in clusterNumbersWithPlotsInUnplantedSubzones
+
+                    plot.isAvailable &&
+                        plotNotAlreadyInObservation &&
+                        clusterNumberIsCandidateForObservation &&
+                        allPlotsInClusterAreInPlantedSubzones
                   }
                 }
                 .map { it.id }
 
         observationStore.addPlotsToObservation(
-            observationId, newPlotsInClustersWithoutPlotsInUnplantedSubzones, true)
+            observationId, newPermanentPlotsInClustersWithoutPlotsInUnplantedSubzones, true)
       }
     }
   }
