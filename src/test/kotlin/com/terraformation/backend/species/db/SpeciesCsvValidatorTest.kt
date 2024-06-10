@@ -24,7 +24,7 @@ internal class SpeciesCsvValidatorTest {
   private val uploadId = UploadId(1)
 
   private val header =
-      "Scientific Name,Common Name,Family,IUCN Conservation Category,Rare,Growth Form,Seed Storage Behavior,Ecosystem Types"
+      "Scientific Name,Common Name,Family,IUCN Red List Category,Rare,Growth Form,Seed Storage Behavior,Ecosystem Types"
   private val gibberishHeader: String by lazy {
     header.split(',').joinToString(",") { it.toGibberish() }
   }
@@ -34,7 +34,7 @@ internal class SpeciesCsvValidatorTest {
     @Test
     fun `must include all expected columns`() {
       assertError(
-          "Scientific Name,Family,IUCN Conservation Category,Rare,Growth Form,Seed Storage Behavior\n",
+          "Scientific Name,Family,IUCN Red List Category,Rare,Growth Form,Seed Storage Behavior\n",
           MalformedValue,
           messages.csvBadHeader())
     }
@@ -47,7 +47,7 @@ internal class SpeciesCsvValidatorTest {
     @Test
     fun `column names may be quoted`() {
       assertValidationResults(
-          """"Scientific Name","Common Name","Family","IUCN Conservation Category","Rare","Growth Form","Seed Storage Behavior","Ecosystem Types"""" +
+          """"Scientific Name","Common Name","Family","IUCN Red List Category","Rare","Growth Form","Seed Storage Behavior","Ecosystem Types"""" +
               "\n")
     }
 
@@ -281,7 +281,7 @@ internal class SpeciesCsvValidatorTest {
         errors =
             setOf(
                 UploadProblemsRow(
-                    field = "IUCN Conservation Category",
+                    field = "IUCN Red List Category",
                     isError = true,
                     message = messages.speciesCsvConservationCategoryInvalid(),
                     position = 2,
@@ -331,7 +331,7 @@ internal class SpeciesCsvValidatorTest {
   @Test
   fun `accepts localized values for enumerated fields`() {
     val gibberishTrue = "true".toGibberish()
-    val gibberishShrub = "Shrub".toGibberish()
+    val gibberishShrub = "Shrub or Tree".toGibberish()
     val gibberishRecalcitrant = "Recalcitrant".toGibberish()
     val gibberishMangroves = "Mangroves".toGibberish()
     val csv =
