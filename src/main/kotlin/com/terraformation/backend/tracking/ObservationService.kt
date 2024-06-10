@@ -412,6 +412,8 @@ class ObservationService(
       val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
       val plantedSubzoneIds = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId).keys
 
+      val existingPermanentPlotIds =
+          observationPlots.filter { it.model.isPermanent }.map { it.model.monitoringPlotId }
       val removedObservationPlots =
           observationPlots.filter {
             it.model.monitoringPlotId in event.monitoringPlotReplacements.removedMonitoringPlotIds
@@ -422,8 +424,7 @@ class ObservationService(
       observationStore.removePlotsFromObservation(
           observationId, removedPermanentPlots.map { it.model.monitoringPlotId })
 
-      val newPermanentPlotIds =
-          plantingSiteStore.ensurePermanentClustersExist(plantingSiteId).toSet()
+      plantingSiteStore.ensurePermanentClustersExist(plantingSiteId)
 
       removedTemporaryPlots.forEach { plot ->
         replaceMonitoringPlot(
@@ -447,7 +448,10 @@ class ObservationService(
             zone.plantingSubzones
                 .flatMap { subzone ->
                   subzone.monitoringPlots.filter {
-                    it.id in newPermanentPlotIds &&
+                    it.isAvailable &&
+                        it.id !in existingPermanentPlotIds &&
+                        it.permanentCluster != null &&
+                        it.permanentCluster <= zone.numPermanentClusters &&
                         it.permanentCluster !in clusterNumbersWithPlotsInUnplantedSubzones
                   }
                 }
