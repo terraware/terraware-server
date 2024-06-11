@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @InternalEndpoint
-@RequestMapping("/api/v1/document-producer/document-templates")
+@RequestMapping("/api/v1/document-producer/templates")
 @RestController
 class DocumentTemplatesController(
     val documentTemplatesDao: DocumentTemplatesDao,
