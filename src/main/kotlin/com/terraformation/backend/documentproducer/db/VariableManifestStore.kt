@@ -20,8 +20,8 @@ import org.jooq.DSLContext
 @Named
 class VariableManifestStore(
     private val clock: InstantSource,
-    private val dslContext: DSLContext,
     private val documentTemplatesDao: DocumentTemplatesDao,
+    private val dslContext: DSLContext,
     private val variableManifestsDao: VariableManifestsDao,
     private val variableManifestEntriesDao: VariableManifestEntriesDao
 ) {

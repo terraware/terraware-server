@@ -2401,8 +2401,8 @@ abstract class DatabaseBackedTest {
         DocumentsRow(
             createdBy = createdBy,
             createdTime = createdTime,
-            id = id?.toIdWrapper { DocumentId(it) },
             documentTemplateId = documentTemplateId,
+            id = id?.toIdWrapper { DocumentId(it) },
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
@@ -2830,15 +2830,15 @@ abstract class DatabaseBackedTest {
   protected fun insertVariableManifest(
       createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
-      id: Any? = null,
       documentTemplateId: DocumentTemplateId = inserted.documentTemplateId,
+      id: Any? = null,
   ): VariableManifestId {
     val row =
         VariableManifestsRow(
             createdBy = createdBy,
             createdTime = createdTime,
-            id = id?.toIdWrapper { VariableManifestId(it) },
             documentTemplateId = documentTemplateId,
+            id = id?.toIdWrapper { VariableManifestId(it) },
         )
 
     variableManifestsDao.insert(row)
@@ -2881,11 +2881,11 @@ abstract class DatabaseBackedTest {
     val deliveryIds = mutableListOf<DeliveryId>()
     val deviceIds = mutableListOf<DeviceId>()
     val documentIds = mutableListOf<DocumentId>()
+    val documentTemplateIds = mutableListOf<DocumentTemplateId>()
     val draftPlantingSiteIds = mutableListOf<DraftPlantingSiteId>()
     val eventIds = mutableListOf<EventId>()
     val facilityIds = mutableListOf<FacilityId>()
     val fileIds = mutableListOf<FileId>()
-    val documentTemplateIds = mutableListOf<DocumentTemplateId>()
     val moduleIds = mutableListOf<ModuleId>()
     val monitoringPlotIds = mutableListOf<MonitoringPlotId>()
     val notificationIds = mutableListOf<NotificationId>()
@@ -2934,6 +2934,9 @@ abstract class DatabaseBackedTest {
     val documentId
       get() = documentIds.last()
 
+    val documentTemplateId
+      get() = documentTemplateIds.last()
+
     val draftPlantingSiteId
       get() = draftPlantingSiteIds.last()
 
@@ -2945,9 +2948,6 @@ abstract class DatabaseBackedTest {
 
     val fileId
       get() = fileIds.last()
-
-    val documentTemplateId
-      get() = documentTemplateIds.last()
 
     val moduleId
       get() = moduleIds.last()
