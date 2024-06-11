@@ -89,7 +89,7 @@ class AdminDocumentController(
 
     try {
       file.inputStream.use { uploadStream ->
-        val result = manifestImporter.import(uploadStream, fileName, documentTemplateId)
+        val result = manifestImporter.import(documentTemplateId, uploadStream)
         if (result.errors.isEmpty()) {
           redirectAttributes.successMessage = "Imported manifest ${result.newVersion}."
         } else {

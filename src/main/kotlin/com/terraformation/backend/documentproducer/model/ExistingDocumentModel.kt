@@ -11,8 +11,8 @@ import java.time.Instant
 data class ExistingDocumentModel(
     val createdBy: UserId,
     val createdTime: Instant,
-    val id: DocumentId,
     val documentTemplateId: DocumentTemplateId,
+    val id: DocumentId,
     val modifiedBy: UserId,
     val modifiedTime: Instant,
     val name: String,
@@ -26,8 +26,8 @@ data class ExistingDocumentModel(
   ) : this(
       createdBy = row.createdBy!!,
       createdTime = row.createdTime!!,
-      id = row.id!!,
       documentTemplateId = row.documentTemplateId!!,
+      id = row.id!!,
       modifiedBy = row.modifiedBy!!,
       modifiedTime = row.modifiedTime!!,
       name = row.name!!,

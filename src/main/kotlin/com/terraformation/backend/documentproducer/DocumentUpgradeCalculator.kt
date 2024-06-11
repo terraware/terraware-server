@@ -73,10 +73,10 @@ class DocumentUpgradeCalculator(
 
     if (oldManifest.documentTemplateId != newManifest.documentTemplateId) {
       throw UpgradeCannotChangeDocumentTemplateException(
-          oldManifestId,
           oldManifest.documentTemplateId!!,
-          newManifestId,
-          newManifest.documentTemplateId!!)
+          oldManifestId,
+          newManifest.documentTemplateId!!,
+          newManifestId)
     }
 
     newManifestVariables = variableStore.fetchManifestVariables(newManifestId).associateBy { it.id }
