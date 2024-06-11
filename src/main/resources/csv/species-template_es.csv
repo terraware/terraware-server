@@ -2,7 +2,7 @@
 
 Ingrese el nombre científico en el siguiente formato:
 
-Género especie",Nombre común,Familia,"Categoría de conservación de la UICN
+Género especie",Nombre común,Familia,"Categoría de Lista roja de UICN
 
 Elija de la siguiente lista o se producirá un error durante la carga:
 
@@ -25,9 +25,10 @@ Elija de la siguiente lista o se producirá un error durante la carga:
 
 - Árbol
 - Arbusto
-- Arbusto/Árbol
+- Arbusto o árbol
 - Enredadera
 - Graminoide
+- Hierba
 - Helecho
 - Hongo
 - Liana
@@ -42,6 +43,9 @@ Elija de la siguiente lista o se producirá un error durante la carga:
 - Ortodoxo
 - Recalcitrante
 - Intermediario
+- Intermedio: de corta vida
+- Intermedio: sensible a bajas temperaturas
+- Intermedio: tolerante a desecación parcial
 - Probablemente ortodoxo
 - Probablemente recalcitrante
 - Probablemente intermediario

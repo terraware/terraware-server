@@ -412,6 +412,8 @@ class ObservationService(
       val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
       val plantedSubzoneIds = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId).keys
 
+      val existingPermanentPlotIds =
+          observationPlots.filter { it.model.isPermanent }.map { it.model.monitoringPlotId }
       val removedObservationPlots =
           observationPlots.filter {
             it.model.monitoringPlotId in event.monitoringPlotReplacements.removedMonitoringPlotIds
@@ -422,8 +424,7 @@ class ObservationService(
       observationStore.removePlotsFromObservation(
           observationId, removedPermanentPlots.map { it.model.monitoringPlotId })
 
-      val newPermanentPlotIds =
-          plantingSiteStore.ensurePermanentClustersExist(plantingSiteId).toSet()
+      plantingSiteStore.ensurePermanentClustersExist(plantingSiteId)
 
       removedTemporaryPlots.forEach { plot ->
         replaceMonitoringPlot(
@@ -443,18 +444,27 @@ class ObservationService(
                 .flatMap { subzone -> subzone.monitoringPlots.mapNotNull { it.permanentCluster } }
                 .toSet()
 
-        val newPlotsInClustersWithoutPlotsInUnplantedSubzones =
+        val newPermanentPlotsInClustersWithoutPlotsInUnplantedSubzones =
             zone.plantingSubzones
                 .flatMap { subzone ->
-                  subzone.monitoringPlots.filter {
-                    it.id in newPermanentPlotIds &&
-                        it.permanentCluster !in clusterNumbersWithPlotsInUnplantedSubzones
+                  subzone.monitoringPlots.filter { plot ->
+                    val plotNotAlreadyInObservation = plot.id !in existingPermanentPlotIds
+                    val clusterNumberIsCandidateForObservation =
+                        plot.permanentCluster != null &&
+                            plot.permanentCluster <= zone.numPermanentClusters
+                    val allPlotsInClusterAreInPlantedSubzones =
+                        plot.permanentCluster !in clusterNumbersWithPlotsInUnplantedSubzones
+
+                    plot.isAvailable &&
+                        plotNotAlreadyInObservation &&
+                        clusterNumberIsCandidateForObservation &&
+                        allPlotsInClusterAreInPlantedSubzones
                   }
                 }
                 .map { it.id }
 
         observationStore.addPlotsToObservation(
-            observationId, newPlotsInClustersWithoutPlotsInUnplantedSubzones, true)
+            observationId, newPermanentPlotsInClustersWithoutPlotsInUnplantedSubzones, true)
       }
     }
   }

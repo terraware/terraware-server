@@ -1793,6 +1793,35 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `adds new permanent cluster to observation if it already exists`() {
+      insertPlantingSubzone(plantingCompletedTime = Instant.EPOCH, width = 2, height = 7)
+      insertPlanting()
+      insertObservation()
+      val newPermanentPlotIds =
+          setOf(
+              insertMonitoringPlot(x = 0, y = 8, permanentCluster = 1, permanentClusterSubplot = 1),
+              insertMonitoringPlot(x = 1, y = 8, permanentCluster = 1, permanentClusterSubplot = 2),
+              insertMonitoringPlot(x = 0, y = 9, permanentCluster = 1, permanentClusterSubplot = 3),
+              insertMonitoringPlot(x = 1, y = 9, permanentCluster = 1, permanentClusterSubplot = 4),
+          )
+
+      val event =
+          PlantingSiteMapEditedEvent(
+              plantingSite,
+              PlantingSiteEdit(BigDecimal.ONE, plantingSite, plantingSite, listOf()),
+              ReplacementResult(newPermanentPlotIds, emptySet()))
+
+      service.on(event)
+
+      val observationPlots = observationPlotsDao.fetchByObservationId(inserted.observationId)
+
+      assertEquals(
+          newPermanentPlotIds,
+          observationPlots.map { it.monitoringPlotId }.toSet(),
+          "Permanent plots in observation")
+    }
+
+    @Test
     fun `does not add new permanent cluster to observation if it is in an unplanted subzone`() {
       plantingZonesDao.update(
           plantingZonesDao.fetchOneById(inserted.plantingZoneId)!!.copy(numPermanentClusters = 2))

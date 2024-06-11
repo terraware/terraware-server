@@ -2,7 +2,7 @@
 
 Please input the scientific name in the following format:
 
-Genus species",Common Name,Family,"IUCN Conservation Category
+Genus species",Common Name,Family,"IUCN Red List Category
 
 Please choose from the following list or an error will occur during upload:
 
@@ -27,13 +27,14 @@ Please choose from the following list or an error will occur during upload:
 - Forb
 - Fungus
 - Graminoid
+- Herb
 - Liana
 - Lichen
 - Mangrove
 - Moss
 - Multiple Forms
 - Shrub
-- Shrub/Tree
+- Shrub or Tree
 - Subshrub
 - Tree
 - Vine","Seed Storage Behavior
@@ -43,6 +44,9 @@ Please choose from the following list or an error will occur during upload:
 - Orthodox
 - Recalcitrant
 - Intermediate
+- Intermediate - Cool Temperature Sensitive
+- Intermediate - Partial Desiccation Tolerant
+- Intermediate - Short Lived
 - Likely Orthodox
 - Likely Recalcitrant
 - Likely Intermediate
