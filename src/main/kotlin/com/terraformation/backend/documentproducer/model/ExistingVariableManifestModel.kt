@@ -9,15 +9,15 @@ import java.time.Instant
 data class ExistingVariableManifestModel(
     val createdBy: UserId,
     val createdTime: Instant,
-    val id: VariableManifestId,
     val documentTemplateId: DocumentTemplateId,
+    val id: VariableManifestId,
 ) {
   constructor(
       row: VariableManifestsRow,
   ) : this(
       createdBy = row.createdBy!!,
       createdTime = row.createdTime!!,
-      id = row.id!!,
       documentTemplateId = row.documentTemplateId!!,
+      id = row.id!!,
   )
 }

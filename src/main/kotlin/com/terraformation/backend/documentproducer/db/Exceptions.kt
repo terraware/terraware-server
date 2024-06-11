@@ -25,10 +25,10 @@ class SavedVersionNotFoundException(documentId: DocumentId, versionId: DocumentS
     EntityNotFoundException("Document $documentId has no saved version $versionId")
 
 class UpgradeCannotChangeDocumentTemplateException(
-    val oldManifestId: VariableManifestId,
     val oldDocumentTemplateId: DocumentTemplateId,
+    val oldManifestId: VariableManifestId,
+    val newDocumentTemplateId: DocumentTemplateId,
     val newManifestId: VariableManifestId,
-    val newDocumentTemplateId: DocumentTemplateId
 ) :
     MismatchedStateException(
         "Cannot upgrade from manifest $oldManifestId (document template $oldDocumentTemplateId) to manifest " +
