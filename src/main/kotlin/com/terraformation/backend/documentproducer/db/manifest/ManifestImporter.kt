@@ -50,9 +50,8 @@ class ManifestImporter(
   private val log = perClassLogger()
 
   fun import(
+      documentTemplateId: DocumentTemplateId,
       inputStream: InputStream,
-      fileName: String,
-      documentTemplateId: DocumentTemplateId
   ): ManifestImportResult {
     val inputBytes = inputStream.readAllBytes()
 

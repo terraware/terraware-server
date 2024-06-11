@@ -152,8 +152,8 @@ class DocumentsController(
 data class DocumentPayload(
     val createdBy: UserId,
     val createdTime: Instant,
-    val id: DocumentId,
     val documentTemplateId: DocumentTemplateId,
+    val id: DocumentId,
     val modifiedBy: UserId,
     val modifiedTime: Instant,
     val name: String,
@@ -167,8 +167,8 @@ data class DocumentPayload(
   ) : this(
       createdBy = model.createdBy,
       createdTime = model.createdTime,
-      id = model.id,
       documentTemplateId = model.documentTemplateId,
+      id = model.id,
       modifiedBy = model.modifiedBy,
       modifiedTime = model.modifiedTime,
       name = model.name,
