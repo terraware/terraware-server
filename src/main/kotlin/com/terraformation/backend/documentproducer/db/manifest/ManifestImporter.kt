@@ -411,9 +411,6 @@ class ManifestImporter(
               variableId = variableId,
               variableManifestId = variableManifestId,
               position = csvVariable.position,
-              name = csvVariable.name,
-              description = csvVariable.description,
-              stableId = csvVariable.stableId,
           )
       val variableManifestEntryKey: VariableManifestEntryId =
           variableManifestStore.addVariableToManifestEntries(variableManifestEntriesRow)
@@ -479,15 +476,14 @@ class ManifestImporter(
      * Returns true if a CSV variable has the same non-manifest-specific settings as an existing
      * variable, and thus the existing variable can be reused in the new manifest.
      *
-     * Ignores manifest-specific settings such as name and description; those will be pulled from
-     * the CSV variable regardless.
-     *
      * Sections and tables are counted as reusable if they have the same children as the existing
      * variable and all the children are reusable. That is, non-reusability propagates from children
      * up to parents here. Propagation in the other direction happens elsewhere.
      */
     private fun canReuseExistingVariable(csvVariable: CsvVariable, variable: Variable): Boolean {
-      return csvVariable.isList == variable.isList &&
+      return csvVariable.description == variable.description &&
+          csvVariable.isList == variable.isList &&
+          csvVariable.name == variable.name &&
           csvVariable.stableId == variable.stableId &&
           when (csvVariable.dataType) {
             CsvVariableType.Number ->

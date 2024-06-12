@@ -28,8 +28,8 @@ class VariablesControllerTest : ControllerIntegrationTest() {
     fun `only lists variables for requested manifest`() {
       val manifestId1 = insertVariableManifest()
       val manifestId2 = insertVariableManifest()
-      val variableId1 = insertVariable(type = VariableType.Date)
-      val variableId2 = insertVariable(type = VariableType.Link)
+      val variableId1 = insertVariable(name = "Date Variable", type = VariableType.Date)
+      val variableId2 = insertVariable(name = "Link Variable", type = VariableType.Link)
 
       insertVariableManifestEntry(manifestId = manifestId1, variableId = variableId1, position = 0)
       insertVariableManifestEntry(manifestId = manifestId2, variableId = variableId2, position = 0)
@@ -42,7 +42,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                   "variables": [
                     {
                       "id": $variableId1,
-                      "name": "Variable $variableId1",
+                      "name": "Date Variable",
                       "position": 0,
                       "type": "Date",
                       "isList": false
@@ -56,8 +56,13 @@ class VariablesControllerTest : ControllerIntegrationTest() {
 
     @Test
     fun `represents section recommendations reciprocally`() {
-      val sectionVariableId = insertVariableManifestEntry(insertSectionVariable())
-      val dateVariableId = insertVariableManifestEntry(insertVariable(type = VariableType.Date))
+      val sectionVariableId =
+          insertVariableManifestEntry(
+              insertSectionVariable(
+                  id = insertVariable(name = "Section Variable", type = VariableType.Section)))
+      val dateVariableId =
+          insertVariableManifestEntry(
+              insertVariable(name = "Date Variable", type = VariableType.Date))
 
       insertSectionRecommendation(sectionId = sectionVariableId, recommendedId = dateVariableId)
 
@@ -70,7 +75,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                     {
                       "children": [],
                       "id": $sectionVariableId,
-                      "name": "Variable $sectionVariableId",
+                      "name": "Section Variable",
                       "position": 0,
                       "recommends": [$dateVariableId],
                       "renderHeading": true,
@@ -79,7 +84,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                     },
                     {
                       "id": $dateVariableId,
-                      "name": "Variable $dateVariableId",
+                      "name": "Date Variable",
                       "position": 1,
                       "recommendedBy": [$sectionVariableId],
                       "type": "Date",
@@ -96,26 +101,37 @@ class VariablesControllerTest : ControllerIntegrationTest() {
     fun `uses correct payload for each variable type`() {
       val dateVariableId =
           insertVariableManifestEntry(
-              insertVariable(type = VariableType.Date, isList = true),
-              name = "A date",
-              description = "A description")
+              insertVariable(
+                  type = VariableType.Date,
+                  isList = true,
+                  name = "A date",
+                  description = "A description"))
       val imageVariableId =
-          insertVariableManifestEntry(insertVariable(type = VariableType.Image), name = "An image")
+          insertVariableManifestEntry(insertVariable(type = VariableType.Image, name = "An image"))
       val linkVariableId =
-          insertVariableManifestEntry(insertVariable(type = VariableType.Link), name = "A link")
+          insertVariableManifestEntry(insertVariable(type = VariableType.Link, name = "A link"))
       val numberVariableId =
           insertVariableManifestEntry(
               insertNumberVariable(
-                  decimalPlaces = 1, minValue = BigDecimal.TWO, maxValue = BigDecimal.TEN),
-              name = "A number")
+                  id = insertVariable(type = VariableType.Number, name = "A number"),
+                  decimalPlaces = 1,
+                  minValue = BigDecimal.TWO,
+                  maxValue = BigDecimal.TEN))
       val parentSectionVariableId =
-          insertVariableManifestEntry(insertSectionVariable(), name = "Parent section")
+          insertVariableManifestEntry(
+              insertSectionVariable(
+                  id = insertVariable(type = VariableType.Section, name = "Parent section")))
       val childSectionVariableId =
           insertVariableManifestEntry(
-              insertSectionVariable(parentId = parentSectionVariableId, renderHeading = false),
-              name = "Child section")
+              insertSectionVariable(
+                  id = insertVariable(type = VariableType.Section, name = "Child section"),
+                  parentId = parentSectionVariableId,
+                  renderHeading = false))
       val selectVariableId =
-          insertVariableManifestEntry(insertSelectVariable(isMultiple = true), name = "A select")
+          insertVariableManifestEntry(
+              insertSelectVariable(
+                  id = insertVariable(type = VariableType.Select, name = "A select"),
+                  isMultiple = true))
       val optionId1 =
           insertSelectOption(
               selectVariableId,
@@ -123,20 +139,24 @@ class VariablesControllerTest : ControllerIntegrationTest() {
               description = "Description 1",
               renderedText = "Rendered 1")
       val optionId2 = insertSelectOption(selectVariableId, "Option 2")
-      val tableVariableId = insertVariableManifestEntry(insertTableVariable(), name = "A table")
+      val tableVariableId =
+          insertVariableManifestEntry(
+              insertTableVariable(id = insertVariable(type = VariableType.Table, name = "A table")))
       val columnId1 =
           insertTableColumn(
               tableVariableId,
               insertVariableManifestEntry(
-                  insertVariable(type = VariableType.Date), name = "Column 1"),
+                  insertVariable(name = "Column 1", type = VariableType.Date)),
               isHeader = true)
       val columnId2 =
           insertVariableManifestEntry(
-              insertTableColumn(tableVariableId, insertVariable(type = VariableType.Link)),
-              name = "Column 2")
+              insertTableColumn(
+                  tableVariableId, insertVariable(name = "Column 2", type = VariableType.Link)))
       val textVariableId =
           insertVariableManifestEntry(
-              insertTextVariable(textType = VariableTextType.MultiLine), name = "A paragraph")
+              insertTextVariable(
+                  id = insertVariable(type = VariableType.Text, name = "A paragraph"),
+                  textType = VariableTextType.MultiLine))
 
       mockMvc
           .get(path())

@@ -2808,17 +2808,27 @@ abstract class DatabaseBackedTest {
     variableValueTableRowsDao.insert(row)
   }
 
+  private var nextVariableNumber = 1
+
   protected fun insertVariable(
+      description: String? = null,
       id: Any? = null,
       isList: Boolean = false,
+      name: String = "Variable $nextVariableNumber",
       replacesVariableId: Any? = null,
+      stableId: String = "$nextVariableNumber",
       type: VariableType = VariableType.Text
   ): VariableId {
+    nextVariableNumber++
+
     val row =
         VariablesRow(
+            description = description,
             id = id?.toIdWrapper { VariableId(it) },
             isList = isList,
+            name = name,
             replacesVariableId = replacesVariableId?.toIdWrapper { VariableId(it) },
+            stableId = stableId,
             variableTypeId = type,
         )
 
@@ -2850,19 +2860,13 @@ abstract class DatabaseBackedTest {
 
   protected fun insertVariableManifestEntry(
       variableId: Any,
-      description: String? = null,
       manifestId: Any = inserted.variableManifestId,
-      name: String = "Variable $variableId",
       position: Int = nextManifestPosition++,
-      stableId: String = "$variableId",
   ): VariableId {
     val variableIdWrapper = variableId.toIdWrapper { VariableId(it) }
     val row =
         VariableManifestEntriesRow(
-            description = description,
-            name = name,
             position = position,
-            stableId = stableId,
             variableId = variableIdWrapper,
             variableManifestId = manifestId.toIdWrapper { VariableManifestId(it) },
         )

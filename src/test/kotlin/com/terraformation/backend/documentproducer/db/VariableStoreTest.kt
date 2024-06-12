@@ -41,15 +41,28 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchVariable {
     @Test
     fun `fetches nested sections`() {
-      val sectionId1 = insertSectionVariable()
-      val sectionId2 = insertSectionVariable(parentId = sectionId1)
-      val sectionId3a = insertSectionVariable(parentId = sectionId2, renderHeading = false)
-      val sectionId3b = insertSectionVariable(parentId = sectionId2, renderHeading = false)
+      val sectionId1 =
+          insertSectionVariable(
+              id = insertVariable(name = "1", stableId = "A", type = VariableType.Section))
+      val sectionId2 =
+          insertSectionVariable(
+              id = insertVariable(name = "1.1", stableId = "B", type = VariableType.Section),
+              parentId = sectionId1)
+      val sectionId3a =
+          insertSectionVariable(
+              id = insertVariable(name = "1.1.1", stableId = "C", type = VariableType.Section),
+              parentId = sectionId2,
+              renderHeading = false)
+      val sectionId3b =
+          insertSectionVariable(
+              id = insertVariable(name = "1.1.2", stableId = "D", type = VariableType.Section),
+              parentId = sectionId2,
+              renderHeading = false)
 
-      insertVariableManifestEntry(sectionId1, name = "1", stableId = "A")
-      insertVariableManifestEntry(sectionId2, name = "1.1", stableId = "B")
-      insertVariableManifestEntry(sectionId3a, name = "1.1.1", stableId = "C")
-      insertVariableManifestEntry(sectionId3b, name = "1.1.2", stableId = "D")
+      insertVariableManifestEntry(sectionId1)
+      insertVariableManifestEntry(sectionId2)
+      insertVariableManifestEntry(sectionId3a)
+      insertVariableManifestEntry(sectionId3b)
 
       val expected =
           SectionVariable(

@@ -204,15 +204,15 @@ class VariableStore(
         val recommendedBy = fetchRecommendedBy(variableId)
         val base =
             BaseVariableProperties(
-                description = manifestRecord.description,
+                description = variablesRow.description,
                 id = variableId,
                 isList = variablesRow.isList!!,
                 manifestId = manifestId,
-                name = manifestRecord.name!!,
+                name = variablesRow.name!!,
                 position = manifestRecord.position!!,
                 recommendedBy = recommendedBy,
                 replacesVariableId = variablesRow.replacesVariableId,
-                stableId = manifestRecord.stableId!!,
+                stableId = variablesRow.stableId!!,
             )
 
         val variable =
