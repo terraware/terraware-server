@@ -170,6 +170,8 @@ data class ListDeliverablesElement(
     val dueDate: LocalDate,
     val id: DeliverableId,
     val moduleId: ModuleId,
+    val moduleName: String,
+    val moduleTitle: String,
     val name: String,
     @Schema(
         description =
@@ -193,6 +195,8 @@ data class ListDeliverablesElement(
       model.dueDate,
       model.deliverableId,
       model.moduleId,
+      model.moduleName,
+      model.moduleTitle,
       model.name,
       model.documents.size,
       model.organizationId,
