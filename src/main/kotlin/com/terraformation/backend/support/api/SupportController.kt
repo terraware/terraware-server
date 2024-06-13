@@ -84,7 +84,6 @@ class SupportController(private val service: SupportService) {
         try {
           service.attachTemporaryFile(file.getFilename(), sizedInputStream)
         } catch (e: NotSupportedException) {
-          log.error("Unsupported file type ${file.contentType}", e)
           throw e
         } catch (e: Exception) {
           log.error("Unable to upload ${file.getFilename()}", e)
