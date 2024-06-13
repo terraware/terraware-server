@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.ws.rs.InternalServerErrorException
 import jakarta.ws.rs.NotSupportedException
+import java.io.BufferedInputStream
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -76,7 +77,9 @@ class SupportController(private val service: SupportService) {
 
     val sizedInputStream =
         SizedInputStream(
-            file.inputStream, file.size, file.contentType?.let { MediaType.parseMediaType(it) })
+            BufferedInputStream(file.inputStream), // BufferedInputStream supports mark/reset
+            file.size,
+            file.contentType?.let { MediaType.parseMediaType(it) })
     val temporaryAttachments =
         try {
           service.attachTemporaryFile(file.getFilename(), sizedInputStream)
