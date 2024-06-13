@@ -17,6 +17,7 @@ import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.DocumentStore
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
@@ -168,6 +169,9 @@ data class ListDeliverablesElement(
     val descriptionHtml: String?,
     val dueDate: LocalDate,
     val id: DeliverableId,
+    val moduleId: ModuleId,
+    val moduleName: String,
+    val moduleTitle: String,
     val name: String,
     @Schema(
         description =
@@ -190,6 +194,9 @@ data class ListDeliverablesElement(
       model.descriptionHtml,
       model.dueDate,
       model.deliverableId,
+      model.moduleId,
+      model.moduleName,
+      model.moduleTitle,
       model.name,
       model.documents.size,
       model.organizationId,
