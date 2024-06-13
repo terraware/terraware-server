@@ -65,9 +65,12 @@ data class CsvVariable(
 ) {
   fun mapToVariablesRow() =
       VariablesRow(
+          description = description,
           id = variableId,
           isList = isList,
+          name = name,
           replacesVariableId = replacesVariableId,
+          stableId = stableId,
           variableTypeId = dataType.variableType,
       )
 }

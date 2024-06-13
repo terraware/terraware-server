@@ -4,7 +4,6 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.docprod.VariableId
-import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
@@ -134,10 +133,15 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
-      val actualTableVariable = getVariableByManifestEntryName("Project Proponent Table")
+      val actualTableVariable = getVariableByName("Project Proponent Table")
       val expectedTableVariable =
           VariablesRow(
-              id = actualTableVariable.id!!, variableTypeId = VariableType.Table, isList = false)
+              description = "A table with contact details",
+              id = actualTableVariable.id!!,
+              isList = false,
+              name = "Project Proponent Table",
+              stableId = "1",
+              variableTypeId = VariableType.Table)
 
       val actualTableRow = variableTablesDao.fetchOneByVariableId(actualTableVariable.id!!)
       val expectedTableRow =
@@ -146,9 +150,9 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               variableTypeId = VariableType.Table,
               tableStyleId = VariableTableStyle.Horizontal)
 
-      val tableColumnVariableRow1 = getVariableByManifestEntryName("Organization Name")
-      val tableColumnVariableRow2 = getVariableByManifestEntryName("Contact Person")
-      val tableColumnVariableRow3 = getVariableByManifestEntryName("Title")
+      val tableColumnVariableRow1 = getVariableByName("Organization Name")
+      val tableColumnVariableRow2 = getVariableByName("Contact Person")
+      val tableColumnVariableRow3 = getVariableByName("Title")
 
       val actualTableColumnRows = variableTableColumnsDao.findAll()
       val expectedTableColumnRows =
@@ -191,10 +195,10 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
-      val actualTableVariable = getVariableByManifestEntryName("Audit history")
+      val actualTableVariable = getVariableByName("Audit history")
 
-      val tableColumnVariableRow1 = getVariableByManifestEntryName("Audit type")
-      val tableColumnVariableRow2 = getVariableByManifestEntryName("Number of years")
+      val tableColumnVariableRow1 = getVariableByName("Audit type")
+      val tableColumnVariableRow2 = getVariableByName("Number of years")
 
       val actualTableColumnRows = variableTableColumnsDao.findAll()
       val expectedTableColumnRows =
@@ -274,15 +278,12 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
           variableSectionsDao.findAll().map { variableSectionsRow ->
             FlatVariable(
                 variableId = variableSectionsRow.variableId!!,
-                manifestEntryName =
-                    variableManifestEntriesDao
-                        .fetchByVariableId(variableSectionsRow.variableId!!)
-                        .single()
-                        .name,
+                variableName =
+                    variablesDao.fetchById(variableSectionsRow.variableId!!).single().name,
                 parentId = variableSectionsRow.parentVariableId,
-                parentManifestEntryName =
+                parentVariableName =
                     variableSectionsRow.parentVariableId?.let {
-                      variableManifestEntriesDao.fetchByVariableId(it).single().name
+                      variablesDao.fetchById(it).single().name
                     })
           }
 
@@ -291,7 +292,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
           parent: String? = null
       ): VariableSectionsRow? =
           flatVariables
-              .find { it.manifestEntryName == name && it.parentManifestEntryName == parent }
+              .find { it.variableName == name && it.parentVariableName == parent }
               ?.let { variableSectionsDao.fetchOneByVariableId(it.variableId) }
 
       val actualLevel1SectionVariable = getSectionVariableByNameAndParent("Project Details")
@@ -415,13 +416,13 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
-      val actualVariableO = getVariableByManifestEntryName("Organization Name")
+      val actualVariableO = getVariableByName("Organization Name")
       val actualVariableTextO = variableTextsDao.fetchOneByVariableId(actualVariableO.id!!)
-      val actualVariableOAL = getVariableByManifestEntryName("Organization Name As List")
+      val actualVariableOAL = getVariableByName("Organization Name As List")
       val actualVariableTextOAL = variableTextsDao.fetchOneByVariableId(actualVariableOAL.id!!)
-      val actualVariablePS = getVariableByManifestEntryName("Prior Scenario")
+      val actualVariablePS = getVariableByName("Prior Scenario")
       val actualVariableTextPS = variableTextsDao.fetchOneByVariableId(actualVariablePS.id!!)
-      val actualVariablePSAL = getVariableByManifestEntryName("Prior Scenario As List")
+      val actualVariablePSAL = getVariableByName("Prior Scenario As List")
       val actualVariableTextPSAL = variableTextsDao.fetchOneByVariableId(actualVariablePSAL.id!!)
 
       assertEquals(emptyList<String>(), importResult.errors, "no errors")
@@ -485,14 +486,14 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val selectRows = variableSelectsDao.findAll()
       val selectOptionRows = variableSelectOptionsDao.findAll()
 
-      val variableEAGER = getVariableByManifestEntryName("Estimated reductions")
+      val variableEAGER = getVariableByName("Estimated reductions")
       val variableSelectEAGER = selectRows.find { it.variableId == variableEAGER.id }
       val variableSelectOptionsEAGER = selectOptionRows.filter { it.variableId == variableEAGER.id }
       // Scrutinize a specific option we expect
       val variableSelectOption3EAGER =
           variableSelectOptionsEAGER.find { it.name!!.endsWith("medium") }
 
-      val variableMUMS = getVariableByManifestEntryName("Made up multi select")
+      val variableMUMS = getVariableByName("Made up multi select")
       val variableSelectMUMS = selectRows.find { it.variableId == variableMUMS.id }
       val variableSelectOptionsMUMS = selectOptionRows.filter { it.variableId == variableMUMS.id }
       // Scrutinize a specific option we expect
@@ -659,16 +660,12 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           setOf(
               VariableManifestEntriesRow(
-                  name = "Select Variable",
                   position = 2,
-                  stableId = "A",
                   variableId = variablesRows[0].id,
                   variableManifestId = initialResult.newVersion,
               ),
               VariableManifestEntriesRow(
-                  name = "Select Variable",
                   position = 2,
-                  stableId = "A",
                   variableId = variablesRows[0].id,
                   variableManifestId = updatedResult.newVersion,
               ),
@@ -692,16 +689,12 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           setOf(
               VariableManifestEntriesRow(
-                  name = "Select",
                   position = 2,
-                  stableId = "1",
                   variableId = variablesRows[0].id,
                   variableManifestId = initialResult.newVersion,
               ),
               VariableManifestEntriesRow(
-                  name = "Select",
                   position = 2,
-                  stableId = "1",
                   variableId = variablesRows[1].id,
                   variableManifestId = updatedResult.newVersion,
               ),
@@ -733,14 +726,14 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nBottom,C,,Section,,,Middle,yes,,,,,,,"
 
       importer.import(inserted.documentTemplateId, sizedInputStream(initialCsv))
-      val initialTop = getVariableByManifestEntryName("Top")
-      val initialMiddle = getVariableByManifestEntryName("Middle")
-      val initialBottom = getVariableByManifestEntryName("Bottom")
+      val initialTop = getVariableByName("Top")
+      val initialMiddle = getVariableByName("Middle")
+      val initialBottom = getVariableByName("Bottom")
 
       val updatedResult = importer.import(inserted.documentTemplateId, sizedInputStream(updatedCsv))
-      val updatedTop = getVariableByManifestEntryName("Top", updatedResult.newVersion)
-      val updatedMiddle = getVariableByManifestEntryName("Middle", updatedResult.newVersion)
-      val updatedBottom = getVariableByManifestEntryName("Bottom", updatedResult.newVersion)
+      val updatedTop = getVariableByName("Top")
+      val updatedMiddle = getVariableByName("Middle")
+      val updatedBottom = getVariableByName("Bottom")
 
       assertNotEquals(initialTop, updatedTop, "Top-level section should be new")
       assertNotEquals(initialMiddle, updatedMiddle, "Middle section should be new")
@@ -791,13 +784,13 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nBottom,C,,Section,,,Middle,,,,,,,,"
 
       importer.import(inserted.documentTemplateId, sizedInputStream(initialCsv))
-      val initialTop = getVariableByManifestEntryName("Top")
-      val initialMiddle = getVariableByManifestEntryName("Middle")
+      val initialTop = getVariableByName("Top")
+      val initialMiddle = getVariableByName("Middle")
 
       val updatedResult = importer.import(inserted.documentTemplateId, sizedInputStream(updatedCsv))
-      val updatedTop = getVariableByManifestEntryName("Top", updatedResult.newVersion)
-      val updatedMiddle = getVariableByManifestEntryName("Middle", updatedResult.newVersion)
-      val updatedBottom = getVariableByManifestEntryName("Bottom", updatedResult.newVersion)
+      val updatedTop = getVariableByName("Top")
+      val updatedMiddle = getVariableByName("Middle")
+      val updatedBottom = getVariableByName("Bottom")
 
       assertNotEquals(initialTop, updatedTop, "Top-level section should be new")
       assertNotEquals(initialMiddle, updatedMiddle, "Middle section should be new")
@@ -834,23 +827,23 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `reuses section if none of its descendents have changed structurally`() {
+    fun `reuses section if none of its descendents have changed`() {
       val initialCsv =
           header +
               "\nInitial Top,A,,Section,,,,,,,,,,," +
               "\nInitial Bottom,B,,Section,,,Initial Top,,,,,,,,"
       val updatedCsv =
           header +
-              "\nUpdated Top,A,,Section,,,,,,,,,,," +
-              "\nUpdated Bottom,B,,Section,,,Updated Top,,,,,,,,"
+              "\nInitial Top,A,,Section,,,,,,,,,,," +
+              "\nInitial Bottom,B,,Section,,,Initial Top,,,,,,,,"
 
       importer.import(inserted.documentTemplateId, sizedInputStream(initialCsv))
-      val initialTop = getVariableByManifestEntryName("Initial Top")
-      val initialBottom = getVariableByManifestEntryName("Initial Bottom")
+      val initialTop = getVariableByName("Initial Top")
+      val initialBottom = getVariableByName("Initial Bottom")
 
       importer.import(inserted.documentTemplateId, sizedInputStream(updatedCsv))
-      val updatedTop = getVariableByManifestEntryName("Updated Top")
-      val updatedBottom = getVariableByManifestEntryName("Updated Bottom")
+      val updatedTop = getVariableByName("Initial Top")
+      val updatedBottom = getVariableByName("Initial Bottom")
 
       assertEquals(initialTop, updatedTop, "Top-level section should be reused")
       assertEquals(initialBottom, updatedBottom, "Top-level section should be reused")
@@ -878,10 +871,10 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val variablesRows = variablesDao.findAll()
       assertEquals(4, variablesRows.size, "Number of variables imported")
 
-      val section1Row = getVariableByManifestEntryName("Section 1", initialManifestId)
-      val section2Row = getVariableByManifestEntryName("Section 2", initialManifestId)
-      val variable1Row = getVariableByManifestEntryName("Variable 1", initialManifestId)
-      val variable2Row = getVariableByManifestEntryName("Variable 2", initialManifestId)
+      val section1Row = getVariableByName("Section 1")
+      val section2Row = getVariableByName("Section 2")
+      val variable1Row = getVariableByName("Variable 1")
+      val variable2Row = getVariableByName("Variable 2")
 
       assertEquals(
           setOf(
@@ -915,7 +908,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `reuses existing variable if only per-manifest settings have changed`() {
+    fun `creates new variable if name or description have changed`() {
       val initialCsv =
           "$header\nOriginal variable,1,Original description,Text (single-line),,,,,,,,,,,"
       val updatedCsv =
@@ -928,30 +921,49 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val initialVariableId = initialVariables.first().id!!
 
       val updateResult = importer.import(inserted.documentTemplateId, sizedInputStream(updatedCsv))
-      assertEquals(
-          initialVariables, variablesDao.findAll(), "Should not have imported new variables")
+
+      val updatedVariables = variablesDao.findAll()
+      assertEquals(2, updatedVariables.size, "Should have imported 1 new variable")
+      val updatedVariableId = updatedVariables.find { it.id != initialVariableId }!!.id
 
       assertEquals(
           setOf(
               VariableManifestEntriesRow(
-                  description = "Original description",
-                  name = "Original variable",
                   position = 2,
-                  stableId = "1",
                   variableId = initialVariableId,
                   variableManifestId = initialResult.newVersion,
               ),
               VariableManifestEntriesRow(
-                  description = "Updated description",
-                  name = "Updated variable",
                   position = 2,
-                  stableId = "1",
-                  variableId = initialVariableId,
+                  variableId = updatedVariableId,
                   variableManifestId = updateResult.newVersion,
               ),
           ),
           variableManifestEntriesDao.findAll().toSet(),
-          "Same variable should be present in both manifests")
+          "Both versions of the variable are present as manifest entries")
+
+      assertEquals(
+          setOf(
+              VariablesRow(
+                  description = "Original description",
+                  id = initialVariableId,
+                  isList = false,
+                  name = "Original variable",
+                  stableId = "1",
+                  variableTypeId = VariableType.Text,
+              ),
+              VariablesRow(
+                  description = "Updated description",
+                  id = updatedVariableId,
+                  isList = false,
+                  name = "Updated variable",
+                  replacesVariableId = initialVariableId,
+                  stableId = "1",
+                  variableTypeId = VariableType.Text,
+              ),
+          ),
+          variablesDao.findAll().toSet(),
+          "New version of the variable should be present")
     }
 
     @Test
@@ -978,18 +990,36 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           VariableManifestEntriesRow(
-              name = "Number variable",
               position = 2,
-              stableId = "1",
               variableId = newVariableId,
               variableManifestId = updateResult.newVersion,
           ),
           variableManifestEntriesDao.fetchByVariableManifestId(updateResult.newVersion!!).single(),
           "New manifest should use new variable")
+
+      assertEquals(
+          setOf(
+              VariablesRow(
+                  id = initialVariableId,
+                  isList = false,
+                  name = "Number variable",
+                  stableId = "1",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  id = newVariableId,
+                  isList = false,
+                  name = "Number variable",
+                  replacesVariableId = initialVariableId,
+                  stableId = "1",
+                  variableTypeId = VariableType.Number,
+              )),
+          variablesDao.findAll().toSet(),
+          "Both versions of the variable are present")
     }
 
     @Test
-    fun `reuses existing table and column variables if no columns have validation changes`() {
+    fun `Creates new table and column variables if the column names are updated`() {
       val initialCsv =
           header +
               "\nTable,1,,Table,Yes,,,,,,,,,," +
@@ -1009,34 +1039,79 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val updateResult = importer.import(inserted.documentTemplateId, sizedInputStream(updatedCsv))
 
       val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
-      assertEquals(initialVariables, updatedVariables, "Should not have created new variables")
+      assertEquals(6, updatedVariables.size, "Should have created 2 new variables")
 
       assertEquals(
           setOf(
               VariableManifestEntriesRow(
-                  name = "Table",
                   position = 2,
-                  stableId = "1",
-                  variableId = initialVariables[0].id,
+                  variableId = updatedVariables[3].id,
                   variableManifestId = updateResult.newVersion,
               ),
               VariableManifestEntriesRow(
-                  name = "Renamed A",
                   position = 3,
-                  stableId = "2",
-                  variableId = initialVariables[1].id,
+                  variableId = updatedVariables[4].id,
                   variableManifestId = updateResult.newVersion,
               ),
               VariableManifestEntriesRow(
-                  name = "Renamed B",
                   position = 4,
-                  stableId = "3",
-                  variableId = initialVariables[2].id,
+                  variableId = updatedVariables[5].id,
                   variableManifestId = updateResult.newVersion,
               ),
           ),
           variableManifestEntriesDao.fetchByVariableManifestId(updateResult.newVersion!!).toSet(),
-          "New manifest should use existing variables")
+          "New manifest should use existing variable for table and new variables for renamed columns")
+
+      assertEquals(
+          setOf(
+              VariablesRow(
+                  id = initialVariables[0].id,
+                  isList = true,
+                  name = "Table",
+                  stableId = "1",
+                  variableTypeId = VariableType.Table,
+              ),
+              VariablesRow(
+                  id = initialVariables[1].id,
+                  isList = false,
+                  name = "Column A",
+                  stableId = "2",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  id = initialVariables[2].id,
+                  isList = false,
+                  name = "Column B",
+                  stableId = "3",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  id = updatedVariables[3].id,
+                  isList = true,
+                  name = "Table",
+                  replacesVariableId = initialVariables[0].id,
+                  stableId = "1",
+                  variableTypeId = VariableType.Table,
+              ),
+              VariablesRow(
+                  id = updatedVariables[4].id,
+                  isList = false,
+                  name = "Renamed A",
+                  replacesVariableId = initialVariables[1].id,
+                  stableId = "2",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  id = updatedVariables[5].id,
+                  isList = false,
+                  name = "Renamed B",
+                  replacesVariableId = initialVariables[2].id,
+                  stableId = "3",
+                  variableTypeId = VariableType.Number,
+              ),
+          ),
+          variablesDao.findAll().toSet(),
+          "New variables are created for columns but not the table")
     }
 
     @Test
@@ -1066,23 +1141,17 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           setOf(
               VariableManifestEntriesRow(
-                  name = "Table",
                   position = 2,
-                  stableId = "1",
                   variableId = newTableVariableId,
                   variableManifestId = updateResult.newVersion,
               ),
               VariableManifestEntriesRow(
-                  name = "Column A",
                   position = 3,
-                  stableId = "2",
                   variableId = updatedVariables[4].id,
                   variableManifestId = updateResult.newVersion,
               ),
               VariableManifestEntriesRow(
-                  name = "Column B",
                   position = 4,
-                  stableId = "3",
                   variableId = updatedVariables[5].id,
                   variableManifestId = updateResult.newVersion,
               ),
@@ -1105,25 +1174,16 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     private fun sizedInputStream(content: String) = sizedInputStream(content.toByteArray())
 
     // This is not safe to use in tests where there are multiple variables with the same name, this
-    // does not care about hierarchy and will grab the first one that matches by name
-    private fun getVariableByManifestEntryName(
-        name: String,
-        manifestId: VariableManifestId? = null
-    ): VariablesRow {
-      val variableId =
-          variableManifestEntriesDao
-              .fetchByName(name)
-              .filter { manifestId == null || it.variableManifestId == manifestId }
-              .single()
-              .variableId!!
-      return variablesDao.fetchOneById(variableId)!!
-    }
+    // does not care about hierarchy and will grab the first one that matches by name in reversed
+    // order
+    private fun getVariableByName(name: String): VariablesRow =
+        variablesDao.fetchByName(name).reversed().first()
   }
 }
 
 private data class FlatVariable(
     val variableId: VariableId,
-    val manifestEntryName: String?,
+    val variableName: String?,
     val parentId: VariableId?,
-    val parentManifestEntryName: String?,
+    val parentVariableName: String?,
 )
