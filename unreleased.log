@@ -1,1 +1,1 @@
-a2bfd9d17f7 Fixed unrecognized Jira request types problem (#2061)
+0bde1d20be0 Updated tika file type detection to only occur if mark/reset are supported (#2062)
