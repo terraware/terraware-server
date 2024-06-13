@@ -1,7 +1,1 @@
-540b9e148e5 SW-5345 Added moduleId to Deliverables API (#2059)
-f843788c625 SW-5546 Fix permission error on deliverable approval (#2058)
-64383d73c93 SW-5073 Add new values to Spanish species template (#2057)
-ff0466352cb SW-5516 Add new permanent clusters to observation (#2055)
-04bd39ded94 Updated translations from Phrase (#2056)
-bc8d754df27 SW-5073 Update species enum values, names (#2054)
-299b5880c4b SW-5484 Check detected file Mime type in addition to client header (#2049)
+a2bfd9d17f7 Fixed unrecognized Jira request types problem (#2061)
