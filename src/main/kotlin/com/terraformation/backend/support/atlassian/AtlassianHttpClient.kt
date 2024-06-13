@@ -95,9 +95,12 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
   }
 
   private fun getJiraServiceRequestTypes(): Map<SupportRequestType, Int> =
-      makeRequest(ListServiceRequestTypesHttpRequest(serviceDesk.id)).values.associate {
-        SupportRequestType.forJsonValue(it.name) to it.id
-      }
+      makeRequest(ListServiceRequestTypesHttpRequest(serviceDesk.id))
+          .values
+          .mapNotNull { model ->
+            SupportRequestType.forJsonValue(model.name)?.let { it to model.id }
+          }
+          .associate { it }
 
   private fun findServiceDesk(): ServiceDeskProjectModel =
       makeRequest(ListServiceDesksHttpRequest()).values.firstOrNull {
