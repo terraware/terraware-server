@@ -17,6 +17,7 @@ import com.terraformation.backend.support.atlassian.request.ListServiceRequestTy
 import com.terraformation.backend.support.atlassian.request.PostServiceDeskRequestResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.java.Java
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -128,6 +129,7 @@ class AtlassianHttpClient(private val config: TerrawareServerConfig) {
       }
 
       install(ContentNegotiation) { register(ContentType.Application.Json, JacksonConverter()) }
+      install(HttpTimeout) { requestTimeoutMillis = REQUEST_TIMEOUT_MS }
 
       // By default, treat non-2xx responses as errors. This can be overridden per request.
       expectSuccess = true
