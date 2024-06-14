@@ -2678,15 +2678,31 @@ abstract class DatabaseBackedTest {
     return variableId
   }
 
+  private var lastTableColumnTableId: VariableId? = null
+  private var lastTableColumnPosition = 0
+
   protected fun insertTableColumn(
       tableId: Any,
       columnId: Any,
       isHeader: Boolean = false,
+      position: Int? = null,
   ): VariableId {
+    val tableIdWrapper = tableId.toIdWrapper { VariableId(it) }
+    val effectivePosition =
+        when {
+          position != null -> position
+          lastTableColumnTableId == tableIdWrapper -> lastTableColumnPosition + 1
+          else -> 1
+        }
+
+    lastTableColumnTableId = tableIdWrapper
+    lastTableColumnPosition = effectivePosition
+
     val row =
         VariableTableColumnsRow(
             isHeader = isHeader,
-            tableVariableId = tableId.toIdWrapper { VariableId(it) },
+            position = effectivePosition,
+            tableVariableId = tableIdWrapper,
             tableVariableTypeId = VariableType.Table,
             variableId = columnId.toIdWrapper { VariableId(it) },
         )
