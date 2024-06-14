@@ -156,7 +156,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val expectedTotalUsers = 10
     val baseUserId = 100
 
-    (baseUserId ..< expectedTotalUsers + baseUserId).forEach { userId ->
+    (baseUserId..<expectedTotalUsers + baseUserId).forEach { userId ->
       insertUser(userId)
       insertOrganizationUser(userId)
     }

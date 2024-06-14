@@ -129,7 +129,7 @@ class PlantingSiteImporter(
               when (geometry) {
                 is Polygon -> listOf(geometry)
                 is MultiPolygon ->
-                    (0 ..< geometry.numGeometries).map { geometry.getGeometryN(it) as Polygon }
+                    (0..<geometry.numGeometries).map { geometry.getGeometryN(it) as Polygon }
                 else -> {
                   problems.add("Exclusion geometries must all be Polygon or MultiPolygon.")
                   throw ShapefilesInvalidException(problems)
