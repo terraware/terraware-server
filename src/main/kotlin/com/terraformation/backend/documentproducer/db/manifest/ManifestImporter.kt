@@ -328,12 +328,19 @@ class ManifestImporter(
           csvVariableByPath[csvVariable.parentPath]?.variableId
               ?: throw IllegalStateException(
                   "Parent variable has not been imported - ${csvVariable.parent}")
+      val zeroIndexedPosition =
+          csvVariablesByParentPath[csvVariable.parentPath]?.indexOfFirst {
+            it.variableId == csvVariable.variableId
+          }
+              ?: throw IllegalStateException(
+                  "Variable ${csvVariable.variableId} not found in parent ${csvVariable.parentPath}")
 
       variableStore.importTableColumnVariable(
           VariableTableColumnsRow(
               variableId = csvVariable.variableId,
               tableVariableId = tableVariableId,
               tableVariableTypeId = VariableType.Table,
+              position = zeroIndexedPosition + 1,
               isHeader = csvVariable.isHeader))
     }
 

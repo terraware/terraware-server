@@ -148,9 +148,12 @@ CREATE TABLE docprod.variable_table_columns (
     variable_id BIGINT PRIMARY KEY REFERENCES docprod.variables,
     table_variable_id BIGINT NOT NULL REFERENCES docprod.variables,
     table_variable_type_id INTEGER NOT NULL REFERENCES docprod.variable_types,
+    position INTEGER NOT NULL,
     is_header BOOLEAN NOT NULL,
 
     CHECK (table_variable_type_id = 6),
+
+    UNIQUE (table_variable_id, position),
 
     FOREIGN KEY (table_variable_id, table_variable_type_id)
         REFERENCES docprod.variable_tables (variable_id, variable_type_id)

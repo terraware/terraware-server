@@ -161,16 +161,19 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
                   variableId = tableColumnVariableRow1.id!!,
                   tableVariableId = actualTableVariable.id!!,
                   tableVariableTypeId = VariableType.Table,
+                  position = 1,
                   isHeader = false),
               VariableTableColumnsRow(
                   variableId = tableColumnVariableRow2.id!!,
                   tableVariableId = actualTableVariable.id!!,
                   tableVariableTypeId = VariableType.Table,
+                  position = 2,
                   isHeader = false),
               VariableTableColumnsRow(
                   variableId = tableColumnVariableRow3.id!!,
                   tableVariableId = actualTableVariable.id!!,
                   tableVariableTypeId = VariableType.Table,
+                  position = 3,
                   isHeader = false))
 
       assertEquals(emptyList<String>(), importResult.errors, "no errors")
@@ -207,11 +210,13 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
                   variableId = tableColumnVariableRow1.id!!,
                   tableVariableId = actualTableVariable.id!!,
                   tableVariableTypeId = VariableType.Table,
+                  position = 1,
                   isHeader = true),
               VariableTableColumnsRow(
                   variableId = tableColumnVariableRow2.id!!,
                   tableVariableId = actualTableVariable.id!!,
                   tableVariableTypeId = VariableType.Table,
+                  position = 2,
                   isHeader = false))
 
       val actualNumberRow = variableNumbersDao.fetchOneByVariableId(tableColumnVariableRow2.id!!)

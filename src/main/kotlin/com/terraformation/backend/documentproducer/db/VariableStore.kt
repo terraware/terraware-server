@@ -311,7 +311,7 @@ class VariableStore(
               .on(VARIABLE_TABLE_COLUMNS.VARIABLE_ID.eq(VARIABLE_MANIFEST_ENTRIES.VARIABLE_ID))
               .where(VARIABLE_TABLE_COLUMNS.TABLE_VARIABLE_ID.eq(base.id))
               .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId))
-              .orderBy(VARIABLE_MANIFEST_ENTRIES.POSITION)
+              .orderBy(VARIABLE_TABLE_COLUMNS.POSITION)
               .fetch { record ->
                 TableColumn(
                     record[VARIABLE_TABLE_COLUMNS.IS_HEADER.asNonNullable()],
