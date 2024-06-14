@@ -88,7 +88,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
             ACCESSIONS.EST_WEIGHT_QUANTITY,
             ACCESSIONS.EST_WEIGHT_UNITS_ID,
             ACCESSIONS.EST_WEIGHT_GRAMS),
-        aliasField("geolocation", "geolocations_coordinates"),
         idWrapperField("id", ACCESSIONS.ID) { AccessionId(it) },
         textField("plantId", ACCESSIONS.FOUNDER_ID),
         integerField("plantsCollectedFrom", ACCESSIONS.TREES_COLLECTED_FROM),
