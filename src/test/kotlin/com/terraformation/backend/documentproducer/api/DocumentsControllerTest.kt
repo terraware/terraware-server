@@ -9,6 +9,7 @@ import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.tables.pojos.VariableValuesRow
 import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
+import io.ktor.client.utils.EmptyContent.status
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -32,6 +33,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
   fun setUp() {
     val userId = insertUser()
     insertUserGlobalRole(userId = userId, GlobalRole.TFExpert)
+    insertOrganization()
+    insertProject()
     insertDocumentTemplate()
     insertVariableManifest()
   }
@@ -45,8 +48,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
             {
               "documentTemplateId": 12345,
               "name": "Test",
-              "organizationName": "Test",
-              "ownedBy": ${inserted.userId}
+              "ownedBy": ${inserted.userId},
+              "projectId": ${inserted.projectId}
             }"""
               .trimIndent()
 
@@ -60,8 +63,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
             {
               "documentTemplateId": ${inserted.documentTemplateId},
               "name": "Test document",
-              "organizationName": "Org Name",
-              "ownedBy": ${inserted.userId}
+              "ownedBy": ${inserted.userId},
+              "projectId": ${inserted.projectId}
             }"""
               .trimIndent()
 
@@ -77,8 +80,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                     "modifiedBy": ${inserted.userId},
                     "modifiedTime": "${Instant.EPOCH}",
                     "name": "Test document",
-                    "organizationName": "Org Name",
                     "ownedBy": ${inserted.userId},
+                    "projectId": ${inserted.projectId},
                     "status": "Draft"
                   }
                 }
@@ -92,13 +95,15 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
   inner class ListDocuments {
     @Test
     fun `returns document details`() {
+      val projectId = inserted.projectId
+      val otherProjectId = insertProject(name = "Other Project")
       val otherDocumentTemplateId = insertDocumentTemplate()
       val otherVariableManifestId =
           insertVariableManifest(documentTemplateId = otherDocumentTemplateId)
       val otherUserId = insertUser(101)
       val otherCreatedTime = Instant.EPOCH.plusSeconds(100)
       val otherModifiedTime = otherCreatedTime.plusSeconds(1)
-      val documentId1 = insertDocument()
+      val documentId1 = insertDocument(projectId = projectId)
       val documentId2 =
           insertDocument(
               createdBy = inserted.userId,
@@ -106,8 +111,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
               documentTemplateId = otherDocumentTemplateId,
               modifiedBy = inserted.userId,
               modifiedTime = otherModifiedTime,
-              organizationName = "Other Org",
               ownedBy = otherUserId,
+              projectId = otherProjectId,
               status = DocumentStatus.Locked,
               variableManifestId = otherVariableManifestId,
           )
@@ -125,8 +130,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                       "documentTemplateId": ${inserted.documentTemplateId},
                       "modifiedBy": ${inserted.userId},
                       "modifiedTime": "${Instant.EPOCH}",
-                      "organizationName": "Test Org",
                       "ownedBy": ${inserted.userId},
+                      "projectId": $projectId,
                       "status": "Draft",
                       "variableManifestId": ${inserted.variableManifestId}
                     },
@@ -137,8 +142,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                       "documentTemplateId": $otherDocumentTemplateId,
                       "modifiedBy": ${inserted.userId},
                       "modifiedTime": "$otherModifiedTime",
-                      "organizationName": "Other Org",
                       "ownedBy": $otherUserId,
+                      "projectId": $otherProjectId,
                       "status": "Locked",
                       "variableManifestId": $otherVariableManifestId
                     }
@@ -170,8 +175,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                     "documentTemplateId": ${inserted.documentTemplateId},
                     "modifiedBy": ${inserted.userId},
                     "modifiedTime": "${Instant.EPOCH}",
-                    "organizationName": "Test Org",
                     "ownedBy": ${inserted.userId},
+                    "projectId": ${inserted.projectId},
                     "status": "Draft",
                     "variableManifestId": ${inserted.variableManifestId}
                   }
@@ -188,7 +193,6 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
           """
             {
               "name": "Test Test document",
-              "organizationName": "New New Org",
               "ownedBy": ${inserted.userId}
             }"""
               .trimIndent()
@@ -211,7 +215,6 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
               documentTemplateId = otherDocumentTemplateId,
               modifiedBy = inserted.userId,
               modifiedTime = otherModifiedTime,
-              organizationName = "Other Org",
               ownedBy = otherUserId,
               status = DocumentStatus.Locked,
               variableManifestId = otherVariableManifestId,
@@ -221,7 +224,6 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
           """
             {
               "name": "Test Test document",
-              "organizationName": "New New Org",
               "ownedBy": ${inserted.userId}
             }"""
               .trimIndent()
@@ -230,7 +232,6 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
       val documentsRow = documentsDao.fetchOneById(documentId)
       assertEquals(documentsRow!!.name, "Test Test document")
-      assertEquals(documentsRow.organizationName, "New New Org")
       assertEquals(documentsRow.ownedBy, inserted.userId)
     }
   }

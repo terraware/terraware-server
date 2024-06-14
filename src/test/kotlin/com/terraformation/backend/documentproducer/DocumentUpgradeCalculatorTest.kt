@@ -68,6 +68,8 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertUser()
+    insertOrganization()
+    insertProject()
     insertDocumentTemplate()
     insertVariableManifest()
     insertDocument()

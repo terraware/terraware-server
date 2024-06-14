@@ -6,6 +6,7 @@ import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentSavedVersionId
@@ -157,8 +158,8 @@ data class DocumentPayload(
     val modifiedBy: UserId,
     val modifiedTime: Instant,
     val name: String,
-    val organizationName: String,
     val ownedBy: UserId,
+    val projectId: ProjectId,
     val status: DocumentStatus,
     val variableManifestId: VariableManifestId,
 ) {
@@ -172,8 +173,8 @@ data class DocumentPayload(
       modifiedBy = model.modifiedBy,
       modifiedTime = model.modifiedTime,
       name = model.name,
-      organizationName = model.organizationName,
       ownedBy = model.ownedBy,
+      projectId = model.projectId,
       status = model.status,
       variableManifestId = model.variableManifestId,
   )
@@ -208,10 +209,10 @@ data class DocumentSavedVersionPayload(
 data class CreateDocumentRequestPayload(
     val documentTemplateId: DocumentTemplateId,
     val name: String,
-    val organizationName: String,
     val ownedBy: UserId,
+    val projectId: ProjectId,
 ) {
-  fun toModel() = NewDocumentModel(documentTemplateId, name, organizationName, ownedBy)
+  fun toModel() = NewDocumentModel(documentTemplateId, name, ownedBy, projectId)
 }
 
 data class CreateSavedDocumentVersionRequestPayload(
@@ -228,13 +229,11 @@ data class CreateSavedDocumentVersionRequestPayload(
 
 data class UpdateDocumentRequestPayload(
     val name: String,
-    val organizationName: String,
     val ownedBy: UserId,
 ) {
   fun applyChanges(row: DocumentsRow) =
       row.copy(
           name = name,
-          organizationName = organizationName,
           ownedBy = ownedBy,
       )
 }

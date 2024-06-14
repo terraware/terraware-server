@@ -1,5 +1,6 @@
 package com.terraformation.backend.documentproducer.model
 
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentStatus
@@ -16,8 +17,8 @@ data class ExistingDocumentModel(
     val modifiedBy: UserId,
     val modifiedTime: Instant,
     val name: String,
-    val organizationName: String,
     val ownedBy: UserId,
+    val projectId: ProjectId,
     val status: DocumentStatus,
     val variableManifestId: VariableManifestId,
 ) {
@@ -31,8 +32,8 @@ data class ExistingDocumentModel(
       modifiedBy = row.modifiedBy!!,
       modifiedTime = row.modifiedTime!!,
       name = row.name!!,
-      organizationName = row.organizationName!!,
       ownedBy = row.ownedBy!!,
+      projectId = row.projectId!!,
       status = row.statusId!!,
       variableManifestId = row.variableManifestId!!,
   )
