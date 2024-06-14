@@ -156,6 +156,8 @@ class VariableStore(
               DSL.selectOne()
                   .from(VARIABLE_TABLE_COLUMNS)
                   .where(ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
+          .groupBy(STABLE_ID)
+          .orderBy(ID.desc())
           .fetch()
           .map { record -> fetchVariableForStableId(record[STABLE_ID]!!, record[ID]!!) }
     }
