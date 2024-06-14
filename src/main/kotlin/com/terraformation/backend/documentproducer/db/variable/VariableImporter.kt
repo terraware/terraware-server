@@ -88,7 +88,6 @@ class VariableImporter(
     val csvVariableNormalizer = CsvVariableNormalizer()
 
     var newVariablesImported = 0
-    var variablesAttachedToNewManifest = 0
 
     val results = mutableListOf<String>()
     val errors = mutableListOf<String>()
