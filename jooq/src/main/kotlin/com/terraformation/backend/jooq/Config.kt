@@ -40,6 +40,9 @@ val ENUM_TABLES =
         "docprod" to
             listOf(
                 EnumTable(
+                    "dependency_conditions",
+                    listOf(".*\\.dependency_condition_id")),
+                EnumTable(
                     "document_statuses",
                     listOf("documents\\.status_id"),
                     enumName = "DocumentStatus"),
