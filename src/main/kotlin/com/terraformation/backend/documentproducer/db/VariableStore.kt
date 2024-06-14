@@ -71,6 +71,14 @@ class VariableStore(
   private val variables = ConcurrentHashMap<Pair<VariableManifestId?, VariableId>, Variable>()
 
   /**
+   * Cache of information about variables by their stable ID. Each stable ID will point to the
+   * latest version of the variable for that ID. This just holds variable definitions, not values!
+   * There is currently no mechanism to limit the size of this cache; the assumption for now is
+   * that all the variables in the system will easily fit in memory.
+   */
+  private val stableIdVariables = ConcurrentHashMap<Pair<String, VariableId>, Variable>()
+
+  /**
    * Cache of information about which variables were replaced by which other variables. If a
    * variable isn't a replacement for any other variables, its value in this map will be an empty
    * list.
@@ -87,8 +95,22 @@ class VariableStore(
    * @throws CircularReferenceException There is a cycle in the graph of the variable and its
    *   children.
    */
-  fun fetchVariable(variableId: VariableId, manifestId: VariableManifestId? = null): Variable {
-    return variables[manifestId to variableId] ?: FetchContext(manifestId).fetchVariable(variableId)
+  fun fetchVariable(manifestId: VariableManifestId, variableId: VariableId): Variable {
+    return variables[manifestId to variableId] ?: ManifestFetchContext(manifestId).fetchVariable(variableId)
+  }
+
+  /**
+   * Returns information about a variable. Eagerly fetches other variables that are related to the
+   * requested variable, e.g., table columns.
+   *
+   * @throws VariableNotFoundException The variable didn't exist.
+   * @throws VariableIncompleteException The variable didn't have all the information required for
+   *   its type.
+   * @throws CircularReferenceException There is a cycle in the graph of the variable and its
+   *   children.
+   */
+  fun fetchVariableForStableId(stableId: String, variableId: VariableId): Variable {
+    return stableIdVariables[stableId to variableId] ?: StableIdVariableFetchContext(stableId).fetchVariable(variableId)
   }
 
   /**
@@ -114,6 +136,27 @@ class VariableStore(
           .orderBy(POSITION)
           .fetch(VARIABLE_ID.asNonNullable())
           .map { fetchVariable(it, manifestId) }
+    }
+  }
+
+  /**
+   * Fetches the list of non-section variables, using the latest version of each based on their
+   * stable ID. Table columns are not included in the top-level list, but rather in the containing
+   * variables' lists of children.
+   */
+  fun fetchAllNonSectionVariables(): List<Variable> {
+    return with(VARIABLES) {
+      dslContext
+          .select(ID, STABLE_ID)
+          .from(this)
+          .where(VARIABLE_TYPE_ID.ne(VariableType.Section))
+          .andNotExists(
+              DSL.selectOne()
+                  .from(VARIABLE_TABLE_COLUMNS)
+                  .where(ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
+          .orderBy(POSITION)
+          .fetch()
+          .map { record -> fetchVariableForStableId(record[STABLE_ID], record[ID]) }
     }
   }
 
@@ -187,10 +230,7 @@ class VariableStore(
    * Logic for recursively fetching a variable and the variables it's related to. Variable fetching
    * is stateful because we want to detect cycles.
    */
-  private inner class FetchContext(private val manifestId: VariableManifestId?) {
-    /** Stack of variables that are being fetched in this context. Used to detect cycles. */
-    val fetchesInProgress = ArrayDeque<VariableId>()
-
+  private inner class ManifestFetchContext(private val manifestId: VariableManifestId): FetchContext() {
     /** Returns information about a variable and its children, if any. */
     fun fetchVariable(variableId: VariableId): Variable {
       if (variableId in fetchesInProgress) {
@@ -263,76 +303,10 @@ class VariableStore(
       }
     }
 
-    private fun fetchNumber(base: BaseVariableProperties): NumberVariable {
-      val numbersRow =
-          variableNumbersDao.fetchOneByVariableId(base.id)
-              ?: throw VariableIncompleteException(base.id)
-
-      return NumberVariable(
-          base,
-          numbersRow.minValue,
-          numbersRow.maxValue,
-          numbersRow.decimalPlaces!!,
-      )
-    }
-
-    private fun fetchText(base: BaseVariableProperties): TextVariable {
-      val textRow =
-          variableTextsDao.fetchOneByVariableId(base.id)
-              ?: throw VariableIncompleteException(base.id)
-
-      return TextVariable(base, textRow.variableTextTypeId!!)
-    }
-
-    private fun fetchSelect(base: BaseVariableProperties): SelectVariable {
-      val selectRow =
-          variableSelectsDao.fetchOneByVariableId(base.id)
-              ?: throw VariableIncompleteException(base.id)
-
-      val options =
-          dslContext
-              .selectFrom(VARIABLE_SELECT_OPTIONS)
-              .where(VARIABLE_SELECT_OPTIONS.VARIABLE_ID.eq(base.id))
-              .orderBy(VARIABLE_SELECT_OPTIONS.POSITION)
-              .fetch { record ->
-                SelectOption(
-                    description = record[VARIABLE_SELECT_OPTIONS.DESCRIPTION],
-                    id = record[VARIABLE_SELECT_OPTIONS.ID]!!,
-                    name = record[VARIABLE_SELECT_OPTIONS.NAME]!!,
-                    renderedText = record[VARIABLE_SELECT_OPTIONS.RENDERED_TEXT],
-                )
-              }
-
-      return SelectVariable(base, selectRow.isMultiple!!, options)
-    }
-
-    private fun fetchTable(base: BaseVariableProperties): TableVariable {
-      val tableRow =
-          variableTablesDao.fetchOneByVariableId(base.id)
-              ?: throw VariableIncompleteException(base.id)
-
-      val columns =
-          dslContext
-              .select(VARIABLE_TABLE_COLUMNS.IS_HEADER, VARIABLE_TABLE_COLUMNS.VARIABLE_ID)
-              .from(VARIABLE_TABLE_COLUMNS)
-              .join(VARIABLE_MANIFEST_ENTRIES)
-              .on(VARIABLE_TABLE_COLUMNS.VARIABLE_ID.eq(VARIABLE_MANIFEST_ENTRIES.VARIABLE_ID))
-              .where(VARIABLE_TABLE_COLUMNS.TABLE_VARIABLE_ID.eq(base.id))
-              .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId))
-              .orderBy(VARIABLE_TABLE_COLUMNS.POSITION)
-              .fetch { record ->
-                TableColumn(
-                    record[VARIABLE_TABLE_COLUMNS.IS_HEADER.asNonNullable()],
-                    fetchVariable(record[VARIABLE_TABLE_COLUMNS.VARIABLE_ID.asNonNullable()]))
-              }
-
-      return TableVariable(base, tableRow.tableStyleId!!, columns)
-    }
-
     private fun fetchSection(base: BaseVariableProperties): SectionVariable {
       val sectionRow =
           variableSectionsDao.fetchOneByVariableId(base.id)
-              ?: throw VariableIncompleteException(base.id)
+            ?: throw VariableIncompleteException(base.id)
 
       val children =
           dslContext
@@ -357,6 +331,139 @@ class VariableStore(
           }
 
       return SectionVariable(base, sectionRow.renderHeading!!, children, recommends)
+    }
+
+    protected fun fetchTable(base: BaseVariableProperties): TableVariable {
+      val tableRow =
+          variableTablesDao.fetchOneByVariableId(base.id)
+            ?: throw VariableIncompleteException(base.id)
+
+      val columns =
+          dslContext
+              .select(VARIABLE_TABLE_COLUMNS.IS_HEADER, VARIABLE_TABLE_COLUMNS.VARIABLE_ID)
+              .from(VARIABLE_TABLE_COLUMNS)
+              .join(VARIABLE_MANIFEST_ENTRIES)
+              .on(VARIABLE_TABLE_COLUMNS.VARIABLE_ID.eq(VARIABLE_MANIFEST_ENTRIES.VARIABLE_ID))
+              .where(VARIABLE_TABLE_COLUMNS.TABLE_VARIABLE_ID.eq(base.id))
+              .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId))
+              .orderBy(VARIABLE_TABLE_COLUMNS.POSITION)
+              .fetch { record ->
+                TableColumn(
+                    record[VARIABLE_TABLE_COLUMNS.IS_HEADER.asNonNullable()],
+                    fetchVariable(record[VARIABLE_TABLE_COLUMNS.VARIABLE_ID.asNonNullable()]))
+              }
+
+      return TableVariable(base, tableRow.tableStyleId!!, columns)
+    }
+  }
+
+  private inner class StableIdVariableFetchContext(private val stableId: String): FetchContext() {
+    fun fetchVariable(variableId: VariableId): Variable {
+      if (variableId in fetchesInProgress) {
+        fetchesInProgress.addLast(variableId)
+        throw CircularReferenceException(fetchesInProgress)
+      }
+
+      return stableIdVariables.getOrPut(stableId to variableId) {
+        fetchesInProgress.addLast(variableId)
+
+        val variablesRow =
+            variablesDao.fetchOneById(variableId) ?: throw VariableNotFoundException(variableId)
+        val base =
+            BaseVariableProperties(
+                description = variablesRow.description,
+                id = variableId,
+                isList = variablesRow.isList!!,
+                name = variablesRow.name!!,
+                position = variablesRow.position!!,
+                replacesVariableId = variablesRow.replacesVariableId,
+                stableId = variablesRow.stableId!!,
+            )
+
+        val variable =
+            when (variablesRow.variableTypeId!!) {
+              VariableType.Date -> DateVariable(base)
+              VariableType.Number -> fetchNumber(base)
+              VariableType.Text -> fetchText(base)
+              VariableType.Image -> ImageVariable(base)
+              VariableType.Select -> fetchSelect(base)
+              VariableType.Table -> fetchTable(base)
+              VariableType.Link -> LinkVariable(base)
+              VariableType.Section -> throw IllegalArgumentException("Section variable should not be fetche in all variable context")
+            }
+
+        fetchesInProgress.removeLast()
+
+        variable
+      }
+    }
+
+    protected fun fetchTable(base: BaseVariableProperties): TableVariable {
+      val tableRow =
+          variableTablesDao.fetchOneByVariableId(base.id)
+            ?: throw VariableIncompleteException(base.id)
+
+      val columns =
+          dslContext
+              .select(VARIABLE_TABLE_COLUMNS.IS_HEADER, VARIABLE_TABLE_COLUMNS.VARIABLE_ID)
+              .from(VARIABLE_TABLE_COLUMNS)
+              .where(VARIABLE_TABLE_COLUMNS.TABLE_VARIABLE_ID.eq(base.id))
+              .orderBy(VARIABLE_TABLE_COLUMNS.POSITION)
+              .fetch { record ->
+                TableColumn(
+                    record[VARIABLE_TABLE_COLUMNS.IS_HEADER.asNonNullable()],
+                    fetchVariable(record[VARIABLE_TABLE_COLUMNS.VARIABLE_ID.asNonNullable()]))
+              }
+
+      return TableVariable(base, tableRow.tableStyleId!!, columns)
+    }
+  }
+
+  private open inner class FetchContext() {
+    /** Stack of variables that are being fetched in this context. Used to detect cycles. */
+    val fetchesInProgress = ArrayDeque<VariableId>()
+
+    protected fun fetchNumber(base: BaseVariableProperties): NumberVariable {
+      val numbersRow =
+          variableNumbersDao.fetchOneByVariableId(base.id)
+              ?: throw VariableIncompleteException(base.id)
+
+      return NumberVariable(
+          base,
+          numbersRow.minValue,
+          numbersRow.maxValue,
+          numbersRow.decimalPlaces!!,
+      )
+    }
+
+    protected fun fetchText(base: BaseVariableProperties): TextVariable {
+      val textRow =
+          variableTextsDao.fetchOneByVariableId(base.id)
+              ?: throw VariableIncompleteException(base.id)
+
+      return TextVariable(base, textRow.variableTextTypeId!!)
+    }
+
+    protected fun fetchSelect(base: BaseVariableProperties): SelectVariable {
+      val selectRow =
+          variableSelectsDao.fetchOneByVariableId(base.id)
+              ?: throw VariableIncompleteException(base.id)
+
+      val options =
+          dslContext
+              .selectFrom(VARIABLE_SELECT_OPTIONS)
+              .where(VARIABLE_SELECT_OPTIONS.VARIABLE_ID.eq(base.id))
+              .orderBy(VARIABLE_SELECT_OPTIONS.POSITION)
+              .fetch { record ->
+                SelectOption(
+                    description = record[VARIABLE_SELECT_OPTIONS.DESCRIPTION],
+                    id = record[VARIABLE_SELECT_OPTIONS.ID]!!,
+                    name = record[VARIABLE_SELECT_OPTIONS.NAME]!!,
+                    renderedText = record[VARIABLE_SELECT_OPTIONS.RENDERED_TEXT],
+                )
+              }
+
+      return SelectVariable(base, selectRow.isMultiple!!, options)
     }
   }
 }

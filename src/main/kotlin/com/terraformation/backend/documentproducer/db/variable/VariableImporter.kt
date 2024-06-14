@@ -5,11 +5,7 @@ import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
-import com.terraformation.backend.db.docprod.embeddables.pojos.VariableManifestEntryId
-import com.terraformation.backend.db.docprod.tables.pojos.VariableManifestEntriesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableNumbersRow
-import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionRecommendationsRow
-import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableTableColumnsRow
@@ -50,12 +46,11 @@ class VariableImporter(
   private val log = perClassLogger()
 
   fun import(
-      documentTemplateId: DocumentTemplateId,
       inputStream: InputStream,
   ): VariableImportResult {
     val inputBytes = inputStream.readAllBytes()
 
-    val validator = ManifestCsvValidator(messages)
+    val validator = VariableCsvValidator(messages)
     validator.validate(inputBytes)
 
     if (validator.errors.isNotEmpty()) {
@@ -63,7 +58,7 @@ class VariableImporter(
     }
 
     return try {
-      ImportContext().importCsv(documentTemplateId, inputBytes)
+      ImportContext().importCsv(inputBytes)
     } catch (e: Exception) {
       VariableImportResult(
           null,
@@ -101,7 +96,6 @@ class VariableImporter(
     val errors = mutableListOf<String>()
 
     fun importCsv(
-        documentTemplateId: DocumentTemplateId,
         inputBytes: ByteArray
     ): VariableImportResult {
       try {
@@ -112,11 +106,7 @@ class VariableImporter(
             csvVariables.filter { it.parentPath != null }.groupBy { it.parentPath!! }
 
         dslContext.transaction { _ ->
-          useExistingVariables(documentTemplateId)
-
-          val newVariableManifest =
-              variableManifestStore.create(NewVariableManifestModel(documentTemplateId))
-          variableManifestId = newVariableManifest.id
+          useExistingVariables()
 
           // Import tables first
           importCsvVariables(
@@ -152,13 +142,10 @@ class VariableImporter(
       return VariableImportResult(variableManifestId, "Success", results, errors)
     }
 
-    private fun useExistingVariables(documentTemplateId: DocumentTemplateId) {
-      val existingManifestId =
-          variableManifestStore.fetchVariableManifestByDocumentTemplate(documentTemplateId)?.id
-              ?: return
-      val existingVariables = variableStore.fetchManifestVariables(existingManifestId)
+    private fun useExistingVariables() {
+      val existingVariables = variableStore.fetchAllNonSectionVariables()
 
-      // Child variables such as table columns and subsections are not in the top-level list, so we
+      // Child variables such as table columns are not in the top-level list, so we
       // need to recursively process them.
       fun processVariables(variables: List<Variable>) {
         variables.forEach { variable ->
@@ -224,19 +211,17 @@ class VariableImporter(
             filteredCsvVariables.filterNot { it.dataType.value in ignoreDataTypes }
       }
 
-      filteredCsvVariables
-          .filter { canImportVariable(it) }
-          .forEach { csvVariable ->
-            try {
-              importVariable(csvVariable)
-            } catch (e: Exception) {
-              val errorMessage =
-                  "Error while adding net new variable ${e.message} - position: ${csvVariable.position} - name: ${csvVariable.name}"
-              if (errorMessage !in errors) {
-                errors.add(errorMessage)
-              }
-            }
+      filteredCsvVariables.forEach { csvVariable ->
+        try {
+          importVariable(csvVariable)
+        } catch (e: Exception) {
+          val errorMessage =
+              "Error while adding net new variable ${e.message} - position: ${csvVariable.position} - name: ${csvVariable.name}"
+          if (errorMessage !in errors) {
+            errors.add(errorMessage)
           }
+        }
+      }
 
       val notImported = filteredCsvVariables.filter { it.variableId == null }
       if (notImported.isNotEmpty()) {
@@ -251,63 +236,22 @@ class VariableImporter(
     // This is where we define the "extra" import instructions for specific variable types
     private fun importTypeSpecificVariable(csvVariable: CsvVariable) {
       when (csvVariable.dataType) {
-        CsvVariableType.SingleSelect,
-        CsvVariableType.MultiSelect -> importSelectVariable(csvVariable)
-        CsvVariableType.Table -> importTableVariable(csvVariable)
-        CsvVariableType.Section -> importSectionVariable(csvVariable)
-        CsvVariableType.Number -> importNumberVariable(csvVariable)
-        CsvVariableType.SingleLine,
-        CsvVariableType.MultiLine -> importTextVariable(csvVariable)
+        AllVariableCsvVariableType.SingleSelect,
+        AllVariableCsvVariableType.MultiSelect -> importSelectVariable(csvVariable)
+        AllVariableCsvVariableType.Table -> importTableVariable(csvVariable)
+        AllVariableCsvVariableType.Number -> importNumberVariable(csvVariable)
+        AllVariableCsvVariableType.SingleLine,
+        AllVariableCsvVariableType.MultiLine -> importTextVariable(csvVariable)
         else -> Unit
       }
 
-      if (csvVariableByPath[csvVariable.parentPath]?.dataType == CsvVariableType.Table) {
+      if (csvVariableByPath[csvVariable.parentPath]?.dataType == AllVariableCsvVariableType.Table) {
         importTableColumnVariable(csvVariable)
       }
     }
 
-    private fun importSectionVariable(csvVariable: CsvVariable) {
-      if (csvVariable.dataType != CsvVariableType.Section) {
-        // This should be impossible since we are filtering the csv variables before we get here
-        // But we should double-check
-        throw IllegalStateException(
-            "Attempting to import a section variable which is not of type 'section'")
-      }
-
-      val parentVariable = csvVariable.parentPath?.let { csvVariableByPath[it] }
-
-      variableStore.importSectionVariable(
-          VariableSectionsRow(
-              variableId = csvVariable.variableId,
-              variableTypeId = VariableType.Section,
-              parentVariableId = parentVariable?.variableId,
-              parentVariableTypeId = if (parentVariable != null) VariableType.Section else null,
-              renderHeading = !csvVariable.isNonNumberedSection))
-    }
-
-    private fun importRecommendedVariables(csvVariable: CsvVariable) {
-      if (csvVariable.dataType == CsvVariableType.Section) {
-        csvVariable.recommendedVariables.forEach { recommended ->
-          val recommendedId = csvVariableByPath["\t$recommended"]?.variableId
-          if (recommendedId != null) {
-            variableStore.insertSectionRecommendation(
-                VariableSectionRecommendationsRow(
-                    recommendedVariableId = recommendedId,
-                    sectionVariableId = csvVariable.variableId,
-                    sectionVariableTypeId = VariableType.Section,
-                    variableManifestId = variableManifestId,
-                ))
-          } else {
-            errors.add(
-                "Recommended variable does not exist - position: ${csvVariable.position}, " +
-                    "recommended: $recommended")
-          }
-        }
-      }
-    }
-
     private fun importTableVariable(csvVariable: CsvVariable) {
-      if (csvVariable.dataType != CsvVariableType.Table) {
+      if (csvVariable.dataType != AllVariableCsvVariableType.Table) {
         // This should be impossible since we are filtering the csv variables before we get here
         // But we should double-check
         throw IllegalStateException(
@@ -345,8 +289,8 @@ class VariableImporter(
               variableTypeId = VariableType.Select,
               isMultiple =
                   when (csvVariable.dataType) {
-                    CsvVariableType.SingleSelect -> false
-                    CsvVariableType.MultiSelect -> true
+                    AllVariableCsvVariableType.SingleSelect -> false
+                    AllVariableCsvVariableType.MultiSelect -> true
                     else ->
                         throw IllegalStateException(
                             "Attempting to import a Select Variable with non-select type variable data")
@@ -373,8 +317,8 @@ class VariableImporter(
               variableTypeId = VariableType.Text,
               variableTextTypeId =
                   when (csvVariable.dataType) {
-                    CsvVariableType.SingleLine -> VariableTextType.SingleLine
-                    CsvVariableType.MultiLine -> VariableTextType.MultiLine
+                    AllVariableCsvVariableType.SingleLine -> VariableTextType.SingleLine
+                    AllVariableCsvVariableType.MultiLine -> VariableTextType.MultiLine
                     else ->
                         throw IllegalStateException(
                             "Attempt to import a non Text type CSV variable as a Text Variable")
@@ -406,29 +350,11 @@ class VariableImporter(
                 variableStore.importVariable(variablesRow)
               }
 
-      val variableManifestEntriesRow =
-          VariableManifestEntriesRow(
-              variableId = variableId,
-              variableManifestId = variableManifestId,
-              position = csvVariable.position,
-          )
-      val variableManifestEntryKey: VariableManifestEntryId =
-          variableManifestStore.addVariableToManifestEntries(variableManifestEntriesRow)
-      variablesAttachedToNewManifest++
-
       csvVariable.variableId = variableId
-      csvVariable.variableManifestEntryKey = variableManifestEntryKey
 
       if (isNewVariable) {
         importTypeSpecificVariable(csvVariable)
       }
-
-      importRecommendedVariables(csvVariable)
-    }
-
-    private fun canImportVariable(csvVariable: CsvVariable): Boolean {
-      // If the variable has a variable manifest entry key, it has already been imported.
-      return csvVariable.variableManifestEntryKey == null
     }
 
     /**
@@ -486,34 +412,30 @@ class VariableImporter(
           csvVariable.name == variable.name &&
           csvVariable.stableId == variable.stableId &&
           when (csvVariable.dataType) {
-            CsvVariableType.Number ->
+            AllVariableCsvVariableType.Number ->
                 variable is NumberVariable &&
                     csvVariable.minValue == variable.minValue &&
                     csvVariable.maxValue == variable.maxValue &&
                     (csvVariable.decimalPlaces ?: 0) == variable.decimalPlaces
-            CsvVariableType.SingleLine ->
+            AllVariableCsvVariableType.SingleLine ->
                 variable is TextVariable && variable.textType == VariableTextType.SingleLine
-            CsvVariableType.MultiLine ->
+            AllVariableCsvVariableType.MultiLine ->
                 variable is TextVariable && variable.textType == VariableTextType.MultiLine
-            CsvVariableType.SingleSelect ->
+            AllVariableCsvVariableType.SingleSelect ->
                 variable is SelectVariable &&
                     !variable.isMultiple &&
                     hasSameOptions(csvVariable, variable)
-            CsvVariableType.MultiSelect ->
+            AllVariableCsvVariableType.MultiSelect ->
                 variable is SelectVariable &&
                     variable.isMultiple &&
                     hasSameOptions(csvVariable, variable)
-            CsvVariableType.Date -> variable is DateVariable
-            CsvVariableType.Link -> variable is LinkVariable
-            CsvVariableType.Image -> variable is ImageVariable
-            CsvVariableType.Table ->
+            AllVariableCsvVariableType.Date -> variable is DateVariable
+            AllVariableCsvVariableType.Link -> variable is LinkVariable
+            AllVariableCsvVariableType.Image -> variable is ImageVariable
+            AllVariableCsvVariableType.Table ->
                 variable is TableVariable &&
                     variable.tableStyle == csvVariable.tableStyle &&
                     hasSameColumns(csvVariable, variable)
-            CsvVariableType.Section ->
-                variable is SectionVariable &&
-                    csvVariable.isNonNumberedSection == !variable.renderHeading &&
-                    hasSameSubsections(csvVariable, variable)
           }
     }
 

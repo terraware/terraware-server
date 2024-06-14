@@ -6,6 +6,7 @@ import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.tables.daos.DocumentTemplatesDao
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentTemplatesRow
 import com.terraformation.backend.documentproducer.db.manifest.ManifestImporter
+import com.terraformation.backend.documentproducer.db.variable.VariableImporter
 import io.swagger.v3.oas.annotations.ExternalDocumentation
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -26,8 +27,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequireGlobalRole([GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert])
 @RequestMapping("/admin/document-producer")
 class AdminDocumentProducerController(
-    private val manifestImporter: ManifestImporter,
     private val documentTemplatesDao: DocumentTemplatesDao,
+    private val manifestImporter: ManifestImporter,
+    private val variableImporter: VariableImporter,
 ) {
   /** Redirects /admin to /admin/ so relative URLs in the UI will work. */
   @GetMapping
@@ -56,6 +58,39 @@ class AdminDocumentProducerController(
       redirectAttributes.successMessage = "Document Template ${row.id} added."
     } catch (e: Exception) {
       redirectAttributes.failureMessage = "Failed to add document template: ${e.message}"
+    }
+
+    return documentProducerAdminHome()
+  }
+
+  @Operation(
+      summary = "Upload a variable manifest.",
+      description = "The uploaded file must be in CSV format.",
+      externalDocs =
+      ExternalDocumentation(
+          description = "Current Google sheet",
+          url =
+          "https://docs.google.com/spreadsheets/d/16ybKFseSwFubxZ_i6ENxsF2XT0RqajhdumefJOoHQo8/edit#gid=1050189377"))
+  @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], path = ["/uploadAllVariables"])
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content = [Content(encoding = [Encoding(name = "file", contentType = "text/csv")])],
+  )
+  fun uploadAllVariables(
+    @RequestPart("file") file: MultipartFile,
+    redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      file.inputStream.use { uploadStream ->
+        val result = variableImporter.import(uploadStream)
+        if (result.errors.isEmpty()) {
+          redirectAttributes.successMessage = "Imported variables."
+        } else {
+          redirectAttributes.failureMessage = "Failed to import variables."
+          redirectAttributes.failureDetails = result.errors
+        }
+      }
+    } catch (e: Exception) {
+      redirectAttributes.failureMessage = "Error attempting to import variables: $e"
     }
 
     return documentProducerAdminHome()

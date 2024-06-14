@@ -5,7 +5,6 @@ import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableType
-import com.terraformation.backend.db.docprod.embeddables.pojos.VariableManifestEntryId
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
 import java.math.BigDecimal
@@ -14,59 +13,58 @@ private const val LOCALIZED_ERROR_KEY_UNKNOWN_DATA_TYPE = "variablesCsvDataTypeU
 
 // In the header order in the CSV
 data class CsvVariable(
-  /** Column 1/A - Name */
+    /** Column 1/A - Name */
     val name: String,
-  /** Column 2/B - Identifier that stays stable across settings changes. */
+    /** Column 2/B - Identifier that stays stable across settings changes. */
     val stableId: String,
-  /** Column 3/C - Description (optional) */
+    /** Column 3/C - Description (optional) */
     val description: String?,
-  /** Column 4/D - Data Type */
-    val dataType: CsvVariableType,
-  /** Column 5/E - List? */
+    /** Column 4/D - Data Type */
+    val dataType: AllVariableCsvVariableType,
+    /** Column 5/E - List? */
     val isList: Boolean,
-  /** Column 6/F - Parent (for non-top-level sections and table columns) */
+    /** Column 6/F - Parent (for non-top-level sections and table columns) */
     val parent: String?,
-  /**
+    /**
      * Column 7/G - Options (for Select; put each value on a separate line, optionally prefixed with
      * a hyphen; if the value should result in different text in the rendered document, put the text
      * in double square brackets after the option)
      */
     val options: List<VariableSelectOptionsRow>,
-  /** Column 8/H - Minimum value, if any (for Number) */
+    /** Column 8/H - Minimum value, if any (for Number) */
     val minValue: BigDecimal?,
-  /** Column 9/I - Maximum value, if any (for Number) */
+    /** Column 9/I - Maximum value, if any (for Number) */
     val maxValue: BigDecimal?,
-  /** Column 10/J - Decimal places (for Number) */
+    /** Column 10/J - Decimal places (for Number) */
     val decimalPlaces: Int?,
-  /** Column 11/K - Table style (for Table) */
+    /** Column 11/K - Table style (for Table) */
     val tableStyle: VariableTableStyle?,
-  /** Column 12/L - Header? (for table columns) */
+    /** Column 12/L - Header? (for table columns) */
     val isHeader: Boolean,
-  /** Column 13/M - Notes */
+    /** Column 13/M - Notes */
     val notes: String?,
-  /** Column 14/N - Deliverable ID */
+    /** Column 14/N - Deliverable ID */
     val deliverableId: DeliverableId?,
-  /** Column 15/O - Deliverable Question */
+    /** Column 15/O - Deliverable Question */
     val deliverableQuestion: String?,
-  /** Column 16/P - Dependency - Variable ID */
+    /** Column 16/P - Dependency - Variable ID */
     val dependencyVariableId: VariableId?,
-  /** Column 17/Q - Dependency - Condition */
+    /** Column 17/Q - Dependency - Condition */
     val dependencyCondition: DependencyCondition?,
-  /** Column 18/R - Dependency - Value */
+    /** Column 18/R - Dependency - Value */
     val dependencyValue: String?,
-  /** Column 19/S - Internal Only */
+    /** Column 19/S - Internal Only */
     val internalOnly: Boolean,
 
-
-  /** Position in the sheet, recorded against the variable manifest entry */
+    /** Position in the sheet, recorded against the variable manifest entry */
     val position: Int,
-  /** The path to the variable within the hierarchy */
+    /** The path to the variable within the hierarchy */
     var variablePath: String,
-  /** The path to the parent variable within the hierarchy */
+    /** The path to the parent variable within the hierarchy */
     var parentPath: String?,
-  /** The base variable ID */
+    /** The base variable ID */
     var variableId: VariableId? = null,
-  /** If this variable replaces one from an earlier manifest, that variable's ID. */
+    /** If this variable replaces one from an earlier manifest, that variable's ID. */
     var replacesVariableId: VariableId? = null,
 ) {
   fun mapToVariablesRow() =
@@ -87,7 +85,7 @@ data class CsvVariable(
       )
 }
 
-enum class CsvVariableType(val value: String, val variableType: VariableType) {
+enum class AllVariableCsvVariableType(val value: String, val variableType: VariableType) {
   Number("Number", VariableType.Number),
   SingleLine("Text (single-line)", VariableType.Text),
   MultiLine("Text (multi-line)", VariableType.Text),
@@ -96,13 +94,12 @@ enum class CsvVariableType(val value: String, val variableType: VariableType) {
   Date("Date", VariableType.Date),
   Link("Link", VariableType.Link),
   Image("Image", VariableType.Image),
-  Table("Table", VariableType.Table),
-  Section("Section", VariableType.Section);
+  Table("Table", VariableType.Table);
 
   companion object {
     private val byValue = entries.associateBy { it.value }
 
-    fun create(input: String): CsvVariableType =
+    fun create(input: String): AllVariableCsvVariableType =
         byValue[input] ?: throw IllegalArgumentException(LOCALIZED_ERROR_KEY_UNKNOWN_DATA_TYPE)
   }
 }

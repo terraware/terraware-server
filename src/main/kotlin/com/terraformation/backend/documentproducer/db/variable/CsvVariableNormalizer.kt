@@ -52,26 +52,30 @@ class CsvVariableNormalizer {
               else VariableTableStyle.Horizontal,
           isHeader = normalizeBoolean(values[VARIABLE_CSV_COLUMN_INDEX_IS_HEADER]),
           notes = values[VARIABLE_CSV_COLUMN_INDEX_NOTES],
-          deliverableId = values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID]?.let{ DeliverableId(it) },
+          deliverableId =
+              values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID]?.let { DeliverableId(it) },
           deliverableQuestion = values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION],
-          dependencyVariableId = values[VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_ID]?.let{ VariableId(it) },
-          dependencyCondition = values[VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_CONDITION]?.let{
-            when (it.lowercase()) {
-              "=" -> DependencyCondition.Eq
-              "eq" -> DependencyCondition.Eq
-              "<" -> DependencyCondition.Lt
-              "lt" -> DependencyCondition.Lt
-              "<=" -> DependencyCondition.Lte
-              "lte" -> DependencyCondition.Lte
-              ">" -> DependencyCondition.Gt
-              "gt" -> DependencyCondition.Gt
-              ">=" -> DependencyCondition.Gte
-              "gte" -> DependencyCondition.Gte
-              "!=" -> DependencyCondition.Neq
-              "neq" -> DependencyCondition.Neq
-              else -> throw IllegalArgumentException("Invalid Dependency Condition supplied - $it")
-            }
-          },
+          dependencyVariableId =
+              values[VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_ID]?.let { VariableId(it) },
+          dependencyCondition =
+              values[VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_CONDITION]?.let {
+                when (it.lowercase()) {
+                  "=" -> DependencyCondition.Eq
+                  "eq" -> DependencyCondition.Eq
+                  "<" -> DependencyCondition.Lt
+                  "lt" -> DependencyCondition.Lt
+                  "<=" -> DependencyCondition.Lte
+                  "lte" -> DependencyCondition.Lte
+                  ">" -> DependencyCondition.Gt
+                  "gt" -> DependencyCondition.Gt
+                  ">=" -> DependencyCondition.Gte
+                  "gte" -> DependencyCondition.Gte
+                  "!=" -> DependencyCondition.Neq
+                  "neq" -> DependencyCondition.Neq
+                  else ->
+                      throw IllegalArgumentException("Invalid Dependency Condition supplied - $it")
+                }
+              },
           dependencyValue = values[VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VALUE],
           internalOnly = normalizeBoolean(values[VARIABLE_CSV_COLUMN_INDEX_INTERNAL_ONLY]),
           position = index + 2,
