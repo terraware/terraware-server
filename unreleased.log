@@ -1,1 +1,1 @@
-0bde1d20be0 Updated tika file type detection to only occur if mark/reset are supported (#2062)
+29fa63f53ac Remove geolocation search field (#2063)
