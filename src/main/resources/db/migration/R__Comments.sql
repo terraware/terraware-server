@@ -138,8 +138,6 @@ COMMENT ON TABLE projects IS 'Distinguishes among an organization''s projects.';
 
 COMMENT ON TABLE regions IS '(Enum) Parts of the world where countries are located.';
 
-COMMENT ON FUNCTION reject_delete_value() IS 'Trigger function that rejects deletion of `variable_values` rows unless the entire document is being deleted.';
-
 COMMENT ON TABLE report_files IS 'Linking table between `reports` and `files` for non-photo files.';
 
 COMMENT ON TABLE report_photos IS 'Linking table between `reports` and `files` for photos.';
@@ -541,6 +539,7 @@ COMMENT ON TABLE accelerator.submissions IS 'Information about the current state
 
 COMMENT ON TABLE accelerator.vote_options IS '(Enum) Available vote options.';
 
+
 COMMENT ON TABLE docprod.document_saved_versions IS 'Saved versions of document variable values. A saved version is conceptually just a reference to a particular point in the edit history of the document; to restore that version, we ignore any later edits.';
 
 COMMENT ON TABLE docprod.document_statuses IS '(Enum) Current stage of a document''s lifecycle.';
@@ -548,6 +547,8 @@ COMMENT ON TABLE docprod.document_statuses IS '(Enum) Current stage of a documen
 COMMENT ON TABLE docprod.document_templates IS 'Templates for the different types of documents this system can produce.';
 
 COMMENT ON TABLE docprod.documents IS 'Top-level information about documents.';
+
+COMMENT ON FUNCTION docprod.reject_delete_value() IS 'Trigger function that rejects deletion of `variable_values` rows unless the entire document is being deleted.';
 
 COMMENT ON TABLE docprod.variable_image_values IS 'Linking table that defines which image files are values of which variables.';
 
