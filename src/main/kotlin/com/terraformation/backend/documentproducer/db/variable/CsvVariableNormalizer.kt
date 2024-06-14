@@ -13,24 +13,23 @@ import java.math.BigDecimal
 class CsvVariableNormalizer {
   private val variablePaths: MutableList<String> = mutableListOf()
 
-  fun normalizeFromCsv(inputBytes: ByteArray): List<CsvVariable> {
+  fun normalizeFromCsv(inputBytes: ByteArray): List<AllVariableCsvVariable> {
     val csvReader = CSVReader(InputStreamReader(inputBytes.inputStream()))
     // Consume the header, it was already validated
     csvReader.readNext()
 
     return csvReader.mapIndexed { index, rawValues ->
       val values = rawValues.map { it.ifEmpty { null } }
-      val dataType = CsvVariableType.create(rawValues[VARIABLE_CSV_COLUMN_INDEX_DATA_TYPE])
+      val dataType =
+          AllVariableCsvVariableType.create(rawValues[VARIABLE_CSV_COLUMN_INDEX_DATA_TYPE])
 
       // Sections are always lists.
-      val isList =
-          dataType == CsvVariableType.Section ||
-              normalizeBoolean(values[VARIABLE_CSV_COLUMN_INDEX_IS_LIST])
+      val isList = normalizeBoolean(values[VARIABLE_CSV_COLUMN_INDEX_IS_LIST])
 
       val name = rawValues[VARIABLE_CSV_COLUMN_INDEX_NAME].trim()
       val parent = values[VARIABLE_CSV_COLUMN_INDEX_PARENT]?.trim()
 
-      CsvVariable(
+      AllVariableCsvVariable(
           name = name,
           stableId = rawValues[VARIABLE_CSV_COLUMN_INDEX_STABLE_ID],
           description = values[VARIABLE_CSV_COLUMN_INDEX_DESCRIPTION],

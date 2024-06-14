@@ -73,8 +73,8 @@ class VariableStore(
   /**
    * Cache of information about variables by their stable ID. Each stable ID will point to the
    * latest version of the variable for that ID. This just holds variable definitions, not values!
-   * There is currently no mechanism to limit the size of this cache; the assumption for now is
-   * that all the variables in the system will easily fit in memory.
+   * There is currently no mechanism to limit the size of this cache; the assumption for now is that
+   * all the variables in the system will easily fit in memory.
    */
   private val stableIdVariables = ConcurrentHashMap<Pair<String, VariableId>, Variable>()
 
@@ -96,7 +96,8 @@ class VariableStore(
    *   children.
    */
   fun fetchVariable(manifestId: VariableManifestId, variableId: VariableId): Variable {
-    return variables[manifestId to variableId] ?: ManifestFetchContext(manifestId).fetchVariable(variableId)
+    return variables[manifestId to variableId]
+        ?: ManifestFetchContext(manifestId).fetchVariable(variableId)
   }
 
   /**
@@ -110,7 +111,8 @@ class VariableStore(
    *   children.
    */
   fun fetchVariableForStableId(stableId: String, variableId: VariableId): Variable {
-    return stableIdVariables[stableId to variableId] ?: StableIdVariableFetchContext(stableId).fetchVariable(variableId)
+    return stableIdVariables[stableId to variableId]
+        ?: StableIdVariableFetchContext(stableId).fetchVariable(variableId)
   }
 
   /**
@@ -154,9 +156,8 @@ class VariableStore(
               DSL.selectOne()
                   .from(VARIABLE_TABLE_COLUMNS)
                   .where(ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
-          .orderBy(POSITION)
           .fetch()
-          .map { record -> fetchVariableForStableId(record[STABLE_ID], record[ID]) }
+          .map { record -> fetchVariableForStableId(record[STABLE_ID]!!, record[ID]!!) }
     }
   }
 
@@ -306,7 +307,7 @@ class VariableStore(
     private fun fetchSection(base: BaseVariableProperties): SectionVariable {
       val sectionRow =
           variableSectionsDao.fetchOneByVariableId(base.id)
-            ?: throw VariableIncompleteException(base.id)
+              ?: throw VariableIncompleteException(base.id)
 
       val children =
           dslContext
@@ -336,7 +337,7 @@ class VariableStore(
     protected fun fetchTable(base: BaseVariableProperties): TableVariable {
       val tableRow =
           variableTablesDao.fetchOneByVariableId(base.id)
-            ?: throw VariableIncompleteException(base.id)
+              ?: throw VariableIncompleteException(base.id)
 
       val columns =
           dslContext
@@ -357,7 +358,7 @@ class VariableStore(
     }
   }
 
-  private inner class StableIdVariableFetchContext(private val stableId: String): FetchContext() {
+  private inner class StableIdVariableFetchContext(private val stableId: String) : FetchContext() {
     fun fetchVariable(variableId: VariableId): Variable {
       if (variableId in fetchesInProgress) {
         fetchesInProgress.addLast(variableId)
@@ -375,7 +376,6 @@ class VariableStore(
                 id = variableId,
                 isList = variablesRow.isList!!,
                 name = variablesRow.name!!,
-                position = variablesRow.position!!,
                 replacesVariableId = variablesRow.replacesVariableId,
                 stableId = variablesRow.stableId!!,
             )
@@ -389,7 +389,9 @@ class VariableStore(
               VariableType.Select -> fetchSelect(base)
               VariableType.Table -> fetchTable(base)
               VariableType.Link -> LinkVariable(base)
-              VariableType.Section -> throw IllegalArgumentException("Section variable should not be fetche in all variable context")
+              VariableType.Section ->
+                  throw IllegalArgumentException(
+                      "Section variable should not be fetche in all variable context")
             }
 
         fetchesInProgress.removeLast()
@@ -401,7 +403,7 @@ class VariableStore(
     protected fun fetchTable(base: BaseVariableProperties): TableVariable {
       val tableRow =
           variableTablesDao.fetchOneByVariableId(base.id)
-            ?: throw VariableIncompleteException(base.id)
+              ?: throw VariableIncompleteException(base.id)
 
       val columns =
           dslContext

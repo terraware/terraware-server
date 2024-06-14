@@ -1,6 +1,5 @@
 package com.terraformation.backend.documentproducer.db.variable
 
-import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableTextType
@@ -16,7 +15,6 @@ import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.model.DateVariable
 import com.terraformation.backend.documentproducer.model.ImageVariable
 import com.terraformation.backend.documentproducer.model.LinkVariable
-import com.terraformation.backend.documentproducer.model.NewVariableManifestModel
 import com.terraformation.backend.documentproducer.model.NumberVariable
 import com.terraformation.backend.documentproducer.model.SectionVariable
 import com.terraformation.backend.documentproducer.model.SelectVariable
@@ -70,8 +68,8 @@ class VariableImporter(
   }
 
   private inner class ImportContext {
-    lateinit var csvVariables: List<CsvVariable>
-    lateinit var csvVariableByStableId: Map<String, CsvVariable>
+    lateinit var csvVariables: List<AllVariableCsvVariable>
+    lateinit var csvVariableByStableId: Map<String, AllVariableCsvVariable>
     lateinit var variableManifestId: VariableManifestId
 
     /**
@@ -79,13 +77,13 @@ class VariableImporter(
      * the hierarchy. For example "\tProject Details\tSummary\tProject Details", this allows us to
      * cache the values in memory without collisions due to non-uniqueness of the variable name.
      */
-    lateinit var csvVariableByPath: Map<String, CsvVariable>
+    lateinit var csvVariableByPath: Map<String, AllVariableCsvVariable>
 
     /**
      * Map of full variable paths to CSV variables that are children of the path. The children are
      * in the same order they appear in the manifest.
      */
-    lateinit var csvVariablesByParentPath: Map<String, List<CsvVariable>>
+    lateinit var csvVariablesByParentPath: Map<String, List<AllVariableCsvVariable>>
 
     val csvVariableNormalizer = CsvVariableNormalizer()
 
@@ -95,9 +93,7 @@ class VariableImporter(
     val results = mutableListOf<String>()
     val errors = mutableListOf<String>()
 
-    fun importCsv(
-        inputBytes: ByteArray
-    ): VariableImportResult {
+    fun importCsv(inputBytes: ByteArray): VariableImportResult {
       try {
         csvVariables = csvVariableNormalizer.normalizeFromCsv(inputBytes)
         csvVariableByPath = csvVariables.associateBy { it.variablePath }
@@ -109,17 +105,17 @@ class VariableImporter(
           useExistingVariables()
 
           // Import tables first
-          importCsvVariables(
+          importAllVariableCsvVariables(
               csvVariables = csvVariables, importVariableType = HierarchicalVariableType.Table)
 
           // Import all non tables, non sections
-          importCsvVariables(
+          importAllVariableCsvVariables(
               csvVariables = csvVariables,
               ignoreVariableTypes =
                   listOf(HierarchicalVariableType.Table, HierarchicalVariableType.Section))
 
           // Import all sections
-          importCsvVariables(
+          importAllVariableCsvVariables(
               csvVariables = csvVariables, importVariableType = HierarchicalVariableType.Section)
 
           if (errors.isNotEmpty()) {
@@ -177,41 +173,42 @@ class VariableImporter(
           .forEach { markChildrenNonReusable(it) }
     }
 
-    private fun importCsvVariables(
-        csvVariables: List<CsvVariable>,
+    private fun importAllVariableCsvVariables(
+        csvVariables: List<AllVariableCsvVariable>,
         importVariableType: HierarchicalVariableType? = null,
         ignoreVariableTypes: List<HierarchicalVariableType>? = null,
     ) {
-      var filteredCsvVariables = csvVariables
+      var filteredAllVariableCsvVariables = csvVariables
 
       // Target specific variable type to import
       // When importing a specific variable type, we will also import its children. For example - a
       // "table" variable with several children of type "single text" will all be imported within
-      // the same `importCsvVariables` run, in hierarchical order from parent down through all
+      // the same `importAllVariableCsvVariables` run, in hierarchical order from parent down
+      // through all
       // descendents.
       if (importVariableType != null) {
         // Get all the variable names that are the correct data type
-        val filteredCsvVariableNames =
-            filteredCsvVariables
+        val filteredAllVariableCsvVariableNames =
+            filteredAllVariableCsvVariables
                 .filter { it.dataType.value == importVariableType.value }
                 .map { it.name }
 
         // Filter csv variables down to list of variables that are either the given type or children
         // of the given type
-        filteredCsvVariables =
-            filteredCsvVariables.filter { csvVariable ->
-              variableNameOrParentWithinList(csvVariable, filteredCsvVariableNames)
+        filteredAllVariableCsvVariables =
+            filteredAllVariableCsvVariables.filter { csvVariable ->
+              variableNameOrParentWithinList(csvVariable, filteredAllVariableCsvVariableNames)
             }
       }
 
       // Ignore specific variable types during import
       if (ignoreVariableTypes != null) {
         val ignoreDataTypes = ignoreVariableTypes.map { it.value }.toSet()
-        filteredCsvVariables =
-            filteredCsvVariables.filterNot { it.dataType.value in ignoreDataTypes }
+        filteredAllVariableCsvVariables =
+            filteredAllVariableCsvVariables.filterNot { it.dataType.value in ignoreDataTypes }
       }
 
-      filteredCsvVariables.forEach { csvVariable ->
+      filteredAllVariableCsvVariables.forEach { csvVariable ->
         try {
           importVariable(csvVariable)
         } catch (e: Exception) {
@@ -223,18 +220,20 @@ class VariableImporter(
         }
       }
 
-      val notImported = filteredCsvVariables.filter { it.variableId == null }
+      val notImported = filteredAllVariableCsvVariables.filter { it.variableId == null }
       if (notImported.isNotEmpty()) {
         notImported.forEach { log.debug("Variable not imported: $it") }
         throw IllegalStateException("Some variables could not be imported")
       }
     }
 
-    private fun variableNameOrParentWithinList(csvVariable: CsvVariable, names: List<String>) =
-        names.intersect(setOf(csvVariable.name, csvVariable.parent)).isNotEmpty()
+    private fun variableNameOrParentWithinList(
+        csvVariable: AllVariableCsvVariable,
+        names: List<String>
+    ) = names.intersect(setOf(csvVariable.name, csvVariable.parent)).isNotEmpty()
 
     // This is where we define the "extra" import instructions for specific variable types
-    private fun importTypeSpecificVariable(csvVariable: CsvVariable) {
+    private fun importTypeSpecificVariable(csvVariable: AllVariableCsvVariable) {
       when (csvVariable.dataType) {
         AllVariableCsvVariableType.SingleSelect,
         AllVariableCsvVariableType.MultiSelect -> importSelectVariable(csvVariable)
@@ -250,7 +249,7 @@ class VariableImporter(
       }
     }
 
-    private fun importTableVariable(csvVariable: CsvVariable) {
+    private fun importTableVariable(csvVariable: AllVariableCsvVariable) {
       if (csvVariable.dataType != AllVariableCsvVariableType.Table) {
         // This should be impossible since we are filtering the csv variables before we get here
         // But we should double-check
@@ -266,7 +265,7 @@ class VariableImporter(
               tableStyleId = csvVariable.tableStyle))
     }
 
-    private fun importTableColumnVariable(csvVariable: CsvVariable) {
+    private fun importTableColumnVariable(csvVariable: AllVariableCsvVariable) {
       // Column Variable
       val tableVariableId: VariableId =
           csvVariableByPath[csvVariable.parentPath]?.variableId
@@ -282,7 +281,7 @@ class VariableImporter(
     }
 
     // Import select variable and select variable option rows
-    private fun importSelectVariable(csvVariable: CsvVariable) {
+    private fun importSelectVariable(csvVariable: AllVariableCsvVariable) {
       val selectsRow =
           VariableSelectsRow(
               variableId = csvVariable.variableId,
@@ -300,7 +299,7 @@ class VariableImporter(
           selectsRow, csvVariable.options.map { it.copy(variableId = csvVariable.variableId) })
     }
 
-    private fun importNumberVariable(csvVariable: CsvVariable) {
+    private fun importNumberVariable(csvVariable: AllVariableCsvVariable) {
       variableStore.importNumberVariable(
           VariableNumbersRow(
               variableId = csvVariable.variableId,
@@ -310,7 +309,7 @@ class VariableImporter(
               decimalPlaces = csvVariable.decimalPlaces))
     }
 
-    private fun importTextVariable(csvVariable: CsvVariable) {
+    private fun importTextVariable(csvVariable: AllVariableCsvVariable) {
       variableStore.importTextVariable(
           VariableTextsRow(
               variableId = csvVariable.variableId,
@@ -331,7 +330,7 @@ class VariableImporter(
      *
      * Modifies [csvVariable] to set the variable ID and manifest entry key.
      */
-    private fun importVariable(csvVariable: CsvVariable) {
+    private fun importVariable(csvVariable: AllVariableCsvVariable) {
       val variablesRow = csvVariable.mapToVariablesRow()
       if (variablesRow.variableTypeId == null) {
         // This theoretically should not be possible, but the field is optional on the VariablesRow
@@ -361,7 +360,10 @@ class VariableImporter(
      * Returns true if the list of select options in a CSV variable is the same as the options of an
      * existing variable.
      */
-    private fun hasSameOptions(csvVariable: CsvVariable, variable: SelectVariable): Boolean {
+    private fun hasSameOptions(
+        csvVariable: AllVariableCsvVariable,
+        variable: SelectVariable
+    ): Boolean {
       val variableOptions =
           variable.options.mapIndexed { index, selectOption ->
             VariableSelectOptionsRow(
@@ -379,7 +381,7 @@ class VariableImporter(
      * Returns true if a CSV variable representing a table has the same columns as an existing table
      * variable. Manifest-specific settings on the columns (name, etc.) are ignored.
      */
-    private fun hasSameColumns(csvVariable: CsvVariable, table: TableVariable): Boolean {
+    private fun hasSameColumns(csvVariable: AllVariableCsvVariable, table: TableVariable): Boolean {
       val csvColumns = csvVariablesByParentPath[csvVariable.variablePath] ?: emptyList()
 
       return csvColumns.size == table.columns.size &&
@@ -389,7 +391,10 @@ class VariableImporter(
           }
     }
 
-    private fun hasSameSubsections(csvVariable: CsvVariable, section: SectionVariable): Boolean {
+    private fun hasSameSubsections(
+        csvVariable: AllVariableCsvVariable,
+        section: SectionVariable
+    ): Boolean {
       val csvSubsections = csvVariablesByParentPath[csvVariable.variablePath] ?: emptyList()
 
       return csvSubsections.size == section.children.size &&
@@ -406,7 +411,10 @@ class VariableImporter(
      * variable and all the children are reusable. That is, non-reusability propagates from children
      * up to parents here. Propagation in the other direction happens elsewhere.
      */
-    private fun canReuseExistingVariable(csvVariable: CsvVariable, variable: Variable): Boolean {
+    private fun canReuseExistingVariable(
+        csvVariable: AllVariableCsvVariable,
+        variable: Variable
+    ): Boolean {
       return csvVariable.description == variable.description &&
           csvVariable.isList == variable.isList &&
           csvVariable.name == variable.name &&
@@ -439,7 +447,7 @@ class VariableImporter(
           }
     }
 
-    private fun markChildrenNonReusable(csvVariable: CsvVariable) {
+    private fun markChildrenNonReusable(csvVariable: AllVariableCsvVariable) {
       csvVariablesByParentPath[csvVariable.variablePath]?.forEach { child ->
         if (child.variableId != null) {
           child.replacesVariableId = child.variableId

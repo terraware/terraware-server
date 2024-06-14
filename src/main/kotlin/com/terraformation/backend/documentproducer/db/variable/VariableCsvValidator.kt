@@ -52,7 +52,7 @@ class VariableCsvValidator(
   private val existingStableIds = mutableSetOf<String>()
 
   private val parentPathToChildrenNamesMap = mutableMapOf<String, MutableSet<String>>()
-  private val variableTypeByPath = mutableMapOf<String, CsvVariableType>()
+  private val variableTypeByPath = mutableMapOf<String, AllVariableCsvVariableType>()
 
   override val validators: List<((String?, String) -> Unit)?> =
       listOf(
@@ -192,15 +192,15 @@ class VariableCsvValidator(
 
     val variableType =
         try {
-          CsvVariableType.create(dataTypeName)
+          AllVariableCsvVariableType.create(dataTypeName)
         } catch (e: IllegalArgumentException) {
           addError(dataTypeField, dataTypeName, e.localizedMessage)
           return
         }
 
     when (variableType) {
-      CsvVariableType.SingleSelect,
-      CsvVariableType.MultiSelect ->
+      AllVariableCsvVariableType.SingleSelect,
+      AllVariableCsvVariableType.MultiSelect ->
           if (values[VARIABLE_CSV_COLUMN_INDEX_OPTIONS].isNullOrEmpty()) {
             addError(dataTypeField, "", messages.variablesCsvDataTypeRequiresOptions())
           }
@@ -217,14 +217,7 @@ class VariableCsvValidator(
           variableTypeByPath[parentPath]
               ?: throw IllegalStateException("Unable to find type of parent $parentPath")
 
-      if (variableType == CsvVariableType.Section) {
-        if (parentVariableType != CsvVariableType.Section) {
-          addError(
-              messages.manifestCsvColumnName(VARIABLE_CSV_COLUMN_INDEX_PARENT),
-              parent,
-              messages.variablesCsvSectionParentMustBeSection())
-        }
-      } else if (parentVariableType != CsvVariableType.Table) {
+      if (parentVariableType != AllVariableCsvVariableType.Table) {
         addError(
             messages.manifestCsvColumnName(VARIABLE_CSV_COLUMN_INDEX_PARENT),
             parent,

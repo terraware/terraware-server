@@ -131,9 +131,7 @@ class DocumentUpgradeCalculator(
         }
       } else {
         valuesOfReplacedVariable
-            .mapNotNull { oldValue ->
-              variable.convertValue(oldVariable, oldValue, null, variableStore::fetchVariable)
-            }
+            .mapNotNull { oldValue -> variable.convertValue(oldVariable, oldValue, null) }
             .map { AppendValueOperation(it) }
       }
     } else {
@@ -256,10 +254,7 @@ class DocumentUpgradeCalculator(
                   existingValues[newColumn.replacesVariableId]
                       ?.filter { it.rowValueId == oldRow.id }
                       ?.sortedBy { it.listPosition }
-                      ?.mapNotNull { oldValue ->
-                        newColumn.convertValue(
-                            oldColumn, oldValue, null, variableStore::fetchVariable)
-                      }
+                      ?.mapNotNull { oldValue -> newColumn.convertValue(oldColumn, oldValue, null) }
                       ?.map { AppendValueOperation(it) } ?: emptyList()
                 } else {
                   emptyList<ValueOperation>()

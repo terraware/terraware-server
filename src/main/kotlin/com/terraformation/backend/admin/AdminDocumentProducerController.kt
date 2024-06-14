@@ -67,17 +67,17 @@ class AdminDocumentProducerController(
       summary = "Upload a variable manifest.",
       description = "The uploaded file must be in CSV format.",
       externalDocs =
-      ExternalDocumentation(
-          description = "Current Google sheet",
-          url =
-          "https://docs.google.com/spreadsheets/d/16ybKFseSwFubxZ_i6ENxsF2XT0RqajhdumefJOoHQo8/edit#gid=1050189377"))
+          ExternalDocumentation(
+              description = "Current Google sheet",
+              url =
+                  "https://docs.google.com/spreadsheets/d/16ybKFseSwFubxZ_i6ENxsF2XT0RqajhdumefJOoHQo8/edit#gid=1050189377"))
   @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], path = ["/uploadAllVariables"])
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       content = [Content(encoding = [Encoding(name = "file", contentType = "text/csv")])],
   )
   fun uploadAllVariables(
-    @RequestPart("file") file: MultipartFile,
-    redirectAttributes: RedirectAttributes,
+      @RequestPart("file") file: MultipartFile,
+      redirectAttributes: RedirectAttributes,
   ): String {
     try {
       file.inputStream.use { uploadStream ->

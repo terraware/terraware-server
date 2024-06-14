@@ -12,7 +12,7 @@ import java.math.BigDecimal
 private const val LOCALIZED_ERROR_KEY_UNKNOWN_DATA_TYPE = "variablesCsvDataTypeUnknown"
 
 // In the header order in the CSV
-data class CsvVariable(
+data class AllVariableCsvVariable(
     /** Column 1/A - Name */
     val name: String,
     /** Column 2/B - Identifier that stays stable across settings changes. */
