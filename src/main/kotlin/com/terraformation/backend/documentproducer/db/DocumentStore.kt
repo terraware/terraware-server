@@ -3,6 +3,7 @@ package com.terraformation.backend.documentproducer.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentSavedVersionId
 import com.terraformation.backend.db.docprod.DocumentStatus
@@ -97,6 +98,13 @@ class DocumentStore(
 
   fun findAll(): List<ExistingDocumentModel> {
     return documentsDao.findAll().map { ExistingDocumentModel(it) }
+  }
+
+  fun fetchByProjectId(projectId: ProjectId): List<ExistingDocumentModel> {
+    return documentsDao
+        .fetchByProjectId(projectId)
+        .map { ExistingDocumentModel(it) }
+        .filter { currentUser().canReadDocument(it.id) }
   }
 
   fun fetchDocumentById(documentId: DocumentId): DocumentsRow {

@@ -23,6 +23,7 @@ import com.terraformation.backend.documentproducer.model.ExistingSavedVersionMod
 import com.terraformation.backend.documentproducer.model.NewDocumentModel
 import com.terraformation.backend.documentproducer.model.NewSavedVersionModel
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
@@ -32,6 +33,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @InternalEndpoint
@@ -43,8 +45,17 @@ class DocumentsController(
 ) {
   @GetMapping
   @Operation(summary = "Gets a list of all the documents.")
-  fun listDocuments(): ListDocumentsResponsePayload {
-    val models = documentStore.findAll()
+  fun listDocuments(
+      @Parameter(description = "If present, only list documents for this project.")
+      @RequestParam
+      projectId: ProjectId?
+  ): ListDocumentsResponsePayload {
+    val models =
+        if (projectId != null) {
+          documentStore.fetchByProjectId(projectId)
+        } else {
+          documentStore.findAll()
+        }
 
     return ListDocumentsResponsePayload(models.map { DocumentPayload(it) })
   }

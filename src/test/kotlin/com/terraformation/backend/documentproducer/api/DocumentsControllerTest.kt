@@ -9,7 +9,6 @@ import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.tables.pojos.VariableValuesRow
 import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
-import io.ktor.client.utils.EmptyContent.status
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -146,6 +145,36 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                       "projectId": $otherProjectId,
                       "status": "Locked",
                       "variableManifestId": $otherVariableManifestId
+                    }
+                  ]
+                }"""
+                  .trimIndent())
+    }
+
+    @Test
+    fun `can limit results to a single project`() {
+      val projectId = inserted.projectId
+      val documentId = insertDocument()
+      insertProject(name = "Other Project")
+      insertDocument()
+
+      mockMvc
+          .get("$path?projectId=$projectId")
+          .andExpectJson(
+              """
+                {
+                  "documents": [
+                    {
+                      "createdBy": ${inserted.userId},
+                      "createdTime": "${Instant.EPOCH}",
+                      "id": $documentId,
+                      "documentTemplateId": ${inserted.documentTemplateId},
+                      "modifiedBy": ${inserted.userId},
+                      "modifiedTime": "${Instant.EPOCH}",
+                      "ownedBy": ${inserted.userId},
+                      "projectId": $projectId,
+                      "status": "Draft",
+                      "variableManifestId": ${inserted.variableManifestId}
                     }
                   ]
                 }"""
