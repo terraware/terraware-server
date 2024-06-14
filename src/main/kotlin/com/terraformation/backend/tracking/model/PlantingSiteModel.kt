@@ -185,7 +185,6 @@ data class PlantingSiteModel<
         boundary: MultiPolygon? = null,
         description: String? = null,
         exclusion: MultiPolygon? = null,
-        gridOrigin: Point? = null,
         name: String,
         organizationId: OrganizationId,
         plantingSeasons: List<ExistingPlantingSeasonModel> = emptyList(),
@@ -199,6 +198,10 @@ data class PlantingSiteModel<
           boundary?.differenceNullable(exclusion)?.calculateAreaHectares()?.let { area ->
             if (area.signum() > 0) area else null
           }
+
+      // The point that will be used as the origin for the grid of monitoring plots. We use the
+      // southwest corner of the envelope (bounding box) of the site boundary.
+      val gridOrigin = boundary?.factory?.createPoint(boundary.envelope.coordinates[0])
 
       return NewPlantingSiteModel(
           areaHa = areaHa,
