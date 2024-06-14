@@ -32,6 +32,8 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertUser()
+    insertOrganization()
+    insertProject()
     insertDocumentTemplate()
     insertVariableManifest()
     insertDocument()

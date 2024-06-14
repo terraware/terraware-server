@@ -55,8 +55,8 @@ class DocumentStore(
             modifiedBy = currentUserId,
             modifiedTime = now,
             name = newDocumentModel.name,
-            organizationName = newDocumentModel.organizationName,
             ownedBy = newDocumentModel.ownedBy,
+            projectId = newDocumentModel.projectId,
             statusId = DocumentStatus.Draft,
             variableManifestId = manifestId,
         )

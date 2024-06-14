@@ -2392,8 +2392,8 @@ abstract class DatabaseBackedTest {
       modifiedTime: Instant = createdTime,
       id: Any? = null,
       name: String = "Document ${nextDocumentSuffix++}",
-      organizationName: String = "Test Org",
       ownedBy: UserId = createdBy,
+      projectId: Any = inserted.projectId,
       status: DocumentStatus = DocumentStatus.Draft,
       variableManifestId: VariableManifestId = inserted.variableManifestId,
   ): DocumentId {
@@ -2406,8 +2406,8 @@ abstract class DatabaseBackedTest {
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
-            organizationName = organizationName,
             ownedBy = ownedBy,
+            projectId = projectId.toIdWrapper { ProjectId(it) },
             statusId = status,
             variableManifestId = variableManifestId,
         )

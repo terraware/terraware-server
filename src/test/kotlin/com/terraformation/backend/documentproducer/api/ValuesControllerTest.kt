@@ -21,6 +21,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
   fun setUp() {
     val userId = insertUser()
     insertUserGlobalRole(userId = userId, GlobalRole.TFExpert)
+    insertOrganization()
+    insertProject()
     insertDocumentTemplate()
     insertVariableManifest()
     insertDocument()

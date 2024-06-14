@@ -14,6 +14,8 @@ class VariablesControllerTest : ControllerIntegrationTest() {
   @BeforeEach
   fun setUp() {
     insertUser()
+    insertOrganization()
+    insertProject()
     insertDocumentTemplate()
     insertVariableManifest()
     insertDocument()
