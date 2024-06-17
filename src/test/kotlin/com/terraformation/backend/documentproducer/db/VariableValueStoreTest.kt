@@ -3,7 +3,7 @@ package com.terraformation.backend.documentproducer.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
@@ -211,7 +211,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         val row2ColumnValueId = insertValue(variableId = columnVariableId, textValue = "C")
         insertValueTableRow(row2ColumnValueId, row2Id)
 
-        store.updateValues(listOf(DeleteValueOperation(inserted.documentId, row0Id)))
+        store.updateValues(listOf(DeleteValueOperation(inserted.projectId, row0Id)))
 
         val updatedDocument = store.listValues(inserted.documentId)
 
@@ -256,8 +256,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
 
         store.updateValues(
             listOf(
-                DeleteValueOperation(inserted.documentId, row1Id),
-                DeleteValueOperation(inserted.documentId, row0Id)))
+                DeleteValueOperation(inserted.projectId, row1Id),
+                DeleteValueOperation(inserted.projectId, row0Id)))
 
         val updatedDocument = store.listValues(inserted.documentId)
 
@@ -286,7 +286,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         store.updateValues(
             listOf(
                 DeleteValueOperation(
-                    inserted.documentId, append1Result.first { it.value == "1" }.id),
+                    inserted.projectId, append1Result.first { it.value == "1" }.id),
                 AppendValueOperation(NewTextValue(newValueProps(variableId), "3"))))
 
         val round1Values = store.listValues(inserted.documentId)
@@ -297,8 +297,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
 
         store.updateValues(
             listOf(
-                DeleteValueOperation(
-                    inserted.documentId, round1Values.first { it.value == "2" }.id),
+                DeleteValueOperation(inserted.projectId, round1Values.first { it.value == "2" }.id),
                 AppendValueOperation(NewTextValue(newValueProps(variableId), "4"))))
 
         val round2Values = store.listValues(inserted.documentId)
@@ -319,7 +318,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       insertValue(variableId = variableId, listPosition = 0, textValue = "first")
       insertValue(variableId = variableId, listPosition = 1, textValue = "second")
 
-      assertEquals(2, store.fetchNextListPosition(inserted.documentId, variableId))
+      assertEquals(2, store.fetchNextListPosition(inserted.projectId, variableId))
     }
 
     @Test
@@ -328,7 +327,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
           insertVariableManifestEntry(
               insertTextVariable(insertVariable(type = VariableType.Text, isList = true)))
 
-      assertEquals(0, store.fetchNextListPosition(inserted.documentId, variableId))
+      assertEquals(0, store.fetchNextListPosition(inserted.projectId, variableId))
     }
 
     @Test
@@ -336,7 +335,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       val variableId = insertVariableManifestEntry(insertTextVariable())
       insertValue(variableId = variableId, textValue = "text")
 
-      assertEquals(0, store.fetchNextListPosition(inserted.documentId, variableId))
+      assertEquals(0, store.fetchNextListPosition(inserted.projectId, variableId))
     }
 
     @Test
@@ -347,14 +346,14 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       insertValue(
           variableId = variableId, listPosition = 1, textValue = "deleted", isDeleted = true)
 
-      assertEquals(1, store.fetchNextListPosition(inserted.documentId, variableId))
+      assertEquals(1, store.fetchNextListPosition(inserted.projectId, variableId))
     }
   }
 
   private fun existingValueProps(
       valueId: Any,
       variableId: Any,
-      documentId: DocumentId = inserted.documentId,
+      projectId: ProjectId = inserted.projectId,
       position: Int = 0,
       rowValueId: Any? = null,
       citation: String? = null,
@@ -362,15 +361,15 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
     return BaseVariableValueProperties(
         citation = citation,
         id = valueId.toIdWrapper { VariableValueId(it) },
-        documentId = documentId,
         listPosition = position,
+        projectId = projectId,
         variableId = variableId.toIdWrapper { VariableId(it) },
         rowValueId = rowValueId?.toIdWrapper { VariableValueId(it) })
   }
 
   private fun newValueProps(
       variableId: Any,
-      documentId: DocumentId = inserted.documentId,
+      projectId: ProjectId = inserted.projectId,
       position: Int = 0,
       rowValueId: Any? = null,
       citation: String? = null,
@@ -378,8 +377,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
     return BaseVariableValueProperties(
         citation = citation,
         id = null,
-        documentId = documentId,
         listPosition = position,
+        projectId = projectId,
         variableId = variableId.toIdWrapper { VariableId(it) },
         rowValueId = rowValueId?.toIdWrapper { VariableValueId(it) })
   }

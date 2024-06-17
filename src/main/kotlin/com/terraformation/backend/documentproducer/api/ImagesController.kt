@@ -9,6 +9,7 @@ import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.documentproducer.DocumentFileService
+import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
@@ -31,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 class ImagesController(
     private val documentFileService: DocumentFileService,
+    private val documentStore: DocumentStore,
 ) {
   @GetMapping(
       "/{valueId}",
@@ -104,16 +106,17 @@ class ImagesController(
             size = file.size,
         )
 
+    val projectId = documentStore.fetchProjectId(documentId)
     val isAppend = listPosition == null
 
     val base =
         BaseVariableValueProperties(
             citation = citation,
-            documentId = documentId,
             id = null,
             // If list position isn't specified, the value here will be ignored because isAppend
             // will be true.
             listPosition = listPosition?.toIntOrNull() ?: 0,
+            projectId = projectId,
             rowValueId = rowValueId?.ifEmpty { null }?.let { VariableValueId(it.toLong()) },
             variableId = VariableId(variableId.toLong()),
         )
