@@ -296,16 +296,7 @@ class PlantingSiteStore(
 
     val now = clock.instant()
 
-    // The point that will be used as the origin for the grid of monitoring plots. We use the
-    // southwest corner of the envelope (bounding box) of the site boundary.
-    val gridOrigin =
-        if (newModel.boundary != null) {
-          newModel.boundary.factory.createPoint(newModel.boundary.envelope.coordinates[0])
-        } else {
-          null
-        }
-
-    val problems = newModel.copy(gridOrigin = gridOrigin).validate()
+    val problems = newModel.validate()
     if (problems != null) {
       throw PlantingSiteMapInvalidException(problems)
     }
@@ -318,7 +309,7 @@ class PlantingSiteStore(
             createdTime = now,
             description = newModel.description,
             exclusion = newModel.exclusion,
-            gridOrigin = gridOrigin,
+            gridOrigin = newModel.gridOrigin,
             modifiedBy = currentUser().userId,
             modifiedTime = now,
             name = newModel.name,
@@ -333,8 +324,9 @@ class PlantingSiteStore(
 
       var siteHistoryId: PlantingSiteHistoryId? = null
 
-      if (newModel.boundary != null && gridOrigin != null) {
-        siteHistoryId = insertPlantingSiteHistory(newModel, gridOrigin, now, plantingSiteId)
+      if (newModel.boundary != null && newModel.gridOrigin != null) {
+        siteHistoryId =
+            insertPlantingSiteHistory(newModel, newModel.gridOrigin, now, plantingSiteId)
 
         newModel.plantingZones.forEach { zone ->
           val zoneId = createPlantingZone(zone, plantingSiteId, now)
@@ -441,7 +433,7 @@ class PlantingSiteStore(
     val plantingSiteId = plantingSiteEdit.existingModel.id
 
     if (plantingSiteEdit.problems.isNotEmpty()) {
-      throw PlantingSiteEditInvalidException(plantingSiteEdit.problems)
+      throw PlantingSiteMapInvalidException(plantingSiteEdit.problems)
     }
 
     requirePermissions { updatePlantingSite(plantingSiteId) }

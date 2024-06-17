@@ -115,7 +115,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         countrySubdivisionCode = organizationModel.countrySubdivisionCode)
     insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
     insertFacility()
-    timeZone = insertTimeZone()
+    timeZone = ZoneId.of("Pacific/Honolulu")
   }
 
   @Test
@@ -156,7 +156,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val expectedTotalUsers = 10
     val baseUserId = 100
 
-    (baseUserId ..< expectedTotalUsers + baseUserId).forEach { userId ->
+    (baseUserId..<expectedTotalUsers + baseUserId).forEach { userId ->
       insertUser(userId)
       insertOrganizationUser(userId)
     }
@@ -407,7 +407,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update publishes event if time zone is changed`() {
     val existing = organizationsDao.fetchOneById(organizationId)!!
-    val newTimeZone = insertTimeZone("Europe/London")
+    val newTimeZone = ZoneId.of("Europe/London")
 
     store.update(existing)
     publisher.assertEventNotPublished<OrganizationTimeZoneChangedEvent>()

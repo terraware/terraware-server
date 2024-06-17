@@ -97,6 +97,7 @@ class UnusedSquareFinder(
       square(sizeMeters)
     }
   }
+
   /**
    * Returns the distance from the grid origin to a particular set of coordinates as an offset in
    * meters along each axis.

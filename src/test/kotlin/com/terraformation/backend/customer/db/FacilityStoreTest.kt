@@ -84,7 +84,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateSubLocation(any()) } returns true
     every { user.canUpdateTimeseries(any()) } returns true
 
-    timeZone = insertTimeZone()
+    timeZone = ZoneId.of("Pacific/Honolulu")
     insertSiteData()
   }
 
@@ -492,7 +492,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `update updates all editable fields`() {
     val otherOrganizationId = OrganizationId(10)
-    val otherTimeZone = insertTimeZone("Europe/Paris")
+    val otherTimeZone = ZoneId.of("Europe/Paris")
 
     insertOrganization(otherOrganizationId)
     insertOrganizationUser(organizationId = otherOrganizationId, role = Role.Admin)
@@ -567,7 +567,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update uses organization time zone if facility time zone is cleared`() {
-    val orgTimeZone = insertTimeZone("Asia/Calcutta")
+    val orgTimeZone = ZoneId.of("Asia/Calcutta")
     organizationsDao.update(
         organizationsDao.fetchOneById(organizationId)!!.copy(timeZone = orgTimeZone))
 
@@ -583,7 +583,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update publishes event if time zone is changed`() {
-    val otherTimeZone = insertTimeZone("Asia/Shanghai")
+    val otherTimeZone = ZoneId.of("Asia/Shanghai")
 
     store.update(store.fetchOneById(facilityId).copy(timeZone = otherTimeZone))
 

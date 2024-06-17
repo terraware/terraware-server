@@ -15,9 +15,8 @@ enum class SupportRequestType(@get:JsonValue val jsonValue: String) {
 
     @JsonCreator
     @JvmStatic
-    fun forJsonValue(jsonValue: String): SupportRequestType {
+    fun forJsonValue(jsonValue: String): SupportRequestType? {
       return byJsonValue[jsonValue]
-          ?: throw IllegalArgumentException("Unrecognized value: $jsonValue")
     }
   }
 }

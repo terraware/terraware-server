@@ -12,6 +12,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.util.Turtle
 import io.mockk.every
 import java.math.BigDecimal
+import java.time.ZoneId
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -33,7 +34,7 @@ internal class PlantingSiteStoreUpdateSiteTest : PlantingSiteStoreTest() {
               ))
 
       val createdTime = clock.instant()
-      val newTimeZone = insertTimeZone("Europe/Paris")
+      val newTimeZone = ZoneId.of("Europe/Paris")
       val now = createdTime.plusSeconds(1000)
       clock.instant = now
 
@@ -104,7 +105,7 @@ internal class PlantingSiteStoreUpdateSiteTest : PlantingSiteStoreTest() {
     fun `publishes event if time zone updated`() {
       val plantingSiteId = insertPlantingSite(timeZone = timeZone)
       val initialModel = store.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
-      val newTimeZone = insertTimeZone("Europe/Paris")
+      val newTimeZone = ZoneId.of("Europe/Paris")
 
       store.updatePlantingSite(plantingSiteId, emptyList()) { it.copy(timeZone = newTimeZone) }
 

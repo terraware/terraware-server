@@ -10,8 +10,8 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.ShapefileGenerator
+import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.tracking.model.Shapefile
-import com.terraformation.backend.tracking.model.ShapefileFeature
 import io.mockk.every
 import kotlin.io.path.Path
 import org.jooq.Record
@@ -73,35 +73,30 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
   inner class Validation {
     @Test
     fun `detects too few shapefiles`() {
-      assertHasProblem(
-          "NoShapefiles.zip", "Expected subzones and optionally exclusions but found 0 shapefiles")
+      assertHasProblem("Expected subzones and optionally exclusions but found 0 shapefiles") {
+        importer.import(
+            "name",
+            "description",
+            organizationId,
+            Shapefile.fromZipFile(Path("$resourcesDir/NoShapefiles.zip")))
+      }
     }
 
+    // Site validation logic is tested in PlantingSiteModelTest; this is just to confirm that
+    // shapefile import actually validates the site before creating it.
     @Test
-    fun `detects zone that is big enough for 5 plots but too small for a permanent cluster`() {
+    fun `validates site map`() {
       val gen = ShapefileGenerator()
       val siteBoundary = gen.multiRectangle(0 to 0, 200 to 30)
       val subzoneFeature = gen.subzoneFeature(siteBoundary)
 
-      assertHasProblem(
-          "Planting zone Z1 is too small to create minimum number of monitoring plots (is the zone at least 150x75 meters?)",
-          listOf(subzoneFeature))
-    }
+      val expected = PlantingSiteValidationFailure.zoneTooSmall("Z1")
 
-    @Test
-    fun `detects zone that is big enough for a permanent cluster but not also for a temporary plot`() {
-      val gen = ShapefileGenerator()
-      val siteBoundary = gen.multiRectangle(0 to 0, 60 to 60)
-      val subzoneFeature = gen.subzoneFeature(siteBoundary)
-
-      assertHasProblem(
-          "Planting zone Z1 is too small to create minimum number of monitoring plots (is the zone at least 150x75 meters?)",
-          listOf(subzoneFeature))
-    }
-
-    private fun assertHasProblem(expected: String, importFunc: () -> Unit) {
       try {
-        importFunc()
+        importer.import(
+            name = "Test Site",
+            organizationId = organizationId,
+            shapefiles = listOf(Shapefile(listOf(subzoneFeature))))
         fail("Should have throw exception for validation failure")
       } catch (e: PlantingSiteMapInvalidException) {
         if (e.problems.none { it == expected }) {
@@ -112,28 +107,16 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       }
     }
 
-    private fun assertHasProblem(zipFile: String, expected: String) {
-      assertHasProblem(expected) {
-        importer.import(
-            "name",
-            "description",
-            organizationId,
-            Shapefile.fromZipFile(Path("$resourcesDir/$zipFile")))
-      }
-    }
-
-    private fun assertHasProblem(
-        expected: String,
-        subzoneFeatures: List<ShapefileFeature>,
-        exclusions: List<ShapefileFeature>? = null,
-    ) {
-      assertHasProblem(expected) {
-        importer.import(
-            name = "Test Site",
-            organizationId = organizationId,
-            shapefiles =
-                listOfNotNull(Shapefile(subzoneFeatures), exclusions?.let { Shapefile(it) }),
-        )
+    private fun assertHasProblem(expected: String, importFunc: () -> Unit) {
+      try {
+        importFunc()
+        fail("Should have throw exception for validation failure")
+      } catch (e: ShapefilesInvalidException) {
+        if (e.problems.none { it == expected }) {
+          // Assertion failure message will include the list of problems we actually got back.
+          assertEquals(
+              listOf(expected), e.problems, "Did not find expected problem in problems list")
+        }
       }
     }
   }

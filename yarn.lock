@@ -613,6 +613,14 @@ mjml-body@4.15.3:
     lodash "^4.17.21"
     mjml-core "4.15.3"
 
+mjml-bullet-list@^1.2.2:
+  version "1.2.2"
+  resolved "https://registry.yarnpkg.com/mjml-bullet-list/-/mjml-bullet-list-1.2.2.tgz#ed5a26707a94f772653e33bd9ace94b63d2c557a"
+  integrity sha512-Ddfajq1K1Okq5iwVN3yxpH4HUaHdlJFdXgbTuea36SLOfhg1PuKN8ZVc5LQoxQjUUTgxaqQ0M+9xPeTzEakKuA==
+  dependencies:
+    mjml "^4.12.0"
+    mjml-core "^4.12.0"
+
 mjml-button@4.15.3:
   version "4.15.3"
   resolved "https://registry.yarnpkg.com/mjml-button/-/mjml-button-4.15.3.tgz#34baf2d7fbf77a5febe6993e311103723279adbd"
@@ -658,7 +666,7 @@ mjml-column@4.15.3:
     lodash "^4.17.21"
     mjml-core "4.15.3"
 
-mjml-core@4.15.3:
+mjml-core@4.15.3, mjml-core@^4.12.0:
   version "4.15.3"
   resolved "https://registry.yarnpkg.com/mjml-core/-/mjml-core-4.15.3.tgz#96c30f49340b95bb9c825a6479557cc9ad1af6c6"
   integrity sha512-Dmwk+2cgSD9L9GmTbEUNd8QxkTZtW9P7FN/ROZW/fGZD6Hq6/4TB0zEspg2Ow9eYjZXO2ofOJ3PaQEEShKV0kQ==
@@ -916,7 +924,7 @@ mjml-wrapper@4.15.3:
     mjml-core "4.15.3"
     mjml-section "4.15.3"
 
-mjml@4.15.3:
+mjml@4.15.3, mjml@^4.12.0:
   version "4.15.3"
   resolved "https://registry.yarnpkg.com/mjml/-/mjml-4.15.3.tgz#d46996d63e957ae946b2da6ca78fcef5186beee9"
   integrity sha512-bW2WpJxm6HS+S3Yu6tq1DUPFoTxU9sPviUSmnL7Ua+oVO3WA5ILFWqvujUlz+oeuM+HCwEyMiP5xvKNPENVjYA==

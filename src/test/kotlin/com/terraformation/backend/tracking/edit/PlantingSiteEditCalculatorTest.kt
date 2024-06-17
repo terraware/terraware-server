@@ -7,6 +7,7 @@ import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.existingSite
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.newSite
+import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -406,7 +407,7 @@ class PlantingSiteEditCalculatorTest {
           }
 
       assertHasProblem(
-          PlantingSiteEditProblem.ZoneBoundaryChanged(
+          PlantingSiteValidationFailure.zoneBoundaryChanged(
               conflictsWith = setOf("Z1", "Z2"), zoneName = "Z1"),
           existing,
           desired)
@@ -430,7 +431,7 @@ class PlantingSiteEditCalculatorTest {
           }
 
       assertHasProblem(
-          PlantingSiteEditProblem.SubzoneBoundaryChanged(
+          PlantingSiteValidationFailure.subzoneBoundaryChanged(
               conflictsWith = setOf("S1", "S2"), subzoneName = "S1", zoneName = "Z1"),
           existing,
           desired)
@@ -446,7 +447,7 @@ class PlantingSiteEditCalculatorTest {
           }
 
       assertHasProblem(
-          PlantingSiteEditProblem.CannotSplitZone(
+          PlantingSiteValidationFailure.cannotSplitZone(
               conflictsWith = setOf("N1", "N2"), zoneName = "Z1"),
           existing,
           desired)
@@ -464,7 +465,7 @@ class PlantingSiteEditCalculatorTest {
           }
 
       assertHasProblem(
-          PlantingSiteEditProblem.CannotSplitSubzone(
+          PlantingSiteValidationFailure.cannotSplitSubzone(
               conflictsWith = setOf("N1", "N2"), subzoneName = "S1", zoneName = "Z1"),
           existing,
           desired)
@@ -481,7 +482,8 @@ class PlantingSiteEditCalculatorTest {
       val desired = newSite(x = 150)
 
       assertHasProblem(
-          PlantingSiteEditProblem.CannotRemovePlantedSubzone(subzoneName = "S1", zoneName = "Z1"),
+          PlantingSiteValidationFailure.cannotRemovePlantedSubzone(
+              subzoneName = "S1", zoneName = "Z1"),
           existing,
           desired,
           setOf(existing.plantingZones[0].plantingSubzones[0].id))
@@ -496,7 +498,8 @@ class PlantingSiteEditCalculatorTest {
       val desired = newSite(x = 150)
 
       assertHasProblem(
-          PlantingSiteEditProblem.CannotRemovePlantedSubzone(subzoneName = "S1", zoneName = "Z1"),
+          PlantingSiteValidationFailure.cannotRemovePlantedSubzone(
+              subzoneName = "S1", zoneName = "Z1"),
           existing,
           desired,
           setOf(existing.plantingZones[0].plantingSubzones[0].id))
@@ -535,14 +538,14 @@ class PlantingSiteEditCalculatorTest {
     }
   }
 
-  private fun assertHasProblem(problem: PlantingSiteEditProblem, edit: PlantingSiteEdit) {
+  private fun assertHasProblem(problem: PlantingSiteValidationFailure, edit: PlantingSiteEdit) {
     if (edit.problems.none { it == problem }) {
       assertEquals(listOf(problem), edit.problems, "Expected problem not found")
     }
   }
 
   private fun assertHasProblem(
-      problem: PlantingSiteEditProblem,
+      problem: PlantingSiteValidationFailure,
       existing: ExistingPlantingSiteModel,
       desired: AnyPlantingSiteModel,
       plantedSubzoneIds: Set<PlantingSubzoneId> = setOf(PlantingSubzoneId(1)),

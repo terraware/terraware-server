@@ -13,6 +13,8 @@ import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import com.terraformation.backend.support.atlassian.model.TemporaryAttachmentModel
 import jakarta.inject.Named
 import jakarta.ws.rs.NotSupportedException
+import org.apache.tika.Tika
+import org.springframework.http.MediaType
 
 @Named
 class SupportService(
@@ -59,10 +61,23 @@ class SupportService(
       filename: String,
       sizedInputStream: SizedInputStream,
   ): List<TemporaryAttachmentModel> {
+
     sizedInputStream.contentType?.let {
-      !isContentTypeSupported(it) &&
-          throw NotSupportedException(
-              "$it is not a supported content type. Must be one of $SUPPORTED_CONTENT_TYPES_STRING")
+      if (!isContentTypeSupported(it)) {
+        throw NotSupportedException(
+            "$it is not a supported content type. Must be one of $SUPPORTED_CONTENT_TYPES_STRING")
+      }
+    }
+
+    if (sizedInputStream.markSupported()) {
+      // Only perform a file type detection if the Input Stream supports resetting
+      sizedInputStream.mark(sizedInputStream.size.toInt())
+      val tikaContentType = MediaType.parseMediaType(Tika().detect(sizedInputStream))
+      if (!isContentTypeSupported(tikaContentType)) {
+        throw NotSupportedException(
+            "File detected to be $tikaContentType, which is not supported. Must be one of $SUPPORTED_CONTENT_TYPES_STRING")
+      }
+      sizedInputStream.reset()
     }
 
     return atlassianHttpClient.attachTemporaryFile(filename, sizedInputStream).temporaryAttachments

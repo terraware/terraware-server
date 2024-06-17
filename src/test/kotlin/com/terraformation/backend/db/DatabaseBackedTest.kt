@@ -134,7 +134,6 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ProjectLandUseM
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSettingsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
-import com.terraformation.backend.db.default_schema.tables.pojos.TimeZonesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
@@ -1008,6 +1007,8 @@ abstract class DatabaseBackedTest {
       emailNotificationsEnabled: Boolean = false,
       timeZone: ZoneId? = null,
       locale: Locale? = null,
+      cookiesConsented: Boolean? = null,
+      cookiesConsentedTime: Instant? = if (cookiesConsented != null) Instant.EPOCH else null,
   ): UserId {
     val userIdWrapper = userId?.toIdWrapper { UserId(it) }
 
@@ -1016,6 +1017,8 @@ abstract class DatabaseBackedTest {
           dslContext
               .insertInto(USERS)
               .set(AUTH_ID, authId)
+              .set(COOKIES_CONSENTED, cookiesConsented)
+              .set(COOKIES_CONSENTED_TIME, cookiesConsentedTime)
               .set(CREATED_TIME, Instant.EPOCH)
               .set(EMAIL, email)
               .set(EMAIL_NOTIFICATIONS_ENABLED, emailNotificationsEnabled)
@@ -2089,12 +2092,6 @@ abstract class DatabaseBackedTest {
     recordedPlantsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!
-  }
-
-  fun insertTimeZone(timeZone: Any = ZoneId.of("Pacific/Honolulu")): ZoneId {
-    val zoneId = if (timeZone is ZoneId) timeZone else ZoneId.of("$timeZone")
-    timeZonesDao.insert(TimeZonesRow(zoneId))
-    return zoneId
   }
 
   protected fun insertOrganizationInternalTag(

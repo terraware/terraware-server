@@ -54,9 +54,9 @@ These steps apply to a local instance of Keycloak, and also to an existing one t
    9. Click the "Service Account Roles" tab.
    10. Click "Assign Roles."
    11. Select each of the following roles and click the "Add selected" button (note that the list of roles in the dialog is paginated, so search for them or navigate to the appropriate pages):
-      - manage-users
-      - view-realm
-      - view-users
+   - manage-users
+   - view-realm
+   - view-users
    12. Click the "Assign" button.
    13. Click the "Credentials" tab.
    14. Copy the value of the "client secret" field; you'll be using it later.
@@ -124,15 +124,15 @@ There are two main ways to supply these settings: in environment variables or in
 
 If you work at Terraformation then ask a fellow developer for the values of these settings (likely in the Terraformation 1Password Eng Infra Vault).
 
-| Property | Environment Variable | Description
-| --- | --- | ---
-| `spring.security.oauth2.client.provider.keycloak.issuer-uri` | `SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUERURI` | The base URL of the Terraware realm on your Keycloak server. If you are running Keycloak locally, this will be `http://localhost:8081/realms/terraware`. Otherwise, it will be the URL of your Keycloak server including the realm prefix for the Terraware realm, which is usually `/realms/terraware`.
-| `spring.security.oauth2.client.registration.keycloak.client-id` | `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_CLIENTID` | The client ID terraware-server will use to make Keycloak API requests. If you followed the instructions to create a local Keycloak instance, then this will be `dev-terraware-server`.
-| `spring.security.oauth2.client.registration.keycloak.client-secret` | `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTSECRET` | The secret associated with the client ID.
-| `spring.security.oauth2.resourceserver.jwt.issuer-uri` | `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI` | Set this to the same value as the other issuer URI.
-| `terraware.keycloak.api-client-id` | `TERRAWARE_KEYCLOAK_API_CLIENT_ID` | The Keycloak client ID that terraware-server API clients will use to generate access tokens. If you followed the instructions to create a local Keycloak instance, then this will be `api`.
-| `terraware.keycloak.api-client-group-name` | `TERRAWARE_KEYCLOAK_API_CLIENT_GROUP_NAME` | The name of the Keycloak group to add newly-created API client users to. The default is `/api-clients`. If you chose a different group name when you were setting up Keycloak, you'll need to set this. Note that because Keycloak group names are hierarchical, the value must start with `/`.
-| `terraware.keycloak.api-client-username-prefix` | `TERRAWARE_KEYCLOAK_API_CLIENT_USERNAME_PREFIX` | A prefix to put at the beginning of the Keycloak usernames of API client users. The default is `api-`. This is to make the users easy to identify in the Keycloak admin console.
+|                              Property                               |                        Environment Variable                        |                                                                                                                                               Description                                                                                                                                                |
+|---------------------------------------------------------------------|--------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `spring.security.oauth2.client.provider.keycloak.issuer-uri`        | `SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUERURI`        | The base URL of the Terraware realm on your Keycloak server. If you are running Keycloak locally, this will be `http://localhost:8081/realms/terraware`. Otherwise, it will be the URL of your Keycloak server including the realm prefix for the Terraware realm, which is usually `/realms/terraware`. |
+| `spring.security.oauth2.client.registration.keycloak.client-id`     | `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_CLIENTID`              | The client ID terraware-server will use to make Keycloak API requests. If you followed the instructions to create a local Keycloak instance, then this will be `dev-terraware-server`.                                                                                                                   |
+| `spring.security.oauth2.client.registration.keycloak.client-secret` | `SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENTSECRET` | The secret associated with the client ID.                                                                                                                                                                                                                                                                |
+| `spring.security.oauth2.resourceserver.jwt.issuer-uri`              | `SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUERURI`              | Set this to the same value as the other issuer URI.                                                                                                                                                                                                                                                      |
+| `terraware.keycloak.api-client-id`                                  | `TERRAWARE_KEYCLOAK_API_CLIENT_ID`                                 | The Keycloak client ID that terraware-server API clients will use to generate access tokens. If you followed the instructions to create a local Keycloak instance, then this will be `api`.                                                                                                              |
+| `terraware.keycloak.api-client-group-name`                          | `TERRAWARE_KEYCLOAK_API_CLIENT_GROUP_NAME`                         | The name of the Keycloak group to add newly-created API client users to. The default is `/api-clients`. If you chose a different group name when you were setting up Keycloak, you'll need to set this. Note that because Keycloak group names are hierarchical, the value must start with `/`.          |
+| `terraware.keycloak.api-client-username-prefix`                     | `TERRAWARE_KEYCLOAK_API_CLIENT_USERNAME_PREFIX`                    | A prefix to put at the beginning of the Keycloak usernames of API client users. The default is `api-`. This is to make the users easy to identify in the Keycloak admin console.                                                                                                                         |
 
 #### Using environment variables
 
@@ -166,3 +166,4 @@ spring:
         jwt:
           issuer-uri: http://your-server/realms/your-realm
 ```
+

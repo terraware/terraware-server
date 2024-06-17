@@ -89,12 +89,12 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       val projectId4 =
           insertProject(id = 4, organizationId = organizationId2, participantId = participantId3)
 
-      val moduleId1 = insertModule(id = 1)
+      val moduleId1 = insertModule(id = 1, name = "Name 1")
       val deliverableId1 = insertDeliverable(id = 1, moduleId = 1)
       val deliverableId2 =
           insertDeliverable(
               id = 2, deliverableCategoryId = DeliverableCategory.Compliance, moduleId = 1)
-      val moduleId2 = insertModule(id = 2)
+      val moduleId2 = insertModule(id = 2, name = "Name 2")
       val deliverableId3 = insertDeliverable(id = 3, moduleId = 2, descriptionHtml = null)
       insertDeliverableDocument(templateUrl = "https://example.com/")
 
@@ -102,17 +102,23 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           cohortId1,
           moduleId1,
           startDate = LocalDate.of(2024, 1, 1),
-          endDate = LocalDate.of(2024, 1, 2))
+          endDate = LocalDate.of(2024, 1, 2),
+          title = "Module 1",
+      )
       insertCohortModule(
           cohortId1,
           moduleId2,
           startDate = LocalDate.of(2024, 2, 1),
-          endDate = LocalDate.of(2024, 2, 2))
+          endDate = LocalDate.of(2024, 2, 2),
+          title = "Module 2",
+      )
       insertCohortModule(
           cohortId2,
           moduleId2,
           startDate = LocalDate.of(2024, 3, 1),
-          endDate = LocalDate.of(2024, 3, 2))
+          endDate = LocalDate.of(2024, 3, 2),
+          title = "Module 3",
+      )
 
       val submissionId1 =
           insertSubmission(
@@ -145,6 +151,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       fun DeliverableSubmissionModel.forProject4() =
           copy(
               dueDate = LocalDate.of(2024, 3, 2),
+              moduleTitle = "Module 3",
               organizationId = organizationId2,
               organizationName = "Organization 2",
               participantId = participantId3,
@@ -190,6 +197,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               feedback = "feedback",
               internalComment = "comment",
               moduleId = moduleId1,
+              moduleName = "Name 1",
+              moduleTitle = "Module 1",
               name = "Deliverable 1",
               organizationId = organizationId1,
               organizationName = "Organization 1",
@@ -218,6 +227,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               descriptionHtml = null,
               dueDate = LocalDate.of(2024, 2, 2),
               moduleId = moduleId2,
+              moduleName = "Name 2",
+              moduleTitle = "Module 2",
               name = "Deliverable 3",
               templateUrl = URI("https://example.com/"),
           )

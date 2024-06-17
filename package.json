@@ -8,9 +8,10 @@
   "license": "UNLICENSED",
   "private": true,
   "devDependencies": {
-    "mjml": "4.15.3"
+    "mjml": "4.15.3",
+    "mjml-bullet-list": "^1.2.2"
   },
   "scripts": {
-    "mjml": "mjml"
+    "mjml": "node scripts/mjml-with-plugins.js"
   }
 }
