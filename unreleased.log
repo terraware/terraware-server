@@ -1,3 +1,5 @@
+e7f32f3d85d Update dependency org.eclipse.jgit:org.eclipse.jgit to 6.10.+ (#2073)
+fc43f159857 Update database dependencies (#2072)
 29f57b1b1e0 SW-5523 Implemented a timeout limit for Atlassian endpoint (#2070)
 3a5258514c0 Moved grid origin logic to model class (#2067)
 29461e158de Upgrade to ktfmt 0.50 (#2066)
