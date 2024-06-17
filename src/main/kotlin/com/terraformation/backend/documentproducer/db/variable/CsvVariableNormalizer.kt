@@ -3,7 +3,6 @@ package com.terraformation.backend.documentproducer.db.variable
 import com.opencsv.CSVReader
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.docprod.DependencyCondition
-import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionsRow
@@ -54,8 +53,8 @@ class CsvVariableNormalizer {
           deliverableId =
               values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID]?.let { DeliverableId(it) },
           deliverableQuestion = values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION],
-          dependencyVariableId =
-              values[VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_ID]?.let { VariableId(it) },
+          dependencyVariableStableId =
+              values[VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID],
           dependencyCondition =
               values[VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_CONDITION]?.let {
                 when (it.lowercase()) {

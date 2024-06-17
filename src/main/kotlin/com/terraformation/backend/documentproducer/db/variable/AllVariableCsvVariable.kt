@@ -47,8 +47,8 @@ data class AllVariableCsvVariable(
     val deliverableId: DeliverableId?,
     /** Column 15/O - Deliverable Question */
     val deliverableQuestion: String?,
-    /** Column 16/P - Dependency - Variable ID */
-    val dependencyVariableId: VariableId?,
+    /** Column 16/P - Dependency - Variable Stable ID */
+    val dependencyVariableStableId: String?,
     /** Column 17/Q - Dependency - Condition */
     val dependencyCondition: DependencyCondition?,
     /** Column 18/R - Dependency - Value */
@@ -71,7 +71,7 @@ data class AllVariableCsvVariable(
       VariablesRow(
           deliverableId = deliverableId,
           deliverableQuestion = deliverableQuestion,
-          dependencyVariableId = dependencyVariableId,
+          dependencyVariableStableId = dependencyVariableStableId,
           dependencyConditionId = dependencyCondition,
           dependencyValue = dependencyValue,
           description = description,

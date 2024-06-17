@@ -35,11 +35,11 @@ const val VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID = VARIABLE_CSV_COLUMN_INDEX_N
 const val VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION =
     VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID + 1
 // Column 16/P
-const val VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_ID =
+const val VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID =
     VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION + 1
 // Column 17/Q
 const val VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_CONDITION =
-    VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_ID + 1
+    VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID + 1
 // Column 18/R
 const val VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VALUE =
     VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_CONDITION + 1
@@ -61,10 +61,10 @@ class VariableCsvValidator(
           null,
           null,
           null,
-          this::validateRecommendedVariables,
-          null,
           null,
           this::validateOptions,
+          null,
+          null,
           null,
           null,
           null,
@@ -80,7 +80,7 @@ class VariableCsvValidator(
   override val rowValidators: List<((List<String?>) -> Unit)> = listOf(this::validateRow)
 
   override fun getColumnName(position: Int): String {
-    return messages.manifestCsvColumnName(position)
+    return messages.variablesCsvColumnName(position)
   }
 
   private fun validateName(value: String?, field: String) {
@@ -99,21 +99,6 @@ class VariableCsvValidator(
     } else {
       existingStableIds.add(value)
     }
-  }
-
-  private fun validateRecommendedVariables(value: String?, field: String) {
-    if (value.isNullOrEmpty()) {
-      return
-    }
-
-    val recommendations = splitAndTrimNewline(value).map { scrubHyphenPrefix(it) }
-    recommendations
-        .groupBy { it }
-        .filterValues { it.size > 1 }
-        .keys
-        .forEach { recommendation ->
-          addError(field, recommendation, messages.variablesCsvRecommendationNotUnique())
-        }
   }
 
   private fun validateOptions(value: String?, field: String) {

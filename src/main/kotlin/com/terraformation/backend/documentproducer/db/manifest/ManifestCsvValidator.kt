@@ -69,7 +69,7 @@ class ManifestCsvValidator(
 
   private fun validateName(value: String?, field: String) {
     if (value.isNullOrBlank()) {
-      addError(field, value, messages.variablesCsvNameRequired())
+      addError(field, value, messages.manifestCsvNameRequired())
     } else if (value.contains('\n')) {
       addError(field, value, messages.variableCsvNameLineBreak())
     }
@@ -77,9 +77,9 @@ class ManifestCsvValidator(
 
   private fun validateStableId(value: String?, field: String) {
     if (value.isNullOrBlank()) {
-      addError(field, value, messages.variablesCsvStableIdRequired())
+      addError(field, value, messages.manifestCsvStableIdRequired())
     } else if (value in existingStableIds) {
-      addError(field, value, messages.variablesCsvStableIdNotUnique())
+      addError(field, value, messages.manifestCsvStableIdNotUnique())
     } else {
       existingStableIds.add(value)
     }
@@ -96,7 +96,7 @@ class ManifestCsvValidator(
         .filterValues { it.size > 1 }
         .keys
         .forEach { recommendation ->
-          addError(field, recommendation, messages.variablesCsvRecommendationNotUnique())
+          addError(field, recommendation, messages.manifestCsvRecommendationNotUnique())
         }
   }
 
@@ -112,7 +112,7 @@ class ManifestCsvValidator(
       addError(
           field,
           value,
-          messages.variablesCsvSelectOptionsNotUnique(),
+          messages.manifestCsvSelectOptionsNotUnique(),
       )
     }
   }
@@ -142,7 +142,7 @@ class ManifestCsvValidator(
       addError(
           messages.manifestCsvColumnName(MANIFEST_CSV_COLUMN_INDEX_PARENT),
           name,
-          messages.variablesCsvVariableParentDoesNotExist())
+          messages.manifestCsvVariableParentDoesNotExist())
       return
     }
 
@@ -154,9 +154,9 @@ class ManifestCsvValidator(
       val message =
           if (parent.isNullOrEmpty()) {
             // Empty parent means this is a top-level variable.
-            messages.variablesCsvTopLevelNameNotUnique()
+            messages.manifestCsvTopLevelNameNotUnique()
           } else {
-            messages.variablesCsvVariableNameNotUniqueWithinParent()
+            messages.manifestCsvVariableNameNotUniqueWithinParent()
           }
 
       addError(messages.manifestCsvColumnName(MANIFEST_CSV_COLUMN_INDEX_NAME), name, message)
@@ -170,7 +170,7 @@ class ManifestCsvValidator(
 
     val dataTypeName = values[MANIFEST_CSV_COLUMN_INDEX_DATA_TYPE]
     if (dataTypeName.isNullOrEmpty()) {
-      addError(dataTypeField, "", messages.variablesCsvDataTypeRequired())
+      addError(dataTypeField, "", messages.manifestCsvDataTypeRequired())
       return
     }
 
@@ -186,7 +186,7 @@ class ManifestCsvValidator(
       CsvVariableType.SingleSelect,
       CsvVariableType.MultiSelect ->
           if (values[MANIFEST_CSV_COLUMN_INDEX_OPTIONS].isNullOrEmpty()) {
-            addError(dataTypeField, "", messages.variablesCsvDataTypeRequiresOptions())
+            addError(dataTypeField, "", messages.manifestCsvDataTypeRequiresOptions())
           }
       else -> Unit
     }
@@ -206,13 +206,13 @@ class ManifestCsvValidator(
           addError(
               messages.manifestCsvColumnName(MANIFEST_CSV_COLUMN_INDEX_PARENT),
               parent,
-              messages.variablesCsvSectionParentMustBeSection())
+              messages.manifestCsvSectionParentMustBeSection())
         }
       } else if (parentVariableType != CsvVariableType.Table) {
         addError(
             messages.manifestCsvColumnName(MANIFEST_CSV_COLUMN_INDEX_PARENT),
             parent,
-            messages.variablesCsvWrongDataTypeForChild())
+            messages.manifestCsvWrongDataTypeForChild())
       }
     }
   }

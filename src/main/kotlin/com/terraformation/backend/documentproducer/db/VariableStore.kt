@@ -71,14 +71,6 @@ class VariableStore(
   private val variables = ConcurrentHashMap<Pair<VariableManifestId?, VariableId>, Variable>()
 
   /**
-   * Cache of information about variables by their stable ID. Each stable ID will point to the
-   * latest version of the variable for that ID. This just holds variable definitions, not values!
-   * There is currently no mechanism to limit the size of this cache; the assumption for now is that
-   * all the variables in the system will easily fit in memory.
-   */
-  private val stableIdVariables = ConcurrentHashMap<Pair<String, VariableId>, Variable>()
-
-  /**
    * Cache of information about which variables were replaced by which other variables. If a
    * variable isn't a replacement for any other variables, its value in this map will be an empty
    * list.
@@ -95,8 +87,8 @@ class VariableStore(
    * @throws CircularReferenceException There is a cycle in the graph of the variable and its
    *   children.
    */
-  fun fetchVariable(manifestId: VariableManifestId, variableId: VariableId): Variable {
-    return variables[manifestId to variableId]
+  fun fetchVariableForManifest(manifestId: VariableManifestId, variableId: VariableId): Variable {
+    return manifestVariables[manifestId to variableId]
         ?: ManifestFetchContext(manifestId).fetchVariable(variableId)
   }
 
@@ -110,9 +102,8 @@ class VariableStore(
    * @throws CircularReferenceException There is a cycle in the graph of the variable and its
    *   children.
    */
-  fun fetchVariableForStableId(stableId: String, variableId: VariableId): Variable {
-    return stableIdVariables[stableId to variableId]
-        ?: StableIdVariableFetchContext(stableId).fetchVariable(variableId)
+  fun fetchVariable(variableId: VariableId): Variable {
+    return variables[variableId] ?: StableIdVariableFetchContext().fetchVariable(variableId)
   }
 
   /**
@@ -137,7 +128,7 @@ class VariableStore(
                   .and(VARIABLE_SECTIONS.PARENT_VARIABLE_ID.isNotNull))
           .orderBy(POSITION)
           .fetch(VARIABLE_ID.asNonNullable())
-          .map { fetchVariable(it, manifestId) }
+          .map { fetchVariableForManifest(manifestId, it) }
     }
   }
 
@@ -156,10 +147,10 @@ class VariableStore(
               DSL.selectOne()
                   .from(VARIABLE_TABLE_COLUMNS)
                   .where(ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
-          .groupBy(STABLE_ID)
+          .groupBy(ID, STABLE_ID)
           .orderBy(ID.desc())
           .fetch()
-          .map { record -> fetchVariableForStableId(record[STABLE_ID]!!, record[ID]!!) }
+          .map { record -> fetchVariable(record[ID]!!) }
     }
   }
 
@@ -226,7 +217,7 @@ class VariableStore(
   /** Clears the variable cache. Used in tests. */
   fun clearCache() {
     replacements.clear()
-    variables.clear()
+    manifestVariables.clear()
   }
 
   /**
@@ -241,7 +232,7 @@ class VariableStore(
         throw CircularReferenceException(fetchesInProgress)
       }
 
-      return variables.getOrPut(manifestId to variableId) {
+      return manifestVariables.getOrPut(manifestId to variableId) {
         fetchesInProgress.addLast(variableId)
 
         val variablesRow =
@@ -360,14 +351,14 @@ class VariableStore(
     }
   }
 
-  private inner class StableIdVariableFetchContext(private val stableId: String) : FetchContext() {
+  private inner class StableIdVariableFetchContext() : FetchContext() {
     fun fetchVariable(variableId: VariableId): Variable {
       if (variableId in fetchesInProgress) {
         fetchesInProgress.addLast(variableId)
         throw CircularReferenceException(fetchesInProgress)
       }
 
-      return stableIdVariables.getOrPut(stableId to variableId) {
+      return variables.getOrPut(variableId) {
         fetchesInProgress.addLast(variableId)
 
         val variablesRow =

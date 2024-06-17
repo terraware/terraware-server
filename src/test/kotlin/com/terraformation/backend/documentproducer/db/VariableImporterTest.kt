@@ -1,0 +1,676 @@
+package com.terraformation.backend.documentproducer.db
+
+import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableTableStyle
+import com.terraformation.backend.db.docprod.VariableTextType
+import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.db.docprod.tables.pojos.*
+import com.terraformation.backend.documentproducer.db.variable.VariableImporter
+import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.mockUser
+import org.junit.jupiter.api.*
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
+
+class VariableImporterTest : DatabaseTest(), RunsAsUser {
+  override val user = mockUser()
+
+  private val messages = Messages()
+
+  private val variableStore: VariableStore by lazy {
+    VariableStore(
+        dslContext,
+        variableNumbersDao,
+        variablesDao,
+        variableSectionRecommendationsDao,
+        variableSectionsDao,
+        variableSelectsDao,
+        variableSelectOptionsDao,
+        variableTablesDao,
+        variableTableColumnsDao,
+        variableTextsDao)
+  }
+
+  private val importer: VariableImporter by lazy {
+    VariableImporter(dslContext, messages, variableStore)
+  }
+
+  @BeforeEach
+  fun setUp() {
+    insertUser()
+  }
+
+  @Nested
+  inner class UploadManifest {
+    private var oldAuthentication: Authentication? = null
+
+    private val header =
+        "Name,ID,Description,Data Type,List?,Parent,Options,Minimum value,Maximum value,Decimal places,Table Style,Header?,Notes,Deliverable ID,Deliverable Question,Dependency Variable ID,Dependency Condition,Dependency Value,Internal Only"
+
+    @BeforeEach
+    fun setUp() {
+      //      every { user.canCreateVariable() } returns true
+    }
+
+    @AfterEach
+    fun tearDown() {
+      SecurityContextHolder.getContext().authentication = oldAuthentication
+    }
+
+    @Test
+    fun `detects duplicate stable IDs`() {
+      val testCsv =
+          header +
+              "\nName X,Duplicate ID,,Number,Yes,,,,,,,,,,,,,," +
+              "\nName Y,Duplicate ID,,Number,Yes,,,,,,,,,,,,,,"
+
+      val importResult = importer.import(sizedInputStream(testCsv))
+
+      Assertions.assertEquals(
+          listOf(
+              "Message: ID must be unique across the entire all variables CSV, Field: ID, Value: Duplicate ID, Position: 3"),
+          importResult.errors)
+    }
+
+    @Test
+    fun `correctly identifies when there is a non-unique top level input name`() {
+      val testCsv =
+          header +
+              "\nDuplicate Name,1,,Number,,,,,,,,,,,,,,," +
+              "\nDuplicate Name,2,,Number,,,,,,,,,,,,,,,"
+
+      val importResult = importer.import(sizedInputStream(testCsv))
+
+      Assertions.assertEquals(
+          listOf(
+              "Message: Top Level Variable Name must be unique, Field: Name, Value: Duplicate Name, Position: 3"),
+          importResult.errors,
+          "Non-Unique Input Names")
+    }
+
+    @Test
+    fun `imports table variables correctly`() {
+      val testCsv =
+          header +
+              "\nProject Proponent Table,1,A table with contact details,Table,No,,,,,,,,,,,,,," +
+              "\nOrganization Name,2,,Text (single-line),,Project Proponent Table,,,,,,,,,,,,," +
+              "\nContact Person,3,,Text (single-line),,Project Proponent Table,,,,,,,,,,,,," +
+              "\nTitle,4,,Text (single-line),,Project Proponent Table,,,,,,,,,,,,,"
+
+      val importResult = importer.import(sizedInputStream(testCsv))
+
+      val actualTableVariable = getVariableByName("Project Proponent Table")
+      val expectedTableVariable =
+          VariablesRow(
+              description = "A table with contact details",
+              id = actualTableVariable.id!!,
+              internalOnly = false,
+              isList = false,
+              name = "Project Proponent Table",
+              stableId = "1",
+              variableTypeId = VariableType.Table)
+
+      val actualTableRow = variableTablesDao.fetchOneByVariableId(actualTableVariable.id!!)
+      val expectedTableRow =
+          VariableTablesRow(
+              variableId = actualTableVariable.id!!,
+              variableTypeId = VariableType.Table,
+              tableStyleId = VariableTableStyle.Horizontal)
+
+      val tableColumnVariableRow1 = getVariableByName("Organization Name")
+      val tableColumnVariableRow2 = getVariableByName("Contact Person")
+      val tableColumnVariableRow3 = getVariableByName("Title")
+
+      val actualTableColumnRows = variableTableColumnsDao.findAll()
+      val expectedTableColumnRows =
+          listOf(
+              VariableTableColumnsRow(
+                  variableId = tableColumnVariableRow1.id!!,
+                  tableVariableId = actualTableVariable.id!!,
+                  tableVariableTypeId = VariableType.Table,
+                  position = 1,
+                  isHeader = false),
+              VariableTableColumnsRow(
+                  variableId = tableColumnVariableRow2.id!!,
+                  tableVariableId = actualTableVariable.id!!,
+                  tableVariableTypeId = VariableType.Table,
+                  position = 2,
+                  isHeader = false),
+              VariableTableColumnsRow(
+                  variableId = tableColumnVariableRow3.id!!,
+                  tableVariableId = actualTableVariable.id!!,
+                  tableVariableTypeId = VariableType.Table,
+                  position = 3,
+                  isHeader = false))
+
+      Assertions.assertEquals(emptyList<String>(), importResult.errors, "no errors")
+      Assertions.assertEquals(
+          expectedTableVariable, actualTableVariable, "Variable DB row for table is correct")
+      Assertions.assertEquals(
+          expectedTableRow, actualTableRow, "Variable Table DB row for table is correct")
+      Assertions.assertEquals(
+          expectedTableColumnRows,
+          actualTableColumnRows,
+          "Variable Table Column DB rows are correct")
+    }
+
+    @Test
+    fun `imports complex table with select option header column correctly`() {
+      val testCsv =
+          header +
+              "\nAudit history,1,,Table,Yes,,,,,,Horizontal,,,,,,,," +
+              "\nAudit type,2,,Select (single),,Audit history,\"- Validation/verification" +
+              "\n- Some other audit type\",,,,,Yes,,,,,,," +
+              "\nNumber of years,3,,Number,,Audit history,,,,1,,,,,,,,,"
+
+      val importResult = importer.import(sizedInputStream(testCsv))
+
+      val actualTableVariable = getVariableByName("Audit history")
+
+      val tableColumnVariableRow1 = getVariableByName("Audit type")
+      val tableColumnVariableRow2 = getVariableByName("Number of years")
+
+      val actualTableColumnRows = variableTableColumnsDao.findAll()
+      val expectedTableColumnRows =
+          listOf(
+              VariableTableColumnsRow(
+                  variableId = tableColumnVariableRow1.id!!,
+                  tableVariableId = actualTableVariable.id!!,
+                  tableVariableTypeId = VariableType.Table,
+                  position = 1,
+                  isHeader = true),
+              VariableTableColumnsRow(
+                  variableId = tableColumnVariableRow2.id!!,
+                  tableVariableId = actualTableVariable.id!!,
+                  tableVariableTypeId = VariableType.Table,
+                  position = 2,
+                  isHeader = false))
+
+      val actualNumberRow = variableNumbersDao.fetchOneByVariableId(tableColumnVariableRow2.id!!)
+      val expectedNumberRow =
+          VariableNumbersRow(
+              variableId = tableColumnVariableRow2.id!!,
+              variableTypeId = VariableType.Number,
+              decimalPlaces = 1)
+
+      val actualSelectRow = variableSelectsDao.fetchOneByVariableId(tableColumnVariableRow1.id!!)
+      val expectedSelectRow =
+          VariableSelectsRow(
+              variableId = tableColumnVariableRow1.id!!,
+              variableTypeId = VariableType.Select,
+              isMultiple = false)
+
+      val actualSelectOptionRows =
+          variableSelectOptionsDao.fetchByVariableId(tableColumnVariableRow1.id!!)
+      val expectedSelectOptionRows =
+          listOf(
+              VariableSelectOptionsRow(
+                  variableId = tableColumnVariableRow1.id!!,
+                  variableTypeId = VariableType.Select,
+                  name = "Validation/verification",
+                  position = 1),
+              VariableSelectOptionsRow(
+                  variableId = tableColumnVariableRow1.id!!,
+                  variableTypeId = VariableType.Select,
+                  name = "Some other audit type",
+                  position = 2))
+
+      Assertions.assertEquals(emptyList<String>(), importResult.errors, "no errors")
+      Assertions.assertEquals(
+          expectedTableColumnRows,
+          actualTableColumnRows,
+          "Variable Table Column DB rows are correct")
+      Assertions.assertEquals(expectedNumberRow, actualNumberRow, "Variable Number row is correct")
+      Assertions.assertEquals(expectedSelectRow, actualSelectRow, "Variable Select row is correct")
+      Assertions.assertEquals(
+          expectedSelectOptionRows,
+          actualSelectOptionRows.map { it.copy(id = null) },
+          "Variable Select Option rows are correct")
+    }
+
+    @Test
+    fun `ensures that single and multi line text are saved into the DB as expected`() {
+      val testCsv =
+          header +
+              "\nOrganization Name,1,,Text (single-line),,,,,,,,,,,,,,," +
+              "\nOrganization Name As List,2,,Text (single-line),yes,,,,,,,,,,,,,," +
+              "\nPrior Scenario,3,A brief description of the scenario,Text (multi-line),,,,,,,,,,,,,,," +
+              "\nPrior Scenario As List,4,A brief description of the scenario,Text (multi-line),yes,,,,,,,,,,,,,,"
+
+      val importResult = importer.import(sizedInputStream(testCsv))
+
+      val actualVariableO = getVariableByName("Organization Name")
+      val actualVariableTextO = variableTextsDao.fetchOneByVariableId(actualVariableO.id!!)
+      val actualVariableOAL = getVariableByName("Organization Name As List")
+      val actualVariableTextOAL = variableTextsDao.fetchOneByVariableId(actualVariableOAL.id!!)
+      val actualVariablePS = getVariableByName("Prior Scenario")
+      val actualVariableTextPS = variableTextsDao.fetchOneByVariableId(actualVariablePS.id!!)
+      val actualVariablePSAL = getVariableByName("Prior Scenario As List")
+      val actualVariableTextPSAL = variableTextsDao.fetchOneByVariableId(actualVariablePSAL.id!!)
+
+      Assertions.assertEquals(emptyList<String>(), importResult.errors, "no errors")
+
+      Assertions.assertFalse(actualVariableO.isList!!, "single input without list is not a list")
+      Assertions.assertEquals(
+          VariableTextsRow(
+              variableId = actualVariableO.id!!,
+              variableTypeId = VariableType.Text,
+              variableTextTypeId = VariableTextType.SingleLine),
+          actualVariableTextO,
+          "single line text variable saved correctly")
+
+      Assertions.assertTrue(actualVariableOAL.isList!!, "single input with list is a list")
+      Assertions.assertEquals(
+          VariableTextsRow(
+              variableId = actualVariableOAL.id!!,
+              variableTypeId = VariableType.Text,
+              variableTextTypeId = VariableTextType.SingleLine),
+          actualVariableTextOAL,
+          "single line text variable saved correctly")
+
+      Assertions.assertFalse(actualVariablePS.isList!!, "multi input without list is not a list")
+      Assertions.assertEquals(
+          VariableTextsRow(
+              variableId = actualVariablePS.id!!,
+              variableTypeId = VariableType.Text,
+              variableTextTypeId = VariableTextType.MultiLine),
+          actualVariableTextPS,
+          "multi line text variable saved correctly")
+
+      Assertions.assertTrue(actualVariablePSAL.isList!!, "multi input with list is a list")
+      Assertions.assertEquals(
+          VariableTextsRow(
+              variableId = actualVariablePSAL.id!!,
+              variableTypeId = VariableType.Text,
+              variableTextTypeId = VariableTextType.MultiLine),
+          actualVariableTextPSAL,
+          "multi line text variable saved correctly")
+    }
+
+    @Test
+    fun `ensures that single and multi selects are saved into the DB as expected`() {
+      val testCsv =
+          header +
+              // Single select
+              "\nEstimated reductions,1,Canned description,Select (single),,,\"- tiny" +
+              "\n- small" +
+              "\n- medium" +
+              "\n- large\",,,,,,,,,,,," +
+              // Multi select
+              "\nMade up multi select,2,Select as many as you want!,Select (multiple),,,\"- Option 1" +
+              "\n- Option 2" +
+              "\n- Option 3" +
+              "\n- Option 4 [[This one has super special rendered text!]]" +
+              "\n- Option 5\",,,,,,,,,,,,"
+
+      val importResult = importer.import(sizedInputStream(testCsv))
+
+      val selectRows = variableSelectsDao.findAll()
+      val selectOptionRows = variableSelectOptionsDao.findAll()
+
+      val variableEAGER = getVariableByName("Estimated reductions")
+      val variableSelectEAGER = selectRows.find { it.variableId == variableEAGER.id }
+      val variableSelectOptionsEAGER = selectOptionRows.filter { it.variableId == variableEAGER.id }
+      // Scrutinize a specific option we expect
+      val variableSelectOption3EAGER =
+          variableSelectOptionsEAGER.find { it.name!!.endsWith("medium") }
+
+      val variableMUMS = getVariableByName("Made up multi select")
+      val variableSelectMUMS = selectRows.find { it.variableId == variableMUMS.id }
+      val variableSelectOptionsMUMS = selectOptionRows.filter { it.variableId == variableMUMS.id }
+      // Scrutinize a specific option we expect
+      val variableSelectOption4MUMS =
+          variableSelectOptionsMUMS.find { it.name!!.endsWith("Option 4") }
+
+      Assertions.assertEquals(emptyList<String>(), importResult.errors, "no errors")
+      Assertions.assertFalse(variableEAGER.isList!!, "single select is not a list")
+      Assertions.assertNotNull(variableSelectEAGER, "single select variable select was created")
+      Assertions.assertFalse(
+          variableSelectEAGER?.isMultiple!!, "single select variable select is not multiple")
+      Assertions.assertEquals(
+          variableSelectOptionsEAGER.size, 4, "single select variable select options were created")
+
+      Assertions.assertEquals(
+          VariableSelectOptionsRow(
+              name = "medium",
+              position = 3,
+              variableId = variableEAGER.id,
+              variableTypeId = variableEAGER.variableTypeId),
+          variableSelectOption3EAGER?.copy(id = null),
+          "single select option")
+
+      Assertions.assertFalse(variableMUMS.isList!!, "multi select is not a list")
+      Assertions.assertNotNull(variableSelectMUMS, "multi select variable select was created")
+      Assertions.assertTrue(
+          variableSelectMUMS?.isMultiple!!, "multi select variable select is multiple")
+      Assertions.assertEquals(
+          variableSelectOptionsMUMS.size, 5, "multi select variable select options were created")
+
+      Assertions.assertEquals(
+          VariableSelectOptionsRow(
+              name = "Option 4",
+              position = 4,
+              renderedText = "This one has super special rendered text!",
+              variableId = variableMUMS.id,
+              variableTypeId = variableMUMS.variableTypeId),
+          variableSelectOption4MUMS?.copy(id = null),
+          "multi select option with rendered text")
+    }
+
+    @Test
+    fun `ensures that select options are unique within the select`() {
+      val testCsv =
+          header +
+              "\nEstimated reductions,1,Canned Description,Select (single),,,\"- tiny amount" +
+              "\n- small amount" +
+              "\n- medium amount" +
+              "\n- medium amount" +
+              "\n- large amount\",,,,,,,,,,,,"
+
+      val importResult = importer.import(sizedInputStream(testCsv))
+
+      Assertions.assertEquals(
+          listOf(
+              "Message: Select option values must be unique within the select variable, Field: Options, Value: - tiny amount" +
+                  "\n- small amount" +
+                  "\n- medium amount" +
+                  "\n- medium amount" +
+                  "\n- large amount, Position: 2"),
+          importResult.errors,
+          "duplicate option error")
+    }
+
+    @Test
+    fun `detects newlines in variable names`() {
+      val testCsv = "$header\n\"Number\nName\",1,,Number,,,,,,,,,,,,,,,"
+
+      val importResult = importer.import(sizedInputStream(testCsv))
+
+      Assertions.assertEquals(
+          listOf(
+              "Message: Name may not contain line breaks, Field: Name, Value: Number\nName, Position: 2"),
+          importResult.errors)
+    }
+
+    @Test
+    fun `detects missing names`() {
+      val testCsv = header + "\n,1,,Section,Yes,,,,,,,,,,,,,,"
+
+      val importResult = importer.import(sizedInputStream(testCsv))
+
+      Assertions.assertEquals(
+          listOf("Message: Name column is required, Field: Name, Value: null, Position: 2"),
+          importResult.errors)
+    }
+
+    //    @Test
+    //    fun `ensures that the current CSV imports without error`() {
+    //      val csvInput = javaClass.getResourceAsStream("/manifest/variable-manifest-rev5.csv")!!
+    //
+    //      val importResult = importer.import(csvInput)
+    //
+    //        Assertions.assertEquals(emptyList<String>(), importResult.errors, "no errors")
+    //    }
+
+    @Test
+    fun `reuses existing select variable`() {
+      val testCsv =
+          header +
+              "\nSelect Variable,A,,Select (single),,,\"- Option 1\n- Option 2\n- Option 3\",,,,,,,,,,,,"
+
+      importer.import(sizedInputStream(testCsv))
+      importer.import(sizedInputStream(testCsv))
+
+      val variablesRows = variablesDao.findAll()
+      Assertions.assertEquals(1, variablesRows.size, "Number of imported variables")
+    }
+
+    @Test
+    fun `creates new select variable if options have changed`() {
+      val initialCsv =
+          "$header\nSelect,1,,Select (single),,,\"- Option 1\n- Option 2\n- Option 3\",,,,,,,,,,,,"
+      val updatedCsv = "$header\nSelect,1,,Select (single),,,\"- Option 1\n- Option 2\",,,,,,,,,,,,"
+
+      importer.import(sizedInputStream(initialCsv))
+      importer.import(sizedInputStream(updatedCsv))
+
+      val variablesRows = variablesDao.findAll().sortedBy { it.id!!.value }
+      Assertions.assertEquals(2, variablesRows.size, "Number of imported variables")
+
+      Assertions.assertEquals(
+          setOf("Option 1", "Option 2", "Option 3"),
+          variableSelectOptionsDao.fetchByVariableId(variablesRows[0].id!!).map { it.name }.toSet(),
+          "Initial options")
+      Assertions.assertEquals(
+          setOf("Option 1", "Option 2"),
+          variableSelectOptionsDao.fetchByVariableId(variablesRows[1].id!!).map { it.name }.toSet(),
+          "Updated options")
+    }
+
+    @Test
+    fun `creates new variable if name or description have changed`() {
+      val initialCsv =
+          "$header\nOriginal variable,1,Original description,Text (single-line),,,,,,,,,,,,,,,"
+      val updatedCsv =
+          "$header\nUpdated variable,1,Updated description,Text (single-line),,,,,,,,,,,,,,,"
+
+      val initialResult = importer.import(sizedInputStream(initialCsv))
+
+      val initialVariables = variablesDao.findAll()
+      Assertions.assertEquals(1, initialVariables.size, "Should have imported 1 variable")
+      val initialVariableId = initialVariables.first().id!!
+
+      val updateResult = importer.import(sizedInputStream(updatedCsv))
+
+      val updatedVariables = variablesDao.findAll()
+      Assertions.assertEquals(2, updatedVariables.size, "Should have imported 1 new variable")
+      val updatedVariableId = updatedVariables.find { it.id != initialVariableId }!!.id
+
+      Assertions.assertEquals(
+          setOf(
+              VariablesRow(
+                  description = "Original description",
+                  id = initialVariableId,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Original variable",
+                  stableId = "1",
+                  variableTypeId = VariableType.Text,
+              ),
+              VariablesRow(
+                  description = "Updated description",
+                  id = updatedVariableId,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Updated variable",
+                  replacesVariableId = initialVariableId,
+                  stableId = "1",
+                  variableTypeId = VariableType.Text,
+              ),
+          ),
+          variablesDao.findAll().toSet(),
+          "New version of the variable should be present")
+    }
+
+    @Test
+    fun `creates new variable if validation settings have changed`() {
+      val initialCsv = "$header\nNumber variable,1,,Number,,,,10,,,,,,,,,,,"
+      val updatedCsv = "$header\nNumber variable,1,,Number,,,,20,,,,,,,,,,,"
+
+      importer.import(sizedInputStream(initialCsv))
+
+      val initialVariables = variablesDao.findAll()
+      Assertions.assertEquals(1, initialVariables.size, "Should have imported 1 variable")
+      val initialVariableId = initialVariables.first().id!!
+
+      importer.import(sizedInputStream(updatedCsv))
+
+      val updatedVariables = variablesDao.findAll()
+      Assertions.assertEquals(2, updatedVariables.size, "Should have imported new copy of variable")
+      val newVariableId = updatedVariables.map { it.id!! }.first { it != initialVariableId }
+
+      Assertions.assertEquals(
+          initialVariableId,
+          updatedVariables.first { it.id == newVariableId }.replacesVariableId,
+          "New variable should be marked as replacement of existing one")
+
+      Assertions.assertEquals(
+          setOf(
+              VariablesRow(
+                  id = initialVariableId,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Number variable",
+                  stableId = "1",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  id = newVariableId,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Number variable",
+                  replacesVariableId = initialVariableId,
+                  stableId = "1",
+                  variableTypeId = VariableType.Number,
+              )),
+          variablesDao.findAll().toSet(),
+          "Both versions of the variable are present")
+    }
+
+    @Test
+    fun `Creates new table and column variables if the column names are updated`() {
+      val initialCsv =
+          header +
+              "\nTable,1,,Table,Yes,,,,,,,,,,,,,," +
+              "\nColumn A,2,,Number,,Table,,,,,,,,,,,,," +
+              "\nColumn B,3,,Number,,Table,,,,,,,,,,,,,"
+      val updatedCsv =
+          header +
+              "\nTable,1,,Table,Yes,,,,,,,,,,,,,," +
+              "\nRenamed A,2,,Number,,Table,,,,,,,,,,,,," +
+              "\nRenamed B,3,,Number,,Table,,,,,,,,,,,,,"
+
+      importer.import(sizedInputStream(initialCsv))
+
+      val initialVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+      Assertions.assertEquals(3, initialVariables.size, "Should have imported 3 variables")
+
+      importer.import(sizedInputStream(updatedCsv))
+
+      val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+      Assertions.assertEquals(6, updatedVariables.size, "Should have created 2 new variables")
+
+      Assertions.assertEquals(
+          setOf(
+              VariablesRow(
+                  id = initialVariables[0].id,
+                  internalOnly = false,
+                  isList = true,
+                  name = "Table",
+                  stableId = "1",
+                  variableTypeId = VariableType.Table,
+              ),
+              VariablesRow(
+                  id = initialVariables[1].id,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Column A",
+                  stableId = "2",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  id = initialVariables[2].id,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Column B",
+                  stableId = "3",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  id = updatedVariables[3].id,
+                  internalOnly = false,
+                  isList = true,
+                  name = "Table",
+                  replacesVariableId = initialVariables[0].id,
+                  stableId = "1",
+                  variableTypeId = VariableType.Table,
+              ),
+              VariablesRow(
+                  id = updatedVariables[4].id,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Renamed A",
+                  replacesVariableId = initialVariables[1].id,
+                  stableId = "2",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  id = updatedVariables[5].id,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Renamed B",
+                  replacesVariableId = initialVariables[2].id,
+                  stableId = "3",
+                  variableTypeId = VariableType.Number,
+              ),
+          ),
+          variablesDao.findAll().toSet(),
+          "New variables are created for columns and table")
+    }
+
+    @Test
+    fun `creates new table variable and new column variables if any columns have changed`() {
+      val initialCsv =
+          header +
+              "\nTable,1,,Table,Yes,,,,,,,,,,,,,," +
+              "\nColumn A,2,,Number,,Table,,,,,,,,,,,,," +
+              "\nColumn B,3,,Number,,Table,,,,,,,,,,,,,"
+      val updatedCsv =
+          header +
+              "\nTable,1,,Table,Yes,,,,,,,,,,,,,," +
+              "\nColumn A,2,,Number,,Table,,,,,,,,,,,,," +
+              "\nColumn B,3,,Number,,Table,,1,,,,,,,,,,,"
+
+      importer.import(sizedInputStream(initialCsv))
+
+      val initialVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+      Assertions.assertEquals(3, initialVariables.size, "Should have imported 3 variables")
+
+      importer.import(sizedInputStream(updatedCsv))
+
+      val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+      Assertions.assertEquals(
+          6, updatedVariables.size, "Should have imported new copies of all variables")
+      val newTableVariableId = updatedVariables[3].id!!
+
+      Assertions.assertEquals(
+          setOf(updatedVariables[4].id, updatedVariables[5].id),
+          variableTableColumnsDao
+              .fetchByTableVariableId(newTableVariableId)
+              .map { it.variableId }
+              .toSet(),
+          "New columns should be children of new table")
+    }
+
+    private fun sizedInputStream(content: ByteArray) =
+        SizedInputStream(content.inputStream(), content.size.toLong())
+
+    private fun sizedInputStream(content: String) = sizedInputStream(content.toByteArray())
+
+    // This is not safe to use in tests where there are multiple variables with the same name, this
+    // does not care about hierarchy and will grab the first one that matches by name in reversed
+    // order
+    private fun getVariableByName(name: String): VariablesRow =
+        variablesDao.fetchByName(name).reversed().first()
+  }
+}
+
+private data class VariableImportFlatVariable(
+    val variableId: VariableId,
+    val variableName: String?,
+    val parentId: VariableId?,
+    val parentVariableName: String?,
+)

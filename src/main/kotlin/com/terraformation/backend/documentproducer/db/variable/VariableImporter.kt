@@ -1,7 +1,6 @@
 package com.terraformation.backend.documentproducer.db.variable
 
 import com.terraformation.backend.db.docprod.VariableId
-import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.tables.pojos.VariableNumbersRow
@@ -10,7 +9,6 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableTableColumnsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableTablesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableTextsRow
-import com.terraformation.backend.documentproducer.db.VariableManifestStore
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.model.DateVariable
 import com.terraformation.backend.documentproducer.model.ImageVariable
@@ -28,7 +26,6 @@ import java.io.InputStream
 import org.jooq.DSLContext
 
 data class VariableImportResult(
-    val newVersion: VariableManifestId?,
     val message: String,
     val results: List<String>,
     val errors: List<String>
@@ -38,7 +35,6 @@ data class VariableImportResult(
 class VariableImporter(
     private val dslContext: DSLContext,
     private val messages: Messages,
-    private val variableManifestStore: VariableManifestStore,
     private val variableStore: VariableStore,
 ) {
   private val log = perClassLogger()
@@ -52,17 +48,16 @@ class VariableImporter(
     validator.validate(inputBytes)
 
     if (validator.errors.isNotEmpty()) {
-      return VariableImportResult(null, "Failure", emptyList(), validator.errors)
+      return VariableImportResult("Failure", emptyList(), validator.errors)
     }
 
     return try {
       ImportContext().importCsv(inputBytes)
     } catch (e: Exception) {
       VariableImportResult(
-          null,
           "Failure",
           listOf(),
-          listOf("Error while attempting to import the new variable manifest - ${e.message}"),
+          listOf("Error while attempting to import the all variables CSV - ${e.message}"),
       )
     }
   }
@@ -70,7 +65,6 @@ class VariableImporter(
   private inner class ImportContext {
     lateinit var csvVariables: List<AllVariableCsvVariable>
     lateinit var csvVariableByStableId: Map<String, AllVariableCsvVariable>
-    lateinit var variableManifestId: VariableManifestId
 
     /**
      * Map of full variable paths to CSV variables. This is the full "path" to the variable within
@@ -123,18 +117,17 @@ class VariableImporter(
           }
         }
       } catch (e: ImportAbortedDueToErrorsException) {
-        return VariableImportResult(null, "Failure", emptyList(), errors)
+        return VariableImportResult("Failure", emptyList(), errors)
       } catch (e: Exception) {
         log.error("Exception thrown while importing", e)
 
         return VariableImportResult(
-            null,
             "Unexpected failure",
             emptyList(),
             listOf("Exception thrown while importing: $e") + errors)
       }
 
-      return VariableImportResult(variableManifestId, "Success", results, errors)
+      return VariableImportResult("Success", results, errors)
     }
 
     private fun useExistingVariables() {
@@ -270,12 +263,19 @@ class VariableImporter(
           csvVariableByPath[csvVariable.parentPath]?.variableId
               ?: throw IllegalStateException(
                   "Parent variable has not been imported - ${csvVariable.parent}")
+      val zeroIndexedPosition =
+          csvVariablesByParentPath[csvVariable.parentPath]?.indexOfFirst {
+            it.variableId == csvVariable.variableId
+          }
+              ?: throw IllegalStateException(
+                  "Variable ${csvVariable.variableId} not found in parent ${csvVariable.parentPath}")
 
       variableStore.importTableColumnVariable(
           VariableTableColumnsRow(
               variableId = csvVariable.variableId,
               tableVariableId = tableVariableId,
               tableVariableTypeId = VariableType.Table,
+              position = zeroIndexedPosition + 1,
               isHeader = csvVariable.isHeader))
     }
 

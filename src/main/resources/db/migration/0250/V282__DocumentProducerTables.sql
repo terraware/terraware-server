@@ -31,7 +31,7 @@ CREATE TABLE docprod.variables (
     description TEXT,
     deliverable_id BIGINT REFERENCES accelerator.deliverables ON DELETE SET NULL,
     deliverable_question TEXT,
-    dependency_variable_id BIGINT REFERENCES docprod.variables ON DELETE SET NULL,
+    dependency_variable_stable_id TEXT,
     dependency_condition_id INTEGER REFERENCES docprod.dependency_conditions,
     dependency_value TEXT,
     internal_only BOOLEAN DEFAULT FALSE NOT NULL,
