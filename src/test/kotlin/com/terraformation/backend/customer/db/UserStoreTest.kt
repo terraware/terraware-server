@@ -735,6 +735,15 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       insertUser(userId = 100, authId = authId)
       assertThrows<AccessDeniedException> { userStore.deleteUserById(inserted.userId) }
     }
+
+    @Test
+    fun `throws exception if attempting to delete non-individual users`() {
+      val deviceManagerUser = insertUser(userId = 100, type = UserType.DeviceManager)
+      val systemUser = insertUser(userId = 200, type = UserType.System)
+
+      assertThrows<AccessDeniedException> { userStore.deleteUserById(deviceManagerUser) }
+      assertThrows<AccessDeniedException> { userStore.deleteUserById(systemUser) }
+    }
   }
 
   @Nested

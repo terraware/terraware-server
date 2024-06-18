@@ -571,7 +571,7 @@ class UserStore(
     requirePermissions { deleteUsers() }
 
     val user = fetchOneById(userId)
-    if (user !is IndividualUser) {
+    if (user !is IndividualUser || user.userType != UserType.Individual) {
       throw AccessDeniedException("Not allowed to delete non-individual users")
     }
 
