@@ -1,8 +1,11 @@
 package com.terraformation.backend.documentproducer
 
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.documentproducer.db.DocumentNotFoundException
+import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.db.VariableValueNotFoundException
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.db.VariableValueTypeMismatchException
@@ -19,17 +22,18 @@ import java.io.InputStream
 /** Manages storage of image files relating to documents within the document producer. */
 @Named
 class DocumentFileService(
+    private val documentStore: DocumentStore,
     private val fileService: FileService,
     private val variableValueStore: VariableValueStore,
 ) {
   fun readImageValue(
-      documentId: DocumentId,
+      projectId: ProjectId,
       valueId: VariableValueId,
       maxWidth: Int? = null,
       maxHeight: Int? = null,
   ): SizedInputStream {
     val existingValue = variableValueStore.fetchOneById(valueId)
-    if (existingValue.documentId != documentId) {
+    if (existingValue.projectId != projectId) {
       throw VariableValueNotFoundException(valueId)
     }
 
@@ -38,6 +42,19 @@ class DocumentFileService(
     } else {
       throw VariableValueTypeMismatchException(valueId, VariableType.Image)
     }
+  }
+
+  fun readImageValue(
+      documentId: DocumentId,
+      valueId: VariableValueId,
+      maxWidth: Int? = null,
+      maxHeight: Int? = null,
+  ): SizedInputStream {
+    val projectId =
+        documentStore.fetchDocumentById(documentId).projectId
+            ?: throw DocumentNotFoundException(documentId)
+
+    return readImageValue(projectId, valueId, maxWidth, maxHeight)
   }
 
   fun storeImageValue(
@@ -54,7 +71,7 @@ class DocumentFileService(
           if (isAppend) {
             base.copy(
                 listPosition =
-                    variableValueStore.fetchNextListPosition(base.documentId, base.variableId))
+                    variableValueStore.fetchNextListPosition(base.projectId, base.variableId))
           } else {
             base
           }

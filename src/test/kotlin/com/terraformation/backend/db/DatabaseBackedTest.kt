@@ -2536,13 +2536,13 @@ abstract class DatabaseBackedTest {
   protected fun insertSectionValue(
       variableId: Any,
       listPosition: Int = 0,
-      documentId: Any = inserted.documentId,
+      projectId: ProjectId = inserted.projectId,
       id: Any =
           insertValue(
               variableId = variableId,
               listPosition = listPosition,
               type = VariableType.Section,
-              documentId = documentId),
+              projectId = projectId),
       textValue: String? = null,
       usedVariableId: Any? = null,
       usageType: VariableUsageType? =
@@ -2777,7 +2777,7 @@ abstract class DatabaseBackedTest {
       id: Any? = null,
       variableId: Any,
       listPosition: Int = 0,
-      documentId: Any = inserted.documentId,
+      projectId: Any = inserted.projectId,
       isDeleted: Boolean = false,
       textValue: String? = null,
       numberValue: BigDecimal? = null,
@@ -2794,7 +2794,7 @@ abstract class DatabaseBackedTest {
         VariableValuesRow(
             citation = citation,
             id = id?.toIdWrapper { VariableValueId(it) },
-            documentId = documentId.toIdWrapper { DocumentId(it) },
+            projectId = projectId.toIdWrapper { ProjectId(it) },
             variableId = variableIdWrapper,
             variableTypeId = actualType,
             listPosition = listPosition,
