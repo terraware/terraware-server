@@ -88,7 +88,7 @@ class VariableStore(
    *   children.
    */
   fun fetchVariableForManifest(manifestId: VariableManifestId, variableId: VariableId): Variable {
-    return manifestVariables[manifestId to variableId]
+    return variables[manifestId to variableId]
         ?: ManifestFetchContext(manifestId).fetchVariable(variableId)
   }
 
@@ -103,7 +103,7 @@ class VariableStore(
    *   children.
    */
   fun fetchVariable(variableId: VariableId): Variable {
-    return variables[variableId] ?: StableIdVariableFetchContext().fetchVariable(variableId)
+    return variables[null to variableId] ?: StableIdVariableFetchContext().fetchVariable(variableId)
   }
 
   /**
@@ -140,17 +140,16 @@ class VariableStore(
   fun fetchAllNonSectionVariables(): List<Variable> {
     return with(VARIABLES) {
       dslContext
-          .select(ID, STABLE_ID)
+          .select(DSL.max(ID), STABLE_ID)
           .from(this)
           .where(VARIABLE_TYPE_ID.ne(VariableType.Section))
           .andNotExists(
               DSL.selectOne()
                   .from(VARIABLE_TABLE_COLUMNS)
                   .where(ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
-          .groupBy(ID, STABLE_ID)
-          .orderBy(ID.desc())
+          .groupBy(STABLE_ID)
           .fetch()
-          .map { record -> fetchVariable(record[ID]!!) }
+          .map { record -> fetchVariable(record[DSL.max(ID)]!!) }
     }
   }
 
@@ -217,7 +216,7 @@ class VariableStore(
   /** Clears the variable cache. Used in tests. */
   fun clearCache() {
     replacements.clear()
-    manifestVariables.clear()
+    variables.clear()
   }
 
   /**
@@ -232,7 +231,7 @@ class VariableStore(
         throw CircularReferenceException(fetchesInProgress)
       }
 
-      return manifestVariables.getOrPut(manifestId to variableId) {
+      return variables.getOrPut(manifestId to variableId) {
         fetchesInProgress.addLast(variableId)
 
         val variablesRow =
@@ -358,7 +357,7 @@ class VariableStore(
         throw CircularReferenceException(fetchesInProgress)
       }
 
-      return variables.getOrPut(variableId) {
+      return variables.getOrPut(null to variableId) {
         fetchesInProgress.addLast(variableId)
 
         val variablesRow =
