@@ -1,27 +1,27 @@
 package com.terraformation.backend.documentproducer.model
 
-import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableValueId
 
 sealed interface ValueOperation {
-  val documentId: DocumentId
+  val projectId: ProjectId
 }
 
 data class AppendValueOperation(
     val value: VariableValue<Nothing?, *>,
 ) : ValueOperation {
-  override val documentId: DocumentId
-    get() = value.documentId
+  override val projectId: ProjectId
+    get() = value.projectId
 }
 
 data class DeleteValueOperation(
-    override val documentId: DocumentId,
+    override val projectId: ProjectId,
     val valueId: VariableValueId,
 ) : ValueOperation
 
 data class ReplaceValuesOperation(
-    override val documentId: DocumentId,
+    override val projectId: ProjectId,
     val variableId: VariableId,
     val rowValueId: VariableValueId?,
     val values: List<VariableValue<Nothing?, *>>,
@@ -30,6 +30,6 @@ data class ReplaceValuesOperation(
 data class UpdateValueOperation(
     val value: VariableValue<VariableValueId, *>,
 ) : ValueOperation {
-  override val documentId: DocumentId
-    get() = value.documentId
+  override val projectId: ProjectId
+    get() = value.projectId
 }

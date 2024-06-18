@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.api
 
 import com.terraformation.backend.api.ControllerIntegrationTest
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
@@ -26,6 +27,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
   @BeforeEach
   fun setUp() {
     insertUser()
+    insertUserGlobalRole(role = GlobalRole.TFExpert)
     insertOrganization()
     insertProject()
     insertDocumentTemplate()
@@ -76,7 +78,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
     }
 
     @Test
-    fun `image value must be from correct document`() {
+    fun `image value must be from correct project`() {
       val imageVariableId = insertVariableManifestEntry(insertVariable(type = VariableType.Image))
 
       val uri = URI("https://test")
@@ -86,6 +88,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       val imageValueId = insertImageValue(imageVariableId, fileId)
 
+      insertProject()
       val otherDocumentId = insertDocument()
 
       mockMvc

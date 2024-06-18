@@ -1,7 +1,7 @@
 package com.terraformation.backend.documentproducer.model
 
 import com.terraformation.backend.db.default_schema.FileId
-import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
 import com.terraformation.backend.db.docprod.VariableManifestId
@@ -572,10 +572,7 @@ class VariableTest {
    * Helper function to fetch a variable. Returns a dummy variable unless the variable ID is
    * [nonexistentVariableId], in which case it throws an exception.
    */
-  private fun mockFetchVariable(
-      @Suppress("UNUSED_PARAMETER") manifestId: VariableManifestId,
-      variableId: VariableId
-  ): Variable {
+  private fun mockFetchVariable(variableId: VariableId): Variable {
     if (variableId == nonexistentVariableId) {
       throw VariableNotFoundException(variableId)
     } else {
@@ -623,7 +620,7 @@ class VariableTest {
           citation = null,
           id = null,
           listPosition = listPosition,
-          documentId = DocumentId(1),
+          projectId = ProjectId(1),
           rowValueId = null,
           variableId = VariableId(variableId),
       )

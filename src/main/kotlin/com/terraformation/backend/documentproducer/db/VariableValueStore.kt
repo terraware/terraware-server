@@ -2,9 +2,9 @@ package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
-import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.tables.daos.DocumentsDao
@@ -21,10 +21,10 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionValuesR
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableValueTableRowsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableValuesRow
+import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_IMAGE_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_LINK_VALUES
-import com.terraformation.backend.db.docprod.tables.references.VARIABLE_MANIFEST_ENTRIES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SECTION_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SELECT_OPTION_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_TABLE_COLUMNS
@@ -89,13 +89,13 @@ class VariableValueStore(
   ): Map<VariableValueId, BaseVariableValueProperties<VariableValueId>> {
     return with(VARIABLE_VALUES) {
       dslContext
-          .select(ID, DOCUMENT_ID, VARIABLE_ID, LIST_POSITION, CITATION)
+          .select(ID, PROJECT_ID, VARIABLE_ID, LIST_POSITION, CITATION)
           .from(VARIABLE_VALUES)
           .where(ID.`in`(valueIds))
           .fetchMap(ID.asNonNullable()) { record ->
             BaseVariableValueProperties(
                 record[ID]!!,
-                record[DOCUMENT_ID]!!,
+                record[PROJECT_ID]!!,
                 record[LIST_POSITION]!!,
                 record[VARIABLE_ID]!!,
                 record[CITATION],
@@ -104,20 +104,18 @@ class VariableValueStore(
     }
   }
 
-  /** Returns a document's highest value ID, if any. */
-  fun fetchMaxValueId(documentId: DocumentId): VariableValueId? {
-    return with(VARIABLE_VALUES) {
-      dslContext
-          .select(DSL.max(ID))
-          .from(VARIABLE_VALUES)
-          .where(DOCUMENT_ID.eq(documentId))
-          .fetchOne(DSL.max(ID))
-    }
+  /** Returns a project's highest value ID, if any. */
+  fun fetchMaxValueId(projectId: ProjectId): VariableValueId? {
+    return dslContext
+        .select(DSL.max(VARIABLE_VALUES.ID))
+        .from(VARIABLE_VALUES)
+        .where(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
+        .fetchOne(DSL.max(VARIABLE_VALUES.ID))
   }
 
   fun fetchOneById(valueId: VariableValueId): ExistingValue {
-    val documentId = fetchDocumentId(valueId)
-    val values = listValues(documentId, valueId, valueId)
+    val projectId = fetchProjectId(valueId)
+    val values = listValues(projectId, valueId, valueId)
 
     return values.firstOrNull() ?: throw VariableValueNotFoundException(valueId)
   }
@@ -130,7 +128,26 @@ class VariableValueStore(
     val includeDeletedValues = minValueId != null
     val conditions =
         listOfNotNull(
-            VARIABLE_VALUES.DOCUMENT_ID.eq(documentId),
+            VARIABLE_VALUES.PROJECT_ID.eq(
+                DSL.select(DOCUMENTS.PROJECT_ID)
+                    .from(DOCUMENTS)
+                    .where(DOCUMENTS.ID.eq(documentId))),
+            minValueId?.let { VARIABLE_VALUES.ID.ge(it) },
+            maxValueId?.let { VARIABLE_VALUES.ID.le(it) },
+        )
+
+    return fetchByConditions(conditions, includeDeletedValues)
+  }
+
+  fun listValues(
+      projectId: ProjectId,
+      minValueId: VariableValueId? = null,
+      maxValueId: VariableValueId? = null
+  ): List<ExistingValue> {
+    val includeDeletedValues = minValueId != null
+    val conditions =
+        listOfNotNull(
+            VARIABLE_VALUES.PROJECT_ID.eq(projectId),
             minValueId?.let { VARIABLE_VALUES.ID.ge(it) },
             maxValueId?.let { VARIABLE_VALUES.ID.le(it) },
         )
@@ -143,7 +160,7 @@ class VariableValueStore(
    * not a list, always returns 0; otherwise returns the current maximum list position plus 1, or 0
    * if there are no existing values yet.
    */
-  fun fetchNextListPosition(documentId: DocumentId, variableId: VariableId): Int {
+  fun fetchNextListPosition(projectId: ProjectId, variableId: VariableId): Int {
     return dslContext
         .select(
             DSL.case_()
@@ -151,7 +168,7 @@ class VariableValueStore(
                     VARIABLES.IS_LIST,
                     DSL.select(DSL.max(VARIABLE_VALUES.LIST_POSITION).plus(1))
                         .from(VARIABLE_VALUES)
-                        .where(VARIABLE_VALUES.DOCUMENT_ID.eq(documentId))
+                        .where(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
                         .and(VARIABLE_VALUES.VARIABLE_ID.eq(variableId))
                         .and(VARIABLE_VALUES.IS_DELETED.isFalse))
                 .else_(0))
@@ -194,7 +211,7 @@ class VariableValueStore(
                 VARIABLE_VALUES.IS_DELETED,
                 VARIABLE_VALUES.LIST_POSITION,
                 VARIABLE_VALUES.NUMBER_VALUE,
-                VARIABLE_VALUES.DOCUMENT_ID,
+                VARIABLE_VALUES.PROJECT_ID,
                 VARIABLE_VALUES.TEXT_VALUE,
                 VARIABLE_VALUES.VARIABLE_ID,
                 VARIABLE_VALUES.VARIABLE_TYPE_ID,
@@ -235,7 +252,7 @@ class VariableValueStore(
       val base =
           BaseVariableValueProperties(
               citation = record[VARIABLE_VALUES.CITATION],
-              documentId = record[VARIABLE_VALUES.DOCUMENT_ID]!!,
+              projectId = record[VARIABLE_VALUES.PROJECT_ID]!!,
               id = record[VARIABLE_VALUES.ID]!!,
               listPosition = record[VARIABLE_VALUES.LIST_POSITION]!!,
               rowValueId = record[VARIABLE_VALUE_TABLE_ROWS.TABLE_ROW_VALUE_ID],
@@ -306,33 +323,29 @@ class VariableValueStore(
    *   one.
    */
   fun updateValues(operations: List<ValueOperation>): List<ExistingValue> {
-    val documentId = operations.firstOrNull()?.documentId ?: return emptyList()
+    val projectId = operations.firstOrNull()?.projectId ?: return emptyList()
 
     val latestRowIds = mutableMapOf<VariableId, VariableValueId>()
-    if (operations.any { it.documentId != documentId }) {
-      throw IllegalArgumentException("Cannot update values of multiple documents")
+    if (operations.any { it.projectId != projectId }) {
+      throw IllegalArgumentException("Cannot update values of multiple projects")
     }
 
-    val maxValueIdBefore = fetchMaxValueId(documentId) ?: VariableValueId(0)
+    val maxValueIdBefore = fetchMaxValueId(projectId) ?: VariableValueId(0)
 
     dslContext.transaction { _ ->
-      val documentsRow =
-          documentsDao.fetchOneById(documentId) ?: throw DocumentNotFoundException(documentId)
-      val manifestId = documentsRow.variableManifestId!!
-
       operations.forEach { operation ->
         when (operation) {
-          is AppendValueOperation -> appendValue(operation, manifestId, latestRowIds)
+          is AppendValueOperation -> appendValue(operation, latestRowIds)
           is DeleteValueOperation -> deleteValue(operation)
-          is ReplaceValuesOperation -> replaceValues(operation, manifestId)
-          is UpdateValueOperation -> updateValue(operation, manifestId)
+          is ReplaceValuesOperation -> replaceValues(operation)
+          is UpdateValueOperation -> updateValue(operation)
         }
       }
     }
 
-    val maxValueIdAfter = fetchMaxValueId(documentId) ?: VariableValueId(1)
+    val maxValueIdAfter = fetchMaxValueId(projectId) ?: VariableValueId(1)
 
-    return listValues(documentId, VariableValueId(maxValueIdBefore.value + 1), maxValueIdAfter)
+    return listValues(projectId, VariableValueId(maxValueIdBefore.value + 1), maxValueIdAfter)
   }
 
   /** Sets a single value at a specific list position, superseding any previous value. */
@@ -346,16 +359,15 @@ class VariableValueStore(
     }
 
     return dslContext.transactionResult { _ ->
-      insertValue(newValue.documentId, newValue.listPosition, newValue.rowValueId, newValue)
+      insertValue(newValue.projectId, newValue.listPosition, newValue.rowValueId, newValue)
     }
   }
 
   private fun appendValue(
       operation: AppendValueOperation,
-      manifestId: VariableManifestId,
       latestRowIds: MutableMap<VariableId, VariableValueId>
   ): VariableValueId {
-    val documentId = operation.documentId
+    val projectId = operation.projectId
     val variableId = operation.value.variableId
     val variablesRow =
         variablesDao.fetchOneById(variableId) ?: throw VariableNotFoundException(variableId)
@@ -365,10 +377,6 @@ class VariableValueStore(
     // - Otherwise, if we've just inserted a row into the column's table, use that row's ID (to
     //   support inserting a row with values in one API request)
     // - Otherwise, it's an error: we don't know which row to assign the value to.
-
-    if (!isVariableInManifest(variableId, manifestId)) {
-      throw VariableNotInManifestException(variableId, manifestId)
-    }
 
     val inputRowValueId = operation.value.rowValueId
     val containingTableId = fetchContainingTableVariableId(variableId)
@@ -393,12 +401,12 @@ class VariableValueStore(
 
     val listPosition =
         if (variablesRow.isList == true) {
-          fetchNextListPosition(documentId, variableId, actualRowValueId)
+          fetchNextListPosition(projectId, variableId, actualRowValueId)
         } else {
           0
         }
 
-    val valueId = insertValue(documentId, listPosition, actualRowValueId, operation.value)
+    val valueId = insertValue(projectId, listPosition, actualRowValueId, operation.value)
 
     if (variablesRow.variableTypeId == VariableType.Table) {
       latestRowIds[variableId] = valueId
@@ -423,7 +431,7 @@ class VariableValueStore(
     val containingRowId = fetchContainingRowId(valueId)
     val listPosition = valuesRow.listPosition!!
     val maxListPosition =
-        fetchMaxListPosition(operation.documentId, variableId, containingRowId)
+        fetchMaxListPosition(operation.projectId, variableId, containingRowId)
             ?: throw IllegalStateException(
                 "Variable $variableId has values but no max list position")
 
@@ -431,9 +439,9 @@ class VariableValueStore(
         DeletedValue(
             BaseVariableValueProperties(
                 citation = null,
-                documentId = operation.documentId,
                 id = null,
                 listPosition = listPosition,
+                projectId = operation.projectId,
                 rowValueId = containingRowId,
                 variableId = variableId,
             ),
@@ -444,7 +452,7 @@ class VariableValueStore(
     val valuesToRenumber =
         fetchByConditions(
             listOfNotNull(
-                VARIABLE_VALUES.DOCUMENT_ID.eq(operation.documentId),
+                VARIABLE_VALUES.PROJECT_ID.eq(operation.projectId),
                 VARIABLE_VALUES.VARIABLE_ID.eq(variableId),
                 containingRowId?.let { VARIABLE_VALUE_TABLE_ROWS.TABLE_ROW_VALUE_ID.eq(it) },
                 VARIABLE_VALUES.LIST_POSITION.gt(listPosition),
@@ -454,7 +462,7 @@ class VariableValueStore(
     valuesToRenumber.forEach { valueToRenumber ->
       val newValueId =
           insertValue(
-              operation.documentId,
+              operation.projectId,
               valueToRenumber.listPosition - 1,
               containingRowId,
               valueToRenumber)
@@ -476,10 +484,7 @@ class VariableValueStore(
 
     val deletedId =
         insertValue(
-            operation.documentId,
-            maxListPosition,
-            targetRowValueId ?: containingRowId,
-            deletedValue)
+            operation.projectId, maxListPosition, targetRowValueId ?: containingRowId, deletedValue)
 
     // If this was a table row, recursively delete all its column values.
     if (variablesRow.variableTypeId == VariableType.Table) {
@@ -496,15 +501,12 @@ class VariableValueStore(
               .fetch(VARIABLE_VALUE_TABLE_ROWS.VARIABLE_VALUE_ID.asNonNullable())
 
       cellValueIds.forEach { cellValueId ->
-        deleteValue(DeleteValueOperation(operation.documentId, cellValueId), deletedId)
+        deleteValue(DeleteValueOperation(operation.projectId, cellValueId), deletedId)
       }
     }
   }
 
-  private fun replaceValues(
-      operation: ReplaceValuesOperation,
-      manifestId: VariableManifestId,
-  ) {
+  private fun replaceValues(operation: ReplaceValuesOperation) {
     val variableId = operation.variableId
     val variablesRow =
         variablesDao.fetchOneById(variableId) ?: throw VariableNotFoundException(variableId)
@@ -513,49 +515,37 @@ class VariableValueStore(
       throw VariableNotListException(variableId)
     }
 
-    if (!isVariableInManifest(variableId, manifestId)) {
-      throw VariableNotInManifestException(variableId, manifestId)
-    }
-
     if (variablesRow.isList == true) {
       // If the replacement list has fewer items than the existing value, delete the items whose
       // list positions no longer exist.
 
       val maxListPosition =
-          fetchMaxListPosition(operation.documentId, variableId, operation.rowValueId)
+          fetchMaxListPosition(operation.projectId, variableId, operation.rowValueId)
       if (maxListPosition != null) {
         (operation.values.size..maxListPosition).forEach { listPosition ->
           val deletedValue =
               DeletedValue(
                   BaseVariableValueProperties(
                       citation = null,
-                      documentId = operation.documentId,
                       id = null,
                       listPosition = listPosition,
+                      projectId = operation.projectId,
                       rowValueId = operation.rowValueId,
                       variableId = operation.variableId,
                   ),
                   variablesRow.variableTypeId!!)
 
-          insertValue(operation.documentId, listPosition, operation.rowValueId, deletedValue)
+          insertValue(operation.projectId, listPosition, operation.rowValueId, deletedValue)
         }
       }
     }
 
     operation.values.forEachIndexed { listPosition, value ->
-      insertValue(operation.documentId, listPosition, operation.rowValueId, value)
+      insertValue(operation.projectId, listPosition, operation.rowValueId, value)
     }
   }
 
-  private fun updateValue(
-      operation: UpdateValueOperation,
-      manifestId: VariableManifestId,
-  ) {
-    val variableId = fetchVariableId(operation.value.id)
-    if (!isVariableInManifest(variableId, manifestId)) {
-      throw VariableNotInManifestException(variableId, manifestId)
-    }
-
+  private fun updateValue(operation: UpdateValueOperation) {
     val rowValueId = fetchContainingRowId(operation.value.id)
 
     // Updating images is a special case, because we need to carry the file ID over from the
@@ -568,9 +558,9 @@ class VariableValueStore(
           ExistingImageValue(
               BaseVariableValueProperties(
                   citation = operation.value.citation,
-                  documentId = operation.value.documentId,
                   id = operation.value.id,
                   listPosition = operation.value.listPosition,
+                  projectId = operation.projectId,
                   rowValueId = operation.value.rowValueId,
                   variableId = operation.value.variableId,
               ),
@@ -579,11 +569,11 @@ class VariableValueStore(
           operation.value
         }
 
-    insertValue(operation.documentId, operation.value.listPosition, rowValueId, effectiveValue)
+    insertValue(operation.projectId, operation.value.listPosition, rowValueId, effectiveValue)
   }
 
   private fun insertValue(
-      documentId: DocumentId,
+      projectId: ProjectId,
       listPosition: Int,
       rowValueId: VariableValueId?,
       value: VariableValue<*, *>,
@@ -594,10 +584,10 @@ class VariableValueStore(
             createdBy = currentUser().userId,
             createdTime = clock.instant(),
             dateValue = if (value is DateValue) value.value else null,
-            documentId = documentId,
             isDeleted = value is DeletedValue,
             listPosition = listPosition,
             numberValue = if (value is NumberValue) value.value else null,
+            projectId = projectId,
             textValue = if (value is TextValue) value.value else null,
             variableId = value.variableId,
             variableTypeId = value.type,
@@ -732,7 +722,7 @@ class VariableValueStore(
   }
 
   private fun fetchMaxListPosition(
-      documentId: DocumentId,
+      projectId: ProjectId,
       variableId: VariableId,
       rowValueId: VariableValueId?
   ): Int? {
@@ -744,13 +734,13 @@ class VariableValueStore(
           .select(DSL.max(VARIABLE_VALUES.LIST_POSITION))
           .from(VARIABLE_VALUES)
           .where(VARIABLE_VALUES.VARIABLE_ID.eq(variableId))
-          .and(VARIABLE_VALUES.DOCUMENT_ID.eq(documentId))
+          .and(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
           .and(VARIABLE_VALUES.IS_DELETED.isFalse)
           .andNotExists(
               DSL.selectOne()
                   .from(deletedValues)
                   .where(deletedValues.VARIABLE_ID.eq(variableId))
-                  .and(deletedValues.DOCUMENT_ID.eq(documentId))
+                  .and(deletedValues.PROJECT_ID.eq(projectId))
                   .and(deletedValues.LIST_POSITION.eq(VARIABLE_VALUES.LIST_POSITION))
                   .and(deletedValues.IS_DELETED.isTrue)
                   .and(deletedValues.ID.gt(VARIABLE_VALUES.ID)))
@@ -763,7 +753,7 @@ class VariableValueStore(
           .join(VARIABLE_VALUE_TABLE_ROWS)
           .on(VARIABLE_VALUES.ID.eq(VARIABLE_VALUE_TABLE_ROWS.VARIABLE_VALUE_ID))
           .where(VARIABLE_VALUES.VARIABLE_ID.eq(variableId))
-          .and(VARIABLE_VALUES.DOCUMENT_ID.eq(documentId))
+          .and(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
           .and(VARIABLE_VALUE_TABLE_ROWS.TABLE_ROW_VALUE_ID.eq(rowValueId))
           .and(VARIABLE_VALUES.IS_DELETED.isFalse)
           .andNotExists(
@@ -772,7 +762,7 @@ class VariableValueStore(
                   .join(deletedRows)
                   .on(deletedValues.ID.eq(deletedRows.VARIABLE_VALUE_ID))
                   .where(deletedValues.VARIABLE_ID.eq(variableId))
-                  .and(deletedValues.DOCUMENT_ID.eq(documentId))
+                  .and(deletedValues.PROJECT_ID.eq(projectId))
                   .and(deletedRows.TABLE_ROW_VALUE_ID.eq(rowValueId))
                   .and(deletedValues.LIST_POSITION.eq(VARIABLE_VALUES.LIST_POSITION))
                   .and(deletedValues.IS_DELETED.isTrue)
@@ -783,33 +773,15 @@ class VariableValueStore(
   }
 
   private fun fetchNextListPosition(
-      documentId: DocumentId,
+      projectId: ProjectId,
       variableId: VariableId,
       rowValueId: VariableValueId?
   ): Int {
-    return fetchMaxListPosition(documentId, variableId, rowValueId)?.let { it + 1 } ?: 0
+    return fetchMaxListPosition(projectId, variableId, rowValueId)?.let { it + 1 } ?: 0
   }
 
-  private fun fetchDocumentId(valueId: VariableValueId): DocumentId {
-    return with(VARIABLE_VALUES) {
-      dslContext
-          .select(DOCUMENT_ID)
-          .from(VARIABLE_VALUES)
-          .where(ID.eq(valueId))
-          .fetchOne()
-          ?.value1() ?: throw VariableValueNotFoundException(valueId)
-    }
-  }
-
-  private fun isVariableInManifest(
-      variableId: VariableId,
-      manifestId: VariableManifestId
-  ): Boolean {
-    return dslContext
-        .selectOne()
-        .from(VARIABLE_MANIFEST_ENTRIES)
-        .where(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId))
-        .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_ID.eq(variableId))
-        .fetchOne() != null
+  private fun fetchProjectId(valueId: VariableValueId): ProjectId {
+    return dslContext.fetchValue(VARIABLE_VALUES.PROJECT_ID, VARIABLE_VALUES.ID.eq(valueId))
+        ?: throw VariableValueNotFoundException(valueId)
   }
 }
