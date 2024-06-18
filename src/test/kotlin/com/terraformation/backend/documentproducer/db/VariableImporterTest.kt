@@ -406,14 +406,18 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           importResult.errors)
     }
 
-    //    @Test
-    //    fun `ensures that the current CSV imports without error`() {
-    //      val csvInput = javaClass.getResourceAsStream("/manifest/variable-manifest-rev5.csv")!!
-    //
-    //      val importResult = importer.import(csvInput)
-    //
-    //        Assertions.assertEquals(emptyList<String>(), importResult.errors, "no errors")
-    //    }
+    @Test
+    fun `ensures that the current CSV imports without error`() {
+      insertModule()
+      insertDeliverable(id = 27)
+      insertDeliverable(id = 123)
+      
+      val csvInput = javaClass.getResourceAsStream("/manifest/all-variables-rev1.csv")!!
+
+      val importResult = importer.import(csvInput)
+
+      Assertions.assertEquals(emptyList<String>(), importResult.errors, "no errors")
+    }
 
     @Test
     fun `reuses existing select variable`() {
