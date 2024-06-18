@@ -23,7 +23,7 @@
                     ${strings("notification.user.addedToTerraware.email.body.2", organization.name)}
                 </mj-text>
                 <mj-text mj-class="text-body03" padding-top="32px">
-                    ${strings("notification.user.addedToTerraware.email.body.3", admin.fullName, admin.email)}</mj-text>
+                    ${strings("notification.user.addedToTerraware.email.body.3")}</mj-text>
                 <mj-text mj-class="text-body03">
                     ${strings("notification.user.addedToTerraware.email.body.4", organization.name, admin.fullName, admin.email)}</mj-text>
                 <mj-text mj-class="text-body03" padding-bottom="32px">
