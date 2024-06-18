@@ -3,6 +3,7 @@ package com.terraformation.backend.documentproducer
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
@@ -178,49 +179,33 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
 
     val documentId = insertDocument(variableManifestId = oldManifestId)
 
-    val oldTableRowId1 =
-        insertValue(variableId = oldTableVariableId, listPosition = 0, documentId = documentId)
+    val oldTableRowId1 = insertValue(variableId = oldTableVariableId, listPosition = 0)
     insertValueTableRow(
-        insertValue(
-            variableId = oldTableObsoleteColumnId,
-            textValue = "obsolete 1",
-            documentId = documentId),
+        insertValue(variableId = oldTableObsoleteColumnId, textValue = "obsolete 1"),
         oldTableRowId1)
     insertValueTableRow(
         insertValue(
             variableId = oldTableOutdatedColumnId,
             numberValue = BigDecimal(50),
-            documentId = documentId,
             citation = "citation"),
         oldTableRowId1)
 
-    val oldTableRowId2 =
-        insertValue(variableId = oldTableVariableId, listPosition = 1, documentId = documentId)
+    val oldTableRowId2 = insertValue(variableId = oldTableVariableId, listPosition = 1)
     insertValueTableRow(
-        insertValue(
-            variableId = oldTableObsoleteColumnId,
-            textValue = "obsolete 2",
-            documentId = documentId),
+        insertValue(variableId = oldTableObsoleteColumnId, textValue = "obsolete 2"),
         oldTableRowId2)
     insertValueTableRow(
-        insertValue(
-            variableId = oldTableOutdatedColumnId,
-            numberValue = BigDecimal(5),
-            documentId = documentId),
+        insertValue(variableId = oldTableOutdatedColumnId, numberValue = BigDecimal(5)),
         oldTableRowId2)
 
     assertEquals(
         listOf(
-            AppendValueOperation(
-                NewTableValue(newValueProps(newTableVariableId, documentId = documentId))),
+            AppendValueOperation(NewTableValue(newValueProps(newTableVariableId))),
             AppendValueOperation(
                 NewNumberValue(
-                    newValueProps(
-                        newTableUpdatedColumnId, documentId = documentId, citation = "citation"),
-                    BigDecimal(50))),
+                    newValueProps(newTableUpdatedColumnId, citation = "citation"), BigDecimal(50))),
             // Empty row because the old one didn't have any values to carry forward.
-            AppendValueOperation(
-                NewTableValue(newValueProps(newTableVariableId, documentId = documentId))),
+            AppendValueOperation(NewTableValue(newValueProps(newTableVariableId))),
         ),
         calculateOperations(newManifestId, documentId))
   }
@@ -246,36 +231,23 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
 
     val documentId = insertDocument(variableManifestId = oldManifestId)
     val outdatedValueId =
-        insertSectionValue(
-            sectionVariableId,
-            documentId = documentId,
-            listPosition = 0,
-            usedVariableId = outdatedVariableId)
+        insertSectionValue(sectionVariableId, listPosition = 0, usedVariableId = outdatedVariableId)
     val obsoleteValueId =
-        insertSectionValue(
-            sectionVariableId,
-            documentId = documentId,
-            listPosition = 1,
-            usedVariableId = obsoleteVariableId)
-    insertSectionValue(
-        sectionVariableId, documentId = documentId, listPosition = 2, textValue = "some text")
-    insertSectionValue(
-        sectionVariableId,
-        documentId = documentId,
-        listPosition = 3,
-        usedVariableId = unmodifiedVariableId)
+        insertSectionValue(sectionVariableId, listPosition = 1, usedVariableId = obsoleteVariableId)
+    insertSectionValue(sectionVariableId, listPosition = 2, textValue = "some text")
+    insertSectionValue(sectionVariableId, listPosition = 3, usedVariableId = unmodifiedVariableId)
 
     assertEquals(
         listOf(
             UpdateValueOperation(
                 ExistingSectionValue(
                     BaseVariableValueProperties(
-                        outdatedValueId, documentId, 0, sectionVariableId, null),
+                        outdatedValueId, inserted.projectId, 0, sectionVariableId, null),
                     SectionValueVariable(
                         updatedVariableId,
                         VariableUsageType.Injection,
                         VariableInjectionDisplayStyle.Block))),
-            DeleteValueOperation(documentId, obsoleteValueId),
+            DeleteValueOperation(inserted.projectId, obsoleteValueId),
         ),
         calculateOperations(newManifestId, documentId))
   }
@@ -295,7 +267,7 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
 
   private fun newValueProps(
       variableId: Any,
-      documentId: DocumentId = inserted.documentId,
+      projectId: ProjectId = inserted.projectId,
       listPosition: Int = 0,
       rowValueId: Any? = null,
       citation: String? = null,
@@ -303,8 +275,8 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
     return BaseVariableValueProperties(
         citation = citation,
         id = null,
-        documentId = documentId,
         listPosition = listPosition,
+        projectId = projectId,
         variableId = variableId.toIdWrapper { VariableId(it) },
         rowValueId = rowValueId?.toIdWrapper { VariableValueId(it) })
   }

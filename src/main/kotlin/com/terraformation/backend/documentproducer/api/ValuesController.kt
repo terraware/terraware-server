@@ -7,6 +7,7 @@ import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.documentproducer.VariableValueService
+import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/document-producer/documents/{documentId}/values")
 @RestController
 class ValuesController(
+    private val documentStore: DocumentStore,
     private val variableValueStore: VariableValueStore,
     private val variableValueService: VariableValueService,
 ) {
@@ -52,8 +54,9 @@ class ValuesController(
       @RequestParam
       maxValueId: VariableValueId? = null,
   ): ListVariableValuesResponsePayload {
+    val projectId = documentStore.fetchProjectId(documentId)
     val currentMax =
-        variableValueStore.fetchMaxValueId(documentId)
+        variableValueStore.fetchMaxValueId(projectId)
             ?: return ListVariableValuesResponsePayload(VariableValueId(0), emptyList())
     val nextValueId = VariableValueId(currentMax.value + 1)
 
@@ -89,12 +92,13 @@ class ValuesController(
       @PathVariable documentId: DocumentId,
       @RequestBody payload: UpdateVariableValuesRequestPayload
   ): SimpleSuccessResponsePayload {
+    val projectId = documentStore.fetchProjectId(documentId)
     val existingValueIds = payload.operations.mapNotNull { it.getExistingValueId() }
     val existingBases = variableValueStore.fetchBaseProperties(existingValueIds)
     val operations =
         payload.operations.map { operationPayload ->
           val base = operationPayload.getExistingValueId()?.let { existingBases[it] }
-          operationPayload.toOperationModel(documentId, base)
+          operationPayload.toOperationModel(projectId, base)
         }
 
     variableValueService.validate(operations)

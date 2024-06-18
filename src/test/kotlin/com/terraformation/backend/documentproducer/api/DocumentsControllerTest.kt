@@ -273,15 +273,15 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
     fun `saves current maximum value ID and manifest ID`() {
       val payload = """{ "name": "Test" }"""
 
+      val projectId = inserted.projectId
       val documentId = insertDocument()
-      val otherDocumentId = insertDocument()
+      val otherProjectId = insertProject()
       val variableId = insertVariableManifestEntry(insertTextVariable())
 
-      insertValue(documentId = documentId, variableId = variableId, textValue = "Value 1")
+      insertValue(projectId = projectId, variableId = variableId, textValue = "Value 1")
       val latestValueId =
-          insertValue(documentId = documentId, variableId = variableId, textValue = "Value 2")
-      insertValue(
-          variableId = variableId, documentId = otherDocumentId, textValue = "Other document")
+          insertValue(projectId = projectId, variableId = variableId, textValue = "Value 2")
+      insertValue(projectId = otherProjectId, variableId = variableId, textValue = "Other document")
 
       mockMvc
           .post(versionsPath(documentId)) { content = payload }
@@ -361,10 +361,11 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
     @Test
     fun `returns not found error if version is from a different document`() {
       val documentId = insertDocument()
+      val otherProjectId = insertProject()
       val otherDocumentId = insertDocument()
       val variableId = insertVariableManifestEntry(insertTextVariable())
       val valueId =
-          insertValue(variableId = variableId, documentId = otherDocumentId, textValue = "Text")
+          insertValue(variableId = variableId, projectId = otherProjectId, textValue = "Text")
       val versionId = insertSavedVersion(valueId, otherDocumentId)
 
       mockMvc.get(versionsPath(versionId, documentId)).andExpect { status { isNotFound() } }
@@ -407,10 +408,11 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       val payload = """{ "isSubmitted": true }"""
 
       val documentId = insertDocument()
+      val otherProjectId = insertProject()
       val otherDocumentId = insertDocument()
       val variableId = insertVariableManifestEntry(insertTextVariable())
       val valueId =
-          insertValue(variableId = variableId, documentId = otherDocumentId, textValue = "Text")
+          insertValue(variableId = variableId, projectId = otherProjectId, textValue = "Text")
       val versionId = insertSavedVersion(valueId, otherDocumentId)
 
       mockMvc
@@ -440,7 +442,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
         val instant = timestamp.toInstant()
         lastValueId =
             insertValue(
-                documentId = inserted.documentId,
+                projectId = inserted.projectId,
                 variableId = variableId,
                 createdBy = userId,
                 createdTime = instant)
@@ -636,9 +638,9 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                   citation = "citation",
                   createdBy = inserted.userId,
                   createdTime = Instant.EPOCH,
-                  documentId = inserted.documentId,
                   isDeleted = false,
                   listPosition = 0,
+                  projectId = inserted.projectId,
                   textValue = "1",
                   variableId = newVariableId,
                   variableTypeId = VariableType.Text,

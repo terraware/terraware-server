@@ -36,7 +36,7 @@ interface BaseVariable {
   val isList: Boolean
 
   /** Which manifest this object's per-manifest values come from. Can vary between manifests. */
-  val manifestId: VariableManifestId
+  val manifestId: VariableManifestId?
 
   /** The variable's user-facing name. Can vary between manifests. */
   val name: String
@@ -67,7 +67,7 @@ data class BaseVariableProperties(
     override val description: String? = null,
     override val id: VariableId,
     override val isList: Boolean = false,
-    override val manifestId: VariableManifestId,
+    override val manifestId: VariableManifestId?,
     override val name: String,
     override val position: Int,
     override val recommendedBy: Collection<VariableId> = emptyList(),
@@ -108,7 +108,7 @@ sealed interface Variable : BaseVariable {
       VariableValueInvalidException::class)
   fun validate(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableManifestId, VariableId) -> Variable,
+      fetchVariable: (VariableId) -> Variable,
   ) {
     if (!isList && value.listPosition > 0) {
       throw VariableNotListException(id)
@@ -130,7 +130,7 @@ sealed interface Variable : BaseVariable {
    */
   fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableManifestId, VariableId) -> Variable,
+      fetchVariable: (VariableId) -> Variable,
   )
 
   /**
@@ -141,7 +141,7 @@ sealed interface Variable : BaseVariable {
       oldVariable: Variable,
       oldValue: VariableValue<*, *>,
       newRowValueId: VariableValueId?,
-      fetchVariable: (VariableManifestId, VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable
   ): NewValue? {
     return convertValueForType(oldVariable, oldValue, newRowValueId)?.let { convertedValue ->
       try {
@@ -171,7 +171,7 @@ sealed interface Variable : BaseVariable {
  */
 private fun Variable.baseForValue(oldValue: VariableValue<*, *>, newRowValueId: VariableValueId?) =
     BaseVariableValueProperties(
-        null, oldValue.documentId, oldValue.listPosition, id, oldValue.citation, newRowValueId)
+        null, oldValue.projectId, oldValue.listPosition, id, oldValue.citation, newRowValueId)
 
 data class NumberVariable(
     private val base: BaseVariableProperties,
@@ -184,7 +184,7 @@ data class NumberVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableManifestId, VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable
   ) {
     if (value !is NumberValue) {
       throw VariableTypeMismatchException(id, VariableType.Number)
@@ -230,7 +230,7 @@ data class TextVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableManifestId, VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable
   ) {
     if (value !is TextValue) {
       throw VariableTypeMismatchException(id, VariableType.Text)
@@ -285,7 +285,7 @@ data class DateVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableManifestId, VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable
   ) {
     if (value !is DateValue) {
       throw VariableTypeMismatchException(id, VariableType.Date)
@@ -322,7 +322,7 @@ data class ImageVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableManifestId, VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable
   ) {
     if (value !is ImageValue) {
       throw VariableTypeMismatchException(id, VariableType.Image)
@@ -361,7 +361,7 @@ data class SelectVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableManifestId, VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable
   ) {
     if (value !is SelectValue) {
       throw VariableTypeMismatchException(id, VariableType.Select)
@@ -429,7 +429,7 @@ data class SectionVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableManifestId, VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable
   ) {
     if (value !is SectionValue) {
       throw VariableTypeMismatchException(id, VariableType.Section)
@@ -444,7 +444,7 @@ data class SectionVariable(
       val usedVariableId = value.value.usedVariableId
 
       try {
-        fetchVariable(manifestId, usedVariableId)
+        fetchVariable(usedVariableId)
       } catch (e: VariableNotFoundException) {
         throw VariableValueInvalidException(
             id, "Variable $usedVariableId is used but does not exist in manifest")
@@ -480,7 +480,7 @@ data class TableVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableManifestId, VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable
   ) {
     if (value !is TableValue) {
       throw VariableTypeMismatchException(id, VariableType.Table)
@@ -508,7 +508,7 @@ data class LinkVariable(
 
   override fun validateForType(
       value: VariableValue<*, *>,
-      fetchVariable: (VariableManifestId, VariableId) -> Variable
+      fetchVariable: (VariableId) -> Variable
   ) {
     if (value !is LinkValue) {
       throw VariableTypeMismatchException(id, VariableType.Link)

@@ -64,8 +64,11 @@ class VariableStore(
    * Cache of information about variables. This just holds variable definitions, not values! There
    * is currently no mechanism to limit the size of this cache; the assumption for now is that all
    * the variables in the system will easily fit in memory.
+   *
+   * The manifest ID in the key must be non-null for section variables and null for all other
+   * variable types.
    */
-  private val variables = ConcurrentHashMap<Pair<VariableManifestId, VariableId>, Variable>()
+  private val variables = ConcurrentHashMap<Pair<VariableManifestId?, VariableId>, Variable>()
 
   /**
    * Cache of information about which variables were replaced by which other variables. If a
@@ -84,7 +87,7 @@ class VariableStore(
    * @throws CircularReferenceException There is a cycle in the graph of the variable and its
    *   children.
    */
-  fun fetchVariable(manifestId: VariableManifestId, variableId: VariableId): Variable {
+  fun fetchVariable(variableId: VariableId, manifestId: VariableManifestId? = null): Variable {
     return variables[manifestId to variableId] ?: FetchContext(manifestId).fetchVariable(variableId)
   }
 
@@ -110,7 +113,7 @@ class VariableStore(
                   .and(VARIABLE_SECTIONS.PARENT_VARIABLE_ID.isNotNull))
           .orderBy(POSITION)
           .fetch(VARIABLE_ID.asNonNullable())
-          .map { fetchVariable(manifestId, it) }
+          .map { fetchVariable(it, manifestId) }
     }
   }
 
@@ -184,7 +187,7 @@ class VariableStore(
    * Logic for recursively fetching a variable and the variables it's related to. Variable fetching
    * is stateful because we want to detect cycles.
    */
-  private inner class FetchContext(private val manifestId: VariableManifestId) {
+  private inner class FetchContext(private val manifestId: VariableManifestId?) {
     /** Stack of variables that are being fetched in this context. Used to detect cycles. */
     val fetchesInProgress = ArrayDeque<VariableId>()
 
@@ -209,7 +212,8 @@ class VariableStore(
                 isList = variablesRow.isList!!,
                 manifestId = manifestId,
                 name = variablesRow.name!!,
-                position = manifestRecord.position!!,
+                // TODO: Figure out how to order non-manifest variables
+                position = manifestRecord?.position ?: 0,
                 recommendedBy = recommendedBy,
                 replacesVariableId = variablesRow.replacesVariableId,
                 stableId = variablesRow.stableId!!,
@@ -233,13 +237,17 @@ class VariableStore(
       }
     }
 
-    private fun fetchManifestRecord(variableId: VariableId): VariableManifestEntriesRecord {
-      return with(VARIABLE_MANIFEST_ENTRIES) {
-        dslContext
-            .selectFrom(VARIABLE_MANIFEST_ENTRIES)
-            .where(VARIABLE_MANIFEST_ID.eq(manifestId))
-            .and(VARIABLE_ID.eq(variableId))
-            .fetchOne() ?: throw VariableNotFoundException(variableId)
+    private fun fetchManifestRecord(variableId: VariableId): VariableManifestEntriesRecord? {
+      return if (manifestId != null) {
+        with(VARIABLE_MANIFEST_ENTRIES) {
+          dslContext
+              .selectFrom(VARIABLE_MANIFEST_ENTRIES)
+              .where(VARIABLE_MANIFEST_ID.eq(manifestId))
+              .and(VARIABLE_ID.eq(variableId))
+              .fetchOne() ?: throw VariableNotFoundException(variableId)
+        }
+      } else {
+        null
       }
     }
 
