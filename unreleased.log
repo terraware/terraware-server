@@ -1,3 +1,4 @@
+e4dedb01b80 SW-4674 Implemented super admin method to delete any individual user (#2076)
 723c756ee52 Update geoToolsVersion to v31.2 (#2074)
 e7f32f3d85d Update dependency org.eclipse.jgit:org.eclipse.jgit to 6.10.+ (#2073)
 fc43f159857 Update database dependencies (#2072)
