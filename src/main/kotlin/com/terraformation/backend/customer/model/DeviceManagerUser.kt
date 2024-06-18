@@ -252,6 +252,8 @@ data class DeviceManagerUser(
 
   override fun canDeleteUpload(uploadId: UploadId): Boolean = false
 
+  override fun canDeleteUsers(): Boolean = false
+
   override fun canImportGlobalSpeciesData(): Boolean = false
 
   override fun canListNotifications(organizationId: OrganizationId?): Boolean = false

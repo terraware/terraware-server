@@ -292,6 +292,8 @@ data class IndividualUser(
 
   override fun canDeleteUpload(uploadId: UploadId) = canReadUpload(uploadId)
 
+  override fun canDeleteUsers(): Boolean = isSuperAdmin()
+
   override fun canImportGlobalSpeciesData() = isSuperAdmin()
 
   override fun canListAutomations(facilityId: FacilityId) = isMember(facilityId)
