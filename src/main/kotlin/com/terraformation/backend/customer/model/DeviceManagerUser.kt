@@ -354,6 +354,8 @@ data class DeviceManagerUser(
 
   override fun canReadProjectScores(projectId: ProjectId): Boolean = false
 
+  override fun canReadProjectVariableOwners(projectId: ProjectId): Boolean = false
+
   override fun canReadProjectVotes(projectId: ProjectId): Boolean = false
 
   override fun canReadReport(reportId: ReportId): Boolean = false
@@ -449,6 +451,8 @@ data class DeviceManagerUser(
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId): Boolean = false
 
   override fun canUpdateProjectScores(projectId: ProjectId): Boolean = false
+
+  override fun canUpdateProjectVariableOwners(projectId: ProjectId): Boolean = false
 
   override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = false
 

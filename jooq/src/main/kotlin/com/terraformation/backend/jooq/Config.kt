@@ -423,4 +423,9 @@ val EMBEDDABLES =
         EmbeddableDefinitionType()
             .withName("variable_manifest_entry_id")
             .withTables("variable_manifest_entries")
-            .withColumns("variable_id", "variable_manifest_id"))
+            .withColumns("variable_id", "variable_manifest_id"),
+        EmbeddableDefinitionType()
+            .withName("variable_owner_id")
+            .withTables("variable_owners")
+            .withColumns("variable_id", "project_id"),
+    )

@@ -318,6 +318,17 @@ CREATE TABLE docprod.variable_value_table_rows (
 
 CREATE INDEX ON docprod.variable_value_table_rows (table_row_value_id);
 
+CREATE TABLE docprod.variable_owners (
+    project_id BIGINT NOT NULL REFERENCES projects ON DELETE CASCADE,
+    variable_id BIGINT NOT NULL REFERENCES docprod.variables,
+    owned_by BIGINT NOT NULL REFERENCES users ON DELETE CASCADE,
+
+    PRIMARY KEY (project_id, variable_id)
+);
+
+CREATE INDEX ON docprod.variable_owners (variable_id);
+CREATE INDEX ON docprod.variable_owners (owned_by);
+
 CREATE FUNCTION docprod.reject_delete() RETURNS TRIGGER AS $$
 BEGIN
     RAISE 'This table does not allow deletes.';
