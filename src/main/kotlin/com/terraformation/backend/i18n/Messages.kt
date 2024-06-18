@@ -412,6 +412,14 @@ class Messages {
 
   fun variablesCsvDataTypeRequired() = getMessage("variablesCsvDataTypeRequired")
 
+  fun variableCsvDeliverableDoesNotExist() = getMessage("variablesCsvDeliverableDoesNotExist")
+
+  fun variablesCsvDependencyConfigIncomplete(columnName: String) =
+      getMessage("variablesCsvDependencyConfigIncomplete", columnName)
+
+  fun variablesCsvDependencyVariableStableIdDoesNotExist() =
+      getMessage("variablesCsvDependencyVariableStableIdDoesNotExist")
+
   fun variablesCsvNameLineBreak() = getMessage("variablesCsvNameLineBreak")
 
   fun variablesCsvNameRequired() = getMessage("variablesCsvNameRequired")

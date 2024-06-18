@@ -28,6 +28,13 @@ import org.jooq.impl.DSL
 class DeliverableStore(
     private val dslContext: DSLContext,
 ) {
+  fun deliverableIdExists(id: DeliverableId): Boolean {
+    requirePermissions { readAllDeliverables() }
+
+    return dslContext.select(DELIVERABLES.ID).from(DELIVERABLES).fetchOne()?.value1()?.let { true }
+        ?: false
+  }
+
   fun fetchDeliverableSubmissions(
       organizationId: OrganizationId? = null,
       participantId: ParticipantId? = null,

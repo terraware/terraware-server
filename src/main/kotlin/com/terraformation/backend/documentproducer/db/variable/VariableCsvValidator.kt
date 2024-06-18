@@ -1,5 +1,7 @@
 package com.terraformation.backend.documentproducer.db.variable
 
+import com.terraformation.backend.accelerator.db.DeliverableStore
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.documentproducer.db.CsvValidator
 import com.terraformation.backend.i18n.Messages
 
@@ -46,10 +48,11 @@ const val VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VALUE =
 // Column 19/S
 const val VARIABLE_CSV_COLUMN_INDEX_INTERNAL_ONLY = VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VALUE + 1
 
-class VariableCsvValidator(
-    messages: Messages,
-) : CsvValidator(messages) {
+class VariableCsvValidator(messages: Messages, val deliverableStore: DeliverableStore) :
+    CsvValidator(messages) {
   private val existingStableIds = mutableSetOf<String>()
+
+  private val existingDeliverableIds = mutableSetOf<DeliverableId>()
 
   private val parentPathToChildrenNamesMap = mutableMapOf<String, MutableSet<String>>()
   private val variableTypeByPath = mutableMapOf<String, AllVariableCsvVariableType>()
@@ -69,9 +72,9 @@ class VariableCsvValidator(
           null,
           null,
           null,
+          this::validateDeliverable,
           null,
-          null,
-          null,
+          this::validateDependencyVariableStableId,
           null,
           null,
           null,
@@ -81,6 +84,60 @@ class VariableCsvValidator(
 
   override fun getColumnName(position: Int): String {
     return messages.variablesCsvColumnName(position)
+  }
+
+  private fun validateDeliverable(value: String?, field: String) {
+    if (value.isNullOrBlank()) {
+      return
+    }
+
+    val deliverableId = DeliverableId(value)
+
+    if (deliverableId in existingDeliverableIds) {
+      return
+    } else if (!deliverableStore.deliverableIdExists(deliverableId)) {
+      addError(field, value, messages.variableCsvDeliverableDoesNotExist())
+    }
+
+    existingDeliverableIds.add(deliverableId)
+  }
+
+  private fun validateDependencyVariableStableId(value: String?, field: String) {
+    if (value.isNullOrBlank()) {
+      return
+    }
+
+    if (value !in existingStableIds) {
+      addError(field, value, messages.variablesCsvDependencyVariableStableIdDoesNotExist())
+    }
+  }
+
+  /**
+   * Validates that the dependency configuration supplied, dictated by 3 fields, is complete. If any
+   * part of the configuration is supplied, the entire configuration must be supplied.
+   */
+  private fun validateDependencyConfiguration(values: List<String?>) {
+    val dependencyConfig =
+        listOf(
+                VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID,
+                VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_CONDITION,
+                VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VALUE)
+            .map { index ->
+              values[index] to
+                  messages.variablesCsvDependencyConfigIncomplete(
+                      messages.variablesCsvColumnName(index))
+            }
+
+    val configSupplied = dependencyConfig.any { it.first != null }
+    if (!configSupplied) {
+      return
+    }
+
+    dependencyConfig.forEach { (value, message) ->
+      if (value == null) {
+        addError(null, null, message)
+      }
+    }
   }
 
   private fun validateName(value: String?, field: String) {
@@ -141,7 +198,7 @@ class VariableCsvValidator(
       // If this is not top level, and we couldn't find the closest parent, then we are not
       // correctly adding parent paths to the in memory map
       addError(
-          messages.manifestCsvColumnName(VARIABLE_CSV_COLUMN_INDEX_PARENT),
+          messages.variablesCsvColumnName(VARIABLE_CSV_COLUMN_INDEX_PARENT),
           name,
           messages.variablesCsvVariableParentDoesNotExist())
       return
@@ -160,14 +217,14 @@ class VariableCsvValidator(
             messages.variablesCsvVariableNameNotUniqueWithinParent()
           }
 
-      addError(messages.manifestCsvColumnName(VARIABLE_CSV_COLUMN_INDEX_NAME), name, message)
+      addError(messages.variablesCsvColumnName(VARIABLE_CSV_COLUMN_INDEX_NAME), name, message)
       return
     } else {
       // Append this as another child to this parent path
       parentPathToChildrenNamesMap[parentPath]!!.add(name)
     }
 
-    val dataTypeField = messages.manifestCsvColumnName(VARIABLE_CSV_COLUMN_INDEX_DATA_TYPE)
+    val dataTypeField = messages.variablesCsvColumnName(VARIABLE_CSV_COLUMN_INDEX_DATA_TYPE)
 
     val dataTypeName = values[VARIABLE_CSV_COLUMN_INDEX_DATA_TYPE]
     if (dataTypeName.isNullOrEmpty()) {
@@ -204,10 +261,12 @@ class VariableCsvValidator(
 
       if (parentVariableType != AllVariableCsvVariableType.Table) {
         addError(
-            messages.manifestCsvColumnName(VARIABLE_CSV_COLUMN_INDEX_PARENT),
+            messages.variablesCsvColumnName(VARIABLE_CSV_COLUMN_INDEX_PARENT),
             parent,
             messages.variablesCsvWrongDataTypeForChild())
       }
     }
+
+    validateDependencyConfiguration(values)
   }
 }

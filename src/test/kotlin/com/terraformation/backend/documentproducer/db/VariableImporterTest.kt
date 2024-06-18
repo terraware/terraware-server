@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.VariableTableStyle
@@ -11,6 +12,7 @@ import com.terraformation.backend.documentproducer.db.variable.VariableImporter
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
+import io.mockk.every
 import org.junit.jupiter.api.*
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
@@ -19,6 +21,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val messages = Messages()
+
+  private val deliverableStore: DeliverableStore by lazy { DeliverableStore(dslContext) }
 
   private val variableStore: VariableStore by lazy {
     VariableStore(
@@ -35,7 +39,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
   }
 
   private val importer: VariableImporter by lazy {
-    VariableImporter(dslContext, messages, variableStore)
+    VariableImporter(deliverableStore, dslContext, messages, variableStore)
   }
 
   @BeforeEach
@@ -658,6 +662,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     fun `saves deliverable related fields as expected`() {
       insertModule()
       val deliverableId = insertDeliverable()
+
       val csv =
           header +
               "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,true" +
@@ -666,36 +671,6 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,1115,>=,5,true"
 
       importer.import(sizedInputStream(csv))
-
-      val expected =
-          setOf(
-              VariablesRow(
-                  deliverableId = deliverableId,
-                  deliverableQuestion =
-                      "What number of non-native species will you plant in this project?",
-                  id = null,
-                  internalOnly = true,
-                  isList = false,
-                  name = "Number of non-native species",
-                  stableId = "1115",
-                  variableTypeId = VariableType.Number,
-              ),
-              VariablesRow(
-                  deliverableId = deliverableId,
-                  deliverableQuestion =
-                      "What is the reason these non-native species are being planted?",
-                  dependencyConditionId = DependencyCondition.Gte,
-                  dependencyVariableStableId = "1115",
-                  dependencyValue = "5",
-                  id = null,
-                  internalOnly = true,
-                  isList = false,
-                  name = "Reason to use non-native species",
-                  stableId = "1116",
-                  variableTypeId = VariableType.Select,
-              ),
-          )
-      val actual = variablesDao.findAll().toSet().map { it.copy(id = null) }
 
       Assertions.assertEquals(
           listOf(
@@ -727,6 +702,105 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           ),
           variablesDao.findAll().map { it.copy(id = null) },
           "New variables are created with deliverable related fields")
+    }
+
+    @Test
+    fun `returns an error if a deliverable ID is referenced that does not exist`() {
+      every { user.canReadAllDeliverables() } returns true
+
+      val deliverableId = "1"
+
+      val csv =
+          header +
+              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,true" +
+              "\nReason to use non-native species,1116,,Select (multiple),,,\"- agroforestry timber" +
+              "\n- sustainable timber" +
+              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,1115,>=,5,true"
+
+      val result = importer.import(sizedInputStream(csv))
+
+      Assertions.assertEquals(
+          listOf(
+              "Message: Supplied Deliverable ID does not exist, Field: Deliverable ID, Value: 1, Position: 2"),
+          result.errors)
+    }
+
+    @Test
+    fun `returns an error if a dependency stable variable ID is referenced that does not exist`() {
+      every { user.canReadAllDeliverables() } returns true
+
+      insertModule()
+      val deliverableId = insertDeliverable()
+
+      val nonexistentDependencyVariableStableId = "1111"
+
+      val csv =
+          header +
+              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,true" +
+              "\nReason to use non-native species,1116,,Select (multiple),,,\"- agroforestry timber" +
+              "\n- sustainable timber" +
+              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,$nonexistentDependencyVariableStableId,>=,5,true"
+
+      val result = importer.import(sizedInputStream(csv))
+
+      Assertions.assertEquals(
+          listOf(
+              "Message: Supplied Dependency Variable Stable ID does not exist, Field: Dependency Variable Stable ID, Value: $nonexistentDependencyVariableStableId, Position: 3"),
+          result.errors)
+    }
+
+    @Test
+    fun `returns an error if the dependency configuration supplied is not complete`() {
+      every { user.canReadAllDeliverables() } returns true
+
+      insertModule()
+      val deliverableId = insertDeliverable()
+
+      // Dependency Config has:
+      // variable stable ID, condition, value
+      //        1115       ,    >=    ,   5
+      val missingDependencyVariableStableId = ",>=,5"
+      val missingDependencyCondition = "1115,,5"
+      val missingDependencyValue = "1115,>=,"
+
+      val csvMissingDependencyVariableStableId =
+          header +
+              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,true" +
+              "\nReason to use non-native species,1116,,Select (multiple),,,\"- agroforestry timber" +
+              "\n- sustainable timber" +
+              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,$missingDependencyVariableStableId,true"
+
+      val result1 = importer.import(sizedInputStream(csvMissingDependencyVariableStableId))
+      Assertions.assertEquals(
+          listOf(
+              "Message: Supplied Dependency Configuration is incomplete: Missing Dependency Variable Stable ID, Field: null, Value: null, Position: 3"),
+          result1.errors)
+
+      val csvMissingDependencyCondition =
+          header +
+              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,true" +
+              "\nReason to use non-native species,1116,,Select (multiple),,,\"- agroforestry timber" +
+              "\n- sustainable timber" +
+              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,$missingDependencyCondition,true"
+
+      val result2 = importer.import(sizedInputStream(csvMissingDependencyCondition))
+      Assertions.assertEquals(
+          listOf(
+              "Message: Supplied Dependency Configuration is incomplete: Missing Dependency Condition, Field: null, Value: null, Position: 3"),
+          result2.errors)
+
+      val csvMissingDependencyValue =
+          header +
+              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,true" +
+              "\nReason to use non-native species,1116,,Select (multiple),,,\"- agroforestry timber" +
+              "\n- sustainable timber" +
+              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,$missingDependencyValue,true"
+
+      val result3 = importer.import(sizedInputStream(csvMissingDependencyValue))
+      Assertions.assertEquals(
+          listOf(
+              "Message: Supplied Dependency Configuration is incomplete: Missing Dependency Value, Field: null, Value: null, Position: 3"),
+          result3.errors)
     }
 
     private fun sizedInputStream(content: ByteArray) =

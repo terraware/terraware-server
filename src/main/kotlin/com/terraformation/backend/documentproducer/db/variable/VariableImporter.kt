@@ -1,5 +1,6 @@
 package com.terraformation.backend.documentproducer.db.variable
 
+import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
@@ -33,6 +34,7 @@ data class VariableImportResult(
 
 @Named
 class VariableImporter(
+    private val deliverableStore: DeliverableStore,
     private val dslContext: DSLContext,
     private val messages: Messages,
     private val variableStore: VariableStore,
@@ -44,7 +46,7 @@ class VariableImporter(
   ): VariableImportResult {
     val inputBytes = inputStream.readAllBytes()
 
-    val validator = VariableCsvValidator(messages)
+    val validator = VariableCsvValidator(messages, deliverableStore)
     validator.validate(inputBytes)
 
     if (validator.errors.isNotEmpty()) {
@@ -205,7 +207,7 @@ class VariableImporter(
           importVariable(csvVariable)
         } catch (e: Exception) {
           val errorMessage =
-              "Error while adding net new variable ${e.message} - position: ${csvVariable.position} - name: ${csvVariable.name}"
+              "Error while adding net new variable at position ${csvVariable.position} with name ${csvVariable.name} - ${e.message} "
           if (errorMessage !in errors) {
             errors.add(errorMessage)
           }
