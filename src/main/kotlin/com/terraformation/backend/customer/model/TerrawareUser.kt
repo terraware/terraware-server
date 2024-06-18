@@ -190,6 +190,8 @@ interface TerrawareUser : Principal {
 
   fun canDeleteUpload(uploadId: UploadId): Boolean
 
+  fun canDeleteUsers(): Boolean
+
   fun canImportGlobalSpeciesData(): Boolean
 
   fun canListAutomations(facilityId: FacilityId): Boolean

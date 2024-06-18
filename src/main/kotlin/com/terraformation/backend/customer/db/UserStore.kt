@@ -564,7 +564,21 @@ class UserStore(
     requirePermissions { deleteSelf() }
 
     val user = currentUser()
+    deleteUser(user)
+  }
 
+  fun deleteUserById(userId: UserId) {
+    requirePermissions { deleteUsers() }
+
+    val user = fetchOneById(userId)
+    if (user !is IndividualUser || user.userType != UserType.Individual) {
+      throw AccessDeniedException("Not allowed to delete non-individual users")
+    }
+
+    deleteUser(user)
+  }
+
+  private fun deleteUser(user: TerrawareUser) {
     dslContext.transaction { _ ->
       val authId = user.authId
 

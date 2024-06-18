@@ -485,6 +485,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun deleteUpload() = allow { deleteUpload(uploadId) } ifUser { canDeleteUpload(uploadId) }
 
+  @Test fun deleteUsers() = allow { deleteUsers() } ifUser { canDeleteUsers() }
+
   @Test
   fun importGlobalSpeciesData() =
       allow { importGlobalSpeciesData() } ifUser { canImportGlobalSpeciesData() }

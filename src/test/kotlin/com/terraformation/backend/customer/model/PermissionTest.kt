@@ -1638,6 +1638,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipant = true,
         deleteParticipantProject = true,
         deleteSelf = true,
+        deleteUsers = true,
         importGlobalSpeciesData = true,
         manageDeliverables = true,
         manageInternalTags = true,
@@ -2561,6 +2562,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipantProject: Boolean = false,
         deleteSelf: Boolean = false,
         deleteSupportIssue: Boolean = false,
+        deleteUsers: Boolean = false,
         importGlobalSpeciesData: Boolean = false,
         manageDeliverables: Boolean = false,
         manageInternalTags: Boolean = false,
@@ -2613,6 +2615,7 @@ internal class PermissionTest : DatabaseTest() {
           "Can delete participant project")
       assertEquals(deleteSelf, user.canDeleteSelf(), "Can delete self")
       assertEquals(deleteSupportIssue, user.canDeleteSupportIssue(), "Can delete support issue")
+      assertEquals(deleteUsers, user.canDeleteUsers(), "Can delete users")
       assertEquals(
           importGlobalSpeciesData,
           user.canImportGlobalSpeciesData(),

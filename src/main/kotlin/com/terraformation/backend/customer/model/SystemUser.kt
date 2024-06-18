@@ -236,6 +236,8 @@ class SystemUser(
 
   override fun canDeleteUpload(uploadId: UploadId): Boolean = true
 
+  override fun canDeleteUsers(): Boolean = false
+
   override fun canImportGlobalSpeciesData(): Boolean = false
 
   override fun canListAutomations(facilityId: FacilityId): Boolean = true

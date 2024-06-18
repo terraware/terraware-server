@@ -448,6 +448,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun deleteUsers() {
+    if (!user.canDeleteUsers()) {
+      throw AccessDeniedException("No permission to delete users")
+    }
+  }
+
   fun importGlobalSpeciesData() {
     if (!user.canImportGlobalSpeciesData()) {
       throw AccessDeniedException("No permission to import global species data")

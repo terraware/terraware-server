@@ -711,6 +711,42 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
+  inner class DeleteUserById {
+    // Most of this method coverage overlaps with deleteSelf() above
+    @BeforeEach
+    fun setUp() {
+      every { user.authId } returns authId
+      every { user.canDeleteUsers() } returns true
+    }
+
+    @Test
+    fun `publishes UserDeletedEvent`() {
+      insertUser(userId = 100, authId = authId)
+
+      userStore.deleteUserById(inserted.userId)
+
+      publisher.assertEventPublished(UserDeletionStartedEvent(inserted.userId))
+    }
+
+    @Test
+    fun `throws exception if no permission to delete users`() {
+      every { user.canDeleteUsers() } returns false
+
+      insertUser(userId = 100, authId = authId)
+      assertThrows<AccessDeniedException> { userStore.deleteUserById(inserted.userId) }
+    }
+
+    @Test
+    fun `throws exception if attempting to delete non-individual users`() {
+      val deviceManagerUser = insertUser(userId = 100, type = UserType.DeviceManager)
+      val systemUser = insertUser(userId = 200, type = UserType.System)
+
+      assertThrows<AccessDeniedException> { userStore.deleteUserById(deviceManagerUser) }
+      assertThrows<AccessDeniedException> { userStore.deleteUserById(systemUser) }
+    }
+  }
+
+  @Nested
   inner class FetchByOrganizationId {
     @BeforeEach
     fun setUp() {
