@@ -2,7 +2,7 @@ package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
@@ -49,11 +49,6 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
     private val header =
         "Name,ID,Description,Data Type,List?,Parent,Options,Minimum value,Maximum value,Decimal places,Table Style,Header?,Notes,Deliverable ID,Deliverable Question,Dependency Variable ID,Dependency Condition,Dependency Value,Internal Only"
-
-    @BeforeEach
-    fun setUp() {
-      //      every { user.canCreateVariable() } returns true
-    }
 
     @AfterEach
     fun tearDown() {
@@ -411,7 +406,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       insertModule()
       insertDeliverable(id = 27)
       insertDeliverable(id = 123)
-      
+
       val csvInput = javaClass.getResourceAsStream("/manifest/all-variables-rev1.csv")!!
 
       val importResult = importer.import(csvInput)
@@ -659,6 +654,81 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           "New columns should be children of new table")
     }
 
+    @Test
+    fun `saves deliverable related fields as expected`() {
+      insertModule()
+      val deliverableId = insertDeliverable()
+      val csv =
+          header +
+              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,true" +
+              "\nReason to use non-native species,1116,,Select (multiple),,,\"- agroforestry timber" +
+              "\n- sustainable timber" +
+              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,1115,>=,5,true"
+
+      importer.import(sizedInputStream(csv))
+
+      val expected =
+          setOf(
+              VariablesRow(
+                  deliverableId = deliverableId,
+                  deliverableQuestion =
+                      "What number of non-native species will you plant in this project?",
+                  id = null,
+                  internalOnly = true,
+                  isList = false,
+                  name = "Number of non-native species",
+                  stableId = "1115",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  deliverableId = deliverableId,
+                  deliverableQuestion =
+                      "What is the reason these non-native species are being planted?",
+                  dependencyConditionId = DependencyCondition.Gte,
+                  dependencyVariableStableId = "1115",
+                  dependencyValue = "5",
+                  id = null,
+                  internalOnly = true,
+                  isList = false,
+                  name = "Reason to use non-native species",
+                  stableId = "1116",
+                  variableTypeId = VariableType.Select,
+              ),
+          )
+      val actual = variablesDao.findAll().toSet().map { it.copy(id = null) }
+
+      Assertions.assertEquals(
+          listOf(
+              VariablesRow(
+                  deliverableId = deliverableId,
+                  deliverableQuestion =
+                      "What number of non-native species will you plant in this project?",
+                  id = null,
+                  internalOnly = true,
+                  isList = false,
+                  name = "Number of non-native species",
+                  stableId = "1115",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  deliverableId = deliverableId,
+                  deliverableQuestion =
+                      "What is the reason these non-native species are being planted?",
+                  dependencyConditionId = DependencyCondition.Gte,
+                  dependencyVariableStableId = "1115",
+                  dependencyValue = "5",
+                  id = null,
+                  internalOnly = true,
+                  isList = false,
+                  name = "Reason to use non-native species",
+                  stableId = "1116",
+                  variableTypeId = VariableType.Select,
+              ),
+          ),
+          variablesDao.findAll().map { it.copy(id = null) },
+          "New variables are created with deliverable related fields")
+    }
+
     private fun sizedInputStream(content: ByteArray) =
         SizedInputStream(content.inputStream(), content.size.toLong())
 
@@ -671,10 +741,3 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
         variablesDao.fetchByName(name).reversed().first()
   }
 }
-
-private data class VariableImportFlatVariable(
-    val variableId: VariableId,
-    val variableName: String?,
-    val parentId: VariableId?,
-    val parentVariableName: String?,
-)
