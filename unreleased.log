@@ -1,3 +1,4 @@
+723c756ee52 Update geoToolsVersion to v31.2 (#2074)
 e7f32f3d85d Update dependency org.eclipse.jgit:org.eclipse.jgit to 6.10.+ (#2073)
 fc43f159857 Update database dependencies (#2072)
 29f57b1b1e0 SW-5523 Implemented a timeout limit for Atlassian endpoint (#2070)
