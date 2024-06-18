@@ -43,6 +43,16 @@
             align="center"
         />
         <mj-class
+            name="org-image-container"
+            align="center"
+            background-color="#8AC656"
+        />
+        <mj-class
+            name="settings-container"
+            align="center"
+            width="650px"
+        />
+        <mj-class
             name="text-headline06-bold-green"
             font-family="Inter, sans-serif"
             font-weight="700"
@@ -50,6 +60,7 @@
             line-height="32px"
             color="#2C8658"
             align="center"
+            padding="0px"
         />
         <mj-class
             name="text-headline06-bold"
@@ -59,15 +70,25 @@
             line-height="28px"
             color="#000000"
             align="center"
+            padding="0px"
         />
         <mj-class
             name="text-body03"
             font-family="Inter, sans-serif"
             font-weight="400"
+            font-size="16px"
+            line-height="24px"
+        />
+        <mj-class
+            name="text-body-footer"
+            font-family="Inter, sans-serif"
+            font-weight="500"
             font-size="14px"
             line-height="20px"
-            color="#333025"
-            padding="0px 32px 24px 32px"
+            width="650px"
+            color="#7F775B"
+            align="center"
+            background-color="#F9F8F7"
         />
         <mj-class
             name="text-body03-secondary"
@@ -90,8 +111,24 @@
             font-size="16px"
             line-height="24px"
         />
-
-        <mj-class name="footer-wrapper" width="650px" padding="0px" padding-top="48px" />
+        <mj-class
+            name="footer-wrapper"
+            width="650px"
+            padding="0px"
+            padding-bottom="24px"
+            align="center"
+            background-color="#F9F8F7"
+        />
+        <mj-class
+            name="text-footer"
+            font-family="Inter, sans-serif"
+            font-weight="500"
+            font-size="14px"
+            line-height="20px"
+            color="#7F775B"
+            align="center"
+            padding="0px"
+        />
         <mj-class
             name="text-body02"
             font-family="Inter, sans-serif"

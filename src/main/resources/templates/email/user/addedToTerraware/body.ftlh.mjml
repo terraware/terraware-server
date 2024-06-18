@@ -3,12 +3,12 @@
     <mj-include path="../../head.ftlh.mjml"/>
 
     <mj-body>
-        <mj-hero>
-            <mj-image mj-class="logo-img" src="${webAppUrl}/assets/tw-tf-logo.svg">
-            </mj-image>
-        </mj-hero>
-        <mj-section padding="0px">
-            <mj-column>
+        <mj-section padding="24px 0px" background-color="#F9F8F7">
+            <mj-column padding="0">
+                <mj-image mj-class="logo-img" src="${webAppUrl}/assets/tw-tf-logo.png">
+                </mj-image>
+            </mj-column>
+            <mj-column padding="0">
                 <mj-text mj-class="text-header01">
                     ${strings("notification.user.addedToOrganization.email.header.1")}</mj-text>
             </mj-column>
@@ -22,11 +22,11 @@
                 <mj-text mj-class="text-headline06-bold">
                     ${strings("notification.user.addedToOrganization.email.body.2", organization.name)}
                 </mj-text>
-                <mj-text mj-class="text-body03">
+                <mj-text mj-class="text-body03" padding-top="32px">
                     ${strings("notification.user.addedToOrganization.email.body.3", admin.fullName, admin.email)}</mj-text>
                 <mj-text mj-class="text-body03">
                     ${strings("notification.user.addedToOrganization.email.body.4", organization.name, admin.fullName, admin.email)}</mj-text>
-                <mj-text mj-class="text-body03">
+                <mj-text mj-class="text-body03" padding-bottom="32px">
                     ${strings("notification.user.addedToTerraware.email.body.4")}</mj-text>
                 <mj-button mj-class="btn-productive-primary-md" href="${terrawareRegistrationUrl?no_esc}"
                 >${strings("notification.user.addedToTerraware.email.buttonLabel")}</mj-button>
@@ -35,12 +35,17 @@
                 <mj-text mj-class="text-body03">
                     ${strings("notification.user.addedToTerraware.email.body.5")}</mj-text>
                 <mj-list>
-                    <mj-li>${strings("notification.user.addedToTerraware.email.body.item.1")}</mj-li>
-                    <mj-li>${strings("notification.user.addedToTerraware.email.body.item.2")}</mj-li>
-                    <mj-li>${strings("notification.user.addedToTerraware.email.body.item.3")}</mj-li>
-                    <mj-li>${strings("notification.user.addedToTerraware.email.body.item.4")}</mj-li>
+                    <mj-li font-size="16px" font-weight="400" line-height="24px" font-family="Inter, sans-serif" color="#000000">${strings("notification.user.addedToTerraware.email.body.item.1")}</mj-li>
+                    <mj-li font-size="16px" font-weight="400" line-height="24px" font-family="Inter, sans-serif" color="#000000">${strings("notification.user.addedToTerraware.email.body.item.2")}</mj-li>
+                    <mj-li font-size="16px" font-weight="400" line-height="24px" font-family="Inter, sans-serif" color="#000000">${strings("notification.user.addedToTerraware.email.body.item.3")}</mj-li>
+                    <mj-li font-size="16px" font-weight="400" line-height="24px" font-family="Inter, sans-serif" color="#000000">${strings("notification.user.addedToTerraware.email.body.item.4")}</mj-li>
                 </mj-list>
-                <mj-image src=""></mj-image>
+            </mj-column>
+            <mj-column mj-class="org-image-container">
+                <mj-image src="${webAppUrl}/assets/org-screenshot.png">
+                </mj-image>
+            </mj-column>
+            <mj-column background-color="#F9F8F7" padding-top="24px">
                 <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>
         </mj-section>
