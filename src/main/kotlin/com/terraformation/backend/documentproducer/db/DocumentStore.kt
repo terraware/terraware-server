@@ -14,6 +14,7 @@ import com.terraformation.backend.db.docprod.tables.daos.DocumentTemplatesDao
 import com.terraformation.backend.db.docprod.tables.daos.DocumentsDao
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentSavedVersionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentsRow
+import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
 import com.terraformation.backend.db.docprod.tables.references.DOCUMENT_SAVED_VERSIONS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_MANIFESTS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
@@ -72,11 +73,13 @@ class DocumentStore(
 
     val documentsRow = fetchDocumentById(model.documentId)
 
-    val maxVariableValueId =
+    val projectMaxVariableValueId =
         dslContext
             .select(DSL.max(VARIABLE_VALUES.ID))
             .from(VARIABLE_VALUES)
-            .where(VARIABLE_VALUES.DOCUMENT_ID.eq(model.documentId))
+            .join(DOCUMENTS)
+            .on(VARIABLE_VALUES.PROJECT_ID.eq(DOCUMENTS.PROJECT_ID))
+            .where(DOCUMENTS.ID.eq(model.documentId))
             .fetchOne(DSL.max(VARIABLE_VALUES.ID))
             ?: throw CannotSaveEmptyDocumentException(model.documentId)
 
@@ -86,7 +89,7 @@ class DocumentStore(
             createdTime = clock.instant(),
             documentId = model.documentId,
             isSubmitted = model.isSubmitted,
-            maxVariableValueId = maxVariableValueId,
+            maxVariableValueId = projectMaxVariableValueId,
             name = model.name,
             variableManifestId = documentsRow.variableManifestId,
         )
@@ -97,7 +100,10 @@ class DocumentStore(
   }
 
   fun findAll(): List<ExistingDocumentModel> {
-    return documentsDao.findAll().map { ExistingDocumentModel(it) }
+    return documentsDao
+        .findAll()
+        .map { ExistingDocumentModel(it) }
+        .filter { currentUser().canReadDocument(it.id) }
   }
 
   fun fetchByProjectId(projectId: ProjectId): List<ExistingDocumentModel> {
@@ -127,6 +133,13 @@ class DocumentStore(
     }
 
     return ExistingSavedVersionModel(versionsRow)
+  }
+
+  fun fetchProjectId(documentId: DocumentId): ProjectId {
+    requirePermissions { readDocument(documentId) }
+
+    return dslContext.fetchValue(DOCUMENTS.PROJECT_ID, DOCUMENTS.ID.eq(documentId))
+        ?: throw DocumentNotFoundException(documentId)
   }
 
   /** Returns a list of saved versions in reverse chronological order. */
@@ -171,8 +184,9 @@ class DocumentStore(
         .select(
             VARIABLE_VALUES.CREATED_BY.asNonNullable(),
             DSL.max(VARIABLE_VALUES.CREATED_TIME).asNonNullable())
-        .from(VARIABLE_VALUES, subquery)
-        .where(VARIABLE_VALUES.DOCUMENT_ID.eq(documentId))
+        .from(VARIABLE_VALUES, DOCUMENTS, subquery)
+        .where(DOCUMENTS.ID.eq(documentId))
+        .and(DOCUMENTS.PROJECT_ID.eq(VARIABLE_VALUES.PROJECT_ID))
         .groupBy(nextSavedVersionIdField, createdDateField, VARIABLE_VALUES.CREATED_BY)
         .orderBy(
             DSL.max(VARIABLE_VALUES.CREATED_TIME).desc().nullsFirst(), VARIABLE_VALUES.CREATED_BY)

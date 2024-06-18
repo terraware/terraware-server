@@ -3,7 +3,7 @@ package com.terraformation.backend.documentproducer.api
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.documentproducer.model.AppendValueOperation
@@ -48,7 +48,7 @@ sealed interface ValueOperationPayload {
   fun getExistingValueId(): VariableValueId? = null
 
   fun <ID : VariableValueId?> toOperationModel(
-      documentId: DocumentId,
+      projectId: ProjectId,
       base: BaseVariableValueProperties<ID>? = null
   ): ValueOperation
 }
@@ -81,13 +81,13 @@ data class AppendValueOperationPayload(
     get() = ValueOperationType.Append
 
   override fun <ID : VariableValueId?> toOperationModel(
-      documentId: DocumentId,
+      projectId: ProjectId,
       base: BaseVariableValueProperties<ID>?
   ): ValueOperation {
     return AppendValueOperation(
         value.toValueModel(
             BaseVariableValueProperties(
-                null, documentId, 0, variableId, value.citation, rowValueId)))
+                null, projectId, 0, variableId, value.citation, rowValueId)))
   }
 }
 
@@ -111,10 +111,10 @@ data class DeleteValueOperationPayload(val valueId: VariableValueId) : ValueOper
     get() = ValueOperationType.Delete
 
   override fun <ID : VariableValueId?> toOperationModel(
-      documentId: DocumentId,
+      projectId: ProjectId,
       base: BaseVariableValueProperties<ID>?
   ): ValueOperation {
-    return DeleteValueOperation(documentId, valueId)
+    return DeleteValueOperation(projectId, valueId)
   }
 
   override fun getExistingValueId() = valueId
@@ -146,17 +146,17 @@ data class ReplaceValuesOperationPayload(
     get() = ValueOperationType.Replace
 
   override fun <ID : VariableValueId?> toOperationModel(
-      documentId: DocumentId,
+      projectId: ProjectId,
       base: BaseVariableValueProperties<ID>?
   ): ValueOperation {
     return ReplaceValuesOperation(
-        documentId,
+        projectId,
         variableId,
         rowValueId,
         values.mapIndexed { index, valuePayload ->
           valuePayload.toValueModel(
               BaseVariableValueProperties(
-                  null, documentId, index, variableId, valuePayload.citation))
+                  null, projectId, index, variableId, valuePayload.citation))
         })
   }
 }
@@ -178,7 +178,7 @@ data class UpdateValueOperationPayload(
     get() = ValueOperationType.Update
 
   override fun <ID : VariableValueId?> toOperationModel(
-      documentId: DocumentId,
+      projectId: ProjectId,
       base: BaseVariableValueProperties<ID>?
   ): ValueOperation {
     if (base == null) {
@@ -187,7 +187,7 @@ data class UpdateValueOperationPayload(
     return UpdateValueOperation(
         value.toValueModel(
             BaseVariableValueProperties(
-                valueId, documentId, base.listPosition, base.variableId, value.citation)))
+                valueId, projectId, base.listPosition, base.variableId, value.citation)))
   }
 
   override fun getExistingValueId() = valueId

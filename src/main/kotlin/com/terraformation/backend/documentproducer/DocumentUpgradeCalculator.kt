@@ -1,5 +1,6 @@
 package com.terraformation.backend.documentproducer
 
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
@@ -42,6 +43,7 @@ class DocumentUpgradeCalculator(
 ) {
   private val log = perClassLogger()
 
+  private lateinit var projectId: ProjectId
   private lateinit var existingValues: Map<VariableId, List<ExistingValue>>
   private lateinit var documentsRow: DocumentsRow
   private lateinit var oldManifestId: VariableManifestId
@@ -59,6 +61,7 @@ class DocumentUpgradeCalculator(
 
   private fun init() {
     documentsRow = documentStore.fetchDocumentById(documentId)
+    projectId = documentsRow.projectId!!
 
     oldManifestId = documentsRow.variableManifestId!!
     if (newManifestId.value < oldManifestId.value) {
@@ -115,7 +118,7 @@ class DocumentUpgradeCalculator(
 
     return if (!valuesOfReplacedVariable.isNullOrEmpty()) {
       val oldVariable =
-          variableStore.fetchVariable(oldManifestId, valuesOfReplacedVariable.first().variableId)
+          variableStore.fetchVariable(valuesOfReplacedVariable.first().variableId, oldManifestId)
 
       if (variable is TableVariable) {
         if (oldVariable is TableVariable) {
@@ -164,7 +167,7 @@ class DocumentUpgradeCalculator(
                     ExistingSectionValue(
                         BaseVariableValueProperties(
                             sectionValue.id,
-                            documentId,
+                            projectId,
                             sectionValue.listPosition,
                             variable.id,
                             sectionValue.citation),
@@ -185,7 +188,7 @@ class DocumentUpgradeCalculator(
             if (sectionValue.value is SectionValueVariable &&
                 sectionValue.value.usedVariableId !in newManifestVariables &&
                 sectionValue.value.usedVariableId !in replacementVariableIds) {
-              DeleteValueOperation(documentId, sectionValue.id)
+              DeleteValueOperation(projectId, sectionValue.id)
             } else {
               null
             }
@@ -222,7 +225,7 @@ class DocumentUpgradeCalculator(
           AppendValueOperation(
               NewSectionValue(
                   BaseVariableValueProperties(
-                      null, documentId, 0, variable.id, sectionValue.citation),
+                      null, projectId, 0, variable.id, sectionValue.citation),
                   validFragment))
         }
       }
@@ -240,7 +243,7 @@ class DocumentUpgradeCalculator(
       val rowOperation =
           AppendValueOperation(
               NewTableValue(
-                  BaseVariableValueProperties(null, documentId, 0, newTable.id, oldRow.citation)))
+                  BaseVariableValueProperties(null, projectId, 0, newTable.id, oldRow.citation)))
 
       val columnOperations =
           newTable.columns

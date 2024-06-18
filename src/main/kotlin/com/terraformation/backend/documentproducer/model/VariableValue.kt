@@ -1,7 +1,7 @@
 package com.terraformation.backend.documentproducer.model
 
 import com.terraformation.backend.db.default_schema.FileId
-import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
 import com.terraformation.backend.db.docprod.VariableSelectOptionId
@@ -14,7 +14,7 @@ import java.time.LocalDate
 
 interface BaseVariableValue<ID : VariableValueId?> {
   val id: ID
-  val documentId: DocumentId
+  val projectId: ProjectId
   val listPosition: Int
   val variableId: VariableId
   val citation: String?
@@ -28,7 +28,7 @@ interface BaseVariableValue<ID : VariableValueId?> {
 
 data class BaseVariableValueProperties<ID : VariableValueId?>(
     override val id: ID,
-    override val documentId: DocumentId,
+    override val projectId: ProjectId,
     override val listPosition: Int,
     override val variableId: VariableId,
     override val citation: String?,
