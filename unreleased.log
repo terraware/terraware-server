@@ -1,3 +1,4 @@
+9cae8529503 Add user to "added to organization" email model (#2079)
 01db54e6e29 Make emails images full size and use copyright HTML code (#2077)
 2a5cd11350e SW-5439 Welcome Email: Enhancements - new email template & content updates (#2048)
 e4dedb01b80 SW-4674 Implemented super admin method to delete any individual user (#2076)
