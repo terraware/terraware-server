@@ -8,7 +8,6 @@
 
         <mj-class
             name="logo-img"
-            width="126px"
             align="center"
         />
 
