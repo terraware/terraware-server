@@ -88,8 +88,7 @@ class VariableStore(
    *   children.
    */
   fun fetchVariableForManifest(manifestId: VariableManifestId, variableId: VariableId): Variable {
-    return variables[manifestId to variableId]
-        ?: ManifestFetchContext(manifestId).fetchVariable(variableId)
+    return variables[manifestId to variableId] ?: FetchContext(manifestId).fetchVariable(variableId)
   }
 
   /**
@@ -103,7 +102,7 @@ class VariableStore(
    *   children.
    */
   fun fetchVariable(variableId: VariableId): Variable {
-    return variables[null to variableId] ?: VariableFetchContext().fetchVariable(variableId)
+    return variables[null to variableId] ?: FetchContext().fetchVariable(variableId)
   }
 
   /**
@@ -223,9 +222,10 @@ class VariableStore(
    * Logic for recursively fetching a variable and the variables it's related to. Variable fetching
    * is stateful because we want to detect cycles.
    */
-  private inner class ManifestFetchContext(private val manifestId: VariableManifestId) :
-      FetchContext() {
-    /** Returns information about a variable and its children, if any. */
+  private inner class FetchContext(val manifestId: VariableManifestId? = null) {
+    /** Stack of variables that are being fetched in this context. Used to detect cycles. */
+    val fetchesInProgress = ArrayDeque<VariableId>()
+
     fun fetchVariable(variableId: VariableId): Variable {
       if (variableId in fetchesInProgress) {
         fetchesInProgress.addLast(variableId)
@@ -237,8 +237,19 @@ class VariableStore(
 
         val variablesRow =
             variablesDao.fetchOneById(variableId) ?: throw VariableNotFoundException(variableId)
-        val manifestRecord = fetchManifestRecord(variableId)
-        val recommendedBy = fetchRecommendedBy(variableId)
+        val manifestRecord =
+            if (manifestId != null) {
+              fetchManifestRecord(variableId)
+            } else {
+              null
+            }
+        val recommendedBy =
+            if (manifestId != null) {
+              fetchRecommendedBy(variableId)
+            } else {
+              emptyList()
+            }
+
         val base =
             BaseVariableProperties(
                 description = variablesRow.description,
@@ -271,7 +282,7 @@ class VariableStore(
       }
     }
 
-    private fun fetchManifestRecord(variableId: VariableId): VariableManifestEntriesRecord? {
+    private fun fetchManifestRecord(variableId: VariableId): VariableManifestEntriesRecord {
       return with(VARIABLE_MANIFEST_ENTRIES) {
         dslContext
             .selectFrom(VARIABLE_MANIFEST_ENTRIES)
@@ -292,53 +303,6 @@ class VariableStore(
             .fetch(SECTION_VARIABLE_ID.asNonNullable())
       }
     }
-  }
-
-  private inner class VariableFetchContext() : FetchContext() {
-    fun fetchVariable(variableId: VariableId): Variable {
-      if (variableId in fetchesInProgress) {
-        fetchesInProgress.addLast(variableId)
-        throw CircularReferenceException(fetchesInProgress)
-      }
-
-      return variables.getOrPut(null to variableId) {
-        fetchesInProgress.addLast(variableId)
-
-        val variablesRow =
-            variablesDao.fetchOneById(variableId) ?: throw VariableNotFoundException(variableId)
-        val base =
-            BaseVariableProperties(
-                description = variablesRow.description,
-                id = variableId,
-                isList = variablesRow.isList!!,
-                name = variablesRow.name!!,
-                manifestId = null,
-                replacesVariableId = variablesRow.replacesVariableId,
-                stableId = variablesRow.stableId!!,
-            )
-
-        val variable =
-            when (variablesRow.variableTypeId!!) {
-              VariableType.Date -> DateVariable(base)
-              VariableType.Number -> fetchNumber(base)
-              VariableType.Text -> fetchText(base)
-              VariableType.Image -> ImageVariable(base)
-              VariableType.Select -> fetchSelect(base)
-              VariableType.Table -> fetchTable(base)
-              VariableType.Link -> LinkVariable(base)
-              VariableType.Section -> fetchSection(base)
-            }
-
-        fetchesInProgress.removeLast()
-
-        variable
-      }
-    }
-  }
-
-  private open inner class FetchContext() {
-    /** Stack of variables that are being fetched in this context. Used to detect cycles. */
-    val fetchesInProgress = ArrayDeque<VariableId>()
 
     protected fun fetchNumber(base: BaseVariableProperties): NumberVariable {
       val numbersRow =
@@ -379,9 +343,7 @@ class VariableStore(
               .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId))
               .orderBy(VARIABLE_MANIFEST_ENTRIES.POSITION)
               .fetch(VARIABLE_SECTIONS.VARIABLE_ID.asNonNullable())
-              .map { variableId ->
-                fetchVariableForManifest(manifestId, variableId) as SectionVariable
-              }
+              .map { variableId -> fetchVariable(variableId) as SectionVariable }
 
       val recommends =
           with(VARIABLE_SECTION_RECOMMENDATIONS) {
@@ -433,13 +395,7 @@ class VariableStore(
               .fetch { record ->
                 TableColumn(
                     record[VARIABLE_TABLE_COLUMNS.IS_HEADER.asNonNullable()],
-                    if (base.manifestId != null) {
-                      fetchVariableForManifest(
-                          base.manifestId,
-                          record[VARIABLE_TABLE_COLUMNS.VARIABLE_ID.asNonNullable()])
-                    } else {
-                      fetchVariable(record[VARIABLE_TABLE_COLUMNS.VARIABLE_ID.asNonNullable()])
-                    })
+                    fetchVariable(record[VARIABLE_TABLE_COLUMNS.VARIABLE_ID.asNonNullable()]))
               }
 
       return TableVariable(base, tableRow.tableStyleId!!, columns)
