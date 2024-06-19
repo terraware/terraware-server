@@ -153,6 +153,7 @@ class UserAddedToOrganization(
     val admin: IndividualUser,
     val organization: OrganizationModel,
     val organizationHomeUrl: String,
+    val user: IndividualUser,
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "user/addedToOrganization"

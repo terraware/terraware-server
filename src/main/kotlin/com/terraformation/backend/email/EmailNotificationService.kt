@@ -212,7 +212,7 @@ class EmailNotificationService(
 
     emailService.sendUserNotification(
         user,
-        UserAddedToOrganization(config, admin, organization, organizationHomeUrl),
+        UserAddedToOrganization(config, admin, organization, organizationHomeUrl, user),
         requireOptIn = false)
   }
 
