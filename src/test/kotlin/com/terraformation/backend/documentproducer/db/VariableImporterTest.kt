@@ -407,6 +407,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `ensures that the current CSV imports without error`() {
+      every { user.canReadAllDeliverables() } returns true
+
       insertModule()
       insertDeliverable(id = 27)
       insertDeliverable(id = 123)
@@ -660,6 +662,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `saves deliverable related fields as expected`() {
+      every { user.canReadAllDeliverables() } returns true
+
       insertModule()
       val deliverableId = insertDeliverable()
 

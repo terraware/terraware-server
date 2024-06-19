@@ -31,8 +31,9 @@ class DeliverableStore(
   fun deliverableIdExists(id: DeliverableId): Boolean {
     requirePermissions { readAllDeliverables() }
 
-    return dslContext.select(DELIVERABLES.ID).from(DELIVERABLES).fetchOne()?.value1()?.let { true }
-        ?: false
+    return with(DELIVERABLES) {
+      dslContext.select(ID).from(this).where(ID.eq(id)).fetchOne()?.value1()?.let { true } ?: false
+    }
   }
 
   fun fetchDeliverableSubmissions(

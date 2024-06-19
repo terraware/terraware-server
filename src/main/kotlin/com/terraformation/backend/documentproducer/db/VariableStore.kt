@@ -103,7 +103,7 @@ class VariableStore(
    *   children.
    */
   fun fetchVariable(variableId: VariableId): Variable {
-    return variables[null to variableId] ?: StableIdVariableFetchContext().fetchVariable(variableId)
+    return variables[null to variableId] ?: VariableFetchContext().fetchVariable(variableId)
   }
 
   /**
@@ -223,7 +223,8 @@ class VariableStore(
    * Logic for recursively fetching a variable and the variables it's related to. Variable fetching
    * is stateful because we want to detect cycles.
    */
-  private inner class ManifestFetchContext(private val manifestId: VariableManifestId): FetchContext() {
+  private inner class ManifestFetchContext(private val manifestId: VariableManifestId) :
+      FetchContext() {
     /** Returns information about a variable and its children, if any. */
     fun fetchVariable(variableId: VariableId): Variable {
       if (variableId in fetchesInProgress) {
@@ -271,16 +272,12 @@ class VariableStore(
     }
 
     private fun fetchManifestRecord(variableId: VariableId): VariableManifestEntriesRecord? {
-      return if (manifestId != null) {
-        with(VARIABLE_MANIFEST_ENTRIES) {
-          dslContext
-              .selectFrom(VARIABLE_MANIFEST_ENTRIES)
-              .where(VARIABLE_MANIFEST_ID.eq(manifestId))
-              .and(VARIABLE_ID.eq(variableId))
-              .fetchOne() ?: throw VariableNotFoundException(variableId)
-        }
-      } else {
-        null
+      return with(VARIABLE_MANIFEST_ENTRIES) {
+        dslContext
+            .selectFrom(VARIABLE_MANIFEST_ENTRIES)
+            .where(VARIABLE_MANIFEST_ID.eq(manifestId))
+            .and(VARIABLE_ID.eq(variableId))
+            .fetchOne() ?: throw VariableNotFoundException(variableId)
       }
     }
 
@@ -295,62 +292,9 @@ class VariableStore(
             .fetch(SECTION_VARIABLE_ID.asNonNullable())
       }
     }
-
-    private fun fetchSection(base: BaseVariableProperties): SectionVariable {
-      val sectionRow =
-          variableSectionsDao.fetchOneByVariableId(base.id)
-              ?: throw VariableIncompleteException(base.id)
-
-      val children =
-          dslContext
-              .select(VARIABLE_SECTIONS.VARIABLE_ID)
-              .from(VARIABLE_SECTIONS)
-              .join(VARIABLE_MANIFEST_ENTRIES)
-              .on(VARIABLE_SECTIONS.VARIABLE_ID.eq(VARIABLE_MANIFEST_ENTRIES.VARIABLE_ID))
-              .where(VARIABLE_SECTIONS.PARENT_VARIABLE_ID.eq(base.id))
-              .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId))
-              .orderBy(VARIABLE_MANIFEST_ENTRIES.POSITION)
-              .fetch(VARIABLE_SECTIONS.VARIABLE_ID.asNonNullable())
-              .map { fetchVariable(it) as SectionVariable }
-
-      val recommends =
-          with(VARIABLE_SECTION_RECOMMENDATIONS) {
-            dslContext
-                .select(RECOMMENDED_VARIABLE_ID)
-                .from(VARIABLE_SECTION_RECOMMENDATIONS)
-                .where(SECTION_VARIABLE_ID.eq(base.id))
-                .and(VARIABLE_MANIFEST_ID.eq(manifestId))
-                .fetch(RECOMMENDED_VARIABLE_ID.asNonNullable())
-          }
-
-      return SectionVariable(base, sectionRow.renderHeading!!, children, recommends)
-    }
-
-    protected fun fetchTable(base: BaseVariableProperties): TableVariable {
-      val tableRow =
-          variableTablesDao.fetchOneByVariableId(base.id)
-              ?: throw VariableIncompleteException(base.id)
-
-      val columns =
-          dslContext
-              .select(VARIABLE_TABLE_COLUMNS.IS_HEADER, VARIABLE_TABLE_COLUMNS.VARIABLE_ID)
-              .from(VARIABLE_TABLE_COLUMNS)
-              .join(VARIABLE_MANIFEST_ENTRIES)
-              .on(VARIABLE_TABLE_COLUMNS.VARIABLE_ID.eq(VARIABLE_MANIFEST_ENTRIES.VARIABLE_ID))
-              .where(VARIABLE_TABLE_COLUMNS.TABLE_VARIABLE_ID.eq(base.id))
-              .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId))
-              .orderBy(VARIABLE_TABLE_COLUMNS.POSITION)
-              .fetch { record ->
-                TableColumn(
-                    record[VARIABLE_TABLE_COLUMNS.IS_HEADER.asNonNullable()],
-                    fetchVariable(record[VARIABLE_TABLE_COLUMNS.VARIABLE_ID.asNonNullable()]))
-              }
-
-      return TableVariable(base, tableRow.tableStyleId!!, columns)
-    }
   }
 
-  private inner class StableIdVariableFetchContext() : FetchContext() {
+  private inner class VariableFetchContext() : FetchContext() {
     fun fetchVariable(variableId: VariableId): Variable {
       if (variableId in fetchesInProgress) {
         fetchesInProgress.addLast(variableId)
@@ -368,6 +312,7 @@ class VariableStore(
                 id = variableId,
                 isList = variablesRow.isList!!,
                 name = variablesRow.name!!,
+                manifestId = null,
                 replacesVariableId = variablesRow.replacesVariableId,
                 stableId = variablesRow.stableId!!,
             )
@@ -381,35 +326,13 @@ class VariableStore(
               VariableType.Select -> fetchSelect(base)
               VariableType.Table -> fetchTable(base)
               VariableType.Link -> LinkVariable(base)
-              VariableType.Section ->
-                  throw IllegalArgumentException(
-                      "Section variable should not be fetche in all variable context")
+              VariableType.Section -> fetchSection(base)
             }
 
         fetchesInProgress.removeLast()
 
         variable
       }
-    }
-
-    protected fun fetchTable(base: BaseVariableProperties): TableVariable {
-      val tableRow =
-          variableTablesDao.fetchOneByVariableId(base.id)
-              ?: throw VariableIncompleteException(base.id)
-
-      val columns =
-          dslContext
-              .select(VARIABLE_TABLE_COLUMNS.IS_HEADER, VARIABLE_TABLE_COLUMNS.VARIABLE_ID)
-              .from(VARIABLE_TABLE_COLUMNS)
-              .where(VARIABLE_TABLE_COLUMNS.TABLE_VARIABLE_ID.eq(base.id))
-              .orderBy(VARIABLE_TABLE_COLUMNS.POSITION)
-              .fetch { record ->
-                TableColumn(
-                    record[VARIABLE_TABLE_COLUMNS.IS_HEADER.asNonNullable()],
-                    fetchVariable(record[VARIABLE_TABLE_COLUMNS.VARIABLE_ID.asNonNullable()]))
-              }
-
-      return TableVariable(base, tableRow.tableStyleId!!, columns)
     }
   }
 
@@ -430,12 +353,48 @@ class VariableStore(
       )
     }
 
-    protected fun fetchText(base: BaseVariableProperties): TextVariable {
-      val textRow =
-          variableTextsDao.fetchOneByVariableId(base.id)
+    protected fun fetchSection(base: BaseVariableProperties): SectionVariable {
+      val sectionRow =
+          variableSectionsDao.fetchOneByVariableId(base.id)
               ?: throw VariableIncompleteException(base.id)
 
-      return TextVariable(base, textRow.variableTextTypeId!!)
+      val manifestId: VariableManifestId =
+          base.manifestId
+              ?: with(VARIABLE_MANIFEST_ENTRIES) {
+                dslContext
+                    .select(VARIABLE_MANIFEST_ID)
+                    .from(this)
+                    .where(VARIABLE_ID.eq(base.id))
+                    .fetchOne(VARIABLE_MANIFEST_ID.asNonNullable())
+                    ?: throw VariableManifestNotFoundForVariableException(base.id)
+              }
+
+      val children =
+          dslContext
+              .select(VARIABLE_SECTIONS.VARIABLE_ID)
+              .from(VARIABLE_SECTIONS)
+              .join(VARIABLE_MANIFEST_ENTRIES)
+              .on(VARIABLE_SECTIONS.VARIABLE_ID.eq(VARIABLE_MANIFEST_ENTRIES.VARIABLE_ID))
+              .where(VARIABLE_SECTIONS.PARENT_VARIABLE_ID.eq(base.id))
+              .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId))
+              .orderBy(VARIABLE_MANIFEST_ENTRIES.POSITION)
+              .fetch(VARIABLE_SECTIONS.VARIABLE_ID.asNonNullable())
+              .map { variableId ->
+                fetchVariableForManifest(manifestId, variableId) as SectionVariable
+              }
+
+      val recommends =
+          with(VARIABLE_SECTION_RECOMMENDATIONS) {
+            dslContext
+                .select(RECOMMENDED_VARIABLE_ID)
+                .from(VARIABLE_SECTION_RECOMMENDATIONS)
+                .where(SECTION_VARIABLE_ID.eq(base.id))
+                .and(VARIABLE_MANIFEST_ID.eq(manifestId))
+                .fetch(RECOMMENDED_VARIABLE_ID.asNonNullable())
+          }
+
+      return SectionVariable(
+          base.copy(manifestId = manifestId), sectionRow.renderHeading!!, children, recommends)
     }
 
     protected fun fetchSelect(base: BaseVariableProperties): SelectVariable {
@@ -458,6 +417,40 @@ class VariableStore(
               }
 
       return SelectVariable(base, selectRow.isMultiple!!, options)
+    }
+
+    protected fun fetchTable(base: BaseVariableProperties): TableVariable {
+      val tableRow =
+          variableTablesDao.fetchOneByVariableId(base.id)
+              ?: throw VariableIncompleteException(base.id)
+
+      val columns =
+          dslContext
+              .select(VARIABLE_TABLE_COLUMNS.IS_HEADER, VARIABLE_TABLE_COLUMNS.VARIABLE_ID)
+              .from(VARIABLE_TABLE_COLUMNS)
+              .where(VARIABLE_TABLE_COLUMNS.TABLE_VARIABLE_ID.eq(base.id))
+              .orderBy(VARIABLE_TABLE_COLUMNS.POSITION)
+              .fetch { record ->
+                TableColumn(
+                    record[VARIABLE_TABLE_COLUMNS.IS_HEADER.asNonNullable()],
+                    if (base.manifestId != null) {
+                      fetchVariableForManifest(
+                          base.manifestId,
+                          record[VARIABLE_TABLE_COLUMNS.VARIABLE_ID.asNonNullable()])
+                    } else {
+                      fetchVariable(record[VARIABLE_TABLE_COLUMNS.VARIABLE_ID.asNonNullable()])
+                    })
+              }
+
+      return TableVariable(base, tableRow.tableStyleId!!, columns)
+    }
+
+    protected fun fetchText(base: BaseVariableProperties): TextVariable {
+      val textRow =
+          variableTextsDao.fetchOneByVariableId(base.id)
+              ?: throw VariableIncompleteException(base.id)
+
+      return TextVariable(base, textRow.variableTextTypeId!!)
     }
   }
 }

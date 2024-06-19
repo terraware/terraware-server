@@ -417,14 +417,14 @@ data class SectionVariable(
       }
 
       // TODO validate this somewhere else
-//      val usedVariableId = value.value.usedVariableId
-//
-//      try {
-//        fetchVariable(usedVariableId)
-//      } catch (e: VariableNotFoundException) {
-//        throw VariableValueInvalidException(
-//            id, "Variable $usedVariableId is used but does not exist in manifest")
-//      }
+      //      val usedVariableId = value.value.usedVariableId
+      //
+      //      try {
+      //        fetchVariable(usedVariableId)
+      //      } catch (e: VariableNotFoundException) {
+      //        throw VariableValueInvalidException(
+      //            id, "Variable $usedVariableId is used but does not exist in manifest")
+      //      }
     }
 
     if (manifestId == null) {
