@@ -1,11 +1,8 @@
 package com.terraformation.backend.documentproducer
 
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
-import com.terraformation.backend.documentproducer.db.DocumentNotFoundException
-import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.db.VariableValueNotFoundException
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.db.VariableValueTypeMismatchException
@@ -19,10 +16,9 @@ import com.terraformation.backend.file.model.NewFileMetadata
 import jakarta.inject.Named
 import java.io.InputStream
 
-/** Manages storage of image files relating to documents within the document producer. */
+/** Manages storage of files that are values of image variables. */
 @Named
-class DocumentFileService(
-    private val documentStore: DocumentStore,
+class VariableFileService(
     private val fileService: FileService,
     private val variableValueStore: VariableValueStore,
 ) {
@@ -42,19 +38,6 @@ class DocumentFileService(
     } else {
       throw VariableValueTypeMismatchException(valueId, VariableType.Image)
     }
-  }
-
-  fun readImageValue(
-      documentId: DocumentId,
-      valueId: VariableValueId,
-      maxWidth: Int? = null,
-      maxHeight: Int? = null,
-  ): SizedInputStream {
-    val projectId =
-        documentStore.fetchDocumentById(documentId).projectId
-            ?: throw DocumentNotFoundException(documentId)
-
-    return readImageValue(projectId, valueId, maxWidth, maxHeight)
   }
 
   fun storeImageValue(
