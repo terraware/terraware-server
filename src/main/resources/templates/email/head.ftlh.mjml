@@ -4,15 +4,17 @@
             name="logo-wrapper"
             width="650px"
             padding="0px"
+            background-color="#F9F8F7"
         />
 
         <mj-class
             name="logo-img"
             align="center"
+            width="256px"
         />
 
         <mj-class
-            name="body-wrapper"
+            name="body-wrapper-old"
             width="650px"
             padding="1px"
             background-color="#7F775B"
@@ -21,7 +23,7 @@
             inner-border-radius="23px"
         />
         <mj-class
-            name="body-wrapper-new"
+            name="body-wrapper"
             padding="32px"
             background-color="#FFFFFF"
             border-top="1px solid #B2AB93"
@@ -69,7 +71,7 @@
             line-height="28px"
             color="#000000"
             align="center"
-            padding="0px"
+            padding="0px 0px 32px 0px"
         />
         <mj-class
             name="text-body03"
@@ -103,7 +105,7 @@
             background-color="#2C8658"
             color="#FFFFFF"
             height="40px"
-            padding="0px 0px 32px 0px"
+            padding="32px 0px 32px 0px"
             border-radius="1024px"
             font-family="Inter, sans-serif"
             font-weight="600"
