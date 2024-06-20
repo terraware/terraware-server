@@ -276,6 +276,7 @@ internal class EmailNotificationServiceTest {
     every { user.email } returns "user@test.com"
     every { user.emailNotificationsEnabled } returns true
     every { user.fullName } returns "Normal User"
+    every { user.firstName } returns "Normal"
     every { user.locale } returns Locale.ENGLISH
     every { user.userId } returns UserId(2)
     every { userStore.getTerraformationContactUser(any()) } returns null
