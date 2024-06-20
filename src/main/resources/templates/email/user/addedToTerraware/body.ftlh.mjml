@@ -22,6 +22,8 @@
                 <mj-button mj-class="btn-productive-primary-md" href="${terrawareRegistrationUrl?no_esc}"
                 >${strings("notification.user.addedToTerraware.email.buttonLabel")}</mj-button>
             </mj-column>
+        </mj-section>
+        <mj-section padding="0px">
             <mj-column mj-class="secondary-wrapper">
                 <mj-text mj-class="text-body03">
                     ${strings("notification.user.addedToTerraware.email.body.6")}</mj-text>
@@ -32,12 +34,14 @@
                     <mj-li font-size="16px" font-weight="400" line-height="24px" font-family="Inter, sans-serif" color="#000000">${strings("notification.email.terrawareBenefits.4")}</mj-li>
                 </mj-list>
             </mj-column>
+        </mj-section>
+        <mj-section padding="0px">
             <mj-column mj-class="org-image-container" width="100%">
                 <mj-image src="${webAppUrl}/assets/org-screenshot.png">
                 </mj-image>
             </mj-column>
-            <mj-include path="../../manageSettings.ftlh.mjml"/>
         </mj-section>
+        <mj-include path="../../manageSettings.ftlh.mjml"/>
 
         <mj-include path="../../footer.ftlh.mjml"/>
     </mj-body>

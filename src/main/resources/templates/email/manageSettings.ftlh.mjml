@@ -1,5 +1,7 @@
-<mj-column background-color="#F9F8F7" padding-top="24px">
-    <mj-text mj-class="text-body-footer">
-        ${link("notification.email.html.manageSettings", manageSettingsUrl)}
-    </mj-text>
-</mj-column>
+<mj-section padding="0px">
+    <mj-column background-color="#F9F8F7" padding-top="24px">
+        <mj-text mj-class="text-body-footer">
+            ${link("notification.email.html.manageSettings", manageSettingsUrl)}
+        </mj-text>
+    </mj-column>
+</mj-section>

@@ -18,8 +18,8 @@
                 </mj-text>
                 <mj-include path="../../facility/link.ftlh.mjml"/>
             </mj-column>
-            <mj-include path="../../manageSettings.ftlh.mjml"/>
         </mj-section>
+        <mj-include path="../../manageSettings.ftlh.mjml"/>
 
         <mj-include path="../../footer.ftlh.mjml"/>
     </mj-body>

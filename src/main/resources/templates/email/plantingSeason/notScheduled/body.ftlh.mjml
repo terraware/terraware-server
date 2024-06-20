@@ -15,8 +15,8 @@
                            href="${plantingSiteUrl?no_esc}">${strings("notification.email.buttonLabel")}
                 </mj-button>
             </mj-column>
-            <mj-include path="../../manageSettings.ftlh.mjml"/>
         </mj-section>
+        <mj-include path="../../manageSettings.ftlh.mjml"/>
 
         <mj-include path="../../footer.ftlh.mjml"/>
     </mj-body>
