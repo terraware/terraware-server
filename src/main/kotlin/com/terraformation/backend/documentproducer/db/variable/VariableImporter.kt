@@ -109,10 +109,6 @@ class VariableImporter(
               ignoreVariableTypes =
                   listOf(HierarchicalVariableType.Table, HierarchicalVariableType.Section))
 
-          // Import all sections
-          importAllVariableCsvVariables(
-              csvVariables = csvVariables, importVariableType = HierarchicalVariableType.Section)
-
           if (errors.isNotEmpty()) {
             // Roll back the transaction so we don't end up with a partially-imported manifest.
             throw ImportAbortedDueToErrorsException()
