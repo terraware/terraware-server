@@ -8,7 +8,8 @@ import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableValueId
-import com.terraformation.backend.documentproducer.DocumentFileService
+import com.terraformation.backend.documentproducer.VariableFileService
+import com.terraformation.backend.documentproducer.db.DocumentNotFoundException
 import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
@@ -31,8 +32,8 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/document-producer/documents/{documentId}/images")
 @RestController
 class ImagesController(
-    private val documentFileService: DocumentFileService,
     private val documentStore: DocumentStore,
+    private val variableFileService: VariableFileService,
 ) {
   @GetMapping(
       "/{valueId}",
@@ -68,8 +69,12 @@ class ImagesController(
                   "if needed to preserve the aspect ratio of the original.")
       maxHeight: Int? = null,
   ): ResponseEntity<InputStreamResource> {
-    return documentFileService
-        .readImageValue(documentId, valueId, maxWidth, maxHeight)
+    val projectId =
+        documentStore.fetchDocumentById(documentId).projectId
+            ?: throw DocumentNotFoundException(documentId)
+
+    return variableFileService
+        .readImageValue(projectId, valueId, maxWidth, maxHeight)
         .toResponseEntity()
   }
 
@@ -122,7 +127,7 @@ class ImagesController(
         )
 
     val valueId =
-        documentFileService.storeImageValue(file.inputStream, newMetadata, base, caption, isAppend)
+        variableFileService.storeImageValue(file.inputStream, newMetadata, base, caption, isAppend)
 
     return UploadImageFileResponsePayload(valueId)
   }
