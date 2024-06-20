@@ -284,7 +284,7 @@ class VariableStore(
       }
     }
 
-    protected fun fetchNumber(base: BaseVariableProperties): NumberVariable {
+    private fun fetchNumber(base: BaseVariableProperties): NumberVariable {
       val numbersRow =
           variableNumbersDao.fetchOneByVariableId(base.id)
               ?: throw VariableIncompleteException(base.id)
@@ -297,7 +297,7 @@ class VariableStore(
       )
     }
 
-    protected fun fetchSection(base: BaseVariableProperties): SectionVariable {
+    private fun fetchSection(base: BaseVariableProperties): SectionVariable {
       val sectionRow =
           variableSectionsDao.fetchOneByVariableId(base.id)
               ?: throw VariableIncompleteException(base.id)
@@ -339,7 +339,7 @@ class VariableStore(
           base.copy(manifestId = manifestId), sectionRow.renderHeading!!, children, recommends)
     }
 
-    protected fun fetchSelect(base: BaseVariableProperties): SelectVariable {
+    private fun fetchSelect(base: BaseVariableProperties): SelectVariable {
       val selectRow =
           variableSelectsDao.fetchOneByVariableId(base.id)
               ?: throw VariableIncompleteException(base.id)
@@ -361,7 +361,7 @@ class VariableStore(
       return SelectVariable(base, selectRow.isMultiple!!, options)
     }
 
-    protected fun fetchTable(base: BaseVariableProperties): TableVariable {
+    private fun fetchTable(base: BaseVariableProperties): TableVariable {
       val tableRow =
           variableTablesDao.fetchOneByVariableId(base.id)
               ?: throw VariableIncompleteException(base.id)
@@ -381,7 +381,7 @@ class VariableStore(
       return TableVariable(base, tableRow.tableStyleId!!, columns)
     }
 
-    protected fun fetchText(base: BaseVariableProperties): TextVariable {
+    private fun fetchText(base: BaseVariableProperties): TextVariable {
       val textRow =
           variableTextsDao.fetchOneByVariableId(base.id)
               ?: throw VariableIncompleteException(base.id)
