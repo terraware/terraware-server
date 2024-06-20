@@ -794,14 +794,21 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readProjectScores(projectId: ProjectId) {
     if (!user.canReadProjectScores(projectId)) {
       readProject(projectId)
-      throw throw AccessDeniedException("No permission to view scores for project $projectId")
+      throw AccessDeniedException("No permission to view scores for project $projectId")
+    }
+  }
+
+  fun readProjectVariableOwners(projectId: ProjectId) {
+    if (!user.canReadProjectVariableOwners(projectId)) {
+      readProject(projectId)
+      throw AccessDeniedException("No permission to read variable owners for project $projectId")
     }
   }
 
   fun readProjectVotes(projectId: ProjectId) {
     if (!user.canReadProjectVotes(projectId)) {
       readProject(projectId)
-      throw throw AccessDeniedException("No permission to view votes for project $projectId")
+      throw AccessDeniedException("No permission to view votes for project $projectId")
     }
   }
 
@@ -1137,14 +1144,21 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun updateProjectScores(projectId: ProjectId) {
     if (!user.canUpdateProjectScores(projectId)) {
       readProject(projectId)
-      throw throw AccessDeniedException("No permission to update scores for project $projectId")
+      throw AccessDeniedException("No permission to update scores for project $projectId")
+    }
+  }
+
+  fun updateProjectVariableOwners(projectId: ProjectId) {
+    if (!user.canUpdateProjectVariableOwners(projectId)) {
+      readProject(projectId)
+      throw AccessDeniedException("No permission to update variable owners for project $projectId")
     }
   }
 
   fun updateProjectVotes(projectId: ProjectId) {
     if (!user.canUpdateProjectVotes(projectId)) {
       readProject(projectId)
-      throw throw AccessDeniedException("No permission to update votes for project $projectId")
+      throw AccessDeniedException("No permission to update votes for project $projectId")
     }
   }
 

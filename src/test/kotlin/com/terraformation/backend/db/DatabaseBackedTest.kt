@@ -172,6 +172,7 @@ import com.terraformation.backend.db.docprod.tables.daos.VariableLinkValuesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableManifestEntriesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableManifestsDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableNumbersDao
+import com.terraformation.backend.db.docprod.tables.daos.VariableOwnersDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableSectionRecommendationsDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableSectionValuesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableSectionsDao
@@ -192,6 +193,7 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariableLinkValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableManifestEntriesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableManifestsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableNumbersRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableOwnersRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionRecommendationsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionsRow
@@ -551,6 +553,7 @@ abstract class DatabaseBackedTest {
   protected val variableManifestEntriesDao: VariableManifestEntriesDao by lazyDao()
   protected val variableManifestsDao: VariableManifestsDao by lazyDao()
   protected val variableNumbersDao: VariableNumbersDao by lazyDao()
+  protected val variableOwnersDao: VariableOwnersDao by lazyDao()
   protected val variableSelectsDao: VariableSelectsDao by lazyDao()
   protected val variableSelectOptionValuesDao: VariableSelectOptionValuesDao by lazyDao()
   protected val variableSelectOptionsDao: VariableSelectOptionsDao by lazyDao()
@@ -2890,6 +2893,21 @@ abstract class DatabaseBackedTest {
     variableManifestEntriesDao.insert(row)
 
     return variableIdWrapper
+  }
+
+  protected fun insertVariableOwner(
+      variableId: Any,
+      ownedBy: Any,
+      projectId: Any = inserted.projectId,
+  ) {
+    val row =
+        VariableOwnersRow(
+            ownedBy = ownedBy.toIdWrapper { UserId(it) },
+            projectId = projectId.toIdWrapper { ProjectId(it) },
+            variableId = variableId.toIdWrapper { VariableId(it) },
+        )
+
+    variableOwnersDao.insert(row)
   }
 
   class Inserted {
