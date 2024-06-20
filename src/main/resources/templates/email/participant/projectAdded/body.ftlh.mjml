@@ -11,8 +11,8 @@
                     Project ${projectName} in organization ${organizationName} has just been added
                     to participant ${participantName} by ${adminName}.
                 </mj-text>
-                <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>
+            <mj-include path="../../manageSettings.ftlh.mjml"/>
         </mj-section>
 
         <mj-include path="../../footer.ftlh.mjml"/>

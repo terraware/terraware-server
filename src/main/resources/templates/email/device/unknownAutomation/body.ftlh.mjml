@@ -15,8 +15,8 @@
                     <!-- htmlmin:ignore --></#if><!-- htmlmin:ignore -->
                 </mj-text>
                 <mj-include path="../../facility/link.ftlh.mjml"/>
-                <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>
+            <mj-include path="../../manageSettings.ftlh.mjml"/>
         </mj-section>
 
         <mj-include path="../../footer.ftlh.mjml"/>

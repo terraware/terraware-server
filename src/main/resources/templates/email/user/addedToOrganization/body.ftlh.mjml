@@ -3,30 +3,26 @@
     <mj-include path="../../head.ftlh.mjml"/>
 
     <mj-body>
-        <mj-section padding="24px 0px" background-color="#F9F8F7">
-            <mj-column padding="0" width="100%">
-                <mj-image mj-class="logo-img" src="${webAppUrl}/assets/tw-tf-logo.png">
-                </mj-image>
-            </mj-column>
-            <mj-column padding="0">
-                <mj-text mj-class="text-header01">
-                    ${strings("notification.email.header")}</mj-text>
-            </mj-column>
-        </mj-section>
+        <mj-include path="../../logo.ftlh.mjml"/>
 
         <mj-section padding="0px">
-            <mj-column mj-class="body-wrapper-new">
+            <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold-green">
                     ${strings("notification.user.addedToOrganization.email.body.1")}
                 </mj-text>
                 <mj-text mj-class="text-headline06-bold">
                     ${strings("notification.user.addedToOrganization.email.body.2", organization.name)}
                 </mj-text>
-                <mj-text mj-class="text-body03" padding-top="32px">
-                ${strings("notification.user.addedToOrganization.email.body.3", user.firstName)}</mj-text>
+                <mj-text mj-class="text-body03">
+                    <#if user.firstName??>
+                    ${strings("notification.user.addedToOrganization.email.body.3", user.firstName)}
+                    <#else>
+                    ${strings("notification.user.addedToOrganization.email.body.3.noname")}
+                    </#if>
+                </mj-text>
                 <mj-text mj-class="text-body03">
                     ${strings("notification.user.addedToOrganization.email.body.4", organization.name, admin.fullName, admin.email)}</mj-text>
-                <mj-text mj-class="text-body03" padding-bottom="32px">
+                <mj-text mj-class="text-body03">
                     ${strings("notification.user.addedToOrganization.email.body.5")}</mj-text>
                 <mj-button mj-class="btn-productive-primary-md" href="${organizationHomeUrl?no_esc}"
                 >${strings("notification.user.addedToOrganization.email.buttonLabel")}</mj-button>
@@ -45,9 +41,7 @@
                 <mj-image src="${webAppUrl}/assets/org-screenshot.png">
                 </mj-image>
             </mj-column>
-            <mj-column background-color="#F9F8F7" padding-top="24px">
-                <mj-include path="../../manageSettings.ftlh.mjml"/>
-            </mj-column>
+            <mj-include path="../../manageSettings.ftlh.mjml"/>
         </mj-section>
 
         <mj-include path="../../footer.ftlh.mjml"/>

@@ -12,8 +12,8 @@
                     ${areaHaDifference} hectares have been ${addedToOrRemovedFrom} the planting
                     site.
                 </mj-text>
-                <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>
+            <mj-include path="../../manageSettings.ftlh.mjml"/>
         </mj-section>
 
         <mj-include path="../../footer.ftlh.mjml"/>

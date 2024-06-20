@@ -20,8 +20,8 @@
                 <mj-text mj-class="text-body03">
                 ${strings("notification.observation.monitoringPlotReplaced.email.body.5", duration.displayName)}
                 </mj-text>
-                <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>
+            <mj-include path="../../manageSettings.ftlh.mjml"/>
         </mj-section>
 
         <mj-include path="../../footer.ftlh.mjml"/>

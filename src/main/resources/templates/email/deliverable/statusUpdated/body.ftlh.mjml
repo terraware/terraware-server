@@ -16,8 +16,8 @@
                 <mj-button mj-class="btn-productive-primary-md"
                            href="${deliverableUrl?no_esc}">${strings("notification.deliverable.statusUpdated.email.buttonLabel")}
                 </mj-button>
-                <mj-include path="../../manageSettings.ftlh.mjml"/>
             </mj-column>
+            <mj-include path="../../manageSettings.ftlh.mjml"/>
         </mj-section>
 
         <mj-include path="../../footer.ftlh.mjml"/>
