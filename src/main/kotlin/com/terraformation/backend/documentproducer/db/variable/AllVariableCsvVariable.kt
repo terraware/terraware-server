@@ -103,8 +103,3 @@ enum class AllVariableCsvVariableType(val value: String, val variableType: Varia
         byValue[input] ?: throw IllegalArgumentException(LOCALIZED_ERROR_KEY_UNKNOWN_DATA_TYPE)
   }
 }
-
-enum class HierarchicalVariableType(val value: String) {
-  Table("Table"),
-  Section("Section")
-}

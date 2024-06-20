@@ -18,6 +18,7 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariableTextsRow
 import com.terraformation.backend.documentproducer.db.VariableManifestStore
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.model.DateVariable
+import com.terraformation.backend.documentproducer.model.HierarchicalVariableType
 import com.terraformation.backend.documentproducer.model.ImageVariable
 import com.terraformation.backend.documentproducer.model.LinkVariable
 import com.terraformation.backend.documentproducer.model.NewVariableManifestModel
