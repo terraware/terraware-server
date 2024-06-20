@@ -354,6 +354,8 @@ class SystemUser(
 
   override fun canReadProjectScores(projectId: ProjectId): Boolean = true
 
+  override fun canReadProjectVariableOwners(projectId: ProjectId): Boolean = true
+
   override fun canReadProjectVotes(projectId: ProjectId): Boolean = true
 
   override fun canReadReport(reportId: ReportId): Boolean = true
@@ -459,6 +461,8 @@ class SystemUser(
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId): Boolean = false
 
   override fun canUpdateProjectScores(projectId: ProjectId): Boolean = true
+
+  override fun canUpdateProjectVariableOwners(projectId: ProjectId): Boolean = true
 
   override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = true
 

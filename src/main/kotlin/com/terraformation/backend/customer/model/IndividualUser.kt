@@ -461,6 +461,8 @@ data class IndividualUser(
 
   override fun canReadProjectScores(projectId: ProjectId) = isReadOnlyOrHigher()
 
+  override fun canReadProjectVariableOwners(projectId: ProjectId) = isReadOnlyOrHigher()
+
   override fun canReadProjectVotes(projectId: ProjectId) = isReadOnlyOrHigher()
 
   override fun canReadReport(reportId: ReportId) =
@@ -613,6 +615,8 @@ data class IndividualUser(
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId) = isAcceleratorAdmin()
 
   override fun canUpdateProjectScores(projectId: ProjectId): Boolean = isTFExpertOrHigher()
+
+  override fun canUpdateProjectVariableOwners(projectId: ProjectId) = isTFExpertOrHigher()
 
   override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = isTFExpertOrHigher()
 

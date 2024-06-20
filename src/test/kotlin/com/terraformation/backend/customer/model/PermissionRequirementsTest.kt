@@ -705,6 +705,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
     requirements.readProjectScores(projectId)
   }
 
+  @Test
+  fun readProjectVariableOwners() {
+    assertThrows<ProjectNotFoundException> { requirements.readProjectVariableOwners(projectId) }
+
+    grant { user.canReadProject(projectId) }
+    assertThrows<AccessDeniedException> { requirements.readProjectVariableOwners(projectId) }
+
+    grant { user.canReadProjectVariableOwners(projectId) }
+    requirements.readProjectVariableOwners(projectId)
+  }
+
   @Test fun readReport() = testRead { readReport(reportId) }
 
   @Test fun readSpecies() = testRead { readSpecies(speciesId) }
@@ -897,6 +908,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun updateProjectScores() =
       allow { updateProjectScores(projectId) } ifUser { canUpdateProjectScores(projectId) }
+
+  @Test
+  fun updateProjectVariableOwners() =
+      allow { updateProjectVariableOwners(projectId) } ifUser
+          {
+            canUpdateProjectVariableOwners(projectId)
+          }
 
   @Test
   fun updateProjectVotes() =
