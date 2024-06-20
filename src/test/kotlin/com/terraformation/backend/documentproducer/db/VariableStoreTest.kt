@@ -110,7 +110,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                                       ),
                                       renderHeading = false)))))
 
-      val actual = store.fetchVariableForManifest(inserted.variableManifestId, sectionId1)
+      val actual = store.fetchVariable(sectionId1, inserted.variableManifestId)
 
       assertEquals(expected, actual)
     }
@@ -130,7 +130,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
       insertVariableManifestEntry(variableId = sectionId3)
 
       assertThrows<CircularReferenceException> {
-        store.fetchVariableForManifest(inserted.variableManifestId, sectionId1)
+        store.fetchVariable(sectionId1, inserted.variableManifestId)
       }
     }
   }

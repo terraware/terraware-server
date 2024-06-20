@@ -118,8 +118,7 @@ class DocumentUpgradeCalculator(
 
     return if (!valuesOfReplacedVariable.isNullOrEmpty()) {
       val oldVariable =
-          variableStore.fetchVariableForManifest(
-              oldManifestId, valuesOfReplacedVariable.first().variableId)
+          variableStore.fetchVariable(valuesOfReplacedVariable.first().variableId, oldManifestId)
 
       if (variable is TableVariable) {
         if (oldVariable is TableVariable) {

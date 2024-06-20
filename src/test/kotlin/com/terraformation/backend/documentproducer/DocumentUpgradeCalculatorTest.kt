@@ -198,7 +198,7 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
         insertValue(variableId = oldTableOutdatedColumnId, numberValue = BigDecimal(5)),
         oldTableRowId2)
 
-    assertEquals(
+    val expected =
         listOf(
             AppendValueOperation(NewTableValue(newValueProps(newTableVariableId))),
             AppendValueOperation(
@@ -206,8 +206,10 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
                     newValueProps(newTableUpdatedColumnId, citation = "citation"), BigDecimal(50))),
             // Empty row because the old one didn't have any values to carry forward.
             AppendValueOperation(NewTableValue(newValueProps(newTableVariableId))),
-        ),
-        calculateOperations(newManifestId, documentId))
+        )
+    val actual = calculateOperations(newManifestId, documentId)
+
+    assertEquals(expected, actual)
   }
 
   @Test
