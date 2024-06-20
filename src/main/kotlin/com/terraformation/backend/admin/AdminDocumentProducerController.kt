@@ -7,10 +7,6 @@ import com.terraformation.backend.db.docprod.tables.daos.DocumentTemplatesDao
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentTemplatesRow
 import com.terraformation.backend.documentproducer.db.manifest.ManifestImporter
 import com.terraformation.backend.documentproducer.db.variable.VariableImporter
-import io.swagger.v3.oas.annotations.ExternalDocumentation
-import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
@@ -63,18 +59,7 @@ class AdminDocumentProducerController(
     return documentProducerAdminHome()
   }
 
-  @Operation(
-      summary = "Upload a variable manifest.",
-      description = "The uploaded file must be in CSV format.",
-      externalDocs =
-          ExternalDocumentation(
-              description = "Current Google sheet",
-              url =
-                  "https://docs.google.com/spreadsheets/d/16ybKFseSwFubxZ_i6ENxsF2XT0RqajhdumefJOoHQo8/edit#gid=1050189377"))
   @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], path = ["/uploadAllVariables"])
-  @io.swagger.v3.oas.annotations.parameters.RequestBody(
-      content = [Content(encoding = [Encoding(name = "file", contentType = "text/csv")])],
-  )
   fun uploadAllVariables(
       @RequestPart("file") file: MultipartFile,
       redirectAttributes: RedirectAttributes,
@@ -96,18 +81,7 @@ class AdminDocumentProducerController(
     return documentProducerAdminHome()
   }
 
-  @Operation(
-      summary = "Upload a variable manifest.",
-      description = "The uploaded file must be in CSV format.",
-      externalDocs =
-          ExternalDocumentation(
-              description = "Current Google sheet",
-              url =
-                  "https://docs.google.com/spreadsheets/d/1PZTcDdWnegd5V03jvFguVHTBTb2sG3uzM4tmNhzvCUQ/edit#gid=1382800928"))
   @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], path = ["/uploadManifest"])
-  @io.swagger.v3.oas.annotations.parameters.RequestBody(
-      content = [Content(encoding = [Encoding(name = "file", contentType = "text/csv")])],
-  )
   fun uploadVariableManifest(
       @RequestPart("file") file: MultipartFile,
       @Schema(
