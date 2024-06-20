@@ -389,18 +389,6 @@ class VariableImporter(
           }
     }
 
-    private fun hasSameSubsections(
-        csvVariable: AllVariableCsvVariable,
-        section: SectionVariable
-    ): Boolean {
-      val csvSubsections = csvVariablesByParentPath[csvVariable.variablePath] ?: emptyList()
-
-      return csvSubsections.size == section.children.size &&
-          section.children.zip(csvSubsections).all { (subsection, csvSubsection) ->
-            canReuseExistingVariable(csvSubsection, subsection)
-          }
-    }
-
     /**
      * Returns true if a CSV variable has the same non-manifest-specific settings as an existing
      * variable, and thus the existing variable can be reused in the new manifest.

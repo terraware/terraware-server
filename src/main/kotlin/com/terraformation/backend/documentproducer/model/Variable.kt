@@ -42,7 +42,7 @@ interface BaseVariable {
   val name: String
 
   /** The variable's position in the manifest, starting from 0. Can vary between manifests. */
-  val position: Int?
+  val position: Int
 
   /** Which sections this variable is recommended by. Can vary between manifests. */
   val recommendedBy: Collection<VariableId>
@@ -69,7 +69,7 @@ data class BaseVariableProperties(
     override val isList: Boolean = false,
     override val manifestId: VariableManifestId?,
     override val name: String,
-    override val position: Int? = null,
+    override val position: Int,
     override val recommendedBy: Collection<VariableId> = emptyList(),
     override val replacesVariableId: VariableId? = null,
     override val stableId: String,
@@ -90,8 +90,8 @@ sealed interface Variable : BaseVariable {
   val type: VariableType
 
   /**
-   * Checks whether a value is valid for this variable. This includes both generic and type-specific
-   * checks.
+   * Checks whether or not a value is valid for this variable. This includes both generic and
+   * type-specific checks.
    *
    * @param fetchVariable Function to look up a variable. Used for validation of data types that can
    *   include references to other variables. Should throw [VariableNotFoundException] if the
@@ -106,26 +106,32 @@ sealed interface Variable : BaseVariable {
       VariableNotListException::class,
       VariableTypeMismatchException::class,
       VariableValueInvalidException::class)
-  fun validate(value: VariableValue<*, *>) {
+  fun validate(
+      value: VariableValue<*, *>,
+      fetchVariable: (VariableId) -> Variable,
+  ) {
     if (!isList && value.listPosition > 0) {
       throw VariableNotListException(id)
     }
 
-    validateForType(value)
+    validateForType(value, fetchVariable)
   }
 
   /**
    * Call [validate] instead of this.
    *
-   * Checks whether a value is valid for this variable. This has different checks for each data
-   * type. This is called by [validate] which is the actual entry point that external callers should
-   * use.
+   * Checks whether or not a value is valid for this variable. This has different checks for each
+   * data type. This is called by [validate] which is the actual entry point that external callers
+   * should use.
    *
    * @throws VariableTypeMismatchException The value was of the wrong type.
    * @throws VariableValueInvalidException The value was of the correct type but didn't conform to
    *   this variable's restrictions.
    */
-  fun validateForType(value: VariableValue<*, *>)
+  fun validateForType(
+      value: VariableValue<*, *>,
+      fetchVariable: (VariableId) -> Variable,
+  )
 
   /**
    * Converts a value of another variable to a value of this variable, if the existing value is
@@ -134,11 +140,12 @@ sealed interface Variable : BaseVariable {
   fun convertValue(
       oldVariable: Variable,
       oldValue: VariableValue<*, *>,
-      newRowValueId: VariableValueId?
+      newRowValueId: VariableValueId?,
+      fetchVariable: (VariableId) -> Variable
   ): NewValue? {
     return convertValueForType(oldVariable, oldValue, newRowValueId)?.let { convertedValue ->
       try {
-        validate(convertedValue)
+        validate(convertedValue, fetchVariable)
         convertedValue
       } catch (e: Exception) {
         null
@@ -175,7 +182,10 @@ data class NumberVariable(
   override val type: VariableType
     get() = VariableType.Number
 
-  override fun validateForType(value: VariableValue<*, *>) {
+  override fun validateForType(
+      value: VariableValue<*, *>,
+      fetchVariable: (VariableId) -> Variable
+  ) {
     if (value !is NumberValue) {
       throw VariableTypeMismatchException(id, VariableType.Number)
     }
@@ -218,7 +228,10 @@ data class TextVariable(
   override val type: VariableType
     get() = VariableType.Text
 
-  override fun validateForType(value: VariableValue<*, *>) {
+  override fun validateForType(
+      value: VariableValue<*, *>,
+      fetchVariable: (VariableId) -> Variable
+  ) {
     if (value !is TextValue) {
       throw VariableTypeMismatchException(id, VariableType.Text)
     }
@@ -270,7 +283,10 @@ data class DateVariable(
   override val type: VariableType
     get() = VariableType.Date
 
-  override fun validateForType(value: VariableValue<*, *>) {
+  override fun validateForType(
+      value: VariableValue<*, *>,
+      fetchVariable: (VariableId) -> Variable
+  ) {
     if (value !is DateValue) {
       throw VariableTypeMismatchException(id, VariableType.Date)
     }
@@ -304,7 +320,10 @@ data class ImageVariable(
   override val type: VariableType
     get() = VariableType.Image
 
-  override fun validateForType(value: VariableValue<*, *>) {
+  override fun validateForType(
+      value: VariableValue<*, *>,
+      fetchVariable: (VariableId) -> Variable
+  ) {
     if (value !is ImageValue) {
       throw VariableTypeMismatchException(id, VariableType.Image)
     }
@@ -340,7 +359,10 @@ data class SelectVariable(
   override val type: VariableType
     get() = VariableType.Select
 
-  override fun validateForType(value: VariableValue<*, *>) {
+  override fun validateForType(
+      value: VariableValue<*, *>,
+      fetchVariable: (VariableId) -> Variable
+  ) {
     if (value !is SelectValue) {
       throw VariableTypeMismatchException(id, VariableType.Select)
     }
@@ -405,7 +427,10 @@ data class SectionVariable(
   override val type: VariableType
     get() = VariableType.Section
 
-  override fun validateForType(value: VariableValue<*, *>) {
+  override fun validateForType(
+      value: VariableValue<*, *>,
+      fetchVariable: (VariableId) -> Variable
+  ) {
     if (value !is SectionValue) {
       throw VariableTypeMismatchException(id, VariableType.Section)
     }
@@ -416,22 +441,15 @@ data class SectionVariable(
         throw VariableValueInvalidException(id, "Display style is required for variable injections")
       }
 
-      // TODO validate this somewhere else
-      //      val usedVariableId = value.value.usedVariableId
-      //
-      //      try {
-      //        fetchVariable(usedVariableId)
-      //      } catch (e: VariableNotFoundException) {
-      //        throw VariableValueInvalidException(
-      //            id, "Variable $usedVariableId is used but does not exist in manifest")
-      //      }
-    }
+      val usedVariableId = value.value.usedVariableId
 
-    if (manifestId == null) {
-      throw VariableValueInvalidException(id, "Section variable must have an associated manifest")
+      try {
+        fetchVariable(usedVariableId)
+      } catch (e: VariableNotFoundException) {
+        throw VariableValueInvalidException(
+            id, "Variable $usedVariableId is used but does not exist in manifest")
+      }
     }
-
-    // TODO validate that the variable exists in the manifest
   }
 
   override fun convertValueForType(
@@ -460,7 +478,10 @@ data class TableVariable(
   override val type: VariableType
     get() = VariableType.Table
 
-  override fun validateForType(value: VariableValue<*, *>) {
+  override fun validateForType(
+      value: VariableValue<*, *>,
+      fetchVariable: (VariableId) -> Variable
+  ) {
     if (value !is TableValue) {
       throw VariableTypeMismatchException(id, VariableType.Table)
     }
@@ -485,7 +506,10 @@ data class LinkVariable(
   override val type: VariableType
     get() = VariableType.Link
 
-  override fun validateForType(value: VariableValue<*, *>) {
+  override fun validateForType(
+      value: VariableValue<*, *>,
+      fetchVariable: (VariableId) -> Variable
+  ) {
     if (value !is LinkValue) {
       throw VariableTypeMismatchException(id, VariableType.Link)
     }

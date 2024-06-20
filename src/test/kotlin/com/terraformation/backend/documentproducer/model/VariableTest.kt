@@ -205,19 +205,19 @@ class VariableTest {
               baseValue(), SectionValueVariable(VariableId(2), VariableUsageType.Reference, null)))
     }
 
-    //    @Test
-    //    fun `rejects reference to nonexistent variable`() {
-    //      assertThrows<VariableValueInvalidException> {
-    //        testValidate(
-    //            SectionVariable(baseVariable(), true),
-    //            NewSectionValue(
-    //                baseValue(),
-    //                SectionValueVariable(
-    //                    nonexistentVariableId,
-    //                    VariableUsageType.Injection,
-    //                    VariableInjectionDisplayStyle.Block)))
-    //      }
-    //    }
+    @Test
+    fun `rejects reference to nonexistent variable`() {
+      assertThrows<VariableValueInvalidException> {
+        testValidate(
+            SectionVariable(baseVariable(), true),
+            NewSectionValue(
+                baseValue(),
+                SectionValueVariable(
+                    nonexistentVariableId,
+                    VariableUsageType.Injection,
+                    VariableInjectionDisplayStyle.Block)))
+      }
+    }
 
     @Test
     fun `rejects injection without display style`() {
@@ -585,7 +585,7 @@ class VariableTest {
    * fetch [nonexistentVariableId], the fetch will fail.
    */
   private fun testValidate(variable: Variable, value: VariableValue<*, *>) {
-    variable.validate(value)
+    variable.validate(value, this::mockFetchVariable)
   }
 
   private fun tryConvert(
@@ -594,7 +594,7 @@ class VariableTest {
       newVariable: Variable,
       newRowValueId: VariableValueId? = null
   ): NewValue? {
-    return newVariable.convertValue(oldVariable, oldValue, newRowValueId)
+    return newVariable.convertValue(oldVariable, oldValue, newRowValueId, this::mockFetchVariable)
   }
 
   private fun assertConversionResult(
