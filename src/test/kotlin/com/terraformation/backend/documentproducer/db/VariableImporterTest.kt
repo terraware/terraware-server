@@ -14,6 +14,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 
@@ -68,7 +69,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val importResult = importer.import(sizedInputStream(testCsv))
 
-      Assertions.assertEquals(
+      assertEquals(
           listOf(
               "Message: ID must be unique across the entire all variables CSV, Field: ID, Value: Duplicate ID, Position: 3"),
           importResult.errors)
@@ -83,7 +84,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val importResult = importer.import(sizedInputStream(testCsv))
 
-      Assertions.assertEquals(
+      assertEquals(
           listOf(
               "Message: Top Level Variable Name must be unique, Field: Name, Value: Duplicate Name, Position: 3"),
           importResult.errors,
@@ -145,12 +146,11 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   position = 3,
                   isHeader = false))
 
-      Assertions.assertEquals(emptyList<String>(), importResult.errors, "no errors")
-      Assertions.assertEquals(
+      assertEquals(emptyList<String>(), importResult.errors, "no errors")
+      assertEquals(
           expectedTableVariable, actualTableVariable, "Variable DB row for table is correct")
-      Assertions.assertEquals(
-          expectedTableRow, actualTableRow, "Variable Table DB row for table is correct")
-      Assertions.assertEquals(
+      assertEquals(expectedTableRow, actualTableRow, "Variable Table DB row for table is correct")
+      assertEquals(
           expectedTableColumnRows,
           actualTableColumnRows,
           "Variable Table Column DB rows are correct")
@@ -217,14 +217,14 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   name = "Some other audit type",
                   position = 2))
 
-      Assertions.assertEquals(emptyList<String>(), importResult.errors, "no errors")
-      Assertions.assertEquals(
+      assertEquals(emptyList<String>(), importResult.errors, "no errors")
+      assertEquals(
           expectedTableColumnRows,
           actualTableColumnRows,
           "Variable Table Column DB rows are correct")
-      Assertions.assertEquals(expectedNumberRow, actualNumberRow, "Variable Number row is correct")
-      Assertions.assertEquals(expectedSelectRow, actualSelectRow, "Variable Select row is correct")
-      Assertions.assertEquals(
+      assertEquals(expectedNumberRow, actualNumberRow, "Variable Number row is correct")
+      assertEquals(expectedSelectRow, actualSelectRow, "Variable Select row is correct")
+      assertEquals(
           expectedSelectOptionRows,
           actualSelectOptionRows.map { it.copy(id = null) },
           "Variable Select Option rows are correct")
@@ -250,10 +250,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       val actualVariablePSAL = getVariableByName("Prior Scenario As List")
       val actualVariableTextPSAL = variableTextsDao.fetchOneByVariableId(actualVariablePSAL.id!!)
 
-      Assertions.assertEquals(emptyList<String>(), importResult.errors, "no errors")
+      assertEquals(emptyList<String>(), importResult.errors, "no errors")
 
       Assertions.assertFalse(actualVariableO.isList!!, "single input without list is not a list")
-      Assertions.assertEquals(
+      assertEquals(
           VariableTextsRow(
               variableId = actualVariableO.id!!,
               variableTypeId = VariableType.Text,
@@ -262,7 +262,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           "single line text variable saved correctly")
 
       Assertions.assertTrue(actualVariableOAL.isList!!, "single input with list is a list")
-      Assertions.assertEquals(
+      assertEquals(
           VariableTextsRow(
               variableId = actualVariableOAL.id!!,
               variableTypeId = VariableType.Text,
@@ -271,7 +271,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           "single line text variable saved correctly")
 
       Assertions.assertFalse(actualVariablePS.isList!!, "multi input without list is not a list")
-      Assertions.assertEquals(
+      assertEquals(
           VariableTextsRow(
               variableId = actualVariablePS.id!!,
               variableTypeId = VariableType.Text,
@@ -280,7 +280,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           "multi line text variable saved correctly")
 
       Assertions.assertTrue(actualVariablePSAL.isList!!, "multi input with list is a list")
-      Assertions.assertEquals(
+      assertEquals(
           VariableTextsRow(
               variableId = actualVariablePSAL.id!!,
               variableTypeId = VariableType.Text,
@@ -324,15 +324,15 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       val variableSelectOption4MUMS =
           variableSelectOptionsMUMS.find { it.name!!.endsWith("Option 4") }
 
-      Assertions.assertEquals(emptyList<String>(), importResult.errors, "no errors")
+      assertEquals(emptyList<String>(), importResult.errors, "no errors")
       Assertions.assertFalse(variableEAGER.isList!!, "single select is not a list")
       Assertions.assertNotNull(variableSelectEAGER, "single select variable select was created")
       Assertions.assertFalse(
           variableSelectEAGER?.isMultiple!!, "single select variable select is not multiple")
-      Assertions.assertEquals(
+      assertEquals(
           variableSelectOptionsEAGER.size, 4, "single select variable select options were created")
 
-      Assertions.assertEquals(
+      assertEquals(
           VariableSelectOptionsRow(
               name = "medium",
               position = 3,
@@ -345,10 +345,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       Assertions.assertNotNull(variableSelectMUMS, "multi select variable select was created")
       Assertions.assertTrue(
           variableSelectMUMS?.isMultiple!!, "multi select variable select is multiple")
-      Assertions.assertEquals(
+      assertEquals(
           variableSelectOptionsMUMS.size, 5, "multi select variable select options were created")
 
-      Assertions.assertEquals(
+      assertEquals(
           VariableSelectOptionsRow(
               name = "Option 4",
               position = 4,
@@ -371,7 +371,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val importResult = importer.import(sizedInputStream(testCsv))
 
-      Assertions.assertEquals(
+      assertEquals(
           listOf(
               "Message: Select option values must be unique within the select variable, Field: Options, Value: - tiny amount" +
                   "\n- small amount" +
@@ -388,7 +388,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val importResult = importer.import(sizedInputStream(testCsv))
 
-      Assertions.assertEquals(
+      assertEquals(
           listOf(
               "Message: Name may not contain line breaks, Field: Name, Value: Number\nName, Position: 2"),
           importResult.errors)
@@ -400,7 +400,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val importResult = importer.import(sizedInputStream(testCsv))
 
-      Assertions.assertEquals(
+      assertEquals(
           listOf("Message: Name column is required, Field: Name, Value: null, Position: 2"),
           importResult.errors)
     }
@@ -417,7 +417,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val importResult = importer.import(csvInput)
 
-      Assertions.assertEquals(emptyList<String>(), importResult.errors, "no errors")
+      assertEquals(emptyList<String>(), importResult.errors, "no errors")
     }
 
     @Test
@@ -430,7 +430,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       importer.import(sizedInputStream(testCsv))
 
       val variablesRows = variablesDao.findAll()
-      Assertions.assertEquals(1, variablesRows.size, "Number of imported variables")
+      assertEquals(1, variablesRows.size, "Number of imported variables")
     }
 
     @Test
@@ -443,13 +443,13 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       importer.import(sizedInputStream(updatedCsv))
 
       val variablesRows = variablesDao.findAll().sortedBy { it.id!!.value }
-      Assertions.assertEquals(2, variablesRows.size, "Number of imported variables")
+      assertEquals(2, variablesRows.size, "Number of imported variables")
 
-      Assertions.assertEquals(
+      assertEquals(
           setOf("Option 1", "Option 2", "Option 3"),
           variableSelectOptionsDao.fetchByVariableId(variablesRows[0].id!!).map { it.name }.toSet(),
           "Initial options")
-      Assertions.assertEquals(
+      assertEquals(
           setOf("Option 1", "Option 2"),
           variableSelectOptionsDao.fetchByVariableId(variablesRows[1].id!!).map { it.name }.toSet(),
           "Updated options")
@@ -465,16 +465,16 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       val initialResult = importer.import(sizedInputStream(initialCsv))
 
       val initialVariables = variablesDao.findAll()
-      Assertions.assertEquals(1, initialVariables.size, "Should have imported 1 variable")
+      assertEquals(1, initialVariables.size, "Should have imported 1 variable")
       val initialVariableId = initialVariables.first().id!!
 
       val updateResult = importer.import(sizedInputStream(updatedCsv))
 
       val updatedVariables = variablesDao.findAll()
-      Assertions.assertEquals(2, updatedVariables.size, "Should have imported 1 new variable")
+      assertEquals(2, updatedVariables.size, "Should have imported 1 new variable")
       val updatedVariableId = updatedVariables.find { it.id != initialVariableId }!!.id
 
-      Assertions.assertEquals(
+      assertEquals(
           setOf(
               VariablesRow(
                   description = "Original description",
@@ -508,21 +508,21 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       importer.import(sizedInputStream(initialCsv))
 
       val initialVariables = variablesDao.findAll()
-      Assertions.assertEquals(1, initialVariables.size, "Should have imported 1 variable")
+      assertEquals(1, initialVariables.size, "Should have imported 1 variable")
       val initialVariableId = initialVariables.first().id!!
 
       importer.import(sizedInputStream(updatedCsv))
 
       val updatedVariables = variablesDao.findAll()
-      Assertions.assertEquals(2, updatedVariables.size, "Should have imported new copy of variable")
+      assertEquals(2, updatedVariables.size, "Should have imported new copy of variable")
       val newVariableId = updatedVariables.map { it.id!! }.first { it != initialVariableId }
 
-      Assertions.assertEquals(
+      assertEquals(
           initialVariableId,
           updatedVariables.first { it.id == newVariableId }.replacesVariableId,
           "New variable should be marked as replacement of existing one")
 
-      Assertions.assertEquals(
+      assertEquals(
           setOf(
               VariablesRow(
                   id = initialVariableId,
@@ -561,14 +561,14 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       importer.import(sizedInputStream(initialCsv))
 
       val initialVariables = variablesDao.findAll().sortedBy { it.id!!.value }
-      Assertions.assertEquals(3, initialVariables.size, "Should have imported 3 variables")
+      assertEquals(3, initialVariables.size, "Should have imported 3 variables")
 
       importer.import(sizedInputStream(updatedCsv))
 
       val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
-      Assertions.assertEquals(6, updatedVariables.size, "Should have created 2 new variables")
+      assertEquals(6, updatedVariables.size, "Should have created 2 new variables")
 
-      Assertions.assertEquals(
+      assertEquals(
           setOf(
               VariablesRow(
                   id = initialVariables[0].id,
@@ -642,16 +642,15 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       importer.import(sizedInputStream(initialCsv))
 
       val initialVariables = variablesDao.findAll().sortedBy { it.id!!.value }
-      Assertions.assertEquals(3, initialVariables.size, "Should have imported 3 variables")
+      assertEquals(3, initialVariables.size, "Should have imported 3 variables")
 
       importer.import(sizedInputStream(updatedCsv))
 
       val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
-      Assertions.assertEquals(
-          6, updatedVariables.size, "Should have imported new copies of all variables")
+      assertEquals(6, updatedVariables.size, "Should have imported new copies of all variables")
       val newTableVariableId = updatedVariables[3].id!!
 
-      Assertions.assertEquals(
+      assertEquals(
           setOf(updatedVariables[4].id, updatedVariables[5].id),
           variableTableColumnsDao
               .fetchByTableVariableId(newTableVariableId)
@@ -676,7 +675,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import(sizedInputStream(csv))
 
-      Assertions.assertEquals(
+      assertEquals(
           listOf(
               VariablesRow(
                   deliverableId = deliverableId,
@@ -723,7 +722,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val result = importer.import(sizedInputStream(csv))
 
-      Assertions.assertEquals(
+      assertEquals(
           listOf(
               "Message: Supplied Deliverable ID does not exist, Field: Deliverable ID, Value: 1, Position: 2"),
           result.errors)
@@ -747,7 +746,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val result = importer.import(sizedInputStream(csv))
 
-      Assertions.assertEquals(
+      assertEquals(
           listOf(
               "Message: Supplied Dependency Variable Stable ID does not exist, Field: Dependency Variable Stable ID, Value: $nonexistentDependencyVariableStableId, Position: 3"),
           result.errors)
@@ -775,7 +774,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,$missingDependencyVariableStableId,true"
 
       val result1 = importer.import(sizedInputStream(csvMissingDependencyVariableStableId))
-      Assertions.assertEquals(
+      assertEquals(
           listOf(
               "Message: Supplied Dependency Configuration is incomplete: Missing field, Field: Dependency Variable Stable ID, Value: null, Position: 3"),
           result1.errors)
@@ -788,7 +787,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,$missingDependencyCondition,true"
 
       val result2 = importer.import(sizedInputStream(csvMissingDependencyCondition))
-      Assertions.assertEquals(
+      assertEquals(
           listOf(
               "Message: Supplied Dependency Configuration is incomplete: Missing field, Field: Dependency Condition, Value: null, Position: 3"),
           result2.errors)
@@ -801,7 +800,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,$missingDependencyValue,true"
 
       val result3 = importer.import(sizedInputStream(csvMissingDependencyValue))
-      Assertions.assertEquals(
+      assertEquals(
           listOf(
               "Message: Supplied Dependency Configuration is incomplete: Missing field, Field: Dependency Value, Value: null, Position: 3"),
           result3.errors)
