@@ -117,25 +117,17 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
    * part of the configuration is supplied, the entire configuration must be supplied.
    */
   private fun validateDependencyConfiguration(values: List<String?>) {
-    val dependencyConfig =
+    val columns =
         listOf(
-                VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID,
-                VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_CONDITION,
-                VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VALUE)
-            .map { index ->
-              values[index] to
-                  messages.variablesCsvDependencyConfigIncomplete(
-                      messages.variablesCsvColumnName(index))
-            }
+            VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID,
+            VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_CONDITION,
+            VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VALUE)
+    val missingColumns = columns.filter { values[it] == null }
 
-    val configSupplied = dependencyConfig.any { it.first != null }
-    if (!configSupplied) {
-      return
-    }
-
-    dependencyConfig.forEach { (value, message) ->
-      if (value == null) {
-        addError(null, null, message)
+    if (missingColumns.isNotEmpty() && missingColumns.size != columns.size) {
+      missingColumns.forEach { index ->
+        val columnName = getColumnName(index)
+        addError(columnName, null, messages.variablesCsvDependencyConfigIncomplete())
       }
     }
   }

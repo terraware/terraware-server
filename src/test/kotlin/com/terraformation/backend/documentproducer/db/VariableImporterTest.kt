@@ -777,7 +777,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       val result1 = importer.import(sizedInputStream(csvMissingDependencyVariableStableId))
       Assertions.assertEquals(
           listOf(
-              "Message: Supplied Dependency Configuration is incomplete: Missing Dependency Variable Stable ID, Field: null, Value: null, Position: 3"),
+              "Message: Supplied Dependency Configuration is incomplete: Missing field, Field: Dependency Variable Stable ID, Value: null, Position: 3"),
           result1.errors)
 
       val csvMissingDependencyCondition =
@@ -790,7 +790,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       val result2 = importer.import(sizedInputStream(csvMissingDependencyCondition))
       Assertions.assertEquals(
           listOf(
-              "Message: Supplied Dependency Configuration is incomplete: Missing Dependency Condition, Field: null, Value: null, Position: 3"),
+              "Message: Supplied Dependency Configuration is incomplete: Missing field, Field: Dependency Condition, Value: null, Position: 3"),
           result2.errors)
 
       val csvMissingDependencyValue =
@@ -803,7 +803,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       val result3 = importer.import(sizedInputStream(csvMissingDependencyValue))
       Assertions.assertEquals(
           listOf(
-              "Message: Supplied Dependency Configuration is incomplete: Missing Dependency Value, Field: null, Value: null, Position: 3"),
+              "Message: Supplied Dependency Configuration is incomplete: Missing field, Field: Dependency Value, Value: null, Position: 3"),
           result3.errors)
     }
 
