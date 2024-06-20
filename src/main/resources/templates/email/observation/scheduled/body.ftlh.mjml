@@ -15,8 +15,8 @@
                 ${strings("notification.observation.scheduled.email.body.2", plantingSiteName, startDateString, endDateString)}
                 </mj-text>
             </mj-column>
-            <mj-include path="../../manageSettings.ftlh.mjml"/>
         </mj-section>
+        <mj-include path="../../manageSettings.ftlh.mjml"/>
 
         <mj-include path="../../footer.ftlh.mjml"/>
     </mj-body>

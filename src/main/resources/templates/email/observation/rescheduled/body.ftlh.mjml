@@ -21,8 +21,8 @@
                 ${strings("notification.observation.rescheduled.email.body.4", newStartDateString, newEndDateString)}
                 </mj-text>
             </mj-column>
-            <mj-include path="../../manageSettings.ftlh.mjml"/>
         </mj-section>
+        <mj-include path="../../manageSettings.ftlh.mjml"/>
 
         <mj-include path="../../footer.ftlh.mjml"/>
     </mj-body>

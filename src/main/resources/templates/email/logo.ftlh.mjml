@@ -1,9 +1,11 @@
 <!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.EmailTemplateModel" --> -->
-<mj-section padding="24px 0px" background-color="#F9F8F7">
+<mj-section padding="24px 0px 0px 0px" background-color="#F9F8F7">
     <mj-column padding="0" width="100%">
         <mj-image mj-class="logo-img" src="${webAppUrl}/assets/tw-tf-logo.png">
         </mj-image>
     </mj-column>
+</mj-section>
+<mj-section padding="0px 0px 24px 0px" background-color="#F9F8F7">
     <mj-column padding="0">
         <mj-text mj-class="text-header01">
             ${strings("notification.email.header")}</mj-text>
