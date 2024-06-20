@@ -307,6 +307,8 @@ interface TerrawareUser : Principal {
 
   fun canReadProjectScores(projectId: ProjectId): Boolean
 
+  fun canReadProjectVariableOwners(projectId: ProjectId): Boolean
+
   fun canReadProjectVotes(projectId: ProjectId): Boolean
 
   fun canReadReport(reportId: ReportId): Boolean
@@ -410,6 +412,8 @@ interface TerrawareUser : Principal {
   fun canUpdateProjectDocumentSettings(projectId: ProjectId): Boolean
 
   fun canUpdateProjectScores(projectId: ProjectId): Boolean
+
+  fun canUpdateProjectVariableOwners(projectId: ProjectId): Boolean
 
   fun canUpdateProjectVotes(projectId: ProjectId): Boolean
 

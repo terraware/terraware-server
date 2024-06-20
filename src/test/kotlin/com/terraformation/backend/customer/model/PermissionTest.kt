@@ -1449,11 +1449,13 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectModules = true,
         readProjectScores = true,
+        readProjectVariableOwners = true,
         readProjectVotes = true,
         updateDefaultVoters = true,
         updateProject = true,
         updateProjectAcceleratorDetails = true,
         updateProjectScores = true,
+        updateProjectVariableOwners = true,
         updateProjectVotes = true,
     )
 
@@ -1558,12 +1560,14 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectModules = true,
         readProjectScores = true,
+        readProjectVariableOwners = true,
         readProjectVotes = true,
         updateDefaultVoters = true,
         updateProject = true,
         updateProjectAcceleratorDetails = true,
         updateProjectDocumentSettings = true,
         updateProjectScores = true,
+        updateProjectVariableOwners = true,
         updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
@@ -1589,11 +1593,13 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectModules = true,
         readProjectScores = true,
+        readProjectVariableOwners = true,
         readProjectVotes = true,
         updateDefaultVoters = true,
         updateProjectAcceleratorDetails = true,
         updateProjectDocumentSettings = true,
         updateProjectScores = true,
+        updateProjectVariableOwners = true,
         updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
@@ -1736,11 +1742,13 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectModules = true,
         readProjectScores = true,
+        readProjectVariableOwners = true,
         readProjectVotes = true,
         updateProject = true,
         updateProjectAcceleratorDetails = true,
         updateProjectDocumentSettings = true,
         updateProjectScores = true,
+        updateProjectVariableOwners = true,
         updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
@@ -1766,10 +1774,12 @@ internal class PermissionTest : DatabaseTest() {
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectScores = true,
+        readProjectVariableOwners = true,
         readProjectVotes = true,
         updateProjectAcceleratorDetails = true,
         updateProjectDocumentSettings = true,
         updateProjectScores = true,
+        updateProjectVariableOwners = true,
         updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
@@ -1910,10 +1920,12 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectModules = true,
         readProjectScores = true,
+        readProjectVariableOwners = true,
         readProjectVotes = true,
         updateProject = true,
         updateProjectAcceleratorDetails = true,
         updateProjectScores = true,
+        updateProjectVariableOwners = true,
         updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
@@ -1934,9 +1946,11 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectModules = true,
         readProjectScores = true,
+        readProjectVariableOwners = true,
         readProjectVotes = true,
         updateProjectAcceleratorDetails = true,
         updateProjectScores = true,
+        updateProjectVariableOwners = true,
         updateProjectVotes = true,
         updateSubmissionStatus = true,
     )
@@ -2081,6 +2095,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectModules = true,
         readProjectScores = true,
+        readProjectVariableOwners = true,
         readProjectVotes = true,
     )
 
@@ -2093,6 +2108,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectModules = true,
         readProjectScores = true,
+        readProjectVariableOwners = true,
         readProjectVotes = true,
     )
 
@@ -2923,12 +2939,14 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables: Boolean = false,
         readProjectModules: Boolean = false,
         readProjectScores: Boolean = false,
+        readProjectVariableOwners: Boolean = false,
         readProjectVotes: Boolean = false,
         updateDefaultVoters: Boolean = false,
         updateProject: Boolean = false,
         updateProjectAcceleratorDetails: Boolean = false,
         updateProjectDocumentSettings: Boolean = false,
         updateProjectScores: Boolean = false,
+        updateProjectVariableOwners: Boolean = false,
         updateProjectVotes: Boolean = false,
         updateSubmissionStatus: Boolean = false,
     ) {
@@ -2960,6 +2978,10 @@ internal class PermissionTest : DatabaseTest() {
             user.canReadProjectScores(projectId),
             "Can read scores for project $projectId")
         assertEquals(
+            readProjectVariableOwners,
+            user.canReadProjectVariableOwners(projectId),
+            "Can read variable owners for project $projectId")
+        assertEquals(
             readProjectVotes,
             user.canReadProjectVotes(projectId),
             "Can read votes for project $projectId")
@@ -2979,7 +3001,10 @@ internal class PermissionTest : DatabaseTest() {
             updateProjectScores,
             user.canUpdateProjectScores(projectId),
             "Can update scores for project $projectId")
-
+        assertEquals(
+            updateProjectVariableOwners,
+            user.canUpdateProjectVariableOwners(projectId),
+            "Can update variable owners for project $projectId")
         assertEquals(
             updateProjectVotes,
             user.canUpdateProjectVotes(projectId),
