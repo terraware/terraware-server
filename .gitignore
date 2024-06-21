@@ -13,3 +13,6 @@ openapi.yaml
 .DS_Store
 .run
 docker/volumes
+
+# Kotlin compiler temporary files
+.kotlin
