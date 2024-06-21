@@ -91,6 +91,15 @@ VALUES (1, 'PV'),
        (2, 'Seed Bank Default')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO docprod.dependency_conditions (id, name)
+VALUES (1, 'eq'),
+       (2, 'gt'),
+       (3, 'gte'),
+       (4, 'lt'),
+       (5, 'lte'),
+       (6, 'neq')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO docprod.document_statuses (id, name)
 VALUES (1, 'Draft'),
        (2, 'Locked'),

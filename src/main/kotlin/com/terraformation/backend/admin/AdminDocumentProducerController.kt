@@ -6,10 +6,7 @@ import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.tables.daos.DocumentTemplatesDao
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentTemplatesRow
 import com.terraformation.backend.documentproducer.db.manifest.ManifestImporter
-import io.swagger.v3.oas.annotations.ExternalDocumentation
-import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Encoding
+import com.terraformation.backend.documentproducer.db.variable.VariableImporter
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
@@ -26,8 +23,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequireGlobalRole([GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert])
 @RequestMapping("/admin/document-producer")
 class AdminDocumentProducerController(
-    private val manifestImporter: ManifestImporter,
     private val documentTemplatesDao: DocumentTemplatesDao,
+    private val manifestImporter: ManifestImporter,
+    private val variableImporter: VariableImporter,
 ) {
   /** Redirects /admin to /admin/ so relative URLs in the UI will work. */
   @GetMapping
@@ -61,18 +59,29 @@ class AdminDocumentProducerController(
     return documentProducerAdminHome()
   }
 
-  @Operation(
-      summary = "Upload a variable manifest.",
-      description = "The uploaded file must be in CSV format.",
-      externalDocs =
-          ExternalDocumentation(
-              description = "Current Google sheet",
-              url =
-                  "https://docs.google.com/spreadsheets/d/1PZTcDdWnegd5V03jvFguVHTBTb2sG3uzM4tmNhzvCUQ/edit#gid=1382800928"))
+  @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], path = ["/uploadAllVariables"])
+  fun uploadAllVariables(
+      @RequestPart("file") file: MultipartFile,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      file.inputStream.use { uploadStream ->
+        val result = variableImporter.import(uploadStream)
+        if (result.errors.isEmpty()) {
+          redirectAttributes.successMessage = "Imported variables."
+        } else {
+          redirectAttributes.failureMessage = "Failed to import variables."
+          redirectAttributes.failureDetails = result.errors
+        }
+      }
+    } catch (e: Exception) {
+      redirectAttributes.failureMessage = "Error attempting to import variables: $e"
+    }
+
+    return documentProducerAdminHome()
+  }
+
   @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], path = ["/uploadManifest"])
-  @io.swagger.v3.oas.annotations.parameters.RequestBody(
-      content = [Content(encoding = [Encoding(name = "file", contentType = "text/csv")])],
-  )
   fun uploadVariableManifest(
       @RequestPart("file") file: MultipartFile,
       @Schema(
