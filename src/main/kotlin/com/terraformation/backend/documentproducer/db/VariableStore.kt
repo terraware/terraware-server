@@ -117,6 +117,27 @@ class VariableStore(
     }
   }
 
+  /**
+   * Fetches the list of non-section variables, using the latest version of each based on their
+   * stable ID. Table columns are not included in the top-level list, but rather in the containing
+   * variables' lists of children.
+   */
+  fun fetchAllNonSectionVariables(): List<Variable> {
+    return with(VARIABLES) {
+      dslContext
+          .select(DSL.max(ID), STABLE_ID)
+          .from(this)
+          .where(VARIABLE_TYPE_ID.ne(VariableType.Section))
+          .andNotExists(
+              DSL.selectOne()
+                  .from(VARIABLE_TABLE_COLUMNS)
+                  .where(ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
+          .groupBy(STABLE_ID)
+          .fetch()
+          .map { record -> fetchVariable(record[DSL.max(ID)]!!) }
+    }
+  }
+
   fun importVariable(variable: VariablesRow): VariableId {
     variablesDao.insert(variable)
     return variable.id!!
@@ -187,11 +208,10 @@ class VariableStore(
    * Logic for recursively fetching a variable and the variables it's related to. Variable fetching
    * is stateful because we want to detect cycles.
    */
-  private inner class FetchContext(private val manifestId: VariableManifestId?) {
+  private inner class FetchContext(private val manifestId: VariableManifestId? = null) {
     /** Stack of variables that are being fetched in this context. Used to detect cycles. */
     val fetchesInProgress = ArrayDeque<VariableId>()
 
-    /** Returns information about a variable and its children, if any. */
     fun fetchVariable(variableId: VariableId): Variable {
       if (variableId in fetchesInProgress) {
         fetchesInProgress.addLast(variableId)
@@ -205,6 +225,7 @@ class VariableStore(
             variablesDao.fetchOneById(variableId) ?: throw VariableNotFoundException(variableId)
         val manifestRecord = fetchManifestRecord(variableId)
         val recommendedBy = fetchRecommendedBy(variableId)
+
         val base =
             BaseVariableProperties(
                 description = variablesRow.description,
@@ -276,12 +297,46 @@ class VariableStore(
       )
     }
 
-    private fun fetchText(base: BaseVariableProperties): TextVariable {
-      val textRow =
-          variableTextsDao.fetchOneByVariableId(base.id)
+    private fun fetchSection(base: BaseVariableProperties): SectionVariable {
+      val sectionRow =
+          variableSectionsDao.fetchOneByVariableId(base.id)
               ?: throw VariableIncompleteException(base.id)
 
-      return TextVariable(base, textRow.variableTextTypeId!!)
+      val manifestId: VariableManifestId =
+          base.manifestId
+              ?: with(VARIABLE_MANIFEST_ENTRIES) {
+                dslContext
+                    .select(VARIABLE_MANIFEST_ID)
+                    .from(this)
+                    .where(VARIABLE_ID.eq(base.id))
+                    .fetchOne(VARIABLE_MANIFEST_ID.asNonNullable())
+                    ?: throw VariableManifestNotFoundForVariableException(base.id)
+              }
+
+      val children =
+          dslContext
+              .select(VARIABLE_SECTIONS.VARIABLE_ID)
+              .from(VARIABLE_SECTIONS)
+              .join(VARIABLE_MANIFEST_ENTRIES)
+              .on(VARIABLE_SECTIONS.VARIABLE_ID.eq(VARIABLE_MANIFEST_ENTRIES.VARIABLE_ID))
+              .where(VARIABLE_SECTIONS.PARENT_VARIABLE_ID.eq(base.id))
+              .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId))
+              .orderBy(VARIABLE_MANIFEST_ENTRIES.POSITION)
+              .fetch(VARIABLE_SECTIONS.VARIABLE_ID.asNonNullable())
+              .map { variableId -> fetchVariable(variableId) as SectionVariable }
+
+      val recommends =
+          with(VARIABLE_SECTION_RECOMMENDATIONS) {
+            dslContext
+                .select(RECOMMENDED_VARIABLE_ID)
+                .from(VARIABLE_SECTION_RECOMMENDATIONS)
+                .where(SECTION_VARIABLE_ID.eq(base.id))
+                .and(VARIABLE_MANIFEST_ID.eq(manifestId))
+                .fetch(RECOMMENDED_VARIABLE_ID.asNonNullable())
+          }
+
+      return SectionVariable(
+          base.copy(manifestId = manifestId), sectionRow.renderHeading!!, children, recommends)
     }
 
     private fun fetchSelect(base: BaseVariableProperties): SelectVariable {
@@ -315,10 +370,7 @@ class VariableStore(
           dslContext
               .select(VARIABLE_TABLE_COLUMNS.IS_HEADER, VARIABLE_TABLE_COLUMNS.VARIABLE_ID)
               .from(VARIABLE_TABLE_COLUMNS)
-              .join(VARIABLE_MANIFEST_ENTRIES)
-              .on(VARIABLE_TABLE_COLUMNS.VARIABLE_ID.eq(VARIABLE_MANIFEST_ENTRIES.VARIABLE_ID))
               .where(VARIABLE_TABLE_COLUMNS.TABLE_VARIABLE_ID.eq(base.id))
-              .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId))
               .orderBy(VARIABLE_TABLE_COLUMNS.POSITION)
               .fetch { record ->
                 TableColumn(
@@ -329,34 +381,12 @@ class VariableStore(
       return TableVariable(base, tableRow.tableStyleId!!, columns)
     }
 
-    private fun fetchSection(base: BaseVariableProperties): SectionVariable {
-      val sectionRow =
-          variableSectionsDao.fetchOneByVariableId(base.id)
+    private fun fetchText(base: BaseVariableProperties): TextVariable {
+      val textRow =
+          variableTextsDao.fetchOneByVariableId(base.id)
               ?: throw VariableIncompleteException(base.id)
 
-      val children =
-          dslContext
-              .select(VARIABLE_SECTIONS.VARIABLE_ID)
-              .from(VARIABLE_SECTIONS)
-              .join(VARIABLE_MANIFEST_ENTRIES)
-              .on(VARIABLE_SECTIONS.VARIABLE_ID.eq(VARIABLE_MANIFEST_ENTRIES.VARIABLE_ID))
-              .where(VARIABLE_SECTIONS.PARENT_VARIABLE_ID.eq(base.id))
-              .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId))
-              .orderBy(VARIABLE_MANIFEST_ENTRIES.POSITION)
-              .fetch(VARIABLE_SECTIONS.VARIABLE_ID.asNonNullable())
-              .map { fetchVariable(it) as SectionVariable }
-
-      val recommends =
-          with(VARIABLE_SECTION_RECOMMENDATIONS) {
-            dslContext
-                .select(RECOMMENDED_VARIABLE_ID)
-                .from(VARIABLE_SECTION_RECOMMENDATIONS)
-                .where(SECTION_VARIABLE_ID.eq(base.id))
-                .and(VARIABLE_MANIFEST_ID.eq(manifestId))
-                .fetch(RECOMMENDED_VARIABLE_ID.asNonNullable())
-          }
-
-      return SectionVariable(base, sectionRow.renderHeading!!, children, recommends)
+      return TextVariable(base, textRow.variableTextTypeId!!)
     }
   }
 }

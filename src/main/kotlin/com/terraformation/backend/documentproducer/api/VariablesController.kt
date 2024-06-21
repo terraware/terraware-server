@@ -83,7 +83,7 @@ interface VariablePayload {
   val name: String
     get() = model.name
 
-  val position: Int
+  val position: Int?
     get() = model.position
 
   val recommendedBy: Set<VariableId>?

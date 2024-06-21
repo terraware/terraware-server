@@ -138,6 +138,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
           VariablesRow(
               description = "A table with contact details",
               id = actualTableVariable.id!!,
+              internalOnly = false,
               isList = false,
               name = "Project Proponent Table",
               stableId = "1",
@@ -952,6 +953,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               VariablesRow(
                   description = "Original description",
                   id = initialVariableId,
+                  internalOnly = false,
                   isList = false,
                   name = "Original variable",
                   stableId = "1",
@@ -960,6 +962,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               VariablesRow(
                   description = "Updated description",
                   id = updatedVariableId,
+                  internalOnly = false,
                   isList = false,
                   name = "Updated variable",
                   replacesVariableId = initialVariableId,
@@ -1006,6 +1009,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
           setOf(
               VariablesRow(
                   id = initialVariableId,
+                  internalOnly = false,
                   isList = false,
                   name = "Number variable",
                   stableId = "1",
@@ -1013,6 +1017,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               ),
               VariablesRow(
                   id = newVariableId,
+                  internalOnly = false,
                   isList = false,
                   name = "Number variable",
                   replacesVariableId = initialVariableId,
@@ -1071,6 +1076,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
           setOf(
               VariablesRow(
                   id = initialVariables[0].id,
+                  internalOnly = false,
                   isList = true,
                   name = "Table",
                   stableId = "1",
@@ -1078,6 +1084,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               ),
               VariablesRow(
                   id = initialVariables[1].id,
+                  internalOnly = false,
                   isList = false,
                   name = "Column A",
                   stableId = "2",
@@ -1085,6 +1092,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               ),
               VariablesRow(
                   id = initialVariables[2].id,
+                  internalOnly = false,
                   isList = false,
                   name = "Column B",
                   stableId = "3",
@@ -1092,6 +1100,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               ),
               VariablesRow(
                   id = updatedVariables[3].id,
+                  internalOnly = false,
                   isList = true,
                   name = "Table",
                   replacesVariableId = initialVariables[0].id,
@@ -1100,6 +1109,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               ),
               VariablesRow(
                   id = updatedVariables[4].id,
+                  internalOnly = false,
                   isList = false,
                   name = "Renamed A",
                   replacesVariableId = initialVariables[1].id,
@@ -1108,6 +1118,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               ),
               VariablesRow(
                   id = updatedVariables[5].id,
+                  internalOnly = false,
                   isList = false,
                   name = "Renamed B",
                   replacesVariableId = initialVariables[2].id,
