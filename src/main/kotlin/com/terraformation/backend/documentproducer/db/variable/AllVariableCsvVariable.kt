@@ -56,20 +56,24 @@ data class AllVariableCsvVariable(
     /** Column 19/S - Internal Only */
     val internalOnly: Boolean,
 
-    /** Position in the sheet, recorded against the variable manifest entry */
-    val position: Int,
-    /** The path to the variable within the hierarchy */
-    var variablePath: String,
+    /** These are calculated during the import */
+    /** The position of this variable within the associated deliverable, if applicable * */
+    var deliverablePosition: Int?,
     /** The path to the parent variable within the hierarchy */
     var parentPath: String?,
-    /** The base variable ID */
-    var variableId: VariableId? = null,
+    /** Position in the sheet, recorded against the variable manifest entry */
+    val position: Int,
     /** If this variable replaces one from an earlier manifest, that variable's ID. */
     var replacesVariableId: VariableId? = null,
+    /** The base variable ID */
+    var variableId: VariableId? = null,
+    /** The path to the variable within the hierarchy */
+    var variablePath: String,
 ) {
   fun mapToVariablesRow() =
       VariablesRow(
           deliverableId = deliverableId,
+          deliverablePosition = deliverablePosition,
           deliverableQuestion = deliverableQuestion,
           dependencyVariableStableId = dependencyVariableStableId,
           dependencyConditionId = dependencyCondition,

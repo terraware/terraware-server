@@ -10,6 +10,7 @@ import java.io.InputStreamReader
 import java.math.BigDecimal
 
 class CsvVariableNormalizer {
+  private val deliverablePositions: MutableMap<DeliverableId, Int> = mutableMapOf()
   private val variablePaths: MutableList<String> = mutableListOf()
 
   fun normalizeFromCsv(inputBytes: ByteArray): List<AllVariableCsvVariable> {
@@ -25,6 +26,8 @@ class CsvVariableNormalizer {
       // Sections are always lists.
       val isList = normalizeBoolean(values[VARIABLE_CSV_COLUMN_INDEX_IS_LIST])
 
+      val deliverableId =
+          values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID]?.let { DeliverableId(it) }
       val name = rawValues[VARIABLE_CSV_COLUMN_INDEX_NAME].trim()
       val parent = values[VARIABLE_CSV_COLUMN_INDEX_PARENT]?.trim()
 
@@ -50,8 +53,13 @@ class CsvVariableNormalizer {
               else VariableTableStyle.Horizontal,
           isHeader = normalizeBoolean(values[VARIABLE_CSV_COLUMN_INDEX_IS_HEADER]),
           notes = values[VARIABLE_CSV_COLUMN_INDEX_NOTES],
-          deliverableId =
-              values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID]?.let { DeliverableId(it) },
+          deliverableId = deliverableId,
+          deliverablePosition =
+              deliverableId?.let {
+                deliverablePositions.getOrDefault(it, 0).also { deliverablePosition ->
+                  deliverablePositions[it] = deliverablePosition + 1
+                }
+              },
           deliverableQuestion = values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION],
           dependencyVariableStableId =
               values[VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID],

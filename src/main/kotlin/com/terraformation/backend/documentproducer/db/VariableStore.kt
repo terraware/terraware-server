@@ -228,6 +228,7 @@ class VariableStore(
 
         val base =
             BaseVariableProperties(
+                deliverablePosition = variablesRow.deliverablePosition,
                 description = variablesRow.description,
                 id = variableId,
                 isList = variablesRow.isList!!,
