@@ -136,7 +136,7 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
     if (value.isNullOrBlank()) {
       addError(field, value, messages.variablesCsvNameRequired())
     } else if (value.contains('\n')) {
-      addError(field, value, messages.variableCsvNameLineBreak())
+      addError(field, value, messages.csvNameLineBreak())
     }
   }
 
