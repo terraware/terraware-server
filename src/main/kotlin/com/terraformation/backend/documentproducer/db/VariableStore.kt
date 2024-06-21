@@ -134,7 +134,7 @@ class VariableStore(
                   .where(ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
           .groupBy(STABLE_ID)
           .fetch()
-          .map { record -> fetchVariable(record[DSL.max(ID)]!!) }
+          .map { record -> fetchVariable(record[DSL.max(ID)]!!, null) }
     }
   }
 
@@ -208,7 +208,7 @@ class VariableStore(
    * Logic for recursively fetching a variable and the variables it's related to. Variable fetching
    * is stateful because we want to detect cycles.
    */
-  private inner class FetchContext(private val manifestId: VariableManifestId? = null) {
+  private inner class FetchContext(private val manifestId: VariableManifestId?) {
     /** Stack of variables that are being fetched in this context. Used to detect cycles. */
     val fetchesInProgress = ArrayDeque<VariableId>()
 
@@ -302,17 +302,6 @@ class VariableStore(
           variableSectionsDao.fetchOneByVariableId(base.id)
               ?: throw VariableIncompleteException(base.id)
 
-      val manifestId: VariableManifestId =
-          base.manifestId
-              ?: with(VARIABLE_MANIFEST_ENTRIES) {
-                dslContext
-                    .select(VARIABLE_MANIFEST_ID)
-                    .from(this)
-                    .where(VARIABLE_ID.eq(base.id))
-                    .fetchOne(VARIABLE_MANIFEST_ID.asNonNullable())
-                    ?: throw VariableManifestNotFoundForVariableException(base.id)
-              }
-
       val children =
           dslContext
               .select(VARIABLE_SECTIONS.VARIABLE_ID)
@@ -323,7 +312,7 @@ class VariableStore(
               .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId))
               .orderBy(VARIABLE_MANIFEST_ENTRIES.POSITION)
               .fetch(VARIABLE_SECTIONS.VARIABLE_ID.asNonNullable())
-              .map { variableId -> fetchVariable(variableId) as SectionVariable }
+              .map { fetchVariable(it) as SectionVariable }
 
       val recommends =
           with(VARIABLE_SECTION_RECOMMENDATIONS) {
