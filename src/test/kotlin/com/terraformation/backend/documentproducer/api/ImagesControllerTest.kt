@@ -30,16 +30,13 @@ class ImagesControllerTest : ControllerIntegrationTest() {
     insertUserGlobalRole(role = GlobalRole.TFExpert)
     insertOrganization()
     insertProject()
-    insertDocumentTemplate()
-    insertVariableManifest()
-    insertDocument()
   }
 
   @Nested
-  inner class GetImageValue {
+  inner class GetProjectImageValue {
     @Test
     fun `can get full-sized image file`() {
-      val imageVariableId = insertVariableManifestEntry(insertVariable(type = VariableType.Image))
+      val imageVariableId = insertVariable(type = VariableType.Image)
 
       val uri = URI("https://test")
       val contents = byteArrayOf(1, 2, 3, 4)
@@ -49,7 +46,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
       val imageValueId = insertImageValue(imageVariableId, fileId)
 
       mockMvc
-          .get("/api/v1/document-producer/documents/${inserted.documentId}/images/$imageValueId")
+          .get("/api/v1/document-producer/projects/${inserted.projectId}/images/$imageValueId")
           .andExpect {
             status { isOk() }
             content { bytes(contents) }
@@ -58,7 +55,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
     @Test
     fun `gets thumbnail if dimensions are specified`() {
-      val imageVariableId = insertVariableManifestEntry(insertVariable(type = VariableType.Image))
+      val imageVariableId = insertVariable(type = VariableType.Image)
 
       val uri = URI("https://thumb")
       val contents = byteArrayOf(1, 2, 3, 4)
@@ -70,7 +67,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       mockMvc
           .get(
-              "/api/v1/document-producer/documents/${inserted.documentId}/images/$imageValueId?maxWidth=320")
+              "/api/v1/document-producer/projects/${inserted.projectId}/images/$imageValueId?maxWidth=320")
           .andExpect {
             status { isOk() }
             content { bytes(contents) }
@@ -79,7 +76,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
     @Test
     fun `image value must be from correct project`() {
-      val imageVariableId = insertVariableManifestEntry(insertVariable(type = VariableType.Image))
+      val imageVariableId = insertVariable(type = VariableType.Image)
 
       val uri = URI("https://test")
       val contents = byteArrayOf(1, 2, 3, 4)
@@ -88,27 +85,26 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       val imageValueId = insertImageValue(imageVariableId, fileId)
 
-      insertProject()
-      val otherDocumentId = insertDocument()
+      val otherProjectId = insertProject()
 
       mockMvc
-          .get("/api/v1/document-producer/documents/$otherDocumentId/images/$imageValueId")
+          .get("/api/v1/document-producer/projects/$otherProjectId/images/$imageValueId")
           .andExpect { status { isNotFound() } }
     }
 
     @Test
     fun `cannot get nonexistent image`() {
-      mockMvc.get("/api/v1/document-producer/documents/${inserted.documentId}/images/1").andExpect {
+      mockMvc.get("/api/v1/document-producer/projects/${inserted.projectId}/images/1").andExpect {
         status { isNotFound() }
       }
     }
   }
 
   @Nested
-  inner class UploadImageValue {
+  inner class UploadProjectImageValue {
     @Test
     fun `uploaded image is stored`() {
-      val imageVariableId = insertVariableManifestEntry(insertVariable(type = VariableType.Image))
+      val imageVariableId = insertVariable(type = VariableType.Image)
 
       val caption = "Image caption"
       val fileData = byteArrayOf(1, 2, 3, 4)
@@ -116,8 +112,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       mockMvc
           .multipart(
-              HttpMethod.POST,
-              "/api/v1/document-producer/documents/${inserted.documentId}/images") {
+              HttpMethod.POST, "/api/v1/document-producer/projects/${inserted.projectId}/images") {
                 file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
                 part(MockPart("caption", caption.toByteArray()))
                 part(MockPart("variableId", "$imageVariableId".toByteArray()))
@@ -146,8 +141,8 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
     @Test
     fun `can store multiple images in table cell`() {
-      val tableVariableId = insertVariableManifestEntry(insertTableVariable())
-      val imageVariableId = insertVariableManifestEntry(insertVariable(type = VariableType.Image))
+      val tableVariableId = insertTableVariable()
+      val imageVariableId = insertVariable(type = VariableType.Image)
       insertTableColumn(tableVariableId, imageVariableId)
 
       val rowValueId = insertValue(variableId = tableVariableId)
@@ -160,8 +155,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       mockMvc
           .multipart(
-              HttpMethod.POST,
-              "/api/v1/document-producer/documents/${inserted.documentId}/images") {
+              HttpMethod.POST, "/api/v1/document-producer/projects/${inserted.projectId}/images") {
                 file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
                 part(MockPart("caption", caption.toByteArray()))
                 part(MockPart("variableId", "$imageVariableId".toByteArray()))
@@ -189,8 +183,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
     @Test
     fun `allocates next available list position if not specified`() {
-      val imageVariableId =
-          insertVariableManifestEntry(insertVariable(type = VariableType.Image, isList = true))
+      val imageVariableId = insertVariable(type = VariableType.Image, isList = true)
       insertImageValue(
           imageVariableId, insertFile(storageUrl = URI("http://dummy1")), listPosition = 0)
       insertImageValue(
@@ -202,8 +195,7 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
       mockMvc
           .multipart(
-              HttpMethod.POST,
-              "/api/v1/document-producer/documents/${inserted.documentId}/images") {
+              HttpMethod.POST, "/api/v1/document-producer/projects/${inserted.projectId}/images") {
                 file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
                 part(MockPart("caption", caption.toByteArray()))
                 part(MockPart("variableId", "$imageVariableId".toByteArray()))
@@ -223,18 +215,232 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
     @Test
     fun `returns error if variable is not an image`() {
-      val textVariableId = insertVariableManifestEntry(insertTextVariable())
+      val textVariableId = insertTextVariable()
 
       mockMvc
           .multipart(
-              HttpMethod.POST,
-              "/api/v1/document-producer/documents/${inserted.documentId}/images") {
+              HttpMethod.POST, "/api/v1/document-producer/projects/${inserted.projectId}/images") {
                 file(MockMultipartFile("file", "dummy", MediaType.IMAGE_JPEG_VALUE, byteArrayOf(1)))
                 part(MockPart("caption", "dummy".toByteArray()))
                 part(MockPart("variableId", "$textVariableId".toByteArray()))
                 part(MockPart("listPosition", "0".toByteArray()))
               }
           .andExpect { status { isConflict() } }
+    }
+  }
+
+  @Nested
+  inner class DocumentBasedEndpoints {
+    @BeforeEach
+    fun setUp() {
+      insertDocumentTemplate()
+      insertVariableManifest()
+      insertDocument()
+    }
+
+    @Nested
+    inner class GetImageValue {
+      @Test
+      fun `can get full-sized image file`() {
+        val imageVariableId = insertVariableManifestEntry(insertVariable(type = VariableType.Image))
+
+        val uri = URI("https://test")
+        val contents = byteArrayOf(1, 2, 3, 4)
+        val fileId = insertFile(size = contents.size.toLong(), storageUrl = uri)
+        fileStore.write(uri, contents.inputStream())
+
+        val imageValueId = insertImageValue(imageVariableId, fileId)
+
+        mockMvc
+            .get("/api/v1/document-producer/documents/${inserted.documentId}/images/$imageValueId")
+            .andExpect {
+              status { isOk() }
+              content { bytes(contents) }
+            }
+      }
+
+      @Test
+      fun `gets thumbnail if dimensions are specified`() {
+        val imageVariableId = insertVariableManifestEntry(insertVariable(type = VariableType.Image))
+
+        val uri = URI("https://thumb")
+        val contents = byteArrayOf(1, 2, 3, 4)
+        val fileId = insertFile()
+        insertThumbnail(fileId = fileId, size = contents.size, storageUrl = uri)
+        fileStore.write(uri, contents.inputStream())
+
+        val imageValueId = insertImageValue(imageVariableId, fileId)
+
+        mockMvc
+            .get(
+                "/api/v1/document-producer/documents/${inserted.documentId}/images/$imageValueId?maxWidth=320")
+            .andExpect {
+              status { isOk() }
+              content { bytes(contents) }
+            }
+      }
+
+      @Test
+      fun `image value must be from correct project`() {
+        val imageVariableId = insertVariableManifestEntry(insertVariable(type = VariableType.Image))
+
+        val uri = URI("https://test")
+        val contents = byteArrayOf(1, 2, 3, 4)
+        val fileId = insertFile(size = contents.size.toLong(), storageUrl = uri)
+        fileStore.write(uri, contents.inputStream())
+
+        val imageValueId = insertImageValue(imageVariableId, fileId)
+
+        insertProject()
+        val otherDocumentId = insertDocument()
+
+        mockMvc
+            .get("/api/v1/document-producer/documents/$otherDocumentId/images/$imageValueId")
+            .andExpect { status { isNotFound() } }
+      }
+
+      @Test
+      fun `cannot get nonexistent image`() {
+        mockMvc
+            .get("/api/v1/document-producer/documents/${inserted.documentId}/images/1")
+            .andExpect { status { isNotFound() } }
+      }
+    }
+
+    @Nested
+    inner class UploadImageValue {
+      @Test
+      fun `uploaded image is stored`() {
+        val imageVariableId = insertVariableManifestEntry(insertVariable(type = VariableType.Image))
+
+        val caption = "Image caption"
+        val fileData = byteArrayOf(1, 2, 3, 4)
+        val filename = "test.jpg"
+
+        mockMvc
+            .multipart(
+                HttpMethod.POST,
+                "/api/v1/document-producer/documents/${inserted.documentId}/images") {
+                  file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
+                  part(MockPart("caption", caption.toByteArray()))
+                  part(MockPart("variableId", "$imageVariableId".toByteArray()))
+                  part(MockPart("listPosition", "0".toByteArray()))
+                }
+            .andExpectJson(
+                """
+                {
+                  "valueId": 1,
+                  "status": "ok"
+                }
+              """
+                    .trimIndent())
+
+        val imageValuesRow = variableImageValuesDao.findAll().single()
+        assertEquals(caption, imageValuesRow.caption, "Caption")
+
+        val filesRow = filesDao.findAll().single()
+        assertEquals(
+            listOf(filename, "image/jpeg"),
+            listOf(filesRow.fileName, filesRow.contentType),
+            "File metadata")
+
+        assertArrayEquals(fileData, fileStore.files.values.single())
+      }
+
+      @Test
+      fun `can store multiple images in table cell`() {
+        val tableVariableId = insertVariableManifestEntry(insertTableVariable())
+        val imageVariableId = insertVariableManifestEntry(insertVariable(type = VariableType.Image))
+        insertTableColumn(tableVariableId, imageVariableId)
+
+        val rowValueId = insertValue(variableId = tableVariableId)
+        insertImageValue(imageVariableId, insertFile(), listPosition = 0)
+
+        val caption = "Image caption"
+        val fileData = byteArrayOf(1, 2, 3, 4)
+        val filename = "test.jpg"
+        val listPosition = 1
+
+        mockMvc
+            .multipart(
+                HttpMethod.POST,
+                "/api/v1/document-producer/documents/${inserted.documentId}/images") {
+                  file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
+                  part(MockPart("caption", caption.toByteArray()))
+                  part(MockPart("variableId", "$imageVariableId".toByteArray()))
+                  part(MockPart("listPosition", "$listPosition".toByteArray()))
+                  part(MockPart("rowValueId", "$rowValueId".toByteArray()))
+                }
+            .andExpectJson(
+                """
+                {
+                  "valueId": 3,
+                  "status": "ok"
+                }
+              """
+                    .trimIndent())
+
+        val valuesRow = variableValuesDao.fetchOneById(VariableValueId(3))!!
+        assertEquals(1, valuesRow.listPosition, "New value should be at list position 1")
+
+        val tableRowRows = variableValueTableRowsDao.fetchByVariableValueId(VariableValueId(3))
+        assertEquals(
+            listOf(rowValueId),
+            tableRowRows.map { it.tableRowValueId },
+            "New image value should be in table row")
+      }
+
+      @Test
+      fun `allocates next available list position if not specified`() {
+        val imageVariableId =
+            insertVariableManifestEntry(insertVariable(type = VariableType.Image, isList = true))
+        insertImageValue(
+            imageVariableId, insertFile(storageUrl = URI("http://dummy1")), listPosition = 0)
+        insertImageValue(
+            imageVariableId, insertFile(storageUrl = URI("http://dummy2")), listPosition = 1)
+
+        val caption = "Image caption"
+        val fileData = byteArrayOf(1, 2, 3, 4)
+        val filename = "test.jpg"
+
+        mockMvc
+            .multipart(
+                HttpMethod.POST,
+                "/api/v1/document-producer/documents/${inserted.documentId}/images") {
+                  file(MockMultipartFile("file", filename, MediaType.IMAGE_JPEG_VALUE, fileData))
+                  part(MockPart("caption", caption.toByteArray()))
+                  part(MockPart("variableId", "$imageVariableId".toByteArray()))
+                }
+            .andExpectJson(
+                """
+                {
+                  "valueId": 3,
+                  "status": "ok"
+                }
+              """
+                    .trimIndent())
+
+        val valuesRow = variableValuesDao.fetchOneById(VariableValueId(3))!!
+        assertEquals(2, valuesRow.listPosition, "List position of new value")
+      }
+
+      @Test
+      fun `returns error if variable is not an image`() {
+        val textVariableId = insertVariableManifestEntry(insertTextVariable())
+
+        mockMvc
+            .multipart(
+                HttpMethod.POST,
+                "/api/v1/document-producer/documents/${inserted.documentId}/images") {
+                  file(
+                      MockMultipartFile(
+                          "file", "dummy", MediaType.IMAGE_JPEG_VALUE, byteArrayOf(1)))
+                  part(MockPart("caption", "dummy".toByteArray()))
+                  part(MockPart("variableId", "$textVariableId".toByteArray()))
+                  part(MockPart("listPosition", "0".toByteArray()))
+                }
+            .andExpect { status { isConflict() } }
+      }
     }
   }
 }

@@ -3,6 +3,7 @@ package com.terraformation.backend.documentproducer.api
 import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableValueId
@@ -24,14 +25,89 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @InternalEndpoint
-@RequestMapping("/api/v1/document-producer/documents/{documentId}/values")
+@RequestMapping("/api/v1/document-producer")
 @RestController
 class ValuesController(
     private val documentStore: DocumentStore,
     private val variableValueStore: VariableValueStore,
     private val variableValueService: VariableValueService,
 ) {
-  @GetMapping
+  @GetMapping("/projects/{projectId}/values")
+  @Operation(
+      summary = "Get the values of the variables in a project.",
+      description =
+          "This may be used to fetch the full set of current values (the default behavior), the " +
+              "values from a saved version (if maxValueId is specified), or to poll for recent " +
+              "edits (if minValueId is specified).")
+  fun listProjectVariableValues(
+      @PathVariable projectId: ProjectId,
+      @Parameter(
+          description =
+              "If specified, only return values with this ID or higher. Use this to poll for " +
+                  "incremental updates to a document. Incremental results may include values of " +
+                  "type 'Deleted' in cases where, e.g., elements have been removed from a list.")
+      @RequestParam
+      minValueId: VariableValueId? = null,
+      @Parameter(
+          description =
+              "If specified, only return values with this ID or lower. Use this to retrieve " +
+                  "saved document versions.")
+      @RequestParam
+      maxValueId: VariableValueId? = null,
+  ): ListVariableValuesResponsePayload {
+    val currentMax =
+        variableValueStore.fetchMaxValueId(projectId)
+            ?: return ListVariableValuesResponsePayload(VariableValueId(0), emptyList())
+    val nextValueId = VariableValueId(currentMax.value + 1)
+
+    // If the client didn't explicitly tell us otherwise, only return values whose IDs are less
+    // than the nextValueId we'll be returning, in case new values are inserted by another user at
+    // the same time this endpoint is executing.
+    val effectiveMax = maxValueId ?: currentMax
+    val valuesByVariableId =
+        variableValueStore.listValues(projectId, minValueId, effectiveMax).groupBy {
+          it.variableId to it.rowValueId
+        }
+
+    return ListVariableValuesResponsePayload(
+        nextValueId,
+        valuesByVariableId.values.map { values ->
+          ExistingVariableValuesPayload(
+              values.first().variableId,
+              values.first().rowValueId,
+              values.map { ExistingValuePayload.of(it) })
+        })
+  }
+
+  @Operation(
+      summary = "Update the values of the variables in a project.",
+      description =
+          "Make a list of changes to a project's variable values. The changes are applied in " +
+              "order and are treated as an atomic unit. That is, the changes will either all " +
+              "succeed or all fail; there won't be a case where some of the changes are applied " +
+              "and some aren't. See the payload descriptions for more details about the " +
+              "operations you can perform on values.")
+  @PostMapping("/projects/{projectId}/values")
+  fun updateProjectVariableValues(
+      @PathVariable projectId: ProjectId,
+      @RequestBody payload: UpdateVariableValuesRequestPayload
+  ): SimpleSuccessResponsePayload {
+    val existingValueIds = payload.operations.mapNotNull { it.getExistingValueId() }
+    val existingBases = variableValueStore.fetchBaseProperties(existingValueIds)
+    val operations =
+        payload.operations.map { operationPayload ->
+          val base = operationPayload.getExistingValueId()?.let { existingBases[it] }
+          operationPayload.toOperationModel(projectId, base)
+        }
+
+    variableValueService.validate(operations)
+
+    variableValueStore.updateValues(operations)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @GetMapping("/documents/{documentId}/values")
   @Operation(
       summary = "Get the values of the variables in a document.",
       description =
@@ -55,28 +131,7 @@ class ValuesController(
       maxValueId: VariableValueId? = null,
   ): ListVariableValuesResponsePayload {
     val projectId = documentStore.fetchProjectId(documentId)
-    val currentMax =
-        variableValueStore.fetchMaxValueId(projectId)
-            ?: return ListVariableValuesResponsePayload(VariableValueId(0), emptyList())
-    val nextValueId = VariableValueId(currentMax.value + 1)
-
-    // If the client didn't explicitly tell us otherwise, only return values whose IDs are less
-    // than the nextValueId we'll be returning, in case new values are inserted by another user at
-    // the same time this endpoint is executing.
-    val effectiveMax = maxValueId ?: currentMax
-    val valuesByVariableId =
-        variableValueStore.listValues(documentId, minValueId, effectiveMax).groupBy {
-          it.variableId to it.rowValueId
-        }
-
-    return ListVariableValuesResponsePayload(
-        nextValueId,
-        valuesByVariableId.values.map { values ->
-          ExistingVariableValuesPayload(
-              values.first().variableId,
-              values.first().rowValueId,
-              values.map { ExistingValuePayload.of(it) })
-        })
+    return listProjectVariableValues(projectId, maxValueId)
   }
 
   @Operation(
@@ -87,25 +142,13 @@ class ValuesController(
               "succeed or all fail; there won't be a case where some of the changes are applied " +
               "and some aren't. See the payload descriptions for more details about the " +
               "operations you can perform on values.")
-  @PostMapping
+  @PostMapping("/documents/{documentId}/values")
   fun updateVariableValues(
       @PathVariable documentId: DocumentId,
       @RequestBody payload: UpdateVariableValuesRequestPayload
   ): SimpleSuccessResponsePayload {
     val projectId = documentStore.fetchProjectId(documentId)
-    val existingValueIds = payload.operations.mapNotNull { it.getExistingValueId() }
-    val existingBases = variableValueStore.fetchBaseProperties(existingValueIds)
-    val operations =
-        payload.operations.map { operationPayload ->
-          val base = operationPayload.getExistingValueId()?.let { existingBases[it] }
-          operationPayload.toOperationModel(projectId, base)
-        }
-
-    variableValueService.validate(operations)
-
-    variableValueStore.updateValues(operations)
-
-    return SimpleSuccessResponsePayload()
+    return updateProjectVariableValues(projectId, payload)
   }
 }
 
