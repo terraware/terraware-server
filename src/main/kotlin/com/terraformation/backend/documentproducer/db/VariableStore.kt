@@ -134,7 +134,7 @@ class VariableStore(
                   .where(ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
           .groupBy(STABLE_ID)
           .fetch()
-          .map { record -> fetchVariable(record[DSL.max(ID)]!!, null) }
+          .map { record -> fetchVariable(record[DSL.max(ID)]!!) }
     }
   }
 
