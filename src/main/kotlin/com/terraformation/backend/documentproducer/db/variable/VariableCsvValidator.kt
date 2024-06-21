@@ -37,11 +37,11 @@ const val VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID = VARIABLE_CSV_COLUMN_INDEX_N
 const val VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION =
     VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID + 1
 // Column 16/P
-const val VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_POSITION =
+const val VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION_POSITION =
     VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION + 1
 // Column 17/Q
 const val VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID =
-    VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_POSITION + 1
+    VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION_POSITION + 1
 // Column 18/R
 const val VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_CONDITION =
     VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID + 1
@@ -106,16 +106,17 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
     existingDeliverableIds.add(deliverableId)
   }
 
-  /**
-   * If there is a deliverable ID, a position must be provided as well
-   */
+  /** If there is a deliverable ID, a position must be provided as well */
   private fun validateDeliverableConfiguration(values: List<String?>) {
     if (values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID].isNullOrBlank()) {
       return
     }
 
-    if (values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_POSITION].isNullOrBlank()) {
-      addError(getColumnName(VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_POSITION), null, messages.variableCsvDeliverablePositionRequired())
+    if (values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION_POSITION].isNullOrBlank()) {
+      addError(
+          getColumnName(VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION_POSITION),
+          null,
+          messages.variableCsvDeliverablePositionRequired())
     }
   }
 

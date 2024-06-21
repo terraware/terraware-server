@@ -644,7 +644,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `ensures that the current CSV imports without error`() {
       val documentTemplateId = inserted.documentTemplateId
-      val csvInput = javaClass.getResourceAsStream("/manifest/variable-manifest-rev5.csv")!!
+      val csvInput = javaClass.getResourceAsStream("/csv/variable-manifest-rev5.csv")!!
 
       val importResult = importer.import(documentTemplateId, csvInput)
 
