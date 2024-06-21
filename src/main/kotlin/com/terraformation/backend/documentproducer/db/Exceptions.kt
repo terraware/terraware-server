@@ -54,9 +54,6 @@ class VariableInTableException(val variableId: VariableId) :
 class VariableManifestNotFoundException(val manifestId: VariableManifestId) :
     EntityNotFoundException("Variable manifest $manifestId not found")
 
-class VariableManifestNotFoundForVariableException(val variableId: VariableId) :
-    EntityNotFoundException("Variable manifest not found for variable ID $variableId")
-
 class VariableNotFoundException(val variableId: VariableId) :
     EntityNotFoundException("Variable $variableId not found")
 
