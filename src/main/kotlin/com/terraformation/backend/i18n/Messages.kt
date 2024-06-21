@@ -53,6 +53,8 @@ class Messages {
 
   fun csvDateMalformed() = getMessage("csvDateMalformed")
 
+  fun csvNameLineBreak() = getMessage("csvNameLineBreak")
+
   fun csvWrongFieldCount(expected: Int, actual: Int) =
       getMessage("csvWrongFieldCount", expected, actual)
 
@@ -383,8 +385,6 @@ class Messages {
 
   fun manifestCsvDataTypeRequired() = getMessage("manifestCsvDataTypeRequired")
 
-  fun variableCsvNameLineBreak() = getMessage("variableCsvNameLineBreak")
-
   fun manifestCsvNameRequired() = getMessage("manifestCsvNameRequired")
 
   fun manifestCsvDataTypeRequiresOptions() = getMessage("manifestCsvDataTypeRequiresOptions")
@@ -419,8 +419,6 @@ class Messages {
 
   fun variablesCsvDependencyVariableStableIdDoesNotExist() =
       getMessage("variablesCsvDependencyVariableStableIdDoesNotExist")
-
-  fun variablesCsvNameLineBreak() = getMessage("variablesCsvNameLineBreak")
 
   fun variablesCsvNameRequired() = getMessage("variablesCsvNameRequired")
 

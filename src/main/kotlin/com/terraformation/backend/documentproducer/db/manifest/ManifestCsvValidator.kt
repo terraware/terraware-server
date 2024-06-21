@@ -71,7 +71,7 @@ class ManifestCsvValidator(
     if (value.isNullOrBlank()) {
       addError(field, value, messages.manifestCsvNameRequired())
     } else if (value.contains('\n')) {
-      addError(field, value, messages.variableCsvNameLineBreak())
+      addError(field, value, messages.csvNameLineBreak())
     }
   }
 
