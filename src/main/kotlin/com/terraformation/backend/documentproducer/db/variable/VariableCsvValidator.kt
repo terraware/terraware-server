@@ -120,6 +120,7 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
           messages.variablesCsvDependencyVariableStableIdDoesNotExist())
     }
 
+    // A variable can not depend on itself
     val variableStableId = values[VARIABLE_CSV_COLUMN_INDEX_STABLE_ID]
     if (variableStableId == value) {
       addError(
