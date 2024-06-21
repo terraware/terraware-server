@@ -15,6 +15,9 @@ import com.terraformation.backend.mockUser
 import io.mockk.every
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 
@@ -252,7 +255,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(emptyList<String>(), importResult.errors, "no errors")
 
-      Assertions.assertFalse(actualVariableO.isList!!, "single input without list is not a list")
+      assertFalse(actualVariableO.isList!!, "single input without list is not a list")
       assertEquals(
           VariableTextsRow(
               variableId = actualVariableO.id!!,
@@ -261,7 +264,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           actualVariableTextO,
           "single line text variable saved correctly")
 
-      Assertions.assertTrue(actualVariableOAL.isList!!, "single input with list is a list")
+      assertTrue(actualVariableOAL.isList!!, "single input with list is a list")
       assertEquals(
           VariableTextsRow(
               variableId = actualVariableOAL.id!!,
@@ -270,7 +273,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           actualVariableTextOAL,
           "single line text variable saved correctly")
 
-      Assertions.assertFalse(actualVariablePS.isList!!, "multi input without list is not a list")
+      assertFalse(actualVariablePS.isList!!, "multi input without list is not a list")
       assertEquals(
           VariableTextsRow(
               variableId = actualVariablePS.id!!,
@@ -279,7 +282,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           actualVariableTextPS,
           "multi line text variable saved correctly")
 
-      Assertions.assertTrue(actualVariablePSAL.isList!!, "multi input with list is a list")
+      assertTrue(actualVariablePSAL.isList!!, "multi input with list is a list")
       assertEquals(
           VariableTextsRow(
               variableId = actualVariablePSAL.id!!,
@@ -325,9 +328,9 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           variableSelectOptionsMUMS.find { it.name!!.endsWith("Option 4") }
 
       assertEquals(emptyList<String>(), importResult.errors, "no errors")
-      Assertions.assertFalse(variableEAGER.isList!!, "single select is not a list")
-      Assertions.assertNotNull(variableSelectEAGER, "single select variable select was created")
-      Assertions.assertFalse(
+      assertFalse(variableEAGER.isList!!, "single select is not a list")
+      assertNotNull(variableSelectEAGER, "single select variable select was created")
+      assertFalse(
           variableSelectEAGER?.isMultiple!!, "single select variable select is not multiple")
       assertEquals(
           variableSelectOptionsEAGER.size, 4, "single select variable select options were created")
@@ -341,10 +344,9 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           variableSelectOption3EAGER?.copy(id = null),
           "single select option")
 
-      Assertions.assertFalse(variableMUMS.isList!!, "multi select is not a list")
-      Assertions.assertNotNull(variableSelectMUMS, "multi select variable select was created")
-      Assertions.assertTrue(
-          variableSelectMUMS?.isMultiple!!, "multi select variable select is multiple")
+      assertFalse(variableMUMS.isList!!, "multi select is not a list")
+      assertNotNull(variableSelectMUMS, "multi select variable select was created")
+      assertTrue(variableSelectMUMS?.isMultiple!!, "multi select variable select is multiple")
       assertEquals(
           variableSelectOptionsMUMS.size, 5, "multi select variable select options were created")
 
