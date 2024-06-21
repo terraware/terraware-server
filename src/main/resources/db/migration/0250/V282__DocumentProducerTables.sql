@@ -43,8 +43,8 @@ CREATE TABLE docprod.variables (
     -- Compound unique key so child tables can constrain themselves to variables of the correct type.
     UNIQUE (id, variable_type_id),
 
-    -- Make sure that if a deliverable_id is supplied, a position is also supplied
-    CHECK (deliverable_id is null OR (deliverable_id is not null AND deliverable_position is not null))
+    -- Make sure that both deliverable_id and deliverable_position exist or don't exist
+    CHECK ((deliverable_id IS NULL) = (deliverable_position IS NULL))
 );
 
 CREATE TABLE docprod.variable_manifests (

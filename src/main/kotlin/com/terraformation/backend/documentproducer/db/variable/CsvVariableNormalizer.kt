@@ -10,7 +10,7 @@ import java.io.InputStreamReader
 import java.math.BigDecimal
 
 class CsvVariableNormalizer {
-  private val deliverablePositions: MutableMap<DeliverableId?, Int> = mutableMapOf()
+  private val deliverablePositions: MutableMap<DeliverableId, Int> = mutableMapOf()
   private val variablePaths: MutableList<String> = mutableListOf()
 
   fun normalizeFromCsv(inputBytes: ByteArray): List<AllVariableCsvVariable> {
