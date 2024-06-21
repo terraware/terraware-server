@@ -420,6 +420,8 @@ class Messages {
   fun variablesCsvDependencyVariableStableIdDoesNotExist() =
       getMessage("variablesCsvDependencyVariableStableIdDoesNotExist")
 
+  fun variablesCsvDependsOnItself() = getMessage("variablesCsvDependsOnItself")
+
   fun variablesCsvNameRequired() = getMessage("variablesCsvNameRequired")
 
   fun variablesCsvDataTypeRequiresOptions() = getMessage("variablesCsvDataTypeRequiresOptions")
