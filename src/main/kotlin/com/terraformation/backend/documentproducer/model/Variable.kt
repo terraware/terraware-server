@@ -26,6 +26,9 @@ import java.time.format.DateTimeParseException
  * implementations can delegate to [BaseVariableProperties] to cut down on needless repetition.
  */
 interface BaseVariable {
+  /** The position of this variable within its associated deliverable, if applicable * */
+  val deliverablePosition: Int?
+
   /** Optional description if the variable's name isn't sufficient. Can vary between manifests. */
   val description: String?
 
@@ -64,6 +67,7 @@ interface BaseVariable {
  * classes that implement [Variable].
  */
 data class BaseVariableProperties(
+    override val deliverablePosition: Int? = null,
     override val description: String? = null,
     override val id: VariableId,
     override val isList: Boolean = false,

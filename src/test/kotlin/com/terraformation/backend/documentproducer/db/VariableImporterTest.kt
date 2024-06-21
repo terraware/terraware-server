@@ -683,6 +683,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   deliverableId = deliverableId,
                   deliverableQuestion =
                       "What number of non-native species will you plant in this project?",
+                  deliverablePosition = 0,
                   id = null,
                   internalOnly = true,
                   isList = false,
@@ -694,6 +695,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   deliverableId = deliverableId,
                   deliverableQuestion =
                       "What is the reason these non-native species are being planted?",
+                  deliverablePosition = 1,
                   dependencyConditionId = DependencyCondition.Gte,
                   dependencyVariableStableId = "1115",
                   dependencyValue = "5",
@@ -707,6 +709,128 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           ),
           variablesDao.findAll().map { it.copy(id = null) },
           "New variables are created with deliverable related fields")
+    }
+
+    @Test
+    fun `saves and updates deliverable position field as expected`() {
+      every { user.canReadAllDeliverables() } returns true
+
+      insertModule()
+      val deliverableId1 = insertDeliverable()
+      val deliverableId2 = insertDeliverable()
+
+      val csv1 =
+          header +
+              "\nDeliverable 1 question 1,1111,,Number,,,,,,,,,,$deliverableId1,,,,," +
+              "\nDeliverable 2 question 1,1112,,Number,,,,,,,,,,$deliverableId2,,,,," +
+              "\nDeliverable 1 question 2,1113,,Number,,,,,,,,,,$deliverableId1,,,,,"
+
+      importer.import(sizedInputStream(csv1))
+
+      val variables = variablesDao.findAll()
+
+      assertEquals(
+          listOf(
+              VariablesRow(
+                  deliverableId = deliverableId1,
+                  deliverablePosition = 0,
+                  id = null,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Deliverable 1 question 1",
+                  stableId = "1111",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  deliverableId = deliverableId2,
+                  deliverablePosition = 0,
+                  id = null,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Deliverable 2 question 1",
+                  stableId = "1112",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  deliverableId = deliverableId1,
+                  deliverablePosition = 1,
+                  id = null,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Deliverable 1 question 2",
+                  stableId = "1113",
+                  variableTypeId = VariableType.Number,
+              ),
+          ),
+          variables.map { it.copy(id = null) },
+          "New variables are created with correct deliverable positions")
+
+      val csv2 =
+          header +
+              "\nDeliverable 1 question 1,1111,,Number,,,,,,,,,,$deliverableId1,,,,," +
+              "\nDeliverable 1 another question,1114,,Number,,,,,,,,,,$deliverableId1,,,,," +
+              "\nDeliverable 2 question 1,1112,,Number,,,,,,,,,,$deliverableId2,,,,," +
+              "\nDeliverable 1 question 2,1113,,Number,,,,,,,,,,$deliverableId1,,,,,"
+
+      importer.import(sizedInputStream(csv2))
+
+      assertEquals(
+          listOf(
+              VariablesRow(
+                  deliverableId = deliverableId1,
+                  deliverablePosition = 0,
+                  id = null,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Deliverable 1 question 1",
+                  stableId = "1111",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  deliverableId = deliverableId2,
+                  deliverablePosition = 0,
+                  id = null,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Deliverable 2 question 1",
+                  stableId = "1112",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  deliverableId = deliverableId1,
+                  deliverablePosition = 1,
+                  id = null,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Deliverable 1 question 2",
+                  stableId = "1113",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  deliverableId = deliverableId1,
+                  deliverablePosition = 1,
+                  id = null,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Deliverable 1 another question",
+                  stableId = "1114",
+                  variableTypeId = VariableType.Number,
+              ),
+              // Since the position has changed within the deliverable, a new variable is created
+              VariablesRow(
+                  deliverableId = deliverableId1,
+                  deliverablePosition = 2,
+                  id = null,
+                  internalOnly = false,
+                  isList = false,
+                  name = "Deliverable 1 question 2",
+                  replacesVariableId = variables[2].id,
+                  stableId = "1113",
+                  variableTypeId = VariableType.Number,
+              ),
+          ),
+          variablesDao.findAll().map { it.copy(id = null) },
+          "New variables are created with correct deliverable positions")
     }
 
     @Test
