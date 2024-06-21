@@ -47,13 +47,15 @@ data class AllVariableCsvVariable(
     val deliverableId: DeliverableId?,
     /** Column 15/O - Deliverable Question */
     val deliverableQuestion: String?,
-    /** Column 16/P - Dependency - Variable Stable ID */
+    /** Column 16/P - Deliverable Question Position */
+    val deliverableQuestionPosition: Int?,
+    /** Column 17/Q - Dependency - Variable Stable ID */
     val dependencyVariableStableId: String?,
-    /** Column 17/Q - Dependency - Condition */
+    /** Column 18/R - Dependency - Condition */
     val dependencyCondition: DependencyCondition?,
-    /** Column 18/R - Dependency - Value */
+    /** Column 19/S - Dependency - Value */
     val dependencyValue: String?,
-    /** Column 19/S - Internal Only */
+    /** Column 20/T - Internal Only */
     val internalOnly: Boolean,
 
     /** Position in the sheet, recorded against the variable manifest entry */
@@ -71,6 +73,7 @@ data class AllVariableCsvVariable(
       VariablesRow(
           deliverableId = deliverableId,
           deliverableQuestion = deliverableQuestion,
+          deliverableQuestionPosition = deliverableQuestionPosition,
           dependencyVariableStableId = dependencyVariableStableId,
           dependencyConditionId = dependencyCondition,
           dependencyValue = dependencyValue,

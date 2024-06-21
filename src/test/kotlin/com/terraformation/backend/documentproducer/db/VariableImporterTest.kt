@@ -53,7 +53,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     private var oldAuthentication: Authentication? = null
 
     private val header =
-        "Name,ID,Description,Data Type,List?,Parent,Options,Minimum value,Maximum value,Decimal places,Table Style,Header?,Notes,Deliverable ID,Deliverable Question,Dependency Variable ID,Dependency Condition,Dependency Value,Internal Only"
+        "Name,ID,Description,Data Type,List?,Parent,Options,Minimum value,Maximum value,Decimal places,Table Style,Header?,Notes,Deliverable ID,Deliverable Question,Deliverable Question Position,Dependency Variable ID,Dependency Condition,Dependency Value,Internal Only"
 
     @AfterEach
     fun tearDown() {
@@ -64,8 +64,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     fun `detects duplicate stable IDs`() {
       val testCsv =
           header +
-              "\nName X,Duplicate ID,,Number,Yes,,,,,,,,,,,,,," +
-              "\nName Y,Duplicate ID,,Number,Yes,,,,,,,,,,,,,,"
+              "\nName X,Duplicate ID,,Number,Yes,,,,,,,,,,,,,,," +
+              "\nName Y,Duplicate ID,,Number,Yes,,,,,,,,,,,,,,,"
 
       val importResult = importer.import(sizedInputStream(testCsv))
 
@@ -79,8 +79,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     fun `correctly identifies when there is a non-unique top level input name`() {
       val testCsv =
           header +
-              "\nDuplicate Name,1,,Number,,,,,,,,,,,,,,," +
-              "\nDuplicate Name,2,,Number,,,,,,,,,,,,,,,"
+              "\nDuplicate Name,1,,Number,,,,,,,,,,,,,,,," +
+              "\nDuplicate Name,2,,Number,,,,,,,,,,,,,,,,"
 
       val importResult = importer.import(sizedInputStream(testCsv))
 
@@ -95,10 +95,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     fun `imports table variables correctly`() {
       val testCsv =
           header +
-              "\nProject Proponent Table,1,A table with contact details,Table,No,,,,,,,,,,,,,," +
-              "\nOrganization Name,2,,Text (single-line),,Project Proponent Table,,,,,,,,,,,,," +
-              "\nContact Person,3,,Text (single-line),,Project Proponent Table,,,,,,,,,,,,," +
-              "\nTitle,4,,Text (single-line),,Project Proponent Table,,,,,,,,,,,,,"
+              "\nProject Proponent Table,1,A table with contact details,Table,No,,,,,,,,,,,,,,," +
+              "\nOrganization Name,2,,Text (single-line),,Project Proponent Table,,,,,,,,,,,,,," +
+              "\nContact Person,3,,Text (single-line),,Project Proponent Table,,,,,,,,,,,,,," +
+              "\nTitle,4,,Text (single-line),,Project Proponent Table,,,,,,,,,,,,,,"
 
       val importResult = importer.import(sizedInputStream(testCsv))
 
@@ -160,10 +160,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     fun `imports complex table with select option header column correctly`() {
       val testCsv =
           header +
-              "\nAudit history,1,,Table,Yes,,,,,,Horizontal,,,,,,,," +
+              "\nAudit history,1,,Table,Yes,,,,,,Horizontal,,,,,,,,," +
               "\nAudit type,2,,Select (single),,Audit history,\"- Validation/verification" +
-              "\n- Some other audit type\",,,,,Yes,,,,,,," +
-              "\nNumber of years,3,,Number,,Audit history,,,,1,,,,,,,,,"
+              "\n- Some other audit type\",,,,,Yes,,,,,,,," +
+              "\nNumber of years,3,,Number,,Audit history,,,,1,,,,,,,,,,"
 
       val importResult = importer.import(sizedInputStream(testCsv))
 
@@ -234,10 +234,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     fun `ensures that single and multi line text are saved into the DB as expected`() {
       val testCsv =
           header +
-              "\nOrganization Name,1,,Text (single-line),,,,,,,,,,,,,,," +
-              "\nOrganization Name As List,2,,Text (single-line),yes,,,,,,,,,,,,,," +
-              "\nPrior Scenario,3,A brief description of the scenario,Text (multi-line),,,,,,,,,,,,,,," +
-              "\nPrior Scenario As List,4,A brief description of the scenario,Text (multi-line),yes,,,,,,,,,,,,,,"
+              "\nOrganization Name,1,,Text (single-line),,,,,,,,,,,,,,,," +
+              "\nOrganization Name As List,2,,Text (single-line),yes,,,,,,,,,,,,,,," +
+              "\nPrior Scenario,3,A brief description of the scenario,Text (multi-line),,,,,,,,,,,,,,,," +
+              "\nPrior Scenario As List,4,A brief description of the scenario,Text (multi-line),yes,,,,,,,,,,,,,,,"
 
       val importResult = importer.import(sizedInputStream(testCsv))
 
@@ -297,13 +297,13 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               "\nEstimated reductions,1,Canned description,Select (single),,,\"- tiny" +
               "\n- small" +
               "\n- medium" +
-              "\n- large\",,,,,,,,,,,," +
+              "\n- large\",,,,,,,,,,,,," +
               // Multi select
               "\nMade up multi select,2,Select as many as you want!,Select (multiple),,,\"- Option 1" +
               "\n- Option 2" +
               "\n- Option 3" +
               "\n- Option 4 [[This one has super special rendered text!]]" +
-              "\n- Option 5\",,,,,,,,,,,,"
+              "\n- Option 5\",,,,,,,,,,,,,"
 
       val importResult = importer.import(sizedInputStream(testCsv))
 
@@ -367,7 +367,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               "\n- small amount" +
               "\n- medium amount" +
               "\n- medium amount" +
-              "\n- large amount\",,,,,,,,,,,,"
+              "\n- large amount\",,,,,,,,,,,,,"
 
       val importResult = importer.import(sizedInputStream(testCsv))
 
@@ -384,7 +384,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `detects newlines in variable names`() {
-      val testCsv = "$header\n\"Number\nName\",1,,Number,,,,,,,,,,,,,,,"
+      val testCsv = "$header\n\"Number\nName\",1,,Number,,,,,,,,,,,,,,,,"
 
       val importResult = importer.import(sizedInputStream(testCsv))
 
@@ -396,7 +396,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `detects missing names`() {
-      val testCsv = header + "\n,1,,Section,Yes,,,,,,,,,,,,,,"
+      val testCsv = header + "\n,1,,Section,Yes,,,,,,,,,,,,,,,"
 
       val importResult = importer.import(sizedInputStream(testCsv))
 
@@ -413,7 +413,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       insertDeliverable(id = 27)
       insertDeliverable(id = 123)
 
-      val csvInput = javaClass.getResourceAsStream("/manifest/all-variables-rev1.csv")!!
+      val csvInput = javaClass.getResourceAsStream("/csv/all-variables-rev1.csv")!!
 
       val importResult = importer.import(csvInput)
 
@@ -424,7 +424,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     fun `reuses existing select variable`() {
       val testCsv =
           header +
-              "\nSelect Variable,A,,Select (single),,,\"- Option 1\n- Option 2\n- Option 3\",,,,,,,,,,,,"
+              "\nSelect Variable,A,,Select (single),,,\"- Option 1\n- Option 2\n- Option 3\",,,,,,,,,,,,,"
 
       importer.import(sizedInputStream(testCsv))
       importer.import(sizedInputStream(testCsv))
@@ -436,8 +436,9 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `creates new select variable if options have changed`() {
       val initialCsv =
-          "$header\nSelect,1,,Select (single),,,\"- Option 1\n- Option 2\n- Option 3\",,,,,,,,,,,,"
-      val updatedCsv = "$header\nSelect,1,,Select (single),,,\"- Option 1\n- Option 2\",,,,,,,,,,,,"
+          "$header\nSelect,1,,Select (single),,,\"- Option 1\n- Option 2\n- Option 3\",,,,,,,,,,,,,"
+      val updatedCsv =
+          "$header\nSelect,1,,Select (single),,,\"- Option 1\n- Option 2\",,,,,,,,,,,,,"
 
       importer.import(sizedInputStream(initialCsv))
       importer.import(sizedInputStream(updatedCsv))
@@ -458,9 +459,9 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `creates new variable if name or description have changed`() {
       val initialCsv =
-          "$header\nOriginal variable,1,Original description,Text (single-line),,,,,,,,,,,,,,,"
+          "$header\nOriginal variable,1,Original description,Text (single-line),,,,,,,,,,,,,,,,"
       val updatedCsv =
-          "$header\nUpdated variable,1,Updated description,Text (single-line),,,,,,,,,,,,,,,"
+          "$header\nUpdated variable,1,Updated description,Text (single-line),,,,,,,,,,,,,,,,"
 
       val initialResult = importer.import(sizedInputStream(initialCsv))
 
@@ -502,8 +503,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates new variable if validation settings have changed`() {
-      val initialCsv = "$header\nNumber variable,1,,Number,,,,10,,,,,,,,,,,"
-      val updatedCsv = "$header\nNumber variable,1,,Number,,,,20,,,,,,,,,,,"
+      val initialCsv = "$header\nNumber variable,1,,Number,,,,10,,,,,,,,,,,,"
+      val updatedCsv = "$header\nNumber variable,1,,Number,,,,20,,,,,,,,,,,,"
 
       importer.import(sizedInputStream(initialCsv))
 
@@ -549,14 +550,14 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     fun `Creates new table and column variables if the column names are updated`() {
       val initialCsv =
           header +
-              "\nTable,1,,Table,Yes,,,,,,,,,,,,,," +
-              "\nColumn A,2,,Number,,Table,,,,,,,,,,,,," +
-              "\nColumn B,3,,Number,,Table,,,,,,,,,,,,,"
+              "\nTable,1,,Table,Yes,,,,,,,,,,,,,,," +
+              "\nColumn A,2,,Number,,Table,,,,,,,,,,,,,," +
+              "\nColumn B,3,,Number,,Table,,,,,,,,,,,,,,"
       val updatedCsv =
           header +
-              "\nTable,1,,Table,Yes,,,,,,,,,,,,,," +
-              "\nRenamed A,2,,Number,,Table,,,,,,,,,,,,," +
-              "\nRenamed B,3,,Number,,Table,,,,,,,,,,,,,"
+              "\nTable,1,,Table,Yes,,,,,,,,,,,,,,," +
+              "\nRenamed A,2,,Number,,Table,,,,,,,,,,,,,," +
+              "\nRenamed B,3,,Number,,Table,,,,,,,,,,,,,,"
 
       importer.import(sizedInputStream(initialCsv))
 
@@ -630,14 +631,14 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     fun `creates new table variable and new column variables if any columns have changed`() {
       val initialCsv =
           header +
-              "\nTable,1,,Table,Yes,,,,,,,,,,,,,," +
-              "\nColumn A,2,,Number,,Table,,,,,,,,,,,,," +
-              "\nColumn B,3,,Number,,Table,,,,,,,,,,,,,"
+              "\nTable,1,,Table,Yes,,,,,,,,,,,,,,," +
+              "\nColumn A,2,,Number,,Table,,,,,,,,,,,,,," +
+              "\nColumn B,3,,Number,,Table,,,,,,,,,,,,,,"
       val updatedCsv =
           header +
-              "\nTable,1,,Table,Yes,,,,,,,,,,,,,," +
-              "\nColumn A,2,,Number,,Table,,,,,,,,,,,,," +
-              "\nColumn B,3,,Number,,Table,,1,,,,,,,,,,,"
+              "\nTable,1,,Table,Yes,,,,,,,,,,,,,,," +
+              "\nColumn A,2,,Number,,Table,,,,,,,,,,,,,," +
+              "\nColumn B,3,,Number,,Table,,1,,,,,,,,,,,,"
 
       importer.import(sizedInputStream(initialCsv))
 
@@ -668,10 +669,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val csv =
           header +
-              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,true" +
+              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,1,,,,true" +
               "\nReason to use non-native species,1116,,Select (multiple),,,\"- agroforestry timber" +
               "\n- sustainable timber" +
-              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,1115,>=,5,true"
+              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,2,1115,>=,5,true"
 
       importer.import(sizedInputStream(csv))
 
@@ -681,6 +682,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   deliverableId = deliverableId,
                   deliverableQuestion =
                       "What number of non-native species will you plant in this project?",
+                  deliverableQuestionPosition = 1,
                   id = null,
                   internalOnly = true,
                   isList = false,
@@ -692,6 +694,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   deliverableId = deliverableId,
                   deliverableQuestion =
                       "What is the reason these non-native species are being planted?",
+                  deliverableQuestionPosition = 2,
                   dependencyConditionId = DependencyCondition.Gte,
                   dependencyVariableStableId = "1115",
                   dependencyValue = "5",
@@ -715,10 +718,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val csv =
           header +
-              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,true" +
+              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,1,,,,true" +
               "\nReason to use non-native species,1116,,Select (multiple),,,\"- agroforestry timber" +
               "\n- sustainable timber" +
-              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,1115,>=,5,true"
+              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,2,1115,>=,5,true"
 
       val result = importer.import(sizedInputStream(csv))
 
@@ -739,16 +742,35 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val csv =
           header +
-              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,true" +
+              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,1,,,,true" +
               "\nReason to use non-native species,1116,,Select (multiple),,,\"- agroforestry timber" +
               "\n- sustainable timber" +
-              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,$nonexistentDependencyVariableStableId,>=,5,true"
+              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,2,$nonexistentDependencyVariableStableId,>=,5,true"
 
       val result = importer.import(sizedInputStream(csv))
 
       assertEquals(
           listOf(
               "Message: Supplied Dependency Variable Stable ID does not exist, Field: Dependency Variable Stable ID, Value: $nonexistentDependencyVariableStableId, Position: 3"),
+          result.errors)
+    }
+
+    @Test
+    fun `returns an error if the deliverable configuration is not complete`() {
+      every { user.canReadAllDeliverables() } returns true
+
+      insertModule()
+      val deliverableId = insertDeliverable()
+
+      // A variable attached to a deliverable via stable ID must also include a position
+      val csv =
+          header +
+              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,,true"
+
+      val result = importer.import(sizedInputStream(csv))
+      assertEquals(
+          listOf(
+              "Message: If a Deliverable ID is supplied, a Deliverable Position must also be supplied, Field: Deliverable Position, Value: null, Position: 2"),
           result.errors)
     }
 
@@ -768,10 +790,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val csvMissingDependencyVariableStableId =
           header +
-              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,true" +
+              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,1,,,,true" +
               "\nReason to use non-native species,1116,,Select (multiple),,,\"- agroforestry timber" +
               "\n- sustainable timber" +
-              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,$missingDependencyVariableStableId,true"
+              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,2,$missingDependencyVariableStableId,true"
 
       val result1 = importer.import(sizedInputStream(csvMissingDependencyVariableStableId))
       assertEquals(
@@ -781,10 +803,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val csvMissingDependencyCondition =
           header +
-              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,true" +
+              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,1,,,,true" +
               "\nReason to use non-native species,1116,,Select (multiple),,,\"- agroforestry timber" +
               "\n- sustainable timber" +
-              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,$missingDependencyCondition,true"
+              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,2,$missingDependencyCondition,true"
 
       val result2 = importer.import(sizedInputStream(csvMissingDependencyCondition))
       assertEquals(
@@ -794,10 +816,10 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val csvMissingDependencyValue =
           header +
-              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,true" +
+              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,1,,,,true" +
               "\nReason to use non-native species,1116,,Select (multiple),,,\"- agroforestry timber" +
               "\n- sustainable timber" +
-              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,$missingDependencyValue,true"
+              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,2,$missingDependencyValue,true"
 
       val result3 = importer.import(sizedInputStream(csvMissingDependencyValue))
       assertEquals(

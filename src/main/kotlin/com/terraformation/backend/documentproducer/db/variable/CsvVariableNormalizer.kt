@@ -53,6 +53,8 @@ class CsvVariableNormalizer {
           deliverableId =
               values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID]?.let { DeliverableId(it) },
           deliverableQuestion = values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION],
+          deliverableQuestionPosition =
+              normalizeNumber(values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION_POSITION]),
           dependencyVariableStableId =
               values[VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID],
           dependencyCondition =
