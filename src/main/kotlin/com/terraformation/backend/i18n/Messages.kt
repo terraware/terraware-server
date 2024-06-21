@@ -414,6 +414,8 @@ class Messages {
 
   fun variableCsvDeliverableDoesNotExist() = getMessage("variablesCsvDeliverableDoesNotExist")
 
+  fun variableCsvDeliverablePositionRequired() = getMessage("variableCsvDeliverablePositionRequired")
+
   fun variablesCsvDependencyConfigIncomplete() =
       getMessage("variablesCsvDependencyConfigIncomplete")
 

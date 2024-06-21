@@ -31,6 +31,7 @@ CREATE TABLE docprod.variables (
     description TEXT,
     deliverable_id BIGINT REFERENCES accelerator.deliverables ON DELETE SET NULL,
     deliverable_question TEXT,
+    deliverable_question_position INTEGER,
     dependency_variable_stable_id TEXT,
     dependency_condition_id INTEGER REFERENCES docprod.dependency_conditions,
     dependency_value TEXT,
