@@ -753,6 +753,29 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `returns an error if a dependency stable variable ID is referencing itself`() {
+      every { user.canReadAllDeliverables() } returns true
+
+      insertModule()
+      val deliverableId = insertDeliverable()
+      val stableId = "1116"
+
+      val csv =
+          header +
+              "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,true" +
+              "\nReason to use non-native species,$stableId,,Select (multiple),,,\"- agroforestry timber" +
+              "\n- sustainable timber" +
+              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,$stableId,>=,5,true"
+
+      val result = importer.import(sizedInputStream(csv))
+
+      assertEquals(
+          listOf(
+              "Message: Supplied Dependency Variable Stable ID is the same as this variable's Stable ID, Field: Dependency Variable Stable ID, Value: $stableId, Position: 3"),
+          result.errors)
+    }
+
+    @Test
     fun `returns an error if the dependency configuration supplied is not complete`() {
       every { user.canReadAllDeliverables() } returns true
 

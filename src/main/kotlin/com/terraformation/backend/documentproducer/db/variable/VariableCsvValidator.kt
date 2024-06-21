@@ -74,13 +74,17 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
           null,
           this::validateDeliverable,
           null,
-          this::validateDependencyVariableStableId,
+          null,
           null,
           null,
           null,
       )
 
-  override val rowValidators: List<((List<String?>) -> Unit)> = listOf(this::validateRow)
+  override val rowValidators: List<((List<String?>) -> Unit)> =
+      listOf(
+          this::validateRow,
+          this::validateDependencyConfiguration,
+          this::validateDependencyVariableStableId)
 
   override fun getColumnName(position: Int): String {
     return messages.variablesCsvColumnName(position)
@@ -102,13 +106,26 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
     existingDeliverableIds.add(deliverableId)
   }
 
-  private fun validateDependencyVariableStableId(value: String?, field: String) {
+  private fun validateDependencyVariableStableId(values: List<String?>) {
+    val columnIndex = VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID
+    val value = values[columnIndex]
     if (value.isNullOrBlank()) {
       return
     }
 
     if (value !in existingStableIds) {
-      addError(field, value, messages.variablesCsvDependencyVariableStableIdDoesNotExist())
+      addError(
+          messages.variablesCsvColumnName(columnIndex),
+          value,
+          messages.variablesCsvDependencyVariableStableIdDoesNotExist())
+    }
+
+    val variableStableId = values[VARIABLE_CSV_COLUMN_INDEX_STABLE_ID]
+    if (variableStableId == value) {
+      addError(
+          messages.variablesCsvColumnName(columnIndex),
+          value,
+          messages.variablesCsvDependsOnItself())
     }
   }
 
@@ -258,7 +275,5 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
             messages.variablesCsvWrongDataTypeForChild())
       }
     }
-
-    validateDependencyConfiguration(values)
   }
 }
