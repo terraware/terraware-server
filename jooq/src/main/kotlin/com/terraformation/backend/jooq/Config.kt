@@ -49,6 +49,10 @@ val ENUM_TABLES =
                 EnumTable("variable_text_types", listOf(".*\\.variable_text_type_id")),
                 EnumTable("variable_types", listOf(".*variable_type_id")),
                 EnumTable("variable_usage_types", listOf(".*\\.usage_type_id")),
+                EnumTable(
+                    "variable_workflow_statuses",
+                    listOf(".*\\.variable_workflow_status_id"),
+                    "VariableWorkflowStatus"),
             ),
         "nursery" to
             listOf(
@@ -237,6 +241,7 @@ val ID_WRAPPERS =
                     listOf(
                         "variable_values\\.id", ".*variable_value_id", ".*\\.table_row_value_id")),
                 IdWrapper("VariableValueTableRowId", listOf("variable_value_table_rows\\.id")),
+                IdWrapper("VariableWorkflowHistoryId", listOf("variable_workflow_history\\.id")),
             ),
         "nursery" to
             listOf(

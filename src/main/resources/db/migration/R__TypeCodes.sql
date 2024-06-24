@@ -505,6 +505,17 @@ VALUES (1, 'Individual'),
        (4, 'System')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO docprod.variable_workflow_statuses (id, name)
+VALUES (1, 'Not Submitted'),
+       (2, 'In Review'),
+       (3, 'Needs Translation'),
+       (4, 'Approved'),
+       (5, 'Rejected'),
+       (6, 'Not Needed'),
+       (7, 'Incomplete'),
+       (8, 'Complete')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO seedbank.viability_test_seed_types (id, name)
 VALUES (1, 'Fresh'),
        (2, 'Stored')
