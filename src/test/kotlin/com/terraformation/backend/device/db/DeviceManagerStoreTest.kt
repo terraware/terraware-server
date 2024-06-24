@@ -16,7 +16,6 @@ import java.time.Instant
 import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -65,36 +64,6 @@ internal class DeviceManagerStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchOneById throws exception if the device manager does not exist`() {
     assertThrows<DeviceManagerNotFoundException> { store.fetchOneById(deviceManagerId) }
-  }
-
-  @Test
-  fun `fetchOneBySensorKitId returns row for device manager`() {
-    val sensorKitId = "xyzzy"
-
-    insertDeviceManager(newRow(sensorKitId = sensorKitId))
-
-    val expected = deviceManagersDao.fetchOneById(deviceManagerId)!!
-    val actual = store.fetchOneBySensorKitId(sensorKitId)
-
-    assertEquals(expected, actual)
-  }
-
-  @Test
-  fun `fetchOneBySensorKitId returns null if user has no read permission`() {
-    val sensorKitId = "xyzzy"
-
-    insertDeviceManager(newRow(sensorKitId = sensorKitId))
-
-    every { user.canReadDeviceManager(deviceManagerId) } returns false
-
-    assertNull(store.fetchOneBySensorKitId(sensorKitId))
-  }
-
-  @Test
-  fun `fetchOneBySensorKitId returns null if no device manager has the short code`() {
-    insertDeviceManager()
-
-    assertNull(store.fetchOneBySensorKitId("nonexistentSensorKitId"))
   }
 
   @Test

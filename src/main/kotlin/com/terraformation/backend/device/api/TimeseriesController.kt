@@ -14,22 +14,16 @@ import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
-import com.terraformation.backend.db.default_schema.TimeseriesId
 import com.terraformation.backend.db.default_schema.TimeseriesType
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeseriesRow
 import com.terraformation.backend.device.db.TimeseriesStore
 import com.terraformation.backend.device.model.TimeseriesModel
-import com.terraformation.backend.device.model.TimeseriesValueModel
 import com.terraformation.backend.log.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import jakarta.validation.Valid
-import jakarta.validation.constraints.Max
-import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.Size
-import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.core.Response
 import java.time.Instant
@@ -174,53 +168,6 @@ class TimeseriesController(
       ResponseEntity.ok(RecordTimeseriesValuesResponsePayload(errors))
     }
   }
-
-  @Operation(summary = "Returns historical values of timeseries.")
-  @PostMapping("/history")
-  fun getTimeseriesHistory(
-      @RequestBody @Valid payload: GetTimeseriesHistoryRequestPayload
-  ): GetTimeseriesHistoryResponsePayload {
-    if (payload.seconds != null) {
-      if (payload.startTime != null || payload.endTime != null) {
-        throw BadRequestException("Must specify seconds or start/end times, but not both.")
-      }
-      if (payload.seconds < 1) {
-        throw BadRequestException("seconds must be greater than 0.")
-      }
-    } else if (payload.startTime != null && payload.endTime != null) {
-      if (payload.endTime <= payload.startTime) {
-        throw BadRequestException("endTime must be later than startTime.")
-      }
-    }
-
-    val timeseriesModels: Map<TimeseriesId, TimeseriesModel> =
-        payload.timeseries
-            .mapNotNull { timeSeriesStore.fetchOneByName(it.deviceId, it.timeseriesName) }
-            .associateBy { it.id }
-
-    val allValues: Map<TimeseriesId, List<TimeseriesValueModel>> =
-        when {
-          payload.seconds != null -> {
-            timeSeriesStore.fetchHistory(payload.seconds, payload.count, timeseriesModels.keys)
-          }
-          payload.startTime != null && payload.endTime != null -> {
-            timeSeriesStore.fetchHistory(
-                payload.startTime, payload.endTime, payload.count, timeseriesModels.keys)
-          }
-          else -> {
-            throw BadRequestException("Must specify seconds or startTime/endTime.")
-          }
-        }
-
-    val valuesPayloads: List<TimeseriesValuesPayload> =
-        timeseriesModels.map { (timeseriesId, model) ->
-          val valuePayloads =
-              allValues[timeseriesId]?.map { TimeseriesValuePayload(it) } ?: emptyList()
-          TimeseriesValuesPayload(model.deviceId, model.name, valuePayloads)
-        }
-
-    return GetTimeseriesHistoryResponsePayload(valuesPayloads)
-  }
 }
 
 data class CreateTimeseriesEntry(
@@ -290,9 +237,7 @@ data class TimeseriesValuePayload(
                 "or integer value in string form. If the timeseries is of type Text, this can be " +
                 "an arbitrary string.")
     val value: String
-) {
-  constructor(model: TimeseriesValueModel) : this(model.createdTime, model.value)
-}
+)
 
 data class CreateTimeseriesRequestPayload(val timeseries: List<CreateTimeseriesEntry>)
 
@@ -361,36 +306,3 @@ data class TimeseriesPayload(
 
 data class ListTimeseriesResponsePayload(val timeseries: List<TimeseriesPayload>) :
     SuccessResponsePayload
-
-data class TimeseriesIdPayload(val deviceId: DeviceId, val timeseriesName: String)
-
-data class GetTimeseriesHistoryRequestPayload(
-    @Schema(
-        description =
-            "Start of time range to query. If this is non-null, endTime must also be specified, " +
-                "and seconds must be null or absent.")
-    val startTime: Instant?,
-    @Schema(
-        description =
-            "End of time range to query. If this is non-null, startTime must also be specified, " +
-                "and seconds must be null or absent.")
-    val endTime: Instant?,
-    @Schema(
-        description =
-            "Number of seconds in the past to start the time range. If this is non-null, " +
-                "startTime and endTime must be null or absent.")
-    val seconds: Long?,
-    @field:Min(1)
-    @field:Max(50)
-    @Schema(
-        description =
-            "Number of values to return. The time range is divided into this many equal " +
-                "intervals, and a value is returned from each interval if available.")
-    val count: Int,
-    @ArraySchema(
-        arraySchema = Schema(description = "Timeseries to query. May be from different devices."))
-    @field:Size(max = 100)
-    val timeseries: List<TimeseriesIdPayload>,
-)
-
-data class GetTimeseriesHistoryResponsePayload(val values: List<TimeseriesValuesPayload>)
