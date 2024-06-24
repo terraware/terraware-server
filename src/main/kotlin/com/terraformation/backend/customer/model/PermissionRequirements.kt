@@ -46,6 +46,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -58,6 +59,7 @@ import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.documentproducer.db.DocumentNotFoundException
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.db.DeliveryNotFoundException
@@ -220,6 +222,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createDocument() {
+    if (!user.canCreateDocument()) {
+      throw AccessDeniedException("No permission to create documents")
+    }
+  }
+
   fun createDraftPlantingSite(organizationId: OrganizationId) {
     if (!user.canCreateDraftPlantingSite(organizationId)) {
       readOrganization(organizationId)
@@ -285,6 +293,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createSavedVersion(documentId: DocumentId) {
+    if (!user.canCreateSavedVersion(documentId)) {
+      throw AccessDeniedException("No permission to create saved versions")
+    }
+  }
+
   fun createSpecies(organizationId: OrganizationId) {
     if (!user.canCreateSpecies(organizationId)) {
       readOrganization(organizationId)
@@ -310,6 +324,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canCreateTimeseries(deviceId)) {
       readDevice(deviceId)
       throw AccessDeniedException("No permission to create timeseries on device $deviceId")
+    }
+  }
+
+  fun createVariableManifest() {
+    if (!user.canCreateVariableManifest()) {
+      throw AccessDeniedException("No permission to create Variable Manifests")
     }
   }
 
@@ -613,6 +633,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readDocument(documentId: DocumentId) {
+    if (!user.canReadDocument(documentId)) {
+      throw DocumentNotFoundException(documentId)
+    }
+  }
+
   fun readDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) {
     if (!user.canReadDraftPlantingSite(draftPlantingSiteId)) {
       throw DraftPlantingSiteNotFoundException(draftPlantingSiteId)
@@ -768,14 +794,21 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readProjectScores(projectId: ProjectId) {
     if (!user.canReadProjectScores(projectId)) {
       readProject(projectId)
-      throw throw AccessDeniedException("No permission to view scores for project $projectId")
+      throw AccessDeniedException("No permission to view scores for project $projectId")
+    }
+  }
+
+  fun readProjectVariableOwners(projectId: ProjectId) {
+    if (!user.canReadProjectVariableOwners(projectId)) {
+      readProject(projectId)
+      throw AccessDeniedException("No permission to read variable owners for project $projectId")
     }
   }
 
   fun readProjectVotes(projectId: ProjectId) {
     if (!user.canReadProjectVotes(projectId)) {
       readProject(projectId)
-      throw throw AccessDeniedException("No permission to view votes for project $projectId")
+      throw AccessDeniedException("No permission to view votes for project $projectId")
     }
   }
 
@@ -993,6 +1026,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateDocument(documentId: DocumentId) {
+    if (!user.canUpdateDocument(documentId)) {
+      throw AccessDeniedException("No permission to update document")
+    }
+  }
+
   fun updateDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) {
     if (!user.canUpdateDraftPlantingSite(draftPlantingSiteId)) {
       readDraftPlantingSite(draftPlantingSiteId)
@@ -1105,14 +1144,21 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun updateProjectScores(projectId: ProjectId) {
     if (!user.canUpdateProjectScores(projectId)) {
       readProject(projectId)
-      throw throw AccessDeniedException("No permission to update scores for project $projectId")
+      throw AccessDeniedException("No permission to update scores for project $projectId")
+    }
+  }
+
+  fun updateProjectVariableOwners(projectId: ProjectId) {
+    if (!user.canUpdateProjectVariableOwners(projectId)) {
+      readProject(projectId)
+      throw AccessDeniedException("No permission to update variable owners for project $projectId")
     }
   }
 
   fun updateProjectVotes(projectId: ProjectId) {
     if (!user.canUpdateProjectVotes(projectId)) {
       readProject(projectId)
-      throw throw AccessDeniedException("No permission to update votes for project $projectId")
+      throw AccessDeniedException("No permission to update votes for project $projectId")
     }
   }
 

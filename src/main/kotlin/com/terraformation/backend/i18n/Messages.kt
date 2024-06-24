@@ -53,6 +53,8 @@ class Messages {
 
   fun csvDateMalformed() = getMessage("csvDateMalformed")
 
+  fun csvNameLineBreak() = getMessage("csvNameLineBreak")
+
   fun csvWrongFieldCount(expected: Int, actual: Int) =
       getMessage("csvWrongFieldCount", expected, actual)
 
@@ -378,6 +380,72 @@ class Messages {
     val locale = currentLocale()
     return values.joinToString(listDelimiter()) { it.getDisplayName(locale) }
   }
+
+  fun manifestCsvColumnName(position: Int): String = getMessage("manifestCsvColumnName.$position")
+
+  fun manifestCsvDataTypeRequired() = getMessage("manifestCsvDataTypeRequired")
+
+  fun manifestCsvNameRequired() = getMessage("manifestCsvNameRequired")
+
+  fun manifestCsvDataTypeRequiresOptions() = getMessage("manifestCsvDataTypeRequiresOptions")
+
+  fun manifestCsvRecommendationNotUnique() = getMessage("manifestCsvRecommendationNotUnique")
+
+  fun manifestCsvSectionParentMustBeSection() = getMessage("manifestCsvSectionParentMustBeSection")
+
+  fun manifestCsvSelectOptionsNotUnique() = getMessage("manifestCsvSelectOptionsNotUnique")
+
+  fun manifestCsvStableIdNotUnique() = getMessage("manifestCsvStableIdNotUnique")
+
+  fun manifestCsvStableIdRequired() = getMessage("manifestCsvStableIdRequired")
+
+  fun manifestCsvTopLevelNameNotUnique() = getMessage("manifestCsvTopLevelNameNotUnique")
+
+  fun manifestCsvVariableNameNotUniqueWithinParent() =
+      getMessage("manifestCsvVariableNameNotUniqueWithinParent")
+
+  fun manifestCsvVariableParentDoesNotExist() = getMessage("manifestCsvVariableParentDoesNotExist")
+
+  fun manifestCsvWrongDataTypeForChild() = getMessage("manifestCsvWrongDataTypeForChild")
+
+  fun variablesCsvColumnName(position: Int): String = getMessage("variablesCsvColumnName.$position")
+
+  fun variablesCsvDataTypeRequired() = getMessage("variablesCsvDataTypeRequired")
+
+  fun variableCsvDeliverableDoesNotExist() = getMessage("variablesCsvDeliverableDoesNotExist")
+
+  fun variablesCsvDependencyConfigIncomplete() =
+      getMessage("variablesCsvDependencyConfigIncomplete")
+
+  fun variablesCsvDependencyVariableStableIdDoesNotExist() =
+      getMessage("variablesCsvDependencyVariableStableIdDoesNotExist")
+
+  fun variablesCsvDependsOnItself() = getMessage("variablesCsvDependsOnItself")
+
+  fun variablesCsvNameRequired() = getMessage("variablesCsvNameRequired")
+
+  fun variablesCsvDataTypeRequiresOptions() = getMessage("variablesCsvDataTypeRequiresOptions")
+
+  fun variablesCsvRecommendationNotUnique() = getMessage("variablesCsvRecommendationNotUnique")
+
+  fun variablesCsvSectionParentMustBeSection() =
+      getMessage("variablesCsvSectionParentMustBeSection")
+
+  fun variablesCsvSelectOptionsNotUnique() = getMessage("variablesCsvSelectOptionsNotUnique")
+
+  fun variablesCsvStableIdNotUnique() = getMessage("variablesCsvStableIdNotUnique")
+
+  fun variablesCsvStableIdRequired() = getMessage("variablesCsvStableIdRequired")
+
+  fun variablesCsvTopLevelNameNotUnique() = getMessage("variablesCsvTopLevelNameNotUnique")
+
+  fun variablesCsvVariableNameNotUniqueWithinParent() =
+      getMessage("variablesCsvVariableNameNotUniqueWithinParent")
+
+  fun variablesCsvVariableParentDoesNotExist() =
+      getMessage("variablesCsvVariableParentDoesNotExist")
+
+  fun variablesCsvWrongDataTypeForChild() = getMessage("variablesCsvWrongDataTypeForChild")
 
   private val validAccessionStates
     get() = getEnumValuesList(AccessionState.entries.filter { it.isV2Compatible })

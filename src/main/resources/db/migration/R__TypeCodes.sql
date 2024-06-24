@@ -91,6 +91,54 @@ VALUES (1, 'PV'),
        (2, 'Seed Bank Default')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO docprod.dependency_conditions (id, name)
+VALUES (1, 'eq'),
+       (2, 'gt'),
+       (3, 'gte'),
+       (4, 'lt'),
+       (5, 'lte'),
+       (6, 'neq')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO docprod.document_statuses (id, name)
+VALUES (1, 'Draft'),
+       (2, 'Locked'),
+       (3, 'Published'),
+       (4, 'Ready'),
+       (5, 'Submitted')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO docprod.variable_injection_display_styles (id, name)
+VALUES (1, 'Inline'),
+       (2, 'Block')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO docprod.variable_table_styles (id, name)
+VALUES (1, 'Horizontal'),
+       (2, 'Vertical')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO docprod.variable_text_types (id, name)
+VALUES (1, 'SingleLine'),
+       (2, 'MultiLine')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO docprod.variable_types (id, name)
+VALUES (1, 'Number'),
+       (2, 'Text'),
+       (3, 'Date'),
+       (4, 'Image'),
+       (5, 'Select'),
+       (6, 'Table'),
+       (7, 'Link'),
+       (8, 'Section')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO docprod.variable_usage_types (id, name)
+VALUES (1, 'Injection'),
+       (2, 'Reference')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO ecosystem_types (id, name)
 VALUES (1, 'Boreal forests/Taiga'),
        (2, 'Deserts and xeric shrublands'),

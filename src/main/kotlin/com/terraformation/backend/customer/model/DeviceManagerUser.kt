@@ -26,6 +26,7 @@ import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -112,6 +113,8 @@ data class DeviceManagerUser(
 
   override fun canCreateTimeseries(deviceId: DeviceId): Boolean = canAccessDevice(deviceId)
 
+  override fun canCreateVariableManifest(): Boolean = false
+
   override fun canDeleteAutomation(automationId: AutomationId): Boolean =
       canAccessAutomation(automationId)
 
@@ -127,6 +130,8 @@ data class DeviceManagerUser(
 
   override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean =
       canAccessDeviceManager(deviceManagerId)
+
+  override fun canReadDocument(documentId: DocumentId): Boolean = false
 
   override fun canReadFacility(facilityId: FacilityId): Boolean = canAccessFacility(facilityId)
 
@@ -186,6 +191,8 @@ data class DeviceManagerUser(
 
   override fun canCreateDeviceManager(): Boolean = false
 
+  override fun canCreateDocument(): Boolean = false
+
   override fun canCreateDraftPlantingSite(organizationId: OrganizationId): Boolean = false
 
   override fun canCreateFacility(organizationId: OrganizationId): Boolean = false
@@ -201,6 +208,8 @@ data class DeviceManagerUser(
   override fun canCreateProject(organizationId: OrganizationId): Boolean = false
 
   override fun canCreateReport(organizationId: OrganizationId): Boolean = false
+
+  override fun canCreateSavedVersion(documentId: DocumentId): Boolean = false
 
   override fun canCreateSpecies(organizationId: OrganizationId): Boolean = false
 
@@ -263,6 +272,8 @@ data class DeviceManagerUser(
   override fun canListReports(organizationId: OrganizationId): Boolean = false
 
   override fun canManageDeliverables(): Boolean = false
+
+  override fun canManageDocumentProducer(): Boolean = false
 
   override fun canManageInternalTags(): Boolean = false
 
@@ -343,6 +354,8 @@ data class DeviceManagerUser(
 
   override fun canReadProjectScores(projectId: ProjectId): Boolean = false
 
+  override fun canReadProjectVariableOwners(projectId: ProjectId): Boolean = false
+
   override fun canReadProjectVotes(projectId: ProjectId): Boolean = false
 
   override fun canReadReport(reportId: ReportId): Boolean = false
@@ -401,6 +414,8 @@ data class DeviceManagerUser(
 
   override fun canUpdateDeviceTemplates(): Boolean = false
 
+  override fun canUpdateDocument(documentId: DocumentId): Boolean = false
+
   override fun canUpdateDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = false
 
   override fun canUpdateFacility(facilityId: FacilityId): Boolean = false
@@ -436,6 +451,8 @@ data class DeviceManagerUser(
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId): Boolean = false
 
   override fun canUpdateProjectScores(projectId: ProjectId): Boolean = false
+
+  override fun canUpdateProjectVariableOwners(projectId: ProjectId): Boolean = false
 
   override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = false
 
