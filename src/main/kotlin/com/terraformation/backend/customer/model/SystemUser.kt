@@ -309,6 +309,8 @@ class SystemUser(
 
   override fun canReadInternalTags(): Boolean = true
 
+  override fun canReadInternalVariableWorkflowDetails(projectId: ProjectId): Boolean = true
+
   override fun canReadModule(moduleId: ModuleId): Boolean = true
 
   override fun canReadModuleDetails(moduleId: ModuleId): Boolean = true
@@ -353,8 +355,6 @@ class SystemUser(
   override fun canReadProjectModules(projectId: ProjectId): Boolean = true
 
   override fun canReadProjectScores(projectId: ProjectId): Boolean = true
-
-  override fun canReadProjectVariableOwners(projectId: ProjectId): Boolean = true
 
   override fun canReadProjectVotes(projectId: ProjectId): Boolean = true
 
@@ -432,6 +432,8 @@ class SystemUser(
 
   override fun canUpdateGlobalRoles(): Boolean = true
 
+  override fun canUpdateInternalVariableWorkflowDetails(projectId: ProjectId): Boolean = true
+
   override fun canUpdateSpecificGlobalRoles(globalRoles: Set<GlobalRole>): Boolean = true
 
   override fun canUpdateNotification(notificationId: NotificationId): Boolean = true
@@ -461,8 +463,6 @@ class SystemUser(
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId): Boolean = false
 
   override fun canUpdateProjectScores(projectId: ProjectId): Boolean = true
-
-  override fun canUpdateProjectVariableOwners(projectId: ProjectId): Boolean = true
 
   override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = true
 

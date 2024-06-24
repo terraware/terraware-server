@@ -263,6 +263,8 @@ interface TerrawareUser : Principal {
 
   fun canReadInternalTags(): Boolean
 
+  fun canReadInternalVariableWorkflowDetails(projectId: ProjectId): Boolean
+
   fun canReadModule(moduleId: ModuleId): Boolean
 
   fun canReadModuleDetails(moduleId: ModuleId): Boolean
@@ -306,8 +308,6 @@ interface TerrawareUser : Principal {
   fun canReadProjectModules(projectId: ProjectId): Boolean
 
   fun canReadProjectScores(projectId: ProjectId): Boolean
-
-  fun canReadProjectVariableOwners(projectId: ProjectId): Boolean
 
   fun canReadProjectVotes(projectId: ProjectId): Boolean
 
@@ -383,6 +383,8 @@ interface TerrawareUser : Principal {
 
   fun canUpdateGlobalRoles(): Boolean
 
+  fun canUpdateInternalVariableWorkflowDetails(projectId: ProjectId): Boolean
+
   fun canUpdateSpecificGlobalRoles(globalRoles: Set<GlobalRole>): Boolean
 
   fun canUpdateNotification(notificationId: NotificationId): Boolean
@@ -412,8 +414,6 @@ interface TerrawareUser : Principal {
   fun canUpdateProjectDocumentSettings(projectId: ProjectId): Boolean
 
   fun canUpdateProjectScores(projectId: ProjectId): Boolean
-
-  fun canUpdateProjectVariableOwners(projectId: ProjectId): Boolean
 
   fun canUpdateProjectVotes(projectId: ProjectId): Boolean
 

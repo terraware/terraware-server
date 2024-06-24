@@ -19,7 +19,7 @@ class VariableOwnerStore(
     private val dslContext: DSLContext,
 ) {
   fun listOwners(projectId: ProjectId): Map<VariableId, UserId> {
-    requirePermissions { readProjectVariableOwners(projectId) }
+    requirePermissions { readInternalVariableWorkflowDetails(projectId) }
 
     return with(VARIABLE_OWNERS) {
       dslContext
@@ -31,7 +31,7 @@ class VariableOwnerStore(
   }
 
   fun updateOwner(projectId: ProjectId, variableId: VariableId, ownedBy: UserId?) {
-    requirePermissions { updateProjectVariableOwners(projectId) }
+    requirePermissions { updateInternalVariableWorkflowDetails(projectId) }
 
     if (!dslContext.fetchExists(PROJECTS, PROJECTS.ID.eq(projectId))) {
       throw ProjectNotFoundException(projectId)

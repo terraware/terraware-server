@@ -798,10 +798,11 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun readProjectVariableOwners(projectId: ProjectId) {
-    if (!user.canReadProjectVariableOwners(projectId)) {
+  fun readInternalVariableWorkflowDetails(projectId: ProjectId) {
+    if (!user.canReadInternalVariableWorkflowDetails(projectId)) {
       readProject(projectId)
-      throw AccessDeniedException("No permission to read variable owners for project $projectId")
+      throw AccessDeniedException(
+          "No permission to read variable workflow details for project $projectId")
     }
   }
 
@@ -1148,10 +1149,11 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun updateProjectVariableOwners(projectId: ProjectId) {
-    if (!user.canUpdateProjectVariableOwners(projectId)) {
+  fun updateInternalVariableWorkflowDetails(projectId: ProjectId) {
+    if (!user.canUpdateInternalVariableWorkflowDetails(projectId)) {
       readProject(projectId)
-      throw AccessDeniedException("No permission to update variable owners for project $projectId")
+      throw AccessDeniedException(
+          "No permission to update variable workflow details for project $projectId")
     }
   }
 

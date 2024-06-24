@@ -385,6 +385,8 @@ data class IndividualUser(
 
   override fun canReadGlobalRoles() = isAcceleratorAdmin()
 
+  override fun canReadInternalVariableWorkflowDetails(projectId: ProjectId) = isReadOnlyOrHigher()
+
   override fun canReadModule(moduleId: ModuleId): Boolean {
     return parentStore.exists(moduleId, userId) || isReadOnlyOrHigher()
   }
@@ -460,8 +462,6 @@ data class IndividualUser(
   }
 
   override fun canReadProjectScores(projectId: ProjectId) = isReadOnlyOrHigher()
-
-  override fun canReadProjectVariableOwners(projectId: ProjectId) = isReadOnlyOrHigher()
 
   override fun canReadProjectVotes(projectId: ProjectId) = isReadOnlyOrHigher()
 
@@ -577,6 +577,8 @@ data class IndividualUser(
         }
       }
 
+  override fun canUpdateInternalVariableWorkflowDetails(projectId: ProjectId) = isTFExpertOrHigher()
+
   override fun canUpdateNotification(notificationId: NotificationId) =
       canReadNotification(notificationId)
 
@@ -615,8 +617,6 @@ data class IndividualUser(
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId) = isAcceleratorAdmin()
 
   override fun canUpdateProjectScores(projectId: ProjectId): Boolean = isTFExpertOrHigher()
-
-  override fun canUpdateProjectVariableOwners(projectId: ProjectId) = isTFExpertOrHigher()
 
   override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = isTFExpertOrHigher()
 
