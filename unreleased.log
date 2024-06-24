@@ -1,1 +1,5 @@
+f927d91da19 Update Spring dependencies (#2095)
+5856da87306 Update dependency types-requests to v2.32.0.20240622 (#2096)
+5333e19851c Update docker/build-push-action action to v6 (#2097)
+8441d59f7e8 Update ktor monorepo to v2.3.12 (#2094)
 b6f3b804f7c Ignore Kotlin compiler temporary files (#2088)
