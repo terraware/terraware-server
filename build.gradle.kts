@@ -26,7 +26,7 @@ plugins {
   id("dev.monosoul.jooq-docker") version "6.0.26"
   id("com.diffplug.spotless") version "6.25.0"
   id("org.jetbrains.dokka") version "1.9.20"
-  id("org.springframework.boot") version "3.3.0"
+  id("org.springframework.boot") version "3.3.1"
   id("io.spring.dependency-management") version "1.1.5"
 
   // Add the build target to generate Swagger docs
@@ -116,7 +116,7 @@ dependencies {
   implementation("org.freemarker:freemarker:2.3.33")
   implementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
-  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:7.2.0")
+  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:7.2.1")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
