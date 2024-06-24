@@ -1,8 +1,7 @@
 package com.terraformation.backend.db
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.api.ArbitraryJsonObject
+import com.terraformation.backend.api.ControllerIntegrationTest
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
@@ -353,7 +352,7 @@ import org.testcontainers.utility.DockerImageName
  * are slower and are usually not as easy to read or maintain.
  *
  * Some things to be aware of:
- * - Each test method is run in a transaction which is rolled back afterwards, so no need to worry
+ * - Each test method is run in a transaction which is rolled back afterward, so no need to worry
  *   about test methods polluting the database for each other if they're writing values.
  * - But that means test methods can't use data written by previous methods. If your test method
  *   needs sample data, either put it in a migration (migrations are run before any tests) or in a
@@ -365,14 +364,17 @@ import org.testcontainers.utility.DockerImageName
  */
 @ActiveProfiles("test")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@ComponentScan(basePackageClasses = [UsersDao::class])
 @ContextConfiguration(
     initializers = [DatabaseBackedTest.DockerPostgresDataSourceInitializer::class])
 @EnableConfigurationProperties(TerrawareServerConfig::class)
+@Suppress("MemberVisibilityCanBePrivate") // Some DAOs are not used in tests yet
 @Testcontainers
 @Transactional
-@ComponentScan(basePackageClasses = [UsersDao::class])
 abstract class DatabaseBackedTest {
-  @Autowired lateinit var dslContext: DSLContext
+  @Autowired
+  @Suppress("SpringJavaInjectionPointsAutowiringInspection") // Spurious IntelliJ warning
+  lateinit var dslContext: DSLContext
 
   /**
    * List of tables from which sequences are to be reset before each test method. Sequences used
@@ -383,8 +385,8 @@ abstract class DatabaseBackedTest {
 
   // ID values inserted by insertSiteData(). These are used in most database-backed tests. They are
   // marked as final so they can be referenced in constructor-initialized properties in subclasses.
-  protected final val organizationId: OrganizationId = OrganizationId(1)
-  protected final val facilityId: FacilityId = FacilityId(100)
+  protected val organizationId: OrganizationId = OrganizationId(1)
+  protected val facilityId: FacilityId = FacilityId(100)
 
   /** IDs of entities that have been inserted using the `insert` helper methods during this test. */
   val inserted = Inserted()
@@ -422,7 +424,7 @@ abstract class DatabaseBackedTest {
    * setting up test data.
    *
    * @receiver A value to convert to a wrapped ID. Can be a number in either raw or string form (in
-   *   which case it is turned into a Long and passed to [wrapperConstructor] or an ID of the
+   *   which case it is turned into a Long and passed to [wrapperConstructor]) or an ID of the
    *   desired type (in which case it is returned to the caller).
    */
   protected final inline fun <R : Any, reified T : Any> R.toIdWrapper(
@@ -440,7 +442,7 @@ abstract class DatabaseBackedTest {
    * Creates a lazily-instantiated jOOQ DAO object. In most cases, type inference will figure out
    * which DAO class to instantiate.
    */
-  private final inline fun <reified T : DAOImpl<*, *, *>> lazyDao(): Lazy<T> {
+  private inline fun <reified T : DAOImpl<*, *, *>> lazyDao(): Lazy<T> {
     return lazy {
       val singleArgConstructor =
           T::class.constructors.first {
@@ -801,7 +803,6 @@ abstract class DatabaseBackedTest {
       moduleId: Any? = inserted.moduleId,
       name: String = "Deliverable $nextDeliverableNumber",
       position: Int = nextDeliverableNumber,
-      subtitle: String? = null,
   ): DeliverableId {
     nextDeliverableNumber++
 
@@ -909,7 +910,6 @@ abstract class DatabaseBackedTest {
       lowerThreshold: Double? = 10.0,
       upperThreshold: Double? = 20.0,
       createdBy: UserId = currentUser().userId,
-      objectMapper: ObjectMapper = jacksonObjectMapper(),
   ) {
     with(AUTOMATIONS) {
       val insertedId = id.toIdWrapper { AutomationId(it) }
@@ -1313,7 +1313,7 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!.also { inserted.accessionIds.add(it) }
   }
 
-  private var nextBatchNuber: Int = 1
+  private var nextBatchNumber: Int = 1
 
   fun insertBatch(
       row: BatchesRow = BatchesRow(),
@@ -1323,8 +1323,6 @@ abstract class DatabaseBackedTest {
       facilityId: Any = row.facilityId ?: this.facilityId,
       germinatingQuantity: Int = row.germinatingQuantity ?: 0,
       id: Any? = row.id,
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
       notReadyQuantity: Int = row.notReadyQuantity ?: 0,
       organizationId: Any = row.organizationId ?: this.organizationId,
       projectId: Any? = row.projectId,
@@ -1332,7 +1330,7 @@ abstract class DatabaseBackedTest {
       readyByDate: LocalDate? = row.readyByDate,
       speciesId: Any = row.speciesId ?: inserted.speciesId,
       version: Int = row.version ?: 1,
-      batchNumber: String = row.batchNumber ?: id?.toString() ?: "${nextBatchNuber++}",
+      batchNumber: String = row.batchNumber ?: id?.toString() ?: "${nextBatchNumber++}",
       germinationRate: Int? = row.germinationRate,
       totalGerminated: Int? = row.totalGerminated,
       totalGerminationCandidates: Int? = row.totalGerminationCandidates,
@@ -2910,6 +2908,7 @@ abstract class DatabaseBackedTest {
     variableOwnersDao.insert(row)
   }
 
+  @Suppress("unused")
   class Inserted {
     val accessionIds = mutableListOf<AccessionId>()
     val automationIds = mutableListOf<AutomationId>()
