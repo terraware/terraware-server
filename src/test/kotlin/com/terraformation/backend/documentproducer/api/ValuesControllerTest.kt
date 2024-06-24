@@ -1,11 +1,14 @@
 package com.terraformation.backend.documentproducer.api
 
 import com.terraformation.backend.api.ControllerIntegrationTest
+import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.tables.references.USER_GLOBAL_ROLES
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.db.docprod.tables.pojos.VariableImageValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableValuesRow
 import java.math.BigDecimal
@@ -23,6 +26,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
     val userId = insertUser()
     insertUserGlobalRole(userId = userId, GlobalRole.TFExpert)
     insertOrganization()
+    insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
     insertProject()
   }
 
@@ -72,6 +76,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                   "values": [
                     {
                       "variableId": $dateVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $dateValueId,
@@ -83,6 +88,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                     },
                     {
                       "variableId": $imageVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $imageValueId,
@@ -94,6 +100,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                     },
                     {
                       "variableId": $numberVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $numberValueId,
@@ -105,6 +112,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                     },
                     {
                       "variableId": $textVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $textValueId,
@@ -116,6 +124,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                     },
                     {
                       "variableId": $linkVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $linkValueId,
@@ -128,6 +137,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                     },
                     {
                       "variableId": $sectionVariableId,
+                      "status": "Incomplete",
                       "values": [
                         {
                           "id": $sectionTextValueId,
@@ -147,6 +157,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                     },
                     {
                       "variableId": $selectVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $selectValueId,
@@ -161,6 +172,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                     },
                     {
                       "variableId": $tableVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $tableValueId,
@@ -209,6 +221,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                   "values": [
                     {
                       "variableId": $tableVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $rowValueId0,
@@ -249,6 +262,153 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                           "listPosition": 0,
                           "type": "Text",
                           "textValue": "Row 1 item 0"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "ok"
+                }
+              """
+                  .trimIndent(),
+              strict = true)
+    }
+
+    @Test
+    fun `returns most recent workflow details`() {
+      val variableId = insertTextVariable(insertVariable(isList = true, type = VariableType.Text))
+      val valueId = insertValue(variableId = variableId, textValue = "Value")
+
+      insertVariableWorkflowHistory(feedback = "Yuck", status = VariableWorkflowStatus.Rejected)
+      insertVariableWorkflowHistory(status = VariableWorkflowStatus.Approved)
+
+      mockMvc
+          .get(path())
+          .andExpectJson(
+              """
+                {
+                  "nextValueId": ${valueId.value + 1},
+                  "values": [
+                    {
+                      "variableId": $variableId,
+                      "status": "Approved",
+                      "values": [
+                        {
+                          "id": $valueId,
+                          "listPosition": 0,
+                          "type": "Text",
+                          "textValue": "Value"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "ok"
+                }
+              """
+                  .trimIndent(),
+              strict = true)
+    }
+
+    @Test
+    fun `returns internal comment if user has permission to read it`() {
+      val variableId = insertTextVariable(insertVariable(isList = true, type = VariableType.Text))
+      val valueId = insertValue(variableId = variableId, textValue = "Value")
+
+      insertVariableWorkflowHistory(
+          feedback = "Looks good",
+          internalComment = "Actually, it's just okay",
+          status = VariableWorkflowStatus.Approved)
+
+      mockMvc
+          .get(path())
+          .andExpectJson(
+              """
+                {
+                  "nextValueId": ${valueId.value + 1},
+                  "values": [
+                    {
+                      "variableId": $variableId,
+                      "feedback": "Looks good",
+                      "internalComment": "Actually, it's just okay",
+                      "status": "Approved",
+                      "values": [
+                        {
+                          "id": $valueId,
+                          "listPosition": 0,
+                          "type": "Text",
+                          "textValue": "Value"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "ok"
+                }
+              """
+                  .trimIndent(),
+              strict = true)
+    }
+
+    @Test
+    fun `returns empty list of variable values if variable has workflow details but no value`() {
+      // Insert a dummy value so we have a valid max value ID
+      val variableId = insertTextVariable(insertVariable(type = VariableType.Text))
+      insertValue(variableId = variableId, textValue = "Dummy")
+
+      // We'll query the values from a project that doesn't have the dummy value.
+      insertProject()
+      insertVariableWorkflowHistory(
+          feedback = "You need to fill this out", status = VariableWorkflowStatus.Rejected)
+
+      mockMvc
+          .get(path())
+          .andExpectJson(
+              """
+                {
+                  "nextValueId": 1,
+                  "values": [
+                    {
+                      "variableId": $variableId,
+                      "feedback": "You need to fill this out",
+                      "status": "Rejected",
+                      "values": []
+                    }
+                  ],
+                  "status": "ok"
+                }
+              """
+                  .trimIndent(),
+              strict = true)
+    }
+
+    @Test
+    fun `does not return internal comment if user has no permission to read it`() {
+      val variableId = insertTextVariable(insertVariable(isList = true, type = VariableType.Text))
+      val valueId = insertValue(variableId = variableId, textValue = "Value")
+
+      insertVariableWorkflowHistory(
+          feedback = "Looks good",
+          internalComment = "Actually, it's just okay",
+          status = VariableWorkflowStatus.Approved)
+
+      dslContext.deleteFrom(USER_GLOBAL_ROLES).execute()
+      insertOrganizationUser()
+
+      mockMvc
+          .get(path())
+          .andExpectJson(
+              """
+                {
+                  "nextValueId": ${valueId.value + 1},
+                  "values": [
+                    {
+                      "variableId": $variableId,
+                      "feedback": "Looks good",
+                      "status": "Approved",
+                      "values": [
+                        {
+                          "id": $valueId,
+                          "listPosition": 0,
+                          "type": "Text",
+                          "textValue": "Value"
                         }
                       ]
                     }
@@ -595,6 +755,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                   "values": [
                     {
                       "variableId": $tableVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $newIdForRow1,
@@ -699,6 +860,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                   "values": [
                     {
                       "variableId": $dateVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $dateValueId,
@@ -710,6 +872,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                     },
                     {
                       "variableId": $imageVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $imageValueId,
@@ -721,6 +884,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                     },
                     {
                       "variableId": $numberVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $numberValueId,
@@ -732,6 +896,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                     },
                     {
                       "variableId": $textVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $textValueId,
@@ -743,6 +908,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                     },
                     {
                       "variableId": $linkVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $linkValueId,
@@ -755,6 +921,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                     },
                     {
                       "variableId": $sectionVariableId,
+                      "status": "Incomplete",
                       "values": [
                         {
                           "id": $sectionTextValueId,
@@ -774,6 +941,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                     },
                     {
                       "variableId": $selectVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $selectValueId,
@@ -788,6 +956,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                     },
                     {
                       "variableId": $tableVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $tableValueId,
@@ -837,6 +1006,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                   "values": [
                     {
                       "variableId": $tableVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $rowValueId0,
@@ -1224,6 +1394,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                   "values": [
                     {
                       "variableId": $tableVariableId,
+                      "status": "Not Submitted",
                       "values": [
                         {
                           "id": $newIdForRow1,

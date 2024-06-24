@@ -9,6 +9,7 @@ import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
 import com.terraformation.backend.db.docprod.VariableSelectOptionId
 import com.terraformation.backend.db.docprod.VariableUsageType
 import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.documentproducer.model.DateValue
 import com.terraformation.backend.documentproducer.model.DeletedValue
 import com.terraformation.backend.documentproducer.model.ExistingDateValue
@@ -275,6 +276,16 @@ data class ExistingVariableValuesPayload(
     val variableId: VariableId,
     @Schema(description = "If this is the value of a table cell, the ID of the row it's part of.")
     val rowValueId: VariableValueId? = null,
+    @Schema(
+        description = "User-visible feedback from reviewer. Not populated for table cell values.")
+    val feedback: String?,
+    @Schema(
+        description =
+            "Internal comment from reviewer. Only populated if the current user has permission " +
+                "to read internal comments. Not populated for table cell values.")
+    val internalComment: String?,
+    @Schema(description = "Current status of this variable. Not populated for table cell values.")
+    val status: VariableWorkflowStatus?,
     @Schema(
         description =
             "Values of this variable or this table cell. When getting the full set of values for " +
