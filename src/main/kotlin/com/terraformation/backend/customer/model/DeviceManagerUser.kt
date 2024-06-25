@@ -311,6 +311,8 @@ data class DeviceManagerUser(
 
   override fun canReadInternalTags(): Boolean = false
 
+  override fun canReadInternalVariableWorkflowDetails(projectId: ProjectId): Boolean = false
+
   override fun canReadModule(moduleId: ModuleId): Boolean = false
 
   override fun canReadModuleDetails(moduleId: ModuleId): Boolean = false
@@ -353,8 +355,6 @@ data class DeviceManagerUser(
   override fun canReadProjectModules(projectId: ProjectId): Boolean = false
 
   override fun canReadProjectScores(projectId: ProjectId): Boolean = false
-
-  override fun canReadProjectVariableOwners(projectId: ProjectId): Boolean = false
 
   override fun canReadProjectVotes(projectId: ProjectId): Boolean = false
 
@@ -422,6 +422,8 @@ data class DeviceManagerUser(
 
   override fun canUpdateGlobalRoles(): Boolean = false
 
+  override fun canUpdateInternalVariableWorkflowDetails(projectId: ProjectId): Boolean = false
+
   override fun canUpdateSpecificGlobalRoles(globalRoles: Set<GlobalRole>): Boolean = false
 
   override fun canUpdateNotification(notificationId: NotificationId): Boolean = false
@@ -451,8 +453,6 @@ data class DeviceManagerUser(
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId): Boolean = false
 
   override fun canUpdateProjectScores(projectId: ProjectId): Boolean = false
-
-  override fun canUpdateProjectVariableOwners(projectId: ProjectId): Boolean = false
 
   override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = false
 

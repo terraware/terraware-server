@@ -594,6 +594,21 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun readInternalTags() = allow { readInternalTags() } ifUser { canReadInternalTags() }
 
+  @Test
+  fun readInternalVariableWorkflowDetails() {
+    assertThrows<ProjectNotFoundException> {
+      requirements.readInternalVariableWorkflowDetails(projectId)
+    }
+
+    grant { user.canReadProject(projectId) }
+    assertThrows<AccessDeniedException> {
+      requirements.readInternalVariableWorkflowDetails(projectId)
+    }
+
+    grant { user.canReadInternalVariableWorkflowDetails(projectId) }
+    requirements.readInternalVariableWorkflowDetails(projectId)
+  }
+
   @Test fun readModule() = testRead { readModule(moduleId) }
 
   @Test
@@ -703,17 +718,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canReadProjectScores(projectId) }
     requirements.readProjectScores(projectId)
-  }
-
-  @Test
-  fun readProjectVariableOwners() {
-    assertThrows<ProjectNotFoundException> { requirements.readProjectVariableOwners(projectId) }
-
-    grant { user.canReadProject(projectId) }
-    assertThrows<AccessDeniedException> { requirements.readProjectVariableOwners(projectId) }
-
-    grant { user.canReadProjectVariableOwners(projectId) }
-    requirements.readProjectVariableOwners(projectId)
   }
 
   @Test fun readReport() = testRead { readReport(reportId) }
@@ -844,6 +848,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun updateGlobalRoles() = allow { updateGlobalRoles() } ifUser { canUpdateGlobalRoles() }
 
   @Test
+  fun updateInternalVariableWorkflowDetails() =
+      allow { updateInternalVariableWorkflowDetails(projectId) } ifUser
+          {
+            canUpdateInternalVariableWorkflowDetails(projectId)
+          }
+
+  @Test
   fun updateNotification() =
       allow { updateNotification(notificationId) } ifUser { canUpdateNotification(notificationId) }
 
@@ -908,13 +919,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun updateProjectScores() =
       allow { updateProjectScores(projectId) } ifUser { canUpdateProjectScores(projectId) }
-
-  @Test
-  fun updateProjectVariableOwners() =
-      allow { updateProjectVariableOwners(projectId) } ifUser
-          {
-            canUpdateProjectVariableOwners(projectId)
-          }
 
   @Test
   fun updateProjectVotes() =
