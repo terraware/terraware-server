@@ -601,4 +601,9 @@ COMMENT ON TABLE docprod.variables IS 'variables that can be supplied by the use
 COMMENT ON COLUMN docprod.variables.is_list IS 'True if this variable is a list of values rather than a single value. If the variable is a table, true if the table can contain multiple rows.';
 COMMENT ON COLUMN docprod.variables.replaces_variable_id IS 'If this is a new version of a variable that existed in a previous manifest version, the ID of the previous version of the variable. This allows the system to automatically migrate values from older variable versions when a document is updated to a new manifest version.';
 
+COMMENT ON TABLE docprod.variable_workflow_history IS 'History of changes to the workflow details for a variable in a project. This table is append-only; edits to the values are represented as new rows, and the row with the highest ID for a given project and variable ID holds the current workflow details for that variable.';
+COMMENT ON COLUMN docprod.variable_workflow_history.max_variable_value_id IS 'The highest variable value ID at the time the workflow operation happened. This is to support fetching the variable value as it existed at the time of the workflow operation. This ID is not required to be a value of the variable referenced by `variable_id` (it can be the maximum value ID for the project as a whole).';
+
+COMMENT ON TABLE docprod.variable_workflow_statuses IS '(Enum) Workflow statuses of variables in projects. The list of valid statuses depends on the variable type.';
+
 -- When adding new tables, put them in alphabetical (ASCII) order.

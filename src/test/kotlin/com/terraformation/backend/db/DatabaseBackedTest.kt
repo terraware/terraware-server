@@ -163,6 +163,8 @@ import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableUsageType
 import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.docprod.VariableWorkflowHistoryId
+import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.db.docprod.tables.daos.DocumentSavedVersionsDao
 import com.terraformation.backend.db.docprod.tables.daos.DocumentTemplatesDao
 import com.terraformation.backend.db.docprod.tables.daos.DocumentsDao
@@ -183,6 +185,7 @@ import com.terraformation.backend.db.docprod.tables.daos.VariableTablesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableTextsDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableValueTableRowsDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableValuesDao
+import com.terraformation.backend.db.docprod.tables.daos.VariableWorkflowHistoryDao
 import com.terraformation.backend.db.docprod.tables.daos.VariablesDao
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentSavedVersionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentTemplatesRow
@@ -204,6 +207,7 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariableTablesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableTextsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableValueTableRowsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableValuesRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableWorkflowHistoryRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
@@ -567,6 +571,7 @@ abstract class DatabaseBackedTest {
   protected val variableTextsDao: VariableTextsDao by lazyDao()
   protected val variableValueTableRowsDao: VariableValueTableRowsDao by lazyDao()
   protected val variableValuesDao: VariableValuesDao by lazyDao()
+  protected val variableWorkflowHistoryDao: VariableWorkflowHistoryDao by lazyDao()
   protected val variablesDao: VariablesDao by lazyDao()
   protected val viabilityTestResultsDao: ViabilityTestResultsDao by lazyDao()
   protected val viabilityTestsDao: ViabilityTestsDao by lazyDao()
@@ -2809,7 +2814,7 @@ abstract class DatabaseBackedTest {
 
     variableValuesDao.insert(row)
 
-    return row.id!!
+    return row.id!!.also { inserted.variableValueIds.add(it) }
   }
 
   protected fun insertValueTableRow(
@@ -2851,7 +2856,7 @@ abstract class DatabaseBackedTest {
 
     variablesDao.insert(row)
 
-    return row.id!!
+    return row.id!!.also { inserted.variableIds.add(it) }
   }
 
   protected fun insertVariableManifest(
@@ -2894,7 +2899,7 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertVariableOwner(
-      variableId: Any,
+      variableId: Any = inserted.variableId,
       ownedBy: Any,
       projectId: Any = inserted.projectId,
   ) {
@@ -2906,6 +2911,33 @@ abstract class DatabaseBackedTest {
         )
 
     variableOwnersDao.insert(row)
+  }
+
+  protected fun insertVariableWorkflowHistory(
+      projectId: Any = inserted.projectId,
+      variableId: Any = inserted.variableId,
+      feedback: String? = null,
+      internalComment: String? = null,
+      status: VariableWorkflowStatus = VariableWorkflowStatus.NotSubmitted,
+      maxVariableValueId: Any = inserted.variableValueId,
+      createdBy: Any = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+  ): VariableWorkflowHistoryId {
+    val row =
+        VariableWorkflowHistoryRow(
+            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdTime = createdTime,
+            feedback = feedback,
+            internalComment = internalComment,
+            maxVariableValueId = maxVariableValueId.toIdWrapper { VariableValueId(it) },
+            projectId = projectId.toIdWrapper { ProjectId(it) },
+            variableId = variableId.toIdWrapper { VariableId(it) },
+            variableWorkflowStatusId = status,
+        )
+
+    variableWorkflowHistoryDao.insert(row)
+
+    return row.id!!.also { inserted.variableWorkflowHistoryIds.add(it) }
   }
 
   @Suppress("unused")
@@ -2944,7 +2976,10 @@ abstract class DatabaseBackedTest {
     val submissionDocumentIds = mutableListOf<SubmissionDocumentId>()
     val uploadIds = mutableListOf<UploadId>()
     val userIds = mutableListOf<UserId>()
+    val variableIds = mutableListOf<VariableId>()
     val variableManifestIds = mutableListOf<VariableManifestId>()
+    val variableValueIds = mutableListOf<VariableValueId>()
+    val variableWorkflowHistoryIds = mutableListOf<VariableWorkflowHistoryId>()
     val withdrawalIds = mutableListOf<WithdrawalId>()
 
     val accessionId
@@ -3046,8 +3081,17 @@ abstract class DatabaseBackedTest {
     val userId
       get() = userIds.last()
 
+    val variableId
+      get() = variableIds.last()
+
     val variableManifestId
       get() = variableManifestIds.last()
+
+    val variableValueId
+      get() = variableValueIds.last()
+
+    val variableWorkflowHistoryId
+      get() = variableWorkflowHistoryIds.last()
 
     val withdrawalId
       get() = withdrawalIds.last()
