@@ -78,7 +78,8 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.deliverable_types (id, name)
 VALUES (1, 'Document'),
-       (2, 'Species')
+       (2, 'Species'),
+       (3, 'Questions')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.document_stores (id, name)
