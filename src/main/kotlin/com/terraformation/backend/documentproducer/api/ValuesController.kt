@@ -6,10 +6,13 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.documentproducer.VariableValueService
 import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
+import com.terraformation.backend.documentproducer.db.VariableWorkflowStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -31,6 +34,7 @@ class ValuesController(
     private val documentStore: DocumentStore,
     private val variableValueStore: VariableValueStore,
     private val variableValueService: VariableValueService,
+    private val variableWorkflowStore: VariableWorkflowStore,
 ) {
   @GetMapping("/projects/{projectId}/values")
   @Operation(
@@ -55,9 +59,7 @@ class ValuesController(
       @RequestParam
       maxValueId: VariableValueId? = null,
   ): ListVariableValuesResponsePayload {
-    val currentMax =
-        variableValueStore.fetchMaxValueId(projectId)
-            ?: return ListVariableValuesResponsePayload(VariableValueId(0), emptyList())
+    val currentMax = variableValueStore.fetchMaxValueId(projectId) ?: VariableValueId(0)
     val nextValueId = VariableValueId(currentMax.value + 1)
 
     // If the client didn't explicitly tell us otherwise, only return values whose IDs are less
@@ -69,14 +71,45 @@ class ValuesController(
           it.variableId to it.rowValueId
         }
 
-    return ListVariableValuesResponsePayload(
-        nextValueId,
+    val workflowDetailsByVariableId = variableWorkflowStore.fetchCurrentForProject(projectId)
+
+    val valuePayloads =
         valuesByVariableId.values.map { values ->
+          val firstValue = values.first()
+          val variableId = firstValue.variableId
+          val workflowDetails = workflowDetailsByVariableId[variableId]
+          val status =
+              workflowDetails?.status
+                  ?: when {
+                    firstValue.rowValueId != null -> null
+                    firstValue.type == VariableType.Section -> VariableWorkflowStatus.Incomplete
+                    else -> VariableWorkflowStatus.NotSubmitted
+                  }
+
           ExistingVariableValuesPayload(
-              values.first().variableId,
-              values.first().rowValueId,
+              variableId,
+              firstValue.rowValueId,
+              workflowDetails?.feedback,
+              workflowDetails?.internalComment,
+              status,
               values.map { ExistingValuePayload.of(it) })
-        })
+        }
+
+    val valuelessWorkflowDetailsPayloads =
+        workflowDetailsByVariableId.entries
+            .filterNot { (it.key to null) in valuesByVariableId }
+            .map { (_, workflowDetails) ->
+              ExistingVariableValuesPayload(
+                  workflowDetails.variableId,
+                  null,
+                  workflowDetails.feedback,
+                  workflowDetails.internalComment,
+                  workflowDetails.status,
+                  emptyList())
+            }
+
+    return ListVariableValuesResponsePayload(
+        nextValueId, valuePayloads + valuelessWorkflowDetailsPayloads)
   }
 
   @Operation(
