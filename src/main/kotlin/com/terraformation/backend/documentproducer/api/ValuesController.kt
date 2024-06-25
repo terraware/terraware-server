@@ -13,7 +13,6 @@ import com.terraformation.backend.documentproducer.VariableValueService
 import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.db.VariableWorkflowStore
-import com.terraformation.backend.log.perClassLogger
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -126,22 +125,17 @@ class ValuesController(
       @PathVariable projectId: ProjectId,
       @RequestBody payload: UpdateVariableValuesRequestPayload
   ): SimpleSuccessResponsePayload {
-    try {
-      val existingValueIds = payload.operations.mapNotNull { it.getExistingValueId() }
-      val existingBases = variableValueStore.fetchBaseProperties(existingValueIds)
-      val operations =
-          payload.operations.map { operationPayload ->
-            val base = operationPayload.getExistingValueId()?.let { existingBases[it] }
-            operationPayload.toOperationModel(projectId, base)
-          }
+    val existingValueIds = payload.operations.mapNotNull { it.getExistingValueId() }
+    val existingBases = variableValueStore.fetchBaseProperties(existingValueIds)
+    val operations =
+        payload.operations.map { operationPayload ->
+          val base = operationPayload.getExistingValueId()?.let { existingBases[it] }
+          operationPayload.toOperationModel(projectId, base)
+        }
 
-      variableValueService.validate(operations)
+    variableValueService.validate(operations)
 
-      variableValueStore.updateValues(operations)
-    } catch (e: Exception) {
-      perClassLogger().error("Failed", e)
-      throw e
-    }
+    variableValueStore.updateValues(operations)
 
     return SimpleSuccessResponsePayload()
   }
