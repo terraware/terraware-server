@@ -1,2 +1,2 @@
 <!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.EmailTemplateModel" --> -->
-<mj-text mj-class="text-footer" css-class="text-footer"><span>&#169;</span>${msg('footer')}</mj-text>
+<mj-text mj-class="text-footer" css-class="text-footer"><span>&#169;</span>${strings("notification.email.html.footer.1")}</mj-text>
