@@ -327,6 +327,8 @@ interface TerrawareUser : Principal {
 
   fun canReadUser(userId: UserId): Boolean
 
+  fun canReadUserDeliverableCategories(userId: UserId): Boolean
+
   fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean
 
   fun canReadWithdrawal(withdrawalId: WithdrawalId): Boolean
@@ -430,6 +432,8 @@ interface TerrawareUser : Principal {
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean
 
   fun canUpdateUpload(uploadId: UploadId): Boolean
+
+  fun canUpdateUserDeliverableCategories(userId: UserId): Boolean
 
   fun canUploadPhoto(accessionId: AccessionId): Boolean
 

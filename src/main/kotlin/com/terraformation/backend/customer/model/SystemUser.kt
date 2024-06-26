@@ -374,6 +374,8 @@ class SystemUser(
 
   override fun canReadUser(userId: UserId): Boolean = true
 
+  override fun canReadUserDeliverableCategories(userId: UserId): Boolean = true
+
   override fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean = true
 
   override fun canReadWithdrawal(withdrawalId: WithdrawalId): Boolean = true
@@ -482,6 +484,8 @@ class SystemUser(
   override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = true
 
   override fun canUpdateUpload(uploadId: UploadId): Boolean = true
+
+  override fun canUpdateUserDeliverableCategories(userId: UserId): Boolean = true
 
   override fun canUploadPhoto(accessionId: AccessionId): Boolean = true
 }

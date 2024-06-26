@@ -372,6 +372,8 @@ data class DeviceManagerUser(
 
   override fun canReadUpload(uploadId: UploadId): Boolean = false
 
+  override fun canReadUserDeliverableCategories(userId: UserId): Boolean = false
+
   override fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean = false
 
   override fun canReadWithdrawal(withdrawalId: WithdrawalId): Boolean = false
@@ -470,6 +472,8 @@ data class DeviceManagerUser(
   override fun canUpdateTerraformationContact(organizationId: OrganizationId): Boolean = false
 
   override fun canUpdateUpload(uploadId: UploadId): Boolean = false
+
+  override fun canUpdateUserDeliverableCategories(userId: UserId): Boolean = false
 
   override fun canUploadPhoto(accessionId: AccessionId): Boolean = false
 
