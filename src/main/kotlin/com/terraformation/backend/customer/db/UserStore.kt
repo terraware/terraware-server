@@ -724,6 +724,7 @@ class UserStore(
   }
 
   /** Relevant parts of the payload of a valid response to an OpenID Connect token request. */
+  @Suppress("PropertyName") // Snake-case property name is defined by OIDC standard
   @JsonIgnoreProperties(ignoreUnknown = true)
   data class OpenIdConnectTokenResponsePayload(val refresh_token: String)
 
