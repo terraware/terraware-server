@@ -14,10 +14,10 @@
                     ${link("notification.seedBank.idle.email.body.html.2", "https://www.terraformation.com/contact-us/terraware-support")}
                 </mj-text>
                 <mj-include path="../link.ftlh.mjml"/>
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+
+                <mj-include path="../../footer.ftlh.mjml"/>
             </mj-column>
         </mj-section>
-        <mj-include path="../../manageSettings.ftlh.mjml"/>
-
-        <mj-include path="../../footer.ftlh.mjml"/>
     </mj-body>
 </mjml>

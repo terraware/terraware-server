@@ -11,10 +11,10 @@
                     ${strings("notification.seedBank.lowPower.email.body", value)}
                 </mj-text>
                 <mj-include path="../../facility/link.ftlh.mjml"/>
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+
+                <mj-include path="../../footer.ftlh.mjml"/>
             </mj-column>
         </mj-section>
-        <mj-include path="../../manageSettings.ftlh.mjml"/>
-
-        <mj-include path="../../footer.ftlh.mjml"/>
     </mj-body>
 </mjml>

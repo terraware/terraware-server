@@ -11,10 +11,10 @@
                     ${strings("notification.seedBank.deviceUnresponsive.email.body", facility.name, device.name)}
                 </mj-text>
                 <mj-include path="../../facility/link.ftlh.mjml"/>
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+
+                <mj-include path="../../footer.ftlh.mjml"/>
             </mj-column>
         </mj-section>
-        <mj-include path="../../manageSettings.ftlh.mjml"/>
-
-        <mj-include path="../../footer.ftlh.mjml"/>
     </mj-body>
 </mjml>

@@ -14,10 +14,10 @@
                 <mj-text mj-class="text-body03">
                 ${strings("notification.observation.notScheduled.email.body.2", plantingSiteName)}
                 </mj-text>
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+
+                <mj-include path="../../footer.ftlh.mjml"/>
             </mj-column>
         </mj-section>
-        <mj-include path="../../manageSettings.ftlh.mjml"/>
-
-        <mj-include path="../../footer.ftlh.mjml"/>
     </mj-body>
 </mjml>
