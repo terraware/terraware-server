@@ -7,10 +7,10 @@
 
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper-welcome">
-                <mj-text mj-class="text-headline06-bold-green">
+                <mj-text mj-class="text-headline06-bold-green" padding-left="0px" padding-right="0px">
                     ${strings("notification.user.addedToTerraware.email.body.1")}
                 </mj-text>
-                <mj-text mj-class="text-headline06-bold">
+                <mj-text mj-class="text-headline06-bold" padding-left="0px" padding-right="0px">
                     ${strings("notification.user.addedToTerraware.email.body.2", organization.name)}
                 </mj-text>
                 <mj-text mj-class="text-body03">

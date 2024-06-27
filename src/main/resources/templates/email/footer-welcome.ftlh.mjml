@@ -1,6 +1,6 @@
 <!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.EmailTemplateModel" --> -->
 <mj-section padding="0px" mj-class="footer-wrapper">
-    <mj-column padding-bottom="24px">
+    <mj-column padding-bottom="24px" padding-top="8px">
         <mj-text mj-class="text-footer"><span>&#169;</span>${strings("notification.email.html.footer.1")}</mj-text>
     </mj-column>
 </mj-section>
