@@ -2833,6 +2833,8 @@ abstract class DatabaseBackedTest {
   private var nextVariableNumber = 1
 
   protected fun insertVariable(
+      deliverableId: Any? = null,
+      deliverablePosition: Int? = null,
       description: String? = null,
       id: Any? = null,
       isList: Boolean = false,
@@ -2845,6 +2847,8 @@ abstract class DatabaseBackedTest {
 
     val row =
         VariablesRow(
+            deliverableId = deliverableId?.toIdWrapper { DeliverableId(it) },
+            deliverablePosition = deliverablePosition,
             description = description,
             id = id?.toIdWrapper { VariableId(it) },
             isList = isList,

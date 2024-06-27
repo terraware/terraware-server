@@ -1,5 +1,6 @@
 package com.terraformation.backend.documentproducer.db
 
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
@@ -76,6 +77,13 @@ class VariableStore(
    * list.
    */
   private val replacements = ConcurrentHashMap<VariableId, List<VariableId>>()
+
+  fun fetchDeliverableVariableIds(deliverableId: DeliverableId): List<VariableId> =
+      dslContext
+          .select(VARIABLES.ID)
+          .from(VARIABLES)
+          .where(VARIABLES.DELIVERABLE_ID.eq(deliverableId))
+          .fetch(VARIABLES.ID.asNonNullable())
 
   /**
    * Returns information about a variable. Eagerly fetches other variables that are related to the

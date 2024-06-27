@@ -134,4 +134,33 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
       }
     }
   }
+
+  @Nested
+  inner class FetchDeliverableVariableIds {
+    @Test
+    fun `fetches the variable IDs associated to a particular deliverable`() {
+      insertModule()
+      val deliverableId1 = insertDeliverable()
+      val deliverableId2 = insertDeliverable()
+
+      val variableId1 =
+          insertNumberVariable(
+              insertVariable(
+                  type = VariableType.Number,
+                  deliverableId = deliverableId1,
+                  deliverablePosition = 0))
+      val variableId2 =
+          insertNumberVariable(
+              insertVariable(
+                  type = VariableType.Number,
+                  deliverableId = deliverableId1,
+                  deliverablePosition = 1))
+      insertNumberVariable(
+          insertVariable(
+              type = VariableType.Number, deliverableId = deliverableId2, deliverablePosition = 0))
+
+      assertEquals(
+          listOf(variableId1, variableId2), store.fetchDeliverableVariableIds(deliverableId1))
+    }
+  }
 }
