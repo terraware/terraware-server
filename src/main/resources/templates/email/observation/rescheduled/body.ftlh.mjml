@@ -20,10 +20,10 @@
                 <mj-text mj-class="text-body03">
                 ${strings("notification.observation.rescheduled.email.body.4", newStartDateString, newEndDateString)}
                 </mj-text>
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+
+                <mj-include path="../../footer.ftlh.mjml"/>
             </mj-column>
         </mj-section>
-        <mj-include path="../../manageSettings.ftlh.mjml"/>
-
-        <mj-include path="../../footer.ftlh.mjml"/>
     </mj-body>
 </mjml>

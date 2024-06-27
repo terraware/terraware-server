@@ -8,22 +8,26 @@
         />
 
         <mj-class
+            name="body-gray"
+            background-color="#F9F8F7"
+        />
+        <mj-class
             name="logo-img"
             align="center"
-            width="256px"
+            width="204px"
         />
 
         <mj-class
-            name="body-wrapper-old"
-            width="650px"
+            name="body-wrapper"
+            width="600px"
             padding="1px"
-            background-color="#7F775B"
+            background-color="#B2AB93"
             inner-background-color="#FFFFFF"
-            border-radius="24px"
-            inner-border-radius="23px"
+            border-radius="8px"
+            inner-border-radius="7px"
         />
         <mj-class
-            name="body-wrapper"
+            name="body-wrapper-welcome"
             padding="32px"
             background-color="#FFFFFF"
             border-top="1px solid #B2AB93"
@@ -40,7 +44,7 @@
             font-weight="500"
             font-size="14px"
             line-height="20px"
-            color="#EF7047"
+            color="#7F775B"
             align="center"
         />
         <mj-class
@@ -56,12 +60,12 @@
         <mj-class
             name="text-headline06-bold-green"
             font-family="Inter, sans-serif"
-            font-weight="700"
-            font-size="24px"
-            line-height="32px"
-            color="#2C8658"
+            font-weight="600"
+            font-size="20px"
+            line-height="28px"
+            color="#000000"
             align="center"
-            padding="0px"
+            padding="24px 0px 0px 0px"
         />
         <mj-class
             name="text-headline06-bold"
@@ -71,7 +75,7 @@
             line-height="28px"
             color="#000000"
             align="center"
-            padding="0px 0px 32px 0px"
+            padding="24px 0px 32px 0px"
         />
         <mj-class
             name="text-body03"
@@ -86,9 +90,9 @@
             font-weight="500"
             font-size="14px"
             line-height="20px"
-            width="650px"
             color="#7F775B"
             align="center"
+            padding="0"
             background-color="#F9F8F7"
         />
         <mj-class
@@ -116,7 +120,6 @@
             name="footer-wrapper"
             width="650px"
             padding="0px"
-            padding-bottom="24px"
             align="center"
             background-color="#F9F8F7"
         />
@@ -128,7 +131,8 @@
             line-height="20px"
             color="#7F775B"
             align="center"
-            padding="0px"
+            padding="0"
+            background-color="#F9F8F7"
         />
         <mj-class
             name="text-body02"
@@ -153,5 +157,16 @@
     <mj-style>
         .text-link { color: #2C8658; }
         .text-link:visited { color: #2C8658; }
+    </mj-style>
+    <mj-style inline>
+        .text-footer div {
+            background: #F9F8F7;
+            padding: 0 0 24px 0;
+        }
+        .text-body-footer div {
+            background: #F9F8F7;
+            border-radius: 0 0 7px 7px;
+            padding: 24px 0 0 0;
+        }
     </mj-style>
 </mj-head>

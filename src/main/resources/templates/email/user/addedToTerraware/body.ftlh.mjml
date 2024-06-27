@@ -2,11 +2,11 @@
 <mjml>
     <mj-include path="../../head.ftlh.mjml"/>
 
-    <mj-body>
-        <mj-include path="../../logo.ftlh.mjml"/>
+    <mj-body mj-class="body-gray">
+        <mj-include path="../../logo-welcome.ftlh.mjml"/>
 
         <mj-section padding="0px">
-            <mj-column mj-class="body-wrapper">
+            <mj-column mj-class="body-wrapper-welcome">
                 <mj-text mj-class="text-headline06-bold-green">
                     ${strings("notification.user.addedToTerraware.email.body.1")}
                 </mj-text>
@@ -41,8 +41,8 @@
                 </mj-image>
             </mj-column>
         </mj-section>
-        <mj-include path="../../manageSettings.ftlh.mjml"/>
+        <mj-include path="../../manageSettings-welcome.ftlh.mjml"/>
 
-        <mj-include path="../../footer.ftlh.mjml"/>
+        <mj-include path="../../footer-welcome.ftlh.mjml"/>
     </mj-body>
 </mjml>

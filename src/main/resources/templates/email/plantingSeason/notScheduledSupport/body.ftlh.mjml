@@ -11,10 +11,10 @@
                     Planting site ${plantingSiteName} is missing a planting season, but the
                     organization has not scheduled one.
                 </mj-text>
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+
+                <mj-include path="../../footer.ftlh.mjml"/>
             </mj-column>
         </mj-section>
-        <mj-include path="../../manageSettings.ftlh.mjml"/>
-
-        <mj-include path="../../footer.ftlh.mjml"/>
     </mj-body>
 </mjml>
