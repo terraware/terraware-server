@@ -43,6 +43,7 @@ import java.util.Locale
 import kotlin.random.Random
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.codec.binary.Base32
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.JSONB
 import org.jooq.impl.DSL
@@ -213,7 +214,10 @@ class UserStore(
    * Returns the users who have global roles. If [roles] is non-null, only returns users with those
    * roles.
    */
-  fun fetchWithGlobalRoles(roles: Collection<GlobalRole>? = null): List<IndividualUser> {
+  fun fetchWithGlobalRoles(
+      roles: Collection<GlobalRole>? = null,
+      additionalCondition: Condition? = null
+  ): List<IndividualUser> {
     requirePermissions { readGlobalRoles() }
 
     val globalRoleConditions =
@@ -222,10 +226,15 @@ class UserStore(
             roles?.let { USER_GLOBAL_ROLES.GLOBAL_ROLE_ID.`in`(it) },
         )
 
+    val conditions =
+        listOfNotNull(
+            DSL.exists(DSL.selectOne().from(USER_GLOBAL_ROLES).where(globalRoleConditions)),
+            additionalCondition)
+
     return dslContext
         .select(USERS.asterisk())
         .from(USERS)
-        .whereExists(DSL.selectOne().from(USER_GLOBAL_ROLES).where(globalRoleConditions))
+        .where(conditions)
         .orderBy(DSL.lower(USERS.EMAIL))
         .fetchInto(UsersRow::class.java)
         .map { rowToIndividualUser(it) }

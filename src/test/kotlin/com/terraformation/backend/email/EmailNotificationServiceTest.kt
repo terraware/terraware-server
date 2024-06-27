@@ -1,6 +1,8 @@
 package com.terraformation.backend.email
 
+import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
@@ -28,6 +30,7 @@ import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.NotificationJobFinishedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
+import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -105,6 +108,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.util.Locale
+import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -115,6 +119,7 @@ internal class EmailNotificationServiceTest {
   private val adminUser: IndividualUser = mockk()
   private val automationStore: AutomationStore = mockk()
   private val config: TerrawareServerConfig = mockk()
+  private val deliverableStore: DeliverableStore = mockk()
   private val deviceStore: DeviceStore = mockk()
   private val facilityStore: FacilityStore = mockk()
   private val organizationStore: OrganizationStore = mockk()
@@ -126,6 +131,7 @@ internal class EmailNotificationServiceTest {
   private val speciesStore: SpeciesStore = mockk()
   private val systemUser: SystemUser = SystemUser(mockk())
   private val user: IndividualUser = mockk()
+  private val userDeliverableCategoriesStore: UserDeliverableCategoriesStore = mockk()
   private val userStore: UserStore = mockk()
 
   private val webAppUrls = WebAppUrls(config, dummyKeycloakInfo())
@@ -144,6 +150,7 @@ internal class EmailNotificationServiceTest {
       EmailNotificationService(
           automationStore,
           config,
+          deliverableStore,
           deviceStore,
           emailService,
           facilityStore,
@@ -154,6 +161,7 @@ internal class EmailNotificationServiceTest {
           projectStore,
           speciesStore,
           systemUser,
+          userDeliverableCategoriesStore,
           userStore,
           webAppUrls)
 
@@ -231,6 +239,8 @@ internal class EmailNotificationServiceTest {
           startDate = LocalDate.of(2023, 9, 1),
           state = ObservationState.Upcoming)
 
+  private val deliverableCategory = DeliverableCategory.Compliance
+
   private val organizationRecipients = setOf("org1@terraware.io", "org2@terraware.io")
 
   private val tfContactUserId = UserId(5)
@@ -257,6 +267,7 @@ internal class EmailNotificationServiceTest {
     every { adminUser.fullName } returns "Admin Name"
     every { adminUser.userId } returns UserId(1)
     every { automationStore.fetchOneById(automation.id) } returns automation
+    every { deliverableStore.fetchDeliverableCategory(any()) } returns deliverableCategory
     every { deviceStore.fetchOneById(devicesRow.id!!) } returns devicesRow
     every { facilityStore.fetchOneById(facility.id) } returns facility
     every { organizationStore.fetchOneById(organization.id) } returns organization
@@ -279,6 +290,7 @@ internal class EmailNotificationServiceTest {
     every { user.firstName } returns "Normal"
     every { user.locale } returns Locale.ENGLISH
     every { user.userId } returns UserId(2)
+    every { userDeliverableCategoriesStore.conditionForUsers(any()) } returns DSL.trueCondition()
     every { userStore.getTerraformationContactUser(any()) } returns null
     every { userStore.fetchByOrganizationId(any(), any(), any()) } returns
         organizationRecipients.map { userForEmail(it) }
@@ -288,7 +300,7 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchOneById(adminUser.userId) } returns adminUser
     every { userStore.fetchOneById(user.userId) } returns user
     every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
-    every { userStore.fetchWithGlobalRoles(setOf(GlobalRole.TFExpert)) } returns
+    every { userStore.fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), any()) } returns
         listOf(acceleratorUser)
 
     every { sender.send(capture(mimeMessageSlot)) } answers

@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
@@ -32,6 +33,17 @@ class DeliverableStore(
     requirePermissions { readAllDeliverables() }
 
     return dslContext.fetchExists(DELIVERABLES, DELIVERABLES.ID.eq(id))
+  }
+
+  fun fetchDeliverableCategory(deliverableId: DeliverableId): DeliverableCategory {
+    requirePermissions { readAllDeliverables() }
+
+    return dslContext
+        .select(DELIVERABLES.DELIVERABLE_CATEGORY_ID)
+        .from(DELIVERABLES)
+        .where(DELIVERABLES.ID.eq(deliverableId))
+        .fetchOne(DELIVERABLES.DELIVERABLE_CATEGORY_ID)
+        ?: throw DeliverableNotFoundException(deliverableId)
   }
 
   fun fetchDeliverableSubmissions(
