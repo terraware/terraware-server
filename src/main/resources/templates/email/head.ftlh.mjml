@@ -21,6 +21,7 @@
             name="body-wrapper"
             width="600px"
             padding="1px"
+            inner-padding="24px"
             background-color="#B2AB93"
             inner-background-color="#FFFFFF"
             border-radius="8px"
@@ -65,7 +66,7 @@
             line-height="28px"
             color="#000000"
             align="center"
-            padding="24px 0px 0px 0px"
+            padding="24px 24px 0px 24px"
         />
         <mj-class
             name="text-headline06-bold"
@@ -75,7 +76,7 @@
             line-height="28px"
             color="#000000"
             align="center"
-            padding="24px 0px 32px 0px"
+            padding="24px 24px 32px 24px"
         />
         <mj-class
             name="text-body03"
@@ -161,11 +162,11 @@
     <mj-style inline>
         .text-footer div {
             background: #F9F8F7;
-            padding: 0 0 24px 0;
+            padding: 8px 0 24px 0;
+            border-radius: 0 0 7px 7px;
         }
         .text-body-footer div {
             background: #F9F8F7;
-            border-radius: 0 0 7px 7px;
             padding: 24px 0 0 0;
         }
     </mj-style>
