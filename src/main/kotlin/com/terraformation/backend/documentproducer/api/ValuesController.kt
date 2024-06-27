@@ -3,6 +3,7 @@ package com.terraformation.backend.documentproducer.api
 import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
@@ -11,6 +12,7 @@ import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.documentproducer.VariableValueService
 import com.terraformation.backend.documentproducer.db.DocumentStore
+import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.db.VariableWorkflowStore
 import io.swagger.v3.oas.annotations.Operation
@@ -32,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class ValuesController(
     private val documentStore: DocumentStore,
+    private val variableStore: VariableStore,
     private val variableValueStore: VariableValueStore,
     private val variableValueService: VariableValueService,
     private val variableWorkflowStore: VariableWorkflowStore,
@@ -45,6 +48,12 @@ class ValuesController(
               "edits (if minValueId is specified).")
   fun listProjectVariableValues(
       @PathVariable projectId: ProjectId,
+      @Parameter(
+          description =
+              "If specified, only return values that belong to variables that are associated to " +
+                  "the given ID")
+      @RequestParam
+      deliverableId: DeliverableId? = null,
       @Parameter(
           description =
               "If specified, only return values with this ID or higher. Use this to poll for " +
@@ -62,12 +71,14 @@ class ValuesController(
     val currentMax = variableValueStore.fetchMaxValueId(projectId) ?: VariableValueId(0)
     val nextValueId = VariableValueId(currentMax.value + 1)
 
+    val variableIds = deliverableId?.let { variableStore.fetchDeliverableVariableIds(it) }
+
     // If the client didn't explicitly tell us otherwise, only return values whose IDs are less
     // than the nextValueId we'll be returning, in case new values are inserted by another user at
     // the same time this endpoint is executing.
     val effectiveMax = maxValueId ?: currentMax
     val valuesByVariableId =
-        variableValueStore.listValues(projectId, minValueId, effectiveMax).groupBy {
+        variableValueStore.listValues(projectId, variableIds, minValueId, effectiveMax).groupBy {
           it.variableId to it.rowValueId
         }
 
@@ -164,7 +175,7 @@ class ValuesController(
       maxValueId: VariableValueId? = null,
   ): ListVariableValuesResponsePayload {
     val projectId = documentStore.fetchProjectId(documentId)
-    return listProjectVariableValues(projectId, maxValueId)
+    return listProjectVariableValues(projectId, null, minValueId, maxValueId)
   }
 
   @Operation(

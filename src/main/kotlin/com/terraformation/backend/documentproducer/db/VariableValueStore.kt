@@ -141,6 +141,7 @@ class VariableValueStore(
 
   fun listValues(
       projectId: ProjectId,
+      variableIds: List<VariableId>? = emptyList(),
       minValueId: VariableValueId? = null,
       maxValueId: VariableValueId? = null
   ): List<ExistingValue> {
@@ -148,6 +149,7 @@ class VariableValueStore(
     val conditions =
         listOfNotNull(
             VARIABLE_VALUES.PROJECT_ID.eq(projectId),
+            variableIds?.let { VARIABLE_VALUES.VARIABLE_ID.`in`(it) },
             minValueId?.let { VARIABLE_VALUES.ID.ge(it) },
             maxValueId?.let { VARIABLE_VALUES.ID.le(it) },
         )
@@ -505,6 +507,12 @@ class VariableValueStore(
       }
     }
   }
+
+  private fun listValues(
+      projectId: ProjectId,
+      minValueId: VariableValueId? = null,
+      maxValueId: VariableValueId? = null
+  ): List<ExistingValue> = listValues(projectId, null, minValueId, maxValueId)
 
   private fun replaceValues(operation: ReplaceValuesOperation) {
     val variableId = operation.variableId
