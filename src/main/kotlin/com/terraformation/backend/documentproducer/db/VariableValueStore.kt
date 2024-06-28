@@ -240,7 +240,7 @@ class VariableValueStore(
             .on(VARIABLE_VALUES.ID.eq(VARIABLE_LINK_VALUES.VARIABLE_VALUE_ID))
             .leftJoin(VARIABLE_SECTION_VALUES)
             .on(VARIABLE_VALUES.ID.eq(VARIABLE_SECTION_VALUES.VARIABLE_VALUE_ID))
-            .leftJoin(VARIABLES)
+            .join(VARIABLES)
             .on(VARIABLE_VALUES.VARIABLE_ID.eq(VARIABLES.ID))
             .where(conditions)
             .orderBy(
