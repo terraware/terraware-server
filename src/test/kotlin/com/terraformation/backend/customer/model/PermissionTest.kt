@@ -1472,6 +1472,8 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *otherUserIds.values.toTypedArray(),
         readUser = true,
+        readUserDeliverableCategories = true,
+        updateUserDeliverableCategories = true,
     )
 
     permissions.andNothingElse()
@@ -1629,6 +1631,8 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *otherUserIds.values.toTypedArray(),
         readUser = true,
+        readUserDeliverableCategories = true,
+        updateUserDeliverableCategories = true,
     )
 
     permissions.expect(
@@ -1809,6 +1813,8 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *otherUserIds.values.toTypedArray(),
         readUser = true,
+        readUserDeliverableCategories = true,
+        updateUserDeliverableCategories = true,
     )
 
     permissions.expect(
@@ -3104,9 +3110,19 @@ internal class PermissionTest : DatabaseTest() {
     fun expect(
         vararg userIds: UserId,
         readUser: Boolean = false,
+        readUserDeliverableCategories: Boolean = false,
+        updateUserDeliverableCategories: Boolean = false,
     ) {
       userIds.forEach { userId ->
         assertEquals(readUser, user.canReadUser(userId), "Can read user $userId")
+        assertEquals(
+            readUserDeliverableCategories,
+            user.canReadUserDeliverableCategories(userId),
+            "Can read deliverable categories for user $userId")
+        assertEquals(
+            updateUserDeliverableCategories,
+            user.canUpdateUserDeliverableCategories(userId),
+            "Can update deliverable categories for user $userId")
 
         uncheckedUsers.remove(userId)
       }

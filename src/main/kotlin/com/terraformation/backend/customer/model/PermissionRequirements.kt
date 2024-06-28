@@ -861,6 +861,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readUserDeliverableCategories(userId: UserId) {
+    if (!user.canReadUserDeliverableCategories(userId)) {
+      readUser(userId)
+      throw AccessDeniedException("No permission to read deliverable categories for user $userId")
+    }
+  }
+
   fun readViabilityTest(viabilityTestId: ViabilityTestId) {
     if (!user.canReadViabilityTest(viabilityTestId)) {
       throw ViabilityTestNotFoundException(viabilityTestId)
@@ -1216,6 +1223,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateUpload(uploadId)) {
       readUpload(uploadId)
       throw AccessDeniedException("No permission to update upload")
+    }
+  }
+
+  fun updateUserDeliverableCategories(userId: UserId) {
+    if (!user.canUpdateUserDeliverableCategories(userId)) {
+      readUser(userId)
+      throw AccessDeniedException("No permission to update deliverable categories for user $userId")
     }
   }
 
