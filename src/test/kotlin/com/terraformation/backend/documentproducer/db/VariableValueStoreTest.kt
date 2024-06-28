@@ -116,6 +116,50 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(expected, actual)
     }
+
+    @Test
+    fun `returns specific variable values for a given project`() {
+      val projectId = insertProject()
+      insertModule()
+      val deliverableId1 = insertDeliverable()
+      val deliverableId2 = insertDeliverable()
+
+      val variableId1 =
+          insertTextVariable(
+              id =
+                  insertVariable(
+                      type = VariableType.Text,
+                      deliverableId = deliverableId1,
+                      deliverablePosition = 0))
+      val valueId1 =
+          insertValue(projectId = projectId, textValue = "value1", variableId = variableId1)
+      val variableId2 =
+          insertTextVariable(
+              id =
+                  insertVariable(
+                      type = VariableType.Text,
+                      deliverableId = deliverableId1,
+                      deliverablePosition = 1))
+      val valueId2 =
+          insertValue(projectId = projectId, textValue = "value2", variableId = variableId2)
+      val variableId3 =
+          insertTextVariable(
+              id =
+                  insertVariable(
+                      type = VariableType.Text,
+                      deliverableId = deliverableId2,
+                      deliverablePosition = 0))
+      insertValue(textValue = "value3", variableId = variableId3)
+
+      val expected =
+          listOf(
+              ExistingTextValue(existingValueProps(valueId1, variableId1), "value1"),
+              ExistingTextValue(existingValueProps(valueId2, variableId2), "value2"))
+
+      val actual = store.listValues(projectId, deliverableId1)
+
+      assertEquals(expected, actual)
+    }
   }
 
   @Nested

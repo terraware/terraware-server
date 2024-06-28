@@ -3,6 +3,7 @@ package com.terraformation.backend.documentproducer.api
 import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
@@ -47,6 +48,12 @@ class ValuesController(
       @PathVariable projectId: ProjectId,
       @Parameter(
           description =
+              "If specified, only return values that belong to variables that are associated " +
+                  "to the given ID")
+      @RequestParam
+      deliverableId: DeliverableId? = null,
+      @Parameter(
+          description =
               "If specified, only return values with this ID or higher. Use this to poll for " +
                   "incremental updates to a document. Incremental results may include values of " +
                   "type 'Deleted' in cases where, e.g., elements have been removed from a list.")
@@ -67,7 +74,7 @@ class ValuesController(
     // the same time this endpoint is executing.
     val effectiveMax = maxValueId ?: currentMax
     val valuesByVariableId =
-        variableValueStore.listValues(projectId, minValueId, effectiveMax).groupBy {
+        variableValueStore.listValues(projectId, deliverableId, minValueId, effectiveMax).groupBy {
           it.variableId to it.rowValueId
         }
 
@@ -164,7 +171,7 @@ class ValuesController(
       maxValueId: VariableValueId? = null,
   ): ListVariableValuesResponsePayload {
     val projectId = documentStore.fetchProjectId(documentId)
-    return listProjectVariableValues(projectId, maxValueId)
+    return listProjectVariableValues(projectId, null, minValueId, maxValueId)
   }
 
   @Operation(

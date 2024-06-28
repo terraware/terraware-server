@@ -1,5 +1,6 @@
 package com.terraformation.backend.documentproducer.model
 
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableSelectOptionId
@@ -26,6 +27,9 @@ import java.time.format.DateTimeParseException
  * implementations can delegate to [BaseVariableProperties] to cut down on needless repetition.
  */
 interface BaseVariable {
+  /** The ID of its associated deliverable, if applicable * */
+  val deliverableId: DeliverableId?
+
   /** The position of this variable within its associated deliverable, if applicable * */
   val deliverablePosition: Int?
 
@@ -67,6 +71,7 @@ interface BaseVariable {
  * classes that implement [Variable].
  */
 data class BaseVariableProperties(
+    override val deliverableId: DeliverableId? = null,
     override val deliverablePosition: Int? = null,
     override val description: String? = null,
     override val id: VariableId,

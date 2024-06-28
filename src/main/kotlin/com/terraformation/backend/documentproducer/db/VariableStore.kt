@@ -1,5 +1,6 @@
 package com.terraformation.backend.documentproducer.db
 
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
@@ -90,6 +91,15 @@ class VariableStore(
   fun fetchVariable(variableId: VariableId, manifestId: VariableManifestId? = null): Variable {
     return variables[manifestId to variableId] ?: FetchContext(manifestId).fetchVariable(variableId)
   }
+
+  fun fetchDeliverableVariables(deliverableId: DeliverableId): List<Variable> =
+      dslContext
+          .select(VARIABLES.ID)
+          .from(VARIABLES)
+          .where(VARIABLES.DELIVERABLE_ID.eq(deliverableId))
+          .orderBy(VARIABLES.DELIVERABLE_POSITION)
+          .fetch(VARIABLES.ID.asNonNullable())
+          .map { fetchVariable(it) }
 
   /**
    * Returns a list of the top-level variables in a manifest in position order. Child sections and
@@ -228,6 +238,7 @@ class VariableStore(
 
         val base =
             BaseVariableProperties(
+                deliverableId = variablesRow.deliverableId,
                 deliverablePosition = variablesRow.deliverablePosition,
                 description = variablesRow.description,
                 id = variableId,

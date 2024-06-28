@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.documentproducer.model.BaseVariableProperties
+import com.terraformation.backend.documentproducer.model.NumberVariable
 import com.terraformation.backend.documentproducer.model.SectionVariable
 import com.terraformation.backend.mockUser
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -132,6 +133,68 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<CircularReferenceException> {
         store.fetchVariable(sectionId1, inserted.variableManifestId)
       }
+    }
+  }
+
+  @Nested
+  inner class FetchDeliverableVariableIds {
+    @Test
+    fun `fetches the variable IDs associated to a particular deliverable`() {
+      insertModule()
+      val deliverableId1 = insertDeliverable()
+      val deliverableId2 = insertDeliverable()
+
+      val variableId1 =
+          insertNumberVariable(
+              insertVariable(
+                  type = VariableType.Number,
+                  deliverableId = deliverableId1,
+                  deliverablePosition = 0))
+      val variableId2 =
+          insertNumberVariable(
+              insertVariable(
+                  type = VariableType.Number,
+                  deliverableId = deliverableId1,
+                  deliverablePosition = 1))
+      insertNumberVariable(
+          insertVariable(
+              type = VariableType.Number, deliverableId = deliverableId2, deliverablePosition = 0))
+
+      val expected =
+          listOf(
+              NumberVariable(
+                  base =
+                      BaseVariableProperties(
+                          deliverableId = deliverableId1,
+                          deliverablePosition = 0,
+                          id = variableId1,
+                          manifestId = null,
+                          name = "Variable 1",
+                          position = 0,
+                          stableId = "1",
+                      ),
+                  decimalPlaces = 0,
+                  minValue = null,
+                  maxValue = null),
+              NumberVariable(
+                  base =
+                      BaseVariableProperties(
+                          deliverableId = deliverableId1,
+                          deliverablePosition = 1,
+                          id = variableId2,
+                          manifestId = null,
+                          name = "Variable 2",
+                          position = 0,
+                          stableId = "2",
+                      ),
+                  decimalPlaces = 0,
+                  minValue = null,
+                  maxValue = null),
+          )
+
+      val actual = store.fetchDeliverableVariables(deliverableId1)
+
+      assertEquals(expected, actual)
     }
   }
 }

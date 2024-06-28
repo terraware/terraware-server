@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.documentproducer.db.VariableStore
@@ -25,6 +26,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.ws.rs.BadRequestException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -36,10 +38,24 @@ import org.springframework.web.bind.annotation.RestController
 class VariablesController(
     private val variableStore: VariableStore,
 ) {
-  @Operation(summary = "List the variables within a given manifest.")
+  @Operation(summary = "List the variables within a given manifest or deliverable.")
   @GetMapping
-  fun listVariables(@RequestParam manifestId: VariableManifestId): ListVariablesResponsePayload {
-    val variables = variableStore.fetchManifestVariables(manifestId)
+  fun listVariables(
+      @RequestParam deliverableId: DeliverableId?,
+      @RequestParam manifestId: VariableManifestId?
+  ): ListVariablesResponsePayload {
+    if (deliverableId != null && manifestId != null) {
+      throw BadRequestException("Only Deliverable ID or Manifest ID can be provided, not both.")
+    }
+
+    val variables =
+        if (deliverableId != null) {
+          variableStore.fetchDeliverableVariables(deliverableId)
+        } else if (manifestId != null) {
+          variableStore.fetchManifestVariables(manifestId)
+        } else {
+          throw BadRequestException("Deliverable ID or Manifest ID must be provided.")
+        }
 
     return ListVariablesResponsePayload(variables.map { VariablePayload.of(it) })
   }
