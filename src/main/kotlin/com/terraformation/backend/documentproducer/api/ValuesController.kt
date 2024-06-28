@@ -48,16 +48,17 @@ class ValuesController(
       @PathVariable projectId: ProjectId,
       @Parameter(
           description =
-              "If specified, only return values with this ID or higher. Use this to poll for " +
-                  "incremental updates to a document. Incremental results may include values of " +
-                  "type 'Deleted' in cases where, e.g., elements have been removed from a list.")
-      @Parameter(
-          description =
               "If specified, only return values that belong to variables that are associated " +
                   "to the given ID")
       @RequestParam
       deliverableId: DeliverableId? = null,
-      @RequestParam minValueId: VariableValueId? = null,
+      @Parameter(
+          description =
+              "If specified, only return values with this ID or higher. Use this to poll for " +
+                  "incremental updates to a document. Incremental results may include values of " +
+                  "type 'Deleted' in cases where, e.g., elements have been removed from a list.")
+      @RequestParam
+      minValueId: VariableValueId? = null,
       @Parameter(
           description =
               "If specified, only return values with this ID or lower. Use this to retrieve " +
