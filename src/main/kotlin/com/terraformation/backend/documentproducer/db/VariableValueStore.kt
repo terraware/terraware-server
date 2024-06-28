@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.DocumentId
@@ -141,6 +142,7 @@ class VariableValueStore(
 
   fun listValues(
       projectId: ProjectId,
+      deliverableId: DeliverableId? = null,
       minValueId: VariableValueId? = null,
       maxValueId: VariableValueId? = null
   ): List<ExistingValue> {
@@ -148,6 +150,7 @@ class VariableValueStore(
     val conditions =
         listOfNotNull(
             VARIABLE_VALUES.PROJECT_ID.eq(projectId),
+            deliverableId?.let { VARIABLES.DELIVERABLE_ID.eq(it) },
             minValueId?.let { VARIABLE_VALUES.ID.ge(it) },
             maxValueId?.let { VARIABLE_VALUES.ID.le(it) },
         )
@@ -237,6 +240,8 @@ class VariableValueStore(
             .on(VARIABLE_VALUES.ID.eq(VARIABLE_LINK_VALUES.VARIABLE_VALUE_ID))
             .leftJoin(VARIABLE_SECTION_VALUES)
             .on(VARIABLE_VALUES.ID.eq(VARIABLE_SECTION_VALUES.VARIABLE_VALUE_ID))
+            .leftJoin(VARIABLES)
+            .on(VARIABLE_VALUES.VARIABLE_ID.eq(VARIABLES.ID))
             .where(conditions)
             .orderBy(
                 VARIABLE_VALUES.VARIABLE_ID,
@@ -505,6 +510,12 @@ class VariableValueStore(
       }
     }
   }
+
+  private fun listValues(
+      projectId: ProjectId,
+      minValueId: VariableValueId? = null,
+      maxValueId: VariableValueId? = null
+  ): List<ExistingValue> = listValues(projectId, null, minValueId, maxValueId)
 
   private fun replaceValues(operation: ReplaceValuesOperation) {
     val variableId = operation.variableId
