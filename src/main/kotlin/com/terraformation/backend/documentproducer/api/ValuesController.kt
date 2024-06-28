@@ -53,8 +53,8 @@ class ValuesController(
                   "type 'Deleted' in cases where, e.g., elements have been removed from a list.")
       @Parameter(
           description =
-              "If specified, only return values that belong to variables that are associated to " +
-                  "the given ID")
+              "If specified, only return values that belong to variables that are associated " +
+                  "to the given ID")
       @RequestParam
       deliverableId: DeliverableId? = null,
       @RequestParam minValueId: VariableValueId? = null,
