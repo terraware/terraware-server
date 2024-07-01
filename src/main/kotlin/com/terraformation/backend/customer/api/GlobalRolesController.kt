@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.api
 
+import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
@@ -7,6 +8,7 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1")
 @RestController
 class GlobalRolesController(
+    private val userDeliverableCategoriesStore: UserDeliverableCategoriesStore,
     private val userStore: UserStore,
 ) {
   @ApiResponse200
@@ -30,7 +33,10 @@ class GlobalRolesController(
   @Operation(summary = "Gets the list of users that have global roles.")
   fun listGlobalRoles(): GlobalRoleUsersListResponsePayload =
       GlobalRoleUsersListResponsePayload(
-          userStore.fetchWithGlobalRoles().map { UserWithGlobalRolesPayload(it) })
+          userStore.fetchWithGlobalRoles().map { user ->
+            UserWithGlobalRolesPayload(
+                user, userDeliverableCategoriesStore.fetchForUser(user.userId))
+          })
 
   @ApiResponse200
   @ApiResponse404
@@ -60,6 +66,7 @@ class GlobalRolesController(
 
 data class UserWithGlobalRolesPayload(
     val createdTime: Instant,
+    val deliverableCategories: Set<DeliverableCategory>,
     val id: UserId,
     val email: String,
     val firstName: String?,
@@ -67,9 +74,11 @@ data class UserWithGlobalRolesPayload(
     val lastName: String?,
 ) {
   constructor(
-      user: IndividualUser
+      user: IndividualUser,
+      deliverableCategories: Set<DeliverableCategory>,
   ) : this(
       createdTime = user.createdTime,
+      deliverableCategories = deliverableCategories,
       id = user.userId,
       email = user.email,
       firstName = user.firstName,
