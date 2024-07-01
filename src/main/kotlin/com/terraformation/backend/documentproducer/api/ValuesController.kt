@@ -5,13 +5,11 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.documentproducer.VariableValueService
-import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.db.VariableWorkflowStore
 import io.swagger.v3.oas.annotations.Operation
@@ -32,7 +30,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/document-producer")
 @RestController
 class ValuesController(
-    private val documentStore: DocumentStore,
     private val variableValueStore: VariableValueStore,
     private val variableValueService: VariableValueService,
     private val variableWorkflowStore: VariableWorkflowStore,
@@ -145,50 +142,6 @@ class ValuesController(
     variableValueStore.updateValues(operations)
 
     return SimpleSuccessResponsePayload()
-  }
-
-  @GetMapping("/documents/{documentId}/values")
-  @Operation(
-      summary = "Get the values of the variables in a document.",
-      description =
-          "This may be used to fetch the full set of current values (the default behavior), the " +
-              "values from a saved version (if maxValueId is specified), or to poll for recent " +
-              "edits (if minValueId is specified).")
-  fun listVariableValues(
-      @PathVariable documentId: DocumentId,
-      @Parameter(
-          description =
-              "If specified, only return values with this ID or higher. Use this to poll for " +
-                  "incremental updates to a document. Incremental results may include values of " +
-                  "type 'Deleted' in cases where, e.g., elements have been removed from a list.")
-      @RequestParam
-      minValueId: VariableValueId? = null,
-      @Parameter(
-          description =
-              "If specified, only return values with this ID or lower. Use this to retrieve " +
-                  "saved document versions.")
-      @RequestParam
-      maxValueId: VariableValueId? = null,
-  ): ListVariableValuesResponsePayload {
-    val projectId = documentStore.fetchProjectId(documentId)
-    return listProjectVariableValues(projectId, null, minValueId, maxValueId)
-  }
-
-  @Operation(
-      summary = "Update the values of the variables in a document.",
-      description =
-          "Make a list of changes to a document's variable values. The changes are applied in " +
-              "order and are treated as an atomic unit. That is, the changes will either all " +
-              "succeed or all fail; there won't be a case where some of the changes are applied " +
-              "and some aren't. See the payload descriptions for more details about the " +
-              "operations you can perform on values.")
-  @PostMapping("/documents/{documentId}/values")
-  fun updateVariableValues(
-      @PathVariable documentId: DocumentId,
-      @RequestBody payload: UpdateVariableValuesRequestPayload
-  ): SimpleSuccessResponsePayload {
-    val projectId = documentStore.fetchProjectId(documentId)
-    return updateProjectVariableValues(projectId, payload)
   }
 }
 

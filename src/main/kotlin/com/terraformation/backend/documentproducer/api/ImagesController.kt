@@ -6,12 +6,9 @@ import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.documentproducer.VariableFileService
-import com.terraformation.backend.documentproducer.db.DocumentNotFoundException
-import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
@@ -33,7 +30,6 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/document-producer")
 @RestController
 class ImagesController(
-    private val documentStore: DocumentStore,
     private val variableFileService: VariableFileService,
 ) {
   @GetMapping(
@@ -126,79 +122,6 @@ class ImagesController(
         variableFileService.storeImageValue(file.inputStream, newMetadata, base, caption, isAppend)
 
     return UploadImageFileResponsePayload(valueId)
-  }
-
-  @GetMapping(
-      "/documents/{documentId}/images/{valueId}",
-      produces =
-          [MediaType.APPLICATION_JSON_VALUE, MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE])
-  @Operation(
-      summary = "Gets the contents of an image variable value.",
-      description =
-          "Optional maxWidth and maxHeight parameters may be included to control the dimensions " +
-              "of the image; the server will scale the original down as needed. If neither " +
-              "parameter is specified, the original full-size image will be returned. The aspect " +
-              "ratio of the original image is maintained, so the returned image may be smaller " +
-              "than the requested width and height. If only maxWidth or only maxHeight is " +
-              "supplied, the other dimension will be computed based on the original image's " +
-              "aspect ratio.")
-  fun getImageValue(
-      @PathVariable documentId: DocumentId,
-      @PathVariable valueId: VariableValueId,
-      @RequestParam
-      @Schema(
-          description =
-              "Maximum desired width in pixels. If neither this nor maxHeight is specified, the " +
-                  "full-sized original image will be returned. If this is specified, an image no " +
-                  "wider than this will be returned. The image may be narrower than this value " +
-                  "if needed to preserve the aspect ratio of the original.")
-      maxWidth: Int? = null,
-      @RequestParam
-      @Schema(
-          description =
-              "Maximum desired height in pixels. If neither this nor maxWidth is specified, the " +
-                  "full-sized original image will be returned. If this is specified, an image no " +
-                  "taller than this will be returned. The image may be shorter than this value " +
-                  "if needed to preserve the aspect ratio of the original.")
-      maxHeight: Int? = null,
-  ): ResponseEntity<InputStreamResource> {
-    val projectId =
-        documentStore.fetchDocumentById(documentId).projectId
-            ?: throw DocumentNotFoundException(documentId)
-
-    return getProjectImageValue(projectId, valueId, maxWidth, maxHeight)
-  }
-
-  @Operation(summary = "Save an image to a new variable value.")
-  @PostMapping("/documents/{documentId}/images")
-  fun uploadImageValue(
-      @PathVariable documentId: DocumentId,
-      @RequestPart file: MultipartFile,
-      @RequestPart(required = false) caption: String?,
-      @RequestPart(required = false) citation: String?,
-      @RequestPart @Schema(format = "int64", type = "integer") variableId: String,
-      @RequestPart(required = false)
-      @Schema(
-          description =
-              "If the variable is a list, which list position to use for the value. If not " +
-                  "specified, the server will use the next available list position if the " +
-                  "variable is a list, or will replace any existing image if the variable is " +
-                  "not a list.",
-          format = "int32",
-          type = "integer")
-      listPosition: String? = null,
-      @RequestPart(required = false)
-      @Schema(
-          description =
-              "If the variable is a table column, value ID of the row the value should belong to.",
-          format = "int64",
-          type = "integer")
-      rowValueId: String? = null,
-  ): UploadImageFileResponsePayload {
-    val projectId = documentStore.fetchProjectId(documentId)
-
-    return uploadProjectImageValue(
-        projectId, file, caption, citation, variableId, listPosition, rowValueId)
   }
 }
 
