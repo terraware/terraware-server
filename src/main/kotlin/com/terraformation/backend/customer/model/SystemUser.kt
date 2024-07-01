@@ -2,43 +2,16 @@ package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
-import com.terraformation.backend.db.accelerator.EventId
-import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.ParticipantId
-import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
-import com.terraformation.backend.db.accelerator.SubmissionDocumentId
-import com.terraformation.backend.db.accelerator.SubmissionId
-import com.terraformation.backend.db.default_schema.AutomationId
-import com.terraformation.backend.db.default_schema.DeviceId
-import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
-import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
-import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.default_schema.SubLocationId
-import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
-import com.terraformation.backend.db.docprod.DocumentId
-import com.terraformation.backend.db.nursery.BatchId
-import com.terraformation.backend.db.nursery.WithdrawalId
-import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.ViabilityTestId
-import com.terraformation.backend.db.tracking.DeliveryId
-import com.terraformation.backend.db.tracking.DraftPlantingSiteId
-import com.terraformation.backend.db.tracking.MonitoringPlotId
-import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.PlantingId
-import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
 import jakarta.inject.Named
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -115,6 +88,9 @@ class SystemUser(
   override val globalRoles: Set<GlobalRole>
     get() = emptySet()
 
+  override val defaultPermission: Boolean
+    get() = true
+
   override fun <T> run(func: () -> T): T {
     return CurrentUserHolder.runAs(this, func)
   }
@@ -124,138 +100,17 @@ class SystemUser(
   override fun getName(): String = USERNAME
 
   /*
-   * All permission checks always succeed except for operations that should only be performed
-   * manually by a system administrator.
+   * All permission checks always succeed (thanks to defaultPermission) except for operations that
+   * should only be performed manually by a system administrator.
    */
-
-  override fun canAddAnyOrganizationUser(): Boolean = true
-
-  override fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean =
-      true
-
-  override fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = true
-
-  override fun canAddParticipantProject(
-      participantId: ParticipantId,
-      projectId: ProjectId
-  ): Boolean = true
-
-  override fun canAddTerraformationContact(organizationId: OrganizationId): Boolean = true
-
-  override fun canCountNotifications(): Boolean = true
-
-  override fun canCreateAccession(facilityId: FacilityId): Boolean = true
-
-  override fun canCreateApiKey(organizationId: OrganizationId): Boolean = true
-
-  override fun canCreateAutomation(facilityId: FacilityId): Boolean = true
-
-  override fun canCreateBatch(facilityId: FacilityId): Boolean = true
-
-  override fun canCreateCohort(): Boolean = true
-
-  override fun canCreateCohortModule(): Boolean = true
-
-  override fun canCreateDelivery(plantingSiteId: PlantingSiteId): Boolean = true
-
-  override fun canCreateDevice(facilityId: FacilityId): Boolean = true
-
-  override fun canCreateDeviceManager(): Boolean = true
-
-  override fun canCreateDocument(): Boolean = true
-
-  override fun canCreateDraftPlantingSite(organizationId: OrganizationId): Boolean = true
-
-  override fun canCreateFacility(organizationId: OrganizationId): Boolean = true
-
-  override fun canCreateNotification(
-      targetUserId: UserId,
-      organizationId: OrganizationId
-  ): Boolean = true
-
-  override fun canCreateObservation(plantingSiteId: PlantingSiteId): Boolean = true
-
-  override fun canCreateParticipant(): Boolean = true
-
-  override fun canCreateParticipantProjectSpecies(projectId: ProjectId): Boolean = true
-
-  override fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = true
-
-  override fun canCreateProject(organizationId: OrganizationId): Boolean = true
-
-  override fun canCreateReport(organizationId: OrganizationId): Boolean = true
-
-  override fun canCreateSavedVersion(documentId: DocumentId): Boolean = true
-
-  override fun canCreateSpecies(organizationId: OrganizationId): Boolean = true
-
-  override fun canCreateSubLocation(facilityId: FacilityId): Boolean = true
-
-  override fun canCreateSubmission(projectId: ProjectId): Boolean = true
-
-  override fun canCreateTimeseries(deviceId: DeviceId): Boolean = true
-
-  override fun canCreateVariableManifest(): Boolean = true
-
-  override fun canCreateWithdrawalPhoto(withdrawalId: WithdrawalId): Boolean = true
-
-  override fun canDeleteAccession(accessionId: AccessionId): Boolean = true
-
-  override fun canDeleteAutomation(automationId: AutomationId): Boolean = true
-
-  override fun canDeleteBatch(batchId: BatchId): Boolean = true
-
-  override fun canDeleteCohort(cohortId: CohortId): Boolean = true
-
-  override fun canDeleteCohortParticipant(
-      cohortId: CohortId,
-      participantId: ParticipantId
-  ): Boolean = true
-
-  override fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = true
-
-  override fun canDeleteOrganization(organizationId: OrganizationId): Boolean = true
-
-  override fun canDeleteParticipant(participantId: ParticipantId): Boolean = true
-
-  override fun canDeleteParticipantProjectSpecies(
-      participantProjectSpeciesId: ParticipantProjectSpeciesId
-  ): Boolean = true
-
-  override fun canDeleteParticipantProject(
-      participantId: ParticipantId,
-      projectId: ProjectId
-  ): Boolean = true
-
-  override fun canDeletePlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
-
-  override fun canDeleteProject(projectId: ProjectId): Boolean = true
 
   override fun canDeleteReport(reportId: ReportId): Boolean = false
 
   override fun canDeleteSelf(): Boolean = false
 
-  override fun canDeleteSpecies(speciesId: SpeciesId): Boolean = true
-
-  override fun canDeleteSubLocation(subLocationId: SubLocationId): Boolean = true
-
-  override fun canDeleteSupportIssue(): Boolean = true
-
-  override fun canDeleteUpload(uploadId: UploadId): Boolean = true
-
   override fun canDeleteUsers(): Boolean = false
 
   override fun canImportGlobalSpeciesData(): Boolean = false
-
-  override fun canListAutomations(facilityId: FacilityId): Boolean = true
-
-  override fun canListFacilities(organizationId: OrganizationId): Boolean = true
-
-  override fun canListNotifications(organizationId: OrganizationId?): Boolean = true
-
-  override fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = true
-
-  override fun canListReports(organizationId: OrganizationId): Boolean = true
 
   override fun canManageDeliverables(): Boolean = false
 
@@ -265,227 +120,14 @@ class SystemUser(
 
   override fun canManageModuleEvents(): Boolean = false
 
-  override fun canManageModuleEventStatuses() = true
-
   override fun canManageModules(): Boolean = false
-
-  override fun canManageNotifications(): Boolean = true
-
-  override fun canManageObservation(observationId: ObservationId): Boolean = true
-
-  override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean = true
-
-  override fun canReadAccession(accessionId: AccessionId): Boolean = true
-
-  override fun canReadAllAcceleratorDetails(): Boolean = true
-
-  override fun canReadAllDeliverables(): Boolean = true
-
-  override fun canReadAutomation(automationId: AutomationId): Boolean = true
-
-  override fun canReadBatch(batchId: BatchId): Boolean = true
-
-  override fun canReadCohort(cohortId: CohortId): Boolean = true
-
-  override fun canReadCohortParticipants(cohortId: CohortId): Boolean = true
-
-  override fun canReadCohorts(): Boolean = true
-
-  override fun canReadDefaultVoters(): Boolean = true
-
-  override fun canReadDelivery(deliveryId: DeliveryId): Boolean = true
-
-  override fun canReadDevice(deviceId: DeviceId): Boolean = true
-
-  override fun canReadDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
-
-  override fun canReadDocument(documentId: DocumentId): Boolean = true
-
-  override fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = true
-
-  override fun canReadFacility(facilityId: FacilityId): Boolean = true
-
-  override fun canReadGlobalRoles(): Boolean = true
-
-  override fun canReadInternalTags(): Boolean = true
-
-  override fun canReadInternalVariableWorkflowDetails(projectId: ProjectId): Boolean = true
-
-  override fun canReadModule(moduleId: ModuleId): Boolean = true
-
-  override fun canReadModuleDetails(moduleId: ModuleId): Boolean = true
-
-  override fun canReadModuleEvent(eventId: EventId): Boolean = true
-
-  override fun canReadModuleEventParticipants(): Boolean = true
-
-  override fun canReadMonitoringPlot(monitoringPlotId: MonitoringPlotId): Boolean = true
-
-  override fun canReadNotification(notificationId: NotificationId): Boolean = true
-
-  override fun canReadObservation(observationId: ObservationId): Boolean = true
-
-  override fun canReadOrganization(organizationId: OrganizationId): Boolean = true
-
-  override fun canReadOrganizationDeliverables(organizationId: OrganizationId): Boolean = true
-
-  override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
-      true
-
-  override fun canReadParticipant(participantId: ParticipantId): Boolean = true
-
-  override fun canReadParticipantProjectSpecies(
-      participantProjectSpeciesId: ParticipantProjectSpeciesId
-  ): Boolean = true
-
-  override fun canReadPlanting(plantingId: PlantingId): Boolean = true
-
-  override fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
-
-  override fun canReadPlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean = true
-
-  override fun canReadPlantingZone(plantingZoneId: PlantingZoneId): Boolean = true
-
-  override fun canReadProject(projectId: ProjectId): Boolean = true
-
-  override fun canReadProjectAcceleratorDetails(projectId: ProjectId): Boolean = true
-
-  override fun canReadProjectDeliverables(projectId: ProjectId): Boolean = true
-
-  override fun canReadProjectModules(projectId: ProjectId): Boolean = true
-
-  override fun canReadProjectScores(projectId: ProjectId): Boolean = true
-
-  override fun canReadProjectVotes(projectId: ProjectId): Boolean = true
-
-  override fun canReadReport(reportId: ReportId): Boolean = true
-
-  override fun canReadSpecies(speciesId: SpeciesId): Boolean = true
-
-  override fun canReadSubLocation(subLocationId: SubLocationId): Boolean = true
-
-  override fun canReadSubmission(submissionId: SubmissionId): Boolean = true
-
-  override fun canReadSubmissionDocument(documentId: SubmissionDocumentId): Boolean = true
-
-  override fun canReadTimeseries(deviceId: DeviceId): Boolean = true
-
-  override fun canReadUpload(uploadId: UploadId): Boolean = true
-
-  override fun canReadUser(userId: UserId): Boolean = true
-
-  override fun canReadUserDeliverableCategories(userId: UserId): Boolean = true
-
-  override fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean = true
-
-  override fun canReadWithdrawal(withdrawalId: WithdrawalId): Boolean = true
 
   override fun canRegenerateAllDeviceManagerTokens(): Boolean = false
 
-  override fun canRemoveOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
-      true
-
-  override fun canRemoveTerraformationContact(organizationId: OrganizationId): Boolean = true
-
-  override fun canReplaceObservationPlot(observationId: ObservationId): Boolean = true
-
-  override fun canRescheduleObservation(observationId: ObservationId): Boolean = true
-
-  override fun canSendAlert(facilityId: FacilityId): Boolean = true
-
-  override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
-      true
-
-  override fun canSetTerraformationContact(organizationId: OrganizationId): Boolean = true
-
-  override fun canSetTestClock(): Boolean = true
-
-  override fun canSetWithdrawalUser(accessionId: AccessionId): Boolean = true
-
-  override fun canScheduleObservation(plantingSiteId: PlantingSiteId): Boolean = true
-
-  override fun canTriggerAutomation(automationId: AutomationId): Boolean = true
-
-  override fun canUpdateAccession(accessionId: AccessionId): Boolean = true
-
-  override fun canUpdateAppVersions(): Boolean = true
-
-  override fun canUpdateAutomation(automationId: AutomationId): Boolean = true
-
-  override fun canUpdateBatch(batchId: BatchId): Boolean = true
-
-  override fun canUpdateCohort(cohortId: CohortId): Boolean = true
-
-  override fun canUpdateDefaultVoters(): Boolean = true
-
-  override fun canUpdateDelivery(deliveryId: DeliveryId): Boolean = true
-
-  override fun canUpdateDevice(deviceId: DeviceId): Boolean = true
-
-  override fun canUpdateDeviceManager(deviceManagerId: DeviceManagerId): Boolean = true
-
-  override fun canUpdateDeviceTemplates(): Boolean = true
-
-  override fun canUpdateDocument(documentId: DocumentId): Boolean = true
-
-  override fun canUpdateDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean = true
-
-  override fun canUpdateFacility(facilityId: FacilityId): Boolean = true
-
-  override fun canUpdateGlobalRoles(): Boolean = true
-
-  override fun canUpdateInternalVariableWorkflowDetails(projectId: ProjectId): Boolean = true
-
-  override fun canUpdateSpecificGlobalRoles(globalRoles: Set<GlobalRole>): Boolean = true
-
-  override fun canUpdateNotification(notificationId: NotificationId): Boolean = true
-
-  override fun canUpdateNotifications(organizationId: OrganizationId?): Boolean = true
-
-  override fun canUpdateObservation(observationId: ObservationId): Boolean = true
-
-  override fun canUpdateOrganization(organizationId: OrganizationId): Boolean = true
-
-  override fun canUpdateParticipant(participantId: ParticipantId): Boolean = true
-
-  override fun canUpdateParticipantProjectSpecies(
-      participantProjectSpeciesId: ParticipantProjectSpeciesId
-  ): Boolean = true
-
-  override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = true
-
-  override fun canUpdatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean = true
-
-  override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean = true
-
-  override fun canUpdateProject(projectId: ProjectId): Boolean = true
-
-  override fun canUpdateProjectAcceleratorDetails(projectId: ProjectId): Boolean = true
-
   override fun canUpdateProjectDocumentSettings(projectId: ProjectId): Boolean = false
-
-  override fun canUpdateProjectScores(projectId: ProjectId): Boolean = true
-
-  override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = true
-
-  override fun canUpdateReport(reportId: ReportId): Boolean = true
-
-  override fun canUpdateSpecies(speciesId: SpeciesId): Boolean = true
-
-  override fun canUpdateSubLocation(subLocationId: SubLocationId): Boolean = true
 
   override fun canUpdateSubmissionStatus(
       deliverableId: DeliverableId,
       projectId: ProjectId
   ): Boolean = false
-
-  override fun canUpdateTerraformationContact(organizationId: OrganizationId): Boolean = true
-
-  override fun canUpdateTimeseries(deviceId: DeviceId): Boolean = true
-
-  override fun canUpdateUpload(uploadId: UploadId): Boolean = true
-
-  override fun canUpdateUserDeliverableCategories(userId: UserId): Boolean = true
-
-  override fun canUploadPhoto(accessionId: AccessionId): Boolean = true
 }
