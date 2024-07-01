@@ -4,9 +4,11 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
@@ -31,6 +33,7 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
+import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
@@ -105,6 +108,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var accessionStore: AccessionStore
   private lateinit var automationStore: AutomationStore
+  private lateinit var deliverableStore: DeliverableStore
   private lateinit var deviceStore: DeviceStore
   private lateinit var facilityStore: FacilityStore
   private lateinit var moduleEventStore: ModuleEventStore
@@ -116,6 +120,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var plantingSiteStore: PlantingSiteStore
   private lateinit var projectStore: ProjectStore
   private lateinit var speciesStore: SpeciesStore
+  private lateinit var userDeliverableCategoriesStore: UserDeliverableCategoriesStore
   private lateinit var userStore: UserStore
   private lateinit var service: AppNotificationService
   private lateinit var webAppUrls: WebAppUrls
@@ -142,6 +147,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             IdentifierGenerator(clock, dslContext),
         )
     automationStore = AutomationStore(automationsDao, clock, dslContext, objectMapper, parentStore)
+    deliverableStore = DeliverableStore(dslContext)
     deviceStore = DeviceStore(devicesDao)
     facilityStore =
         FacilityStore(
@@ -178,6 +184,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             speciesEcosystemTypesDao,
             speciesGrowthFormsDao,
             speciesProblemsDao)
+    userDeliverableCategoriesStore = UserDeliverableCategoriesStore(clock, dslContext)
     userStore =
         UserStore(
             clock,
@@ -196,6 +203,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     service =
         AppNotificationService(
             automationStore,
+            deliverableStore,
             deviceStore,
             dslContext,
             facilityStore,
@@ -209,6 +217,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             projectStore,
             speciesStore,
             SystemUser(usersDao),
+            userDeliverableCategoriesStore,
             userStore,
             messages,
             webAppUrls)
@@ -227,6 +236,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateAutomation(any()) } returns true
     every { user.canCreateNotification(any(), organizationId) } returns true
     every { user.canReadAccession(any()) } returns true
+    every { user.canReadAllDeliverables() } returns true
     every { user.canReadAutomation(any()) } returns true
     every { user.canReadDevice(any()) } returns true
     every { user.canReadFacility(any()) } returns true
@@ -594,12 +604,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `should store deliverable ready for review notification`() {
+  fun `should store deliverable ready for review notification for admin with no categories`() {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
     val cohortId = insertCohort()
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
-    val deliverableId = DeliverableId(1)
+    insertModule()
+    val deliverableId = insertDeliverable()
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
@@ -615,7 +626,52 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `should store deliverable ready for review notification for admin with correct category`() {
+    insertModule()
+    insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
+    val cohortId = insertCohort()
+    val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
+    val projectId = insertProject(participantId = participantId)
+
+    insertUserDeliverableCategory(DeliverableCategory.GIS, user.userId)
+    val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
+
+    every { messages.deliverableReadyForReview("participant1") } returns
+        NotificationMessage("ready for review title", "ready for review body")
+
+    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
+
+    assertNotification(
+        type = NotificationType.DeliverableReadyForReview,
+        title = "ready for review title",
+        body = "ready for review body",
+        localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
+        organizationId = null)
+  }
+
+  @Test
+  fun `should not store deliverable ready for review notification for admin with wrong category`() {
+    insertModule()
+    insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
+
+    val cohortId = insertCohort()
+    val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
+    val projectId = insertProject(participantId = participantId)
+
+    insertUserDeliverableCategory(DeliverableCategory.Compliance)
+    val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
+
+    every { messages.deliverableReadyForReview("participant1") } returns
+        NotificationMessage("ready for review title", "ready for review body")
+
+    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
+
+    assertNotifications(emptyList())
+  }
+
+  @Test
   fun `should store deliverable ready for review notification with TF contact`() {
+    insertModule()
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
     val tfContact = insertUser(UserId(5), email = "tfcontact@terraformation.com")
     insertOrganizationUser(tfContact, role = Role.TerraformationContact)
@@ -623,7 +679,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val cohortId = insertCohort()
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
-    val deliverableId = DeliverableId(1)
+
+    // TF contact has the wrong deliverable category but we should notify them anyway because
+    // being the contact overrides the category filtering.
+    insertUserDeliverableCategory(DeliverableCategory.Compliance, tfContact)
+    val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
@@ -658,7 +718,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val cohortId = insertCohort()
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
-    val deliverableId = DeliverableId(1)
+    insertModule()
+    val deliverableId = insertDeliverable()
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
@@ -733,7 +794,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val projectId = insertProject(participantId = participantId)
     val speciesId = insertSpecies()
     insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
-    val deliverableId = DeliverableId(1)
+    insertModule()
+    val deliverableId = insertDeliverable()
 
     every {
       messages.participantProjectSpeciesAddedToProject("Participant 1", "Project 1", "Species 1")
@@ -759,7 +821,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val projectId = insertProject(participantId = participantId)
     val speciesId = insertSpecies()
     insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
-    val deliverableId = DeliverableId(1)
+    insertModule()
+    val deliverableId = insertDeliverable()
 
     every {
       messages.participantProjectSpeciesApprovedSpeciesEdited("Participant 1", "Species 1")

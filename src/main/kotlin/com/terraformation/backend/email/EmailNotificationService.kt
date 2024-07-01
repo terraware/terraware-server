@@ -1,6 +1,8 @@
 package com.terraformation.backend.email
 
+import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
@@ -27,6 +29,7 @@ import com.terraformation.backend.daily.NotificationJobStartedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -96,6 +99,7 @@ import org.springframework.context.event.EventListener
 class EmailNotificationService(
     private val automationStore: AutomationStore,
     private val config: TerrawareServerConfig,
+    private val deliverableStore: DeliverableStore,
     private val deviceStore: DeviceStore,
     private val emailService: EmailService,
     private val facilityStore: FacilityStore,
@@ -106,6 +110,7 @@ class EmailNotificationService(
     private val projectStore: ProjectStore,
     private val speciesStore: SpeciesStore,
     private val systemUser: SystemUser,
+    private val userDeliverableCategoriesStore: UserDeliverableCategoriesStore,
     private val userStore: UserStore,
     private val webAppUrls: WebAppUrls,
 ) {
@@ -531,6 +536,7 @@ class EmailNotificationService(
     val project = projectStore.fetchOneById(event.projectId)
     val participant = participantStore.fetchOneById(project.participantId!!)
     val species = speciesStore.fetchSpeciesById(event.speciesId)
+    val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
 
     sendToAccelerator(
         project.organizationId,
@@ -541,7 +547,8 @@ class EmailNotificationService(
                 .toString(),
             participant.name,
             project.name,
-            species.scientificName))
+            species.scientificName),
+        deliverableCategory)
   }
 
   @EventListener
@@ -549,6 +556,7 @@ class EmailNotificationService(
     val project = projectStore.fetchOneById(event.projectId)
     val participant = participantStore.fetchOneById(project.participantId!!)
     val species = speciesStore.fetchSpeciesById(event.speciesId)
+    val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
 
     sendToAccelerator(
         project.organizationId,
@@ -558,7 +566,8 @@ class EmailNotificationService(
                 .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
                 .toString(),
             participant.name,
-            species.scientificName))
+            species.scientificName),
+        deliverableCategory)
   }
 
   @EventListener
@@ -569,7 +578,9 @@ class EmailNotificationService(
       return
     }
 
+    val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
     val participant = participantStore.fetchOneById(project.participantId)
+
     sendToAccelerator(
         project.organizationId,
         DeliverableReadyForReview(
@@ -577,7 +588,8 @@ class EmailNotificationService(
             webAppUrls
                 .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
                 .toString(),
-            participant.name))
+            participant.name),
+        deliverableCategory)
   }
 
   @EventListener
@@ -676,10 +688,23 @@ class EmailNotificationService(
 
   /**
    * Sends an email notification to the accelerator team and an organization's Contact. Does not
-   * require user opt-in.
+   * require user opt-in. If the notification relates to a deliverable category, only sends email to
+   * TF Expert users who either have no deliverable categories assigned to them or have the category
+   * in question. The organization's Contact is always included regardless of their deliverable
+   * categories.
    */
-  private fun sendToAccelerator(organizationId: OrganizationId, model: EmailTemplateModel) {
-    val recipients = userStore.fetchWithGlobalRoles(setOf(GlobalRole.TFExpert)).toMutableSet()
+  private fun sendToAccelerator(
+      organizationId: OrganizationId,
+      model: EmailTemplateModel,
+      deliverableCategory: DeliverableCategory? = null,
+  ) {
+    val deliverableCategoryCondition =
+        deliverableCategory?.let { userDeliverableCategoriesStore.conditionForUsers(it) }
+    val recipients =
+        userStore
+            .fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), deliverableCategoryCondition)
+            .toMutableSet()
+
     val tfContact = userStore.getTerraformationContactUser(organizationId)
 
     // The TF contact will not have access to the accelerator console, this email notification

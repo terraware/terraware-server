@@ -1,8 +1,10 @@
 package com.terraformation.backend.customer
 
+import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
@@ -21,6 +23,7 @@ import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationType
@@ -59,6 +62,7 @@ import org.springframework.context.event.EventListener
 @Named
 class AppNotificationService(
     private val automationStore: AutomationStore,
+    private val deliverableStore: DeliverableStore,
     private val deviceStore: DeviceStore,
     private val dslContext: DSLContext,
     private val facilityStore: FacilityStore,
@@ -72,6 +76,7 @@ class AppNotificationService(
     private val projectStore: ProjectStore,
     private val speciesStore: SpeciesStore,
     private val systemUser: SystemUser,
+    private val userDeliverableCategoriesStore: UserDeliverableCategoriesStore,
     private val userStore: UserStore,
     private val messages: Messages,
     private val webAppUrls: WebAppUrls,
@@ -281,6 +286,7 @@ class AppNotificationService(
     val species = speciesStore.fetchSpeciesById(event.speciesId)
 
     val participant = participantStore.fetchOneById(project.participantId)
+    val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
     val deliverableUrl =
         webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
     val renderMessage = {
@@ -292,7 +298,8 @@ class AppNotificationService(
         deliverableUrl,
         NotificationType.ParticipantProjectSpeciesApprovedSpeciesEdited,
         project.organizationId,
-        renderMessage)
+        renderMessage,
+        deliverableCategory)
   }
 
   @EventListener
@@ -310,6 +317,7 @@ class AppNotificationService(
     val species = speciesStore.fetchSpeciesById(event.speciesId)
 
     val participant = participantStore.fetchOneById(project.participantId)
+    val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
     val deliverableUrl =
         webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
     val renderMessage = {
@@ -323,7 +331,8 @@ class AppNotificationService(
         deliverableUrl,
         NotificationType.ParticipantProjectSpeciesAddedToProject,
         project.organizationId,
-        renderMessage)
+        renderMessage,
+        deliverableCategory)
   }
 
   @EventListener
@@ -375,6 +384,7 @@ class AppNotificationService(
       }
 
       val participant = participantStore.fetchOneById(project.participantId)
+      val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
       val deliverableUrl =
           webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
       val renderMessage = { messages.deliverableReadyForReview(participant.name) }
@@ -387,7 +397,8 @@ class AppNotificationService(
           deliverableUrl,
           NotificationType.DeliverableReadyForReview,
           project.organizationId,
-          renderMessage)
+          renderMessage,
+          deliverableCategory)
     }
   }
 
@@ -511,8 +522,15 @@ class AppNotificationService(
       notificationType: NotificationType,
       organizationId: OrganizationId,
       renderMessage: () -> NotificationMessage,
+      deliverableCategory: DeliverableCategory? = null,
   ) {
-    val recipients = userStore.fetchWithGlobalRoles(setOf(GlobalRole.TFExpert)).toMutableSet()
+    val deliverableCategoryCondition =
+        deliverableCategory?.let { userDeliverableCategoriesStore.conditionForUsers(it) }
+    val recipients =
+        userStore
+            .fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), deliverableCategoryCondition)
+            .toMutableSet()
+
     val tfContact = userStore.getTerraformationContactUser(organizationId)
 
     if (tfContact != null) {
