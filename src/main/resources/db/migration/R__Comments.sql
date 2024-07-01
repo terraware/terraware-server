@@ -537,6 +537,8 @@ COMMENT ON TABLE accelerator.submission_statuses IS '(Enum) Statuses of submissi
 
 COMMENT ON TABLE accelerator.submissions IS 'Information about the current states of the information supplied by specific projects in response to deliverables.';
 
+COMMENT ON TABLE accelerator.user_deliverable_categories IS 'Which deliverable categories are assigned to which internal users. This affects things like which accelerator admins are notified about deliverable updates.';
+
 COMMENT ON TABLE accelerator.vote_options IS '(Enum) Available vote options.';
 
 

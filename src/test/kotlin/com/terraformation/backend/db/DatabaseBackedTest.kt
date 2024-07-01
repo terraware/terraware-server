@@ -44,6 +44,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshotsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
+import com.terraformation.backend.db.accelerator.tables.daos.UserDeliverableCategoriesDao
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DefaultVotersRow
@@ -62,6 +63,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVoteDecisio
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionDocumentsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.UserDeliverableCategoriesRow
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.EcosystemType
@@ -552,6 +554,7 @@ abstract class DatabaseBackedTest {
   protected val timeZonesDao: TimeZonesDao by lazyDao()
   protected val uploadProblemsDao: UploadProblemsDao by lazyDao()
   protected val uploadsDao: UploadsDao by lazyDao()
+  protected val userDeliverableCategoriesDao: UserDeliverableCategoriesDao by lazyDao()
   protected val userGlobalRolesDao: UserGlobalRolesDao by lazyDao()
   protected val usersDao: UsersDao by lazyDao()
   protected val variableImageValuesDao: VariableImageValuesDao by lazyDao()
@@ -1120,6 +1123,21 @@ abstract class DatabaseBackedTest {
         }
 
     return insertedId.also { inserted.userIds.add(it) }
+  }
+
+  fun insertUserDeliverableCategory(
+      deliverableCategory: DeliverableCategory,
+      userId: Any = inserted.userId,
+      createdBy: Any = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+  ) {
+    userDeliverableCategoriesDao.insert(
+        UserDeliverableCategoriesRow(
+            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdTime = createdTime,
+            deliverableCategoryId = deliverableCategory,
+            userId = userId.toIdWrapper { UserId(it) },
+        ))
   }
 
   fun insertUserGlobalRole(

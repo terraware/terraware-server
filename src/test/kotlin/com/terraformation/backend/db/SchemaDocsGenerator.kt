@@ -156,6 +156,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "submission_snapshots" to setOf(ALL, ACCELERATOR),
                   "submission_statuses" to setOf(ALL, ACCELERATOR),
                   "submissions" to setOf(ALL, ACCELERATOR),
+                  "user_deliverable_categories" to setOf(ALL, ACCELERATOR),
                   "vote_options" to setOf(ALL, ACCELERATOR),
               ),
           "nursery" to
@@ -400,8 +401,7 @@ class SchemaDocsGenerator : DatabaseTest() {
 
       // Diff the configuration and the list of tables from the DB in two assertions so the failure
       // message is easier to read; assertEquals() would require hunting through a big list of
-      // tables
-      // to spot the differences.
+      // tables to spot the differences.
 
       assertEquals(
           emptySet<String>(),
