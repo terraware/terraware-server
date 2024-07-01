@@ -35,10 +35,6 @@ class DeviceManagerStore(
         ?: throw DeviceManagerNotFoundException(id)
   }
 
-  fun fetchOneBySensorKitId(sensorKitId: String): DeviceManagersRow? {
-    return deviceManagersDao.fetchOneBySensorKitId(sensorKitId)?.unlessInaccessible()
-  }
-
   /** Returns all device managers the current user has permission to see. */
   fun findAll(): List<DeviceManagersRow> {
     val facilityIds = currentUser().facilityRoles.keys.ifEmpty { null }
