@@ -225,7 +225,7 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should throw an error when reading notifications belonging to another user`() {
-    val otherUserId = insertUser(3)
+    val otherUserId = insertUser()
     assertThrows<NotificationNotFoundException> {
       val notification = notificationModel(userId = otherUserId)
       store.create(notification, organizationId)
@@ -235,7 +235,7 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should delete user notifications when user is deleted`() {
-    val otherUserId = insertUser(3)
+    val otherUserId = insertUser()
 
     store.create(notificationModel(userId = otherUserId), organizationId)
 

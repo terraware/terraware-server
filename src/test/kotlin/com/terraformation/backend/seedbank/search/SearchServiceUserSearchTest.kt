@@ -21,15 +21,15 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
   private val usersPrefix = SearchFieldPrefix(tables.users)
 
   private val otherOrganizationId = OrganizationId(2)
-  private val bothOrgsUserId = UserId(4)
-  private val otherOrgUserId = UserId(5)
-  private val deviceManagerUserId = UserId(6)
+  private lateinit var bothOrgsUserId: UserId
+  private lateinit var otherOrgUserId: UserId
+  private lateinit var deviceManagerUserId: UserId
 
   @BeforeEach
   fun insertOtherUsers() {
-    insertUser(deviceManagerUserId, type = UserType.DeviceManager)
-    insertUser(bothOrgsUserId)
-    insertUser(otherOrgUserId)
+    deviceManagerUserId = insertUser(type = UserType.DeviceManager)
+    bothOrgsUserId = insertUser()
+    otherOrgUserId = insertUser()
 
     insertOrganization(otherOrganizationId)
 

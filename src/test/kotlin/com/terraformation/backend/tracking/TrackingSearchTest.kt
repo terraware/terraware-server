@@ -38,7 +38,6 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     insertOrganizationUser()
 

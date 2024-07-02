@@ -58,7 +58,6 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     insertFacility(type = FacilityType.Nursery)
 

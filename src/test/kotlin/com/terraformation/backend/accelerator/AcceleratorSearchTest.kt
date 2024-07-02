@@ -32,7 +32,6 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
     insertParticipant()
@@ -359,7 +358,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
         insertProject(
             organizationId = inserted.organizationId, participantId = inserted.participantId)
 
-    val otherUser = insertUser(100)
+    val otherUser = insertUser()
     val otherOrganization = insertOrganization(id = 100, createdBy = otherUser)
     insertOrganizationUser(
         userId = otherUser, organizationId = otherOrganization, role = Role.Admin)

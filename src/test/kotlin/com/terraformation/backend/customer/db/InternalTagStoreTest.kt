@@ -29,8 +29,6 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
-
     every { user.canManageInternalTags() } returns true
     every { user.canReadInternalTags() } returns true
   }

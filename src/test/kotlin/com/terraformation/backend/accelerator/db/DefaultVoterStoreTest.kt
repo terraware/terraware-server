@@ -21,8 +21,6 @@ class DefaultVoterStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
-
     every { user.canReadDefaultVoters() } returns true
     every { user.canUpdateDefaultVoters() } returns true
   }
@@ -36,11 +34,11 @@ class DefaultVoterStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches all with users added`() {
-      val user100 = insertUser(100)
-      val user200 = insertUser(200)
-      insertDefaultVoter(user100)
-      insertDefaultVoter(user200)
-      assertEquals(listOf(user100, user200), store.findAll())
+      val user1 = insertUser()
+      val user2 = insertUser()
+      insertDefaultVoter(user1)
+      insertDefaultVoter(user2)
+      assertEquals(listOf(user1, user2), store.findAll())
     }
 
     @Test
@@ -54,23 +52,23 @@ class DefaultVoterStoreTest : DatabaseTest(), RunsAsUser {
   inner class Exists {
     @Test
     fun `exists when empty`() {
-      val user100 = insertUser(100)
-      assertFalse(store.exists(user100))
+      val userId = insertUser()
+      assertFalse(store.exists(userId))
     }
 
     @Test
     fun `exists when user is not in table`() {
-      val user100 = insertUser(100)
-      val user200 = insertUser(200)
-      insertDefaultVoter(user100)
-      assertFalse(store.exists(user200))
+      val user1 = insertUser()
+      val user2 = insertUser()
+      insertDefaultVoter(user1)
+      assertFalse(store.exists(user2))
     }
 
     @Test
     fun `exists when user is in table`() {
-      val user100 = insertUser(100)
-      insertDefaultVoter(user100)
-      assertTrue(store.exists(user100))
+      val userId = insertUser()
+      insertDefaultVoter(userId)
+      assertTrue(store.exists(userId))
     }
   }
 
@@ -79,7 +77,7 @@ class DefaultVoterStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `inserts new entry to empty`() {
-      val userId = insertUser(100)
+      val userId = insertUser()
       store.insert(userId)
 
       assertEquals(listOf(DefaultVotersRow(userId)), defaultVotersDao.findAll())
@@ -87,28 +85,28 @@ class DefaultVoterStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `inserts new entry to non-empty`() {
-      val user100 = insertUser(100)
-      val user200 = insertUser(200)
-      insertDefaultVoter(user100)
-      store.insert(user200)
+      val user1 = insertUser()
+      val user2 = insertUser()
+      insertDefaultVoter(user1)
+      store.insert(user2)
 
       assertEquals(
-          listOf(DefaultVotersRow(user100), DefaultVotersRow(user200)), defaultVotersDao.findAll())
+          listOf(DefaultVotersRow(user1), DefaultVotersRow(user2)), defaultVotersDao.findAll())
     }
 
     @Test
     fun `inserts duplicated results in no-op`() {
-      val user100 = insertUser(100)
-      insertDefaultVoter(user100)
-      store.insert(user100)
-      assertEquals(listOf(DefaultVotersRow(user100)), defaultVotersDao.findAll())
+      val userId = insertUser()
+      insertDefaultVoter(userId)
+      store.insert(userId)
+      assertEquals(listOf(DefaultVotersRow(userId)), defaultVotersDao.findAll())
     }
 
     @Test
     fun `inserts without permission throws exception`() {
-      val user100 = insertUser(100)
+      val userId = insertUser()
       every { user.canUpdateDefaultVoters() } returns false
-      assertThrows<AccessDeniedException> { store.insert(user100) }
+      assertThrows<AccessDeniedException> { store.insert(userId) }
     }
   }
 
@@ -117,7 +115,7 @@ class DefaultVoterStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `deletes only one`() {
-      val userId = insertUser(100)
+      val userId = insertUser()
 
       insertDefaultVoter(userId)
       store.delete(userId)
@@ -127,31 +125,31 @@ class DefaultVoterStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `deletes one from many`() {
-      val user100 = insertUser(100)
-      val user200 = insertUser(200)
-      insertDefaultVoter(user100)
-      insertDefaultVoter(user200)
-      store.delete(user200)
+      val user1 = insertUser()
+      val user2 = insertUser()
+      insertDefaultVoter(user1)
+      insertDefaultVoter(user2)
+      store.delete(user2)
 
-      assertEquals(listOf(DefaultVotersRow(user100)), defaultVotersDao.findAll())
+      assertEquals(listOf(DefaultVotersRow(user1)), defaultVotersDao.findAll())
     }
 
     @Test
     fun `deletes no matching record results in no-op`() {
-      val user100 = insertUser(100)
-      val user200 = insertUser(200)
-      insertDefaultVoter(user100)
-      store.delete(user200)
+      val user1 = insertUser()
+      val user2 = insertUser()
+      insertDefaultVoter(user1)
+      store.delete(user2)
 
-      assertEquals(listOf(DefaultVotersRow(user100)), defaultVotersDao.findAll())
+      assertEquals(listOf(DefaultVotersRow(user1)), defaultVotersDao.findAll())
     }
 
     @Test
     fun `deletes without permission throws exception`() {
-      val user100 = insertUser(100)
-      insertDefaultVoter(user100)
+      val user1 = insertUser()
+      insertDefaultVoter(user1)
       every { user.canUpdateDefaultVoters() } returns false
-      assertThrows<AccessDeniedException> { store.delete(user100) }
+      assertThrows<AccessDeniedException> { store.delete(user1) }
     }
   }
 }

@@ -29,7 +29,6 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     insertOrganizationUser(
         userId = inserted.userId, organizationId = inserted.organizationId, role = Role.Admin)
@@ -198,7 +197,7 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
     val userParticipant = insertParticipant(cohortId = userCohort)
     insertProject(participantId = userParticipant, organizationId = inserted.organizationId)
 
-    val otherUser = insertUser(100)
+    val otherUser = insertUser()
     val otherCohort = insertCohort()
     val otherParticipant = insertParticipant(cohortId = otherCohort)
     val otherOrganization = insertOrganization(100)

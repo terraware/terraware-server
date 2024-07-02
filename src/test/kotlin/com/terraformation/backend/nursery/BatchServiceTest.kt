@@ -67,7 +67,6 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateBatch(any()) } returns true
     every { user.canUpdateDelivery(any()) } returns true
 
-    insertUser()
     insertOrganization()
     insertFacility(type = FacilityType.Nursery)
   }

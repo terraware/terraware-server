@@ -22,7 +22,6 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     insertOrganizationUser(currentUser().userId, inserted.organizationId)
     every { user.canReadOrganization(inserted.organizationId) } returns true

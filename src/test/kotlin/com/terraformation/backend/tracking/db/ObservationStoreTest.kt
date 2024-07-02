@@ -79,7 +79,6 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     plantingSiteId = insertPlantingSite()
 
@@ -151,8 +150,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchObservationPlotDetails {
     @Test
     fun `calculates correct values from related tables`() {
-      val userId1 = insertUser(101, firstName = "First", lastName = "Person")
-      val userId2 = insertUser(102, firstName = "Second", lastName = "Human")
+      val userId1 = insertUser(firstName = "First", lastName = "Person")
+      val userId2 = insertUser(firstName = "Second", lastName = "Human")
 
       insertPlantingZone(name = "Z1")
       val plantingSubzoneId1 = insertPlantingSubzone(fullName = "Z1-S1", name = "S1")
@@ -838,7 +837,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if plot is claimed by someone else`() {
-      val otherUserId = insertUser(100)
+      val otherUserId = insertUser()
 
       insertObservationPlot(claimedBy = otherUserId, claimedTime = Instant.EPOCH)
 
@@ -894,7 +893,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if plot is claimed by someone else`() {
-      val otherUserId = insertUser(100)
+      val otherUserId = insertUser()
 
       insertObservationPlot(claimedBy = otherUserId, claimedTime = Instant.EPOCH)
 

@@ -28,7 +28,6 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     insertCohort(phase = CohortPhase.Phase0DueDiligence)
     insertParticipant(cohortId = inserted.cohortId)

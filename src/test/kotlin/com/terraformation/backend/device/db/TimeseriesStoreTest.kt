@@ -8,7 +8,6 @@ import com.terraformation.backend.db.TimeseriesNotFoundException
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.TimeseriesId
 import com.terraformation.backend.db.default_schema.TimeseriesType
-import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeseriesValuesRow
 import com.terraformation.backend.db.default_schema.tables.records.TimeseriesValuesRecord
@@ -103,8 +102,9 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createOrUpdate updates existing timeseries with same name and device ID`() {
-    val otherUser = mockUser(UserId(3))
-    insertUser(otherUser.userId)
+    val otherUser = mockUser()
+    val otherUserId = insertUser()
+    every { otherUser.userId } returns otherUserId
     every { otherUser.canCreateTimeseries(any()) } returns true
 
     timeseriesDao.insert(timeseriesRow)

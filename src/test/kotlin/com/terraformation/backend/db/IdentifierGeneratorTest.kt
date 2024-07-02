@@ -19,7 +19,6 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
   }
 

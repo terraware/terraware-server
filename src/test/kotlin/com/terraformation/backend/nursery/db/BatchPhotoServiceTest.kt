@@ -65,7 +65,6 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     insertSpecies()
     insertFacility(type = FacilityType.Nursery)

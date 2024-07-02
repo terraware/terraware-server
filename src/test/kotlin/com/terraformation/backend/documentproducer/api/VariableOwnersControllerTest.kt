@@ -17,7 +17,6 @@ class VariableOwnersControllerTest : ControllerIntegrationTest() {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     projectId = insertProject()
   }
@@ -36,8 +35,8 @@ class VariableOwnersControllerTest : ControllerIntegrationTest() {
 
       @Test
       fun `returns owner user IDs for variables with owners`() {
-        val ownerId1 = insertUser(100)
-        val ownerId2 = insertUser(101)
+        val ownerId1 = insertUser()
+        val ownerId2 = insertUser()
 
         val sectionId1 = insertSectionVariable()
         val sectionId2 = insertSectionVariable()
@@ -119,7 +118,7 @@ class VariableOwnersControllerTest : ControllerIntegrationTest() {
 
       @Test
       fun `updates owner if one already exists`() {
-        val newOwnerId = insertUser(100)
+        val newOwnerId = insertUser()
         insertVariableOwner(sectionId, user.userId)
         insertVariableOwner(otherSectionId, user.userId)
 

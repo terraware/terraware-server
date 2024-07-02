@@ -17,7 +17,6 @@ import org.springframework.test.web.servlet.put
 class VariableWorkflowControllerTest : ControllerIntegrationTest() {
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
   }
 

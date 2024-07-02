@@ -21,7 +21,6 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
     insertCohort(phase = CohortPhase.Phase1FeasibilityStudy)

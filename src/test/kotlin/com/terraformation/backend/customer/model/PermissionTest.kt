@@ -123,7 +123,7 @@ internal class PermissionTest : DatabaseTest() {
 
   private val clock = Clock.fixed(Instant.EPOCH, ZoneOffset.UTC)!!
 
-  private val userId = UserId(1234)
+  private lateinit var userId: UserId
   private val user: TerrawareUser by lazy { fetchUser() }
 
   /*
@@ -165,13 +165,8 @@ internal class PermissionTest : DatabaseTest() {
   private val deviceManagerIds = listOf(1000L, 1001L, 2000L).map { DeviceManagerId(it) }
   private val nonConnectedDeviceManagerIds = deviceManagerIds.filterToArray { it.value >= 2000 }
 
-  private val sameOrgUserId = UserId(8765)
-  private val otherUserIds =
-      mapOf(
-          OrganizationId(1) to sameOrgUserId,
-          OrganizationId(2) to UserId(8766),
-          OrganizationId(3) to UserId(9876),
-          OrganizationId(4) to UserId(6543))
+  private lateinit var sameOrgUserId: UserId
+  private lateinit var otherUserIds: Map<OrganizationId, UserId>
 
   private val uploadId = UploadId(1)
 
@@ -214,7 +209,8 @@ internal class PermissionTest : DatabaseTest() {
             usersDao,
         )
 
-    insertUser(userId)
+    userId = insertUser()
+    sameOrgUserId = insertUser()
 
     organizationIds.forEach { organizationId ->
       insertOrganization(organizationId, createdBy = userId)
@@ -223,8 +219,14 @@ internal class PermissionTest : DatabaseTest() {
 
     insertOrganizationInternalTag(OrganizationId(4), InternalTagIds.Accelerator, createdBy = userId)
 
+    otherUserIds =
+        mapOf(
+            OrganizationId(1) to sameOrgUserId,
+            OrganizationId(2) to insertUser(),
+            OrganizationId(3) to insertUser(),
+            OrganizationId(4) to insertUser())
+
     otherUserIds.forEach { (organizationId, otherUserId) ->
-      insertUser(otherUserId)
       insertOrganizationUser(otherUserId, organizationId, createdBy = userId)
     }
 

@@ -67,7 +67,6 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     every { config.dailyTasks } returns TerrawareServerConfig.DailyTasksConfig()
 
-    insertUser()
     insertOrganization()
     insertFacility(lastNotificationDate = LocalDate.EPOCH, nextNotificationTime = Instant.EPOCH)
   }

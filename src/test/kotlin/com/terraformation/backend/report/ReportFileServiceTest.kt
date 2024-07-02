@@ -72,7 +72,6 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     reportId = insertReport()
 

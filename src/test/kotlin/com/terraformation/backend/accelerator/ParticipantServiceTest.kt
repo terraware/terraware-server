@@ -36,7 +36,6 @@ class ParticipantServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
 
     every { user.canAddParticipantProject(any(), any()) } returns true

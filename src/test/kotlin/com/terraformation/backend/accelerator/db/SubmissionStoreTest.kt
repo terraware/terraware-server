@@ -29,7 +29,6 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
 
     every { user.canReadProject(any()) } returns true

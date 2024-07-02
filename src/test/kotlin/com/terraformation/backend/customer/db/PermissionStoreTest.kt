@@ -18,6 +18,9 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var permissionStore: PermissionStore
 
+  private lateinit var org2Owner: UserId
+  private lateinit var org1Contributor2Manager: UserId
+
   @BeforeEach
   fun setUp() {
     permissionStore = PermissionStore(dslContext)
@@ -28,21 +31,21 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
     insertTestData()
     assertEquals(
         mapOf(FacilityId(1000) to Role.Contributor, FacilityId(2000) to Role.Manager),
-        permissionStore.fetchFacilityRoles(UserId(7)))
+        permissionStore.fetchFacilityRoles(org1Contributor2Manager))
   }
 
   @Test
   fun `fetchFacilityRoles only includes facilities in organizations the user is in`() {
     insertTestData()
     assertEquals(
-        mapOf(FacilityId(2000) to Role.Owner), permissionStore.fetchFacilityRoles(UserId(6)))
+        mapOf(FacilityId(2000) to Role.Owner), permissionStore.fetchFacilityRoles(org2Owner))
   }
 
   @Test
   fun `fetchOrganizationRoles only includes organizations the user is in`() {
     insertTestData()
     assertEquals(
-        mapOf(OrganizationId(2) to Role.Owner), permissionStore.fetchOrganizationRoles(UserId(6)))
+        mapOf(OrganizationId(2) to Role.Owner), permissionStore.fetchOrganizationRoles(org2Owner))
   }
 
   @Test
@@ -50,19 +53,16 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
     insertTestData()
     assertEquals(
         mapOf(OrganizationId(1) to Role.Contributor, OrganizationId(2) to Role.Manager),
-        permissionStore.fetchOrganizationRoles(UserId(7)))
+        permissionStore.fetchOrganizationRoles(org1Contributor2Manager))
   }
 
   @Test
   fun `fetchGlobalRoles returns empty set if user has no global roles`() {
-    insertUser()
-
     assertEquals(emptySet<GlobalRole>(), permissionStore.fetchGlobalRoles(user.userId))
   }
 
   @Test
   fun `fetchGlobalRoles returns set of global roles`() {
-    insertUser()
     insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
     insertUserGlobalRole(role = GlobalRole.TFExpert)
     insertUserGlobalRole(role = GlobalRole.ReadOnly)
@@ -85,11 +85,11 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
    * - Organization 2
    *   - Facility 2000
    *
-   * - User 5
+   * - User
    *   - Org 1 role: manager
-   * - User 6
+   * - User org2Owner
    *   - Org 2 role: owner
-   * - User 7
+   * - User org1Contributor2Manager
    *   - Org 1 role: contributor
    *   - Org 2 role: manager
    * ```
@@ -100,20 +100,19 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
             OrganizationId(1) to listOf(FacilityId(1000)),
             OrganizationId(2) to listOf(FacilityId(2000)))
 
-    insertUser()
-
     structure.forEach { (organizationId, facilities) ->
       insertOrganization(organizationId)
       facilities.forEach { facilityId -> insertFacility(facilityId, organizationId) }
     }
 
-    configureUser(5, mapOf(1 to Role.Manager))
-    configureUser(6, mapOf(2 to Role.Owner))
-    configureUser(7, mapOf(1 to Role.Contributor, 2 to Role.Manager))
+    configureUser(mapOf(1 to Role.Manager))
+    org2Owner = configureUser(mapOf(2 to Role.Owner))
+    org1Contributor2Manager = configureUser(mapOf(1 to Role.Contributor, 2 to Role.Manager))
   }
 
-  private fun configureUser(userId: Long, roles: Map<Int, Role>) {
-    insertUser(userId)
+  private fun configureUser(roles: Map<Int, Role>): UserId {
+    val userId = insertUser()
     roles.forEach { (orgId, role) -> insertOrganizationUser(userId, orgId, role) }
+    return userId
   }
 }

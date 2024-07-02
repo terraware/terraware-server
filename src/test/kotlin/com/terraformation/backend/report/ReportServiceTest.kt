@@ -172,7 +172,6 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateReport(any()) } returns true
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
 
-    insertUser()
     insertOrganization()
     insertOrganizationUser(user.userId, organizationId, Role.Admin)
   }
@@ -938,7 +937,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if report is locked by another user`() {
-      val otherUserId = insertUser(10)
+      val otherUserId = insertUser()
       val reportId = insertReport(lockedBy = otherUserId)
 
       assertThrows<ReportLockedException> { service.update(reportId) { it } }

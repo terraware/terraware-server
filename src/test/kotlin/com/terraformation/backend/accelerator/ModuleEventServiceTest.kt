@@ -53,7 +53,6 @@ class ModuleEventServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     insertModule()
     insertCohort()

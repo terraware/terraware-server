@@ -67,7 +67,6 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     plantingSiteId = insertPlantingSite(areaHa = BigDecimal(2500))
 

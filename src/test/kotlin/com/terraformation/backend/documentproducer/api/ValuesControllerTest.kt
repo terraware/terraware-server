@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.api
 
 import com.terraformation.backend.api.ControllerIntegrationTest
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -22,8 +23,7 @@ import org.springframework.test.web.servlet.post
 class ValuesControllerTest : ControllerIntegrationTest() {
   @BeforeEach
   fun setUp() {
-    val userId = insertUser()
-    insertUserGlobalRole(userId = userId, GlobalRole.TFExpert)
+    insertUserGlobalRole(userId = currentUser().userId, GlobalRole.TFExpert)
     insertOrganization()
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
     insertProject()

@@ -42,7 +42,6 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
 
     every { user.canCreateParticipantProjectSpecies(any()) } returns true

@@ -50,7 +50,6 @@ class SpeciesNotifierTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     insertModule()
     insertCohort()
