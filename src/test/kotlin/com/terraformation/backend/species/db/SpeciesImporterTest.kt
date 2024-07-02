@@ -101,7 +101,6 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     userId = user.userId
-    insertUser()
     insertOrganization()
 
     every { speciesChecker.checkAllUncheckedSpecies(organizationId) } just Runs

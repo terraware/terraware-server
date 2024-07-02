@@ -189,7 +189,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `updateSubLocation updates correct values`() {
-    val otherUserId = insertUser(10)
+    val otherUserId = insertUser()
     insertSubLocation(subLocationId, createdBy = otherUserId)
 
     val newTime = Instant.EPOCH.plusSeconds(30)

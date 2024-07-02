@@ -115,11 +115,11 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
     val secondWithdrawalTime = firstWithdrawalTime.plus(1, ChronoUnit.DAYS)
     val backdatedWithdrawalTime = secondWithdrawalTime.plus(1, ChronoUnit.DAYS)
 
-    val createUserId = insertUser(20, firstName = "First", lastName = "Last")
-    val checkInUserId = insertUser(30, firstName = null, lastName = null)
-    val processUserId = insertUser(40, firstName = "Bono", lastName = null)
-    val firstWithdrawerUserId = insertUser(50, firstName = "First", lastName = "Withdrawer")
-    val viabilityTesterUserId = insertUser(60, firstName = "Viability", lastName = "Tester")
+    val createUserId = insertUser(firstName = "First", lastName = "Last")
+    val checkInUserId = insertUser(firstName = null, lastName = null)
+    val processUserId = insertUser(firstName = "Bono", lastName = null)
+    val firstWithdrawerUserId = insertUser(firstName = "First", lastName = "Withdrawer")
+    val viabilityTesterUserId = insertUser(firstName = "Viability", lastName = "Tester")
 
     clock.instant = createTime
     every { user.userId } returns createUserId

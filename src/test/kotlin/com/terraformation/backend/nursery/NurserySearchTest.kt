@@ -43,7 +43,6 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization(organizationId)
     insertOrganizationUser(user.userId, organizationId, Role.Manager)
     insertFacility(facilityId, name = "Nursery", type = FacilityType.Nursery)

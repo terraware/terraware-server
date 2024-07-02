@@ -33,7 +33,6 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     insertOrganizationUser(
         userId = inserted.userId, organizationId = inserted.organizationId, role = Role.Admin)
@@ -276,7 +275,7 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
         insertProject(
             organizationId = inserted.organizationId, participantId = inserted.participantId)
 
-    val otherUser = insertUser(100)
+    val otherUser = insertUser()
     val otherOrganization = insertOrganization(id = 100, createdBy = otherUser)
     insertOrganizationUser(
         userId = otherUser, organizationId = otherOrganization, role = Role.Admin)

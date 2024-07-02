@@ -311,6 +311,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.Locale
+import java.util.UUID
 import kotlin.math.roundToInt
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSupertypeOf
@@ -586,7 +587,6 @@ abstract class DatabaseBackedTest {
    * tests.
    */
   fun insertSiteData() {
-    insertUser()
     insertOrganization()
     insertFacility()
   }
@@ -1087,9 +1087,8 @@ abstract class DatabaseBackedTest {
 
   /** Creates a user that can be referenced by various tests. */
   fun insertUser(
-      userId: Any? = currentUser().userId,
-      authId: String? = "$userId",
-      email: String = "$userId@terraformation.com",
+      authId: String? = "${UUID.randomUUID()}",
+      email: String = "$authId@terraformation.com",
       firstName: String? = "First",
       lastName: String? = "Last",
       type: UserType = UserType.Individual,
@@ -1099,8 +1098,6 @@ abstract class DatabaseBackedTest {
       cookiesConsented: Boolean? = null,
       cookiesConsentedTime: Instant? = if (cookiesConsented != null) Instant.EPOCH else null,
   ): UserId {
-    val userIdWrapper = userId?.toIdWrapper { UserId(it) }
-
     val insertedId =
         with(USERS) {
           dslContext
@@ -1111,7 +1108,6 @@ abstract class DatabaseBackedTest {
               .set(CREATED_TIME, Instant.EPOCH)
               .set(EMAIL, email)
               .set(EMAIL_NOTIFICATIONS_ENABLED, emailNotificationsEnabled)
-              .apply { userIdWrapper?.let { set(ID, it) } }
               .set(FIRST_NAME, firstName)
               .set(LAST_NAME, lastName)
               .set(LOCALE, locale)

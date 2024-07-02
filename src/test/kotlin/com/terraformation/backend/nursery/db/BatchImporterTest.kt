@@ -126,7 +126,6 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateUpload(any()) } returns true
     every { userStore.fetchOneById(userId) } returns user
 
-    insertUser()
     insertOrganization()
     insertFacility(type = FacilityType.Nursery)
     subLocationId = insertSubLocation(name = "Location 1")

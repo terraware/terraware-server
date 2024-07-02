@@ -32,7 +32,6 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
 
     every { user.canCreateDraftPlantingSite(any()) } returns true

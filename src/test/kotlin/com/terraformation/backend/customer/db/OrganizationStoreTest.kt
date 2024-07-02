@@ -35,6 +35,7 @@ import io.mockk.every
 import java.time.Instant
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
+import java.util.UUID
 import org.jooq.JSONB
 import org.jooq.Record
 import org.jooq.Table
@@ -107,7 +108,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.facilityRoles } returns mapOf(facilityId to Role.Owner)
     every { user.organizationRoles } returns mapOf(organizationId to Role.Owner)
 
-    insertUser()
     insertOrganization(
         id = null,
         name = organizationModel.name,
@@ -154,11 +154,10 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `fetchById returns correct total user count`() {
     val expectedTotalUsers = 10
-    val baseUserId = 100
 
-    (baseUserId..<expectedTotalUsers + baseUserId).forEach { userId ->
-      insertUser(userId)
-      insertOrganizationUser(userId)
+    repeat(expectedTotalUsers) {
+      insertUser()
+      insertOrganizationUser(inserted.userId)
     }
 
     assertEquals(expectedTotalUsers, store.fetchOneById(organizationId).totalUsers)
@@ -375,7 +374,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val newTime = clock.instant().plusSeconds(1000)
     clock.instant = newTime
 
-    val newUserId = insertUser(101)
+    val newUserId = insertUser()
 
     val updates =
         OrganizationsRow(
@@ -437,31 +436,31 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchUsers returns information about members`() {
     val expected =
         listOf(
-            OrganizationUserModel(
-                UserId(100),
-                "user1@x.com",
-                "First1",
-                "Last1",
-                UserType.Individual,
-                clock.instant().plus(1, ChronoUnit.DAYS),
-                organizationId,
-                Role.Admin),
-            OrganizationUserModel(
-                UserId(101),
-                "user2@x.com",
-                "First2",
-                "Last2",
-                UserType.Individual,
-                clock.instant().plus(2, ChronoUnit.MINUTES),
-                organizationId,
-                Role.Contributor),
-        )
+                OrganizationUserModel(
+                    UserId(0),
+                    "${UUID.randomUUID()}@x.com",
+                    "First1",
+                    "Last1",
+                    UserType.Individual,
+                    clock.instant().plus(1, ChronoUnit.DAYS),
+                    organizationId,
+                    Role.Admin),
+                OrganizationUserModel(
+                    UserId(0),
+                    "${UUID.randomUUID()}@x.com",
+                    "First2",
+                    "Last2",
+                    UserType.Individual,
+                    clock.instant().plus(2, ChronoUnit.MINUTES),
+                    organizationId,
+                    Role.Contributor),
+            )
+            .map { configureUser(it) }
 
-    expected.forEach { configureUser(it) }
     configureUser(
         OrganizationUserModel(
-            UserId(102),
-            "balena-12345",
+            UserId(0),
+            "balena-${UUID.randomUUID()}",
             "Api",
             "Client",
             UserType.DeviceManager,
@@ -494,16 +493,16 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadOrganization(organizationId) } returns false
 
     val model =
-        OrganizationUserModel(
-            UserId(100),
-            "x@y.com",
-            "First",
-            "Last",
-            UserType.Individual,
-            clock.instant(),
-            organizationId,
-            Role.Contributor)
-    configureUser(model)
+        configureUser(
+            OrganizationUserModel(
+                UserId(0),
+                "x@y.com",
+                "First",
+                "Last",
+                UserType.Individual,
+                clock.instant(),
+                organizationId,
+                Role.Contributor))
 
     val expected = listOf(model)
     val actual = store.fetchUsers(organizationId)
@@ -513,7 +512,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `addUser sets user role`() {
-    val newUserId = insertUser(3)
+    val newUserId = insertUser()
 
     store.addUser(organizationId, newUserId, Role.Contributor)
 
@@ -541,7 +540,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `addUser throws exception adding Terraformation Contact with non-terraformation email`() {
     every { user.canAddTerraformationContact(organizationId) } returns true
 
-    val newUserId = insertUser(3, email = "user@nonterraformation.com")
+    val newUserId = insertUser(email = "user@nonterraformation.com")
 
     assertThrows<InvalidTerraformationContactEmail> {
       store.addUser(organizationId, newUserId, Role.TerraformationContact)
@@ -552,7 +551,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `addUser adds Terraformation Contact when permitted`() {
     every { user.canAddTerraformationContact(organizationId) } returns true
 
-    val newUserId = insertUser(3)
+    val newUserId = insertUser()
 
     store.addUser(organizationId, newUserId, Role.TerraformationContact)
 
@@ -564,7 +563,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `addUser adds Terraformation Contact regardless of terraformation domain email case`() {
     every { user.canAddTerraformationContact(organizationId) } returns true
 
-    val newUserId = insertUser(3, email = "newUser@TerraFormation.COM")
+    val newUserId = insertUser(email = "newUser@TerraFormation.COM")
 
     store.addUser(organizationId, newUserId, Role.TerraformationContact)
 
@@ -576,8 +575,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `addUser throws exception adding a second Terraformation Contact when permitted`() {
     every { user.canAddTerraformationContact(organizationId) } returns true
 
-    val newUserId = insertUser(3)
-    val anotherUserId = insertUser(4)
+    val newUserId = insertUser()
+    val anotherUserId = insertUser()
 
     store.addUser(organizationId, newUserId, Role.TerraformationContact)
     assertThrows<RuntimeException> {
@@ -592,8 +591,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         store.fetchTerraformationContact(organizationId),
         "Should not find a Terraformation Contact")
 
-    val tfContact = organizationUserModel(userId = UserId(5), role = Role.TerraformationContact)
-    configureUser(tfContact)
+    val tfContact = configureUser(organizationUserModel(role = Role.TerraformationContact))
 
     assertEquals(
         tfContact.userId,
@@ -610,16 +608,14 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `removeUser throws exception removing Terraformation Contact when no permissions`() {
-    val tfContact = organizationUserModel(userId = UserId(5), role = Role.TerraformationContact)
-    configureUser(tfContact)
+    val tfContact = configureUser(organizationUserModel(role = Role.TerraformationContact))
 
     assertThrows<AccessDeniedException> { store.removeUser(organizationId, tfContact.userId) }
   }
 
   @Test
   fun `removeUser removes Terraformation Contact when permitted`() {
-    val tfContact = organizationUserModel(userId = UserId(5), role = Role.TerraformationContact)
-    configureUser(tfContact)
+    val tfContact = configureUser(organizationUserModel(role = Role.TerraformationContact))
     assertNotNull(
         store.fetchUser(organizationId, tfContact.userId),
         "Should find a Terraformation Contact user")
@@ -637,8 +633,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `removeUser removes user from requested organization`() {
-    val model = organizationUserModel()
-    configureUser(model)
+    val model = configureUser(organizationUserModel())
 
     val otherOrgId = OrganizationId(5)
     insertOrganization(otherOrgId)
@@ -667,10 +662,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `removeUser allows removing owner if there is another owner`() {
-    val owner1 = organizationUserModel(userId = UserId(100), role = Role.Owner)
-    val owner2 = organizationUserModel(userId = UserId(101), role = Role.Owner)
-    configureUser(owner1)
-    configureUser(owner2)
+    val owner1 = configureUser(organizationUserModel(role = Role.Owner))
+    configureUser(organizationUserModel(role = Role.Owner))
 
     store.removeUser(organizationId, owner1.userId)
 
@@ -679,18 +672,15 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `removeUser does not allow removing the only owner by default`() {
-    val owner = organizationUserModel(userId = UserId(100), role = Role.Owner)
-    val admin = organizationUserModel(userId = UserId(101), role = Role.Admin)
-    configureUser(owner)
-    configureUser(admin)
+    val owner = configureUser(organizationUserModel(role = Role.Owner))
+    configureUser(organizationUserModel(role = Role.Admin))
 
     assertThrows<CannotRemoveLastOwnerException> { store.removeUser(organizationId, owner.userId) }
   }
 
   @Test
   fun `removeUser publishes OrganizationAbandonedEvent if last user is removed`() {
-    val owner = organizationUserModel(userId = UserId(100), role = Role.Owner)
-    configureUser(owner)
+    val owner = configureUser(organizationUserModel(role = Role.Owner))
 
     store.removeUser(organizationId, owner.userId, allowRemovingLastOwner = true)
 
@@ -699,10 +689,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `setUserRole allows demoting owner if there is another owner`() {
-    val owner1 = organizationUserModel(userId = UserId(100), role = Role.Owner)
-    val owner2 = organizationUserModel(userId = UserId(101), role = Role.Owner)
-    configureUser(owner1)
-    configureUser(owner2)
+    val owner1 = configureUser(organizationUserModel(role = Role.Owner))
+    configureUser(organizationUserModel(role = Role.Owner))
 
     store.setUserRole(organizationId, owner1.userId, Role.Admin)
 
@@ -712,10 +700,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `setUserRole does not allow demoting the only owner`() {
-    val owner = organizationUserModel(userId = UserId(100), role = Role.Owner)
-    val admin = organizationUserModel(userId = UserId(101), role = Role.Admin)
-    configureUser(owner)
-    configureUser(admin)
+    val owner = configureUser(organizationUserModel(role = Role.Owner))
+    configureUser(organizationUserModel(role = Role.Admin))
 
     assertThrows<CannotRemoveLastOwnerException> {
       store.setUserRole(organizationId, owner.userId, Role.Admin)
@@ -724,8 +710,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `setUserRole throws exception when setting new role as Terraformation Contact when not permitted`() {
-    val owner = organizationUserModel(userId = UserId(100), role = Role.Owner)
-    configureUser(owner)
+    val owner = configureUser(organizationUserModel(role = Role.Owner))
 
     assertThrows<AccessDeniedException> {
       store.setUserRole(organizationId, owner.userId, Role.TerraformationContact)
@@ -735,9 +720,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `setUserRole throws exception when setting new role as Terraformation Contact for non-terraformation email`() {
     val owner =
-        organizationUserModel(
-            userId = UserId(100), role = Role.Owner, email = "user@nonterraformation.com")
-    configureUser(owner)
+        configureUser(
+            organizationUserModel(email = "user@nonterraformation.com", role = Role.Owner))
 
     every { user.canSetTerraformationContact(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, any()) } returns false
@@ -749,8 +733,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `setUserRole throws exception when updating a Terraformation Contact user when not permitted`() {
-    val tfContact = organizationUserModel(userId = UserId(5), role = Role.TerraformationContact)
-    configureUser(tfContact)
+    val tfContact = configureUser(organizationUserModel(role = Role.TerraformationContact))
 
     assertThrows<InvalidRoleUpdateException> {
       store.setUserRole(organizationId, tfContact.userId, Role.Admin)
@@ -759,8 +742,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `setUserRole allows updating a Terraformation Contact user role when permitted`() {
-    val tfContact = organizationUserModel(userId = UserId(5), role = Role.TerraformationContact)
-    configureUser(tfContact)
+    val tfContact = configureUser(organizationUserModel(role = Role.TerraformationContact))
 
     every { user.canUpdateTerraformationContact(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, any()) } returns false
@@ -774,12 +756,9 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `setUserRole allows setting new role as Terraformation Contact when permitted`() {
-    val owner = organizationUserModel(userId = UserId(100), role = Role.Owner)
+    configureUser(organizationUserModel(role = Role.Owner))
     val admin =
-        organizationUserModel(
-            userId = UserId(200), role = Role.Admin, email = "admin@terraformation.com")
-    configureUser(owner)
-    configureUser(admin)
+        configureUser(organizationUserModel(email = "admin@terraformation.com", role = Role.Admin))
 
     every { user.canSetTerraformationContact(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, any()) } returns false
@@ -794,7 +773,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `countRoleUsers includes counts for roles with no users`() {
     listOf(Role.Owner, Role.Owner, Role.Contributor).forEachIndexed { index, role ->
-      configureUser(organizationUserModel(userId = UserId(index + 100L), role = role))
+      configureUser(organizationUserModel(role = role))
     }
 
     val expected =
@@ -852,8 +831,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   private fun organizationUserModel(
-      userId: UserId = UserId(100),
-      email: String = "$userId@y.com",
+      email: String = "${UUID.randomUUID()}@y.com",
       firstName: String = "First",
       lastName: String = "Last",
       userType: UserType = UserType.Individual,
@@ -862,12 +840,13 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
       role: Role = Role.Contributor,
   ): OrganizationUserModel {
     return OrganizationUserModel(
-        userId, email, firstName, lastName, userType, createdTime, organizationId, role)
+        UserId(0), email, firstName, lastName, userType, createdTime, organizationId, role)
   }
 
-  private fun configureUser(model: OrganizationUserModel) {
-    insertUser(model.userId, null, model.email, model.firstName, model.lastName, model.userType)
+  private fun configureUser(model: OrganizationUserModel): OrganizationUserModel {
+    val userId = insertUser(null, model.email, model.firstName, model.lastName, model.userType)
     insertOrganizationUser(
-        model.userId, model.organizationId, model.role, createdTime = model.createdTime)
+        userId, model.organizationId, model.role, createdTime = model.createdTime)
+    return model.copy(userId = userId)
   }
 }

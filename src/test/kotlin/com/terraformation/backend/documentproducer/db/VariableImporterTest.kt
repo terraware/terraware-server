@@ -46,11 +46,6 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     VariableImporter(deliverableStore, dslContext, messages, variableStore)
   }
 
-  @BeforeEach
-  fun setUp() {
-    insertUser()
-  }
-
   @Nested
   inner class UploadManifest {
     private var oldAuthentication: Authentication? = null

@@ -61,7 +61,6 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     store = ThumbnailStore(clock, dslContext, fileStore, filesDao, thumbnailsDao, imageUtils)
 
-    insertUser()
     filesDao.insert(
         FilesRow(
             id = fileId,

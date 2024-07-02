@@ -54,7 +54,6 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization(timeZone = timeZone)
 
     clock.instant = initialInstant

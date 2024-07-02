@@ -55,8 +55,6 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadUpload(any()) } returns true
     every { user.canUpdateUpload(any()) } returns true
     every { user.canDeleteUpload(any()) } returns true
-
-    insertUser()
   }
 
   @Test

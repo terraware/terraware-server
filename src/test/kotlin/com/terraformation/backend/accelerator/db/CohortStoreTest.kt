@@ -36,8 +36,6 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
-
     every { user.canReadCohort(any()) } returns true
     every { user.canReadCohortParticipants(any()) } returns true
   }
@@ -279,7 +277,7 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
   inner class Update {
     @Test
     fun `updates editable fields`() {
-      val otherUserId = insertUser(10)
+      val otherUserId = insertUser()
       val cohortId =
           insertCohort(
               name = "Old Name", createdBy = otherUserId, phase = CohortPhase.Phase0DueDiligence)

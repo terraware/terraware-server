@@ -80,8 +80,6 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
     photoStorageUrl = URI("file:///${relativePath.invariantSeparatorsPathString}")
 
     fileService = FileService(dslContext, clock, config, filesDao, fileStore, thumbnailStore)
-
-    insertUser()
   }
 
   @AfterEach

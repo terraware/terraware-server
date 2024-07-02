@@ -46,8 +46,6 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
-
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
   }

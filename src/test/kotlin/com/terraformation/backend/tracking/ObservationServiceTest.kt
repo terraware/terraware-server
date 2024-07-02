@@ -147,7 +147,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     plantingSiteId = insertPlantingSite(x = 0, width = 11, gridOrigin = point(1))
 

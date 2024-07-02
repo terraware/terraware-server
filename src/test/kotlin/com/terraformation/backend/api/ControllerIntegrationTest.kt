@@ -4,7 +4,10 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseBackedTest
 import com.terraformation.backend.mockUser
+import io.mockk.every
 import jakarta.ws.rs.core.MediaType
+import java.util.UUID
+import org.junit.jupiter.api.BeforeEach
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin
@@ -36,6 +39,14 @@ abstract class ControllerIntegrationTest : DatabaseBackedTest(), RunsAsUser {
                   .apply { with(oidcLogin().idToken { it.subject(currentUser().authId) }) })
           .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
           .build()
+
+  @BeforeEach
+  fun insertMockUser() {
+    val authId = "${UUID.randomUUID()}"
+    val userId = insertUser(authId = authId)
+    every { user.userId } returns userId
+    every { user.authId } returns authId
+  }
 
   /**
    * Asserts that a controller returns an HTTP 200 response with a JSON body that includes the

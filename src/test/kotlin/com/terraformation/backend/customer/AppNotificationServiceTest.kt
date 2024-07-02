@@ -101,7 +101,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Autowired private lateinit var config: TerrawareServerConfig
 
-  private val otherUserId = UserId(100)
+  private lateinit var otherUserId: UserId
 
   private val clock = TestClock()
   private val messages: Messages = mockk()
@@ -254,6 +254,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
 
     insertSiteData()
+    otherUserId = insertUser()
   }
 
   @Test
@@ -263,7 +264,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store a notification of type User Added To Organization`() {
-    insertUser(otherUserId)
     insertOrganizationUser(otherUserId)
 
     service.on(UserAddedToOrganizationEvent(otherUserId, organizationId, user.userId))
@@ -279,7 +279,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store a notification of type User Added To Organization when user is added to Terraware`() {
-    insertUser(otherUserId)
     insertOrganizationUser(otherUserId)
 
     service.on(UserAddedToTerrawareEvent(otherUserId, organizationId, user.userId))
@@ -295,8 +294,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store accession drying end date notification`() {
-    // add a second user to check for multiple notifications
-    insertUser(otherUserId)
     insertOrganizationUser()
 
     val accessionModel =
@@ -314,8 +311,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store nursery seedling batch ready notification`() {
-    // add a second user to check for multiple notifications
-    insertUser(otherUserId)
     insertOrganizationUser()
 
     val facilityId = FacilityId(1000)
@@ -431,10 +426,10 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store report created notification for admins and owners`() {
-    val admin = insertUser(100)
-    val owner = insertUser(101)
-    val manager = insertUser(102)
-    val contributor = insertUser(103)
+    val admin = insertUser()
+    val owner = insertUser()
+    val manager = insertUser()
+    val contributor = insertUser()
 
     insertOrganizationUser(admin, role = Role.Admin)
     insertOrganizationUser(owner, role = Role.Owner)
@@ -658,7 +653,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
 
-    insertUserDeliverableCategory(DeliverableCategory.Compliance)
+    insertUserDeliverableCategory(DeliverableCategory.Compliance, user.userId)
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
 
     every { messages.deliverableReadyForReview("participant1") } returns
@@ -673,7 +668,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun `should store deliverable ready for review notification with TF contact`() {
     insertModule()
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
-    val tfContact = insertUser(UserId(5), email = "tfcontact@terraformation.com")
+    val tfContact = insertUser(email = "tfcontact@terraformation.com")
     insertOrganizationUser(tfContact, role = Role.TerraformationContact)
 
     val cohortId = insertCohort()
@@ -711,7 +706,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should not over-notify deliverable ready for review notification with TF contact that is also an accelerator admin`() {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
-    val tfContact = insertUser(UserId(5), email = "tfcontact@terraformation.com")
+    val tfContact = insertUser(email = "tfcontact@terraformation.com")
     insertOrganizationUser(tfContact, role = Role.TerraformationContact)
     insertUserGlobalRole(tfContact, role = GlobalRole.TFExpert)
 
@@ -853,12 +848,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     insertOrganizationUser(role = Role.Admin)
     // Other user in same project
-    val otherUser = insertUser(otherUserId)
-    insertOrganizationUser(otherUser)
+    insertOrganizationUser(otherUserId)
     val projectId = insertProject()
 
     // Other project in different org
-    val thirdUserId = insertUser(300)
+    val thirdUserId = insertUser()
     val otherOrgId = insertOrganization(300)
     insertOrganizationUser(thirdUserId, otherOrgId)
     val otherProjectId = insertProject(organizationId = otherOrgId)
@@ -890,8 +884,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should render notifications in locale of user`() {
-    insertUser(otherUserId, locale = Locales.GIBBERISH)
-    insertOrganizationUser(otherUserId)
+    val gibberishUserId = insertUser(locale = Locales.GIBBERISH)
+    insertOrganizationUser(gibberishUserId)
 
     var renderedInLocale: Locale? = null
 
@@ -901,7 +895,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
           NotificationMessage("x", "y")
         }
 
-    service.on(UserAddedToOrganizationEvent(otherUserId, organizationId, user.userId))
+    service.on(UserAddedToOrganizationEvent(gibberishUserId, organizationId, user.userId))
 
     assertEquals(Locales.GIBBERISH, renderedInLocale)
   }

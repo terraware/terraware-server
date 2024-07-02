@@ -56,7 +56,6 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadPlantingSite(any()) } returns true
     every { user.canUpdateDelivery(any()) } returns true
 
-    insertUser()
     insertOrganization()
     insertFacility(type = FacilityType.Nursery)
   }

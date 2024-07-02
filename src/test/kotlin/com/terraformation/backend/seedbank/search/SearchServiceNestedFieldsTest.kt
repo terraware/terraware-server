@@ -826,6 +826,8 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             testType = ViabilityTestType.Cut)
     viabilityTestsDao.insert(cutTestRow)
 
+    val email = usersDao.fetchOneById(user.userId)!!.email!!
+
     val expectedAccessions =
         listOf(
                 mapOf(
@@ -942,9 +944,9 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     val expectedUser =
         mapOf(
             "createdTime" to "1970-01-01T00:00:00Z",
-            "email" to "2@terraformation.com",
+            "email" to email,
             "firstName" to "First",
-            "id" to "2",
+            "id" to "${user.userId}",
             "lastName" to "Last",
             "organizationMemberships" to
                 listOf(

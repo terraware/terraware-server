@@ -33,7 +33,6 @@ internal abstract class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     timeZone = ZoneId.of("Pacific/Honolulu")
 

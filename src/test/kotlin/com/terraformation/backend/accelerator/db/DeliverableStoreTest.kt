@@ -29,8 +29,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
-
     every { user.canReadAllDeliverables() } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadOrganizationDeliverables(any()) } returns true

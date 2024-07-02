@@ -9,7 +9,6 @@ import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -23,11 +22,6 @@ class UserDeliverableCategoriesStoreTest : DatabaseTest(), RunsAsUser {
     UserDeliverableCategoriesStore(clock, dslContext)
   }
 
-  @BeforeEach
-  fun setUp() {
-    insertUser()
-  }
-
   @Nested
   inner class FetchForUser {
     @Test
@@ -39,7 +33,7 @@ class UserDeliverableCategoriesStoreTest : DatabaseTest(), RunsAsUser {
 
       val expected = setOf(DeliverableCategory.Compliance, DeliverableCategory.GIS)
 
-      val targetUserId = insertUser(10)
+      val targetUserId = insertUser()
       expected.forEach { insertUserDeliverableCategory(it) }
 
       assertEquals(
@@ -48,7 +42,7 @@ class UserDeliverableCategoriesStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission`() {
-      val otherUserId = insertUser(10)
+      val otherUserId = insertUser()
 
       assertThrows<UserNotFoundException> { store.fetchForUser(otherUserId) }
     }
@@ -61,11 +55,11 @@ class UserDeliverableCategoriesStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadUserDeliverableCategories(any()) } returns true
       every { user.canUpdateUserDeliverableCategories(any()) } returns true
 
-      val targetUserId = insertUser(10)
+      val targetUserId = insertUser()
       insertUserDeliverableCategory(DeliverableCategory.Compliance)
       insertUserDeliverableCategory(DeliverableCategory.FinancialViability)
 
-      val otherUserId = insertUser(11)
+      val otherUserId = insertUser()
       insertUserDeliverableCategory(DeliverableCategory.CarbonEligibility)
 
       store.updateForUser(
@@ -84,7 +78,7 @@ class UserDeliverableCategoriesStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission`() {
-      val otherUserId = insertUser(10)
+      val otherUserId = insertUser()
 
       assertThrows<UserNotFoundException> { store.updateForUser(otherUserId, emptySet()) }
     }

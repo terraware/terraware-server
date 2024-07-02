@@ -22,7 +22,6 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
 
     every { user.canReadAllDeliverables() } returns true

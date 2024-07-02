@@ -26,7 +26,6 @@ class ImagesControllerTest : ControllerIntegrationTest() {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertUserGlobalRole(role = GlobalRole.TFExpert)
     insertOrganization()
     insertProject()

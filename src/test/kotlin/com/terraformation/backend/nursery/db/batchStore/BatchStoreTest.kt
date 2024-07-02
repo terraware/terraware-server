@@ -49,7 +49,6 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     insertFacility(name = "Nursery", type = FacilityType.Nursery)
     speciesId = insertSpecies()

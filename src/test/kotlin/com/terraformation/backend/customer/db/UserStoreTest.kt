@@ -43,6 +43,7 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.ZoneOffset
 import java.util.Locale
+import java.util.UUID
 import org.jooq.JSONB
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -88,7 +89,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
           apiClientGroupName = "/api-clients",
           apiClientUsernamePrefix = "prefix-",
       )
-  private val authId = "authId"
+  private val authId = "${UUID.randomUUID()}"
   private val userRepresentation =
       UserRepresentation(
           attributes = mapOf("locale" to listOf("gx")),
@@ -98,6 +99,9 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
           lastName = "lastName",
           username = "email",
       )
+
+  // Don't insert the mock user by default.
+  override fun insertMockUser() {}
 
   @BeforeEach
   fun setUp() {
@@ -170,11 +174,11 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchByAuthId adds auth ID and name to existing user with matching email address`() {
-    insertUser(authId = null, email = userRepresentation.email)
+    val userId = insertUser(authId = null, email = userRepresentation.email)
 
     val newUser = userStore.fetchByAuthId(authId)
 
-    assertEquals(user.userId, newUser.userId, "Should use existing user ID")
+    assertEquals(userId, newUser.userId, "Should use existing user ID")
 
     val updatedRow = usersDao.fetchOneById(newUser.userId)!!
 
@@ -245,23 +249,23 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchFullNameById returns full name for individual user`() {
-    insertUser()
+    val userId = insertUser()
 
-    assertEquals("First Last", userStore.fetchFullNameById(user.userId))
+    assertEquals("First Last", userStore.fetchFullNameById(userId))
   }
 
   @Test
   fun `fetchFullNameById returns null for device manager user`() {
-    insertUser(type = UserType.DeviceManager)
+    val userId = insertUser(type = UserType.DeviceManager)
 
-    assertNull(userStore.fetchFullNameById(user.userId))
+    assertNull(userStore.fetchFullNameById(userId))
   }
 
   @Test
   fun `fetchWithGlobalRoles only returns users with global roles`() {
-    insertUser(10)
-    val userIdWithOneRole = insertUser(11)
-    val userIdWithTwoRoles = insertUser(12)
+    insertUser()
+    val userIdWithOneRole = insertUser()
+    val userIdWithTwoRoles = insertUser()
 
     insertUserGlobalRole(userIdWithOneRole, GlobalRole.SuperAdmin)
     insertUserGlobalRole(userIdWithTwoRoles, GlobalRole.SuperAdmin)
@@ -275,9 +279,9 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchWithGlobalRoles can search for specific global roles`() {
-    val superAdminUser = insertUser(10)
-    val acceleratorAdminUser = insertUser(11)
-    val readOnlyUser = insertUser(12)
+    val superAdminUser = insertUser()
+    val acceleratorAdminUser = insertUser()
+    val readOnlyUser = insertUser()
 
     insertUserGlobalRole(superAdminUser, GlobalRole.SuperAdmin)
     insertUserGlobalRole(acceleratorAdminUser, GlobalRole.AcceleratorAdmin)
@@ -296,7 +300,9 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   inner class DeviceManagerTest {
     @BeforeEach
     fun setUpOrganization() {
-      insertUser()
+      val userId = insertUser()
+      every { user.userId } returns userId
+
       insertOrganization()
     }
 
@@ -341,7 +347,9 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   inner class GenerateOfflineTokenTest {
     @BeforeEach
     fun setUpOrganization() {
-      insertUser()
+      val userId = insertUser()
+      every { user.userId } returns userId
+
       insertOrganization()
     }
 
@@ -486,7 +494,9 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   inner class Preferences {
     @BeforeEach
     fun setUp() {
-      insertUser()
+      val userId = insertUser()
+      every { user.userId } returns userId
+
       insertOrganization()
       insertOrganizationUser()
     }
@@ -511,7 +521,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetchPreferences returns null if no preferences for user`() {
-      val otherUserId = insertUser(50)
+      val otherUserId = insertUser()
 
       insertPreferences(otherUserId)
       insertPreferences(user.userId, organizationId)
@@ -625,11 +635,13 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `anonymizes user in local database`() {
-      insertUser(
-          authId = authId,
-          email = userRepresentation.email,
-          firstName = userRepresentation.firstName,
-          lastName = userRepresentation.lastName)
+      val userId =
+          insertUser(
+              authId = authId,
+              email = userRepresentation.email,
+              firstName = userRepresentation.firstName,
+              lastName = userRepresentation.lastName)
+      every { user.userId } returns userId
 
       userStore.deleteSelf()
 
@@ -644,7 +656,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `publishes UserDeletedEvent`() {
-      insertUser(authId = authId)
+      val userId = insertUser(authId = authId)
+      every { user.userId } returns userId
 
       userStore.deleteSelf()
 
@@ -653,7 +666,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `removes user from Keycloak`() {
-      insertUser(authId = authId)
+      val userId = insertUser(authId = authId)
+      every { user.userId } returns userId
 
       userStore.deleteSelf()
 
@@ -662,7 +676,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `deletes user preferences`() {
-      insertUser(authId = authId)
+      val userId = insertUser(authId = authId)
+      every { user.userId } returns userId
       insertOrganization()
 
       userStore.updatePreferences(null, JSONB.valueOf("""{"key":"value"}"""))
@@ -678,11 +693,13 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     fun `does not delete user from database if Keycloak deletion fails`() {
       keycloakAdminClient.simulateRequestFailures = true
 
-      insertUser(
-          authId = authId,
-          email = userRepresentation.email,
-          firstName = userRepresentation.firstName,
-          lastName = userRepresentation.lastName)
+      val userId =
+          insertUser(
+              authId = authId,
+              email = userRepresentation.email,
+              firstName = userRepresentation.firstName,
+              lastName = userRepresentation.lastName)
+      every { user.userId } returns userId
 
       val usersRowBefore = usersDao.fetchOneById(user.userId)!!
 
@@ -695,7 +712,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `user is not searchable by email after deletion`() {
-      insertUser(authId = authId, email = userRepresentation.email)
+      val userId = insertUser(authId = authId, email = userRepresentation.email)
+      every { user.userId } returns userId
 
       userStore.deleteSelf()
 
@@ -721,7 +739,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `publishes UserDeletedEvent`() {
-      insertUser(userId = 100, authId = authId)
+      insertUser(authId = authId)
 
       userStore.deleteUserById(inserted.userId)
 
@@ -732,14 +750,14 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if no permission to delete users`() {
       every { user.canDeleteUsers() } returns false
 
-      insertUser(userId = 100, authId = authId)
+      insertUser(authId = authId)
       assertThrows<AccessDeniedException> { userStore.deleteUserById(inserted.userId) }
     }
 
     @Test
     fun `throws exception if attempting to delete non-individual users`() {
-      val deviceManagerUser = insertUser(userId = 100, type = UserType.DeviceManager)
-      val systemUser = insertUser(userId = 200, type = UserType.System)
+      val deviceManagerUser = insertUser(type = UserType.DeviceManager)
+      val systemUser = insertUser(type = UserType.System)
 
       assertThrows<AccessDeniedException> { userStore.deleteUserById(deviceManagerUser) }
       assertThrows<AccessDeniedException> { userStore.deleteUserById(systemUser) }
@@ -750,7 +768,9 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchByOrganizationId {
     @BeforeEach
     fun setUp() {
-      insertUser()
+      val userId = insertUser()
+      every { user.userId } returns userId
+
       insertOrganization()
     }
 
@@ -759,10 +779,10 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       val otherOrganizationId = OrganizationId(2)
 
       val optedInNonMember =
-          insertUser(100, email = "optedInNonMember@x.com", emailNotificationsEnabled = true)
+          insertUser(email = "optedInNonMember@x.com", emailNotificationsEnabled = true)
       val optedInMember =
-          insertUser(101, email = "optedInMember@x.com", emailNotificationsEnabled = true)
-      val optedOutMember = insertUser(102, email = "optedOutMember@x.com")
+          insertUser(email = "optedInMember@x.com", emailNotificationsEnabled = true)
+      val optedOutMember = insertUser(email = "optedOutMember@x.com")
 
       insertOrganization(otherOrganizationId)
 
@@ -778,10 +798,10 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `returns users with requested roles`() {
-      val admin1 = insertUser(100, email = "admin1@x.com", emailNotificationsEnabled = true)
-      val admin2 = insertUser(101, email = "admin2@x.com", emailNotificationsEnabled = true)
-      val manager = insertUser(102, email = "manager@x.com", emailNotificationsEnabled = true)
-      val owner = insertUser(103, email = "owner@x.com", emailNotificationsEnabled = true)
+      val admin1 = insertUser(email = "admin1@x.com", emailNotificationsEnabled = true)
+      val admin2 = insertUser(email = "admin2@x.com", emailNotificationsEnabled = true)
+      val manager = insertUser(email = "manager@x.com", emailNotificationsEnabled = true)
+      val owner = insertUser(email = "owner@x.com", emailNotificationsEnabled = true)
 
       insertOrganizationUser(admin1, role = Role.Admin)
       insertOrganizationUser(admin2, role = Role.Admin)
@@ -801,7 +821,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns terraformation contact user if one exists`() {
       val tfContact =
-          insertUser(100, email = "tfcontact@terraformation.com", emailNotificationsEnabled = true)
+          insertUser(email = "tfcontact@terraformation.com", emailNotificationsEnabled = true)
 
       insertOrganizationUser(tfContact, role = Role.TerraformationContact)
       assertEquals(
@@ -824,7 +844,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `overwrites existing global roles`() {
-      val userId = insertUser(10)
+      val userId = insertUser()
       insertUserGlobalRole(userId, GlobalRole.AcceleratorAdmin)
 
       userStore.updateGlobalRoles(setOf(userId), setOf(GlobalRole.SuperAdmin))
@@ -836,8 +856,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `overwrites existing global roles for a set of users`() {
-      val userId1 = insertUser(10)
-      val userId2 = insertUser(11)
+      val userId1 = insertUser()
+      val userId2 = insertUser()
       insertUserGlobalRole(userId1, GlobalRole.AcceleratorAdmin)
       insertUserGlobalRole(userId2, GlobalRole.TFExpert)
 
@@ -852,8 +872,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can remove all global roles from a set of users`() {
-      val userId1 = insertUser(10)
-      val userId2 = insertUser(11)
+      val userId1 = insertUser()
+      val userId2 = insertUser()
       insertUserGlobalRole(userId1, GlobalRole.SuperAdmin)
       insertUserGlobalRole(userId2, GlobalRole.AcceleratorAdmin)
 
@@ -864,8 +884,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if one of the users being modified does not have a Terraformation email address`() {
-      val userId1 = insertUser(10, email = "test@elsewhere.com")
-      val userId2 = insertUser(11, email = "test@terraformation.com")
+      val userId1 = insertUser(email = "test@elsewhere.com")
+      val userId2 = insertUser(email = "test@terraformation.com")
 
       assertThrows<AccessDeniedException> {
         userStore.updateGlobalRoles(setOf(userId1, userId2), emptySet())
@@ -874,8 +894,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not update any global roles if any of the given userIds are not able to be updated`() {
-      val userId1 = insertUser(10, email = "test@elsewhere.com")
-      val userId2 = insertUser(11, email = "test@terraformation.com")
+      val userId1 = insertUser(email = "test@elsewhere.com")
+      val userId2 = insertUser(email = "test@terraformation.com")
       insertUserGlobalRole(userId2, GlobalRole.AcceleratorAdmin)
 
       assertThrows<AccessDeniedException> {
@@ -891,7 +911,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if no permission`() {
       every { user.canUpdateGlobalRoles() } returns false
 
-      val userId = insertUser(10)
+      val userId = insertUser()
 
       assertThrows<AccessDeniedException> { userStore.updateGlobalRoles(setOf(userId), emptySet()) }
     }

@@ -50,7 +50,6 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
     every { user.canCreatePlantingSite(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
 
-    insertUser()
     insertOrganization()
     insertOrganizationUser()
   }

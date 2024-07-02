@@ -1,18 +1,12 @@
 package com.terraformation.backend.documentproducer.api
 
 import com.terraformation.backend.api.ControllerIntegrationTest
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.test.web.servlet.get
 
 class DocumentTemplatesControllerTest : ControllerIntegrationTest() {
   private val path = "/api/v1/document-producer/templates"
-
-  @BeforeEach
-  fun setUp() {
-    insertUser()
-  }
 
   @Nested
   inner class ListDocumentTemplates {

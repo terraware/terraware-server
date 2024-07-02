@@ -38,15 +38,14 @@ class VoteServiceTest : DatabaseTest(), RunsAsUser {
         VoteStore(clock, dslContext, PhaseChecker(dslContext)))
   }
 
-  private val voter1 = UserId(101)
-  private val voter2 = UserId(102)
+  private lateinit var voter1: UserId
+  private lateinit var voter2: UserId
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
-    insertUser(voter1)
-    insertUser(voter2)
+    voter1 = insertUser()
+    voter2 = insertUser()
     insertDefaultVoter(voter1)
     insertDefaultVoter(voter2)
 

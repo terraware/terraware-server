@@ -17,7 +17,7 @@ internal class PlantingSiteStoreUpdateZoneTest : PlantingSiteStoreTest() {
     @Test
     fun `updates editable values`() {
       val createdTime = Instant.ofEpochSecond(1000)
-      val createdBy = insertUser(100)
+      val createdBy = insertUser()
       val plantingSiteId = insertPlantingSite()
 
       val initialRow =

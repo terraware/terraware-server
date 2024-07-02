@@ -65,7 +65,6 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertDocumentTemplate()
   }
 

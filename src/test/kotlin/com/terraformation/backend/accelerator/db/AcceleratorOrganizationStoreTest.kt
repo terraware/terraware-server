@@ -24,8 +24,6 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
-
     every { user.canReadInternalTags() } returns true
   }
 

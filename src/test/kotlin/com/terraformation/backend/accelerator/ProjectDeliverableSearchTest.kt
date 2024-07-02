@@ -35,7 +35,6 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     insertOrganizationUser(
         userId = inserted.userId, organizationId = inserted.organizationId, role = Role.Admin)

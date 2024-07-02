@@ -30,8 +30,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
   @BeforeEach
   fun setUp() {
-    val userId = insertUser()
-    insertUserGlobalRole(userId = userId, GlobalRole.TFExpert)
+    insertUserGlobalRole(userId = user.userId, GlobalRole.TFExpert)
     insertOrganization()
     insertProject()
     insertDocumentTemplate()
@@ -99,7 +98,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       val otherDocumentTemplateId = insertDocumentTemplate()
       val otherVariableManifestId =
           insertVariableManifest(documentTemplateId = otherDocumentTemplateId)
-      val otherUserId = insertUser(101)
+      val otherUserId = insertUser()
       val otherCreatedTime = Instant.EPOCH.plusSeconds(100)
       val otherModifiedTime = otherCreatedTime.plusSeconds(1)
       val documentId1 = insertDocument(projectId = projectId)
@@ -234,7 +233,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       val otherDocumentTemplateId = insertDocumentTemplate()
       val otherVariableManifestId =
           insertVariableManifest(documentTemplateId = otherDocumentTemplateId)
-      val otherUserId = insertUser(101)
+      val otherUserId = insertUser()
       val otherCreatedTime = Instant.EPOCH.plusSeconds(100)
       val otherModifiedTime = otherCreatedTime.plusSeconds(1)
       val documentId =
@@ -431,8 +430,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       var timestamp = ZonedDateTime.of(2023, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC)
       lateinit var lastValueId: VariableValueId
 
-      val userId1 = insertUser(101)
-      val userId2 = insertUser(102)
+      val userId1 = insertUser()
+      val userId2 = insertUser()
       val documentId = insertDocument(createdBy = userId1)
       val variableManifestId1 = insertVariableManifest()
       val variableId = insertVariableManifestEntry(insertTextVariable())

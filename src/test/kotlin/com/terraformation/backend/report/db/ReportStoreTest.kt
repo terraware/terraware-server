@@ -261,7 +261,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `overwrites existing lock if force is true`() {
-      val otherUserId = insertUser(10)
+      val otherUserId = insertUser()
 
       val reportId = insertReport(lockedBy = otherUserId, lockedTime = Instant.EPOCH)
 
@@ -287,7 +287,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if report already locked and force is not true`() {
-      val otherUserId = insertUser(10)
+      val otherUserId = insertUser()
 
       val reportId = insertReport(lockedBy = otherUserId)
 
@@ -296,7 +296,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if report already submitted`() {
-      val otherUserId = insertUser(10)
+      val otherUserId = insertUser()
 
       val reportId = insertReport(status = ReportStatus.Submitted, submittedBy = otherUserId)
 
@@ -343,7 +343,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if report is locked by someone else`() {
-      val otherUserId = insertUser(10)
+      val otherUserId = insertUser()
 
       val reportId = insertReport(lockedBy = otherUserId)
 
@@ -352,7 +352,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if report already submitted`() {
-      val otherUserId = insertUser(10)
+      val otherUserId = insertUser()
 
       val reportId = insertReport(status = ReportStatus.Submitted, submittedBy = otherUserId)
 
@@ -418,7 +418,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if report is already submitted`() {
-      val otherUserId = insertUser(10)
+      val otherUserId = insertUser()
 
       val reportId = insertReport(status = ReportStatus.Submitted, submittedBy = otherUserId)
 
@@ -438,7 +438,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if report is locked by someone else`() {
-      val otherUserId = insertUser(10)
+      val otherUserId = insertUser()
 
       val reportId = insertReport(lockedBy = otherUserId)
 
@@ -571,7 +571,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if report is locked by another user`() {
-      val otherUserId = insertUser(10)
+      val otherUserId = insertUser()
       val reportId = insertReport(lockedBy = otherUserId)
 
       assertThrows<ReportLockedException> { store.submit(reportId) }

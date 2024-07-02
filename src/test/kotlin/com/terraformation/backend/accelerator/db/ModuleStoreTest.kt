@@ -37,7 +37,6 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertUser()
     insertOrganization()
     cohortId = insertCohort()
     insertParticipant(cohortId = inserted.cohortId)
