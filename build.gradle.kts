@@ -3,10 +3,8 @@ import com.github.jk1.license.render.InventoryHtmlReportRenderer
 import com.terraformation.gradle.PostgresDockerConfigTask
 import com.terraformation.gradle.VersionFileTask
 import com.terraformation.gradle.computeGitVersion
-import java.net.URI
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.internal.deprecation.DeprecatableConfiguration
-import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -25,7 +23,6 @@ plugins {
 
   id("dev.monosoul.jooq-docker") version "6.0.26"
   id("com.diffplug.spotless") version "6.25.0"
-  id("org.jetbrains.dokka") version "1.9.20"
   id("org.springframework.boot") version "3.3.1"
   id("io.spring.dependency-management") version "1.1.5"
 
@@ -144,7 +141,6 @@ dependencies {
 
   developmentOnly("org.springframework.boot:spring-boot-devtools")
   developmentOnly("com.h2database:h2")
-  dokkaPlugin("com.glureau:html-mermaid-dokka-plugin:0.6.0")
 }
 
 tasks.register("downloadDependencies") {
@@ -345,39 +341,4 @@ licenseReport {
       arrayOf(LicenseBundleNormalizer("$projectDir/src/docs/license-normalizer-bundle.json", true))
   outputDir = "$projectDir/docs/license-report"
   renderers = arrayOf(InventoryHtmlReportRenderer())
-}
-
-// https://github.com/Kotlin/dokka/issues/3472
-configurations
-    .matching { it.name.startsWith("dokka") }
-    .configureEach {
-      resolutionStrategy.eachDependency {
-        if (requested.group.startsWith("com.fasterxml.jackson")) {
-          useVersion("2.15.3")
-        }
-      }
-    }
-
-tasks.withType<DokkaTask>().configureEach {
-  dokkaSourceSets {
-    named("main") {
-      outputDirectory = file("docs/dokka")
-      moduleName = "Terraware Server"
-      moduleVersion = "latest"
-      includes.from(fileTree("src/main/kotlin") { include("**/Package.md") })
-      perPackageOption {
-        // Suppress docs for the generated jOOQ classes; the docs aren't useful and they cause
-        // Dokka to chew tons of memory.
-        matchingRegex =
-            "^com\\.terraformation\\.backend\\.db\\.(default_schema|accelerator|nursery|seedbank|tracking).*"
-        suppress = true
-      }
-      sourceLink {
-        localDirectory = file("src/main/kotlin")
-        remoteUrl =
-            URI("https://github.com/terraware/terraware-server/tree/main/src/main/kotlin").toURL()
-        remoteLineSuffix = "#L"
-      }
-    }
-  }
 }

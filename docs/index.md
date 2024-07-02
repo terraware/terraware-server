@@ -30,10 +30,6 @@ The database has some subject-area-specific schemas as well as a default public 
 * [Tracking schema](schema/all/tracking/relationships.html) (`tracking`)
 * Document Producer schema (`docprod`)
 
-## Code docs
-
-[Dokka class documentation](dokka/index.html)
-
 ## Other docs
 
 * [Dependency license report](license-report/index.html)
