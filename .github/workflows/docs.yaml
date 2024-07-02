@@ -56,9 +56,6 @@ jobs:
     - name: Allow generated docs to be committed to gh-pages branch
       run: rm docs/.gitignore
 
-    - name: Generate code docs
-      run: ./gradlew dokkaHtml
-
     - name: Make directory for schema docs
       run: mkdir -p docs/schema
 
