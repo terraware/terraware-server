@@ -1,3 +1,4 @@
+34223ad3a5f SW-5605 Stop using hardwired user IDs in tests (#2127)
 ceb9820dd7f Remove Dokka from CI builds (#2126)
 2df3a53bbba Removed document based endpoints for images and values (#2125)
 cdbbbe86173 SW-5594 Reduce boilerplate when adding permissions (#2123)
