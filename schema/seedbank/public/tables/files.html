@@ -129,6 +129,10 @@
                                                 <td class="constraint detail">submission_snapshots_file_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="variable_image_values.file_id references files.id via variable_image_values_file_id_fkey"><a href='../../docprod/tables/variable_image_values.html'>variable_image_values</a><span class='relatedKey'>.file_id</span></td>
+                                                <td class="constraint detail">variable_image_values_file_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="batch_photos.file_id references files.id via batch_photos_file_id_fkey"><a href='../../nursery/tables/batch_photos.html'>batch_photos</a><span class='relatedKey'>.file_id</span></td>
                                                 <td class="constraint detail">batch_photos_file_id_fkey<span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
@@ -292,6 +296,57 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="file_date">file_date</span></td>
+                                    <td>date</td>
+                                    <td>13</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="width">width</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="height">height</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -351,12 +406,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>file_name_cannot_be_empty_string</td>
-                                    <td>((length(file_name) &gt; 0))</td>
-                                </tr>
-                                <tr>
                                     <td>content_type_cannot_be_empty_string</td>
                                     <td>((length(content_type) &gt; 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>file_name_cannot_be_empty_string</td>
+                                    <td>((length(file_name) &gt; 0))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -381,12 +436,13 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../accelerator/tables/submission_snapshots.html" target="_top" title="accelerator.submission_snapshots" alt="" coords="355,5,699,123">
-<area shape="rect" id="node2" href="../../tables/files.html" target="_top" title="files" alt="" coords="5,355,311,688">
-<area shape="rect" id="node3" href="../../../nursery/tables/batch_photos.html" target="_top" title="nursery.batch_photos" alt="" coords="401,140,652,257">
-<area shape="rect" id="node4" href="../../../nursery/tables/withdrawal_photos.html" target="_top" title="nursery.withdrawal_photos" alt="" coords="379,275,674,392">
-<area shape="rect" id="node5" href="../../tables/thumbnails.html" target="_top" title="thumbnails" alt="" coords="439,409,614,644">
-<area shape="rect" id="node6" href="../../../seedbank/tables/accession_photos.html" target="_top" title="seedbank.accession_photos" alt="" coords="380,661,673,779">
-<area shape="rect" id="node7" href="../../../tracking/tables/observation_photos.html" target="_top" title="tracking.observation_photos" alt="" coords="375,796,678,913">
+<area shape="rect" id="node2" href="../../tables/files.html" target="_top" title="files" alt="" coords="5,407,311,828">
+<area shape="rect" id="node3" href="../../../docprod/tables/variable_image_values.html" target="_top" title="docprod.variable_image_values" alt="" coords="365,140,688,257">
+<area shape="rect" id="node4" href="../../../nursery/tables/batch_photos.html" target="_top" title="nursery.batch_photos" alt="" coords="401,275,652,392">
+<area shape="rect" id="node5" href="../../../nursery/tables/withdrawal_photos.html" target="_top" title="nursery.withdrawal_photos" alt="" coords="379,409,674,527">
+<area shape="rect" id="node6" href="../../tables/thumbnails.html" target="_top" title="thumbnails" alt="" coords="439,544,614,779">
+<area shape="rect" id="node7" href="../../../seedbank/tables/accession_photos.html" target="_top" title="seedbank.accession_photos" alt="" coords="380,796,673,913">
+<area shape="rect" id="node8" href="../../../tracking/tables/observation_photos.html" target="_top" title="tracking.observation_photos" alt="" coords="375,931,678,1048">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/files.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

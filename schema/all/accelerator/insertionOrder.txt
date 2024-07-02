@@ -1,9 +1,9 @@
 cohort_phases
+deliverable_categories
 deliverable_types
 pipelines
 submission_statuses
 vote_options
-deliverable_categories
 document_stores
 event_statuses
 event_types
@@ -23,6 +23,7 @@ event_projects
 submission_snapshots
 project_accelerator_details
 project_vote_decisions
+user_deliverable_categories
 deliverable_documents
 submission_documents
 project_scores

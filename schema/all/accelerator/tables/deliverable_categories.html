@@ -128,6 +128,10 @@
                                                 <td title="deliverables.deliverable_category_id references deliverable_categories.id via deliverables_deliverable_category_id_fkey"><a href='deliverables.html'>deliverables</a><span class='relatedKey'>.deliverable_category_id</span></td>
                                                 <td class="constraint detail">deliverables_deliverable_category_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
+                                            <tr>
+                                                <td title="user_deliverable_categories.deliverable_category_id references deliverable_categories.id via user_deliverable_categories_deliverable_category_id_fkey"><a href='user_deliverable_categories.html'>user_deliverable_categories</a><span class='relatedKey'>.deliverable_category_id</span></td>
+                                                <td class="constraint detail">user_deliverable_categories_deliverable_category_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -212,22 +216,25 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="416,5,652,299">
-<area shape="rect" id="node2" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="5,32,372,160">
+<area shape="rect" id="node1" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="446,5,682,299">
+<area shape="rect" id="node2" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="5,188,372,316">
+<area shape="rect" id="node3" href="../../tables/user_deliverable_categories.html" target="_top" title="user_deliverable_categories" alt="" coords="416,316,712,492">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/deliverable_categories.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliverable_cohort_due_dates.html" target="_top" title="deliverable_cohort_due_dates" alt="" coords="921,146,1233,234">
-<area shape="rect" id="node2" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="639,227,875,520">
-<area shape="rect" id="node4" href="../../tables/deliverable_types.html" target="_top" title="deliverable_types" alt="" coords="301,267,522,355">
-<area shape="rect" id="node6" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="5,372,184,460">
-<area shape="rect" id="node7" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="228,122,595,250">
-<area shape="rect" id="node8" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="336,372,487,460">
-<area shape="rect" id="node3" href="../../tables/deliverable_documents.html" target="_top" title="deliverable_documents" alt="" coords="945,356,1209,444">
-<area shape="rect" id="node5" href="../../tables/deliverable_project_due_dates.html" target="_top" title="deliverable_project_due_dates" alt="" coords="919,251,1236,339">
-<area shape="rect" id="node9" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="988,40,1167,128">
+<area shape="rect" id="node1" href="../../tables/deliverable_cohort_due_dates.html" target="_top" title="deliverable_cohort_due_dates" alt="" coords="1039,284,1351,372">
+<area shape="rect" id="node2" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="756,327,992,620">
+<area shape="rect" id="node4" href="../../tables/deliverable_types.html" target="_top" title="deliverable_types" alt="" coords="453,308,675,396">
+<area shape="rect" id="node6" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="99,320,278,408">
+<area shape="rect" id="node7" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="5,38,372,166">
+<area shape="rect" id="node8" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="489,414,639,502">
+<area shape="rect" id="node3" href="../../tables/deliverable_documents.html" target="_top" title="deliverable_documents" alt="" coords="1063,600,1327,688">
+<area shape="rect" id="node5" href="../../tables/deliverable_project_due_dates.html" target="_top" title="deliverable_project_due_dates" alt="" coords="1036,390,1353,478">
+<area shape="rect" id="node9" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="1105,179,1284,267">
+<area shape="rect" id="node10" href="../../tables/user_deliverable_categories.html" target="_top" title="user_deliverable_categories" alt="" coords="416,63,712,239">
+<area shape="rect" id="node11" href="../../../docprod/tables/variables.html" target="_top" title="docprod.variables" alt="" coords="1083,495,1306,583">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/deliverable_categories.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

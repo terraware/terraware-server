@@ -28,10 +28,7 @@ The database has some subject-area-specific schemas as well as a default public 
 * [Nursery schema](schema/all/nursery/relationships.html) (`nursery`)
 * [Seed bank schema](schema/all/seedbank/relationships.html) (`seedbank`)
 * [Tracking schema](schema/all/tracking/relationships.html) (`tracking`)
-
-## Code docs
-
-[Dokka class documentation](dokka/index.html)
+* Document Producer schema (`docprod`)
 
 ## Other docs
 

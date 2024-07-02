@@ -128,6 +128,10 @@
                                                 <td title="deliverables.deliverable_category_id references deliverable_categories.id via deliverables_deliverable_category_id_fkey"><a href='deliverables.html'>deliverables</a><span class='relatedKey'>.deliverable_category_id</span></td>
                                                 <td class="constraint detail">deliverables_deliverable_category_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
+                                            <tr>
+                                                <td title="user_deliverable_categories.deliverable_category_id references deliverable_categories.id via user_deliverable_categories_deliverable_category_id_fkey"><a href='user_deliverable_categories.html'>user_deliverable_categories</a><span class='relatedKey'>.deliverable_category_id</span></td>
+                                                <td class="constraint detail">user_deliverable_categories_deliverable_category_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -212,21 +216,24 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="416,5,652,240">
-<area shape="rect" id="node2" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="5,32,372,160">
+<area shape="rect" id="node1" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="446,5,682,240">
+<area shape="rect" id="node2" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="5,159,372,287">
+<area shape="rect" id="node3" href="../../tables/user_deliverable_categories.html" target="_top" title="user_deliverable_categories" alt="" coords="416,257,712,433">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/deliverable_categories.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliverable_cohort_due_dates.html" target="_top" title="deliverable_cohort_due_dates" alt="" coords="699,5,1011,93">
-<area shape="rect" id="node2" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="416,145,652,380">
-<area shape="rect" id="node4" href="../../tables/deliverable_types.html" target="_top" title="deliverable_types" alt="" coords="78,69,299,157">
-<area shape="rect" id="node6" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="5,175,372,303">
-<area shape="rect" id="node7" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="113,320,264,408">
-<area shape="rect" id="node3" href="../../tables/deliverable_documents.html" target="_top" title="deliverable_documents" alt="" coords="723,111,987,199">
-<area shape="rect" id="node5" href="../../tables/deliverable_project_due_dates.html" target="_top" title="deliverable_project_due_dates" alt="" coords="696,216,1013,304">
-<area shape="rect" id="node8" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="765,321,944,409">
+<area shape="rect" id="node1" href="../../tables/deliverable_cohort_due_dates.html" target="_top" title="deliverable_cohort_due_dates" alt="" coords="759,5,1071,93">
+<area shape="rect" id="node2" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="446,213,682,448">
+<area shape="rect" id="node4" href="../../tables/deliverable_types.html" target="_top" title="deliverable_types" alt="" coords="78,412,299,500">
+<area shape="rect" id="node6" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="5,524,372,652">
+<area shape="rect" id="node7" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="113,304,264,392">
+<area shape="rect" id="node3" href="../../tables/deliverable_documents.html" target="_top" title="deliverable_documents" alt="" coords="783,427,1047,515">
+<area shape="rect" id="node5" href="../../tables/deliverable_project_due_dates.html" target="_top" title="deliverable_project_due_dates" alt="" coords="756,111,1073,199">
+<area shape="rect" id="node8" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="825,216,1004,304">
+<area shape="rect" id="node9" href="../../tables/user_deliverable_categories.html" target="_top" title="user_deliverable_categories" alt="" coords="416,501,712,677">
+<area shape="rect" id="node10" href="../../../docprod/tables/variables.html" target="_top" title="docprod.variables" alt="" coords="803,321,1026,409">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/deliverable_categories.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

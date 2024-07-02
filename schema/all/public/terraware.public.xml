@@ -315,6 +315,7 @@
       <table name="files" numRows="0" remarks="Generic information about individual files. Files are associated with application entities using linking tables such as `accession_photos`." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="file_id" foreignKey="submission_snapshots_file_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="submission_snapshots"/>
+            <child column="file_id" foreignKey="variable_image_values_file_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_image_values"/>
             <child column="file_id" foreignKey="batch_photos_file_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>
             <child column="file_id" foreignKey="withdrawal_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_photos"/>
             <child column="file_id" foreignKey="report_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="report_files"/>
@@ -335,6 +336,9 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="photos_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="file_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="width" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="height" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="photos_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -654,6 +658,10 @@
             <child column="project_id" foreignKey="project_votes_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_votes"/>
             <child column="project_id" foreignKey="submission_documents_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_documents"/>
             <child column="project_id" foreignKey="submissions_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="submissions"/>
+            <child column="project_id" foreignKey="documents_project_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>
+            <child column="project_id" foreignKey="variable_owners_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_owners"/>
+            <child column="project_id" foreignKey="variable_values_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_values"/>
+            <child column="project_id" foreignKey="variable_workflow_history_project_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_workflow_history"/>
             <child column="project_id" foreignKey="batch_details_history_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
             <child column="project_id" foreignKey="batches_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
             <child column="project_id" foreignKey="project_land_use_model_types_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_land_use_model_types"/>
@@ -1343,6 +1351,16 @@
             <child column="created_by" foreignKey="submission_documents_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_documents"/>
             <child column="created_by" foreignKey="submissions_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
             <child column="modified_by" foreignKey="submissions_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
+            <child column="created_by" foreignKey="user_deliverable_categories_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="user_deliverable_categories"/>
+            <child column="user_id" foreignKey="user_deliverable_categories_user_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="user_deliverable_categories"/>
+            <child column="created_by" foreignKey="document_saved_versions_created_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="document_saved_versions"/>
+            <child column="created_by" foreignKey="documents_created_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>
+            <child column="modified_by" foreignKey="documents_modified_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>
+            <child column="owned_by" foreignKey="documents_owned_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>
+            <child column="created_by" foreignKey="variable_manifests_created_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_manifests"/>
+            <child column="owned_by" foreignKey="variable_owners_owned_by_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_owners"/>
+            <child column="created_by" foreignKey="variable_values_created_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+            <child column="created_by" foreignKey="variable_workflow_history_created_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_workflow_history"/>
             <child column="created_by" foreignKey="batch_details_history_created_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
             <child column="created_by" foreignKey="batch_photos_created_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>
             <child column="deleted_by" foreignKey="batch_photos_deleted_by_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>
