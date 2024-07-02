@@ -31,6 +31,7 @@ import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SELECT_O
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_TABLE_COLUMNS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUE_TABLE_ROWS
+import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
 import com.terraformation.backend.documentproducer.model.AppendValueOperation
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
 import com.terraformation.backend.documentproducer.model.DateValue
@@ -69,12 +70,14 @@ import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class VariableValueStore(
     private val clock: InstantSource,
     private val documentsDao: DocumentsDao,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val variableImageValuesDao: VariableImageValuesDao,
     private val variableLinkValuesDao: VariableLinkValuesDao,
     private val variablesDao: VariablesDao,
@@ -363,6 +366,9 @@ class VariableValueStore(
       throw VariableTypeMismatchException(newValue.variableId, newValue.type)
     }
 
+    // Notify for review if variable is part of a deliverable
+    variablesRow.deliverableId?.let { notifyForReview(it, newValue.projectId) }
+
     return dslContext.transactionResult { _ ->
       insertValue(newValue.projectId, newValue.listPosition, newValue.rowValueId, newValue)
     }
@@ -589,6 +595,10 @@ class VariableValueStore(
       rowValueId: VariableValueId?,
       value: VariableValue<*, *>,
   ): VariableValueId {
+    val variablesRow =
+        variablesDao.fetchOneById(value.variableId)
+            ?: throw VariableNotFoundException(value.variableId)
+
     val valuesRow =
         VariableValuesRow(
             citation = value.citation,
@@ -626,6 +636,9 @@ class VariableValueStore(
       is SectionValue -> insertSectionValue(valueId, value)
       is SelectValue -> insertSelectValue(valueId, value)
     }
+
+    // Notify for review if variable is part of a deliverable
+    variablesRow.deliverableId?.let { notifyForReview(it, projectId) }
 
     return valueId
   }
@@ -794,5 +807,9 @@ class VariableValueStore(
   private fun fetchProjectId(valueId: VariableValueId): ProjectId {
     return dslContext.fetchValue(VARIABLE_VALUES.PROJECT_ID, VARIABLE_VALUES.ID.eq(valueId))
         ?: throw VariableValueNotFoundException(valueId)
+  }
+
+  private fun notifyForReview(deliverableId: DeliverableId, projectId: ProjectId) {
+    eventPublisher.publishEvent(QuestionsDeliverableSubmittedEvent(deliverableId, projectId))
   }
 }

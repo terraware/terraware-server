@@ -2,6 +2,7 @@ package com.terraformation.backend.documentproducer
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.DocumentId
@@ -39,6 +40,9 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
   private val documentStore: DocumentStore by lazy {
     DocumentStore(clock, documentSavedVersionsDao, documentsDao, dslContext, documentTemplatesDao)
   }
+
+  private val eventPublisher = TestEventPublisher()
+
   private val variableStore: VariableStore by lazy {
     VariableStore(
         dslContext,
@@ -57,6 +61,7 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
         clock,
         documentsDao,
         dslContext,
+        eventPublisher,
         variableImageValuesDao,
         variableLinkValuesDao,
         variablesDao,

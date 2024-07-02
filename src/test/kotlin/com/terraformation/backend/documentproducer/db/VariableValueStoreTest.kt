@@ -2,12 +2,14 @@ package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
+import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
 import com.terraformation.backend.documentproducer.model.AppendValueOperation
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
 import com.terraformation.backend.documentproducer.model.DeleteValueOperation
@@ -29,11 +31,13 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences = listOf(VARIABLE_VALUES)
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val store by lazy {
     VariableValueStore(
         clock,
         documentsDao,
         dslContext,
+        eventPublisher,
         variableImageValuesDao,
         variableLinkValuesDao,
         variablesDao,
@@ -231,6 +235,40 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
                 ))
 
         assertEquals(expected, actual)
+      }
+
+      @Test
+      fun `publishes event if a deliverable is associated`() {
+        insertModule()
+        val deliverableId = insertDeliverable()
+        val variableId =
+            insertVariableManifestEntry(
+                insertTextVariable(
+                    id =
+                        insertVariable(
+                            deliverableId = deliverableId,
+                            deliverablePosition = 0,
+                            type = VariableType.Text)))
+        store.updateValues(
+            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))))
+
+        eventPublisher.assertEventPublished(
+            QuestionsDeliverableSubmittedEvent(
+                deliverableId,
+                inserted.projectId,
+            ))
+      }
+
+      @Test
+      fun `does not publish event if a deliverable is not associated`() {
+        val variableId =
+            insertVariableManifestEntry(
+                insertTextVariable(
+                    id = insertVariable(deliverableId = null, type = VariableType.Text)))
+        store.updateValues(
+            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))))
+
+        eventPublisher.assertEventNotPublished<QuestionsDeliverableSubmittedEvent>()
       }
     }
 
