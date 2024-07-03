@@ -11,6 +11,9 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.documentproducer.db.VariableValueStore
+import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
 import com.terraformation.backend.mockUser
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
@@ -20,15 +23,28 @@ import org.junit.jupiter.api.Test
 class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
+  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
 
   private val notifier: SubmissionNotifier by lazy {
     SubmissionNotifier(
-        TestClock(),
+        clock,
         DeliverableStore(dslContext),
         eventPublisher,
         mockk(),
         SystemUser(usersDao),
+        VariableValueStore(
+            clock,
+            documentsDao,
+            dslContext,
+            eventPublisher,
+            variableImageValuesDao,
+            variableLinkValuesDao,
+            variablesDao,
+            variableSectionValuesDao,
+            variableSelectOptionValuesDao,
+            variableValuesDao,
+            variableValueTableRowsDao),
     )
   }
 
@@ -48,7 +64,7 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class NotifyIfNoNewerUploads {
+  inner class NotifyIfNoNewerDocumentSubmission {
     @Test
     fun `does not publish event if there are newer documents`() {
       insertSubmission()
@@ -59,7 +75,7 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
       notifier.notifyIfNoNewerUploads(
           DeliverableDocumentUploadedEvent(deliverableId, documentId, projectId))
 
-      eventPublisher.assertEventNotPublished(DeliverableReadyForReviewEvent::class.java)
+      eventPublisher.assertEventNotPublished<DeliverableReadyForReviewEvent>()
     }
 
     @Test
@@ -71,6 +87,47 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
 
       notifier.notifyIfNoNewerUploads(
           DeliverableDocumentUploadedEvent(deliverableId, documentId, projectId))
+
+      eventPublisher.assertEventPublished(DeliverableReadyForReviewEvent(deliverableId, projectId))
+    }
+  }
+
+  @Nested
+  inner class NotifyIfNoNewerQuestionSubmission {
+    @BeforeEach
+    fun setup() {
+      insertDocumentTemplate()
+      insertVariableManifest()
+      insertDocument()
+
+      insertVariableManifestEntry(
+          insertTextVariable(
+              id =
+                  insertVariable(
+                      deliverableId = inserted.deliverableId,
+                      deliverablePosition = 0,
+                      type = VariableType.Text)))
+    }
+
+    @Test
+    fun `does not publish event if there are newer variable values`() {
+      val oldValueId = insertValue(variableId = inserted.variableId, textValue = "Old")
+      insertValue(variableId = inserted.variableId, textValue = "New")
+
+      notifier.notifyIfNoNewerUploads(
+          QuestionsDeliverableSubmittedEvent(
+              deliverableId, projectId, mapOf(inserted.variableId to oldValueId)))
+
+      eventPublisher.assertEventNotPublished<DeliverableReadyForReviewEvent>()
+    }
+
+    @Test
+    fun `publishes event if these are the latest variable values`() {
+      val valueId = insertValue(variableId = inserted.variableId, textValue = "Only")
+
+      notifier.notifyIfNoNewerUploads(
+          QuestionsDeliverableSubmittedEvent(
+              deliverableId, projectId, mapOf(inserted.variableId to valueId)))
 
       eventPublisher.assertEventPublished(DeliverableReadyForReviewEvent(deliverableId, projectId))
     }

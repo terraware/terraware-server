@@ -117,6 +117,17 @@ class VariableValueStore(
         .fetchOne(DSL.max(VARIABLE_VALUES.ID))
   }
 
+  /** Returns a project's highest value ID, by variable * */
+  fun fetchMaxValueId(projectId: ProjectId, variableId: VariableId): VariableValueId? {
+    return dslContext
+        .select(DSL.max(VARIABLE_VALUES.ID))
+        .from(VARIABLE_VALUES)
+        .where(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
+        .and(VARIABLE_VALUES.VARIABLE_ID.eq(variableId))
+        .and(VARIABLE_VALUES.IS_DELETED.eq(false))
+        .fetchOne(DSL.max(VARIABLE_VALUES.ID))
+  }
+
   fun fetchOneById(valueId: VariableValueId): ExistingValue {
     val projectId = fetchProjectId(valueId)
     val values = listValues(projectId, valueId, valueId)
@@ -353,7 +364,10 @@ class VariableValueStore(
 
     val maxValueIdAfter = fetchMaxValueId(projectId) ?: VariableValueId(1)
 
-    return listValues(projectId, VariableValueId(maxValueIdBefore.value + 1), maxValueIdAfter)
+    val values = listValues(projectId, VariableValueId(maxValueIdBefore.value + 1), maxValueIdAfter)
+    notifyForReview(projectId, values)
+
+    return values
   }
 
   /** Sets a single value at a specific list position, superseding any previous value. */
@@ -365,9 +379,6 @@ class VariableValueStore(
     if (variablesRow.variableTypeId != newValue.type) {
       throw VariableTypeMismatchException(newValue.variableId, newValue.type)
     }
-
-    // Notify for review if variable is part of a deliverable
-    variablesRow.deliverableId?.let { notifyForReview(it, newValue.projectId) }
 
     return dslContext.transactionResult { _ ->
       insertValue(newValue.projectId, newValue.listPosition, newValue.rowValueId, newValue)
@@ -637,9 +648,6 @@ class VariableValueStore(
       is SelectValue -> insertSelectValue(valueId, value)
     }
 
-    // Notify for review if variable is part of a deliverable
-    variablesRow.deliverableId?.let { notifyForReview(it, projectId) }
-
     return valueId
   }
 
@@ -809,7 +817,23 @@ class VariableValueStore(
         ?: throw VariableValueNotFoundException(valueId)
   }
 
-  private fun notifyForReview(deliverableId: DeliverableId, projectId: ProjectId) {
-    eventPublisher.publishEvent(QuestionsDeliverableSubmittedEvent(deliverableId, projectId))
+  private fun notifyForReview(
+      projectId: ProjectId,
+      values: List<ExistingValue>,
+  ) {
+    val valuesByDeliverables =
+        values.groupBy {
+          val variablesRow =
+              variablesDao.fetchOneById(it.variableId)
+                  ?: throw VariableNotFoundException(it.variableId)
+          variablesRow.deliverableId
+        }
+
+    valuesByDeliverables.keys.forEach { deliverableId ->
+      val thisValues = valuesByDeliverables[deliverableId]!!.associate { it.variableId to it.id }
+      deliverableId?.let {
+        eventPublisher.publishEvent(QuestionsDeliverableSubmittedEvent(it, projectId, thisValues))
+      }
+    }
   }
 }

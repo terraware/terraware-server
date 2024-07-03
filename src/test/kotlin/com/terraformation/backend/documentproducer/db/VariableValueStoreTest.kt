@@ -238,25 +238,27 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       @Test
-      fun `publishes event if a deliverable is associated`() {
+      fun `publishes event with updated variable values if a deliverable is associated`() {
         insertModule()
-        val deliverableId = insertDeliverable()
+        insertDeliverable()
         val variableId =
             insertVariableManifestEntry(
                 insertTextVariable(
                     id =
                         insertVariable(
-                            deliverableId = deliverableId,
+                            deliverableId = inserted.deliverableId,
                             deliverablePosition = 0,
                             type = VariableType.Text)))
-        store.updateValues(
-            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))))
+
+        val updatedValues =
+            store.updateValues(
+                listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))))
 
         eventPublisher.assertEventPublished(
             QuestionsDeliverableSubmittedEvent(
-                deliverableId,
+                inserted.deliverableId,
                 inserted.projectId,
-            ))
+                updatedValues.associate { it.variableId to it.id }))
       }
 
       @Test
