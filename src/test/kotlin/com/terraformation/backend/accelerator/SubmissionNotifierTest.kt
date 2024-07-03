@@ -114,7 +114,7 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
       val oldValueId = insertValue(variableId = inserted.variableId, textValue = "Old")
       insertValue(variableId = inserted.variableId, textValue = "New")
 
-      notifier.notifyIfNoNewerUploads(
+      notifier.notifyIfNoNewerSubmissions(
           QuestionsDeliverableSubmittedEvent(
               deliverableId, projectId, mapOf(inserted.variableId to oldValueId)))
 
@@ -125,7 +125,7 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
     fun `publishes event if these are the latest variable values`() {
       val valueId = insertValue(variableId = inserted.variableId, textValue = "Only")
 
-      notifier.notifyIfNoNewerUploads(
+      notifier.notifyIfNoNewerSubmissions(
           QuestionsDeliverableSubmittedEvent(
               deliverableId, projectId, mapOf(inserted.variableId to valueId)))
 

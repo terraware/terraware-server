@@ -48,7 +48,7 @@ class SubmissionNotifier(
   @EventListener
   fun on(event: QuestionsDeliverableSubmittedEvent) {
     scheduler.schedule<SubmissionNotifier>(clock.instant().plus(notificationDelay)) {
-      notifyIfNoNewerUploads(event)
+      notifyIfNoNewerSubmissions(event)
     }
   }
 
@@ -81,7 +81,7 @@ class SubmissionNotifier(
    * Publishes [DeliverableReadyForReviewEvent] if no question answers have been submitted since the
    * one referenced by the event.
    */
-  fun notifyIfNoNewerUploads(event: QuestionsDeliverableSubmittedEvent) {
+  fun notifyIfNoNewerSubmissions(event: QuestionsDeliverableSubmittedEvent) {
     systemUser.run {
       val allValuesLatest =
           event.valueIds.all {

@@ -124,7 +124,6 @@ class VariableValueStore(
         .from(VARIABLE_VALUES)
         .where(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
         .and(VARIABLE_VALUES.VARIABLE_ID.eq(variableId))
-        .and(VARIABLE_VALUES.IS_DELETED.eq(false))
         .fetchOne(DSL.max(VARIABLE_VALUES.ID))
   }
 
@@ -821,18 +820,26 @@ class VariableValueStore(
       projectId: ProjectId,
       values: List<ExistingValue>,
   ) {
+    val variableRows =
+        values
+            .map { it.variableId }
+            .toSet()
+            .associateWith { variablesDao.fetchOneById(it) ?: throw VariableNotFoundException(it) }
+
     val valuesByDeliverables =
-        values.groupBy {
-          val variablesRow =
-              variablesDao.fetchOneById(it.variableId)
-                  ?: throw VariableNotFoundException(it.variableId)
-          variablesRow.deliverableId
-        }
+        values
+            .filter { variableRows[it.variableId]?.deliverableId != null }
+            .groupBy { variableRows[it.variableId]?.deliverableId!! }
 
     valuesByDeliverables.keys.forEach { deliverableId ->
-      val thisValues = valuesByDeliverables[deliverableId]!!.associate { it.variableId to it.id }
-      deliverableId?.let {
-        eventPublisher.publishEvent(QuestionsDeliverableSubmittedEvent(it, projectId, thisValues))
+      val highestValuesByVariables =
+          valuesByDeliverables[deliverableId]!!
+              .groupBy { it.variableId }
+              .mapValues { mapEntry -> mapEntry.value.maxBy { it.id.value }.id }
+
+      deliverableId.let {
+        eventPublisher.publishEvent(
+            QuestionsDeliverableSubmittedEvent(it, projectId, highestValuesByVariables))
       }
     }
   }
