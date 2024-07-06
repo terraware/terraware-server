@@ -837,10 +837,8 @@ class VariableValueStore(
               .groupBy { it.variableId }
               .mapValues { mapEntry -> mapEntry.value.maxBy { it.id.value }.id }
 
-      deliverableId.let {
-        eventPublisher.publishEvent(
-            QuestionsDeliverableSubmittedEvent(it, projectId, highestValuesByVariables))
-      }
+      eventPublisher.publishEvent(
+          QuestionsDeliverableSubmittedEvent(deliverableId, projectId, highestValuesByVariables))
     }
   }
 }
