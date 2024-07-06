@@ -2,12 +2,14 @@ package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
+import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
 import com.terraformation.backend.documentproducer.model.AppendValueOperation
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
 import com.terraformation.backend.documentproducer.model.DeleteValueOperation
@@ -17,6 +19,7 @@ import com.terraformation.backend.documentproducer.model.ExistingTextValue
 import com.terraformation.backend.documentproducer.model.ExistingValue
 import com.terraformation.backend.documentproducer.model.NewTableValue
 import com.terraformation.backend.documentproducer.model.NewTextValue
+import com.terraformation.backend.documentproducer.model.ReplaceValuesOperation
 import com.terraformation.backend.mockUser
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -29,11 +32,13 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences = listOf(VARIABLE_VALUES)
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val store by lazy {
     VariableValueStore(
         clock,
         documentsDao,
         dslContext,
+        eventPublisher,
         variableImageValuesDao,
         variableLinkValuesDao,
         variablesDao,
@@ -348,6 +353,150 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
             listOf(0 to "3", 1 to "4"),
             round2Values.map { it.listPosition to it.value },
             "Values after append, append, delete, append, delete, append")
+      }
+    }
+
+    @Nested
+    inner class PublishEvent {
+      @BeforeEach
+      fun setup() {
+        insertModule()
+        insertDeliverable()
+      }
+
+      @Test
+      fun `publishes event for a non-list variable if a deliverable is associated`() {
+        val variableId =
+            insertVariableManifestEntry(
+                insertTextVariable(
+                    id =
+                        insertVariable(
+                            deliverableId = inserted.deliverableId,
+                            deliverablePosition = 0,
+                            type = VariableType.Text)))
+
+        val updatedValues =
+            store.updateValues(
+                listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))))
+
+        eventPublisher.assertEventPublished(
+            QuestionsDeliverableSubmittedEvent(
+                inserted.deliverableId,
+                inserted.projectId,
+                updatedValues.associate { it.variableId to it.id }))
+      }
+
+      @Test
+      fun `publishes event with the highest variable value Id if a list value is inserted`() {
+        val variableId =
+            insertVariableManifestEntry(
+                insertTextVariable(
+                    id =
+                        insertVariable(
+                            deliverableId = inserted.deliverableId,
+                            deliverablePosition = 0,
+                            isList = true,
+                            type = VariableType.Text)))
+
+        val updatedValues =
+            store.updateValues(
+                listOf(
+                    AppendValueOperation(NewTextValue(newValueProps(variableId), "first")),
+                    AppendValueOperation(NewTextValue(newValueProps(variableId), "second")),
+                ))
+
+        val maxVariableValueId = updatedValues.map { it.id }.maxBy { it.value }
+
+        eventPublisher.assertEventPublished(
+            QuestionsDeliverableSubmittedEvent(
+                inserted.deliverableId,
+                inserted.projectId,
+                mapOf(variableId to maxVariableValueId),
+            ))
+      }
+
+      @Test
+      fun `publishes event if a list value is replaced`() {
+        val variableId =
+            insertVariableManifestEntry(
+                insertTextVariable(
+                    id =
+                        insertVariable(
+                            deliverableId = inserted.deliverableId,
+                            deliverablePosition = 0,
+                            isList = true,
+                            type = VariableType.Text)))
+
+        insertValue(variableId = variableId, listPosition = 0, textValue = "old first")
+        val rowValueId =
+            insertValue(variableId = variableId, listPosition = 1, textValue = "old second")
+        insertValue(variableId = variableId, listPosition = 2, textValue = "old third")
+
+        val updatedValues =
+            store.updateValues(
+                listOf(
+                    ReplaceValuesOperation(
+                        inserted.projectId,
+                        variableId,
+                        rowValueId,
+                        listOf(NewTextValue(newValueProps(variableId), "second"))),
+                ))
+
+        val maxVariableValueId = updatedValues.map { it.id }.maxBy { it.value }
+
+        eventPublisher.assertEventPublished(
+            QuestionsDeliverableSubmittedEvent(
+                inserted.deliverableId,
+                inserted.projectId,
+                mapOf(variableId to maxVariableValueId),
+            ))
+      }
+
+      @Test
+      fun `publishes event if a list variable value is deleted`() {
+        val variableId =
+            insertVariableManifestEntry(
+                insertTextVariable(
+                    id =
+                        insertVariable(
+                            deliverableId = inserted.deliverableId,
+                            deliverablePosition = 0,
+                            isList = true,
+                            type = VariableType.Text)))
+
+        insertValue(variableId = variableId, listPosition = 0, textValue = "old first")
+        val rowValueId =
+            insertValue(variableId = variableId, listPosition = 1, textValue = "old second")
+        insertValue(variableId = variableId, listPosition = 2, textValue = "old third")
+
+        val updatedValues =
+            store.updateValues(
+                listOf(
+                    DeleteValueOperation(
+                        inserted.projectId,
+                        rowValueId,
+                    )))
+
+        val maxVariableValueId = updatedValues.map { it.id }.maxBy { it.value }
+
+        eventPublisher.assertEventPublished(
+            QuestionsDeliverableSubmittedEvent(
+                inserted.deliverableId,
+                inserted.projectId,
+                mapOf(variableId to maxVariableValueId),
+            ))
+      }
+
+      @Test
+      fun `does not publish event if a deliverable is not associated`() {
+        val variableId =
+            insertVariableManifestEntry(
+                insertTextVariable(
+                    id = insertVariable(deliverableId = null, type = VariableType.Text)))
+        store.updateValues(
+            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))))
+
+        eventPublisher.assertEventNotPublished<QuestionsDeliverableSubmittedEvent>()
       }
     }
   }

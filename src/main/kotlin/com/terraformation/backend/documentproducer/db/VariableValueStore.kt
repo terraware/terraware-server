@@ -31,6 +31,7 @@ import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SELECT_O
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_TABLE_COLUMNS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUE_TABLE_ROWS
+import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
 import com.terraformation.backend.documentproducer.model.AppendValueOperation
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
 import com.terraformation.backend.documentproducer.model.DateValue
@@ -69,12 +70,14 @@ import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class VariableValueStore(
     private val clock: InstantSource,
     private val documentsDao: DocumentsDao,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val variableImageValuesDao: VariableImageValuesDao,
     private val variableLinkValuesDao: VariableLinkValuesDao,
     private val variablesDao: VariablesDao,
@@ -111,6 +114,16 @@ class VariableValueStore(
         .select(DSL.max(VARIABLE_VALUES.ID))
         .from(VARIABLE_VALUES)
         .where(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
+        .fetchOne(DSL.max(VARIABLE_VALUES.ID))
+  }
+
+  /** Returns a project's highest value ID, by variable * */
+  fun fetchMaxValueId(projectId: ProjectId, variableId: VariableId): VariableValueId? {
+    return dslContext
+        .select(DSL.max(VARIABLE_VALUES.ID))
+        .from(VARIABLE_VALUES)
+        .where(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
+        .and(VARIABLE_VALUES.VARIABLE_ID.eq(variableId))
         .fetchOne(DSL.max(VARIABLE_VALUES.ID))
   }
 
@@ -350,7 +363,10 @@ class VariableValueStore(
 
     val maxValueIdAfter = fetchMaxValueId(projectId) ?: VariableValueId(1)
 
-    return listValues(projectId, VariableValueId(maxValueIdBefore.value + 1), maxValueIdAfter)
+    val values = listValues(projectId, VariableValueId(maxValueIdBefore.value + 1), maxValueIdAfter)
+    notifyForReview(projectId, values)
+
+    return values
   }
 
   /** Sets a single value at a specific list position, superseding any previous value. */
@@ -589,6 +605,10 @@ class VariableValueStore(
       rowValueId: VariableValueId?,
       value: VariableValue<*, *>,
   ): VariableValueId {
+    val variablesRow =
+        variablesDao.fetchOneById(value.variableId)
+            ?: throw VariableNotFoundException(value.variableId)
+
     val valuesRow =
         VariableValuesRow(
             citation = value.citation,
@@ -794,5 +814,31 @@ class VariableValueStore(
   private fun fetchProjectId(valueId: VariableValueId): ProjectId {
     return dslContext.fetchValue(VARIABLE_VALUES.PROJECT_ID, VARIABLE_VALUES.ID.eq(valueId))
         ?: throw VariableValueNotFoundException(valueId)
+  }
+
+  private fun notifyForReview(
+      projectId: ProjectId,
+      values: List<ExistingValue>,
+  ) {
+    val variableRows =
+        values
+            .map { it.variableId }
+            .toSet()
+            .associateWith { variablesDao.fetchOneById(it) ?: throw VariableNotFoundException(it) }
+
+    val valuesByDeliverables =
+        values
+            .filter { variableRows[it.variableId]?.deliverableId != null }
+            .groupBy { variableRows[it.variableId]?.deliverableId!! }
+
+    valuesByDeliverables.keys.forEach { deliverableId ->
+      val highestValuesByVariables =
+          valuesByDeliverables[deliverableId]!!
+              .groupBy { it.variableId }
+              .mapValues { mapEntry -> mapEntry.value.maxBy { it.id.value }.id }
+
+      eventPublisher.publishEvent(
+          QuestionsDeliverableSubmittedEvent(deliverableId, projectId, highestValuesByVariables))
+    }
   }
 }

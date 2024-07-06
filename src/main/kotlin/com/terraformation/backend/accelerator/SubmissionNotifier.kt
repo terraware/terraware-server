@@ -4,6 +4,8 @@ import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.customer.model.SystemUser
+import com.terraformation.backend.documentproducer.db.VariableValueStore
+import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.time.Duration
@@ -20,6 +22,7 @@ class SubmissionNotifier(
     private val eventPublisher: ApplicationEventPublisher,
     @Lazy private val scheduler: JobScheduler,
     private val systemUser: SystemUser,
+    private val variableValueStore: VariableValueStore,
 ) {
   companion object {
     /**
@@ -38,6 +41,14 @@ class SubmissionNotifier(
   fun on(event: DeliverableDocumentUploadedEvent) {
     scheduler.schedule<SubmissionNotifier>(clock.instant().plus(notificationDelay)) {
       notifyIfNoNewerUploads(event)
+    }
+  }
+
+  /** Schedules a "ready for review" notification when a question is answered. */
+  @EventListener
+  fun on(event: QuestionsDeliverableSubmittedEvent) {
+    scheduler.schedule<SubmissionNotifier>(clock.instant().plus(notificationDelay)) {
+      notifyIfNoNewerSubmissions(event)
     }
   }
 
@@ -62,6 +73,24 @@ class SubmissionNotifier(
         }
       } else {
         log.error("Deliverable ${event.deliverableId} not found for project ${event.projectId}")
+      }
+    }
+  }
+
+  /**
+   * Publishes [DeliverableReadyForReviewEvent] if no question answers have been submitted since the
+   * one referenced by the event.
+   */
+  fun notifyIfNoNewerSubmissions(event: QuestionsDeliverableSubmittedEvent) {
+    systemUser.run {
+      val allValuesLatest =
+          event.valueIds.all {
+            variableValueStore.fetchMaxValueId(event.projectId, it.key) == it.value
+          }
+
+      if (allValuesLatest) {
+        eventPublisher.publishEvent(
+            DeliverableReadyForReviewEvent(event.deliverableId, event.projectId))
       }
     }
   }
