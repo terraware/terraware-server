@@ -1,15 +1,12 @@
 package com.terraformation.backend.documentproducer.db.manifest
 
 import com.terraformation.backend.db.docprod.VariableId
-import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.embeddables.pojos.VariableManifestEntryId
-import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
-import java.math.BigDecimal
 
 // In the header order in the CSV
-data class CsvVariable(
+data class CsvSectionVariable(
     /** Column 1/A - Name */
     val name: String,
     /** Column 2/B - Identifier that stays stable across settings changes. */
@@ -26,7 +23,7 @@ data class CsvVariable(
      */
     val isNonNumberedSection: Boolean,
     /** Column 7/G - Default text for the section with optionally embedded variables */
-    val defaultText: String?,
+    val defaultSectionText: String?,
 
     /** Position in the sheet, recorded against the variable manifest entry */
     val position: Int,
