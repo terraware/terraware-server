@@ -1,3 +1,6 @@
+c4dc30b32a0 Update Spring dependencies (#2130)
+b5a34e572c4 Update JamesIves/github-pages-deploy-action action to v4.6.3 (#2132)
+576cf004279 Update database dependencies (#2131)
 92873d18480 SW-5500 Questionnaire deliverable notifications (#2129)
 127c08b9d11 Fix IntelliJ warning in UserStore (#2128)
 34223ad3a5f SW-5605 Stop using hardwired user IDs in tests (#2127)
