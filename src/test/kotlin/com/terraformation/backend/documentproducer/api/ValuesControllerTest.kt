@@ -309,6 +309,59 @@ class ValuesControllerTest : ControllerIntegrationTest() {
     }
 
     @Test
+    fun `only returns most recent workflow details for variables that belong to a supplied deliverable ID`() {
+      insertModule()
+      val deliverableId = insertDeliverable()
+
+      val variableId =
+          insertTextVariable(
+              insertVariable(
+                  deliverableId = deliverableId,
+                  deliverablePosition = 0,
+                  isList = true,
+                  type = VariableType.Text))
+      val valueId = insertValue(variableId = variableId, textValue = "Value")
+
+      insertVariableWorkflowHistory(
+          feedback = "Unfortunately, I do not speak Malay",
+          status = VariableWorkflowStatus.NeedsTranslation)
+      insertVariableWorkflowHistory(status = VariableWorkflowStatus.InReview)
+
+      val otherVariableId =
+          insertTextVariable(insertVariable(isList = true, type = VariableType.Text))
+      insertValue(variableId = otherVariableId, textValue = "Value")
+
+      insertVariableWorkflowHistory(
+          feedback = "Most excellent", status = VariableWorkflowStatus.Approved)
+
+      mockMvc
+          .get(path() + "?deliverableId=$deliverableId")
+          .andExpectJson(
+              """
+                {
+                  "nextValueId": ${valueId.value + 1},
+                  "values": [
+                    {
+                      "variableId": $variableId,
+                      "status": "In Review",
+                      "values": [
+                        {
+                          "id": $valueId,
+                          "listPosition": 0,
+                          "type": "Text",
+                          "textValue": "Value"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "ok"
+                }
+              """
+                  .trimIndent(),
+              strict = true)
+    }
+
+    @Test
     fun `returns internal comment if user has permission to read it`() {
       val variableId = insertTextVariable(insertVariable(isList = true, type = VariableType.Text))
       val valueId = insertValue(variableId = variableId, textValue = "Value")

@@ -105,13 +105,23 @@ class VariableValueStore(
     }
   }
 
+  /**
+   * Returns a project's highest value ID, if any. Optionally filtered by values for variables
+   * associated to deliverables
+   */
+  fun fetchMaxValueId(deliverableId: DeliverableId?, projectId: ProjectId): VariableValueId? {
+    val conditions =
+        listOfNotNull(
+            VARIABLE_VALUES.PROJECT_ID.eq(projectId),
+            deliverableId?.let { VARIABLES.DELIVERABLE_ID.eq(it) },
+        )
+
+    return fetchMaxValueIdByConditions(conditions)
+  }
+
   /** Returns a project's highest value ID, if any. */
   fun fetchMaxValueId(projectId: ProjectId): VariableValueId? {
-    return dslContext
-        .select(DSL.max(VARIABLE_VALUES.ID))
-        .from(VARIABLE_VALUES)
-        .where(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
-        .fetchOne(DSL.max(VARIABLE_VALUES.ID))
+    return fetchMaxValueId(null, projectId)
   }
 
   fun fetchOneById(valueId: VariableValueId): ExistingValue {
@@ -318,6 +328,16 @@ class VariableValueStore(
         } ?: throw VariableValueIncompleteException(base.id)
       }
     }
+  }
+
+  private fun fetchMaxValueIdByConditions(conditions: List<Condition>): VariableValueId? {
+    return dslContext
+        .select(DSL.max(VARIABLE_VALUES.ID))
+        .from(VARIABLE_VALUES)
+        .join(VARIABLES)
+        .on(VARIABLE_VALUES.VARIABLE_ID.eq(VARIABLES.ID))
+        .where(conditions)
+        .fetchOne(DSL.max(VARIABLE_VALUES.ID))
   }
 
   /**

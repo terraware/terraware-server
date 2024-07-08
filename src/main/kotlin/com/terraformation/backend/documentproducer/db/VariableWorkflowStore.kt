@@ -3,6 +3,7 @@ package com.terraformation.backend.documentproducer.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.docprod.VariableId
@@ -23,17 +24,22 @@ class VariableWorkflowStore(
     private val dslContext: DSLContext,
 ) {
   /**
-   * Returns the current workflow information for the variables in a project. Internal comment is
-   * only populated if the current user has permission to read it.
+   * Returns the current workflow information for the variables in a project, filtered by
+   * deliverable ID if supplied. Internal comment is only populated if the current user has
+   * permission to read it.
    */
   fun fetchCurrentForProject(
+      deliverableId: DeliverableId?,
       projectId: ProjectId
   ): Map<VariableId, ExistingVariableWorkflowHistoryModel> {
     requirePermissions { readProject(projectId) }
 
-    return fetchCurrentByCondition(VARIABLE_WORKFLOW_HISTORY.PROJECT_ID.eq(projectId)).associateBy {
-      it.variableId
-    }
+    val conditions =
+        listOfNotNull(
+            deliverableId?.let { VARIABLES.DELIVERABLE_ID.eq(it) },
+            VARIABLE_WORKFLOW_HISTORY.PROJECT_ID.eq(projectId))
+
+    return fetchCurrentByCondition(conditions).associateBy { it.variableId }
   }
 
   fun update(
@@ -71,7 +77,7 @@ class VariableWorkflowStore(
   }
 
   private fun fetchCurrentByCondition(
-      condition: Condition
+      conditions: List<Condition>
   ): List<ExistingVariableWorkflowHistoryModel> {
     return with(VARIABLE_WORKFLOW_HISTORY) {
       dslContext
@@ -88,7 +94,9 @@ class VariableWorkflowStore(
           )
           .distinctOn(PROJECT_ID, VARIABLE_ID)
           .from(VARIABLE_WORKFLOW_HISTORY)
-          .where(condition)
+          .join(VARIABLES)
+          .on(VARIABLES.ID.eq(VARIABLE_ID))
+          .where(conditions)
           .orderBy(PROJECT_ID, VARIABLE_ID, ID.desc())
           .fetch { record ->
             val model = ExistingVariableWorkflowHistoryModel(record)

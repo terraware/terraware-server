@@ -66,7 +66,8 @@ class ValuesController(
       @RequestParam
       maxValueId: VariableValueId? = null,
   ): ListVariableValuesResponsePayload {
-    val currentMax = variableValueStore.fetchMaxValueId(projectId) ?: VariableValueId(0)
+    val currentMax =
+        variableValueStore.fetchMaxValueId(deliverableId, projectId) ?: VariableValueId(0)
     val nextValueId = VariableValueId(currentMax.value + 1)
 
     // If the client didn't explicitly tell us otherwise, only return values whose IDs are less
@@ -78,7 +79,8 @@ class ValuesController(
           it.variableId to it.rowValueId
         }
 
-    val workflowDetailsByVariableId = variableWorkflowStore.fetchCurrentForProject(projectId)
+    val workflowDetailsByVariableId =
+        variableWorkflowStore.fetchCurrentForProject(deliverableId, projectId)
 
     val valuePayloads =
         valuesByVariableId.values.map { values ->
