@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.model
 
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableSelectOptionId
@@ -32,6 +33,15 @@ interface BaseVariable {
 
   /** The position of this variable within its associated deliverable, if applicable * */
   val deliverablePosition: Int?
+
+  /** The condition for the variable dependency, if applicable * */
+  val dependencyCondition: DependencyCondition?
+
+  /** The value for the variable dependency, if applicable * */
+  val dependencyValue: String?
+
+  /** The ID of the variable this variable depends on, if applicable * */
+  val dependencyVariableStableId: String?
 
   /** Optional description if the variable's name isn't sufficient. Can vary between manifests. */
   val description: String?
@@ -73,6 +83,9 @@ interface BaseVariable {
 data class BaseVariableProperties(
     override val deliverableId: DeliverableId? = null,
     override val deliverablePosition: Int? = null,
+    override val dependencyCondition: DependencyCondition? = null,
+    override val dependencyValue: String? = null,
+    override val dependencyVariableStableId: String? = null,
     override val description: String? = null,
     override val id: VariableId,
     override val isList: Boolean = false,
