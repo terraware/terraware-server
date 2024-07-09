@@ -2,6 +2,7 @@ package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
@@ -11,6 +12,7 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionDefault
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
 import com.terraformation.backend.documentproducer.db.manifest.ManifestImporter
+import com.terraformation.backend.documentproducer.db.variable.VariableImporter
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
@@ -29,6 +31,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
   private val messages = Messages()
   private val clock = TestClock()
+
+  private val deliverableStore: DeliverableStore by lazy { DeliverableStore(dslContext) }
 
   private val variableManifestStore: VariableManifestStore by lazy {
     VariableManifestStore(
@@ -52,6 +56,10 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
   private val importer: ManifestImporter by lazy {
     ManifestImporter(dslContext, messages, variableManifestStore, variableStore)
+  }
+
+  private val variableImporter: VariableImporter by lazy {
+    VariableImporter(deliverableStore, dslContext, messages, variableStore)
   }
 
   @BeforeEach
@@ -203,19 +211,21 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `imports section default values with multiple variables`() {
+      insertTextVariable(
+          insertVariable(name = "Text Variable A", stableId = "1001", type = VariableType.Text))
+      insertTextVariable(
+          insertVariable(name = "Text Variable B", stableId = "1002", type = VariableType.Text))
+
       val documentTemplateId = inserted.documentTemplateId
       val testCsv =
-          header +
-              "\nSection,1,,Section,Yes,,,,,,,,,,Default text with {{Text Variable A}} and {{3}}.," +
-              "\nText Variable A,2,,Text (single-line),,,,,,,,,,,," +
-              "\nText Variable B,3,,Text (single-line),,,,,,,,,,,,"
+          "$header\nSection,1,,,,Yes,Default text with {{Text Variable A - 1001}} and {{Text Variable B - 1002}}."
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
-      val manifestEntries = variablesDao.findAll()
-      val sectionVariableId = manifestEntries.first { it.name == "Section" }.id!!
-      val textAVariableId = manifestEntries.first { it.name == "Text Variable A" }.id!!
-      val textBVariableId = manifestEntries.first { it.name == "Text Variable B" }.id!!
+      val variables = variablesDao.findAll()
+      val sectionVariableId = variables.first { it.name == "Section" }.id!!
+      val textAVariableId = variables.first { it.name == "Text Variable A" }.id!!
+      val textBVariableId = variables.first { it.name == "Text Variable B" }.id!!
 
       val expected =
           listOf(
@@ -273,17 +283,17 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `imports section default values with variables at the beginning`() {
+      insertTextVariable(
+          insertVariable(name = "Text Variable A", stableId = "1001", type = VariableType.Text))
+
       val documentTemplateId = inserted.documentTemplateId
-      val testCsv =
-          header +
-              "\nSection,1,,Section,Yes,,,,,,,,,,{{Text Variable A}} at the start.," +
-              "\nText Variable A,2,,Text (single-line),,,,,,,,,,,,"
+      val testCsv = "$header\nSection,1,,,,Yes,{{Text Variable A - 1001}} at the start."
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
-      val manifestEntries = variablesDao.findAll()
-      val sectionVariableId = manifestEntries.first { it.name == "Section" }.id!!
-      val textAVariableId = manifestEntries.first { it.name == "Text Variable A" }.id!!
+      val variables = variablesDao.findAll()
+      val sectionVariableId = variables.first { it.name == "Section" }.id!!
+      val textAVariableId = variables.first { it.name == "Text Variable A" }.id!!
 
       val expected =
           listOf(
@@ -317,17 +327,17 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `imports section default values with variables at the end`() {
+      insertTextVariable(
+          insertVariable(name = "Text Variable A", stableId = "1001", type = VariableType.Text))
+
       val documentTemplateId = inserted.documentTemplateId
-      val testCsv =
-          header +
-              "\nSection,1,,Section,Yes,,,,,,,,,,At the end is {{Text Variable A}}," +
-              "\nText Variable A,2,,Text (single-line),,,,,,,,,,,,"
+      val testCsv = "$header\nSection,1,,,,Yes,At the end is {{Text Variable A - 1001}}"
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
-      val manifestEntries = variablesDao.findAll()
-      val sectionVariableId = manifestEntries.first { it.name == "Section" }.id!!
-      val textAVariableId = manifestEntries.first { it.name == "Text Variable A" }.id!!
+      val variables = variablesDao.findAll()
+      val sectionVariableId = variables.first { it.name == "Section" }.id!!
+      val textAVariableId = variables.first { it.name == "Text Variable A" }.id!!
 
       val expected =
           listOf(
@@ -362,14 +372,14 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `detects nonexistent variables in section default values`() {
       val documentTemplateId = inserted.documentTemplateId
-      val testCsv = header + "\nSection,1,,Section,Yes,,,,,,,,,,I am {{nonexistent}}!,"
+      val testCsv = "$header\nSection,1,,,,Yes,At the end is {{nonexistent - 1001}}"
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
       assertEquals(
           listOf(
               "Variable in default section text does not exist - position: 2, referenced " +
-                  "variable: nonexistent"),
+                  "variable stable ID: 1001"),
           importResult.errors,
           "Import errors")
       assertEquals(
@@ -481,12 +491,24 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `ensures that the current CSV imports without error`() {
-      val documentTemplateId = inserted.documentTemplateId
-      val csvInput =
+    fun `ensures that the current CSVs import without error`() {
+      every { user.canReadAllDeliverables() } returns true
+
+      insertModule()
+      insertDeliverable(id = 27)
+      insertDeliverable(id = 123)
+
+      // We have to import the variables sheet first otherwise variables referenced within
+      // default text entries will fail to import because the underlying variable is missing
+      // Alternately, we could do a bunch of `insertVariable` setup, but this seems better
+      val variableCsvInput = javaClass.getResourceAsStream("/manifest/all-variables-rev1.csv")!!
+
+      variableImporter.import(variableCsvInput)
+
+      val manifestCsvInput =
           javaClass.getResourceAsStream("/manifest/feasibility-study-variable-manifest-rev1.csv")!!
 
-      val importResult = importer.import(documentTemplateId, csvInput)
+      val importResult = importer.import(inserted.documentTemplateId, manifestCsvInput)
 
       assertEquals(emptyList<String>(), importResult.errors, "no errors")
     }

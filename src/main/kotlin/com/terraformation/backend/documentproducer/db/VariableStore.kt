@@ -95,6 +95,16 @@ class VariableStore(
     return variables[manifestId to variableId] ?: FetchContext(manifestId).fetchVariable(variableId)
   }
 
+  fun fetchByStableId(stableId: String): Variable? =
+      with(VARIABLES) {
+        dslContext
+            .select(ID)
+            .from(VARIABLES)
+            .where(STABLE_ID.eq(stableId))
+            .fetchOne(VARIABLES.ID.asNonNullable())
+            ?.let { fetchVariable(it) }
+      }
+
   fun fetchDeliverableVariables(deliverableId: DeliverableId): List<Variable> =
       dslContext
           .select(VARIABLES.ID)

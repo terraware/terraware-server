@@ -15,7 +15,6 @@ import com.terraformation.backend.documentproducer.db.VariableManifestStore
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.model.NewVariableManifestModel
 import com.terraformation.backend.documentproducer.model.SectionVariable
-import com.terraformation.backend.documentproducer.model.TableVariable
 import com.terraformation.backend.documentproducer.model.Variable
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
@@ -83,6 +82,7 @@ class ManifestImporter(
     lateinit var csvVariablesByParentPath: Map<String, List<CsvSectionVariable>>
 
     val csvVariableNormalizer = CsvVariableNormalizer()
+    val defaultTextVariableByStableId = mutableMapOf<String, Variable?>()
 
     var newVariablesImported = 0
     var variablesAttachedToNewManifest = 0
@@ -137,7 +137,7 @@ class ManifestImporter(
               ?: return
       val existingVariables = variableStore.fetchManifestVariables(existingManifestId)
 
-      // Child variables such as table columns and subsections are not in the top-level list, so we
+      // Child variables such as subsections are not in the top-level list, so we
       // need to recursively process them.
       fun processVariables(variables: List<Variable>) {
         variables.forEach { variable ->
@@ -150,9 +150,7 @@ class ManifestImporter(
             }
           }
 
-          if (variable is TableVariable) {
-            processVariables(variable.columns.map { it.variable })
-          } else if (variable is SectionVariable) {
+          if (variable is SectionVariable) {
             processVariables(variable.children)
           }
         }
@@ -205,14 +203,14 @@ class ManifestImporter(
               renderHeading = !csvVariable.isNonNumberedSection))
 
       if (csvVariable.defaultSectionText != null) {
-        val regex = Regex("(.*?)(?:\\{\\{([^}]+)}}|\$)", RegexOption.DOT_MATCHES_ALL)
+        val regex = Regex("(.*?)(?:\\{\\{(?:[^{]+-\\s([0-9]+))}}|\$)", RegexOption.DOT_MATCHES_ALL)
         val textVariablePairs =
             regex.findAll(csvVariable.defaultSectionText).map { it.groupValues.drop(1) }
         var listPosition = 1
 
         val defaultValuesRows =
             textVariablePairs
-                .flatMap { (textValue, variableName) ->
+                .flatMap { (textValue, variableStableId) ->
                   val textRow =
                       if (textValue.isNotEmpty()) {
                         VariableSectionDefaultValuesRow(
@@ -227,26 +225,31 @@ class ManifestImporter(
                       }
 
                   val variableRow =
-                      if (variableName.isNotEmpty()) {
-                        val referencedCsvVariable =
-                            csvVariableByStableId[variableName]
-                              ?: csvVariableByPath["\t$variableName"]
+                      if (variableStableId.isNotEmpty()) {
+                        val referencedVariable =
+                            if (defaultTextVariableByStableId.containsKey(variableStableId)) {
+                              defaultTextVariableByStableId[variableStableId]
+                            } else {
+                              defaultTextVariableByStableId[variableStableId] =
+                                  variableStore.fetchByStableId(variableStableId)
+                              defaultTextVariableByStableId[variableStableId]
+                            }
 
-                        if (referencedCsvVariable != null) {
+                        if (referencedVariable != null) {
                           VariableSectionDefaultValuesRow(
                               variableId = csvVariable.variableId,
                               variableTypeId = VariableType.Section,
                               variableManifestId = variableManifestId,
                               listPosition = listPosition++,
-                              usedVariableId = referencedCsvVariable.variableId,
-                              usedVariableTypeId = referencedCsvVariable.dataType.variableType,
+                              usedVariableId = referencedVariable.id,
+                              usedVariableTypeId = referencedVariable.type,
                               usageTypeId = VariableUsageType.Injection,
                               displayStyleId = VariableInjectionDisplayStyle.Inline,
                           )
                         } else {
                           errors.add(
                               "Variable in default section text does not exist - position: " +
-                                  "${csvVariable.position}, referenced variable: $variableName")
+                                  "${csvVariable.position}, referenced variable stable ID: $variableStableId")
                           null
                         }
                       } else {
