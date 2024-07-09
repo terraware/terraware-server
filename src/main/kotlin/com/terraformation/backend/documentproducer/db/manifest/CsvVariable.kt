@@ -47,7 +47,9 @@ data class CsvVariable(
     val tableStyle: VariableTableStyle?,
     /** Column 14/N - Header? (for table columns) */
     val isHeader: Boolean,
-    /** Column 15/O - Notes */
+    /** Column 15/O - Default section text */
+    val defaultSectionText: String?,
+    /** Column 16/P - Notes */
     val notes: String?,
 
     /** Position in the sheet, recorded against the variable manifest entry */

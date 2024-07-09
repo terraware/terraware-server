@@ -6,6 +6,7 @@ import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.tables.daos.VariableNumbersDao
+import com.terraformation.backend.db.docprod.tables.daos.VariableSectionDefaultValuesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableSectionRecommendationsDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableSectionsDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableSelectOptionsDao
@@ -15,6 +16,7 @@ import com.terraformation.backend.db.docprod.tables.daos.VariableTablesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableTextsDao
 import com.terraformation.backend.db.docprod.tables.daos.VariablesDao
 import com.terraformation.backend.db.docprod.tables.pojos.VariableNumbersRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionDefaultValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionRecommendationsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionsRow
@@ -53,6 +55,7 @@ class VariableStore(
     private val dslContext: DSLContext,
     private val variableNumbersDao: VariableNumbersDao,
     private val variablesDao: VariablesDao,
+    private val variableSectionDefaultValuesDao: VariableSectionDefaultValuesDao,
     private val variableSectionRecommendationsDao: VariableSectionRecommendationsDao,
     private val variableSectionsDao: VariableSectionsDao,
     private val variableSelectsDao: VariableSelectsDao,
@@ -182,6 +185,10 @@ class VariableStore(
 
   fun importTableColumnVariable(columnRow: VariableTableColumnsRow) {
     variableTableColumnsDao.insert(columnRow)
+  }
+
+  fun importSectionDefaultValues(defaultValueRows: List<VariableSectionDefaultValuesRow>) {
+    variableSectionDefaultValuesDao.insert(defaultValueRows)
   }
 
   fun importSectionVariable(sectionRow: VariableSectionsRow) {

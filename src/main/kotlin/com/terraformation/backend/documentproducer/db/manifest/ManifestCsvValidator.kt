@@ -32,7 +32,9 @@ const val MANIFEST_CSV_COLUMN_INDEX_TABLE_STYLE = MANIFEST_CSV_COLUMN_INDEX_DECI
 // Column 14/N
 const val MANIFEST_CSV_COLUMN_INDEX_IS_HEADER = MANIFEST_CSV_COLUMN_INDEX_TABLE_STYLE + 1
 // Column 15/O
-const val MANIFEST_CSV_COLUMN_INDEX_NOTES = MANIFEST_CSV_COLUMN_INDEX_IS_HEADER + 1
+const val MANIFEST_CSV_COLUMN_INDEX_DEFAULT_SECTION_TEXT = MANIFEST_CSV_COLUMN_INDEX_IS_HEADER + 1
+// Column 16/P
+const val MANIFEST_CSV_COLUMN_INDEX_NOTES = MANIFEST_CSV_COLUMN_INDEX_DEFAULT_SECTION_TEXT + 1
 
 class ManifestCsvValidator(
     messages: Messages,
@@ -53,6 +55,7 @@ class ManifestCsvValidator(
           null,
           null,
           this::validateOptions,
+          null,
           null,
           null,
           null,

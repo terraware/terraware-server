@@ -30,6 +30,7 @@ class CsvVariableNormalizer {
       CsvVariable(
           name = name,
           stableId = rawValues[MANIFEST_CSV_COLUMN_INDEX_STABLE_ID],
+          defaultSectionText = values[MANIFEST_CSV_COLUMN_INDEX_DEFAULT_SECTION_TEXT],
           description = values[MANIFEST_CSV_COLUMN_INDEX_DESCRIPTION],
           dataType = dataType,
           isList = isList,

@@ -2,12 +2,15 @@ package com.terraformation.backend.documentproducer.db.manifest
 
 import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.db.docprod.VariableUsageType
 import com.terraformation.backend.db.docprod.embeddables.pojos.VariableManifestEntryId
 import com.terraformation.backend.db.docprod.tables.pojos.VariableManifestEntriesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableNumbersRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionDefaultValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionRecommendationsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionsRow
@@ -284,6 +287,65 @@ class ManifestImporter(
               parentVariableId = parentVariable?.variableId,
               parentVariableTypeId = if (parentVariable != null) VariableType.Section else null,
               renderHeading = !csvVariable.isNonNumberedSection))
+
+      if (csvVariable.defaultSectionText != null) {
+        val regex = Regex("(.*?)(?:\\{\\{([^}]+)}}|\$)", RegexOption.DOT_MATCHES_ALL)
+        val textVariablePairs =
+            regex.findAll(csvVariable.defaultSectionText).map { it.groupValues.drop(1) }
+        var listPosition = 1
+
+        val defaultValuesRows =
+            textVariablePairs
+                .flatMap { (textValue, variableName) ->
+                  val textRow =
+                      if (textValue.isNotEmpty()) {
+                        VariableSectionDefaultValuesRow(
+                            variableId = csvVariable.variableId,
+                            variableTypeId = VariableType.Section,
+                            variableManifestId = variableManifestId,
+                            listPosition = listPosition++,
+                            textValue = textValue,
+                        )
+                      } else {
+                        null
+                      }
+
+                  val variableRow =
+                      if (variableName.isNotEmpty()) {
+                        val referencedCsvVariable =
+                            csvVariableByStableId[variableName]
+                                ?: csvVariableByPath["\t$variableName"]
+
+                        if (referencedCsvVariable != null) {
+                          VariableSectionDefaultValuesRow(
+                              variableId = csvVariable.variableId,
+                              variableTypeId = VariableType.Section,
+                              variableManifestId = variableManifestId,
+                              listPosition = listPosition++,
+                              usedVariableId = referencedCsvVariable.variableId,
+                              usedVariableTypeId = referencedCsvVariable.dataType.variableType,
+                              usageTypeId = VariableUsageType.Injection,
+                              displayStyleId = VariableInjectionDisplayStyle.Inline,
+                          )
+                        } else {
+                          errors.add(
+                              "Variable in default section text does not exist - position: " +
+                                  "${csvVariable.position}, referenced variable: $variableName")
+                          null
+                        }
+                      } else {
+                        null
+                      }
+
+                  listOfNotNull(
+                      textRow,
+                      variableRow,
+                  )
+                }
+                .toList()
+
+        variableStore.importSectionDefaultValues(defaultValuesRows)
+      }
     }
 
     private fun importRecommendedVariables(csvVariable: CsvVariable) {
