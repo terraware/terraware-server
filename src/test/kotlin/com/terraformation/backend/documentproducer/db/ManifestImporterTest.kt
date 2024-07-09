@@ -215,10 +215,16 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
           insertVariable(name = "Text Variable A", stableId = "1001", type = VariableType.Text))
       insertTextVariable(
           insertVariable(name = "Text Variable B", stableId = "1002", type = VariableType.Text))
+      insertTextVariable(
+          insertVariable(name = "Text Variable C", stableId = "1003", type = VariableType.Text))
+      insertTextVariable(
+          insertVariable(name = "Text Variable D", stableId = "1004", type = VariableType.Text))
+      insertTextVariable(
+          insertVariable(name = "Text Variable E", stableId = "1005", type = VariableType.Text))
 
       val documentTemplateId = inserted.documentTemplateId
       val testCsv =
-          "$header\nSection,1,,,,Yes,Default text with {{Text Variable A - 1001}} and {{Text Variable B - 1002}}."
+          "$header\nSection,1,,,,Yes,Default text with {{1001}} and {{Text Variable B - 1002}} and {{Text Variable C- 1003}} and {{Text Variable D -1004}} and {{Text Variable E-1005}}."
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
@@ -226,6 +232,9 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val sectionVariableId = variables.first { it.name == "Section" }.id!!
       val textAVariableId = variables.first { it.name == "Text Variable A" }.id!!
       val textBVariableId = variables.first { it.name == "Text Variable B" }.id!!
+      val textCVariableId = variables.first { it.name == "Text Variable C" }.id!!
+      val textDVariableId = variables.first { it.name == "Text Variable D" }.id!!
+      val textEVariableId = variables.first { it.name == "Text Variable E" }.id!!
 
       val expected =
           listOf(
@@ -268,6 +277,57 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
                   variableTypeId = VariableType.Section,
                   variableManifestId = importResult.newVersion,
                   listPosition = 5,
+                  textValue = " and ",
+              ),
+              VariableSectionDefaultValuesRow(
+                  variableId = sectionVariableId,
+                  variableTypeId = VariableType.Section,
+                  variableManifestId = importResult.newVersion,
+                  listPosition = 6,
+                  usedVariableId = textCVariableId,
+                  usedVariableTypeId = VariableType.Text,
+                  usageTypeId = VariableUsageType.Injection,
+                  displayStyleId = VariableInjectionDisplayStyle.Inline,
+              ),
+              VariableSectionDefaultValuesRow(
+                  variableId = sectionVariableId,
+                  variableTypeId = VariableType.Section,
+                  variableManifestId = importResult.newVersion,
+                  listPosition = 7,
+                  textValue = " and ",
+              ),
+              VariableSectionDefaultValuesRow(
+                  variableId = sectionVariableId,
+                  variableTypeId = VariableType.Section,
+                  variableManifestId = importResult.newVersion,
+                  listPosition = 8,
+                  usedVariableId = textDVariableId,
+                  usedVariableTypeId = VariableType.Text,
+                  usageTypeId = VariableUsageType.Injection,
+                  displayStyleId = VariableInjectionDisplayStyle.Inline,
+              ),
+              VariableSectionDefaultValuesRow(
+                  variableId = sectionVariableId,
+                  variableTypeId = VariableType.Section,
+                  variableManifestId = importResult.newVersion,
+                  listPosition = 9,
+                  textValue = " and ",
+              ),
+              VariableSectionDefaultValuesRow(
+                  variableId = sectionVariableId,
+                  variableTypeId = VariableType.Section,
+                  variableManifestId = importResult.newVersion,
+                  listPosition = 10,
+                  usedVariableId = textEVariableId,
+                  usedVariableTypeId = VariableType.Text,
+                  usageTypeId = VariableUsageType.Injection,
+                  displayStyleId = VariableInjectionDisplayStyle.Inline,
+              ),
+              VariableSectionDefaultValuesRow(
+                  variableId = sectionVariableId,
+                  variableTypeId = VariableType.Section,
+                  variableManifestId = importResult.newVersion,
+                  listPosition = 11,
                   textValue = ".",
               ),
           )
