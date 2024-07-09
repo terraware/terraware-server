@@ -10,6 +10,7 @@ import com.terraformation.backend.log.debugWithTiming
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.ImageUtils
 import jakarta.inject.Named
+import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -209,6 +210,15 @@ class ThumbnailStore(
     val originalImage =
         log.debugWithTiming("Loaded $photoUrl into image buffer") { imageUtils.read(photoUrl) }
 
+    // Draw image onto a background that has been filled white. This ensures that transparent areas
+    // are rendered white.
+    val newImage =
+        BufferedImage(originalImage.width, originalImage.height, BufferedImage.TYPE_INT_RGB)
+    val graphics = newImage.createGraphics()
+    graphics.paint = Color(255, 255, 255, 255)
+    graphics.fillRect(0, 0, newImage.width, newImage.height)
+    graphics.drawImage(originalImage, null, null)
+
     // If the image is large enough for visual quality to matter, use a higher-quality scaling
     // algorithm.
     val useHighQuality =
@@ -222,7 +232,7 @@ class ThumbnailStore(
 
     return log.debugWithTiming(
         "Resizing image from ${originalImage.width} x ${originalImage.height} to $maxWidth x $maxHeight") {
-          Thumbnails.of(originalImage)
+          Thumbnails.of(newImage)
               .imageType(BufferedImage.TYPE_INT_RGB)
               .scalingMode(scalingMode)
               .size(maxWidth ?: Int.MAX_VALUE, maxHeight ?: Int.MAX_VALUE)

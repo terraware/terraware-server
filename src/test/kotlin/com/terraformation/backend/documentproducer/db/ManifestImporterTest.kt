@@ -4,11 +4,14 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
 import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.db.docprod.VariableUsageType
 import com.terraformation.backend.db.docprod.tables.pojos.VariableManifestEntriesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableNumbersRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionDefaultValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionRecommendationsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionsRow
@@ -50,6 +53,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
         dslContext,
         variableNumbersDao,
         variablesDao,
+        variableSectionDefaultValuesDao,
         variableSectionRecommendationsDao,
         variableSectionsDao,
         variableSelectsDao,
@@ -73,7 +77,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     private var oldAuthentication: Authentication? = null
 
     private val header =
-        "Name,ID,Description,Data Type,List?,Recommended variables,Parent,Non-numbered section?,Options,Minimum value,Maximum value,Decimal places,Table Style,Header,Notes"
+        "Name,ID,Description,Data Type,List?,Recommended variables,Parent,Non-numbered section?,Options,Minimum value,Maximum value,Decimal places,Table Style,Header,Initial Section Text,Notes"
 
     @BeforeEach
     fun setUp() {
@@ -90,8 +94,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
-              "\nName X,Duplicate ID,,Section,Yes,,,,,,,,,," +
-              "\nName Y,Duplicate ID,,Section,Yes,,,,,,,,,,"
+              "\nName X,Duplicate ID,,Section,Yes,,,,,,,,,,," +
+              "\nName Y,Duplicate ID,,Section,Yes,,,,,,,,,,,"
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
@@ -106,10 +110,10 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
-              "\nProject Details,1,,Section,Yes,,,,,,,,,," +
-              "\nProject Details,2,,Section,Yes,,,,,,,,,," +
-              "\nSummary Description of the Project,3,,Section,Yes,,Project Details,,,,,,,," +
-              "\nIntroduction,4,,Section,Yes,,Summary Description of the Project,,,,,,,,"
+              "\nProject Details,1,,Section,Yes,,,,,,,,,,," +
+              "\nProject Details,2,,Section,Yes,,,,,,,,,,," +
+              "\nSummary Description of the Project,3,,Section,Yes,,Project Details,,,,,,,,," +
+              "\nIntroduction,4,,Section,Yes,,Summary Description of the Project,,,,,,,,,"
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
@@ -125,10 +129,10 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
-              "\nProject Proponent Table,1,A table with contact details,Table,No,,,,,,,,,," +
-              "\nOrganization Name,2,,Text (single-line),,,Project Proponent Table,,,,,,,," +
-              "\nContact Person,3,,Text (single-line),,,Project Proponent Table,,,,,,,," +
-              "\nTitle,4,,Text (single-line),,,Project Proponent Table,,,,,,,,"
+              "\nProject Proponent Table,1,A table with contact details,Table,No,,,,,,,,,,," +
+              "\nOrganization Name,2,,Text (single-line),,,Project Proponent Table,,,,,,,,," +
+              "\nContact Person,3,,Text (single-line),,,Project Proponent Table,,,,,,,,," +
+              "\nTitle,4,,Text (single-line),,,Project Proponent Table,,,,,,,,,"
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
@@ -191,10 +195,10 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
-              "\nAudit history,1,,Table,Yes,,,,,,,,Horizontal,," +
+              "\nAudit history,1,,Table,Yes,,,,,,,,Horizontal,,," +
               "\nAudit type,2,,Select (single),,,Audit history,,\"- Validation/verification" +
-              "\n- Some other audit type\",,,,,Yes," +
-              "\nNumber of years,3,,Number,,,Audit history,,,,,1,,,"
+              "\n- Some other audit type\",,,,,Yes,," +
+              "\nNumber of years,3,,Number,,,Audit history,,,,,1,,,,"
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
@@ -266,15 +270,15 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
-              "\nProject Details,1,,Section,Yes,,,,,,,,,," +
-              "\nSummary Description of the Project,2,,Section,Yes,,Project Details,,,,,,,," +
-              "\nIntroduction ,3,,Section,Yes,,Summary Description of the Project,,,,,,,," +
-              "\nBrief description of the project,4,,Section,Yes,, Introduction,yes,,,,,,," +
-              "\nCurrent status of the project and the area it covers.,5,,Section,Yes,,Introduction,yes,,,,,,," +
-              "\nProject Details,6,,Section,Yes,,Summary Description of the Project,,,,,,,," +
-              "\nDetailed explanation,7,,Section,Yes,,Project Details,yes,,,,,,," +
-              "\nInformation about the land,8,,Section,Yes,,Project Details,yes,,,,,,," +
-              "\nProject Management,9,,Section,Yes,,Summary Description of the Project,,,,,,,,"
+              "\nProject Details,1,,Section,Yes,,,,,,,,,,," +
+              "\nSummary Description of the Project,2,,Section,Yes,,Project Details,,,,,,,,," +
+              "\nIntroduction ,3,,Section,Yes,,Summary Description of the Project,,,,,,,,," +
+              "\nBrief description of the project,4,,Section,Yes,, Introduction,yes,,,,,,,," +
+              "\nCurrent status of the project and the area it covers.,5,,Section,Yes,,Introduction,yes,,,,,,,," +
+              "\nProject Details,6,,Section,Yes,,Summary Description of the Project,,,,,,,,," +
+              "\nDetailed explanation,7,,Section,Yes,,Project Details,yes,,,,,,,," +
+              "\nInformation about the land,8,,Section,Yes,,Project Details,yes,,,,,,,," +
+              "\nProject Management,9,,Section,Yes,,Summary Description of the Project,,,,,,,,,"
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
@@ -355,14 +359,191 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `imports section default values with multiple variables`() {
+      val documentTemplateId = inserted.documentTemplateId
+      val testCsv =
+          header +
+              "\nSection,1,,Section,Yes,,,,,,,,,,Default text with {{Text Variable A}} and {{3}}.," +
+              "\nText Variable A,2,,Text (single-line),,,,,,,,,,,," +
+              "\nText Variable B,3,,Text (single-line),,,,,,,,,,,,"
+
+      val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
+
+      val manifestEntries = variablesDao.findAll()
+      val sectionVariableId = manifestEntries.first { it.name == "Section" }.id!!
+      val textAVariableId = manifestEntries.first { it.name == "Text Variable A" }.id!!
+      val textBVariableId = manifestEntries.first { it.name == "Text Variable B" }.id!!
+
+      val expected =
+          listOf(
+              VariableSectionDefaultValuesRow(
+                  variableId = sectionVariableId,
+                  variableTypeId = VariableType.Section,
+                  variableManifestId = importResult.newVersion,
+                  listPosition = 1,
+                  textValue = "Default text with ",
+              ),
+              VariableSectionDefaultValuesRow(
+                  variableId = sectionVariableId,
+                  variableTypeId = VariableType.Section,
+                  variableManifestId = importResult.newVersion,
+                  listPosition = 2,
+                  usedVariableId = textAVariableId,
+                  usedVariableTypeId = VariableType.Text,
+                  usageTypeId = VariableUsageType.Injection,
+                  displayStyleId = VariableInjectionDisplayStyle.Inline,
+              ),
+              VariableSectionDefaultValuesRow(
+                  variableId = sectionVariableId,
+                  variableTypeId = VariableType.Section,
+                  variableManifestId = importResult.newVersion,
+                  listPosition = 3,
+                  textValue = " and ",
+              ),
+              VariableSectionDefaultValuesRow(
+                  variableId = sectionVariableId,
+                  variableTypeId = VariableType.Section,
+                  variableManifestId = importResult.newVersion,
+                  listPosition = 4,
+                  usedVariableId = textBVariableId,
+                  usedVariableTypeId = VariableType.Text,
+                  usageTypeId = VariableUsageType.Injection,
+                  displayStyleId = VariableInjectionDisplayStyle.Inline,
+              ),
+              VariableSectionDefaultValuesRow(
+                  variableId = sectionVariableId,
+                  variableTypeId = VariableType.Section,
+                  variableManifestId = importResult.newVersion,
+                  listPosition = 5,
+                  textValue = ".",
+              ),
+          )
+
+      val actual =
+          variableSectionDefaultValuesDao
+              .findAll()
+              .sortedBy { it.listPosition }
+              .map { it.copy(id = null) }
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `imports section default values with variables at the beginning`() {
+      val documentTemplateId = inserted.documentTemplateId
+      val testCsv =
+          header +
+              "\nSection,1,,Section,Yes,,,,,,,,,,{{Text Variable A}} at the start.," +
+              "\nText Variable A,2,,Text (single-line),,,,,,,,,,,,"
+
+      val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
+
+      val manifestEntries = variablesDao.findAll()
+      val sectionVariableId = manifestEntries.first { it.name == "Section" }.id!!
+      val textAVariableId = manifestEntries.first { it.name == "Text Variable A" }.id!!
+
+      val expected =
+          listOf(
+              VariableSectionDefaultValuesRow(
+                  variableId = sectionVariableId,
+                  variableTypeId = VariableType.Section,
+                  variableManifestId = importResult.newVersion,
+                  listPosition = 1,
+                  usedVariableId = textAVariableId,
+                  usedVariableTypeId = VariableType.Text,
+                  usageTypeId = VariableUsageType.Injection,
+                  displayStyleId = VariableInjectionDisplayStyle.Inline,
+              ),
+              VariableSectionDefaultValuesRow(
+                  variableId = sectionVariableId,
+                  variableTypeId = VariableType.Section,
+                  variableManifestId = importResult.newVersion,
+                  listPosition = 2,
+                  textValue = " at the start.",
+              ),
+          )
+
+      val actual =
+          variableSectionDefaultValuesDao
+              .findAll()
+              .sortedBy { it.listPosition }
+              .map { it.copy(id = null) }
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `imports section default values with variables at the end`() {
+      val documentTemplateId = inserted.documentTemplateId
+      val testCsv =
+          header +
+              "\nSection,1,,Section,Yes,,,,,,,,,,At the end is {{Text Variable A}}," +
+              "\nText Variable A,2,,Text (single-line),,,,,,,,,,,,"
+
+      val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
+
+      val manifestEntries = variablesDao.findAll()
+      val sectionVariableId = manifestEntries.first { it.name == "Section" }.id!!
+      val textAVariableId = manifestEntries.first { it.name == "Text Variable A" }.id!!
+
+      val expected =
+          listOf(
+              VariableSectionDefaultValuesRow(
+                  variableId = sectionVariableId,
+                  variableTypeId = VariableType.Section,
+                  variableManifestId = importResult.newVersion,
+                  listPosition = 1,
+                  textValue = "At the end is ",
+              ),
+              VariableSectionDefaultValuesRow(
+                  variableId = sectionVariableId,
+                  variableTypeId = VariableType.Section,
+                  variableManifestId = importResult.newVersion,
+                  listPosition = 2,
+                  usedVariableId = textAVariableId,
+                  usedVariableTypeId = VariableType.Text,
+                  usageTypeId = VariableUsageType.Injection,
+                  displayStyleId = VariableInjectionDisplayStyle.Inline,
+              ),
+          )
+
+      val actual =
+          variableSectionDefaultValuesDao
+              .findAll()
+              .sortedBy { it.listPosition }
+              .map { it.copy(id = null) }
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `detects nonexistent variables in section default values`() {
+      val documentTemplateId = inserted.documentTemplateId
+      val testCsv = header + "\nSection,1,,Section,Yes,,,,,,,,,,I am {{nonexistent}}!,"
+
+      val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
+
+      assertEquals(
+          listOf(
+              "Variable in default section text does not exist - position: 2, referenced " +
+                  "variable: nonexistent"),
+          importResult.errors,
+          "Import errors")
+      assertEquals(
+          emptyList<Any>(),
+          variableManifestEntriesDao.findAll(),
+          "Should not have imported bad manifest")
+    }
+
+    @Test
     fun `ensures that there are no siblings with the same name`() {
       val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
-              "\nProject Details,1,,Section,Yes,,,,,,,,,," +
-              "\nSummary Description of the Project,2,,Section,Yes,,Project Details,,,,,,,," +
-              "\nIntroduction,3,,Section,Yes,,Summary Description of the Project,,,,,,,," +
-              "\nIntroduction,4,,Section,Yes,,Summary Description of the Project,,,,,,,,"
+              "\nProject Details,1,,Section,Yes,,,,,,,,,,," +
+              "\nSummary Description of the Project,2,,Section,Yes,,Project Details,,,,,,,,," +
+              "\nIntroduction,3,,Section,Yes,,Summary Description of the Project,,,,,,,,," +
+              "\nIntroduction,4,,Section,Yes,,Summary Description of the Project,,,,,,,,,"
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
@@ -378,9 +559,9 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
-              "\nProject Details,1,,Section,Yes,,,,,,,,,," +
-              "\nSummary Description of the Project,2,,Section,Yes,,Project Details,,,,,,,," +
-              "\nIntroduction,3,,Section,Yes,,NOT Summary Description of the Project,,,,,,,,"
+              "\nProject Details,1,,Section,Yes,,,,,,,,,,," +
+              "\nSummary Description of the Project,2,,Section,Yes,,Project Details,,,,,,,,," +
+              "\nIntroduction,3,,Section,Yes,,NOT Summary Description of the Project,,,,,,,,,"
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
@@ -396,8 +577,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
-              "\nProject Details,1,,Section,Yes,,Summary Description of the Project,,,,,,,," +
-              "\nSummary Description of the Project,2,,Section,Yes,,Project Details,,,,,,,,"
+              "\nProject Details,1,,Section,Yes,,Summary Description of the Project,,,,,,,,," +
+              "\nSummary Description of the Project,2,,Section,Yes,,Project Details,,,,,,,,,"
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
@@ -414,10 +595,10 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val documentTemplateId = inserted.documentTemplateId
       val testCsv =
           header +
-              "\nOrganization Name,1,,Text (single-line),,,,,,,,,,," +
-              "\nOrganization Name As List,2,,Text (single-line),yes,,,,,,,,,," +
-              "\nPrior Scenario,3,A brief description of the scenario,Text (multi-line),,,,,,,,,,," +
-              "\nPrior Scenario As List,4,A brief description of the scenario,Text (multi-line),yes,,,,,,,,,,"
+              "\nOrganization Name,1,,Text (single-line),,,,,,,,,,,," +
+              "\nOrganization Name As List,2,,Text (single-line),yes,,,,,,,,,,," +
+              "\nPrior Scenario,3,A brief description of the scenario,Text (multi-line),,,,,,,,,,,," +
+              "\nPrior Scenario As List,4,A brief description of the scenario,Text (multi-line),yes,,,,,,,,,,,"
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
@@ -478,13 +659,13 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\nEstimated reductions,1,Canned description,Select (single),,,,,\"- tiny" +
               "\n- small" +
               "\n- medium" +
-              "\n- large\",,,,,," +
+              "\n- large\",,,,,,," +
               // Multi select
               "\nMade up multi select,2,Select as many as you want!,Select (multiple),,,,,\"- Option 1" +
               "\n- Option 2" +
               "\n- Option 3" +
               "\n- Option 4 [[This one has super special rendered text!]]" +
-              "\n- Option 5\",,,,,,"
+              "\n- Option 5\",,,,,,,"
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
@@ -548,7 +729,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
               "\n- small amount" +
               "\n- medium amount" +
               "\n- medium amount" +
-              "\n- large amount\",,,,,,"
+              "\n- large amount\",,,,,,,"
 
       val importResult = importer.import(documentTemplateId, sizedInputStream(testCsv))
 
@@ -565,7 +746,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `detects duplicate recommended variables`() {
-      val testCsv = "$header\nSection Name,1,,Section,,\"Duplicate\nDuplicate\",,,,,,,,,"
+      val testCsv = "$header\nSection Name,1,,Section,,\"Duplicate\nDuplicate\",,,,,,,,,,"
 
       val importResult = importer.import(inserted.documentTemplateId, sizedInputStream(testCsv))
 
@@ -577,7 +758,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `detects missing recommended variables`() {
-      val testCsv = "$header\nSection Name,1,,Section,,Bogus Recommended,,,,,,,,,"
+      val testCsv = "$header\nSection Name,1,,Section,,Bogus Recommended,,,,,,,,,,"
 
       val importResult = importer.import(inserted.documentTemplateId, sizedInputStream(testCsv))
 
@@ -589,7 +770,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `detects newlines in variable names`() {
-      val testCsv = "$header\n\"Section\nName\",1,,Section,,Bogus Recommended,,,,,,,,,"
+      val testCsv = "$header\n\"Section\nName\",1,,Section,,Bogus Recommended,,,,,,,,,,"
 
       val importResult = importer.import(inserted.documentTemplateId, sizedInputStream(testCsv))
 
@@ -603,8 +784,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     fun `detects sections with tables as parents`() {
       val testCsv =
           header +
-              "\nMy Table,1,,Table,Yes,,,,,,,,,," +
-              "\nMy Section,2,,Section,,,My Table,,,,,,,,"
+              "\nMy Table,1,,Table,Yes,,,,,,,,,,," +
+              "\nMy Section,2,,Section,,,My Table,,,,,,,,,"
 
       val importResult = importer.import(inserted.documentTemplateId, sizedInputStream(testCsv))
 
@@ -618,7 +799,9 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `detects non-sections with sections as parents`() {
       val testCsv =
-          header + "\nMy Section,1,,Section,Yes,,,,,,,,,," + "\nOther,2,,Table,,,My Section,,,,,,,,"
+          header +
+              "\nMy Section,1,,Section,Yes,,,,,,,,,,," +
+              "\nOther,2,,Table,,,My Section,,,,,,,,,"
 
       val importResult = importer.import(inserted.documentTemplateId, sizedInputStream(testCsv))
 
@@ -631,7 +814,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `detects missing names`() {
-      val testCsv = header + "\n,1,,Section,Yes,,,,,,,,,,"
+      val testCsv = header + "\n,1,,Section,Yes,,,,,,,,,,,"
 
       val importResult = importer.import(inserted.documentTemplateId, sizedInputStream(testCsv))
 
@@ -654,7 +837,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     fun `reuses existing select variable`() {
       val testCsv =
           header +
-              "\nSelect Variable,A,,Select (single),,,,,\"- Option 1\n- Option 2\n- Option 3\",,,,,,"
+              "\nSelect Variable,A,,Select (single),,,,,\"- Option 1\n- Option 2\n- Option 3\",,,,,,,"
 
       val initialResult = importer.import(inserted.documentTemplateId, sizedInputStream(testCsv))
       val updatedResult = importer.import(inserted.documentTemplateId, sizedInputStream(testCsv))
@@ -682,8 +865,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `creates new select variable if options have changed`() {
       val initialCsv =
-          "$header\nSelect,1,,Select (single),,,,,\"- Option 1\n- Option 2\n- Option 3\",,,,,,"
-      val updatedCsv = "$header\nSelect,1,,Select (single),,,,,\"- Option 1\n- Option 2\",,,,,,"
+          "$header\nSelect,1,,Select (single),,,,,\"- Option 1\n- Option 2\n- Option 3\",,,,,,,"
+      val updatedCsv = "$header\nSelect,1,,Select (single),,,,,\"- Option 1\n- Option 2\",,,,,,,"
 
       val initialResult = importer.import(inserted.documentTemplateId, sizedInputStream(initialCsv))
       val updatedResult = importer.import(inserted.documentTemplateId, sizedInputStream(updatedCsv))
@@ -721,14 +904,14 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     fun `creates new top-level section if any of its descendents have changed`() {
       val initialCsv =
           header +
-              "\nTop,A,,Section,,,,,,,,,,," +
-              "\nMiddle,B,,Section,,,Top,,,,,,,," +
-              "\nBottom,C,,Section,,,Middle,,,,,,,,"
+              "\nTop,A,,Section,,,,,,,,,,,," +
+              "\nMiddle,B,,Section,,,Top,,,,,,,,," +
+              "\nBottom,C,,Section,,,Middle,,,,,,,,,"
       val updatedCsv =
           header +
-              "\nTop,A,,Section,,,,,,,,,,," +
-              "\nMiddle,B,,Section,,,Top,,,,,,,," +
-              "\nBottom,C,,Section,,,Middle,yes,,,,,,,"
+              "\nTop,A,,Section,,,,,,,,,,,," +
+              "\nMiddle,B,,Section,,,Top,,,,,,,,," +
+              "\nBottom,C,,Section,,,Middle,yes,,,,,,,,"
 
       importer.import(inserted.documentTemplateId, sizedInputStream(initialCsv))
       val initialTop = getVariableByName("Top")
@@ -780,13 +963,13 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     fun `creates new top-level section if new level is added to hierarchy`() {
       val initialCsv =
           header + //
-              "\nTop,A,,Section,,,,,,,,,,," +
-              "\nMiddle,B,,Section,,,Top,,,,,,,,"
+              "\nTop,A,,Section,,,,,,,,,,,," +
+              "\nMiddle,B,,Section,,,Top,,,,,,,,,"
       val updatedCsv =
           header +
-              "\nTop,A,,Section,,,,,,,,,,," +
-              "\nMiddle,B,,Section,,,Top,,,,,,,," +
-              "\nBottom,C,,Section,,,Middle,,,,,,,,"
+              "\nTop,A,,Section,,,,,,,,,,,," +
+              "\nMiddle,B,,Section,,,Top,,,,,,,,," +
+              "\nBottom,C,,Section,,,Middle,,,,,,,,,"
 
       importer.import(inserted.documentTemplateId, sizedInputStream(initialCsv))
       val initialTop = getVariableByName("Top")
@@ -835,12 +1018,12 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     fun `reuses section if none of its descendents have changed`() {
       val initialCsv =
           header +
-              "\nInitial Top,A,,Section,,,,,,,,,,," +
-              "\nInitial Bottom,B,,Section,,,Initial Top,,,,,,,,"
+              "\nInitial Top,A,,Section,,,,,,,,,,,," +
+              "\nInitial Bottom,B,,Section,,,Initial Top,,,,,,,,,"
       val updatedCsv =
           header +
-              "\nInitial Top,A,,Section,,,,,,,,,,," +
-              "\nInitial Bottom,B,,Section,,,Initial Top,,,,,,,,"
+              "\nInitial Top,A,,Section,,,,,,,,,,,," +
+              "\nInitial Bottom,B,,Section,,,Initial Top,,,,,,,,,"
 
       importer.import(inserted.documentTemplateId, sizedInputStream(initialCsv))
       val initialTop = getVariableByName("Initial Top")
@@ -858,16 +1041,16 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     fun `uses recommended variables list from new manifest if a section variable is reused`() {
       val initialCsv =
           header +
-              "\nVariable 1,A,,Text (single-line),,,,,,,,,,," +
-              "\nVariable 2,B,,Text (single-line),,,,,,,,,,," +
-              "\nSection 1,C,,Section,,Variable 1,,,,,,,,," +
-              "\nSection 2,D,,Section,,Variable 2,,,,,,,,,"
+              "\nVariable 1,A,,Text (single-line),,,,,,,,,,,," +
+              "\nVariable 2,B,,Text (single-line),,,,,,,,,,,," +
+              "\nSection 1,C,,Section,,Variable 1,,,,,,,,,," +
+              "\nSection 2,D,,Section,,Variable 2,,,,,,,,,,"
       val updatedCsv =
           header +
-              "\nVariable 1,A,,Text (single-line),,,,,,,,,,," +
-              "\nVariable 2,B,,Text (single-line),,,,,,,,,,," +
-              "\nSection 1,C,,Section,,Variable 2,,,,,,,,," +
-              "\nSection 2,D,,Section,,Variable 2,,,,,,,,,"
+              "\nVariable 1,A,,Text (single-line),,,,,,,,,,,," +
+              "\nVariable 2,B,,Text (single-line),,,,,,,,,,,," +
+              "\nSection 1,C,,Section,,Variable 2,,,,,,,,,," +
+              "\nSection 2,D,,Section,,Variable 2,,,,,,,,,,"
 
       val initialResult = importer.import(inserted.documentTemplateId, sizedInputStream(initialCsv))
       val initialManifestId = initialResult.newVersion
@@ -915,9 +1098,9 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `creates new variable if name or description have changed`() {
       val initialCsv =
-          "$header\nOriginal variable,1,Original description,Text (single-line),,,,,,,,,,,"
+          "$header\nOriginal variable,1,Original description,Text (single-line),,,,,,,,,,,,"
       val updatedCsv =
-          "$header\nUpdated variable,1,Updated description,Text (single-line),,,,,,,,,,,"
+          "$header\nUpdated variable,1,Updated description,Text (single-line),,,,,,,,,,,,"
 
       val initialResult = importer.import(inserted.documentTemplateId, sizedInputStream(initialCsv))
 
@@ -975,8 +1158,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates new variable if validation settings have changed`() {
-      val initialCsv = "$header\nNumber variable,1,,Number,,,,,,10,,,,,"
-      val updatedCsv = "$header\nNumber variable,1,,Number,,,,,,20,,,,,"
+      val initialCsv = "$header\nNumber variable,1,,Number,,,,,,10,,,,,,"
+      val updatedCsv = "$header\nNumber variable,1,,Number,,,,,,20,,,,,,"
 
       importer.import(inserted.documentTemplateId, sizedInputStream(initialCsv))
 
@@ -1031,14 +1214,14 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     fun `Creates new table and column variables if the column names are updated`() {
       val initialCsv =
           header +
-              "\nTable,1,,Table,Yes,,,,,,,,,," +
-              "\nColumn A,2,,Number,,,Table,,,,,,,," +
-              "\nColumn B,3,,Number,,,Table,,,,,,,,"
+              "\nTable,1,,Table,Yes,,,,,,,,,,," +
+              "\nColumn A,2,,Number,,,Table,,,,,,,,," +
+              "\nColumn B,3,,Number,,,Table,,,,,,,,,"
       val updatedCsv =
           header +
-              "\nTable,1,,Table,Yes,,,,,,,,,," +
-              "\nRenamed A,2,,Number,,,Table,,,,,,,," +
-              "\nRenamed B,3,,Number,,,Table,,,,,,,,"
+              "\nTable,1,,Table,Yes,,,,,,,,,,," +
+              "\nRenamed A,2,,Number,,,Table,,,,,,,,," +
+              "\nRenamed B,3,,Number,,,Table,,,,,,,,,"
 
       importer.import(inserted.documentTemplateId, sizedInputStream(initialCsv))
 
@@ -1133,14 +1316,14 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     fun `creates new table variable and new column variables if any columns have changed`() {
       val initialCsv =
           header +
-              "\nTable,1,,Table,Yes,,,,,,,,,," +
-              "\nColumn A,2,,Number,,,Table,,,,,,,," +
-              "\nColumn B,3,,Number,,,Table,,,,,,,,"
+              "\nTable,1,,Table,Yes,,,,,,,,,,," +
+              "\nColumn A,2,,Number,,,Table,,,,,,,,," +
+              "\nColumn B,3,,Number,,,Table,,,,,,,,,"
       val updatedCsv =
           header +
-              "\nTable,1,,Table,Yes,,,,,,,,,," +
-              "\nColumn A,2,,Number,,,Table,,,,,,,," +
-              "\nColumn B,3,,Number,,,Table,,,1,,,,,"
+              "\nTable,1,,Table,Yes,,,,,,,,,,," +
+              "\nColumn A,2,,Number,,,Table,,,,,,,,," +
+              "\nColumn B,3,,Number,,,Table,,,1,,,,,,"
 
       importer.import(inserted.documentTemplateId, sizedInputStream(initialCsv))
 

@@ -87,6 +87,33 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                   .trimIndent(),
           )
     }
+
+    @Test
+    fun `populates sections with default values`() {
+      val textVariableId = insertVariableManifestEntry(insertTextVariable())
+      val sectionId = insertVariableManifestEntry(insertSectionVariable(renderHeading = false))
+      insertDefaultSectionValue(sectionId, listPosition = 0, textValue = "Some text")
+      insertDefaultSectionValue(sectionId, listPosition = 1, usedVariableId = textVariableId)
+
+      val payload =
+          """
+            {
+              "documentTemplateId": ${inserted.documentTemplateId},
+              "name": "Test document",
+              "ownedBy": ${inserted.userId},
+              "projectId": ${inserted.projectId}
+            }"""
+              .trimIndent()
+
+      mockMvc.post(path) { content = payload }.andExpect { status { isOk() } }
+
+      val values = variableSectionValuesDao.findAll().sortedBy { it.variableValueId!!.value }
+
+      assertEquals(2, values.size, "Should have copied both default value entries")
+      assertEquals("Some text", values[0].textValue, "Should have copied text value")
+      assertEquals(
+          textVariableId, values[1].usedVariableId, "Should have copied variable reference")
+    }
   }
 
   @Nested

@@ -566,6 +566,8 @@ COMMENT ON TABLE docprod.variable_numbers IS 'Information about number variables
 
 COMMENT ON TABLE docprod.variable_owners IS 'Which internal users are responsible for reviewing the values of which variables for which projects.';
 
+COMMENT ON TABLE docprod.variable_section_default_values IS 'Section values that are set by default on newly-created documents.';
+
 COMMENT ON TABLE docprod.variable_section_recommendations IS 'Which sections recommend using which other variables. Can vary between manifests.';
 
 COMMENT ON TABLE docprod.variable_section_values IS 'Fragments of the contents of document sections. Each fragment is either a block of text or a usage of a variable; they are assembled in order to render the contents of the section.';

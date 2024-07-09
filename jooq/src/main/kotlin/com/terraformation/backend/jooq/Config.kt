@@ -231,6 +231,9 @@ val ID_WRAPPERS =
                     "VariableManifestId",
                     listOf("variable_manifests\\.id", ".*\\.variable_manifest_id")),
                 IdWrapper(
+                    "VariableSectionDefaultValueId",
+                    listOf("variable_section_default_values\\.id")),
+                IdWrapper(
                     "VariableSelectOptionId",
                     listOf(
                         "variable_select_options\\.id",

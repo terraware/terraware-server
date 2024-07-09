@@ -16,6 +16,7 @@ import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentSavedVersionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentsRow
+import com.terraformation.backend.documentproducer.DocumentService
 import com.terraformation.backend.documentproducer.DocumentUpgradeService
 import com.terraformation.backend.documentproducer.db.DocumentStore
 import com.terraformation.backend.documentproducer.model.ExistingDocumentModel
@@ -40,6 +41,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/document-producer/documents")
 @RestController
 class DocumentsController(
+    private val documentService: DocumentService,
     private val documentStore: DocumentStore,
     private val documentUpgradeService: DocumentUpgradeService,
 ) {
@@ -65,7 +67,7 @@ class DocumentsController(
   fun createDocument(
       @RequestBody payload: CreateDocumentRequestPayload
   ): CreateDocumentResponsePayload {
-    val model = documentStore.create(payload.toModel())
+    val model = documentService.create(payload.toModel())
 
     return CreateDocumentResponsePayload(DocumentPayload(model))
   }
