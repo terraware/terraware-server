@@ -98,10 +98,10 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       val payload =
           """
             {
-              "methodologyId": 1,
+              "documentTemplateId": ${inserted.documentTemplateId},
               "name": "Test document",
-              "organizationName": "Org Name",
               "ownedBy": ${inserted.userId},
+              "projectId": ${inserted.projectId}
             }"""
               .trimIndent()
 
