@@ -230,7 +230,7 @@ class ManifestImporter(
                       if (variableName.isNotEmpty()) {
                         val referencedCsvVariable =
                             csvVariableByStableId[variableName]
-                                ?: csvVariableByPath["\t$variableName"]
+                              ?: csvVariableByPath["\t$variableName"]
 
                         if (referencedCsvVariable != null) {
                           VariableSectionDefaultValuesRow(
