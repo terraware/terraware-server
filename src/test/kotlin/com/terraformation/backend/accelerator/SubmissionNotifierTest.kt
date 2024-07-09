@@ -43,6 +43,7 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
             dslContext,
             variableNumbersDao,
             variablesDao,
+            variableSectionDefaultValuesDao,
             variableSectionRecommendationsDao,
             variableSectionsDao,
             variableSelectsDao,
