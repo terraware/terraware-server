@@ -219,7 +219,6 @@ class ThumbnailStore(
     graphics.fillRect(0, 0, newImage.width, newImage.height)
     graphics.drawImage(originalImage, null, null)
 
-
     // If the image is large enough for visual quality to matter, use a higher-quality scaling
     // algorithm.
     val useHighQuality =
