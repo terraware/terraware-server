@@ -18,6 +18,23 @@ VALUES (5, 'Awaiting Check-In', TRUE),
 ON CONFLICT (id) DO UPDATE SET name   = excluded.name,
                                active = excluded.active;
 
+INSERT INTO accelerator.application_module_statuses (id, name)
+VALUES (1, 'Incomplete'),
+       (2, 'Complete')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO accelerator.application_statuses (id, name)
+VALUES (1, 'Not Submitted'),
+       (2, 'Failed Prescreen'),
+       (3, 'Passed Prescreen'),
+       (4, 'In Review / Submitted'),
+       (5, 'Needs FollowUp'),
+       (6, 'Needs Translation'),
+       (7, 'Accepted'),
+       (8, 'Waitlist'),
+       (9, 'Not Accepted')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO nursery.batch_quantity_history_types (id, name)
 VALUES (1, 'Observed'),
        (2, 'Computed'),
@@ -445,7 +462,8 @@ VALUES (1, 'Not Submitted'),
        (3, 'Needs Translation'),
        (4, 'Approved'),
        (5, 'Rejected'),
-       (6, 'Not Needed')
+       (6, 'Not Needed'),
+       (7, 'Completed')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO internal_tags (id, name, description, is_system, created_by, created_time, modified_by, modified_time)
