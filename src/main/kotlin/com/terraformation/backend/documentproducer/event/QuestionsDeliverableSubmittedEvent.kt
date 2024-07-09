@@ -9,5 +9,5 @@ import com.terraformation.backend.db.docprod.VariableValueId
 data class QuestionsDeliverableSubmittedEvent(
     val deliverableId: DeliverableId,
     val projectId: ProjectId,
-    val valueIds: Map<VariableId, VariableValueId>,
+    val currentValueIds: Map<VariableId, VariableValueId>,
 )

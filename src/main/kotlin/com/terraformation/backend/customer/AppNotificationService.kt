@@ -36,6 +36,7 @@ import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
+import com.terraformation.backend.documentproducer.event.QuestionsDeliverableStatusUpdatedEvent
 import com.terraformation.backend.email.WebAppUrls
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.NotificationMessage
@@ -438,6 +439,23 @@ class AppNotificationService(
             webAppUrls.moduleEvent(moduleEvent.moduleId, moduleEvent.id, organizationId, it)
         insertProjectNotifications(it, NotificationType.EventReminder, renderMessage, eventUrl)
       }
+    }
+  }
+
+  @EventListener
+  fun on(event: QuestionsDeliverableStatusUpdatedEvent) {
+    systemUser.run {
+      val organizationId = parentStore.getOrganizationId(event.projectId)!!
+      val deliverableUrl = webAppUrls.deliverable(event.deliverableId, event.projectId)
+      val renderMessage = { messages.deliverableStatusUpdated() }
+
+      log.info("Creating app notifications for deliverable ${event.deliverableId} status updated")
+      insertOrganizationNotifications(
+          organizationId,
+          NotificationType.DeliverableStatusUpdated,
+          renderMessage,
+          deliverableUrl,
+          setOf(Role.Owner, Role.Admin, Role.Manager))
     }
   }
 
