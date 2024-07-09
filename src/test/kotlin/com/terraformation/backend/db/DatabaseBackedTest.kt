@@ -159,6 +159,7 @@ import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
 import com.terraformation.backend.db.docprod.VariableManifestId
+import com.terraformation.backend.db.docprod.VariableSectionDefaultValueId
 import com.terraformation.backend.db.docprod.VariableSelectOptionId
 import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableTextType
@@ -176,6 +177,7 @@ import com.terraformation.backend.db.docprod.tables.daos.VariableManifestEntries
 import com.terraformation.backend.db.docprod.tables.daos.VariableManifestsDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableNumbersDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableOwnersDao
+import com.terraformation.backend.db.docprod.tables.daos.VariableSectionDefaultValuesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableSectionRecommendationsDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableSectionValuesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableSectionsDao
@@ -198,6 +200,7 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariableManifestEntrie
 import com.terraformation.backend.db.docprod.tables.pojos.VariableManifestsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableNumbersRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableOwnersRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionDefaultValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionRecommendationsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionsRow
@@ -568,6 +571,7 @@ abstract class DatabaseBackedTest {
   protected val variableSelectOptionValuesDao: VariableSelectOptionValuesDao by lazyDao()
   protected val variableSelectOptionsDao: VariableSelectOptionsDao by lazyDao()
   protected val variableSectionsDao: VariableSectionsDao by lazyDao()
+  protected val variableSectionDefaultValuesDao: VariableSectionDefaultValuesDao by lazyDao()
   protected val variableSectionRecommendationsDao: VariableSectionRecommendationsDao by lazyDao()
   protected val variableSectionValuesDao: VariableSectionValuesDao by lazyDao()
   protected val variableTablesDao: VariableTablesDao by lazyDao()
@@ -2589,6 +2593,41 @@ abstract class DatabaseBackedTest {
     variableSectionValuesDao.insert(row)
 
     return row.variableValueId!!
+  }
+
+  protected fun insertDefaultSectionValue(
+      variableId: Any,
+      variableManifestId: Any = inserted.variableManifestId,
+      listPosition: Int = 0,
+      id: Any? = null,
+      textValue: String? = null,
+      usedVariableId: Any? = null,
+      usageType: VariableUsageType? =
+          if (usedVariableId != null) VariableUsageType.Injection else null,
+      displayStyle: VariableInjectionDisplayStyle? =
+          if (usedVariableId != null) VariableInjectionDisplayStyle.Inline else null,
+  ): VariableSectionDefaultValueId {
+    val usedVariableIdWrapper = usedVariableId?.toIdWrapper { VariableId(it) }
+    val usedVariableType =
+        usedVariableIdWrapper?.let { variablesDao.fetchOneById(it)!!.variableTypeId!! }
+
+    val row =
+        VariableSectionDefaultValuesRow(
+            displayStyleId = displayStyle,
+            id = id?.toIdWrapper { VariableSectionDefaultValueId(it) },
+            listPosition = listPosition,
+            textValue = textValue,
+            usageTypeId = usageType,
+            usedVariableId = usedVariableIdWrapper,
+            usedVariableTypeId = usedVariableType,
+            variableId = variableId.toIdWrapper { VariableId(it) },
+            variableManifestId = variableManifestId.toIdWrapper { VariableManifestId(it) },
+            variableTypeId = VariableType.Section,
+        )
+
+    variableSectionDefaultValuesDao.insert(row)
+
+    return row.id!!
   }
 
   protected fun insertSectionRecommendation(

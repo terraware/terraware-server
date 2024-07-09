@@ -6,6 +6,7 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.tables.daos.DocumentsDao
@@ -26,6 +27,7 @@ import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_IMAGE_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_LINK_VALUES
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SECTION_DEFAULT_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SECTION_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SELECT_OPTION_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_TABLE_COLUMNS
@@ -51,6 +53,7 @@ import com.terraformation.backend.documentproducer.model.ImageValue
 import com.terraformation.backend.documentproducer.model.ImageValueDetails
 import com.terraformation.backend.documentproducer.model.LinkValue
 import com.terraformation.backend.documentproducer.model.LinkValueDetails
+import com.terraformation.backend.documentproducer.model.NewSectionValue
 import com.terraformation.backend.documentproducer.model.NewValue
 import com.terraformation.backend.documentproducer.model.NumberValue
 import com.terraformation.backend.documentproducer.model.ReplaceValuesOperation
@@ -331,6 +334,36 @@ class VariableValueStore(
         } ?: throw VariableValueIncompleteException(base.id)
       }
     }
+  }
+
+  /** Populates a new document with the values of variables that are configured with defaults. */
+  fun populateDefaultValues(projectId: ProjectId, manifestId: VariableManifestId) {
+    val hasValues =
+        dslContext.fetchExists(VARIABLE_VALUES, VARIABLE_VALUES.PROJECT_ID.eq(projectId))
+    if (hasValues) {
+      throw IllegalStateException("Can only populate initial values of a new document")
+    }
+
+    val operations =
+        dslContext
+            .selectFrom(VARIABLE_SECTION_DEFAULT_VALUES)
+            .where(VARIABLE_SECTION_DEFAULT_VALUES.VARIABLE_MANIFEST_ID.eq(manifestId))
+            .orderBy(
+                VARIABLE_SECTION_DEFAULT_VALUES.VARIABLE_ID,
+                VARIABLE_SECTION_DEFAULT_VALUES.LIST_POSITION)
+            .map { record ->
+              val fragment =
+                  record.textValue?.let { SectionValueText(it) }
+                      ?: SectionValueVariable(
+                          record.usedVariableId!!, record.usageTypeId!!, record.displayStyleId)
+              AppendValueOperation(
+                  NewSectionValue(
+                      BaseVariableValueProperties(
+                          null, projectId, record.listPosition!!, record.variableId!!, null),
+                      fragment))
+            }
+
+    updateValues(operations)
   }
 
   /**

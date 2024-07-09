@@ -541,7 +541,6 @@ COMMENT ON TABLE accelerator.user_deliverable_categories IS 'Which deliverable c
 
 COMMENT ON TABLE accelerator.vote_options IS '(Enum) Available vote options.';
 
-
 COMMENT ON TABLE docprod.document_saved_versions IS 'Saved versions of document variable values. A saved version is conceptually just a reference to a particular point in the edit history of the document; to restore that version, we ignore any later edits.';
 
 COMMENT ON TABLE docprod.document_statuses IS '(Enum) Current stage of a document''s lifecycle.';
@@ -565,6 +564,8 @@ COMMENT ON TABLE docprod.variable_manifests IS 'A collection of the definitions 
 COMMENT ON TABLE docprod.variable_numbers IS 'Information about number variables that is not relevant for other variable types.';
 
 COMMENT ON TABLE docprod.variable_owners IS 'Which internal users are responsible for reviewing the values of which variables for which projects.';
+
+COMMENT ON TABLE docprod.variable_section_default_values IS 'Section values that are set by default on newly-created documents.';
 
 COMMENT ON TABLE docprod.variable_section_recommendations IS 'Which sections recommend using which other variables. Can vary between manifests.';
 
