@@ -82,7 +82,10 @@ class DocumentUpgradeCalculator(
           newManifestId)
     }
 
-    newManifestVariables = variableStore.fetchManifestVariables(newManifestId).associateBy { it.id }
+    newManifestVariables =
+        variableStore
+            .fetchManifestVariablesWithSubSectionsAndTableColumns(newManifestId)
+            .associateBy { it.id }
     if (newManifestVariables.isEmpty()) {
       throw IllegalArgumentException("No variables defined in manifest $newManifestId")
     }
@@ -107,7 +110,7 @@ class DocumentUpgradeCalculator(
       return sectionOperations(variable)
     }
 
-    // Nothing to do if this variable's value is already up to date or the variable isn't a
+    // Nothing to do if this variable's value is already up-to-date or the variable isn't a
     // replacement for an earlier one.
     if (variable.id in existingValues || variable.replacesVariableId == null) {
       return emptyList()
@@ -201,7 +204,7 @@ class DocumentUpgradeCalculator(
               ?.firstNotNullOfOrNull { existingValues[it] }
               ?.filterIsInstance<ExistingSectionValue>() ?: return emptyList()
 
-      sectionValues.mapNotNull { sectionValue ->
+      sectionValues.flatMap { sectionValue ->
         val valueFragment: SectionValueFragment? =
             when (sectionValue.value) {
               is SectionValueText -> sectionValue.value
@@ -222,12 +225,14 @@ class DocumentUpgradeCalculator(
             }
 
         valueFragment?.let { validFragment ->
-          AppendValueOperation(
-              NewSectionValue(
-                  BaseVariableValueProperties(
-                      null, projectId, 0, variable.id, sectionValue.citation),
-                  validFragment))
-        }
+          listOf(
+              AppendValueOperation(
+                  NewSectionValue(
+                      BaseVariableValueProperties(
+                          null, projectId, 0, variable.id, sectionValue.citation),
+                      validFragment)),
+              DeleteValueOperation(projectId, sectionValue.id))
+        } ?: emptyList()
       }
     }
   }
@@ -238,35 +243,55 @@ class DocumentUpgradeCalculator(
       newTable: TableVariable
   ): List<ValueOperation> {
     val oldColumns = oldTable.columns.map { it.variable }.associateBy { it.id }
+    val deleteOldTableOperations =
+        existingValues[oldTable.id]?.map { DeleteValueOperation(projectId, it.id) } ?: emptyList()
 
-    return oldRows.flatMap { oldRow ->
-      val rowOperation =
-          AppendValueOperation(
-              NewTableValue(
-                  BaseVariableValueProperties(null, projectId, 0, newTable.id, oldRow.citation)))
+    val rowColOperations =
+        oldRows.flatMap { oldRow ->
+          val rowOperation =
+              AppendValueOperation(
+                  NewTableValue(
+                      BaseVariableValueProperties(
+                          null, projectId, 0, newTable.id, oldRow.citation)))
 
-      val columnOperations =
-          newTable.columns
-              .map { it.variable }
-              .flatMap { newColumn ->
-                if (newColumn.replacesVariableId != null &&
-                    newColumn.replacesVariableId in oldColumns) {
-                  val oldColumn = oldColumns[newColumn.replacesVariableId]!!
+          val deleteRowOperation = oldRow.rowValueId?.let { DeleteValueOperation(projectId, it) }
 
-                  existingValues[newColumn.replacesVariableId]
-                      ?.filter { it.rowValueId == oldRow.id }
-                      ?.sortedBy { it.listPosition }
-                      ?.mapNotNull { oldValue ->
-                        newColumn.convertValue(
-                            oldColumn, oldValue, null, variableStore::fetchVariable)
-                      }
-                      ?.map { AppendValueOperation(it) } ?: emptyList()
-                } else {
-                  emptyList<ValueOperation>()
-                }
-              }
+          val columnOperations =
+              newTable.columns
+                  .map { it.variable }
+                  .flatMap { newColumn ->
+                    if (newColumn.replacesVariableId != null &&
+                        newColumn.replacesVariableId in oldColumns) {
+                      val oldColumn = oldColumns[newColumn.replacesVariableId]!!
 
-      listOf(rowOperation) + columnOperations
-    }
+                      val appendOps =
+                          existingValues[newColumn.replacesVariableId]
+                              ?.filter { it.rowValueId == oldRow.id }
+                              ?.sortedBy { it.listPosition }
+                              ?.mapNotNull { oldValue ->
+                                newColumn.convertValue(
+                                    oldColumn, oldValue, null, variableStore::fetchVariable)
+                              }
+                              ?.map { AppendValueOperation(it) } ?: emptyList()
+                      val deleteOps =
+                          existingValues[newColumn.replacesVariableId]
+                              ?.filter { it.rowValueId == oldRow.id }
+                              ?.map { DeleteValueOperation(projectId, it.id) } ?: emptyList()
+
+                      appendOps + deleteOps
+                    } else {
+                      emptyList<ValueOperation>()
+                    }
+                  }
+
+          val operations =
+              listOf(rowOperation) +
+                  (if (deleteRowOperation != null) listOf(deleteRowOperation) else emptyList()) +
+                  columnOperations
+
+          operations
+        }
+
+    return deleteOldTableOperations + rowColOperations
   }
 }

@@ -128,6 +128,29 @@ class VariableStore(
   }
 
   /**
+   * Returns a list of the variables in a manifest in position order. Table columns are excluded.
+   * Section children are included here. They are redundantly included in the children of sections.
+   * This is left in to ensure that, when fetching, cycles may be detected.
+   */
+  fun fetchManifestVariablesWithSubSectionsAndTableColumns(
+      manifestId: VariableManifestId
+  ): List<Variable> {
+    return with(VARIABLE_MANIFEST_ENTRIES) {
+      dslContext
+          .select(VARIABLE_ID)
+          .from(VARIABLE_MANIFEST_ENTRIES)
+          .where(VARIABLE_MANIFEST_ID.eq(manifestId))
+          .andNotExists(
+              DSL.selectOne()
+                  .from(VARIABLE_TABLE_COLUMNS)
+                  .where(VARIABLE_ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
+          .orderBy(POSITION)
+          .fetch(VARIABLE_ID.asNonNullable())
+          .map { fetchVariable(it, manifestId) }
+    }
+  }
+
+  /**
    * Fetches the list of non-section variables, using the latest version of each based on their
    * stable ID. Table columns are not included in the top-level list, but rather in the containing
    * variables' lists of children.

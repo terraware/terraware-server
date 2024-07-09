@@ -20,8 +20,10 @@ import com.terraformation.backend.documentproducer.model.BaseVariableValueProper
 import com.terraformation.backend.documentproducer.model.DeleteValueOperation
 import com.terraformation.backend.documentproducer.model.ExistingSectionValue
 import com.terraformation.backend.documentproducer.model.NewNumberValue
+import com.terraformation.backend.documentproducer.model.NewSectionValue
 import com.terraformation.backend.documentproducer.model.NewTableValue
 import com.terraformation.backend.documentproducer.model.NewTextValue
+import com.terraformation.backend.documentproducer.model.SectionValueText
 import com.terraformation.backend.documentproducer.model.SectionValueVariable
 import com.terraformation.backend.documentproducer.model.UpdateValueOperation
 import com.terraformation.backend.documentproducer.model.ValueOperation
@@ -184,32 +186,40 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
     val documentId = insertDocument(variableManifestId = oldManifestId)
 
     val oldTableRowId1 = insertValue(variableId = oldTableVariableId, listPosition = 0)
-    insertValueTableRow(
-        insertValue(variableId = oldTableObsoleteColumnId, textValue = "obsolete 1"),
-        oldTableRowId1)
-    insertValueTableRow(
+    val oldRowVal1Col1 =
+        insertValue(variableId = oldTableObsoleteColumnId, textValue = "obsolete 1")
+    insertValueTableRow(oldRowVal1Col1, oldTableRowId1)
+    val oldRowVal1Col2 =
         insertValue(
             variableId = oldTableOutdatedColumnId,
             numberValue = BigDecimal(50),
-            citation = "citation"),
-        oldTableRowId1)
+            citation = "citation")
+    insertValueTableRow(oldRowVal1Col2, oldTableRowId1)
 
     val oldTableRowId2 = insertValue(variableId = oldTableVariableId, listPosition = 1)
-    insertValueTableRow(
-        insertValue(variableId = oldTableObsoleteColumnId, textValue = "obsolete 2"),
-        oldTableRowId2)
-    insertValueTableRow(
-        insertValue(variableId = oldTableOutdatedColumnId, numberValue = BigDecimal(5)),
-        oldTableRowId2)
+    val oldRowVal2Col1 =
+        insertValue(variableId = oldTableObsoleteColumnId, textValue = "obsolete 2")
+    insertValueTableRow(oldRowVal2Col1, oldTableRowId2)
+    val oldRowVal2Col2 =
+        insertValue(variableId = oldTableOutdatedColumnId, numberValue = BigDecimal(5))
+    insertValueTableRow(oldRowVal2Col2, oldTableRowId2)
 
     assertEquals(
         listOf(
+            // Delete old rows
+            DeleteValueOperation(inserted.projectId, oldTableRowId1),
+            DeleteValueOperation(inserted.projectId, oldTableRowId2),
+            // Append new rows
             AppendValueOperation(NewTableValue(newValueProps(newTableVariableId))),
             AppendValueOperation(
                 NewNumberValue(
                     newValueProps(newTableUpdatedColumnId, citation = "citation"), BigDecimal(50))),
+            // Delete value from deleted column
+            DeleteValueOperation(inserted.projectId, oldRowVal1Col2),
             // Empty row because the old one didn't have any values to carry forward.
             AppendValueOperation(NewTableValue(newValueProps(newTableVariableId))),
+            // Delete value from deleted column
+            DeleteValueOperation(inserted.projectId, oldRowVal2Col2),
         ),
         calculateOperations(newManifestId, documentId))
   }
@@ -253,6 +263,47 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
                         VariableInjectionDisplayStyle.Block))),
             DeleteValueOperation(inserted.projectId, obsoleteValueId),
         ),
+        calculateOperations(newManifestId, documentId))
+  }
+
+  @Test
+  fun `subsection values variable references updated to new variable IDs`() {
+    val oldManifestId = insertVariableManifest()
+    val parentSectionVariableId =
+        insertVariableManifestEntry(insertSectionVariable(), manifestId = oldManifestId)
+    val subSectionVariableId =
+        insertVariableManifestEntry(
+            insertSectionVariable(parentId = parentSectionVariableId), manifestId = oldManifestId)
+
+    val newManifestId = insertVariableManifest()
+    val newParentSectionVariableId =
+        insertVariableManifestEntry(
+            insertSectionVariable(
+                insertVariable(
+                    type = VariableType.Section, replacesVariableId = parentSectionVariableId)),
+            manifestId = newManifestId)
+    val newSubSectionVariableId =
+        insertVariableManifestEntry(
+            insertSectionVariable(
+                insertVariable(
+                    type = VariableType.Section, replacesVariableId = subSectionVariableId),
+                parentId = newParentSectionVariableId),
+            manifestId = newManifestId)
+    insertVariableManifestEntry(
+        insertSectionVariable(parentId = newParentSectionVariableId), manifestId = newManifestId)
+
+    val documentId = insertDocument(variableManifestId = oldManifestId)
+    val sectionValueId = insertSectionValue(subSectionVariableId, textValue = "some text")
+
+    assertEquals(
+        listOf(
+            AppendValueOperation(
+                NewSectionValue(
+                    BaseVariableValueProperties(
+                        null, inserted.projectId, 0, newSubSectionVariableId, null),
+                    SectionValueText("some text"),
+                )),
+            DeleteValueOperation(inserted.projectId, sectionValueId)),
         calculateOperations(newManifestId, documentId))
   }
 
