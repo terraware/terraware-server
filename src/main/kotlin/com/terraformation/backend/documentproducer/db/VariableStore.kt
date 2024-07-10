@@ -270,6 +270,9 @@ class VariableStore(
             BaseVariableProperties(
                 deliverableId = variablesRow.deliverableId,
                 deliverablePosition = variablesRow.deliverablePosition,
+                dependencyCondition = variablesRow.dependencyConditionId,
+                dependencyValue = variablesRow.dependencyValue,
+                dependencyVariableStableId = variablesRow.dependencyVariableStableId,
                 description = variablesRow.description,
                 id = variableId,
                 isList = variablesRow.isList!!,

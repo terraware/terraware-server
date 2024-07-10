@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.documentproducer.db.VariableStore
@@ -86,6 +87,15 @@ class VariablesController(
         ])
 interface VariablePayload {
   @get:JsonIgnore val model: Variable
+
+  val dependencyCondition: DependencyCondition?
+    get() = model.dependencyCondition
+
+  val dependencyValue: String?
+    get() = model.dependencyValue
+
+  val dependencyVariableStableId: String?
+    get() = model.dependencyVariableStableId
 
   val description: String?
     get() = model.description
