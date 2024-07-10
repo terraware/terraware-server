@@ -1,2 +1,3 @@
+e48d4a219b1 SW-5506 Make the 'variable manifest' CSV work with the latest CSV format (#2134)
 80871e90338 Add stableId to variable response (#2144)
 a7d1a03d742 SW-5500 Send notifications for variables reviews (#2137)
