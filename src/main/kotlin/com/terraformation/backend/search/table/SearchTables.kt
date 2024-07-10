@@ -24,6 +24,8 @@ import java.time.Clock
 class SearchTables(clock: Clock) {
   val accessionCollectors = AccessionCollectorsTable(this)
   val accessions = AccessionsTable(this, clock)
+  val applicationHistories = ApplicationHistoriesTable(this)
+  val applications = ApplicationsTable(this)
   val bags = BagsTable(this)
   val batches = BatchesTable(this)
   val batchSubLocations = BatchSubLocationsTable(this)
