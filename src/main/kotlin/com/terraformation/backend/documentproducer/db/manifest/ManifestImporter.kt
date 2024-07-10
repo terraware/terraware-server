@@ -232,9 +232,9 @@ class ManifestImporter(
                             if (defaultTextVariableByStableId.containsKey(variableStableId)) {
                               defaultTextVariableByStableId[variableStableId]
                             } else {
-                              defaultTextVariableByStableId[variableStableId] =
-                                  variableStore.fetchByStableId(variableStableId)
-                              defaultTextVariableByStableId[variableStableId]
+                              defaultTextVariableByStableId.computeIfAbsent(variableStableId) {
+                                variableStore.fetchByStableId(variableStableId)
+                              }
                             }
 
                         if (referencedVariable != null) {
