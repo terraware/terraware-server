@@ -135,11 +135,14 @@ class ManifestImporter(
       val existingManifestId =
           variableManifestStore.fetchVariableManifestByDocumentTemplate(documentTemplateId)?.id
               ?: return
-      val existingVariables = variableStore.fetchManifestVariables(existingManifestId)
+      val existingSectionVariables =
+          variableStore
+              .fetchManifestVariables(existingManifestId)
+              .filterIsInstance<SectionVariable>()
 
       // Child variables such as subsections are not in the top-level list, so we
       // need to recursively process them.
-      fun processVariables(variables: List<Variable>) {
+      fun processVariables(variables: List<SectionVariable>) {
         variables.forEach { variable ->
           val csvVariable = csvVariableByStableId[variable.stableId]
           if (csvVariable != null) {
@@ -150,18 +153,16 @@ class ManifestImporter(
             }
           }
 
-          if (variable is SectionVariable) {
-            processVariables(variable.children)
-          }
+          processVariables(variable.children)
         }
       }
 
-      processVariables(existingVariables)
+      processVariables(existingSectionVariables)
 
       // At this point, tables and top-level sections are marked as non-reusable if any of their
       // children are non-reusable. But some of the children might still be marked as reusable, so
       // we need to propagate the non-reusability back down the hierarchy.
-      existingVariables
+      existingSectionVariables
           .mapNotNull { csvVariableByStableId[it.stableId] }
           .filter { it.variableId == null }
           .forEach { markChildrenNonReusable(it) }
@@ -204,7 +205,7 @@ class ManifestImporter(
 
       if (csvVariable.defaultSectionText != null) {
         val regex =
-            Regex("(.*?)(?:\\{\\{(?:[^{]+-\\s*)?([0-9]+)}}|\$)", RegexOption.DOT_MATCHES_ALL)
+            Regex("(.*?)(?:\\{\\{(?:[^}]*-\\s*)?([0-9]+)}}|\$)", RegexOption.DOT_MATCHES_ALL)
         val textVariablePairs =
             regex.findAll(csvVariable.defaultSectionText).map { it.groupValues.drop(1) }
         var listPosition = 1

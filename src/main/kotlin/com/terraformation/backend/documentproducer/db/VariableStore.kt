@@ -101,7 +101,7 @@ class VariableStore(
             .select(ID)
             .from(VARIABLES)
             .where(STABLE_ID.eq(stableId))
-            .fetchOne(VARIABLES.ID.asNonNullable())
+            .fetchOne(VARIABLES.ID)
             ?.let { fetchVariable(it) }
       }
 

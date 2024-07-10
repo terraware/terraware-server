@@ -35,20 +35,13 @@ class ManifestCsvValidator(
           this::validateRecommendedVariables,
           null,
           null,
-          this::validateDefaultSectionText,
+          null,
       )
 
   override val rowValidators: List<((List<String?>) -> Unit)> = listOf(this::validateRow)
 
   override fun getColumnName(position: Int): String {
     return messages.manifestCsvColumnName(position)
-  }
-
-  private fun validateDefaultSectionText(value: String?, field: String) {
-    // TODO
-    if (value.isNullOrBlank()) {
-      //      addError(field, value, messages.manifestCsvNameRequired())
-    }
   }
 
   private fun validateName(value: String?, field: String) {
