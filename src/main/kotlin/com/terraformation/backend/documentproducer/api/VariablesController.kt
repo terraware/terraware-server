@@ -118,6 +118,9 @@ interface VariablePayload {
         arraySchema = Schema(description = "IDs of sections that recommend this variable."))
     get() = model.recommendedBy.toSet()
 
+  val stableId
+    get() = model.stableId
+
   val type
     get() = model.type
 
