@@ -1,3 +1,5 @@
+68c4b088bf6 Return variable dependency properties in the "get variables" API response (#2138)
+379d4fcd969 Fix intermittent test failure for manifest importer by explicitly sorting the variables in the order needed (#2140)
 6920ca3c6b8 Bring in missing PDD code (#2135)
 c4dc30b32a0 Update Spring dependencies (#2130)
 b5a34e572c4 Update JamesIves/github-pages-deploy-action action to v4.6.3 (#2132)
