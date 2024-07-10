@@ -4,7 +4,11 @@ import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.customer.model.SystemUser
+import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
+import com.terraformation.backend.documentproducer.db.VariableWorkflowStore
+import com.terraformation.backend.documentproducer.event.QuestionsDeliverableReviewedEvent
+import com.terraformation.backend.documentproducer.event.QuestionsDeliverableStatusUpdatedEvent
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
@@ -22,7 +26,9 @@ class SubmissionNotifier(
     private val eventPublisher: ApplicationEventPublisher,
     @Lazy private val scheduler: JobScheduler,
     private val systemUser: SystemUser,
+    private val variableStore: VariableStore,
     private val variableValueStore: VariableValueStore,
+    private val variableWorkflowStore: VariableWorkflowStore,
 ) {
   companion object {
     /**
@@ -49,6 +55,14 @@ class SubmissionNotifier(
   fun on(event: QuestionsDeliverableSubmittedEvent) {
     scheduler.schedule<SubmissionNotifier>(clock.instant().plus(notificationDelay)) {
       notifyIfNoNewerSubmissions(event)
+    }
+  }
+
+  /** Schedules a "ready for review" notification when a question is answered. */
+  @EventListener
+  fun on(event: QuestionsDeliverableReviewedEvent) {
+    scheduler.schedule<SubmissionNotifier>(clock.instant().plus(notificationDelay)) {
+      notifyIfNoNewerReviews(event)
     }
   }
 
@@ -84,13 +98,36 @@ class SubmissionNotifier(
   fun notifyIfNoNewerSubmissions(event: QuestionsDeliverableSubmittedEvent) {
     systemUser.run {
       val allValuesLatest =
-          event.valueIds.all {
+          event.currentValueIds.all {
             variableValueStore.fetchMaxValueId(event.projectId, it.key) == it.value
           }
 
       if (allValuesLatest) {
         eventPublisher.publishEvent(
             DeliverableReadyForReviewEvent(event.deliverableId, event.projectId))
+      }
+    }
+  }
+
+  /**
+   * Publishes [QuestionsDeliverableStatusUpdatedEvent] if no user-visible feedback or status has
+   * been updated since the one referenced by the event.
+   */
+  fun notifyIfNoNewerReviews(event: QuestionsDeliverableReviewedEvent) {
+    systemUser.run {
+      val deliverableVariableWorkflowsForProject =
+          variableWorkflowStore.fetchCurrentForProjectDeliverable(
+              event.projectId, event.deliverableId)
+
+      if (event.currentWorkflows.keys == deliverableVariableWorkflowsForProject.keys &&
+          deliverableVariableWorkflowsForProject.all { (variableId, historyModel) ->
+            val deliverableWorkflow = event.currentWorkflows[variableId]
+            deliverableWorkflow != null &&
+                deliverableWorkflow.status == historyModel.status &&
+                deliverableWorkflow.feedback == historyModel.feedback
+          }) {
+        eventPublisher.publishEvent(
+            QuestionsDeliverableStatusUpdatedEvent(event.deliverableId, event.projectId))
       }
     }
   }

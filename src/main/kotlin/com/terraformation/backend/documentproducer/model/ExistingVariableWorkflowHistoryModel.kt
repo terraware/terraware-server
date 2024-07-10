@@ -6,6 +6,7 @@ import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.VariableWorkflowHistoryId
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
+import com.terraformation.backend.db.docprod.tables.pojos.VariableWorkflowHistoryRow
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_WORKFLOW_HISTORY
 import java.time.Instant
 import org.jooq.Record
@@ -33,5 +34,19 @@ data class ExistingVariableWorkflowHistoryModel(
       projectId = record[VARIABLE_WORKFLOW_HISTORY.PROJECT_ID]!!,
       status = record[VARIABLE_WORKFLOW_HISTORY.VARIABLE_WORKFLOW_STATUS_ID]!!,
       variableId = record[VARIABLE_WORKFLOW_HISTORY.VARIABLE_ID]!!,
+  )
+
+  constructor(
+      row: VariableWorkflowHistoryRow
+  ) : this(
+      row.createdBy!!,
+      row.createdTime!!,
+      row.feedback,
+      row.id!!,
+      row.internalComment,
+      row.maxVariableValueId!!,
+      row.projectId!!,
+      row.variableWorkflowStatusId!!,
+      row.variableId!!,
   )
 }

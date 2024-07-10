@@ -57,6 +57,7 @@ import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
+import com.terraformation.backend.documentproducer.event.QuestionsDeliverableStatusUpdatedEvent
 import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.email.WebAppUrls
 import com.terraformation.backend.i18n.Locales
@@ -780,6 +781,24 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             submissionId))
 
     assertNotifications(emptyList())
+  }
+
+  @Test
+  fun `should store questions deliverable status updated notification`() {
+    insertOrganizationUser(role = Role.Admin)
+    val projectId = insertProject()
+    val deliverableId = DeliverableId(1)
+
+    every { messages.deliverableStatusUpdated() } returns
+        NotificationMessage("status updated title", "status updated body")
+
+    service.on(QuestionsDeliverableStatusUpdatedEvent(deliverableId, projectId))
+
+    assertNotification(
+        type = NotificationType.DeliverableStatusUpdated,
+        title = "status updated title",
+        body = "status updated body",
+        localUrl = webAppUrls.deliverable(deliverableId, projectId))
   }
 
   @Test

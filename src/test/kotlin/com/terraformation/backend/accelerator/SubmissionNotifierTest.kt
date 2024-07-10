@@ -12,8 +12,14 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.db.docprod.VariableWorkflowStatus
+import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
+import com.terraformation.backend.documentproducer.db.VariableWorkflowStore
+import com.terraformation.backend.documentproducer.event.QuestionsDeliverableReviewedEvent
+import com.terraformation.backend.documentproducer.event.QuestionsDeliverableStatusUpdatedEvent
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
+import com.terraformation.backend.documentproducer.model.ExistingVariableWorkflowHistoryModel
 import com.terraformation.backend.mockUser
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
@@ -33,6 +39,18 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
         eventPublisher,
         mockk(),
         SystemUser(usersDao),
+        VariableStore(
+            dslContext,
+            variableNumbersDao,
+            variablesDao,
+            variableSectionDefaultValuesDao,
+            variableSectionRecommendationsDao,
+            variableSectionsDao,
+            variableSelectsDao,
+            variableSelectOptionsDao,
+            variableTablesDao,
+            variableTableColumnsDao,
+            variableTextsDao),
         VariableValueStore(
             clock,
             documentsDao,
@@ -45,7 +63,12 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
             variableSelectOptionValuesDao,
             variableValuesDao,
             variableValueTableRowsDao),
-    )
+        VariableWorkflowStore(
+            clock,
+            dslContext,
+            eventPublisher,
+            variablesDao,
+        ))
   }
 
   private lateinit var deliverableId: DeliverableId
@@ -130,6 +153,102 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
               deliverableId, projectId, mapOf(inserted.variableId to valueId)))
 
       eventPublisher.assertEventPublished(DeliverableReadyForReviewEvent(deliverableId, projectId))
+    }
+  }
+
+  @Nested
+  inner class NotifyIfNoNewerReviews {
+    @BeforeEach
+    fun setup() {
+      insertDocumentTemplate()
+      insertVariableManifest()
+      insertDocument()
+
+      insertVariableManifestEntry(
+          insertTextVariable(
+              id =
+                  insertVariable(
+                      deliverableId = inserted.deliverableId,
+                      deliverablePosition = 0,
+                      type = VariableType.Text)))
+
+      insertValue(variableId = inserted.variableId)
+    }
+
+    @Test
+    fun `does not publish event if there are newer variable workflows`() {
+      val oldWorkflowHistoryId =
+          insertVariableWorkflowHistory(
+              feedback = "old feedback",
+              status = VariableWorkflowStatus.InReview,
+          )
+
+      insertVariableWorkflowHistory(
+          feedback = "new feedback",
+          status = VariableWorkflowStatus.Approved,
+      )
+
+      val oldWorkflowHistory =
+          ExistingVariableWorkflowHistoryModel(
+              variableWorkflowHistoryDao.fetchOneById(oldWorkflowHistoryId)!!)
+
+      notifier.notifyIfNoNewerReviews(
+          QuestionsDeliverableReviewedEvent(
+              inserted.deliverableId,
+              inserted.projectId,
+              mapOf(inserted.variableId to oldWorkflowHistory)))
+
+      eventPublisher.assertEventNotPublished<QuestionsDeliverableStatusUpdatedEvent>()
+    }
+
+    @Test
+    fun `publishes event if these are the latest variable workflows`() {
+      val workflowId =
+          insertVariableWorkflowHistory(
+              feedback = "feedback",
+              status = VariableWorkflowStatus.Approved,
+          )
+
+      val workflowHistory =
+          ExistingVariableWorkflowHistoryModel(
+              variableWorkflowHistoryDao.fetchOneById(workflowId)!!)
+
+      notifier.notifyIfNoNewerReviews(
+          QuestionsDeliverableReviewedEvent(
+              inserted.deliverableId,
+              inserted.projectId,
+              mapOf(inserted.variableId to workflowHistory)))
+
+      eventPublisher.assertEventPublished(
+          QuestionsDeliverableStatusUpdatedEvent(deliverableId, projectId))
+    }
+
+    @Test
+    fun `publishes event if newer variable workflows contain only internal comment changes`() {
+      val oldWorkflowId =
+          insertVariableWorkflowHistory(
+              feedback = "unchanged feedback",
+              status = VariableWorkflowStatus.Approved,
+          )
+
+      insertVariableWorkflowHistory(
+          feedback = "unchanged feedback",
+          status = VariableWorkflowStatus.Approved,
+          internalComment = "added internal comment",
+      )
+
+      val oldWorkflowHistory =
+          ExistingVariableWorkflowHistoryModel(
+              variableWorkflowHistoryDao.fetchOneById(oldWorkflowId)!!)
+
+      notifier.notifyIfNoNewerReviews(
+          QuestionsDeliverableReviewedEvent(
+              inserted.deliverableId,
+              inserted.projectId,
+              mapOf(inserted.variableId to oldWorkflowHistory)))
+
+      eventPublisher.assertEventPublished(
+          QuestionsDeliverableStatusUpdatedEvent(deliverableId, projectId))
     }
   }
 }
