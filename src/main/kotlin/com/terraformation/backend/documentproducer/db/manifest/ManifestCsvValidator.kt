@@ -10,31 +10,15 @@ const val MANIFEST_CSV_COLUMN_INDEX_STABLE_ID = MANIFEST_CSV_COLUMN_INDEX_NAME +
 // Column 3/C
 const val MANIFEST_CSV_COLUMN_INDEX_DESCRIPTION = MANIFEST_CSV_COLUMN_INDEX_STABLE_ID + 1
 // Column 4/D
-const val MANIFEST_CSV_COLUMN_INDEX_DATA_TYPE = MANIFEST_CSV_COLUMN_INDEX_DESCRIPTION + 1
+const val MANIFEST_CSV_COLUMN_INDEX_RECOMMENDED_VARIABLES =
+    MANIFEST_CSV_COLUMN_INDEX_DESCRIPTION + 1
 // Column 5/E
-const val MANIFEST_CSV_COLUMN_INDEX_IS_LIST = MANIFEST_CSV_COLUMN_INDEX_DATA_TYPE + 1
-// Column 6/F
-const val MANIFEST_CSV_COLUMN_INDEX_RECOMMENDED_VARIABLES = MANIFEST_CSV_COLUMN_INDEX_IS_LIST + 1
-// Column 7/G
 const val MANIFEST_CSV_COLUMN_INDEX_PARENT = MANIFEST_CSV_COLUMN_INDEX_RECOMMENDED_VARIABLES + 1
-// Column 8/H
+// Column 6/F
 const val MANIFEST_CSV_COLUMN_INDEX_IS_NON_NUMBERED_SECTION = MANIFEST_CSV_COLUMN_INDEX_PARENT + 1
-// Column 9/I
-const val MANIFEST_CSV_COLUMN_INDEX_OPTIONS = MANIFEST_CSV_COLUMN_INDEX_IS_NON_NUMBERED_SECTION + 1
-// Column 10/J
-const val MANIFEST_CSV_COLUMN_INDEX_MIN_VALUE = MANIFEST_CSV_COLUMN_INDEX_OPTIONS + 1
-// Column 11/K
-const val MANIFEST_CSV_COLUMN_INDEX_MAX_VALUE = MANIFEST_CSV_COLUMN_INDEX_MIN_VALUE + 1
-// Column 12/L
-const val MANIFEST_CSV_COLUMN_INDEX_DECIMAL_PLACES = MANIFEST_CSV_COLUMN_INDEX_MAX_VALUE + 1
-// Column 13/M
-const val MANIFEST_CSV_COLUMN_INDEX_TABLE_STYLE = MANIFEST_CSV_COLUMN_INDEX_DECIMAL_PLACES + 1
-// Column 14/N
-const val MANIFEST_CSV_COLUMN_INDEX_IS_HEADER = MANIFEST_CSV_COLUMN_INDEX_TABLE_STYLE + 1
-// Column 15/O
-const val MANIFEST_CSV_COLUMN_INDEX_DEFAULT_SECTION_TEXT = MANIFEST_CSV_COLUMN_INDEX_IS_HEADER + 1
-// Column 16/P
-const val MANIFEST_CSV_COLUMN_INDEX_NOTES = MANIFEST_CSV_COLUMN_INDEX_DEFAULT_SECTION_TEXT + 1
+// Column 7/G
+const val MANIFEST_CSV_COLUMN_INDEX_DEFAULT_SECTION_TEXT =
+    MANIFEST_CSV_COLUMN_INDEX_IS_NON_NUMBERED_SECTION + 1
 
 class ManifestCsvValidator(
     messages: Messages,
@@ -42,23 +26,13 @@ class ManifestCsvValidator(
   private val existingStableIds = mutableSetOf<String>()
 
   private val parentPathToChildrenNamesMap = mutableMapOf<String, MutableSet<String>>()
-  private val variableTypeByPath = mutableMapOf<String, CsvVariableType>()
 
   override val validators: List<((String?, String) -> Unit)?> =
       listOf(
           this::validateName,
           this::validateStableId,
           null,
-          null,
-          null,
           this::validateRecommendedVariables,
-          null,
-          null,
-          this::validateOptions,
-          null,
-          null,
-          null,
-          null,
           null,
           null,
           null,
@@ -169,54 +143,8 @@ class ManifestCsvValidator(
       parentPathToChildrenNamesMap[parentPath]!!.add(name)
     }
 
-    val dataTypeField = messages.manifestCsvColumnName(MANIFEST_CSV_COLUMN_INDEX_DATA_TYPE)
-
-    val dataTypeName = values[MANIFEST_CSV_COLUMN_INDEX_DATA_TYPE]
-    if (dataTypeName.isNullOrEmpty()) {
-      addError(dataTypeField, "", messages.manifestCsvDataTypeRequired())
-      return
-    }
-
-    val variableType =
-        try {
-          CsvVariableType.create(dataTypeName)
-        } catch (e: IllegalArgumentException) {
-          addError(dataTypeField, dataTypeName, e.localizedMessage)
-          return
-        }
-
-    when (variableType) {
-      CsvVariableType.SingleSelect,
-      CsvVariableType.MultiSelect ->
-          if (values[MANIFEST_CSV_COLUMN_INDEX_OPTIONS].isNullOrEmpty()) {
-            addError(dataTypeField, "", messages.manifestCsvDataTypeRequiresOptions())
-          }
-      else -> Unit
-    }
-
     // Add this as a path because it may be a parent one day!
     val thisPath = "$parentPath\t$name"
     parentPathToChildrenNamesMap[thisPath] = mutableSetOf()
-    variableTypeByPath[thisPath] = variableType
-
-    if (parentPath.isNotEmpty()) {
-      val parentVariableType =
-          variableTypeByPath[parentPath]
-              ?: throw IllegalStateException("Unable to find type of parent $parentPath")
-
-      if (variableType == CsvVariableType.Section) {
-        if (parentVariableType != CsvVariableType.Section) {
-          addError(
-              messages.manifestCsvColumnName(MANIFEST_CSV_COLUMN_INDEX_PARENT),
-              parent,
-              messages.manifestCsvSectionParentMustBeSection())
-        }
-      } else if (parentVariableType != CsvVariableType.Table) {
-        addError(
-            messages.manifestCsvColumnName(MANIFEST_CSV_COLUMN_INDEX_PARENT),
-            parent,
-            messages.manifestCsvWrongDataTypeForChild())
-      }
-    }
   }
 }
