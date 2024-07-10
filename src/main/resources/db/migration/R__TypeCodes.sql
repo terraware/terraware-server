@@ -25,18 +25,17 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.application_statuses (id, name)
 VALUES (1, 'Not Submitted'),
-       (2, 'Failed Prescreen'),
-       (3, 'Passed Prescreen'),
-       (4, 'In Review / Submitted'),
-       (5, 'Needs Follow-Up'),
-       (6, 'Needs Translation'),
-       (7, 'Carbon Eligible'),
-       (8, 'Pre-check'),
-       (9, 'Ready for Review'),
-       (10, 'PL Review'),
-       (11, 'Accepted'),
-       (12, 'Waitlist'),
-       (13, 'Not Accepted')
+       (2, 'Failed Pre-screen'),
+       (3, 'Passed Pre-screen'),
+       (4, 'Submitted'),
+       (5, 'PL Review'),
+       (6, 'Ready for Review'),
+       (7, 'Pre-check'),
+       (8, 'Needs Follow-up'),
+       (9, 'Carbon Eligible'),
+       (10, 'Accepted'),
+       (11, 'Waitlist'),
+       (12, 'Not Accepted')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO nursery.batch_quantity_history_types (id, name)
