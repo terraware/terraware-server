@@ -110,22 +110,21 @@ class SubmissionNotifier(
   }
 
   /**
-   * Publishes [QuestionsDeliverableStatusUpdatedEvent] if not user-visible feedback or status has
+   * Publishes [QuestionsDeliverableStatusUpdatedEvent] if no user-visible feedback or status has
    * been updated since the one referenced by the event.
    */
   fun notifyIfNoNewerReviews(event: QuestionsDeliverableReviewedEvent) {
     systemUser.run {
       val deliverableVariableWorkflowsForProject =
-          variableWorkflowStore.fetchCurrentForProject(event.projectId).filterKeys {
-            variableStore.fetchVariable(it).deliverableId == event.deliverableId
-          }
+          variableWorkflowStore.fetchCurrentForProjectDeliverable(
+              event.projectId, event.deliverableId)
 
       if (event.currentWorkflows.keys == deliverableVariableWorkflowsForProject.keys &&
-          deliverableVariableWorkflowsForProject.all {
-            val deliverableWorkflow = event.currentWorkflows[it.key]
+          deliverableVariableWorkflowsForProject.all { (variableId, historyModel) ->
+            val deliverableWorkflow = event.currentWorkflows[variableId]
             deliverableWorkflow != null &&
-                deliverableWorkflow.status == it.value.status &&
-                deliverableWorkflow.feedback == it.value.feedback
+                deliverableWorkflow.status == historyModel.status &&
+                deliverableWorkflow.feedback == historyModel.feedback
           }) {
         eventPublisher.publishEvent(
             QuestionsDeliverableStatusUpdatedEvent(event.deliverableId, event.projectId))
