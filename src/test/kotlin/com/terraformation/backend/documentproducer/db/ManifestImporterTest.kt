@@ -1375,7 +1375,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     // does not care about hierarchy and will grab the first one that matches by name in reversed
     // order
     private fun getVariableByName(name: String): VariablesRow =
-        variablesDao.fetchByName(name).reversed().first()
+        variablesDao.fetchByName(name).sortedBy { it.id!!.value }.reversed().first()
   }
 }
 
