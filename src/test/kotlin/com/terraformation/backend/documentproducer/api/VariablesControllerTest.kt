@@ -45,9 +45,9 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "id": $variableId1,
                       "name": "Date Variable",
                       "position": 0,
+                      "stableId": "1",
                       "type": "Date",
-                      "isList": false,
-                      "stableId": "1"
+                      "isList": false
                     }
                   ],
                   "status": "ok"
@@ -81,18 +81,18 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "position": 0,
                       "recommends": [$dateVariableId],
                       "renderHeading": true,
+                      "stableId": "1",
                       "type": "Section",
-                      "isList": true,
-                      "stableId": "1"
+                      "isList": true
                     },
                     {
                       "id": $dateVariableId,
                       "name": "Date Variable",
                       "position": 1,
                       "recommendedBy": [$sectionVariableId],
+                      "stableId": "2",
                       "type": "Date",
-                      "isList": false,
-                      "stableId": "2"
+                      "isList": false
                     }
                   ],
                   "status": "ok"
@@ -173,36 +173,36 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "name": "A date",
                       "description": "A description",
                       "position": 0,
+                      "stableId": "1",
                       "type": "Date",
-                      "isList": true,
-                      "stableId": "1"
+                      "isList": true
                     },
                     {
                       "id": $imageVariableId,
                       "name": "An image",
                       "position": 1,
+                      "stableId": "2",
                       "type": "Image",
-                      "isList": false,
-                      "stableId": "2"
+                      "isList": false
                     },
                     {
                       "id": $linkVariableId,
                       "name": "A link",
                       "position": 2,
+                      "stableId": "3",
                       "type": "Link",
-                      "isList": false,
-                      "stableId": "3"
+                      "isList": false
                     },
                     {
                       "id": $numberVariableId,
                       "name": "A number",
                       "position": 3,
+                      "stableId": "4",
                       "type": "Number",
                       "isList": false,
                       "decimalPlaces": 1,
                       "minValue": 2,
-                      "maxValue": 10,
-                      "stableId": "4"
+                      "maxValue": 10
                     },
                     {
                       "id": $parentSectionVariableId,
@@ -210,6 +210,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "position": 4,
                       "type": "Section",
                       "isList": true,
+                      "stableId": "5",
                       "renderHeading": true,
                       "recommends": [],
                       "children": [
@@ -221,16 +222,16 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                           "isList": true,
                           "renderHeading": false,
                           "recommends": [],
-                          "children": [],
-                          "stableId": "6"
+                          "stableId": "6",
+                          "children": []
                         }
-                      ],
-                      "stableId": "5"
+                      ]
                     },
                     {
                       "id": $selectVariableId,
                       "name": "A select",
                       "position": 6,
+                      "stableId": "7",
                       "type": "Select",
                       "isList": false,
                       "isMultiple": true,
@@ -245,8 +246,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                           "id": $optionId2,
                           "name": "Option 2"
                         }
-                      ],
-                      "stableId": "7"
+                      ]
                     },
                     {
                       "id": $tableVariableId,
@@ -254,6 +254,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "position": 7,
                       "type": "Table",
                       "isList": false,
+                      "stableId": "8",
                       "tableStyle": "Horizontal",
                       "columns": [
                         {
@@ -262,9 +263,9 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                             "id": $columnId1,
                             "name": "Column 1",
                             "position": 8,
+                            "stableId": "9",
                             "type": "Date",
-                            "isList": false,
-                            "stableId": "9"
+                            "isList": false
                           }
                         },
                         {
@@ -273,13 +274,12 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                             "id": $columnId2,
                             "name": "Column 2",
                             "position": 9,
+                            "stableId": "10",
                             "type": "Link",
-                            "isList": false,
-                            "stableId": "10"
+                            "isList": false
                           }
                         }
-                      ],
-                      "stableId": "8"
+                      ]
                     },
                     {
                       "id": $textVariableId,
@@ -287,8 +287,8 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "position": 10,
                       "type": "Text",
                       "isList": false,
-                      "textType": "MultiLine",
-                      "stableId": "11"
+                      "stableId": "11",
+                      "textType": "MultiLine"
                     }
                   ],
                   "status": "ok"
