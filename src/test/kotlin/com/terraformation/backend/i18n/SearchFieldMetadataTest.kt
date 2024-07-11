@@ -13,6 +13,8 @@ class SearchFieldMetadataTest {
 
   @Test
   fun `all search fields have English descriptions`() {
+    // Generate a string with one line per missing field, suitable for copy-pasting into
+    // Messages_en.properties.
     val missingFields =
         mapAllSearchFields { table, field ->
               try {
@@ -21,13 +23,13 @@ class SearchFieldMetadataTest {
                 messages.searchFieldDisplayName(table.name, field.fieldName)
                 null
               } catch (e: Exception) {
-                "search.${table.name}.${field.fieldName}="
+                "search.${table.name}.${field.fieldName} = "
               }
             }
             .sorted()
-            .joinToString("\n")
+            .joinToString("\n", "\n", "\n")
 
-    assertEquals("", missingFields, "Missing search field descriptions")
+    assertEquals("\n\n", missingFields, "Missing search field descriptions")
   }
 
   @Test

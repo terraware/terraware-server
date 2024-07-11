@@ -53,8 +53,10 @@ class EnumsTest : DatabaseTest() {
     val expectedKeys = enums.keys.toSet()
     val missingKeys = expectedKeys - keysInBundle
 
-    // Render the missing keys one per line suitable for copy-pasting into Enums_en.properties.
-    val missingProperties = missingKeys.sorted().joinToString("\n") { "$it=${enums[it] ?: ""}" }
-    assertEquals("", missingProperties, "Bundle $bundleName is missing values")
+    // Render the missing keys one per line with leading and trailing newlines suitable for
+    // copy-pasting into Enums_en.properties.
+    val missingProperties =
+        missingKeys.sorted().joinToString("\n", "\n", "\n") { "$it = ${enums[it] ?: ""}" }
+    assertEquals("\n\n", missingProperties, "Bundle $bundleName is missing values")
   }
 }
