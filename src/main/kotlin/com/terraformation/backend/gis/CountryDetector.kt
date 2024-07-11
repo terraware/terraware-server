@@ -11,7 +11,7 @@ import org.locationtech.jts.geom.Geometry
  * Country borders are loaded from a file that is maintained as part of the
  * [Natural Earth](https://www.naturalearthdata.com/) project, which makes its data available in the
  * public domain. The specific file we use is the
- * [GeoJSON 10-meter administrative countries file](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_10m_admin_0_countries.geojson).
+ * [GeoJSON 1:10m administrative countries file](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_10m_admin_0_countries.geojson).
  */
 @Named
 class CountryDetector {
