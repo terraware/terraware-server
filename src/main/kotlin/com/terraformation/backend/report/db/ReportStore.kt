@@ -298,32 +298,37 @@ class ReportStore(
   fun submit(reportId: ReportId) {
     requirePermissions { updateReport(reportId) }
 
-    ifLocked(reportId) {
-      val body =
-          dslContext
-              .select(REPORTS.BODY)
-              .from(REPORTS)
-              .where(REPORTS.ID.eq(reportId))
-              .fetchOne(REPORTS.BODY)!!
-              .let { objectMapper.readValue<ReportBodyModel>(it.data()) }
-              .toLatestVersion()
+    try {
+      ifLocked(reportId) {
+        val body =
+            dslContext
+                .select(REPORTS.BODY)
+                .from(REPORTS)
+                .where(REPORTS.ID.eq(reportId))
+                .fetchOne(REPORTS.BODY)!!
+                .let { objectMapper.readValue<ReportBodyModel>(it.data()) }
+                .toLatestVersion()
 
-      body.validate()
+        body.validate()
 
-      dslContext
-          .update(REPORTS)
-          .setNull(REPORTS.LOCKED_BY)
-          .setNull(REPORTS.LOCKED_TIME)
-          .set(REPORTS.STATUS_ID, ReportStatus.Submitted)
-          .set(REPORTS.SUBMITTED_BY, currentUser().userId)
-          .set(REPORTS.SUBMITTED_TIME, clock.instant())
-          .where(REPORTS.ID.eq(reportId))
-          .execute()
+        dslContext
+            .update(REPORTS)
+            .setNull(REPORTS.LOCKED_BY)
+            .setNull(REPORTS.LOCKED_TIME)
+            .set(REPORTS.STATUS_ID, ReportStatus.Submitted)
+            .set(REPORTS.SUBMITTED_BY, currentUser().userId)
+            .set(REPORTS.SUBMITTED_TIME, clock.instant())
+            .where(REPORTS.ID.eq(reportId))
+            .execute()
 
-      saveSeedBankInfo(body)
-      saveNurseryInfo(body)
+        saveSeedBankInfo(body)
+        saveNurseryInfo(body)
 
-      eventPublisher.publishEvent(ReportSubmittedEvent(reportId, body))
+        eventPublisher.publishEvent(ReportSubmittedEvent(reportId, body))
+      }
+    } catch (e: Exception) {
+      log.info("Report $reportId cannot be submitted: ${e.message}")
+      throw e
     }
   }
 
