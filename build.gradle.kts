@@ -24,7 +24,7 @@ plugins {
   id("dev.monosoul.jooq-docker") version "6.0.27"
   id("com.diffplug.spotless") version "6.25.0"
   id("org.springframework.boot") version "3.3.1"
-  id("io.spring.dependency-management") version "1.1.5"
+  id("io.spring.dependency-management") version "1.1.6"
 
   // Add the build target to generate Swagger docs
   id("com.github.johnrengelman.processes") version "0.5.0"
@@ -98,7 +98,7 @@ dependencies {
   implementation("com.opencsv:opencsv:5.9")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.8.0")
   implementation("commons-validator:commons-validator:1.9.0")
-  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.1.2")
+  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.2.1")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
   implementation("io.ktor:ktor-client-java:$ktorVersion")
