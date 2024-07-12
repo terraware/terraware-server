@@ -18,11 +18,11 @@ val ENUM_TABLES =
             listOf(
                 EnumTable(
                     "application_module_statuses",
-                    listOf("application_modules\\.status_id"),
+                    listOf(".*\\.application_module_status_id"),
                     enumName = "ApplicationModuleStatus"),
                 EnumTable(
                     "application_statuses",
-                    listOf("application_histories\\.status_id", "applications\\.status_id"),
+                    listOf(".*\\.application_status_id"),
                     enumName = "ApplicationStatus"),
                 EnumTable("cohort_phases", listOf(".*\\.phase_id")),
                 EnumTable("deal_stages", listOf(".*\\.deal_stage_id"), isLocalizable = false),

@@ -11,7 +11,7 @@ CREATE TABLE accelerator.applications (
     created_time TIMESTAMP WITH TIME ZONE NOT NULL,
     modified_by BIGINT NOT NULL REFERENCES users,
     modified_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    status_id INTEGER NOT NULL REFERENCES accelerator.application_statuses,
+    application_status_id INTEGER NOT NULL REFERENCES accelerator.application_statuses,
     boundary GEOMETRY,
     internal_comment TEXT,
     feedback TEXT,
@@ -27,7 +27,7 @@ CREATE TABLE accelerator.application_histories (
     application_id BIGINT NOT NULL REFERENCES accelerator.applications ON DELETE CASCADE,
     modified_by BIGINT NOT NULL REFERENCES users,
     modified_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    status_id INTEGER NOT NULL REFERENCES accelerator.application_statuses,
+    application_status_id INTEGER NOT NULL REFERENCES accelerator.application_statuses,
     boundary GEOMETRY,
     internal_comment TEXT,
     feedback TEXT
@@ -44,7 +44,7 @@ CREATE TABLE accelerator.application_module_statuses (
 CREATE TABLE accelerator.application_modules (
     application_id BIGINT NOT NULL REFERENCES accelerator.applications ON DELETE CASCADE,
     module_id BIGINT NOT NULL REFERENCES accelerator.modules,
-    status_id INTEGER NOT NULL REFERENCES accelerator.application_module_statuses
+    application_module_status_id INTEGER NOT NULL REFERENCES accelerator.application_module_statuses
 );
 
 CREATE INDEX ON accelerator.application_modules (application_id);
