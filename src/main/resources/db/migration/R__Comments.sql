@@ -42,7 +42,9 @@ COMMENT ON TABLE seedbank.collection_sources IS '(Enum) Types of source plants t
 COMMENT ON TABLE conservation_categories IS '(Enum) IUCN conservation category codes.';
 
 COMMENT ON TABLE countries IS 'Country information per ISO-3166.';
-COMMENT ON COLUMN countries.code IS 'ISO-3166 alpha-2 country code.';
+COMMENT ON COLUMN countries.code IS 'ISO-3166 alpha-2 country code. We use this code to refer to countries elsewhere in the data model.';
+COMMENT ON COLUMN countries.code_alpha3 IS 'ISO-3166 alpha-3 country code. This is used in cases where an external system or user needs an alpha-3 code instad of an alpha-2 code, but is treated purely as descriptive data in the data model.';
+COMMENT ON COLUMN countries.eligible IS 'If false, projects in this country are ineligible for the accelerator program.';
 COMMENT ON COLUMN countries.name IS 'Name of country in US English.';
 
 COMMENT ON TABLE country_subdivisions IS 'Country subdivision (state, province, region, etc.) information per ISO-3166-2.';
