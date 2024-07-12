@@ -1,3 +1,4 @@
+02e20295811 SW-5626 Define API endpoints for applications (#2142)
 784bf1b5fae Reduce boilerplate in enum table configuration (#2150)
 d8c5e012522 SW-5625 Database schema for applications (#2139)
 26723d94973 Add alpha-3 codes, eligibility to countries table (#2149)
