@@ -20,8 +20,8 @@ class EnumTable(
      * We need to identify all the tables with foreign keys that reference the above tableName. This
      * allows the generated code for those tables to replace their raw ID value with our enum.
      */
-    includeExpressions: List<String>,
-    val enumName: String = tableName.trimEnd('s').toPascalCase(),
+    includeExpressions: List<String> = calculateDefaultIncludes(tableName),
+    val enumName: String = calculateDefaultName(tableName),
     val additionalColumns: List<EnumTableColumnInfo> = emptyList(),
     /**
      * Force generated jOOQ classes to use this type instead of the underlying (integer) type. You
@@ -53,5 +53,36 @@ class EnumTable(
     } else {
       null
     }
+  }
+
+  companion object {
+    /**
+     * Stripping the trailing "s" from the table name to make it singular can result in invalid
+     * names. For one-offs we just specify the correct name in Config.kt but for common cases we
+     * cover them across the board here.
+     *
+     * The substitutions happen after the trailing "s" is stripped.
+     */
+    private val suffixSubstitutions =
+        listOf(
+            "categorie" to "category",
+            "statuse" to "status",
+        )
+
+    private fun calculateSingularTableName(tableName: String): String {
+      return suffixSubstitutions.fold(tableName.trimEnd('s')) { name, (original, replacement) ->
+        if (name.endsWith(original)) {
+          name.substringBeforeLast(original) + replacement
+        } else {
+          name
+        }
+      }
+    }
+
+    private fun calculateDefaultName(tableName: String): String =
+        calculateSingularTableName(tableName).toPascalCase()
+
+    private fun calculateDefaultIncludes(tableName: String): List<String> =
+        listOf(".*\\." + calculateSingularTableName(tableName) + "_id")
   }
 }

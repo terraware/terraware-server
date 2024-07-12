@@ -11,56 +11,39 @@ import org.jooq.meta.jaxb.EmbeddableDefinitionType
  *    is a very specific name, we can safely include any table that has a column named
  *    "source_plant_origin_id". We are guaranteed that such a column will be a foreign key reference
  *    into the "source_plant_origins" table.
+ *
+ * If no list of include expressions is specified, the default is to match columns with the singular
+ * form of the table name followed by "_id" in any table. For example, if the enum table is
+ * `event_types`, the default include expression is `".*\\.event_type_id"`.
  */
 val ENUM_TABLES =
     mapOf(
         "accelerator" to
             listOf(
-                EnumTable(
-                    "application_module_statuses",
-                    listOf(".*\\.application_module_status_id"),
-                    enumName = "ApplicationModuleStatus"),
-                EnumTable(
-                    "application_statuses",
-                    listOf(".*\\.application_status_id"),
-                    enumName = "ApplicationStatus"),
+                EnumTable("application_module_statuses"),
+                EnumTable("application_statuses"),
                 EnumTable("cohort_phases", listOf(".*\\.phase_id")),
-                EnumTable("deal_stages", listOf(".*\\.deal_stage_id"), isLocalizable = false),
-                EnumTable(
-                    "deliverable_categories",
-                    listOf(".*\\.deliverable_category_id"),
-                    "DeliverableCategory"),
-                EnumTable("deliverable_types", listOf(".*\\.deliverable_type_id")),
-                EnumTable(
-                    "document_stores", listOf(".*\\.document_store_id"), isLocalizable = false),
-                EnumTable("event_statuses", listOf(".*\\.event_status_id"), "EventStatus"),
-                EnumTable("event_types", listOf(".*\\.event_type_id")),
-                EnumTable("pipelines", listOf(".*\\.pipeline_id"), isLocalizable = false),
-                EnumTable(
-                    "score_categories",
-                    listOf("project_scores\\.score_category_id"),
-                    "ScoreCategory",
-                    isLocalizable = false),
-                EnumTable(
-                    "submission_statuses", listOf(".*\\.submission_status_id"), "SubmissionStatus"),
-                EnumTable("vote_options", listOf(".*\\.vote_option_id"), isLocalizable = false),
+                EnumTable("deal_stages", isLocalizable = false),
+                EnumTable("deliverable_categories"),
+                EnumTable("deliverable_types"),
+                EnumTable("document_stores", isLocalizable = false),
+                EnumTable("event_statuses"),
+                EnumTable("event_types"),
+                EnumTable("pipelines", isLocalizable = false),
+                EnumTable("score_categories", isLocalizable = false),
+                EnumTable("submission_statuses"),
+                EnumTable("vote_options", isLocalizable = false),
             ),
         "docprod" to
             listOf(
-                EnumTable("dependency_conditions", listOf(".*\\.dependency_condition_id")),
-                EnumTable(
-                    "document_statuses",
-                    listOf("documents\\.status_id"),
-                    enumName = "DocumentStatus"),
+                EnumTable("dependency_conditions"),
+                EnumTable("document_statuses", listOf("documents\\.status_id")),
                 EnumTable("variable_injection_display_styles", listOf(".*\\.display_style_id")),
                 EnumTable("variable_table_styles", listOf("variable_tables\\.table_style_id")),
-                EnumTable("variable_text_types", listOf(".*\\.variable_text_type_id")),
+                EnumTable("variable_text_types"),
                 EnumTable("variable_types", listOf(".*variable_type_id")),
                 EnumTable("variable_usage_types", listOf(".*\\.usage_type_id")),
-                EnumTable(
-                    "variable_workflow_statuses",
-                    listOf(".*\\.variable_workflow_status_id"),
-                    "VariableWorkflowStatus"),
+                EnumTable("variable_workflow_statuses"),
             ),
         "nursery" to
             listOf(
@@ -77,28 +60,18 @@ val ENUM_TABLES =
             ),
         "public" to
             listOf(
-                EnumTable(
-                    "conservation_categories",
-                    listOf(".*\\.conservation_category_id"),
-                    "ConservationCategory",
-                    useIdAsJsonValue = true),
+                EnumTable("conservation_categories", useIdAsJsonValue = true),
                 EnumTable(
                     "device_template_categories",
                     listOf("device_templates\\.category_id"),
-                    "DeviceTemplateCategory",
                     isLocalizable = false),
-                EnumTable("ecosystem_types", listOf(".*\\.ecosystem_type_id")),
+                EnumTable("ecosystem_types"),
                 EnumTable("facility_connection_states", listOf("facilities\\.connection_state_id")),
                 EnumTable("facility_types", listOf("facilities\\.type_id")),
-                EnumTable("global_roles", listOf(".*\\.global_role_id"), isLocalizable = false),
-                EnumTable("growth_forms", listOf("growth_forms\\.id", ".*\\.growth_form_id")),
-                EnumTable(
-                    "managed_location_types",
-                    listOf("managed_location_types\\.id", ".*\\.managed_location_type_id"),
-                    isLocalizable = false),
-                EnumTable(
-                    "land_use_model_types",
-                    listOf("land_use_model_types\\.id", ".*\\.land_use_model_type_id")),
+                EnumTable("global_roles", isLocalizable = false),
+                EnumTable("growth_forms"),
+                EnumTable("managed_location_types", isLocalizable = false),
+                EnumTable("land_use_model_types"),
                 EnumTable(
                     "notification_criticalities",
                     listOf(".*\\.notification_criticality_id"),
@@ -107,7 +80,6 @@ val ENUM_TABLES =
                     isLocalizable = false),
                 EnumTable(
                     "notification_types",
-                    listOf(".*\\.notification_type_id"),
                     additionalColumns =
                         listOf(
                             EnumTableColumnInfo(
@@ -116,31 +88,17 @@ val ENUM_TABLES =
                                 true,
                             )),
                     isLocalizable = false),
-                EnumTable(
-                    "organization_types",
-                    listOf("organization_types\\.id", ".*\\.organization_type_id"),
-                    isLocalizable = false),
-                EnumTable(
-                    "plant_material_sourcing_methods",
-                    listOf(
-                        "plant_material_sourcing_methods\\.id",
-                        ".*\\.plant_material_sourcing_method_id")),
+                EnumTable("organization_types", isLocalizable = false),
+                EnumTable("plant_material_sourcing_methods"),
                 EnumTable("regions", listOf("countries\\.region_id")),
-                EnumTable("report_statuses", listOf("reports\\.status_id"), "ReportStatus"),
-                EnumTable("roles", listOf(".*\\.role_id")),
-                EnumTable(
-                    "seed_storage_behaviors",
-                    listOf("seed_storage_behaviors\\.id", ".*\\.seed_storage_behavior_id")),
+                EnumTable("report_statuses", listOf("reports\\.status_id")),
+                EnumTable("roles"),
+                EnumTable("seed_storage_behaviors"),
                 EnumTable("seed_treatments", listOf(".*\\.treatment_id")),
                 EnumTable("species_problem_fields", listOf("species_problems\\.field_id")),
-                EnumTable(
-                    "species_native_categories",
-                    listOf(".*\\.species_native_category_id"),
-                    "SpeciesNativeCategory"),
+                EnumTable("species_native_categories"),
                 EnumTable("species_problem_types", listOf("species_problems\\.type_id")),
-                EnumTable(
-                    "successional_groups",
-                    listOf("successional_groups\\.id", ".*\\.successional_group_id")),
+                EnumTable("successional_groups"),
                 EnumTable(
                     "timeseries_types", listOf("timeseries\\.type_id"), isLocalizable = false),
                 EnumTable(
@@ -150,18 +108,15 @@ val ENUM_TABLES =
                 EnumTable(
                     "upload_statuses",
                     listOf("uploads\\.status_id"),
-                    "UploadStatus",
-                    listOf(EnumTableColumnInfo("finished", "Boolean", false)),
+                    additionalColumns = listOf(EnumTableColumnInfo("finished", "Boolean", false)),
                     isLocalizable = false),
                 EnumTable(
                     "upload_types",
                     listOf("uploads\\.type_id"),
                     additionalColumns = listOf(EnumTableColumnInfo("expire_files", "Boolean")),
                     isLocalizable = false),
-                EnumTable("user_types", listOf(".*\\.user_type_id"), isLocalizable = false),
-                EnumTable(
-                    "wood_density_levels",
-                    listOf("wood_density_levels\\.id", ".*\\.wood_density_level_id")),
+                EnumTable("user_types", isLocalizable = false),
+                EnumTable("wood_density_levels"),
             ),
         "seedbank" to
             listOf(
@@ -176,8 +131,8 @@ val ENUM_TABLES =
                         ".*\\.accession_state_id",
                         "accession_state_history\\.(old|new)_state_id"),
                     additionalColumns = listOf(EnumTableColumnInfo("active", "Boolean"))),
-                EnumTable("collection_sources", listOf(".*\\.collection_source_id")),
-                EnumTable("data_sources", listOf(".*\\.data_source_id")),
+                EnumTable("collection_sources"),
+                EnumTable("data_sources"),
                 EnumTable("seed_quantity_units", listOf(".*\\_units_id"), "SeedQuantityUnits"),
                 EnumTable("viability_test_seed_types", listOf("viability_tests\\.seed_type_id")),
                 EnumTable("viability_test_substrates", listOf("viability_tests\\.substrate_id")),
@@ -198,11 +153,10 @@ val ENUM_TABLES =
                     isLocalizable = false),
                 EnumTable(
                     "observation_states", listOf("observations\\.state_id"), isLocalizable = false),
-                EnumTable("planting_types", listOf(".*\\.planting_type_id")),
+                EnumTable("planting_types"),
                 EnumTable(
                     "recorded_plant_statuses",
                     listOf("recorded_plants\\.status_id"),
-                    "RecordedPlantStatus",
                     isLocalizable = false),
                 EnumTable(
                     "recorded_species_certainties",
