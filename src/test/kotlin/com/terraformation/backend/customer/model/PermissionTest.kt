@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.PermissionTest.PermissionsTracker
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
@@ -174,6 +175,7 @@ internal class PermissionTest : DatabaseTest() {
   private val cohortIds = listOf(1, 3, 4).map { CohortId(it.toLong()) }
   private val globalRoles = setOf(GlobalRole.SuperAdmin)
 
+  private val applicationIds = projectIds.map { ApplicationId(it.value) }
   private val moduleIds = listOf(1000, 1001, 3000, 4000).map { ModuleId(it.toLong()) }
   private val deliverableIds = listOf(DeliverableId(1000))
   private val submissionIds = projectIds.map { SubmissionId(it.value) }
@@ -406,6 +408,14 @@ internal class PermissionTest : DatabaseTest() {
           modifiedBy = userId,
           projectId = ProjectId(participantProjectSpeciesId.value))
     }
+
+    applicationIds.forEach { applicationId ->
+      insertApplication(
+          createdBy = userId,
+          id = applicationId,
+          projectId = ProjectId(applicationId.value),
+      )
+    }
   }
 
   @Test
@@ -589,6 +599,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        createApplication = true,
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
@@ -601,6 +612,13 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *submissionIds.forOrg1(),
         readSubmission = true,
+    )
+
+    permissions.expect(
+        *applicationIds.forOrg1(),
+        readApplication = true,
+        updateApplicationBoundary = true,
+        updateApplicationSubmissionStatus = true,
     )
 
     permissions.expect(
@@ -835,6 +853,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        createApplication = true,
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
@@ -847,6 +866,13 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *submissionIds.forOrg1(),
         readSubmission = true,
+    )
+
+    permissions.expect(
+        *applicationIds.forOrg1(),
+        readApplication = true,
+        updateApplicationBoundary = true,
+        updateApplicationSubmissionStatus = true,
     )
 
     permissions.expect(
@@ -1442,6 +1468,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.toTypedArray(),
+        createApplication = true,
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
@@ -1469,6 +1496,14 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
+    )
+
+    permissions.expect(
+        *applicationIds.toTypedArray(),
+        readApplication = true,
+        reviewApplication = true,
+        updateApplicationBoundary = true,
+        updateApplicationSubmissionStatus = true,
     )
 
     permissions.expect(
@@ -1555,6 +1590,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        createApplication = true,
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
@@ -1619,6 +1655,14 @@ internal class PermissionTest : DatabaseTest() {
         readModuleDetails = true,
     )
 
+    permissions.expect(
+        *applicationIds.forOrg1(),
+        readApplication = true,
+        reviewApplication = true,
+        updateApplicationBoundary = true,
+        updateApplicationSubmissionStatus = true,
+    )
+
     // Can read all submissions even those outside of this org
     permissions.expect(
         *submissionIds.toTypedArray(),
@@ -1628,6 +1672,13 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
+    )
+
+    permissions.expect(
+        *applicationIds.toTypedArray(),
+        readApplication = true,
+        reviewApplication = true,
+        updateApplicationBoundary = true,
     )
 
     permissions.expect(
@@ -1739,6 +1790,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        createApplication = true,
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
@@ -1801,6 +1853,14 @@ internal class PermissionTest : DatabaseTest() {
         readModuleDetails = true,
     )
 
+    permissions.expect(
+        *applicationIds.forOrg1(),
+        readApplication = true,
+        reviewApplication = true,
+        updateApplicationBoundary = true,
+        updateApplicationSubmissionStatus = true,
+    )
+
     // Can read all submissions even those outside of this org
     permissions.expect(
         *submissionIds.toTypedArray(),
@@ -1810,6 +1870,13 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
+    )
+
+    permissions.expect(
+        *applicationIds.toTypedArray(),
+        readApplication = true,
+        reviewApplication = true,
+        updateApplicationBoundary = true,
     )
 
     permissions.expect(
@@ -1919,6 +1986,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *projectIds.forOrg1(),
+        createApplication = true,
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
@@ -1974,6 +2042,14 @@ internal class PermissionTest : DatabaseTest() {
         readModuleDetails = true,
     )
 
+    permissions.expect(
+        *applicationIds.forOrg1(),
+        readApplication = true,
+        reviewApplication = true,
+        updateApplicationBoundary = true,
+        updateApplicationSubmissionStatus = true,
+    )
+
     // Can read all submissions even those outside of this org
     permissions.expect(
         *submissionIds.toTypedArray(),
@@ -1983,6 +2059,13 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
+    )
+
+    permissions.expect(
+        *applicationIds.toTypedArray(),
+        readApplication = true,
+        reviewApplication = true,
+        updateApplicationBoundary = true,
     )
 
     permissions.expect(
@@ -2093,6 +2176,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *participantProjectSpeciesIds.forOrg1(),
         readParticipantProjectSpecies = true,
+    )
+
+    permissions.expect(
+        *applicationIds.toTypedArray(),
+        readApplication = true,
     )
 
     permissions.expect(
@@ -2249,6 +2337,7 @@ internal class PermissionTest : DatabaseTest() {
 
   inner class PermissionsTracker {
     private val uncheckedAccessions = accessionIds.toMutableSet()
+    private val uncheckedApplications = applicationIds.toMutableSet()
     private val uncheckedAutomations = automationIds.toMutableSet()
     private val uncheckedBatches = batchIds.toMutableSet()
     private val uncheckedDeliveries = deliveryIds.toMutableSet()
@@ -2938,6 +3027,7 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg projectIds: ProjectId,
+        createApplication: Boolean = false,
         createParticipantProjectSpecies: Boolean = false,
         createSubmission: Boolean = false,
         deleteProject: Boolean = false,
@@ -2959,6 +3049,10 @@ internal class PermissionTest : DatabaseTest() {
         updateSubmissionStatus: Boolean = false,
     ) {
       projectIds.forEach { projectId ->
+        assertEquals(
+            createApplication,
+            user.canCreateApplication(projectId),
+            "Can create application in project $projectId")
         assertEquals(
             createSubmission,
             user.canCreateSubmission(projectId),
@@ -3130,8 +3224,40 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
+    fun expect(
+        vararg applicationIds: ApplicationId,
+        readApplication: Boolean = false,
+        reviewApplication: Boolean = false,
+        updateApplicationBoundary: Boolean = false,
+        updateApplicationSubmissionStatus: Boolean = false,
+    ) {
+      applicationIds
+          .filter { it in uncheckedApplications }
+          .forEach { applicationId ->
+            assertEquals(
+                readApplication,
+                user.canReadApplication(applicationId),
+                "Can read application $applicationId")
+            assertEquals(
+                reviewApplication,
+                user.canReviewApplication(applicationId),
+                "Can review application $applicationId")
+            assertEquals(
+                updateApplicationBoundary,
+                user.canUpdateApplicationBoundary(applicationId),
+                "Can update application boundary $applicationId")
+            assertEquals(
+                updateApplicationSubmissionStatus,
+                user.canUpdateApplicationSubmissionStatus(applicationId),
+                "Can update submission status of application $applicationId")
+
+            uncheckedApplications.remove(applicationId)
+          }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedAccessions.toTypedArray())
+      expect(*uncheckedApplications.toTypedArray())
       expect(*uncheckedAutomations.toTypedArray())
       expect(*uncheckedBatches.toTypedArray())
       expect(*uncheckedDeliveries.toTypedArray())

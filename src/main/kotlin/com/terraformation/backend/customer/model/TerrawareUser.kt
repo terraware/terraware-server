@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
@@ -122,6 +123,8 @@ interface TerrawareUser : Principal {
   fun canCreateAccession(facilityId: FacilityId): Boolean = defaultPermission
 
   fun canCreateApiKey(organizationId: OrganizationId): Boolean = defaultPermission
+
+  fun canCreateApplication(projectId: ProjectId): Boolean = defaultPermission
 
   fun canCreateAutomation(facilityId: FacilityId): Boolean = defaultPermission
 
@@ -251,6 +254,8 @@ interface TerrawareUser : Principal {
 
   fun canReadAllDeliverables(): Boolean = defaultPermission
 
+  fun canReadApplication(applicationId: ApplicationId): Boolean = defaultPermission
+
   fun canReadAutomation(automationId: AutomationId): Boolean = defaultPermission
 
   fun canReadBatch(batchId: BatchId): Boolean = defaultPermission
@@ -362,6 +367,8 @@ interface TerrawareUser : Principal {
 
   fun canRescheduleObservation(observationId: ObservationId): Boolean = defaultPermission
 
+  fun canReviewApplication(applicationId: ApplicationId): Boolean = defaultPermission
+
   fun canSendAlert(facilityId: FacilityId): Boolean = defaultPermission
 
   fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
@@ -378,6 +385,11 @@ interface TerrawareUser : Principal {
   fun canTriggerAutomation(automationId: AutomationId): Boolean = defaultPermission
 
   fun canUpdateAccession(accessionId: AccessionId): Boolean = defaultPermission
+
+  fun canUpdateApplicationBoundary(applicationId: ApplicationId): Boolean = defaultPermission
+
+  fun canUpdateApplicationSubmissionStatus(applicationId: ApplicationId): Boolean =
+      defaultPermission
 
   fun canUpdateAppVersions(): Boolean = defaultPermission
 

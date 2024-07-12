@@ -4,12 +4,14 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionId
+import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
@@ -109,6 +111,9 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getFacilityId(withdrawalId: WithdrawalId): FacilityId? =
       fetchFieldById(withdrawalId, WITHDRAWALS.ID, WITHDRAWALS.FACILITY_ID)
+
+  fun getOrganizationId(applicationId: ApplicationId): OrganizationId? =
+      fetchFieldById(applicationId, APPLICATIONS.ID, APPLICATIONS.projects.ORGANIZATION_ID)
 
   fun getOrganizationId(batchId: BatchId): OrganizationId? =
       fetchFieldById(batchId, BATCHES.ID, BATCHES.ORGANIZATION_ID)

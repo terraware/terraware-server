@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.accelerator.db.ApplicationNotFoundException
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleNotFoundException
 import com.terraformation.backend.accelerator.db.ParticipantNotFoundException
@@ -23,6 +24,7 @@ import com.terraformation.backend.db.SubLocationNotFoundException
 import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
+import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
@@ -116,6 +118,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   private val accessionId: AccessionId by
       readableId(AccessionNotFoundException::class) { canReadAccession(it) }
+  private val applicationId: ApplicationId by
+      readableId(ApplicationNotFoundException::class) { canReadApplication(it) }
   private val automationId: AutomationId by
       readableId(AutomationNotFoundException::class) { canReadAutomation(it) }
   private val batchId: BatchId by readableId(BatchNotFoundException::class) { canReadBatch(it) }
@@ -327,6 +331,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun createApiKey() =
       allow { createApiKey(organizationId) } ifUser { canCreateApiKey(organizationId) }
+
+  @Test
+  fun createApplication() =
+      allow { createApplication(projectId) } ifUser { canCreateApplication(projectId) }
 
   @Test
   fun createAutomation() =
@@ -552,6 +560,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun readAllDeliverables() = allow { readAllDeliverables() } ifUser { canReadAllDeliverables() }
+
+  @Test fun readApplication() = testRead { readApplication(applicationId) }
 
   @Test fun readAutomation() = testRead { readAutomation(automationId) }
 
@@ -780,6 +790,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
             canRescheduleObservation(observationId)
           }
 
+  @Test
+  fun reviewApplication() =
+      allow { reviewApplication(applicationId) } ifUser { canReviewApplication(applicationId) }
+
   @Test fun sendAlert() = allow { sendAlert(facilityId) } ifUser { canSendAlert(facilityId) }
 
   @Test
@@ -810,6 +824,20 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun updateAccession() =
       allow { updateAccession(accessionId) } ifUser { canUpdateAccession(accessionId) }
+
+  @Test
+  fun updateApplicationBoundary() =
+      allow { updateApplicationBoundary(applicationId) } ifUser
+          {
+            canUpdateApplicationBoundary(applicationId)
+          }
+
+  @Test
+  fun updateApplicationSubmissionStatus() =
+      allow { updateApplicationSubmissionStatus(applicationId) } ifUser
+          {
+            canUpdateApplicationSubmissionStatus(applicationId)
+          }
 
   @Test fun updateAppVersions() = allow { updateAppVersions() } ifUser { canUpdateAppVersions() }
 

@@ -6,6 +6,8 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.db.accelerator.ApplicationId
+import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
@@ -25,6 +27,8 @@ import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.VoteOption
+import com.terraformation.backend.db.accelerator.tables.daos.ApplicationHistoriesDao
+import com.terraformation.backend.db.accelerator.tables.daos.ApplicationsDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
 import com.terraformation.backend.db.accelerator.tables.daos.DefaultVotersDao
@@ -45,6 +49,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocuments
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshotsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
 import com.terraformation.backend.db.accelerator.tables.daos.UserDeliverableCategoriesDao
+import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DefaultVotersRow
@@ -468,6 +473,8 @@ abstract class DatabaseBackedTest {
   protected val accessionPhotosDao: AccessionPhotosDao by lazyDao()
   protected val accessionQuantityHistoryDao: AccessionQuantityHistoryDao by lazyDao()
   protected val accessionsDao: AccessionsDao by lazyDao()
+  protected val applicationHistoriesDao: ApplicationHistoriesDao by lazyDao()
+  protected val applicationsDao: ApplicationsDao by lazyDao()
   protected val automationsDao: AutomationsDao by lazyDao()
   protected val bagsDao: BagsDao by lazyDao()
   protected val batchDetailsHistoryDao: BatchDetailsHistoryDao by lazyDao()
@@ -2210,6 +2217,39 @@ abstract class DatabaseBackedTest {
             createdTime = createdTime))
   }
 
+  fun insertApplication(
+      boundary: Geometry? = null,
+      createdBy: Any = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+      feedback: String? = null,
+      id: Any? = null,
+      internalComment: String? = null,
+      internalName: String = "USA_Organization",
+      projectId: Any = inserted.projectId,
+      modifiedBy: Any = createdBy,
+      modifiedTime: Instant = createdTime,
+      status: ApplicationStatus = ApplicationStatus.NotSubmitted,
+  ): ApplicationId {
+    val row =
+        ApplicationsRow(
+            applicationStatusId = status,
+            boundary = boundary,
+            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdTime = createdTime,
+            feedback = feedback,
+            id = id?.toIdWrapper { ApplicationId(it) },
+            internalComment = internalComment,
+            internalName = internalName,
+            projectId = projectId.toIdWrapper { ProjectId(it) },
+            modifiedBy = modifiedBy.toIdWrapper { UserId(it) },
+            modifiedTime = modifiedTime,
+        )
+
+    applicationsDao.insert(row)
+
+    return row.id!!.also { inserted.applicationIds.add(it) }
+  }
+
   private var nextParticipantNumber = 1
 
   fun insertParticipant(
@@ -3000,6 +3040,7 @@ abstract class DatabaseBackedTest {
   @Suppress("unused")
   class Inserted {
     val accessionIds = mutableListOf<AccessionId>()
+    val applicationIds = mutableListOf<ApplicationId>()
     val automationIds = mutableListOf<AutomationId>()
     val batchIds = mutableListOf<BatchId>()
     val cohortIds = mutableListOf<CohortId>()
@@ -3041,6 +3082,9 @@ abstract class DatabaseBackedTest {
 
     val accessionId
       get() = accessionIds.last()
+
+    val applicationId
+      get() = applicationIds.last()
 
     val automationId
       get() = automationIds.last()

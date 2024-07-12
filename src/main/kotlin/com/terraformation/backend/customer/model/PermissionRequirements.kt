@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.model
 
+import com.terraformation.backend.accelerator.db.ApplicationNotFoundException
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleNotFoundException
 import com.terraformation.backend.accelerator.db.ParticipantNotFoundException
@@ -24,6 +25,7 @@ import com.terraformation.backend.db.TimeseriesNotFoundException
 import com.terraformation.backend.db.UploadNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
+import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
@@ -172,6 +174,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
       readOrganization(organizationId)
       throw AccessDeniedException(
           "No permission to create API keys in organization $organizationId")
+    }
+  }
+
+  fun createApplication(projectId: ProjectId) {
+    if (!user.canCreateApplication(projectId)) {
+      readProject(projectId)
+      throw AccessDeniedException("No permission to create application for project $projectId")
     }
   }
 
@@ -578,6 +587,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readApplication(applicationId: ApplicationId) {
+    if (!user.canReadApplication(applicationId)) {
+      throw ApplicationNotFoundException(applicationId)
+    }
+  }
+
   fun readAutomation(automationId: AutomationId) {
     if (!user.canReadAutomation(automationId)) {
       throw AutomationNotFoundException(automationId)
@@ -916,6 +931,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun reviewApplication(applicationId: ApplicationId) {
+    if (!user.canReviewApplication(applicationId)) {
+      readApplication(applicationId)
+      throw AccessDeniedException("No permission to review application $applicationId")
+    }
+  }
+
   fun sendAlert(facilityId: FacilityId) {
     if (!user.canSendAlert(facilityId)) {
       readFacility(facilityId)
@@ -971,6 +993,21 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateAccession(accessionId)) {
       readAccession(accessionId)
       throw AccessDeniedException("No permission to update accession $accessionId")
+    }
+  }
+
+  fun updateApplicationBoundary(applicationId: ApplicationId) {
+    if (!user.canUpdateApplicationBoundary(applicationId)) {
+      readApplication(applicationId)
+      throw AccessDeniedException("No permission to update application boundary $applicationId")
+    }
+  }
+
+  fun updateApplicationSubmissionStatus(applicationId: ApplicationId) {
+    if (!user.canUpdateApplicationSubmissionStatus(applicationId)) {
+      readApplication(applicationId)
+      throw AccessDeniedException(
+          "No permission to update submission status for application $applicationId")
     }
   }
 
