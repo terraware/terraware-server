@@ -475,6 +475,16 @@ COMMENT ON TABLE accelerator.cohort_modules IS 'Which modules are assigned to wh
 COMMENT ON COLUMN accelerator.cohort_modules.title IS 'The title for the module for the cohort. For example "Module 3A" for Module 3A: Title';
 
 
+COMMENT ON TABLE accelerator.application_histories IS 'Change histories for accelerator applications. Only includes changes to top-level metadata, not things like changes to variable values.';
+
+COMMENT ON TABLE accelerator.application_module_statuses IS '(Enum) Possible statuses of individual modules in an application.';
+
+COMMENT ON TABLE accelerator.application_modules IS 'Current states of the modules for individual applications.';
+
+COMMENT ON TABLE accelerator.application_statuses IS '(Enum) Possible statuses for an application to the accelerator program.';
+
+COMMENT ON TABLE accelerator.applications IS 'Information about projects that are applying for the accelerator program.';
+
 COMMENT ON TABLE accelerator.cohort_phases IS '(Enum) Available cohort phases';
 
 COMMENT ON TABLE accelerator.deal_stages IS '(Enum) Stages in the deal workflow that a project progresses through.';
