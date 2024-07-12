@@ -131,15 +131,15 @@
 <text text-anchor="start" x="283" y="-239.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="188,-213 188,-231 322,-231 322,-213 188,-213"/>
 <text text-anchor="start" x="191" y="-219.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="188,-195 188,-213 234,-213 234,-195 188,-195"/>
-<polygon fill="none" stroke="black" points="188,-195 188,-213 234,-213 234,-195 188,-195"/>
+<polygon fill="#ffffff" stroke="none" points="188,-195 188,-213 230,-213 230,-195 188,-195"/>
+<polygon fill="none" stroke="black" points="188,-195 188,-213 230,-213 230,-195 188,-195"/>
 <text text-anchor="start" x="191" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="234,-195 234,-213 287,-213 287,-195 234,-195"/>
-<polygon fill="none" stroke="black" points="234,-195 234,-213 287,-213 287,-195 234,-195"/>
-<text text-anchor="start" x="248" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="287,-195 287,-213 322,-213 322,-195 287,-195"/>
-<polygon fill="none" stroke="black" points="287,-195 287,-213 322,-213 322,-195 287,-195"/>
-<text text-anchor="start" x="302" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00">9 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="230,-195 230,-213 282,-213 282,-195 230,-195"/>
+<polygon fill="none" stroke="black" points="230,-195 230,-213 282,-213 282,-195 230,-195"/>
+<text text-anchor="start" x="243" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="282,-195 282,-213 322,-213 322,-195 282,-195"/>
+<polygon fill="none" stroke="black" points="282,-195 282,-213 322,-213 322,-195 282,-195"/>
+<text text-anchor="start" x="295" y="-201.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
 </a>
 </g>
 </g>

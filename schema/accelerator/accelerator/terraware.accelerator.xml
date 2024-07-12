@@ -1,6 +1,104 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <database name="terraware" schema="accelerator" type="PostgreSQL - 13.1 (Debian 13.1-1.pgdg100+1)">
    <tables>
+      <table name="application_histories" numRows="0" remarks="Change histories for accelerator applications. Only includes changes to top-level metadata, not things like changes to variable values." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="application_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="application_histories_application_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="applications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="application_status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="application_histories_application_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="application_statuses"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="boundary" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="internal_comment" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="feedback" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="application_histories_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="application_histories_application_id_idx" unique="false">
+            <column ascending="true" name="application_id"/>
+         </index>
+         <index name="application_histories_modified_by_idx" unique="false">
+            <column ascending="true" name="modified_by"/>
+         </index>
+      </table>
+      <table name="application_module_statuses" numRows="2" remarks="(Enum) Possible statuses of individual modules in an application." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="application_module_status_id" foreignKey="application_modules_application_module_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="application_modules"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="application_module_statuses_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="application_module_statuses_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="application_modules" numRows="0" remarks="Current states of the modules for individual applications." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="application_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="application_modules_application_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="applications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="module_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="application_modules_module_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="modules"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="application_module_status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="application_modules_application_module_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="application_module_statuses"/>
+         </column>
+         <index name="application_modules_application_id_idx" unique="false">
+            <column ascending="true" name="application_id"/>
+         </index>
+      </table>
+      <table name="application_statuses" numRows="12" remarks="(Enum) Possible statuses for an application to the accelerator program." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="application_status_id" foreignKey="application_histories_application_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="application_histories"/>
+            <child column="application_status_id" foreignKey="applications_application_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="applications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="application_statuses_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="application_statuses_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="applications" numRows="0" remarks="Information about projects that are applying for the accelerator program." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="application_id" foreignKey="application_histories_application_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="application_histories"/>
+            <child column="application_id" foreignKey="application_modules_application_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="application_modules"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="applications_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="internal_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="application_status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="applications_application_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="application_statuses"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="boundary" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="internal_comment" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="feedback" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="applications_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="applications_created_by_idx" unique="false">
+            <column ascending="true" name="created_by"/>
+         </index>
+         <index name="applications_modified_by_idx" unique="false">
+            <column ascending="true" name="modified_by"/>
+         </index>
+         <index name="applications_project_id_key" unique="true">
+            <column ascending="true" name="project_id"/>
+         </index>
+      </table>
       <table name="cohort_modules" numRows="0" remarks="Which modules are assigned to which cohorts." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="cohort_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="cohort_modules_cohort_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohorts"/>
@@ -134,8 +232,8 @@
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
             <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
+            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="deliverable_id" sequenceNumberInPK="1"/>
@@ -297,6 +395,7 @@
       </table>
       <table name="modules" numRows="0" remarks="Possible steps in the workflow of a cohort phase." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="module_id" foreignKey="application_modules_module_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="application_modules"/>
             <child column="module_id" foreignKey="cohort_modules_module_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohort_modules"/>
             <child column="module_id" foreignKey="deliverables_module_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
             <child column="module_id" foreignKey="events_module_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="events"/>
@@ -560,7 +659,7 @@
             <column ascending="true" name="submission_id"/>
          </index>
       </table>
-      <table name="submission_statuses" numRows="6" remarks="(Enum) Statuses of submissions of deliverables by specific projects." schema="accelerator" type="TABLE">
+      <table name="submission_statuses" numRows="7" remarks="(Enum) Statuses of submissions of deliverables by specific projects." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="submission_status_id" foreignKey="participant_project_species_submission_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participant_project_species"/>
             <child column="submission_status_id" foreignKey="submissions_submission_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>

@@ -1,9 +1,11 @@
 cohort_phases
+application_statuses
 deliverable_categories
 deliverable_types
 pipelines
 submission_statuses
 vote_options
+application_module_statuses
 document_stores
 event_statuses
 event_types
@@ -12,6 +14,7 @@ cohorts
 participants
 modules
 deliverables
+applications
 submissions
 deal_stages
 events
@@ -21,6 +24,8 @@ deliverable_cohort_due_dates
 deliverable_project_due_dates
 event_projects
 submission_snapshots
+application_histories
+application_modules
 project_accelerator_details
 project_vote_decisions
 user_deliverable_categories

@@ -109,15 +109,15 @@
 <text text-anchor="start" x="52.5" y="-81.2" font-family="Helvetica,sans-Serif" font-size="11.00">participant_id</text>
 <polygon fill="none" stroke="black" points="21.5,-55 21.5,-73 155.5,-73 155.5,-55 21.5,-55"/>
 <text text-anchor="start" x="24.5" y="-61.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="21.5,-37 21.5,-55 67.5,-55 67.5,-37 21.5,-37"/>
-<polygon fill="none" stroke="black" points="21.5,-37 21.5,-55 67.5,-55 67.5,-37 21.5,-37"/>
+<polygon fill="#ffffff" stroke="none" points="21.5,-37 21.5,-55 63.5,-55 63.5,-37 21.5,-37"/>
+<polygon fill="none" stroke="black" points="21.5,-37 21.5,-55 63.5,-55 63.5,-37 21.5,-37"/>
 <text text-anchor="start" x="24.5" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="67.5,-37 67.5,-55 120.5,-55 120.5,-37 67.5,-37"/>
-<polygon fill="none" stroke="black" points="67.5,-37 67.5,-55 120.5,-55 120.5,-37 67.5,-37"/>
-<text text-anchor="start" x="81.5" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="120.5,-37 120.5,-55 155.5,-55 155.5,-37 120.5,-37"/>
-<polygon fill="none" stroke="black" points="120.5,-37 120.5,-55 155.5,-55 155.5,-37 120.5,-37"/>
-<text text-anchor="start" x="135.5" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">9 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="63.5,-37 63.5,-55 115.5,-55 115.5,-37 63.5,-37"/>
+<polygon fill="none" stroke="black" points="63.5,-37 63.5,-55 115.5,-55 115.5,-37 63.5,-37"/>
+<text text-anchor="start" x="76.5" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="115.5,-37 115.5,-55 155.5,-55 155.5,-37 115.5,-37"/>
+<polygon fill="none" stroke="black" points="115.5,-37 115.5,-55 155.5,-55 155.5,-37 115.5,-37"/>
+<text text-anchor="start" x="128.5" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
 </a>
 </g>
 </g>

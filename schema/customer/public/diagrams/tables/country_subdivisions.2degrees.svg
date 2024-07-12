@@ -50,7 +50,7 @@
 <text text-anchor="start" x="405.5" y="-731.606" font-family="Helvetica,sans-Serif" font-size="11.00">1 row</text>
 <polygon fill="#ffffff" stroke="none" points="439.5,-725.406 439.5,-743.406 469.5,-743.406 469.5,-725.406 439.5,-725.406"/>
 <polygon fill="none" stroke="black" points="439.5,-725.406 439.5,-743.406 469.5,-743.406 469.5,-725.406 439.5,-725.406"/>
-<text text-anchor="start" x="442.5" y="-731.606" font-family="Helvetica,sans-Serif" font-size="11.00">86 &gt;</text>
+<text text-anchor="start" x="442.5" y="-731.606" font-family="Helvetica,sans-Serif" font-size="11.00">89 &gt;</text>
 </a>
 </g>
 </g>
@@ -158,7 +158,7 @@
 <text text-anchor="start" x="933" y="-889.606" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
 <polygon fill="#ffffff" stroke="none" points="972,-883.406 972,-901.406 1002,-901.406 1002,-883.406 972,-883.406"/>
 <polygon fill="none" stroke="black" points="972,-883.406 972,-901.406 1002,-901.406 1002,-883.406 972,-883.406"/>
-<text text-anchor="start" x="975" y="-889.606" font-family="Helvetica,sans-Serif" font-size="11.00">22 &gt;</text>
+<text text-anchor="start" x="975" y="-889.606" font-family="Helvetica,sans-Serif" font-size="11.00">23 &gt;</text>
 </a>
 </g>
 </g>
@@ -171,28 +171,31 @@
 <!-- countries -->
 <g id="node6" class="node"><title>countries</title>
 <g id="a_node6"><a xlink:href="../../tables/countries.html" xlink:title="countries" target="_top">
-<polygon fill="#ffffff" stroke="none" points="147,-683.406 147,-785.406 250,-785.406 250,-683.406 147,-683.406"/>
+<polygon fill="#ffffff" stroke="none" points="147,-661.406 147,-785.406 250,-785.406 250,-661.406 147,-661.406"/>
 <polygon fill="#f5f5f5" stroke="none" points="147.5,-763.406 147.5,-785.406 250.5,-785.406 250.5,-763.406 147.5,-763.406"/>
 <polygon fill="none" stroke="black" points="147.5,-763.406 147.5,-785.406 250.5,-785.406 250.5,-763.406 147.5,-763.406"/>
 <text text-anchor="start" x="152.5" y="-772.606" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">countries</text>
 <text text-anchor="start" x="211.5" y="-771.606" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="147.5,-741.406 147.5,-763.406 250.5,-763.406 250.5,-741.406 147.5,-741.406"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="152.5" y="-758.406"/>
-<text text-anchor="start" x="180.5" y="-749.606" font-family="Helvetica,sans-Serif" font-size="11.00">code</text>
+<text text-anchor="start" x="172.5" y="-749.606" font-family="Helvetica,sans-Serif" font-size="11.00">code</text>
 <polygon fill="none" stroke="black" points="147.5,-719.406 147.5,-741.406 250.5,-741.406 250.5,-719.406 147.5,-719.406"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="152.5" y="-736.406"/>
-<text text-anchor="start" x="180.5" y="-727.606" font-family="Helvetica,sans-Serif" font-size="11.00">region_id</text>
-<polygon fill="none" stroke="black" points="147.5,-701.406 147.5,-719.406 250.5,-719.406 250.5,-701.406 147.5,-701.406"/>
-<text text-anchor="start" x="150.5" y="-707.606" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="147.5,-683.406 147.5,-701.406 171.5,-701.406 171.5,-683.406 147.5,-683.406"/>
-<polygon fill="none" stroke="black" points="147.5,-683.406 147.5,-701.406 171.5,-701.406 171.5,-683.406 147.5,-683.406"/>
-<text text-anchor="start" x="150.5" y="-689.606" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="171.5,-683.406 171.5,-701.406 226.5,-701.406 226.5,-683.406 171.5,-683.406"/>
-<polygon fill="none" stroke="black" points="171.5,-683.406 171.5,-701.406 226.5,-701.406 226.5,-683.406 171.5,-683.406"/>
-<text text-anchor="start" x="174.5" y="-689.606" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
-<polygon fill="#ffffff" stroke="none" points="226.5,-683.406 226.5,-701.406 250.5,-701.406 250.5,-683.406 226.5,-683.406"/>
-<polygon fill="none" stroke="black" points="226.5,-683.406 226.5,-701.406 250.5,-701.406 250.5,-683.406 226.5,-683.406"/>
-<text text-anchor="start" x="230.5" y="-689.606" font-family="Helvetica,sans-Serif" font-size="11.00">5 &gt;</text>
+<text text-anchor="start" x="172.5" y="-727.606" font-family="Helvetica,sans-Serif" font-size="11.00">region_id</text>
+<polygon fill="#ffffff" stroke="none" points="147.5,-697.406 147.5,-719.406 250.5,-719.406 250.5,-697.406 147.5,-697.406"/>
+<polygon fill="none" stroke="black" points="147.5,-697.406 147.5,-719.406 250.5,-719.406 250.5,-697.406 147.5,-697.406"/>
+<text text-anchor="start" x="172.5" y="-705.606" font-family="Helvetica,sans-Serif" font-size="11.00">code_alpha3</text>
+<polygon fill="none" stroke="black" points="147.5,-679.406 147.5,-697.406 250.5,-697.406 250.5,-679.406 147.5,-679.406"/>
+<text text-anchor="start" x="150.5" y="-685.606" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="147.5,-661.406 147.5,-679.406 171.5,-679.406 171.5,-661.406 147.5,-661.406"/>
+<polygon fill="none" stroke="black" points="147.5,-661.406 147.5,-679.406 171.5,-679.406 171.5,-661.406 147.5,-661.406"/>
+<text text-anchor="start" x="150.5" y="-667.606" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="none" points="171.5,-661.406 171.5,-679.406 226.5,-679.406 226.5,-661.406 171.5,-661.406"/>
+<polygon fill="none" stroke="black" points="171.5,-661.406 171.5,-679.406 226.5,-679.406 226.5,-661.406 171.5,-661.406"/>
+<text text-anchor="start" x="174.5" y="-667.606" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
+<polygon fill="#ffffff" stroke="none" points="226.5,-661.406 226.5,-679.406 250.5,-679.406 250.5,-661.406 226.5,-661.406"/>
+<polygon fill="none" stroke="black" points="226.5,-661.406 226.5,-679.406 250.5,-679.406 250.5,-661.406 226.5,-661.406"/>
+<text text-anchor="start" x="230.5" y="-667.606" font-family="Helvetica,sans-Serif" font-size="11.00">5 &gt;</text>
 </a>
 </g>
 </g>

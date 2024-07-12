@@ -6,6 +6,8 @@ deliverable_documents
 user_deliverable_categories
 project_vote_decisions
 project_accelerator_details
+application_modules
+application_histories
 submission_snapshots
 event_projects
 deliverable_project_due_dates
@@ -15,6 +17,7 @@ default_voters
 events
 deal_stages
 submissions
+applications
 deliverables
 modules
 participants
@@ -23,9 +26,11 @@ score_categories
 event_types
 event_statuses
 document_stores
+application_module_statuses
 vote_options
 submission_statuses
 pipelines
 deliverable_types
 deliverable_categories
+application_statuses
 cohort_phases
