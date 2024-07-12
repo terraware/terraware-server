@@ -1,3 +1,5 @@
+32be0171ff8 SW-5632 Detect which countries a geometry is in (#2148)
+a93cac03253 Roll back upgrade to springdoc-openapi (#2152)
 02e20295811 SW-5626 Define API endpoints for applications (#2142)
 784bf1b5fae Reduce boilerplate in enum table configuration (#2150)
 d8c5e012522 SW-5625 Database schema for applications (#2139)
