@@ -38,6 +38,9 @@ logging:
     # bunch of informational messages at start time; suppress them to reduce log clutter in dev
     # environments.
     org.springframework.boot.devtools.restart.ChangeableUrls: WARN
+    # The data set we're using for country borders has a mix of Polygon and MultiPolygon geometries
+    # that causes GeoTools to spew warnings about mixed feature types.
+    org.geotools.feature.DefaultFeatureCollection: ERROR
   pattern:
     # This is the default Spring Boot console log format, but with the MDC values (%X) in between
     # the log message and the exception stacktrace.

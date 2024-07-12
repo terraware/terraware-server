@@ -112,6 +112,7 @@ dependencies {
   implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
   implementation("org.freemarker:freemarker:2.3.33")
   implementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
+  implementation("org.geotools:gt-geojson:$geoToolsVersion")
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
   implementation("org.jobrunr:jobrunr-spring-boot-3-starter:7.2.2")
   implementation("org.jooq:jooq:$jooqVersion")
