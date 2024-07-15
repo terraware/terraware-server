@@ -344,7 +344,7 @@ class VariableValueStore(
             dslContext
                 .select()
                 .from(VARIABLE_VALUES)
-                .rightJoin(VARIABLE_MANIFEST_ENTRIES)
+                .join(VARIABLE_MANIFEST_ENTRIES)
                 .on(VARIABLE_MANIFEST_ENTRIES.VARIABLE_ID.eq(VARIABLE_VALUES.VARIABLE_ID))
                 .where(VARIABLE_VALUES.PROJECT_ID.eq(projectId)))
     if (hasValues) {
