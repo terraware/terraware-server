@@ -1,3 +1,5 @@
+c355be19f6b Update dependency com.google.auth:google-auth-library-oauth2-http to v1.24.0 (#2153)
+f6299810336 Update dependency gradle to v8.9 (#2156)
 ad6ef7e74df Updated translations from Phrase (#2151)
 32be0171ff8 SW-5632 Detect which countries a geometry is in (#2148)
 a93cac03253 Roll back upgrade to springdoc-openapi (#2152)
