@@ -1,3 +1,4 @@
+26d93f0c277 Update dependency com.google.apis:google-api-services-drive to v3-rev20240628-2.0.0 (#2154)
 c355be19f6b Update dependency com.google.auth:google-auth-library-oauth2-http to v1.24.0 (#2153)
 f6299810336 Update dependency gradle to v8.9 (#2156)
 ad6ef7e74df Updated translations from Phrase (#2151)
