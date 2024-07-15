@@ -2,7 +2,9 @@ package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.docprod.DocumentTemplateId
+import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.embeddables.pojos.VariableManifestEntryId
 import com.terraformation.backend.db.docprod.tables.daos.DocumentTemplatesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableManifestEntriesDao
@@ -16,6 +18,7 @@ import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 
 @Named
 class VariableManifestStore(
@@ -26,6 +29,19 @@ class VariableManifestStore(
     private val variableManifestEntriesDao: VariableManifestEntriesDao
 ) {
   private val log = perClassLogger()
+
+  /**
+   * Returns the most recent variable manifest ID for each document template. Document templates
+   * that don't have any variable manifests are not included.
+   */
+  fun fetchLatestVariableManifestIds(): Map<DocumentTemplateId, VariableManifestId> =
+      dslContext
+          .select(VARIABLE_MANIFESTS.DOCUMENT_TEMPLATE_ID, DSL.max(VARIABLE_MANIFESTS.ID))
+          .from(VARIABLE_MANIFESTS)
+          .groupBy(VARIABLE_MANIFESTS.DOCUMENT_TEMPLATE_ID)
+          .fetchMap(
+              VARIABLE_MANIFESTS.DOCUMENT_TEMPLATE_ID.asNonNullable(),
+              DSL.max(VARIABLE_MANIFESTS.ID).asNonNullable())
 
   fun fetchVariableManifestByDocumentTemplate(
       documentTemplateId: DocumentTemplateId
