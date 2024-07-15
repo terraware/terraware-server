@@ -40,7 +40,8 @@ class DocumentTemplatesController(
 data class DocumentTemplatePayload(
     val id: DocumentTemplateId,
     val name: String,
-    @Schema(description = "ID of the most recent variable manifest for the document template, if any.")
+    @Schema(
+        description = "ID of the most recent variable manifest for the document template, if any.")
     val variableManifestId: VariableManifestId?,
 )
 
