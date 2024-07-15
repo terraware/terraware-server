@@ -13,6 +13,7 @@ class DocumentTemplatesControllerTest : ControllerIntegrationTest() {
     @Test
     fun `returns document template details`() {
       val documentTemplateId = insertDocumentTemplate(name = "Feasibility Study")
+      insertVariableManifest(documentTemplateId = documentTemplateId)
       val otherDocumentTemplateId = insertDocumentTemplate(name = "Other Document Template")
 
       mockMvc
@@ -23,15 +24,18 @@ class DocumentTemplatesControllerTest : ControllerIntegrationTest() {
                   "documentTemplates": [
                     {
                       "id": $documentTemplateId,
-                      "name": "Feasibility Study"
+                      "name": "Feasibility Study",
+                      "variableManifestId": ${inserted.variableManifestId}
                     },
                     {
                       "id": $otherDocumentTemplateId,
                       "name": "Other Document Template"
                     }
-                  ]
+                  ],
+                  "status": "ok"
                 }"""
-                  .trimIndent())
+                  .trimIndent(),
+              strict = true)
     }
   }
 }
