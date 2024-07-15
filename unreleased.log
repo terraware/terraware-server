@@ -1,3 +1,4 @@
+dbbd3cf9937 Fix the default value population for new documents (#2158)
 b63d68f3c76 Update Spring dependencies (#2141)
 26d93f0c277 Update dependency com.google.apis:google-api-services-drive to v3-rev20240628-2.0.0 (#2154)
 c355be19f6b Update dependency com.google.auth:google-auth-library-oauth2-http to v1.24.0 (#2153)
