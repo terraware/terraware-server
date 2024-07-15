@@ -90,6 +90,13 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
     @Test
     fun `populates sections with default values`() {
+      // Other values may exist for a project before a new document is created
+      insertModule()
+      val deliverableId = insertDeliverable()
+      val variableId = insertVariable(deliverableId = deliverableId, deliverablePosition = 0)
+      insertTextVariable(variableId)
+      insertValue(variableId = variableId, projectId = inserted.projectId, textValue = "Text")
+
       val textVariableId = insertVariableManifestEntry(insertTextVariable())
       val sectionId = insertVariableManifestEntry(insertSectionVariable(renderHeading = false))
       insertDefaultSectionValue(sectionId, listPosition = 0, textValue = "Some text")

@@ -27,6 +27,7 @@ import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_IMAGE_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_LINK_VALUES
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_MANIFEST_ENTRIES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SECTION_DEFAULT_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SECTION_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SELECT_OPTION_VALUES
@@ -339,7 +340,13 @@ class VariableValueStore(
   /** Populates a new document with the values of variables that are configured with defaults. */
   fun populateDefaultValues(projectId: ProjectId, manifestId: VariableManifestId) {
     val hasValues =
-        dslContext.fetchExists(VARIABLE_VALUES, VARIABLE_VALUES.PROJECT_ID.eq(projectId))
+        dslContext.fetchExists(
+            dslContext
+                .select()
+                .from(VARIABLE_VALUES)
+                .join(VARIABLE_MANIFEST_ENTRIES)
+                .on(VARIABLE_MANIFEST_ENTRIES.VARIABLE_ID.eq(VARIABLE_VALUES.VARIABLE_ID))
+                .where(VARIABLE_VALUES.PROJECT_ID.eq(projectId)))
     if (hasValues) {
       throw IllegalStateException("Can only populate initial values of a new document")
     }
