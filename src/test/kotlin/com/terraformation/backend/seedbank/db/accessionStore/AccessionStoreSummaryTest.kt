@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
@@ -18,12 +17,11 @@ import org.junit.jupiter.api.Test
 internal class AccessionStoreSummaryTest : AccessionStoreTest() {
   @Test
   fun countByState() {
+    val facilityId = inserted.facilityId
+    val sameOrgFacilityId = insertFacility()
     val otherOrganizationId = OrganizationId(2)
-    val otherOrgFacilityId = FacilityId(4)
-    val sameOrgFacilityId = FacilityId(5)
     insertOrganization(otherOrganizationId)
-    insertFacility(otherOrgFacilityId, otherOrganizationId)
-    insertFacility(sameOrgFacilityId)
+    val otherOrgFacilityId = insertFacility()
 
     val toCreate =
         mapOf(
@@ -77,12 +75,11 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
 
   @Test
   fun `getSummaryStatistics counts seeds remaining`() {
+    val facilityId = inserted.facilityId
+    val sameOrgFacilityId = insertFacility()
     val otherOrganizationId = OrganizationId(2)
-    val otherOrgFacilityId = FacilityId(4)
-    val sameOrgFacilityId = FacilityId(5)
     insertOrganization(otherOrganizationId)
-    insertFacility(otherOrgFacilityId, otherOrganizationId)
-    insertFacility(sameOrgFacilityId)
+    val otherOrgFacilityId = insertFacility()
 
     listOf(
             AccessionsRow(
@@ -154,12 +151,10 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
 
   @Test
   fun `getSummaryStatistics estimates seeds remaining by weight`() {
-    val otherOrganizationId = OrganizationId(2)
-    val otherOrgFacilityId = FacilityId(4)
-    val sameOrgFacilityId = FacilityId(5)
-    insertOrganization(otherOrganizationId)
-    insertFacility(otherOrgFacilityId, otherOrganizationId)
-    insertFacility(sameOrgFacilityId)
+    val facilityId = inserted.facilityId
+    val sameOrgFacilityId = insertFacility()
+    insertOrganization(2)
+    val otherOrgFacilityId = insertFacility()
 
     listOf(
             AccessionsRow(
@@ -261,12 +256,10 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
 
   @Test
   fun `getSummaryStatistics counts total withdrawn quantity`() {
-    val otherOrganizationId = OrganizationId(2)
-    val otherOrgFacilityId = FacilityId(4)
-    val sameOrgFacilityId = FacilityId(5)
-    insertOrganization(otherOrganizationId)
-    insertFacility(otherOrgFacilityId, otherOrganizationId)
-    insertFacility(sameOrgFacilityId)
+    val facilityId = inserted.facilityId
+    val sameOrgFacilityId = insertFacility()
+    insertOrganization(2)
+    val otherOrgFacilityId = insertFacility()
 
     listOf(
             AccessionsRow(
@@ -348,12 +341,11 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
 
   @Test
   fun `getSummaryStatistics counts unknown-quantity accessions`() {
+    val facilityId = inserted.facilityId
+    val sameOrgFacilityId = insertFacility()
     val otherOrganizationId = OrganizationId(2)
-    val otherOrgFacilityId = FacilityId(4)
-    val sameOrgFacilityId = FacilityId(5)
     insertOrganization(otherOrganizationId)
-    insertFacility(otherOrgFacilityId, otherOrganizationId)
-    insertFacility(sameOrgFacilityId)
+    val otherOrgFacilityId = insertFacility()
 
     listOf(
             // No subset weight, no subset count
@@ -440,17 +432,16 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
 
   @Test
   fun `getSummaryStatistics counts species`() {
-    val otherOrganizationId = OrganizationId(2)
-    val otherOrgFacilityId = FacilityId(4)
-    val sameOrgFacilityId = FacilityId(5)
+    val facilityId = inserted.facilityId
+    val sameOrgFacilityId = insertFacility()
+
+    val otherOrganizationId = insertOrganization(2)
+    val otherOrgFacilityId = insertFacility()
+
     val speciesId = SpeciesId(1)
     val sameOrgSpeciesId = SpeciesId(2)
     val inactiveAccessionSpeciesId = SpeciesId(3)
     val otherOrgSpeciesId = SpeciesId(4)
-
-    insertOrganization(otherOrganizationId)
-    insertFacility(otherOrgFacilityId, otherOrganizationId)
-    insertFacility(sameOrgFacilityId)
     insertSpecies(speciesId)
     insertSpecies(sameOrgSpeciesId)
     insertSpecies(inactiveAccessionSpeciesId)
@@ -504,17 +495,16 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
 
   @Test
   fun `getSummaryStatistics does not count deleted species`() {
-    val otherOrganizationId = OrganizationId(2)
-    val otherOrgFacilityId = FacilityId(4)
-    val sameOrgFacilityId = FacilityId(5)
+    val facilityId = inserted.facilityId
+    val sameOrgFacilityId = insertFacility()
+    val otherOrganizationId = insertOrganization(2)
+    val otherOrgFacilityId = insertFacility()
+
     val speciesId = SpeciesId(1)
     val sameOrgSpeciesId = SpeciesId(2)
     val inactiveAccessionSpeciesId = SpeciesId(3)
     val otherOrgSpeciesId = SpeciesId(4)
 
-    insertOrganization(otherOrganizationId)
-    insertFacility(otherOrgFacilityId, otherOrganizationId)
-    insertFacility(sameOrgFacilityId)
     insertSpecies(speciesId)
     insertSpecies(sameOrgSpeciesId)
     insertSpecies(inactiveAccessionSpeciesId)
@@ -605,17 +595,10 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
 
   @Test
   fun `countActiveBySubLocation only counts active accessions in facility`() {
-    val otherFacilityId = FacilityId(20)
-    val subLocationId = SubLocationId(1)
-    val otherSubLocationId = SubLocationId(2)
-    val emptySubLocationId = SubLocationId(3)
-    val otherFacilitySubLocationId = SubLocationId(4)
-
-    insertFacility(otherFacilityId)
-    insertSubLocation(subLocationId)
-    insertSubLocation(otherSubLocationId)
-    insertSubLocation(emptySubLocationId)
-    insertSubLocation(otherFacilitySubLocationId, otherFacilityId)
+    val facilityId = inserted.facilityId
+    val subLocationId = insertSubLocation(facilityId = facilityId)
+    val otherSubLocationId = insertSubLocation(facilityId = facilityId)
+    insertSubLocation(facilityId = facilityId)
 
     insertAccession(
         AccessionsRow(stateId = AccessionState.InStorage, subLocationId = subLocationId))
@@ -624,6 +607,10 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
     insertAccession(AccessionsRow(stateId = AccessionState.UsedUp, subLocationId = subLocationId))
     insertAccession(
         AccessionsRow(stateId = AccessionState.InStorage, subLocationId = otherSubLocationId))
+
+    val otherFacilityId = insertFacility()
+    val otherFacilitySubLocationId = insertSubLocation(facilityId = otherFacilityId)
+
     insertAccession(
         AccessionsRow(
             facilityId = otherFacilityId,

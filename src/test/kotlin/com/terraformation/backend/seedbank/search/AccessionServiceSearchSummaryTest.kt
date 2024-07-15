@@ -64,7 +64,7 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
     insertSiteData()
     insertOrganizationUser()
 
-    every { user.facilityRoles } returns mapOf(facilityId to Role.Contributor)
+    every { user.facilityRoles } returns mapOf(inserted.facilityId to Role.Contributor)
   }
 
   @Test

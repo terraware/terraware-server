@@ -133,7 +133,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
 
   @Test
   fun `throws exception if undoing nursery transfer`() {
-    val otherFacilityId = insertFacility(id = 3, type = FacilityType.Nursery)
+    val otherFacilityId = insertFacility(type = FacilityType.Nursery)
 
     val withdrawalId =
         makeInitialWithdrawal(

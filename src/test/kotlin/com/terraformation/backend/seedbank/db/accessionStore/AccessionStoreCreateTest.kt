@@ -3,7 +3,6 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -134,9 +133,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create does not allow creating an accession at a nursery facility`() {
-    val nurseryFacilityId = FacilityId(2)
-
-    insertFacility(nurseryFacilityId, type = FacilityType.Nursery)
+    val nurseryFacilityId = insertFacility(type = FacilityType.Nursery)
 
     assertThrows<FacilityTypeMismatchException> {
       store.create(accessionModel(facilityId = nurseryFacilityId))

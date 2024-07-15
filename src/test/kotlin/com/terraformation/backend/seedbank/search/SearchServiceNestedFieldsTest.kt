@@ -2,7 +2,6 @@ package com.terraformation.backend.seedbank.search
 
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestType
@@ -675,7 +674,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                 mapOf(
                     "id" to "1000",
                     "accessionNumber" to "XYZ",
-                    "facility" to mapOf("name" to "Facility $facilityId"))))
+                    "facility" to mapOf("name" to "Facility 1"))))
 
     assertEquals(expected, result)
   }
@@ -933,10 +932,10 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                 "accessions" to expectedAccessions,
                 "connectionState" to "Not Connected",
                 "createdTime" to "1970-01-01T00:00:00Z",
-                "description" to "Description 100",
+                "description" to "Description 1",
                 "facilityNumber" to "1",
-                "id" to "100",
-                "name" to "Facility 100",
+                "id" to "$facilityId",
+                "name" to "Facility 1",
                 "timeZone" to facilityTimeZone,
                 "type" to "Seed Bank",
             ))
@@ -1075,9 +1074,8 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     val order = listOf(SearchSortField(bagNumberField))
 
     // A facility in an org the user isn't in
-    val otherFacilityId = FacilityId(2000)
     insertOrganization(2)
-    insertFacility(otherFacilityId)
+    val otherFacilityId = insertFacility()
 
     accessionsDao.update(
         accessionsDao.fetchOneById(AccessionId(1000))!!.copy(facilityId = otherFacilityId))
@@ -1098,9 +1096,8 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     val order = listOf(SearchSortField(seedsGerminatedField))
 
     // A facility in an org the user isn't in
-    val otherFacilityId = FacilityId(2000)
     insertOrganization(2)
-    insertFacility(otherFacilityId)
+    val otherFacilityId = insertFacility()
 
     accessionsDao.update(
         accessionsDao.fetchOneById(AccessionId(1000))!!.copy(facilityId = otherFacilityId))

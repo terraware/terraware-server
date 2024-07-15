@@ -7,7 +7,6 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.SpeciesInUseException
 import com.terraformation.backend.db.SpeciesNotFoundException
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.db.SpeciesChecker
@@ -109,7 +108,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     val speciesId = SpeciesId(1)
 
     insertSpecies(speciesId, "species name")
-    insertFacility(id = FacilityId(200))
+    insertFacility()
     insertBatch(speciesId = speciesId)
 
     assertThrows<SpeciesInUseException> { service.deleteSpecies(speciesId) }

@@ -12,11 +12,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class AccessionStoreMultiFacilityTest : AccessionStoreTest() {
-  private val otherFacilityId = FacilityId(500)
+  private lateinit var otherFacilityId: FacilityId
 
   @BeforeEach
   fun createOtherFacility() {
-    insertFacility(otherFacilityId)
+    otherFacilityId = insertFacility()
   }
 
   @Test
@@ -36,8 +36,7 @@ internal class AccessionStoreMultiFacilityTest : AccessionStoreTest() {
 
   @Test
   fun `update writes new facility id if it belongs to the same organization as previous facility`() {
-    val anotherFacilityId = FacilityId(5000)
-    insertFacility(anotherFacilityId)
+    val anotherFacilityId = insertFacility()
 
     every { user.canUpdateAccession(any()) } returns true
     val initial = store.create(accessionModel())
@@ -52,13 +51,13 @@ internal class AccessionStoreMultiFacilityTest : AccessionStoreTest() {
 
   @Test
   fun `update does not write to database if facility id to update does not belong to same organization as previous facility`() {
+    val initialFacilityId = inserted.facilityId
     val anotherOrgId = OrganizationId(5)
-    val facilityIdInAnotherOrg = FacilityId(5000)
     insertOrganization(anotherOrgId, "dev-2")
-    insertFacility(facilityIdInAnotherOrg, anotherOrgId)
+    val facilityIdInAnotherOrg = insertFacility()
 
     every { user.canUpdateAccession(any()) } returns true
-    val initial = store.create(accessionModel())
+    val initial = store.create(accessionModel(facilityId = initialFacilityId))
 
     assertThrows<FacilityNotFoundException> {
       store.update(initial.copy(facilityId = facilityIdInAnotherOrg))
@@ -66,6 +65,6 @@ internal class AccessionStoreMultiFacilityTest : AccessionStoreTest() {
 
     val afterUpdate = store.fetchOneById(initial.id!!)
     assertNotNull(afterUpdate, "Should be able to read accession after updating")
-    assertEquals(afterUpdate.facilityId, facilityId, "Update should not updated facility id")
+    assertEquals(initialFacilityId, afterUpdate.facilityId, "Update should not updated facility id")
   }
 }

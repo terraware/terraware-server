@@ -1,6 +1,5 @@
 package com.terraformation.backend.nursery.db.batchStore
 
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -34,8 +33,7 @@ internal class BatchStoreSpeciesSummaryTest : BatchStoreTest() {
 
   @Test
   fun `includes nurseries that have fully-withdrawn batches`() {
-    val facilityId2 = FacilityId(2)
-    insertFacility(facilityId2, name = "Other Nursery", type = FacilityType.Nursery)
+    val facilityId2 = insertFacility(name = "Other Nursery", type = FacilityType.Nursery)
     insertBatch(speciesId = speciesId, facilityId = facilityId)
     insertBatch(speciesId = speciesId, facilityId = facilityId, readyQuantity = 1)
     insertBatch(speciesId = speciesId, facilityId = facilityId2)

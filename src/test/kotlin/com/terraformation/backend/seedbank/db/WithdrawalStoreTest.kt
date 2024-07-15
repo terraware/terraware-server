@@ -74,7 +74,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
           .set(CREATED_BY, user.userId)
           .set(CREATED_TIME, clock.instant())
           .set(DATA_SOURCE_ID, DataSource.FileImport)
-          .set(FACILITY_ID, facilityId)
+          .set(FACILITY_ID, inserted.facilityId)
           .set(MODIFIED_BY, user.userId)
           .set(MODIFIED_TIME, clock.instant())
           .set(STATE_ID, AccessionState.InStorage)
@@ -203,8 +203,8 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `creates new nursery transfers`() {
     insertSpecies()
-    val nurseryFacilityId = insertFacility(2, type = FacilityType.Nursery)
-    val batchId = insertBatch(facilityId = nurseryFacilityId)
+    insertFacility(type = FacilityType.Nursery)
+    val batchId = insertBatch()
 
     val newWithdrawal =
         WithdrawalModel(

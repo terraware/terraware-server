@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.search
 
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -145,9 +144,9 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
 
   @Test
   fun `only includes values from accessions the user has permission to view`() {
-    insertFacility(1100)
+    val otherFacilityId = insertFacility()
 
-    insertAccession(facilityId = 1100, treesCollectedFrom = 3)
+    insertAccession(facilityId = otherFacilityId, treesCollectedFrom = 3)
 
     val expected = listOf("1", "2")
 
@@ -158,12 +157,12 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
 
   @Test
   fun `includes values from accessions at multiple facilities`() {
+    val otherFacilityId = insertFacility()
+
     every { user.facilityRoles } returns
-        mapOf(facilityId to Role.Manager, FacilityId(1100) to Role.Contributor)
+        mapOf(facilityId to Role.Manager, otherFacilityId to Role.Contributor)
 
-    insertFacility(1100)
-
-    insertAccession(facilityId = 1100, treesCollectedFrom = 3)
+    insertAccession(facilityId = otherFacilityId, treesCollectedFrom = 3)
 
     val expected = listOf("1", "2", "3")
 

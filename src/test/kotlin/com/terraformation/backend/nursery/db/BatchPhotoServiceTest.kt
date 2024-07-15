@@ -6,10 +6,8 @@ import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchPhotoId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchPhotosRow
@@ -220,15 +218,12 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `handler for OrganizationDeletionStartedEvent deletes photos for all batches in organization`() {
-    val facilityId2 = FacilityId(2)
-    val otherOrganizationId = OrganizationId(2)
-    val otherOrgFacilityId = FacilityId(3)
-    insertOrganization(otherOrganizationId)
-    insertFacility(facilityId2, type = FacilityType.Nursery)
-    insertFacility(otherOrgFacilityId, otherOrganizationId, type = FacilityType.Nursery)
-    val facility2BatchId = insertBatch(facilityId = facilityId2)
-    val otherOrgBatchId =
-        insertBatch(facilityId = otherOrgFacilityId, organizationId = otherOrganizationId)
+    insertFacility(type = FacilityType.Nursery)
+    val facility2BatchId = insertBatch()
+
+    val otherOrganizationId = insertOrganization(2)
+    insertFacility(type = FacilityType.Nursery)
+    val otherOrgBatchId = insertBatch(organizationId = otherOrganizationId)
 
     storePhoto()
     storePhoto()

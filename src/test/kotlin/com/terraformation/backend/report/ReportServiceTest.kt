@@ -180,25 +180,25 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   inner class Create {
     @Test
     fun `populates all server-generated fields`() {
-      val nurseryId = FacilityId(1)
       val plantingSiteId = PlantingSiteId(1)
-      val seedBankId = FacilityId(2)
       val speciesId =
           insertSpecies(growthForms = setOf(GrowthForm.Shrub), scientificName = "My species")
 
-      insertFacility(
-          nurseryId,
-          buildCompletedDate = LocalDate.of(2023, 3, 1),
-          buildStartedDate = LocalDate.of(2023, 2, 1),
-          capacity = 1000,
-          type = FacilityType.Nursery,
-      )
+      val nurseryId =
+          insertFacility(
+              buildCompletedDate = LocalDate.of(2023, 3, 1),
+              buildStartedDate = LocalDate.of(2023, 2, 1),
+              capacity = 1000,
+              name = "Nursery",
+              type = FacilityType.Nursery,
+          )
 
-      insertFacility(
-          seedBankId,
-          operationStartedDate = LocalDate.of(2023, 4, 1),
-          type = FacilityType.SeedBank,
-      )
+      val seedBankId =
+          insertFacility(
+              name = "Seed Bank",
+              operationStartedDate = LocalDate.of(2023, 4, 1),
+              type = FacilityType.SeedBank,
+          )
       insertAccession(
           AccessionsRow(
               facilityId = seedBankId,
@@ -227,7 +227,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               id = nurseryId,
                               // 152 dead / (498 remaining + 200 total withdrawn) = 21.8%
                               mortalityRate = 22,
-                              name = "Facility $nurseryId",
+                              name = "Nursery",
                               // inventory (200 not-ready, 300 ready) +
                               // outplanting withdrawals (20 not-ready, 30 ready)
                               totalPlantsPropagated = 550,
@@ -253,7 +253,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                       listOf(
                           ReportBodyModelV1.SeedBank(
                               id = seedBankId,
-                              name = "Facility $seedBankId",
+                              name = "Seed Bank",
                               operationStartedDate = LocalDate.of(2023, 4, 1),
                               operationStartedDateEditable = false,
                               totalSeedsStored = 10,
@@ -281,10 +281,6 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `only includes project-related values in project-level report bodies`() {
-      val projectNurseryId = FacilityId(1)
-      val nonProjectNurseryId = FacilityId(2)
-      val projectSeedBankId = FacilityId(3)
-      val nonProjectSeedBankId = FacilityId(4)
       val projectPlantingSiteId = PlantingSiteId(1)
       val nonProjectPlantingSiteId = PlantingSiteId(2)
       val otherProjectPlantingSiteId = PlantingSiteId(3)
@@ -294,24 +290,24 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val speciesId =
           insertSpecies(growthForms = setOf(GrowthForm.Shrub), scientificName = "My species")
 
-      insertFacility(nonProjectNurseryId, type = FacilityType.Nursery)
-      insertFacility(nonProjectSeedBankId, type = FacilityType.SeedBank)
+      val projectNurseryId =
+          insertFacility(
+              buildCompletedDate = LocalDate.of(2023, 3, 1),
+              buildStartedDate = LocalDate.of(2023, 2, 1),
+              capacity = 1000,
+              type = FacilityType.Nursery,
+          )
+
+      val projectSeedBankId =
+          insertFacility(
+              operationStartedDate = LocalDate.of(2023, 4, 1),
+              type = FacilityType.SeedBank,
+          )
+
+      val nonProjectNurseryId = insertFacility(type = FacilityType.Nursery)
+      val nonProjectSeedBankId = insertFacility(type = FacilityType.SeedBank)
       insertPlantingSite(id = nonProjectPlantingSiteId)
       insertPlantingSite(id = otherProjectPlantingSiteId, projectId = otherProjectId)
-
-      insertFacility(
-          projectNurseryId,
-          buildCompletedDate = LocalDate.of(2023, 3, 1),
-          buildStartedDate = LocalDate.of(2023, 2, 1),
-          capacity = 1000,
-          type = FacilityType.Nursery,
-      )
-
-      insertFacility(
-          projectSeedBankId,
-          operationStartedDate = LocalDate.of(2023, 4, 1),
-          type = FacilityType.SeedBank,
-      )
 
       insertAccession(
           AccessionsRow(
@@ -384,7 +380,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               id = projectNurseryId,
                               // 152 dead / (498 remaining + 200 total withdrawn) = 21.8%
                               mortalityRate = 22,
-                              name = "Facility $projectNurseryId",
+                              name = "Facility 1",
                               // Project-level total only counts one of the four samples:
                               //   inventory (200 not-ready, 300 ready) +
                               //   outplanting withdrawals (20 not-ready, 30 ready)
@@ -414,7 +410,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                       listOf(
                           ReportBodyModelV1.SeedBank(
                               id = projectSeedBankId,
-                              name = "Facility $projectSeedBankId",
+                              name = "Facility 2",
                               operationStartedDate = LocalDate.of(2023, 4, 1),
                               operationStartedDateEditable = false,
                               totalSeedsStored = 7,
@@ -422,7 +418,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                           ),
                           ReportBodyModelV1.SeedBank(
                               id = nonProjectSeedBankId,
-                              name = "Facility $nonProjectSeedBankId",
+                              name = "Facility 4",
                               operationStartedDateEditable = true,
                               totalSeedsStored = 24,
                               totalSeedsStoredForProject = 16,
@@ -662,20 +658,13 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   inner class FetchOneById {
     @Test
     fun `refreshes server-generated fields if report is not submitted`() {
-      val firstSeedBank = FacilityId(1)
-      val firstNursery = FacilityId(2)
-      val secondNursery = FacilityId(3)
-      val secondSeedBank = FacilityId(4)
-      val firstPlantingSite = PlantingSiteId(1)
-      val secondPlantingSite = PlantingSiteId(2)
-
-      insertFacility(
-          firstSeedBank,
-          type = FacilityType.SeedBank,
-          buildCompletedDate = LocalDate.of(2023, 2, 2),
-      )
-      insertFacility(firstNursery, type = FacilityType.Nursery)
-      insertPlantingSite(id = firstPlantingSite)
+      val firstSeedBank =
+          insertFacility(
+              type = FacilityType.SeedBank,
+              buildCompletedDate = LocalDate.of(2023, 2, 2),
+          )
+      val firstNursery = insertFacility(type = FacilityType.Nursery)
+      val firstPlantingSite = insertPlantingSite()
 
       insertAccession(
           AccessionsRow(
@@ -786,13 +775,13 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val reportId = insertReport(body = objectMapper.writeValueAsString(initialBody))
       val initialMetadata = service.fetchOneById(reportId).metadata
 
-      insertFacility(
-          secondSeedBank,
-          type = FacilityType.SeedBank,
-          buildStartedDate = LocalDate.EPOCH,
-      )
-      insertFacility(secondNursery, type = FacilityType.Nursery)
-      insertPlantingSite(id = secondPlantingSite)
+      val secondSeedBank =
+          insertFacility(
+              type = FacilityType.SeedBank,
+              buildStartedDate = LocalDate.EPOCH,
+          )
+      val secondNursery = insertFacility(type = FacilityType.Nursery)
+      val secondPlantingSite = insertPlantingSite()
       facilitiesDao.update(
           facilitiesDao
               .fetchOneById(firstNursery)!!
@@ -815,7 +804,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                                   buildCompletedDateEditable = false,
                                   // 152 dead / (628 remaining + 200 total withdrawn) = 18.4%
                                   mortalityRate = 18,
-                                  name = "Facility $firstNursery",
+                                  name = "Facility 2",
                                   // initial batch (60 not-ready, 70 ready) +
                                   // insertSampleWithdrawals batch (200 not-ready, 300 ready) +
                                   // outplanting withdrawals (20 not-ready, 30 ready)
@@ -824,7 +813,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               ReportBodyModelV1.Nursery(
                                   id = secondNursery,
                                   mortalityRate = 0,
-                                  name = "Facility $secondNursery",
+                                  name = "Facility 4",
                                   totalPlantsPropagated = 0,
                               ),
                           ),
@@ -832,7 +821,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                       plantingSites =
                           listOf(
                               initialBody.plantingSites[0].copy(
-                                  name = "Site $firstPlantingSite",
+                                  name = "Site 1",
                                   species =
                                       listOf(
                                           initialBody.plantingSites[0]
@@ -844,7 +833,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               ),
                               ReportBodyModelV1.PlantingSite(
                                   id = secondPlantingSite,
-                                  name = "Site $secondPlantingSite",
+                                  name = "Site 2",
                                   species =
                                       listOf(
                                           ReportBodyModelV1.PlantingSite.Species(
@@ -858,14 +847,14 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                       seedBanks =
                           listOf(
                               initialBody.seedBanks[0].copy(
-                                  name = "Facility $firstSeedBank",
+                                  name = "Facility 1",
                                   totalSeedsStored = 10L,
                               ),
                               ReportBodyModelV1.SeedBank(
                                   buildStartedDate = LocalDate.EPOCH,
                                   buildStartedDateEditable = false,
                                   id = secondSeedBank,
-                                  name = "Facility $secondSeedBank",
+                                  name = "Facility 3",
                               ),
                           ),
                       totalNurseries = 2,
@@ -887,9 +876,9 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       val expected = service.fetchOneById(reportId)
 
-      insertFacility(1, type = FacilityType.SeedBank)
-      insertFacility(2, type = FacilityType.Nursery)
-      insertPlantingSite(id = 3)
+      insertFacility(type = FacilityType.SeedBank)
+      insertFacility(type = FacilityType.Nursery)
+      insertPlantingSite()
       organizationsDao.update(
           organizationsDao.fetchOneById(organizationId)!!.copy(name = "New name"),
       )
@@ -905,8 +894,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `calls modify function with up-to-date report body`() {
       val reportId = insertReport(lockedBy = user.userId)
-      val seedBankId = FacilityId(1)
-      insertFacility(seedBankId)
+      val seedBankId = insertFacility()
 
       val newNotes = "new notes"
       var calledWithSeedBanks: List<ReportBodyModelV1.SeedBank>? = null

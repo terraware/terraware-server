@@ -17,11 +17,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class BatchStoreCalculationsTest : BatchStoreTest() {
-  private val destinationFacilityId = FacilityId(3)
+  private lateinit var destinationFacilityId: FacilityId
 
   @BeforeEach
   fun insertOtherNursery() {
-    insertFacility(destinationFacilityId, type = FacilityType.Nursery)
+    destinationFacilityId = insertFacility(type = FacilityType.Nursery)
   }
 
   @Test

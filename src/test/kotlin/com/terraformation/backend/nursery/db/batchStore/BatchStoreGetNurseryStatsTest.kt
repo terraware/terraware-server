@@ -1,7 +1,6 @@
 package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.assertJsonEquals
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.nursery.model.NurseryStats
@@ -13,8 +12,7 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
   fun `rolls up multiple species and withdrawals only for specified facility`() {
     every { user.canReadFacility(any()) } returns true
 
-    val otherNurseryId = FacilityId(20)
-    insertFacility(otherNurseryId, type = FacilityType.Nursery)
+    val otherNurseryId = insertFacility(type = FacilityType.Nursery)
     val speciesId2 = insertSpecies(scientificName = "Second species")
 
     val batchId1 =

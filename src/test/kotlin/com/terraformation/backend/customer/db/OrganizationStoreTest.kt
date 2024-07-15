@@ -18,6 +18,7 @@ import com.terraformation.backend.db.InvalidTerraformationContactEmail
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.ManagedLocationType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -56,41 +57,54 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   private val publisher = TestEventPublisher()
   private lateinit var store: OrganizationStore
 
-  private val facilityModel =
-      FacilityModel(
-          connectionState = FacilityConnectionState.NotConnected,
-          createdTime = Instant.EPOCH,
-          description = "Description $facilityId",
-          facilityNumber = 1,
-          id = facilityId,
-          modifiedTime = Instant.EPOCH,
-          name = "Facility $facilityId",
-          organizationId = organizationId,
-          lastTimeseriesTime = null,
-          maxIdleMinutes = 30,
-          nextNotificationTime = Instant.EPOCH,
-          timeZone = null,
-          type = FacilityType.SeedBank,
-      )
-  private val organizationModel =
-      OrganizationModel(
-          id = organizationId,
-          name = "Organization $organizationId",
-          countryCode = "US",
-          countrySubdivisionCode = "US-HI",
-          createdTime = Instant.EPOCH,
-          facilities = listOf(facilityModel),
-          internalTags = setOf(InternalTagIds.Reporter),
-          timeZone = null,
-          totalUsers = 0,
-      )
+  private lateinit var facilityId: FacilityId
+  private val facilityModel: FacilityModel by lazy {
+    FacilityModel(
+        connectionState = FacilityConnectionState.NotConnected,
+        createdTime = Instant.EPOCH,
+        description = "Description 1",
+        facilityNumber = 1,
+        id = facilityId,
+        modifiedTime = Instant.EPOCH,
+        name = "Facility 1",
+        organizationId = organizationId,
+        lastTimeseriesTime = null,
+        maxIdleMinutes = 30,
+        nextNotificationTime = Instant.EPOCH,
+        timeZone = null,
+        type = FacilityType.SeedBank,
+    )
+  }
+  private val organizationModel: OrganizationModel by lazy {
+    OrganizationModel(
+        id = organizationId,
+        name = "Organization 1",
+        countryCode = "US",
+        countrySubdivisionCode = "US-HI",
+        createdTime = Instant.EPOCH,
+        facilities = listOf(facilityModel),
+        internalTags = setOf(InternalTagIds.Reporter),
+        timeZone = null,
+        totalUsers = 0,
+    )
+  }
 
+  override lateinit var organizationId: OrganizationId
   private lateinit var timeZone: ZoneId
 
   @BeforeEach
   fun setUp() {
     permissionStore = PermissionStore(dslContext)
     store = OrganizationStore(clock, dslContext, organizationsDao, publisher)
+
+    organizationId =
+        insertOrganization(
+            id = null,
+            name = "Organization 1",
+            countryCode = "US",
+            countrySubdivisionCode = "US-HI")
+    insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
+    facilityId = insertFacility()
 
     every { user.canReadOrganization(any()) } returns true
     every { user.canUpdateOrganization(any()) } returns true
@@ -108,13 +122,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.facilityRoles } returns mapOf(facilityId to Role.Owner)
     every { user.organizationRoles } returns mapOf(organizationId to Role.Owner)
 
-    insertOrganization(
-        id = null,
-        name = organizationModel.name,
-        countryCode = organizationModel.countryCode,
-        countrySubdivisionCode = organizationModel.countrySubdivisionCode)
-    insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
-    insertFacility()
     timeZone = ZoneId.of("Pacific/Honolulu")
   }
 

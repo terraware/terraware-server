@@ -1,6 +1,5 @@
 package com.terraformation.backend.nursery.db.batchStore
 
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -34,8 +33,6 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
   private val species1Batch1Id = BatchId(11)
   private val species1Batch2Id = BatchId(12)
   private val species2Batch1Id = BatchId(21)
-
-  private val destinationFacilityId = FacilityId(3)
 
   @BeforeEach
   fun insertInitialBatches() {
@@ -468,12 +465,9 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
   @Test
   fun `throws exception if any batches are not from requested facility ID`() {
-    val otherFacilityId = FacilityId(2)
-    insertFacility(otherFacilityId, type = FacilityType.Nursery)
+    insertFacility(type = FacilityType.Nursery)
 
-    val otherFacilityBatchId =
-        insertBatch(
-            id = 100, facilityId = otherFacilityId, speciesId = speciesId, germinatingQuantity = 1)
+    val otherFacilityBatchId = insertBatch(id = 100, speciesId = speciesId, germinatingQuantity = 1)
 
     assertThrows<IllegalArgumentException> {
       store.withdraw(
@@ -504,7 +498,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     val species1Batch2 = batchesDao.fetchOneById(species1Batch2Id)!!
     val species2Batch1 = batchesDao.fetchOneById(species2Batch1Id)!!
 
-    insertFacility(destinationFacilityId, type = FacilityType.Nursery, facilityNumber = 2)
+    val destinationFacilityId = insertFacility(type = FacilityType.Nursery, facilityNumber = 2)
 
     val newReadyByDate = LocalDate.of(2000, 1, 2)
     val withdrawalTime = ZonedDateTime.of(2023, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
@@ -752,14 +746,14 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
   @Test
   fun `nursery transfer retains original accession IDs`() {
-    val seedBankFacilityId = insertFacility(4)
-    val accessionId1 = insertAccession(facilityId = seedBankFacilityId)
-    val accessionId2 = insertAccession(facilityId = seedBankFacilityId)
+    insertFacility()
+    val accessionId1 = insertAccession()
+    val accessionId2 = insertAccession()
 
     batchesDao.update(batchesDao.fetchOneById(species1Batch1Id)!!.copy(accessionId = accessionId1))
     batchesDao.update(batchesDao.fetchOneById(species1Batch2Id)!!.copy(accessionId = accessionId2))
 
-    insertFacility(destinationFacilityId, type = FacilityType.Nursery, facilityNumber = 2)
+    val destinationFacilityId = insertFacility(type = FacilityType.Nursery, facilityNumber = 2)
 
     store.withdraw(
         NewWithdrawalModel(
@@ -795,7 +789,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
   fun `nursery transfer adds to existing batch if batch number already exists`() {
     val species1Batch1 = batchesDao.fetchOneById(species1Batch1Id)!!
 
-    insertFacility(destinationFacilityId, type = FacilityType.Nursery, facilityNumber = 2)
+    val destinationFacilityId = insertFacility(type = FacilityType.Nursery, facilityNumber = 2)
 
     val newReadyByDate = LocalDate.of(2000, 1, 2)
     val firstWithdrawalTime = ZonedDateTime.of(2023, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
@@ -986,10 +980,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
   @Test
   fun `throws exception if destination facility is in a different organization`() {
     val otherOrganizationId = OrganizationId(2)
-    val otherOrgFacilityId = FacilityId(3)
-
     insertOrganization(otherOrganizationId)
-    insertFacility(otherOrgFacilityId, otherOrganizationId, type = FacilityType.Nursery)
+    val otherOrgFacilityId = insertFacility(type = FacilityType.Nursery)
 
     assertThrows<CrossOrganizationNurseryTransferNotAllowedException> {
       store.withdraw(
@@ -1011,7 +1003,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
   @Test
   fun `throws exception if no permission to create batches at destination facility`() {
-    insertFacility(destinationFacilityId, type = FacilityType.Nursery)
+    val destinationFacilityId = insertFacility(type = FacilityType.Nursery)
 
     every { user.canCreateBatch(destinationFacilityId) } returns false
     every { user.canReadFacility(destinationFacilityId) } returns true

@@ -10,10 +10,12 @@ import org.junit.jupiter.api.Test
 internal class SearchServicePermissionTest : SearchServiceTest() {
   @Test
   fun `search only includes accessions at facilities the user has permission to view`() {
+    val memberFacilityId = inserted.facilityId
+
     // A facility in an org the user isn't in
     insertOrganization(2)
-    insertFacility(2000)
-    insertAccession(facilityId = 2000)
+    val otherFacilityId = insertFacility()
+    insertAccession(facilityId = otherFacilityId)
 
     val fields = listOf(accessionNumberField)
     val sortOrder = fields.map { SearchSortField(it) }
@@ -26,7 +28,8 @@ internal class SearchServicePermissionTest : SearchServiceTest() {
             ))
 
     val actual =
-        searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
+        searchAccessions(
+            memberFacilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
 
     assertEquals(expected, actual)
   }

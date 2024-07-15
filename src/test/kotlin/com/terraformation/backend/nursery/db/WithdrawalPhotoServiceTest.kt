@@ -5,10 +5,8 @@ import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalPhotosRow
 import com.terraformation.backend.file.FileService
@@ -130,17 +128,15 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `handler for OrganizationDeletionStartedEvent deletes photos for all withdrawals in organization`() {
-    val facilityId2 = FacilityId(2)
-    val otherOrganizationId = OrganizationId(2)
-    val otherOrgFacilityId = FacilityId(3)
-    insertOrganization(otherOrganizationId)
-    insertFacility(facilityId2, type = FacilityType.Nursery)
-    insertFacility(otherOrgFacilityId, otherOrganizationId, type = FacilityType.Nursery)
-    val facility2WithdrawalId = insertWithdrawal(facilityId = facilityId2)
-    val otherOrgWithdrawalId = insertWithdrawal(facilityId = otherOrgFacilityId)
+    storePhoto()
+    storePhoto()
 
-    storePhoto()
-    storePhoto()
+    val facilityId2 = insertFacility(type = FacilityType.Nursery)
+    val facility2WithdrawalId = insertWithdrawal(facilityId = facilityId2)
+    insertOrganization(2)
+    insertFacility(type = FacilityType.Nursery)
+    val otherOrgWithdrawalId = insertWithdrawal()
+
     storePhoto(facility2WithdrawalId)
     val otherOrgfileId = storePhoto(otherOrgWithdrawalId)
 

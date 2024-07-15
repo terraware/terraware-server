@@ -4,7 +4,6 @@ import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.SubLocationAtWrongFacilityException
 import com.terraformation.backend.db.SubLocationNotFoundException
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SeedTreatment
@@ -146,7 +145,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
 
   @Test
   fun `includes facility number in batch number`() {
-    val secondFacilityId = insertFacility(2, type = FacilityType.Nursery, facilityNumber = 2)
+    val secondFacilityId = insertFacility(type = FacilityType.Nursery, facilityNumber = 2)
 
     val inputModel =
         CreateBatchRequestPayload(
@@ -166,8 +165,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
 
   @Test
   fun `throws exception if facility is not a nursery`() {
-    val seedBankFacilityId = FacilityId(2)
-    insertFacility(seedBankFacilityId, type = FacilityType.SeedBank)
+    val seedBankFacilityId = insertFacility(type = FacilityType.SeedBank)
 
     assertThrows<FacilityTypeMismatchException> {
       store.create(makeNewBatchModel().copy(facilityId = seedBankFacilityId))
@@ -194,8 +192,8 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
 
   @Test
   fun `throws exception if sub-location is not at same facility`() {
-    val otherFacilityId = insertFacility(2, type = FacilityType.Nursery)
-    val otherSubLocationId = insertSubLocation(facilityId = otherFacilityId)
+    insertFacility(type = FacilityType.Nursery)
+    val otherSubLocationId = insertSubLocation()
 
     assertThrows<SubLocationAtWrongFacilityException> {
       store.create(makeNewBatchModel().copy(subLocationIds = setOf(otherSubLocationId)))

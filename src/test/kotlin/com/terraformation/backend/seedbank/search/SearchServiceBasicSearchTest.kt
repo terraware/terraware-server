@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.search
 
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -275,11 +274,13 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
 
   @Test
   fun `search only includes results from requested facility`() {
-    every { user.facilityRoles } returns
-        mapOf(facilityId to Role.Manager, FacilityId(1100) to Role.Contributor)
+    val facilityId = inserted.facilityId
 
-    insertFacility(1100)
-    insertAccession(facilityId = 1100)
+    val otherFacilityId = insertFacility()
+    insertAccession(facilityId = otherFacilityId)
+
+    every { user.facilityRoles } returns
+        mapOf(facilityId to Role.Manager, otherFacilityId to Role.Contributor)
 
     val fields = listOf(accessionNumberField)
     val sortOrder = fields.map { SearchSortField(it) }

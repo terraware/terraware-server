@@ -73,15 +73,18 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
   protected val viabilityTestSeedsTestedField = rootPrefix.resolve("viabilityTests_seedsTested")
   protected val viabilityTestsTypeField = rootPrefix.resolve("viabilityTests_type")
 
+  protected lateinit var facilityId: FacilityId
+
   @BeforeEach
   protected fun init() {
     searchService = SearchService(dslContext)
 
+    insertOrganization()
+    facilityId = insertFacility()
+
     clock.instant = Instant.parse("2020-06-15T00:00:00.00Z")
     every { user.organizationRoles } returns mapOf(organizationId to Role.Manager)
     every { user.facilityRoles } returns mapOf(facilityId to Role.Manager)
-
-    insertSiteData()
 
     insertOrganizationUser(role = Role.Manager)
 

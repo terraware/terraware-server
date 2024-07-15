@@ -63,12 +63,15 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
     )
   }
 
+  private lateinit var facilityId: FacilityId
+
   @BeforeEach
   fun setUp() {
     every { config.dailyTasks } returns TerrawareServerConfig.DailyTasksConfig()
 
     insertOrganization()
-    insertFacility(lastNotificationDate = LocalDate.EPOCH, nextNotificationTime = Instant.EPOCH)
+    facilityId =
+        insertFacility(lastNotificationDate = LocalDate.EPOCH, nextNotificationTime = Instant.EPOCH)
   }
 
   @Test
@@ -160,25 +163,21 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
     notifiers.add(FacilityNotifier { facility, _ -> notifiedFacilities.add(facility.id) })
 
     // Already-inserted facility (`facilityId`) has a last notification date in the past.
+    val notifiedFacilityId = inserted.facilityId
 
     // This facility's last notification date is yesterday from the server's (UTC) point of view,
     // but is today in the facility's time zone.
     val earlierTimeZone = ZoneId.of("America/New_York")
-    val earlierFacilityId = FacilityId(1000)
     insertFacility(
-        earlierFacilityId,
-        lastNotificationDate = LocalDate.now(clock).minusDays(1),
-        timeZone = earlierTimeZone)
+        lastNotificationDate = LocalDate.now(clock).minusDays(1), timeZone = earlierTimeZone)
 
     val laterTimeZone = ZoneId.of("Europe/Athens")
-    val laterFacilityId = FacilityId(1001)
-    insertFacility(
-        laterFacilityId,
-        lastNotificationDate = LocalDate.now(clock).minusDays(1),
-        timeZone = laterTimeZone)
+    val laterFacilityId =
+        insertFacility(
+            lastNotificationDate = LocalDate.now(clock).minusDays(1), timeZone = laterTimeZone)
 
     scanner.sendNotifications()
 
-    assertEquals(setOf(facilityId, laterFacilityId), notifiedFacilities)
+    assertEquals(setOf(notifiedFacilityId, laterFacilityId), notifiedFacilities)
   }
 }
