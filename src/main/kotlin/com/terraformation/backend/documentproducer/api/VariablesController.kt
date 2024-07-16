@@ -55,7 +55,7 @@ class VariablesController(
         } else if (manifestId != null) {
           variableStore.fetchManifestVariables(manifestId)
         } else {
-          throw BadRequestException("Deliverable ID or Manifest ID must be provided.")
+          variableStore.fetchAllNonSectionVariables()
         }
 
     return ListVariablesResponsePayload(variables.map { VariablePayload.of(it) })
