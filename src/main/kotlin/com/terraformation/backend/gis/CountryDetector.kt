@@ -15,9 +15,17 @@ import org.locationtech.jts.geom.Geometry
  */
 @Named
 class CountryDetector {
-  private val log = perClassLogger()
+  companion object {
+    /**
+     * Fuzz factor to account for border-adjacent geometries not precisely matching the actual
+     * border. Countries that contain less than this percent of a geometry are ignored.
+     */
+    const val MIN_COVERAGE_PERCENT = 3.0
 
-  val countryBorders: Map<String, Geometry> by lazy {
+    private val log = perClassLogger()
+  }
+
+  private val countryBorders: Map<String, Geometry> by lazy {
     log.debug("Loading borders")
 
     val result = mutableMapOf<String, Geometry>()
@@ -54,6 +62,18 @@ class CountryDetector {
    * falls outside any country, returns an empty set.
    */
   fun getCountries(geometry: Geometry): Set<String> {
-    return countryBorders.filterValues { border -> geometry.intersects(border) }.keys
+    val minCoverageArea = geometry.area * MIN_COVERAGE_PERCENT / 100.0
+
+    return countryBorders.keys.filter { intersectionArea(it, geometry) >= minCoverageArea }.toSet()
+  }
+
+  fun intersectionArea(countryCode: String, geometry: Geometry): Double {
+    val countryBorder = countryBorders[countryCode] ?: return 0.0
+
+    return if (countryBorder.intersects(geometry)) {
+      countryBorder.intersection(geometry).area
+    } else {
+      0.0
+    }
   }
 }

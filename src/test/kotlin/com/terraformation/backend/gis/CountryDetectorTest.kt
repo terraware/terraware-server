@@ -2,6 +2,7 @@ package com.terraformation.backend.gis
 
 import com.terraformation.backend.point
 import com.terraformation.backend.util.Turtle
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -27,5 +28,19 @@ class CountryDetectorTest {
     val geometry = Turtle(point(0, 0)).makePolygon { rectangle(10, 10) }
 
     assertEquals(emptySet<String>(), detector.getCountries(geometry))
+  }
+
+  @Test
+  fun `ignores a country that only contains a small percent of a geometry`() {
+    val geometry = Turtle(point(3.5, 50)).makePolygon { rectangle(150000, 134000) }
+    val netherlandsIntersectionPercent =
+        detector.intersectionArea("NL", geometry) / geometry.area * 100.0
+
+    assertThat(netherlandsIntersectionPercent)
+        .isGreaterThan(0.0)
+        .isLessThan(CountryDetector.MIN_COVERAGE_PERCENT)
+        .describedAs("Geometry intersects NL a little bit")
+
+    assertEquals(setOf("BE", "FR"), detector.getCountries(geometry))
   }
 }
