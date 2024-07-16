@@ -39,7 +39,8 @@ import org.springframework.web.bind.annotation.RestController
 class VariablesController(
     private val variableStore: VariableStore,
 ) {
-  @Operation(summary = "List the variables within a given manifest or deliverable.")
+  @Operation(
+      summary = "List the variables, optionally filtered by a given manifest or deliverable.")
   @GetMapping
   fun listVariables(
       @RequestParam deliverableId: DeliverableId?,
@@ -55,7 +56,7 @@ class VariablesController(
         } else if (manifestId != null) {
           variableStore.fetchManifestVariables(manifestId)
         } else {
-          throw BadRequestException("Deliverable ID or Manifest ID must be provided.")
+          variableStore.fetchAllNonSectionVariables()
         }
 
     return ListVariablesResponsePayload(variables.map { VariablePayload.of(it) })
