@@ -363,7 +363,7 @@
 <text text-anchor="start" x="11" y="-564.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 <polygon fill="#ffffff" stroke="none" points="47,-558 47,-576 102,-576 102,-558 47,-558"/>
 <polygon fill="none" stroke="black" points="47,-558 47,-576 102,-576 102,-558 47,-558"/>
-<text text-anchor="start" x="63" y="-564.2" font-family="Helvetica,sans-Serif" font-size="11.00">4 rows</text>
+<text text-anchor="start" x="63" y="-564.2" font-family="Helvetica,sans-Serif" font-size="11.00">6 rows</text>
 <polygon fill="#ffffff" stroke="none" points="102,-558 102,-576 138,-576 138,-558 102,-558"/>
 <polygon fill="none" stroke="black" points="102,-558 102,-576 138,-576 138,-558 102,-558"/>
 <text text-anchor="start" x="118" y="-564.2" font-family="Helvetica,sans-Serif" font-size="11.00">5 &gt;</text>

@@ -70,7 +70,7 @@
 <text text-anchor="start" x="13" y="-373.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 0</text>
 <polygon fill="#ffffff" stroke="none" points="54,-367 54,-385 117,-385 117,-367 54,-367"/>
 <polygon fill="none" stroke="black" points="54,-367 54,-385 117,-385 117,-367 54,-367"/>
-<text text-anchor="start" x="78" y="-373.2" font-family="Helvetica,sans-Serif" font-size="11.00">4 rows</text>
+<text text-anchor="start" x="78" y="-373.2" font-family="Helvetica,sans-Serif" font-size="11.00">6 rows</text>
 <polygon fill="#ffffff" stroke="none" points="117,-367 117,-385 218,-385 218,-367 117,-367"/>
 <polygon fill="none" stroke="black" points="117,-367 117,-385 218,-385 218,-367 117,-367"/>
 <text text-anchor="start" x="198" y="-373.2" font-family="Helvetica,sans-Serif" font-size="11.00">5 &gt;</text>
