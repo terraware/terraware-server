@@ -254,10 +254,22 @@ class ApplicationStore(
   }
 
   private fun fetchByCondition(condition: Condition): List<ExistingApplicationModel> {
+    val conditionWithPermission =
+        if (currentUser().canReadAllAcceleratorDetails()) {
+          condition
+        } else {
+          val adminOrgIds = currentUser().adminOrganizations()
+          if (adminOrgIds.isNotEmpty()) {
+            condition.and(APPLICATIONS.projects.ORGANIZATION_ID.`in`(adminOrgIds))
+          } else {
+            return emptyList()
+          }
+        }
+
     return dslContext
         .select(APPLICATIONS.asterisk(), APPLICATIONS.projects.ORGANIZATION_ID)
         .from(APPLICATIONS)
-        .where(condition)
+        .where(conditionWithPermission)
         .orderBy(APPLICATIONS.ID)
         .fetch { ExistingApplicationModel.of(it) }
   }

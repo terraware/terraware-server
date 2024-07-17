@@ -41,6 +41,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     insertOrganization(countryCode = "US")
     insertProject()
 
+    every { user.adminOrganizations() } returns setOf(organizationId)
     every { user.canCreateApplication(any()) } returns true
     every { user.canReadApplication(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
@@ -137,6 +138,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       organizationId2 = insertOrganization(2)
       org2ProjectId1 = insertProject(organizationId = organizationId2)
       org2Project1ApplicationId = insertApplication(projectId = org2ProjectId1)
+
+      every { user.adminOrganizations() } returns setOf(organizationId, organizationId2)
     }
 
     @Nested
@@ -187,6 +190,13 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     projectId = org1ProjectId1,
                     status = ApplicationStatus.PreCheck)),
             store.fetchByProjectId(org1ProjectId1))
+      }
+
+      @Test
+      fun `returns empty list if user is not an admin in the organization`() {
+        every { user.adminOrganizations() } returns setOf(organizationId2)
+
+        assertEquals(emptyList<ExistingApplicationModel>(), store.fetchByProjectId(org1ProjectId1))
       }
 
       @Test

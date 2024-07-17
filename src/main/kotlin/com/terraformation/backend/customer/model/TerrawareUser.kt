@@ -102,6 +102,22 @@ interface TerrawareUser : Principal {
       throw NotImplementedError("Permission logic not implemented")
     }
 
+  /** Returns true if the user has admin privileges in the organization. */
+  fun isAdminOrHigher(organizationId: OrganizationId?): Boolean {
+    return organizationId != null &&
+        when (organizationRoles[organizationId]) {
+          Role.Admin,
+          Role.Owner,
+          Role.TerraformationContact -> true
+          else -> false
+        }
+  }
+
+  /** Returns the organizations in which the user is an admin or owner. */
+  fun adminOrganizations(): Set<OrganizationId> {
+    return organizationRoles.keys.filter { isAdminOrHigher(it) }.toSet()
+  }
+
   /*
    * Permission checks. Each of these returns true if the user has permission to perform the action.
    */
