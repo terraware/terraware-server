@@ -1,6 +1,8 @@
 package com.terraformation.backend.accelerator.api
 
 import com.fasterxml.jackson.annotation.JsonValue
+import com.terraformation.backend.accelerator.db.ApplicationStore
+import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.RequireGlobalRole
@@ -16,6 +18,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.ws.rs.BadRequestException
 import java.time.Instant
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
@@ -35,19 +38,25 @@ import org.springframework.web.multipart.MultipartFile
 @AcceleratorEndpoint
 @RequestMapping("/api/v1/accelerator/applications")
 @RestController
-class ApplicationsController {
+class ApplicationsController(
+    private val applicationStore: ApplicationStore,
+) {
   @Operation(summary = "Create a new application")
   @PostMapping
   fun createApplication(
       @RequestBody payload: CreateApplicationRequestPayload
   ): CreateApplicationResponsePayload {
-    TODO()
+    val model = applicationStore.create(payload.projectId)
+
+    return CreateApplicationResponsePayload(model.id)
   }
 
   @GetMapping("/{applicationId}")
   @Operation(summary = "Get information about an application")
   fun getApplication(@PathVariable applicationId: ApplicationId): GetApplicationResponsePayload {
-    TODO()
+    val model = applicationStore.fetchOneById(applicationId)
+
+    return GetApplicationResponsePayload(ApplicationPayload(model))
   }
 
   @GetMapping("/{applicationId}/history")
@@ -79,7 +88,17 @@ class ApplicationsController {
       @RequestParam
       listAll: Boolean? = null,
   ): ListApplicationsResponsePayload {
-    TODO()
+    val models =
+        when {
+          organizationId != null -> applicationStore.fetchByOrganizationId(organizationId)
+          projectId != null -> applicationStore.fetchByProjectId(projectId)
+          listAll == true -> applicationStore.fetchAll()
+          else ->
+              throw BadRequestException(
+                  "One of organizationId, projectId, or listAll must be specified")
+        }
+
+    return ListApplicationsResponsePayload(models.map { ApplicationPayload(it) })
   }
 
   @Operation(
@@ -87,7 +106,9 @@ class ApplicationsController {
       description = "If the application has not been submitted yet, this is a no-op.")
   @PostMapping("/{applicationId}/restart")
   fun restartApplication(@PathVariable applicationId: ApplicationId): SimpleSuccessResponsePayload {
-    TODO()
+    applicationStore.restart(applicationId)
+
+    return SimpleSuccessResponsePayload()
   }
 
   @Operation(
@@ -95,7 +116,9 @@ class ApplicationsController {
       description = "If the application has already been submitted, this is a no-op.")
   @PostMapping("/{applicationId}/submit")
   fun submitApplication(@PathVariable applicationId: ApplicationId): SimpleSuccessResponsePayload {
-    TODO()
+    applicationStore.submit(applicationId)
+
+    return SimpleSuccessResponsePayload()
   }
 
   @InternalEndpoint
@@ -108,7 +131,9 @@ class ApplicationsController {
       @PathVariable applicationId: ApplicationId,
       @RequestBody payload: ReviewApplicationRequestPayload
   ): SimpleSuccessResponsePayload {
-    TODO()
+    applicationStore.review(applicationId, payload::applyTo)
+
+    return SimpleSuccessResponsePayload()
   }
 
   @Operation(summary = "Update an application's boundary")
@@ -117,7 +142,9 @@ class ApplicationsController {
       @PathVariable applicationId: ApplicationId,
       @RequestBody payload: UpdateApplicationBoundaryRequestPayload
   ): SimpleSuccessResponsePayload {
-    TODO()
+    applicationStore.updateBoundary(applicationId, payload.boundary)
+
+    return SimpleSuccessResponsePayload()
   }
 
   @Operation(summary = "Update an application's boundary using an uploaded file")
@@ -199,7 +226,21 @@ data class ApplicationPayload(
     val organizationId: OrganizationId,
     val projectId: ProjectId,
     val status: ApiApplicationStatus,
-)
+) {
+  constructor(
+      model: ExistingApplicationModel
+  ) : this(
+      model.boundary,
+      model.createdTime,
+      model.feedback,
+      model.id,
+      model.internalComment,
+      model.internalName,
+      model.organizationId,
+      model.projectId,
+      ApiApplicationStatus.of(model.status),
+  )
+}
 
 data class CreateApplicationRequestPayload(val projectId: ProjectId)
 
@@ -209,7 +250,10 @@ data class ReviewApplicationRequestPayload(
     // This is not ApiApplicationStatus since setting an application to "In Review" would make no
     // sense as an admin operation.
     val status: ApplicationStatus,
-)
+) {
+  fun applyTo(model: ExistingApplicationModel) =
+      model.copy(feedback = feedback, internalComment = internalComment, status = status)
+}
 
 data class UpdateApplicationBoundaryRequestPayload(
     @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
