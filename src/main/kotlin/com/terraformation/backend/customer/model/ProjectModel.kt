@@ -10,6 +10,7 @@ import java.time.Instant
 import org.jooq.Record
 
 data class ProjectModel<ID : ProjectId?>(
+    val countryCode: String? = null,
     val createdBy: UserId? = null,
     val createdTime: Instant? = null,
     val description: String? = null,
@@ -23,6 +24,7 @@ data class ProjectModel<ID : ProjectId?>(
   companion object {
     fun of(row: ProjectsRow): ExistingProjectModel {
       return ExistingProjectModel(
+          row.countryCode,
           row.createdBy,
           row.createdTime,
           row.description,
@@ -36,6 +38,7 @@ data class ProjectModel<ID : ProjectId?>(
 
     fun of(record: Record): ExistingProjectModel {
       return ExistingProjectModel(
+          countryCode = record[PROJECTS.COUNTRY_CODE],
           createdBy = record[PROJECTS.CREATED_BY]!!,
           createdTime = record[PROJECTS.CREATED_TIME]!!,
           description = record[PROJECTS.DESCRIPTION],

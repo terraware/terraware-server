@@ -40,6 +40,9 @@ class ParticipantProjectSpeciesNotFoundException(id: ParticipantProjectSpeciesId
 class ParticipantProjectSpeciesProjectNotFoundException(id: ProjectId) :
     EntityNotFoundException("Participant Project Species for project $id not found")
 
+class ProjectApplicationExistsException(projectId: ProjectId) :
+    MismatchedStateException("Project $projectId already has an application")
+
 class ProjectDocumentSettingsNotConfiguredException(id: ProjectId) :
     MismatchedStateException("Project $id document upload settings have not been configured")
 

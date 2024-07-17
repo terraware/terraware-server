@@ -675,15 +675,6 @@ data class IndividualUser(
   private fun isOwner(organizationId: OrganizationId?) =
       organizationId != null && organizationRoles[organizationId] == Role.Owner
 
-  private fun isAdminOrHigher(organizationId: OrganizationId?) =
-      organizationId != null &&
-          when (organizationRoles[organizationId]) {
-            Role.Admin,
-            Role.Owner,
-            Role.TerraformationContact -> true
-            else -> false
-          }
-
   private fun isAdminOrHigher(facilityId: FacilityId?) =
       facilityId != null &&
           when (facilityRoles[facilityId]) {
