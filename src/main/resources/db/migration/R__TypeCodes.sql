@@ -57,7 +57,9 @@ INSERT INTO accelerator.cohort_phases (id, name)
 VALUES (0, 'Phase 0 - Due Diligence'),
        (1, 'Phase 1 - Feasibility Study'),
        (2, 'Phase 2 - Plan and Scale'),
-       (3, 'Phase 3 - Implement and Monitor')
+       (3, 'Phase 3 - Implement and Monitor'),
+       (100, 'Pre-Screen'),
+       (101, 'Application')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO seedbank.collection_sources (id, name)
