@@ -5,6 +5,7 @@ import com.terraformation.backend.auth.SuperAdminAuthority
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
+import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
@@ -185,6 +186,9 @@ data class IndividualUser(
 
   override fun canCreateApiKey(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
 
+  override fun canCreateApplication(projectId: ProjectId) =
+      isAdminOrHigher(parentStore.getOrganizationId(projectId))
+
   override fun canCreateAutomation(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
   override fun canCreateBatch(facilityId: FacilityId) = isMember(facilityId)
@@ -348,6 +352,9 @@ data class IndividualUser(
 
   override fun canReadAllDeliverables() = isReadOnlyOrHigher()
 
+  override fun canReadApplication(applicationId: ApplicationId) =
+      isReadOnlyOrHigher() || isAdminOrHigher(parentStore.getOrganizationId(applicationId))
+
   override fun canReadAutomation(automationId: AutomationId) =
       isMember(parentStore.getFacilityId(automationId))
 
@@ -509,6 +516,8 @@ data class IndividualUser(
   override fun canRescheduleObservation(observationId: ObservationId) =
       isSuperAdmin() || isAdminOrHigher(parentStore.getOrganizationId(observationId))
 
+  override fun canReviewApplication(applicationId: ApplicationId) = isTFExpertOrHigher()
+
   override fun canSendAlert(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role) =
@@ -529,6 +538,12 @@ data class IndividualUser(
 
   override fun canUpdateAccession(accessionId: AccessionId) =
       isManagerOrHigher(parentStore.getFacilityId(accessionId))
+
+  override fun canUpdateApplicationBoundary(applicationId: ApplicationId) =
+      isTFExpertOrHigher() || isAdminOrHigher(parentStore.getOrganizationId(applicationId))
+
+  override fun canUpdateApplicationSubmissionStatus(applicationId: ApplicationId) =
+      isAdminOrHigher(parentStore.getOrganizationId(applicationId))
 
   override fun canUpdateAppVersions() = isSuperAdmin()
 
