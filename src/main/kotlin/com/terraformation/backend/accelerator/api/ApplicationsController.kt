@@ -1,10 +1,12 @@
 package com.terraformation.backend.accelerator.api
 
+import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -71,6 +73,11 @@ class ApplicationsController {
                   "a single element.")
       @RequestParam
       projectId: ProjectId? = null,
+      @Parameter(
+          description =
+              "If true, list all applications for all projects. Only allowed for internal users.")
+      @RequestParam
+      listAll: Boolean? = null,
   ): ListApplicationsResponsePayload {
     TODO()
   }
@@ -123,6 +130,48 @@ class ApplicationsController {
   }
 }
 
+/**
+ * Application statuses as exposed via API. This is the same as [ApplicationStatus] but with an
+ * additional "In Review" value. If the user doesn't have permission to see accelerator details,
+ * several underlying statuses are replaced with "In Review" in API responses.
+ */
+enum class ApiApplicationStatus(@get:JsonValue val jsonValue: String) {
+  NotSubmitted("Not Submitted"),
+  FailedPreScreen("Failed Pre-screen"),
+  PassedPreScreen("Passed Pre-screen"),
+  Submitted("Submitted"),
+  PLReview("PL Review"),
+  ReadyForReview("Ready for Review"),
+  PreCheck("Pre-check"),
+  NeedsFollowUp("Needs Follow-up"),
+  CarbonEligible("Carbon Eligible"),
+  Accepted("Accepted"),
+  Waitlist("Waitlist"),
+  NotAccepted("Not Accepted"),
+  InReview("In Review");
+
+  companion object {
+    fun of(status: ApplicationStatus): ApiApplicationStatus {
+      val exposeInternalStatuses = currentUser().canReadAllAcceleratorDetails()
+
+      return when (status) {
+        ApplicationStatus.Accepted -> Accepted
+        ApplicationStatus.CarbonEligible -> if (exposeInternalStatuses) CarbonEligible else InReview
+        ApplicationStatus.FailedPreScreen -> FailedPreScreen
+        ApplicationStatus.NeedsFollowUp -> if (exposeInternalStatuses) NeedsFollowUp else InReview
+        ApplicationStatus.NotAccepted -> NotAccepted
+        ApplicationStatus.NotSubmitted -> NotSubmitted
+        ApplicationStatus.PassedPreScreen -> PassedPreScreen
+        ApplicationStatus.PLReview -> if (exposeInternalStatuses) PLReview else InReview
+        ApplicationStatus.PreCheck -> if (exposeInternalStatuses) PreCheck else InReview
+        ApplicationStatus.ReadyForReview -> if (exposeInternalStatuses) ReadyForReview else InReview
+        ApplicationStatus.Submitted -> if (exposeInternalStatuses) Submitted else InReview
+        ApplicationStatus.Waitlist -> Waitlist
+      }
+    }
+  }
+}
+
 data class ApplicationHistoryPayload(
     val feedback: String?,
     @Schema(
@@ -130,7 +179,7 @@ data class ApplicationHistoryPayload(
             "Internal-only comment, if any. Only set if the current user is an internal user.")
     val internalComment: String?,
     val modifiedTime: Instant,
-    val status: ApplicationStatus,
+    val status: ApiApplicationStatus,
 )
 
 data class ApplicationPayload(
@@ -149,18 +198,16 @@ data class ApplicationPayload(
     val internalName: String?,
     val organizationId: OrganizationId,
     val projectId: ProjectId,
-    val status: ApplicationStatus,
+    val status: ApiApplicationStatus,
 )
 
-data class CreateApplicationRequestPayload(
-    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
-    val boundary: Geometry?,
-    val projectId: ProjectId,
-)
+data class CreateApplicationRequestPayload(val projectId: ProjectId)
 
 data class ReviewApplicationRequestPayload(
     val feedback: String?,
     val internalComment: String?,
+    // This is not ApiApplicationStatus since setting an application to "In Review" would make no
+    // sense as an admin operation.
     val status: ApplicationStatus,
 )
 
