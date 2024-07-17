@@ -1,3 +1,4 @@
+a4fa3e381af Set correct phase when re-importing modules (#2168)
 ccc83c6ade8 SW-5661 Support phase names in module import (#2167)
 2102c17657d SW-5626 Implement application API endpoints (#2166)
 46cbcb4e705 SW-5626 Implement ApplicationStore (#2165)
