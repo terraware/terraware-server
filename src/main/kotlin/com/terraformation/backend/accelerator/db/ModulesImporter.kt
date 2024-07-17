@@ -96,7 +96,7 @@ class ModulesImporter(
                 .set(LIVE_SESSION_DESCRIPTION, liveSessionInfo)
                 .set(ONE_ON_ONE_SESSION_DESCRIPTION, oneOnOneInfo)
                 .set(WORKSHOP_DESCRIPTION, workshopInfo)
-                .set(PHASE_ID, CohortPhase.Phase1FeasibilityStudy)
+                .set(PHASE_ID, phase)
                 .set(MODIFIED_BY, userId)
                 .set(MODIFIED_TIME, now)
                 .execute()
