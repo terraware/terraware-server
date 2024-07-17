@@ -65,6 +65,7 @@
 <text text-anchor="start" x="835.5" y="-1161.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
 <polygon fill="none" stroke="black" points="961.5,-1153 961.5,-1175 1092.5,-1175 1092.5,-1153 961.5,-1153"/>
 <text text-anchor="start" x="964.5" y="-1161.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
+<polygon fill="#ffffff" stroke="none" points="815.5,-1131 815.5,-1153 961.5,-1153 961.5,-1131 815.5,-1131"/>
 <polygon fill="none" stroke="black" points="815.5,-1131 815.5,-1153 961.5,-1153 961.5,-1131 815.5,-1131"/>
 <text text-anchor="start" x="835.5" y="-1139.2" font-family="Helvetica,sans-Serif" font-size="11.00">internal_name</text>
 <polygon fill="none" stroke="black" points="961.5,-1131 961.5,-1153 1092.5,-1153 1092.5,-1131 961.5,-1131"/>

@@ -99,6 +99,7 @@
 <polygon fill="none" stroke="black" points="1036,-3651 1036,-3673 1182,-3673 1182,-3651 1036,-3651"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1041" y="-3668"/>
 <text text-anchor="start" x="1056" y="-3659.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<polygon fill="#ffffff" stroke="none" points="1036,-3629 1036,-3651 1182,-3651 1182,-3629 1036,-3629"/>
 <polygon fill="none" stroke="black" points="1036,-3629 1036,-3651 1182,-3651 1182,-3629 1036,-3629"/>
 <text text-anchor="start" x="1056" y="-3637.2" font-family="Helvetica,sans-Serif" font-size="11.00">internal_name</text>
 <polygon fill="#ffffff" stroke="none" points="1036,-3607 1036,-3629 1182,-3629 1182,-3607 1036,-3607"/>
