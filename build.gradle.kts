@@ -98,7 +98,9 @@ dependencies {
   implementation("com.opencsv:opencsv:5.9")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.8.0")
   implementation("commons-validator:commons-validator:1.9.0")
-  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.2.1")
+  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.2.1") {
+    exclude("org.apache.tomcat")
+  }
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
   implementation("io.ktor:ktor-client-java:$ktorVersion")
