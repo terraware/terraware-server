@@ -28,6 +28,11 @@ class ModulesImporter(
     private const val COLUMN_ONE_ON_ONE_INFO = COLUMN_LIVE_SESSION_INFO + 1
     private const val COLUMN_WORKSHOP_INFO = COLUMN_ONE_ON_ONE_INFO + 1
     private const val NUM_COLUMNS = COLUMN_WORKSHOP_INFO + 1
+
+    /** Lookup table for phases with both lower-case names and numeric IDs. */
+    private val phases: Map<String, CohortPhase> =
+        CohortPhase.entries.associateBy { it.jsonValue.lowercase() } +
+            CohortPhase.entries.associateBy { "${it.id}" }
   }
 
   fun importModules(inputStream: InputStream) {
@@ -44,7 +49,7 @@ class ModulesImporter(
         }
 
         val moduleId = values[COLUMN_ID]?.toLongOrNull()?.let { ModuleId(it) }
-        val phase = values[COLUMN_PHASE]?.toIntOrNull()?.let { CohortPhase.forId(it) }
+        val phase = values[COLUMN_PHASE]?.lowercase()?.let { phases[it] }
         val name = values[COLUMN_NAME]
         val overview = values[COLUMN_OVERVIEW]
         val preparationMaterials = values[COLUMN_PREPARATION_MATERIALS]
@@ -59,8 +64,11 @@ class ModulesImporter(
         if (name == null) {
           addError("Missing module name")
         }
+        if (phase == null) {
+          addError("Missing or invalid phase")
+        }
 
-        if (moduleId != null && name != null) {
+        if (moduleId != null && name != null && phase != null) {
           with(MODULES) {
             dslContext
                 .insertInto(MODULES)
