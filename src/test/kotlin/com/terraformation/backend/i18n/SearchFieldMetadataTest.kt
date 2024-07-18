@@ -23,7 +23,7 @@ class SearchFieldMetadataTest {
                 messages.searchFieldDisplayName(table.name, field.fieldName)
                 null
               } catch (e: Exception) {
-                "search.${table.name}.${field.fieldName} = "
+                "search.${table.name}.${field.fieldName}="
               }
             }
             .sorted()
