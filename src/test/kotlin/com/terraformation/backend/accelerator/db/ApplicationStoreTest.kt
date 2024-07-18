@@ -14,6 +14,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.gis.CountryDetector
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
@@ -32,8 +33,9 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock = TestClock()
+  private val messages = Messages()
   private val store: ApplicationStore by lazy {
-    ApplicationStore(clock, countriesDao, CountryDetector(), dslContext, organizationsDao)
+    ApplicationStore(clock, countriesDao, CountryDetector(), dslContext, messages, organizationsDao)
   }
 
   @BeforeEach
@@ -413,9 +415,100 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class Submit {
     @Test
+    fun `detects missing boundary`() {
+      val applicationId = insertApplication()
+
+      val result = store.submit(applicationId)
+
+      assertEquals(listOf(messages.applicationPreCheckFailureNoBoundary()), result.problems)
+      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
+    }
+
+    @Test
+    fun `detects boundary outside any countries`() {
+      val applicationId = insertApplication(boundary = rectangle(1))
+
+      val result = store.submit(applicationId)
+
+      assertEquals(listOf(messages.applicationPreCheckFailureNoCountry()), result.problems)
+      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
+    }
+
+    @Test
+    fun `detects boundary in multiple countries`() {
+      val applicationId =
+          insertApplication(
+              boundary = Turtle(point(30, 50)).makePolygon { rectangle(200000, 200000) })
+
+      val result = store.submit(applicationId)
+
+      assertEquals(listOf(messages.applicationPreCheckFailureMultipleCountries()), result.problems)
+      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
+    }
+
+    @Test
+    fun `detects boundary size below minimum`() {
+      val boundaries =
+          mapOf(
+              "Colombia" to point(-75, 3) to 3000,
+              "Ghana" to point(-1.5, 7.25) to 3000,
+              "Kenya" to point(37, 1) to 3000,
+              "Tanzania" to point(34, -8) to 3000,
+              "United States" to point(-100, 41) to 15000,
+          )
+
+      boundaries.forEach { (countryAndOrigin, minHectares) ->
+        val (country, origin) = countryAndOrigin
+
+        insertProject()
+        val applicationId =
+            insertApplication(
+                boundary = Turtle(origin).makePolygon { rectangle(10000, minHectares - 10) })
+
+        val result = store.submit(applicationId)
+
+        assertEquals(
+            listOf(messages.applicationPreCheckFailureBadSize(country, minHectares, 100000)),
+            result.problems,
+            country)
+        assertEquals(ApplicationStatus.FailedPreScreen, result.application.status, country)
+      }
+    }
+
+    @Test
+    fun `detects boundary size above maximum`() {
+      val applicationId =
+          insertApplication(
+              boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 120000) })
+
+      val result = store.submit(applicationId)
+
+      assertEquals(
+          listOf(messages.applicationPreCheckFailureBadSize("United States", 15000, 100000)),
+          result.problems)
+      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
+    }
+
+    @Test
+    fun `detects boundary in country that is ineligible for accelerator`() {
+      val applicationId =
+          insertApplication(
+              boundary = Turtle(point(-100, 51)).makePolygon { rectangle(10000, 16000) })
+
+      val result = store.submit(applicationId)
+
+      assertEquals(
+          listOf(messages.applicationPreCheckFailureIneligibleCountry("Canada")), result.problems)
+      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
+    }
+
+    @Test
     fun `updates status and creates history entry`() {
       val otherUserId = insertUser()
-      val applicationId = insertApplication(createdBy = otherUserId)
+      val applicationId =
+          insertApplication(
+              boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) },
+              createdBy = otherUserId)
       val initial = applicationsDao.findAll().single()
 
       clock.instant = Instant.ofEpochSecond(30)
@@ -425,7 +518,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               initial.copy(
-                  applicationStatusId = ApplicationStatus.Submitted,
+                  applicationStatusId = ApplicationStatus.PassedPreScreen,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant)),
           applicationsDao.findAll())
@@ -434,9 +527,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               ApplicationHistoriesRow(
                   applicationId = applicationId,
+                  boundary = initial.boundary,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-                  applicationStatusId = ApplicationStatus.Submitted)),
+                  applicationStatusId = ApplicationStatus.PassedPreScreen)),
           applicationHistoriesDao.findAll().map { it.copy(id = null) })
     }
 
