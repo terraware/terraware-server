@@ -163,19 +163,23 @@ class ApplicationsController(
  * several underlying statuses are replaced with "In Review" in API responses.
  */
 enum class ApiApplicationStatus(@get:JsonValue val jsonValue: String) {
-  NotSubmitted("Not Submitted"),
-  FailedPreScreen("Failed Pre-screen"),
-  PassedPreScreen("Passed Pre-screen"),
-  Submitted("Submitted"),
-  PLReview("PL Review"),
-  ReadyForReview("Ready for Review"),
-  PreCheck("Pre-check"),
-  NeedsFollowUp("Needs Follow-up"),
-  CarbonEligible("Carbon Eligible"),
   Accepted("Accepted"),
-  Waitlist("Waitlist"),
+  CarbonEligible("Carbon Eligible"),
+  FailedPreScreen("Failed Pre-screen"),
+  IssueActive("Issue Active"),
+  IssuePending("Issue Pending"),
+  IssueResolved("Issue Resolved"),
+  NeedsFollowUp("Needs Follow-up"),
   NotAccepted("Not Accepted"),
-  InReview("In Review");
+  NotSubmitted("Not Submitted"),
+  PassedPreScreen("Passed Pre-screen"),
+  PLReview("PL Review"),
+  PreCheck("Pre-check"),
+  ReadyForReview("Ready for Review"),
+  Submitted("Submitted"),
+  // User-facing statuses, not stored in database
+  InReview("In Review"),
+  Waitlist("Waitlist");
 
   companion object {
     fun of(status: ApplicationStatus): ApiApplicationStatus {
@@ -185,6 +189,9 @@ enum class ApiApplicationStatus(@get:JsonValue val jsonValue: String) {
         ApplicationStatus.Accepted -> Accepted
         ApplicationStatus.CarbonEligible -> if (exposeInternalStatuses) CarbonEligible else InReview
         ApplicationStatus.FailedPreScreen -> FailedPreScreen
+        ApplicationStatus.IssueActive -> if (exposeInternalStatuses) IssueActive else Waitlist
+        ApplicationStatus.IssuePending -> if (exposeInternalStatuses) IssuePending else Waitlist
+        ApplicationStatus.IssueResolved -> if (exposeInternalStatuses) IssueResolved else Waitlist
         ApplicationStatus.NeedsFollowUp -> if (exposeInternalStatuses) NeedsFollowUp else InReview
         ApplicationStatus.NotAccepted -> NotAccepted
         ApplicationStatus.NotSubmitted -> NotSubmitted
@@ -193,7 +200,6 @@ enum class ApiApplicationStatus(@get:JsonValue val jsonValue: String) {
         ApplicationStatus.PreCheck -> if (exposeInternalStatuses) PreCheck else InReview
         ApplicationStatus.ReadyForReview -> if (exposeInternalStatuses) ReadyForReview else InReview
         ApplicationStatus.Submitted -> if (exposeInternalStatuses) Submitted else InReview
-        ApplicationStatus.Waitlist -> Waitlist
       }
     }
   }
