@@ -309,12 +309,12 @@ class ApplicationStore(
     if (application.boundary != null) {
       val countries = countryDetector.getCountries(application.boundary)
       when (countries.size) {
-        0 -> problems.add(messages.applicationPreCheckFailureNoCountry())
+        0 -> problems.add(messages.applicationPreScreenFailureNoCountry())
         1 -> countryCode = countries.first()
-        else -> problems.add(messages.applicationPreCheckFailureMultipleCountries())
+        else -> problems.add(messages.applicationPreScreenFailureMultipleCountries())
       }
     } else {
-      problems.add(messages.applicationPreCheckFailureNoBoundary())
+      problems.add(messages.applicationPreScreenFailureNoBoundary())
     }
 
     val countriesRow = countryCode?.let { countriesDao.fetchOneByCode(it) }
@@ -322,14 +322,14 @@ class ApplicationStore(
     if (countriesRow != null) {
       if (countriesRow.eligible != true) {
         // TODO: Look up localized country name
-        problems.add(messages.applicationPreCheckFailureIneligibleCountry(countriesRow.name!!))
+        problems.add(messages.applicationPreScreenFailureIneligibleCountry(countriesRow.name!!))
       } else {
         val minimumHectares = perCountryMinimumHectares[countryCode] ?: defaultMinimumHectares
         val siteArea = application.boundary!!.calculateAreaHectares().toInt()
 
         if (siteArea < minimumHectares || siteArea > defaultMaximumHectares) {
           problems.add(
-              messages.applicationPreCheckFailureBadSize(
+              messages.applicationPreScreenFailureBadSize(
                   countriesRow.name!!, minimumHectares, defaultMaximumHectares))
         }
       }

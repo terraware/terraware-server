@@ -47,24 +47,24 @@ class Messages {
     return messageSource.getMessage(code, args, currentLocale())
   }
 
-  fun applicationPreCheckFailureBadSize(country: String, minimum: Int, maximum: Int) =
-      getMessage("applicationPreCheck.failure.badSize", country, minimum, maximum)
+  fun applicationPreScreenFailureBadSize(country: String, minimum: Int, maximum: Int) =
+      getMessage("applicationPreScreen.failure.badSize", country, minimum, maximum)
 
-  fun applicationPreCheckFailureIneligibleCountry(country: String) =
-      getMessage("applicationPreCheck.failure.ineligibleCountry", country)
+  fun applicationPreScreenFailureIneligibleCountry(country: String) =
+      getMessage("applicationPreScreen.failure.ineligibleCountry", country)
 
-  fun applicationPreCheckFailureMonocultureTooHigh(maximum: Int) =
-      getMessage("applicationPreCheck.failure.monocultureTooHigh", maximum)
+  fun applicationPreScreenFailureMonocultureTooHigh(maximum: Int) =
+      getMessage("applicationPreScreen.failure.monocultureTooHigh", maximum)
 
-  fun applicationPreCheckFailureMultipleCountries() =
-      getMessage("applicationPreCheck.failure.multipleCountries")
+  fun applicationPreScreenFailureMultipleCountries() =
+      getMessage("applicationPreScreen.failure.multipleCountries")
 
-  fun applicationPreCheckFailureNoBoundary() = getMessage("applicationPreCheck.failure.noBoundary")
+  fun applicationPreScreenFailureNoBoundary() = getMessage("applicationPreScreen.failure.noBoundary")
 
-  fun applicationPreCheckFailureNoCountry() = getMessage("applicationPreCheck.failure.noCountry")
+  fun applicationPreScreenFailureNoCountry() = getMessage("applicationPreScreen.failure.noCountry")
 
-  fun applicationPreCheckFailureTooFewSpecies(minimum: Int) =
-      getMessage("applicationPreCheck.failure.tooFewSpecies", minimum)
+  fun applicationPreScreenFailureTooFewSpecies(minimum: Int) =
+      getMessage("applicationPreScreen.failure.tooFewSpecies", minimum)
 
   fun csvBadHeader() = getMessage("csvBadHeader")
 
