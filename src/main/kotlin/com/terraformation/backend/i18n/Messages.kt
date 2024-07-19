@@ -59,7 +59,8 @@ class Messages {
   fun applicationPreScreenFailureMultipleCountries() =
       getMessage("applicationPreScreen.failure.multipleCountries")
 
-  fun applicationPreScreenFailureNoBoundary() = getMessage("applicationPreScreen.failure.noBoundary")
+  fun applicationPreScreenFailureNoBoundary() =
+      getMessage("applicationPreScreen.failure.noBoundary")
 
   fun applicationPreScreenFailureNoCountry() = getMessage("applicationPreScreen.failure.noCountry")
 
