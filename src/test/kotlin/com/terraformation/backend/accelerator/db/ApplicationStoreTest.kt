@@ -420,7 +420,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       val result = store.submit(applicationId)
 
-      assertEquals(listOf(messages.applicationPreCheckFailureNoBoundary()), result.problems)
+      assertEquals(listOf(messages.applicationPreScreenFailureNoBoundary()), result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
 
@@ -430,7 +430,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       val result = store.submit(applicationId)
 
-      assertEquals(listOf(messages.applicationPreCheckFailureNoCountry()), result.problems)
+      assertEquals(listOf(messages.applicationPreScreenFailureNoCountry()), result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
 
@@ -442,7 +442,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       val result = store.submit(applicationId)
 
-      assertEquals(listOf(messages.applicationPreCheckFailureMultipleCountries()), result.problems)
+      assertEquals(listOf(messages.applicationPreScreenFailureMultipleCountries()), result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
 
@@ -468,7 +468,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
         val result = store.submit(applicationId)
 
         assertEquals(
-            listOf(messages.applicationPreCheckFailureBadSize(country, minHectares, 100000)),
+            listOf(messages.applicationPreScreenFailureBadSize(country, minHectares, 100000)),
             result.problems,
             country)
         assertEquals(ApplicationStatus.FailedPreScreen, result.application.status, country)
@@ -484,7 +484,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       val result = store.submit(applicationId)
 
       assertEquals(
-          listOf(messages.applicationPreCheckFailureBadSize("United States", 15000, 100000)),
+          listOf(messages.applicationPreScreenFailureBadSize("United States", 15000, 100000)),
           result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
@@ -498,7 +498,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       val result = store.submit(applicationId)
 
       assertEquals(
-          listOf(messages.applicationPreCheckFailureIneligibleCountry("Canada")), result.problems)
+          listOf(messages.applicationPreScreenFailureIneligibleCountry("Canada")), result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
 
