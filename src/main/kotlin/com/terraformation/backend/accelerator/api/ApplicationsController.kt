@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.api
 
 import com.fasterxml.jackson.annotation.JsonValue
+import com.terraformation.backend.accelerator.ApplicationService
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
@@ -40,6 +41,7 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/accelerator/applications")
 @RestController
 class ApplicationsController(
+    private val applicationService: ApplicationService,
     private val applicationStore: ApplicationStore,
 ) {
   @Operation(summary = "Create a new application")
@@ -119,7 +121,7 @@ class ApplicationsController(
   fun submitApplication(
       @PathVariable applicationId: ApplicationId
   ): SubmitApplicationResponsePayload {
-    val result = applicationStore.submit(applicationId)
+    val result = applicationService.submit(applicationId)
 
     return SubmitApplicationResponsePayload(result)
   }

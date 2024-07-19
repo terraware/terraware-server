@@ -2,6 +2,8 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
+import com.terraformation.backend.accelerator.model.PreScreenProjectType
+import com.terraformation.backend.accelerator.model.PreScreenVariableValues
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -9,6 +11,7 @@ import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_HISTORIES
+import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
@@ -19,6 +22,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
 import java.time.InstantSource
+import kotlin.math.abs
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -41,6 +45,22 @@ class ApplicationStore(
           "GH" to 3000,
           "KE" to 3000,
           "TZ" to 3000,
+      )
+
+  /**
+   * How far the total of the per-land-use-type hectare counts is allowed to vary from the size of
+   * the project boundary without being treated as an error.
+   */
+  private val landUseTotalFuzzPercent = 10
+
+  /** Maximum percentage of total land allowed to be used for monoculture. */
+  private val monocultureMaxPercent = 10
+
+  private val minimumSpeciesByProjectType =
+      mapOf(
+          PreScreenProjectType.Mangrove to 3,
+          PreScreenProjectType.Mixed to 10,
+          PreScreenProjectType.Terrestrial to 10,
       )
 
   private val log = perClassLogger()
@@ -135,13 +155,21 @@ class ApplicationStore(
    * Submits an application. If it is being submitted for pre-screening, does the pre-screening
    * qualification checks.
    */
-  fun submit(applicationId: ApplicationId): ApplicationSubmissionResult {
+  fun submit(
+      applicationId: ApplicationId,
+      preScreenVariableValues: PreScreenVariableValues? = null
+  ): ApplicationSubmissionResult {
     requirePermissions { updateApplicationSubmissionStatus(applicationId) }
 
     val existing = fetchOneById(applicationId)
 
     return if (existing.status == ApplicationStatus.NotSubmitted) {
-      val problems = checkPreScreenCriteria(existing)
+      if (preScreenVariableValues == null) {
+        throw IllegalArgumentException(
+            "No pre-screen variable values supplied for pre-screen submission")
+      }
+
+      val problems = checkPreScreenCriteria(existing, preScreenVariableValues)
 
       if (problems.isNotEmpty()) {
         updateStatus(applicationId, ApplicationStatus.FailedPreScreen)
@@ -301,12 +329,18 @@ class ApplicationStore(
         .fetch { ExistingApplicationModel.of(it) }
   }
 
-  private fun checkPreScreenCriteria(application: ExistingApplicationModel): List<String> {
+  private fun checkPreScreenCriteria(
+      application: ExistingApplicationModel,
+      preScreenVariableValues: PreScreenVariableValues
+  ): List<String> {
     val problems = mutableListOf<String>()
 
     var countryCode: String? = null
+    var siteAreaHa: Double? = null
 
     if (application.boundary != null) {
+      siteAreaHa = application.boundary.calculateAreaHectares().toDouble()
+
       val countries = countryDetector.getCountries(application.boundary)
       when (countries.size) {
         0 -> problems.add(messages.applicationPreScreenFailureNoCountry())
@@ -319,15 +353,14 @@ class ApplicationStore(
 
     val countriesRow = countryCode?.let { countriesDao.fetchOneByCode(it) }
 
-    if (countriesRow != null) {
+    if (countriesRow != null && siteAreaHa != null) {
       if (countriesRow.eligible != true) {
         // TODO: Look up localized country name
         problems.add(messages.applicationPreScreenFailureIneligibleCountry(countriesRow.name!!))
       } else {
         val minimumHectares = perCountryMinimumHectares[countryCode] ?: defaultMinimumHectares
-        val siteArea = application.boundary!!.calculateAreaHectares().toInt()
 
-        if (siteArea < minimumHectares || siteArea > defaultMaximumHectares) {
+        if (siteAreaHa < minimumHectares || siteAreaHa > defaultMaximumHectares) {
           problems.add(
               messages.applicationPreScreenFailureBadSize(
                   countriesRow.name!!, minimumHectares, defaultMaximumHectares))
@@ -335,9 +368,30 @@ class ApplicationStore(
       }
     }
 
-    // TODO: Check land use type percentages
+    if (siteAreaHa != null) {
+      val totalLandUseArea =
+          preScreenVariableValues.landUseModelHectares.values.sumOf { it.toDouble() }
+      val differenceFromSiteArea = abs(siteAreaHa - totalLandUseArea)
 
-    // TODO: Check number of species based on project type
+      if (differenceFromSiteArea > siteAreaHa * landUseTotalFuzzPercent / 100.0) {
+        problems.add(
+            messages.applicationPreScreenFailureLandUseTotalTooLow(
+                siteAreaHa.toInt(), totalLandUseArea.toInt()))
+      }
+
+      val monocultureArea =
+          preScreenVariableValues.landUseModelHectares[LandUseModelType.Monoculture]
+      if (monocultureArea != null &&
+          monocultureArea.toDouble() > totalLandUseArea * monocultureMaxPercent / 100.0) {
+        problems.add(messages.applicationPreScreenFailureMonocultureTooHigh(monocultureMaxPercent))
+      }
+    }
+
+    val minimumSpecies = minimumSpeciesByProjectType[preScreenVariableValues.projectType]
+    if (minimumSpecies != null &&
+        (preScreenVariableValues.numSpeciesToBePlanted ?: 0) < minimumSpecies) {
+      problems.add(messages.applicationPreScreenFailureTooFewSpecies(minimumSpecies))
+    }
 
     return problems
   }
