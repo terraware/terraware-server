@@ -89,6 +89,9 @@ class VariablesController(
 interface VariablePayload {
   @get:JsonIgnore val model: Variable
 
+  val deliverableId: DeliverableId?
+    get() = model.deliverableId
+
   val dependencyCondition: DependencyCondition?
     get() = model.dependencyCondition
 
