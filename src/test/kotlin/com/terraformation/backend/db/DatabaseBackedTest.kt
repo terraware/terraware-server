@@ -7,6 +7,7 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.accelerator.ApplicationId
+import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
@@ -28,6 +29,7 @@ import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationHistoriesDao
+import com.terraformation.backend.db.accelerator.tables.daos.ApplicationModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationsDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
@@ -50,6 +52,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocuments
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshotsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
 import com.terraformation.backend.db.accelerator.tables.daos.UserDeliverableCategoriesDao
+import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
@@ -477,6 +480,7 @@ abstract class DatabaseBackedTest {
   protected val accessionQuantityHistoryDao: AccessionQuantityHistoryDao by lazyDao()
   protected val accessionsDao: AccessionsDao by lazyDao()
   protected val applicationHistoriesDao: ApplicationHistoriesDao by lazyDao()
+  protected val applicationModulesDao: ApplicationModulesDao by lazyDao()
   protected val applicationsDao: ApplicationsDao by lazyDao()
   protected val automationsDao: AutomationsDao by lazyDao()
   protected val bagsDao: BagsDao by lazyDao()
@@ -2257,6 +2261,21 @@ abstract class DatabaseBackedTest {
     applicationsDao.insert(row)
 
     return row.id!!.also { inserted.applicationIds.add(it) }
+  }
+
+  fun insertApplicationModule(
+      applicationId: Any,
+      moduleId: Any,
+      status: ApplicationModuleStatus,
+  ) {
+    val row =
+        ApplicationModulesRow(
+            applicationId = applicationId.toIdWrapper { ApplicationId(it) },
+            applicationModuleStatusId = status,
+            moduleId = moduleId.toIdWrapper { ModuleId(it) },
+        )
+
+    applicationModulesDao.insert(row)
   }
 
   private var nextParticipantNumber = 1

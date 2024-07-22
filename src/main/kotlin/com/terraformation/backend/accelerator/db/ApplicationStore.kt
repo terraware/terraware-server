@@ -8,9 +8,13 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.accelerator.ApplicationId
+import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_HISTORIES
+import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_MODULES
+import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -115,6 +119,8 @@ class ApplicationStore(
 
       insertHistory(applicationId)
 
+      assignModules(applicationId, CohortPhase.PreScreen)
+
       fetchOneById(applicationId)
     }
   }
@@ -175,6 +181,7 @@ class ApplicationStore(
         updateStatus(applicationId, ApplicationStatus.FailedPreScreen)
       } else {
         updateStatus(applicationId, ApplicationStatus.PassedPreScreen)
+        assignModules(applicationId, CohortPhase.Application)
       }
 
       ApplicationSubmissionResult(fetchOneById(applicationId), problems)
@@ -306,6 +313,26 @@ class ApplicationStore(
                 .from(APPLICATIONS)
                 .where(APPLICATIONS.ID.eq(applicationId)))
         .execute()
+  }
+
+  private fun assignModules(applicationId: ApplicationId, phase: CohortPhase) {
+    if (phase == CohortPhase.PreScreen || phase == CohortPhase.Application) {
+      with(APPLICATION_MODULES) {
+        dslContext
+            .insertInto(
+                APPLICATION_MODULES, APPLICATION_ID, MODULE_ID, APPLICATION_MODULE_STATUS_ID)
+            .select(
+                DSL.select(
+                        DSL.value(applicationId),
+                        MODULES.ID,
+                        DSL.value(ApplicationModuleStatus.Incomplete))
+                    .from(MODULES)
+                    .where(MODULES.PHASE_ID.eq(phase)))
+            .onConflict()
+            .doNothing()
+            .execute()
+      }
+    }
   }
 
   private fun fetchByCondition(condition: Condition): List<ExistingApplicationModel> {
