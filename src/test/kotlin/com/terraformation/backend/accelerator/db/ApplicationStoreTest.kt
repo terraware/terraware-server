@@ -10,8 +10,11 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.ApplicationId
+import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationHistoriesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -63,6 +66,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
   inner class Create {
     @Test
     fun `populates initial values and creates history entry`() {
+      val moduleId = insertModule(phase = CohortPhase.PreScreen)
       val now = Instant.ofEpochSecond(30)
       clock.instant = now
 
@@ -90,6 +94,14 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedTime = now,
               )),
           applicationHistoriesDao.findAll().map { it.copy(id = null) })
+
+      assertEquals(
+          listOf(
+              ApplicationModulesRow(
+                  applicationId = model.id,
+                  moduleId = moduleId,
+                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete)),
+          applicationModulesDao.findAll())
     }
 
     @Test
@@ -576,6 +588,9 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) }
       val applicationId = insertApplication(boundary = boundary, createdBy = otherUserId)
       val initial = applicationsDao.findAll().single()
+      val moduleId1 = insertModule(phase = CohortPhase.Application)
+      val moduleId2 = insertModule(phase = CohortPhase.Application)
+      insertModule(phase = CohortPhase.PreScreen)
 
       clock.instant = Instant.ofEpochSecond(30)
 
@@ -598,6 +613,46 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedTime = clock.instant,
                   applicationStatusId = ApplicationStatus.PassedPreScreen)),
           applicationHistoriesDao.findAll().map { it.copy(id = null) })
+
+      assertEquals(
+          setOf(
+              ApplicationModulesRow(
+                  applicationId = applicationId,
+                  moduleId = moduleId1,
+                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete),
+              ApplicationModulesRow(
+                  applicationId = applicationId,
+                  moduleId = moduleId2,
+                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete),
+          ),
+          applicationModulesDao.findAll().toSet())
+    }
+
+    @Test
+    fun `does not update existing module status on resubmit`() {
+      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) }
+      val applicationId = insertApplication(boundary = boundary)
+      val moduleId1 = insertModule(phase = CohortPhase.Application)
+      val moduleId2 = insertModule(phase = CohortPhase.Application)
+
+      insertApplicationModule(applicationId, moduleId1, ApplicationModuleStatus.Complete)
+
+      clock.instant = Instant.ofEpochSecond(30)
+
+      store.submit(applicationId, validVariables(boundary))
+
+      assertEquals(
+          setOf(
+              ApplicationModulesRow(
+                  applicationId = applicationId,
+                  moduleId = moduleId1,
+                  applicationModuleStatusId = ApplicationModuleStatus.Complete),
+              ApplicationModulesRow(
+                  applicationId = applicationId,
+                  moduleId = moduleId2,
+                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete),
+          ),
+          applicationModulesDao.findAll().toSet())
     }
 
     @Test
