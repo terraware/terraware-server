@@ -1,5 +1,6 @@
 time_zones
 seed_treatments
+regions
 conservation_categories
 device_template_categories
 ecosystem_types
@@ -12,7 +13,6 @@ managed_location_types
 notification_criticalities
 organization_types
 plant_material_sourcing_methods
-regions
 report_statuses
 roles
 seed_storage_behaviors

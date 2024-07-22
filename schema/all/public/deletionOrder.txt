@@ -51,7 +51,6 @@ species_native_categories
 seed_storage_behaviors
 roles
 report_statuses
-regions
 plant_material_sourcing_methods
 organization_types
 notification_criticalities
@@ -64,5 +63,6 @@ facility_connection_states
 ecosystem_types
 device_template_categories
 conservation_categories
+regions
 seed_treatments
 time_zones

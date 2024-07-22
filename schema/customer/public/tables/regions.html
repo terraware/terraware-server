@@ -125,6 +125,10 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="default_project_leads.region_id references regions.id via default_project_leads_region_id_fkey"><a href='../../accelerator/tables/default_project_leads.html'>default_project_leads</a><span class='relatedKey'>.region_id</span></td>
+                                                <td class="constraint detail">default_project_leads_region_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="countries.region_id references regions.id via countries_region_id_fkey"><a href='countries.html'>countries</a><span class='relatedKey'>.region_id</span></td>
                                                 <td class="constraint detail">countries_region_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -212,20 +216,22 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="297,5,456,181">
-<area shape="rect" id="node2" href="../../tables/regions.html" target="_top" title="regions" alt="" coords="5,32,253,160">
+<area shape="rect" id="node1" href="../../../accelerator/tables/default_project_leads.html" target="_top" title="accelerator.default_project_leads" alt="" coords="297,5,637,123">
+<area shape="rect" id="node2" href="../../tables/regions.html" target="_top" title="regions" alt="" coords="5,85,253,213">
+<area shape="rect" id="node3" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="388,140,547,316">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/regions.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="297,44,456,220">
-<area shape="rect" id="node2" href="../../tables/regions.html" target="_top" title="regions" alt="" coords="5,71,253,199">
-<area shape="rect" id="node3" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="500,120,747,208">
-<area shape="rect" id="node4" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="791,108,979,196">
-<area shape="rect" id="node5" href="../../tables/users.html" target="_top" title="users" alt="" coords="553,226,694,314">
-<area shape="rect" id="node6" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="1023,160,1171,248">
-<area shape="rect" id="node7" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1215,199,1457,287">
+<area shape="rect" id="node1" href="../../../accelerator/tables/default_project_leads.html" target="_top" title="accelerator.default_project_leads" alt="" coords="297,5,637,123">
+<area shape="rect" id="node2" href="../../tables/regions.html" target="_top" title="regions" alt="" coords="5,85,253,213">
+<area shape="rect" id="node3" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="388,140,547,316">
+<area shape="rect" id="node4" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="681,216,928,304">
+<area shape="rect" id="node5" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="972,204,1160,292">
+<area shape="rect" id="node6" href="../../tables/users.html" target="_top" title="users" alt="" coords="734,321,875,409">
+<area shape="rect" id="node7" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="1204,256,1352,344">
+<area shape="rect" id="node8" href="../../../seedbank/tables/accessions.html" target="_top" title="seedbank.accessions" alt="" coords="1396,295,1639,383">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/regions.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

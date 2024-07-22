@@ -18,6 +18,7 @@ applications
 submissions
 deal_stages
 events
+default_project_leads
 default_voters
 cohort_modules
 deliverable_cohort_due_dates

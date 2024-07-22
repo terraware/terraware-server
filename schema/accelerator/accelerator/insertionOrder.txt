@@ -33,4 +33,5 @@ project_vote_decisions
 project_votes
 submission_documents
 deliverable_documents
+default_project_leads
 default_voters
