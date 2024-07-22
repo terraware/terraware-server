@@ -26,6 +26,7 @@ class PreScreenVariableValuesFetcher(
   companion object {
     const val STABLE_ID_NUM_SPECIES = "22"
     const val STABLE_ID_PROJECT_TYPE = "3"
+    const val STABLE_ID_TOTAL_EXPANSION_POTENTIAL = "24"
 
     val stableIdsByLandUseModelType =
         mapOf(
@@ -82,7 +83,15 @@ class PreScreenVariableValuesFetcher(
           }
         }
 
-    return PreScreenVariableValues(landUseHectares, numSpeciesToBePlanted, projectType)
+    val totalExpansionPotential =
+        getNumberValue(valuesByStableId, STABLE_ID_TOTAL_EXPANSION_POTENTIAL)
+
+    return PreScreenVariableValues(
+        landUseModelHectares = landUseHectares,
+        numSpeciesToBePlanted = numSpeciesToBePlanted,
+        projectType = projectType,
+        totalExpansionPotential = totalExpansionPotential,
+    )
   }
 
   private fun getNumberValue(values: Map<String, ExistingValue>, stableId: String): BigDecimal? {

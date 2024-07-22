@@ -10,11 +10,12 @@ enum class PreScreenProjectType {
 }
 
 /**
- * Values of variables that are relevant to the pre-screen qualification check. This does not
- * include values that are part of [ExistingApplicationModel].
+ * Values of variables that are relevant to the pre-screen logic. This does not include values that
+ * are part of [ExistingApplicationModel].
  */
 data class PreScreenVariableValues(
     val landUseModelHectares: Map<LandUseModelType, BigDecimal>,
     val numSpeciesToBePlanted: Int?,
     val projectType: PreScreenProjectType?,
+    val totalExpansionPotential: BigDecimal?,
 )
