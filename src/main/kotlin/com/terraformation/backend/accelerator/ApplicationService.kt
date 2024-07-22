@@ -71,6 +71,7 @@ class ApplicationService(
             landUseModelTypes = landUseModelTypes,
             numNativeSpecies = variableValues.numSpeciesToBePlanted,
             projectLead = projectLead,
+            totalExpansionPotential = variableValues.totalExpansionPotential,
         )
       }
     }

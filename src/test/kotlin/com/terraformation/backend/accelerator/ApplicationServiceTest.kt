@@ -71,9 +71,10 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
     fun `fetches variable values for pre-screen submissions`() {
       val preScreenVariableValues =
           PreScreenVariableValues(
-              mapOf(LandUseModelType.Mangroves to BigDecimal(10)),
-              123,
-              PreScreenProjectType.Terrestrial)
+              landUseModelHectares = mapOf(LandUseModelType.Mangroves to BigDecimal(10)),
+              numSpeciesToBePlanted = 123,
+              projectType = PreScreenProjectType.Terrestrial,
+              totalExpansionPotential = BigDecimal(1000))
       val applicationModel =
           ExistingApplicationModel(
               createdTime = Instant.EPOCH,
@@ -116,19 +117,22 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
     fun `populates project accelerator details on pre-screen success`() {
       val projectLead = "Johnny Appleseed"
       val internalName = "KEN_Project 1"
+      val totalExpansionPotential = BigDecimal(1000)
 
       val projectId = insertProject()
       insertDefaultProjectLead(Region.SubSaharanAfrica, projectLead)
 
       val preScreenVariableValues =
           PreScreenVariableValues(
-              mapOf(
-                  LandUseModelType.Agroforestry to BigDecimal.ZERO,
-                  LandUseModelType.Mangroves to BigDecimal(1),
-                  LandUseModelType.NativeForest to BigDecimal(100),
-              ),
+              landUseModelHectares =
+                  mapOf(
+                      LandUseModelType.Agroforestry to BigDecimal.ZERO,
+                      LandUseModelType.Mangroves to BigDecimal(1),
+                      LandUseModelType.NativeForest to BigDecimal(100),
+                  ),
               numSpeciesToBePlanted = 50,
               projectType = PreScreenProjectType.Mixed,
+              totalExpansionPotential = totalExpansionPotential,
           )
       val applicationModel =
           ExistingApplicationModel(
@@ -164,6 +168,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               region = Region.SubSaharanAfrica,
               projectLead = projectLead,
+              totalExpansionPotential = totalExpansionPotential,
           ),
           projectAcceleratorDetailsStore.fetchOneById(projectId),
           "Project accelerator details after submission")

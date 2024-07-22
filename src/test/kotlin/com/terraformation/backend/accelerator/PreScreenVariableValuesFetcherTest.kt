@@ -56,6 +56,7 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var numSpeciesVariableId: VariableId
   private lateinit var projectTypeVariableId: VariableId
+  private lateinit var totalExpansionPotentialVariableId: VariableId
   private lateinit var landUseHectaresVariableIds: Map<LandUseModelType, VariableId>
 
   private lateinit var terrestrialOptionId: VariableSelectOptionId
@@ -74,13 +75,20 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 1,
                 stableId = PreScreenVariableValuesFetcher.STABLE_ID_NUM_SPECIES))
+    totalExpansionPotentialVariableId =
+        insertNumberVariable(
+            insertVariable(
+                type = VariableType.Number,
+                deliverableId = inserted.deliverableId,
+                deliverablePosition = 2,
+                stableId = PreScreenVariableValuesFetcher.STABLE_ID_TOTAL_EXPANSION_POTENTIAL))
 
     projectTypeVariableId =
         insertSelectVariable(
             insertVariable(
                 type = VariableType.Select,
                 deliverableId = inserted.deliverableId,
-                deliverablePosition = 2,
+                deliverablePosition = 3,
                 stableId = PreScreenVariableValuesFetcher.STABLE_ID_PROJECT_TYPE))
     terrestrialOptionId = insertSelectOption(inserted.variableId, "Terrestrial")
     insertSelectOption(inserted.variableId, "Mangrove")
@@ -94,7 +102,7 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
                       insertVariable(
                           type = VariableType.Number,
                           deliverableId = inserted.deliverableId,
-                          deliverablePosition = index + 3,
+                          deliverablePosition = index + 4,
                           stableId = stableId))
             }
             .toMap()
@@ -105,12 +113,14 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `returns null or empty values if variables not set`() {
     assertEquals(
-        PreScreenVariableValues(emptyMap(), null, null), fetcher.fetchValues(inserted.projectId))
+        PreScreenVariableValues(emptyMap(), null, null, null),
+        fetcher.fetchValues(inserted.projectId))
   }
 
   @Test
   fun `fetches values for all variables`() {
     insertValue(variableId = numSpeciesVariableId, numberValue = BigDecimal(123))
+    insertValue(variableId = totalExpansionPotentialVariableId, numberValue = BigDecimal(5555))
     insertSelectValue(variableId = projectTypeVariableId, optionIds = setOf(terrestrialOptionId))
     LandUseModelType.entries.forEach { type ->
       insertValue(
@@ -119,9 +129,10 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         PreScreenVariableValues(
-            LandUseModelType.entries.associateWith { BigDecimal(it.id) },
-            123,
-            PreScreenProjectType.Terrestrial),
+            landUseModelHectares = LandUseModelType.entries.associateWith { BigDecimal(it.id) },
+            numSpeciesToBePlanted = 123,
+            projectType = PreScreenProjectType.Terrestrial,
+            totalExpansionPotential = BigDecimal(5555)),
         fetcher.fetchValues(inserted.projectId))
   }
 

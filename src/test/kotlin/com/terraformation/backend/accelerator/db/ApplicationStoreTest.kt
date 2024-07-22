@@ -516,12 +516,14 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           store.submit(
               applicationId,
               PreScreenVariableValues(
-                  mapOf(
-                      LandUseModelType.Monoculture to BigDecimal.ZERO,
-                      LandUseModelType.NativeForest to landUseTotal,
-                  ),
+                  landUseModelHectares =
+                      mapOf(
+                          LandUseModelType.Monoculture to BigDecimal.ZERO,
+                          LandUseModelType.NativeForest to landUseTotal,
+                      ),
                   numSpeciesToBePlanted = 500,
-                  projectType = PreScreenProjectType.Mixed))
+                  projectType = PreScreenProjectType.Mixed,
+                  totalExpansionPotential = BigDecimal(5000)))
 
       assertEquals(
           listOf(
@@ -542,12 +544,14 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           store.submit(
               applicationId,
               PreScreenVariableValues(
-                  mapOf(
-                      LandUseModelType.Monoculture to halfArea,
-                      LandUseModelType.NativeForest to halfArea,
-                  ),
+                  landUseModelHectares =
+                      mapOf(
+                          LandUseModelType.Monoculture to halfArea,
+                          LandUseModelType.NativeForest to halfArea,
+                      ),
                   numSpeciesToBePlanted = 500,
-                  projectType = PreScreenProjectType.Mixed))
+                  projectType = PreScreenProjectType.Mixed,
+                  totalExpansionPotential = BigDecimal(1000)))
 
       assertEquals(
           listOf(messages.applicationPreScreenFailureMonocultureTooHigh(10)), result.problems)
@@ -625,11 +629,14 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     private fun validVariables(boundary: Geometry): PreScreenVariableValues {
       val projectHectares = boundary.calculateAreaHectares()
       return PreScreenVariableValues(
-          mapOf(
-              LandUseModelType.NativeForest to projectHectares,
-              LandUseModelType.Monoculture to BigDecimal.ZERO),
-          500,
-          PreScreenProjectType.Terrestrial)
+          landUseModelHectares =
+              mapOf(
+                  LandUseModelType.NativeForest to projectHectares,
+                  LandUseModelType.Monoculture to BigDecimal.ZERO),
+          numSpeciesToBePlanted = 500,
+          projectType = PreScreenProjectType.Terrestrial,
+          totalExpansionPotential = BigDecimal(1500),
+      )
     }
   }
 
