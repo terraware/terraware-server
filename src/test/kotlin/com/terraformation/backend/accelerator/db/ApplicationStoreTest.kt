@@ -3,6 +3,8 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
+import com.terraformation.backend.accelerator.model.PreScreenProjectType
+import com.terraformation.backend.accelerator.model.PreScreenVariableValues
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -11,6 +13,7 @@ import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationHistoriesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
+import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.gis.CountryDetector
@@ -19,14 +22,17 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.util.Turtle
+import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.equalsOrBothNull
 import io.mockk.every
+import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.locationtech.jts.geom.Geometry
 import org.springframework.security.access.AccessDeniedException
 
 class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
@@ -418,7 +424,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     fun `detects missing boundary`() {
       val applicationId = insertApplication()
 
-      val result = store.submit(applicationId)
+      val result = store.submit(applicationId, validVariables(rectangle(1)))
 
       assertEquals(listOf(messages.applicationPreScreenFailureNoBoundary()), result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
@@ -426,9 +432,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `detects boundary outside any countries`() {
-      val applicationId = insertApplication(boundary = rectangle(1))
+      val boundary = rectangle(1)
+      val applicationId = insertApplication(boundary = boundary)
 
-      val result = store.submit(applicationId)
+      val result = store.submit(applicationId, validVariables(boundary))
 
       assertEquals(listOf(messages.applicationPreScreenFailureNoCountry()), result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
@@ -436,11 +443,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `detects boundary in multiple countries`() {
-      val applicationId =
-          insertApplication(
-              boundary = Turtle(point(30, 50)).makePolygon { rectangle(200000, 200000) })
+      val boundary = Turtle(point(30, 50)).makePolygon { rectangle(200000, 200000) }
+      val applicationId = insertApplication(boundary = boundary)
 
-      val result = store.submit(applicationId)
+      val result = store.submit(applicationId, validVariables(boundary))
 
       assertEquals(listOf(messages.applicationPreScreenFailureMultipleCountries()), result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
@@ -461,11 +467,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
         val (country, origin) = countryAndOrigin
 
         insertProject()
-        val applicationId =
-            insertApplication(
-                boundary = Turtle(origin).makePolygon { rectangle(10000, minHectares - 10) })
+        val boundary = Turtle(origin).makePolygon { rectangle(10000, minHectares - 10) }
+        val applicationId = insertApplication(boundary = boundary)
 
-        val result = store.submit(applicationId)
+        val result = store.submit(applicationId, validVariables(boundary))
 
         assertEquals(
             listOf(messages.applicationPreScreenFailureBadSize(country, minHectares, 100000)),
@@ -477,11 +482,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `detects boundary size above maximum`() {
-      val applicationId =
-          insertApplication(
-              boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 120000) })
+      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 120000) }
+      val applicationId = insertApplication(boundary = boundary)
 
-      val result = store.submit(applicationId)
+      val result = store.submit(applicationId, validVariables(boundary))
 
       assertEquals(
           listOf(messages.applicationPreScreenFailureBadSize("United States", 15000, 100000)),
@@ -491,11 +495,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `detects boundary in country that is ineligible for accelerator`() {
-      val applicationId =
-          insertApplication(
-              boundary = Turtle(point(-100, 51)).makePolygon { rectangle(10000, 16000) })
+      val boundary = Turtle(point(-100, 51)).makePolygon { rectangle(10000, 16000) }
+      val applicationId = insertApplication(boundary = boundary)
 
-      val result = store.submit(applicationId)
+      val result = store.submit(applicationId, validVariables(boundary))
 
       assertEquals(
           listOf(messages.applicationPreScreenFailureIneligibleCountry("Canada")), result.problems)
@@ -503,17 +506,76 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `detects mismatch between boundary size and total hectares across land use types`() {
+      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 50000) }
+      val boundaryArea = boundary.calculateAreaHectares()
+      val landUseTotal = boundaryArea / BigDecimal.TWO
+      val applicationId = insertApplication(boundary = boundary)
+
+      val result =
+          store.submit(
+              applicationId,
+              PreScreenVariableValues(
+                  mapOf(
+                      LandUseModelType.Monoculture to BigDecimal.ZERO,
+                      LandUseModelType.NativeForest to landUseTotal,
+                  ),
+                  numSpeciesToBePlanted = 500,
+                  projectType = PreScreenProjectType.Mixed))
+
+      assertEquals(
+          listOf(
+              messages.applicationPreScreenFailureLandUseTotalTooLow(
+                  boundaryArea.toInt(), landUseTotal.toInt())),
+          result.problems)
+      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
+    }
+
+    @Test
+    fun `detects monoculture land use too high`() {
+      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 50000) }
+      val boundaryArea = boundary.calculateAreaHectares()
+      val halfArea = boundaryArea / BigDecimal.TWO
+      val applicationId = insertApplication(boundary = boundary)
+
+      val result =
+          store.submit(
+              applicationId,
+              PreScreenVariableValues(
+                  mapOf(
+                      LandUseModelType.Monoculture to halfArea,
+                      LandUseModelType.NativeForest to halfArea,
+                  ),
+                  numSpeciesToBePlanted = 500,
+                  projectType = PreScreenProjectType.Mixed))
+
+      assertEquals(
+          listOf(messages.applicationPreScreenFailureMonocultureTooHigh(10)), result.problems)
+      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
+    }
+
+    @Test
+    fun `detects too few species for project type`() {
+      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 50000) }
+      val applicationId = insertApplication(boundary = boundary)
+
+      val result =
+          store.submit(applicationId, validVariables(boundary).copy(numSpeciesToBePlanted = 9))
+
+      assertEquals(listOf(messages.applicationPreScreenFailureTooFewSpecies(10)), result.problems)
+      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
+    }
+
+    @Test
     fun `updates status and creates history entry`() {
       val otherUserId = insertUser()
-      val applicationId =
-          insertApplication(
-              boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) },
-              createdBy = otherUserId)
+      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) }
+      val applicationId = insertApplication(boundary = boundary, createdBy = otherUserId)
       val initial = applicationsDao.findAll().single()
 
       clock.instant = Instant.ofEpochSecond(30)
 
-      store.submit(applicationId)
+      store.submit(applicationId, validVariables(boundary))
 
       assertEquals(
           listOf(
@@ -558,6 +620,16 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canUpdateApplicationSubmissionStatus(any()) } returns false
 
       assertThrows<AccessDeniedException> { store.submit(applicationId) }
+    }
+
+    private fun validVariables(boundary: Geometry): PreScreenVariableValues {
+      val projectHectares = boundary.calculateAreaHectares()
+      return PreScreenVariableValues(
+          mapOf(
+              LandUseModelType.NativeForest to projectHectares,
+              LandUseModelType.Monoculture to BigDecimal.ZERO),
+          500,
+          PreScreenProjectType.Terrestrial)
     }
   }
 
