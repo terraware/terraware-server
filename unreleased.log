@@ -1,3 +1,4 @@
+7b427967507 SW-5662 Check variable values in pre-screen (#2179)
 21ab9938b0c SW-5662 Fetch variable values for pre-screen (#2178)
 51762249769 SW-5662 Implement non-variable pre-screen checks (#2177)
 419c1228052 Pass deliverableId through in the list variables response (#2176)
