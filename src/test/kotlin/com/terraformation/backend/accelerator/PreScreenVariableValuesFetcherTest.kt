@@ -1,0 +1,135 @@
+package com.terraformation.backend.accelerator
+
+import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.model.PreScreenProjectType
+import com.terraformation.backend.accelerator.model.PreScreenVariableValues
+import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.default_schema.LandUseModelType
+import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableSelectOptionId
+import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.documentproducer.db.VariableStore
+import com.terraformation.backend.documentproducer.db.VariableValueStore
+import com.terraformation.backend.mockUser
+import io.mockk.every
+import java.math.BigDecimal
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.security.access.AccessDeniedException
+
+class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
+  override val user: TerrawareUser = mockUser()
+
+  private val fetcher: PreScreenVariableValuesFetcher by lazy {
+    PreScreenVariableValuesFetcher(
+        VariableStore(
+            dslContext,
+            variableNumbersDao,
+            variablesDao,
+            variableSectionDefaultValuesDao,
+            variableSectionRecommendationsDao,
+            variableSectionsDao,
+            variableSelectsDao,
+            variableSelectOptionsDao,
+            variableTablesDao,
+            variableTableColumnsDao,
+            variableTextsDao),
+        VariableValueStore(
+            TestClock(),
+            documentsDao,
+            dslContext,
+            TestEventPublisher(),
+            variableImageValuesDao,
+            variableLinkValuesDao,
+            variablesDao,
+            variableSectionValuesDao,
+            variableSelectOptionValuesDao,
+            variableValuesDao,
+            variableValueTableRowsDao))
+  }
+
+  private lateinit var numSpeciesVariableId: VariableId
+  private lateinit var projectTypeVariableId: VariableId
+  private lateinit var landUseHectaresVariableIds: Map<LandUseModelType, VariableId>
+
+  private lateinit var terrestrialOptionId: VariableSelectOptionId
+
+  @BeforeEach
+  fun setUp() {
+    insertOrganization()
+    insertProject()
+    insertModule(phase = CohortPhase.PreScreen)
+    insertDeliverable(id = PreScreenVariableValuesFetcher.preScreenDeliverableId)
+
+    numSpeciesVariableId =
+        insertNumberVariable(
+            insertVariable(
+                type = VariableType.Number,
+                deliverableId = inserted.deliverableId,
+                deliverablePosition = 1,
+                stableId = PreScreenVariableValuesFetcher.STABLE_ID_NUM_SPECIES))
+
+    projectTypeVariableId =
+        insertSelectVariable(
+            insertVariable(
+                type = VariableType.Select,
+                deliverableId = inserted.deliverableId,
+                deliverablePosition = 2,
+                stableId = PreScreenVariableValuesFetcher.STABLE_ID_PROJECT_TYPE))
+    terrestrialOptionId = insertSelectOption(inserted.variableId, "Terrestrial")
+    insertSelectOption(inserted.variableId, "Mangrove")
+    insertSelectOption(inserted.variableId, "Mixed")
+
+    landUseHectaresVariableIds =
+        PreScreenVariableValuesFetcher.stableIdsByLandUseModelType.entries
+            .mapIndexed { index, (landUseType, stableId) ->
+              landUseType to
+                  insertNumberVariable(
+                      insertVariable(
+                          type = VariableType.Number,
+                          deliverableId = inserted.deliverableId,
+                          deliverablePosition = index + 3,
+                          stableId = stableId))
+            }
+            .toMap()
+
+    every { user.canReadProjectDeliverables(any()) } returns true
+  }
+
+  @Test
+  fun `returns null or empty values if variables not set`() {
+    assertEquals(
+        PreScreenVariableValues(emptyMap(), null, null), fetcher.fetchValues(inserted.projectId))
+  }
+
+  @Test
+  fun `fetches values for all variables`() {
+    insertValue(variableId = numSpeciesVariableId, numberValue = BigDecimal(123))
+    insertSelectValue(variableId = projectTypeVariableId, optionIds = setOf(terrestrialOptionId))
+    LandUseModelType.entries.forEach { type ->
+      insertValue(
+          variableId = landUseHectaresVariableIds[type]!!, numberValue = BigDecimal(type.id))
+    }
+
+    assertEquals(
+        PreScreenVariableValues(
+            LandUseModelType.entries.associateWith { BigDecimal(it.id) },
+            123,
+            PreScreenProjectType.Terrestrial),
+        fetcher.fetchValues(inserted.projectId))
+  }
+
+  @Test
+  fun `throws exception if no permission to read project deliverables`() {
+    every { user.canReadProjectDeliverables(any()) } returns false
+    every { user.canReadProject(any()) } returns true
+
+    assertThrows<AccessDeniedException> { fetcher.fetchValues(inserted.projectId) }
+  }
+}
