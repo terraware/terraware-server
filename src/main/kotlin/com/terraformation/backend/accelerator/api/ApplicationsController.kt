@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.api
 
 import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.backend.accelerator.db.ApplicationStore
+import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.InternalEndpoint
@@ -115,10 +116,12 @@ class ApplicationsController(
       summary = "Submit an application for review",
       description = "If the application has already been submitted, this is a no-op.")
   @PostMapping("/{applicationId}/submit")
-  fun submitApplication(@PathVariable applicationId: ApplicationId): SimpleSuccessResponsePayload {
-    applicationStore.submit(applicationId)
+  fun submitApplication(
+      @PathVariable applicationId: ApplicationId
+  ): SubmitApplicationResponsePayload {
+    val result = applicationStore.submit(applicationId)
 
-    return SimpleSuccessResponsePayload()
+    return SubmitApplicationResponsePayload(result)
   }
 
   @InternalEndpoint
@@ -280,3 +283,18 @@ data class GetApplicationResponsePayload(val application: ApplicationPayload) :
 
 data class ListApplicationsResponsePayload(val applications: List<ApplicationPayload>) :
     SuccessResponsePayload
+
+data class SubmitApplicationResponsePayload(
+    val application: ApplicationPayload,
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "If the application failed any of the pre-screening checks, a list of the " +
+                        "reasons why. Empty if the application passed pre-screening."))
+    val problems: List<String>,
+) : SuccessResponsePayload {
+  constructor(
+      result: ApplicationSubmissionResult
+  ) : this(ApplicationPayload(result.application), result.problems)
+}

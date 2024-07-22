@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
@@ -13,7 +14,9 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.gis.CountryDetector
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
@@ -27,8 +30,19 @@ class ApplicationStore(
     private val countriesDao: CountriesDao,
     private val countryDetector: CountryDetector,
     private val dslContext: DSLContext,
+    private val messages: Messages,
     private val organizationsDao: OrganizationsDao,
 ) {
+  private val defaultMinimumHectares = 15000
+  private val defaultMaximumHectares = 100000
+  private val perCountryMinimumHectares =
+      mapOf(
+          "CO" to 3000,
+          "GH" to 3000,
+          "KE" to 3000,
+          "TZ" to 3000,
+      )
+
   private val log = perClassLogger()
 
   fun fetchOneById(applicationId: ApplicationId): ExistingApplicationModel {
@@ -117,16 +131,29 @@ class ApplicationStore(
     }
   }
 
-  fun submit(applicationId: ApplicationId) {
+  /**
+   * Submits an application. If it is being submitted for pre-screening, does the pre-screening
+   * qualification checks.
+   */
+  fun submit(applicationId: ApplicationId): ApplicationSubmissionResult {
     requirePermissions { updateApplicationSubmissionStatus(applicationId) }
 
     val existing = fetchOneById(applicationId)
 
-    if (existing.status == ApplicationStatus.NotSubmitted) {
-      updateStatus(applicationId, ApplicationStatus.Submitted)
+    return if (existing.status == ApplicationStatus.NotSubmitted) {
+      val problems = checkPreScreenCriteria(existing)
+
+      if (problems.isNotEmpty()) {
+        updateStatus(applicationId, ApplicationStatus.FailedPreScreen)
+      } else {
+        updateStatus(applicationId, ApplicationStatus.PassedPreScreen)
+      }
+
+      ApplicationSubmissionResult(fetchOneById(applicationId), problems)
     } else {
       log.info(
           "Application $applicationId has status ${existing.status}; ignoring submission request")
+      ApplicationSubmissionResult(existing, emptyList())
     }
   }
 
@@ -272,5 +299,46 @@ class ApplicationStore(
         .where(conditionWithPermission)
         .orderBy(APPLICATIONS.ID)
         .fetch { ExistingApplicationModel.of(it) }
+  }
+
+  private fun checkPreScreenCriteria(application: ExistingApplicationModel): List<String> {
+    val problems = mutableListOf<String>()
+
+    var countryCode: String? = null
+
+    if (application.boundary != null) {
+      val countries = countryDetector.getCountries(application.boundary)
+      when (countries.size) {
+        0 -> problems.add(messages.applicationPreScreenFailureNoCountry())
+        1 -> countryCode = countries.first()
+        else -> problems.add(messages.applicationPreScreenFailureMultipleCountries())
+      }
+    } else {
+      problems.add(messages.applicationPreScreenFailureNoBoundary())
+    }
+
+    val countriesRow = countryCode?.let { countriesDao.fetchOneByCode(it) }
+
+    if (countriesRow != null) {
+      if (countriesRow.eligible != true) {
+        // TODO: Look up localized country name
+        problems.add(messages.applicationPreScreenFailureIneligibleCountry(countriesRow.name!!))
+      } else {
+        val minimumHectares = perCountryMinimumHectares[countryCode] ?: defaultMinimumHectares
+        val siteArea = application.boundary!!.calculateAreaHectares().toInt()
+
+        if (siteArea < minimumHectares || siteArea > defaultMaximumHectares) {
+          problems.add(
+              messages.applicationPreScreenFailureBadSize(
+                  countriesRow.name!!, minimumHectares, defaultMaximumHectares))
+        }
+      }
+    }
+
+    // TODO: Check land use type percentages
+
+    // TODO: Check number of species based on project type
+
+    return problems
   }
 }

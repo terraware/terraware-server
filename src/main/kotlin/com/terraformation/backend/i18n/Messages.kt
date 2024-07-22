@@ -47,6 +47,26 @@ class Messages {
     return messageSource.getMessage(code, args, currentLocale())
   }
 
+  fun applicationPreScreenFailureBadSize(country: String, minimum: Int, maximum: Int) =
+      getMessage("applicationPreScreen.failure.badSize", country, minimum, maximum)
+
+  fun applicationPreScreenFailureIneligibleCountry(country: String) =
+      getMessage("applicationPreScreen.failure.ineligibleCountry", country)
+
+  fun applicationPreScreenFailureMonocultureTooHigh(maximum: Int) =
+      getMessage("applicationPreScreen.failure.monocultureTooHigh", maximum)
+
+  fun applicationPreScreenFailureMultipleCountries() =
+      getMessage("applicationPreScreen.failure.multipleCountries")
+
+  fun applicationPreScreenFailureNoBoundary() =
+      getMessage("applicationPreScreen.failure.noBoundary")
+
+  fun applicationPreScreenFailureNoCountry() = getMessage("applicationPreScreen.failure.noCountry")
+
+  fun applicationPreScreenFailureTooFewSpecies(minimum: Int) =
+      getMessage("applicationPreScreen.failure.tooFewSpecies", minimum)
+
   fun csvBadHeader() = getMessage("csvBadHeader")
 
   fun csvRequiredFieldMissing() = getMessage("csvRequiredFieldMissing")
