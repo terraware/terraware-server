@@ -1,3 +1,6 @@
+eb0124a2a6c Update dependency io.mockk:mockk to v1.13.12 (#2181)
+b6fd3d1d8e8 Update amazoncorretto Docker tag to v21.0.4 (#2182)
+9415f8c0f54 Update database dependencies (#2183)
 7aae4f8cbb3 Update geoToolsVersion to v31.3 (#2184)
 7b427967507 SW-5662 Check variable values in pre-screen (#2179)
 21ab9938b0c SW-5662 Fetch variable values for pre-screen (#2178)
