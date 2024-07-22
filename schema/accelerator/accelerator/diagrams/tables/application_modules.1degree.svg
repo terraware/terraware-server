@@ -18,14 +18,13 @@
 <polygon fill="none" stroke="black" points="273.5,-244 273.5,-266 518.5,-266 518.5,-244 273.5,-244"/>
 <text text-anchor="start" x="278.5" y="-253.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">application_modules</text>
 <text text-anchor="start" x="479.5" y="-252.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="#ffffff" stroke="none" points="273.5,-222 273.5,-244 470.5,-244 470.5,-222 273.5,-222"/>
 <polygon fill="none" stroke="black" points="273.5,-222 273.5,-244 470.5,-244 470.5,-222 273.5,-222"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="278.5" y="-239"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="278.5" y="-239"/>
 <text text-anchor="start" x="293.5" y="-230.2" font-family="Helvetica,sans-Serif" font-size="11.00">application_id</text>
 <polygon fill="none" stroke="black" points="470.5,-222 470.5,-244 518.5,-244 518.5,-222 470.5,-222"/>
 <text text-anchor="start" x="473.5" y="-230.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
 <polygon fill="none" stroke="black" points="273.5,-200 273.5,-222 470.5,-222 470.5,-200 273.5,-200"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="278.5" y="-217"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="278.5" y="-217"/>
 <text text-anchor="start" x="293.5" y="-208.2" font-family="Helvetica,sans-Serif" font-size="11.00">module_id</text>
 <polygon fill="none" stroke="black" points="470.5,-200 470.5,-222 518.5,-222 518.5,-200 470.5,-200"/>
 <text text-anchor="start" x="473.5" y="-208.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
