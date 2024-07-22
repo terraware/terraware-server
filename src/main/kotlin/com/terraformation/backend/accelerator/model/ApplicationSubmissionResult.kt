@@ -10,4 +10,7 @@ data class ApplicationSubmissionResult(
      * reasons.
      */
     val problems: List<String> = emptyList(),
-)
+) {
+  val isSuccessful: Boolean
+    get() = problems.isEmpty()
+}

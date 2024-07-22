@@ -29,29 +29,7 @@ class ProjectAcceleratorDetailsStore(
   fun fetchOneById(projectId: ProjectId): ProjectAcceleratorDetailsModel {
     requirePermissions { readProjectAcceleratorDetails(projectId) }
 
-    val landUseModelTypesMultiset =
-        DSL.multiset(
-                DSL.select(PROJECT_LAND_USE_MODEL_TYPES.LAND_USE_MODEL_TYPE_ID.asNonNullable())
-                    .from(PROJECT_LAND_USE_MODEL_TYPES)
-                    .where(PROJECT_LAND_USE_MODEL_TYPES.PROJECT_ID.eq(PROJECTS.ID)))
-            .convertFrom { result -> result.map { it.value1() }.toSet() }
-
-    return dslContext
-        .select(
-            COUNTRIES.REGION_ID,
-            landUseModelTypesMultiset,
-            PROJECT_ACCELERATOR_DETAILS.asterisk(),
-            PROJECTS.COUNTRY_CODE,
-            PROJECTS.ID,
-        )
-        .from(PROJECTS)
-        .leftJoin(PROJECT_ACCELERATOR_DETAILS)
-        .on(PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
-        .leftJoin(COUNTRIES)
-        .on(PROJECTS.COUNTRY_CODE.eq(COUNTRIES.CODE))
-        .where(PROJECTS.ID.eq(projectId))
-        .fetchOne { ProjectAcceleratorDetailsModel.of(it, landUseModelTypesMultiset) }
-        ?: throw ProjectNotFoundException(projectId)
+    return fetchOneByIdOrNull(projectId) ?: throw ProjectNotFoundException(projectId)
   }
 
   fun update(
@@ -60,7 +38,8 @@ class ProjectAcceleratorDetailsStore(
   ) {
     requirePermissions { updateProjectAcceleratorDetails(projectId) }
 
-    val existing = fetchOneById(projectId)
+    val existing =
+        fetchOneByIdOrNull(projectId) ?: ProjectAcceleratorDetailsModel(projectId = projectId)
     val updated = applyFunc(existing)
 
     val dropboxFolderPath: String?
@@ -140,5 +119,31 @@ class ProjectAcceleratorDetailsStore(
         }
       }
     }
+  }
+
+  private fun fetchOneByIdOrNull(projectId: ProjectId): ProjectAcceleratorDetailsModel? {
+    val landUseModelTypesMultiset =
+        DSL.multiset(
+                DSL.select(PROJECT_LAND_USE_MODEL_TYPES.LAND_USE_MODEL_TYPE_ID.asNonNullable())
+                    .from(PROJECT_LAND_USE_MODEL_TYPES)
+                    .where(PROJECT_LAND_USE_MODEL_TYPES.PROJECT_ID.eq(PROJECTS.ID)),
+            )
+            .convertFrom { result -> result.map { it.value1() }.toSet() }
+
+    return dslContext
+        .select(
+            COUNTRIES.REGION_ID,
+            landUseModelTypesMultiset,
+            PROJECT_ACCELERATOR_DETAILS.asterisk(),
+            PROJECTS.COUNTRY_CODE,
+            PROJECTS.ID,
+        )
+        .from(PROJECTS)
+        .leftJoin(PROJECT_ACCELERATOR_DETAILS)
+        .on(PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
+        .leftJoin(COUNTRIES)
+        .on(PROJECTS.COUNTRY_CODE.eq(COUNTRIES.CODE))
+        .where(PROJECTS.ID.eq(projectId))
+        .fetchOne { ProjectAcceleratorDetailsModel.of(it, landUseModelTypesMultiset) }
   }
 }
