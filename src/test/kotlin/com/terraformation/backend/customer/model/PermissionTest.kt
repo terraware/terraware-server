@@ -1367,6 +1367,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipant = true,
         deleteParticipantProject = true,
         deleteSupportIssue = true,
+        manageDefaultProjectLeads = true,
         manageModuleEventStatuses = true,
         manageNotifications = true,
         readAllAcceleratorDetails = true,
@@ -1703,6 +1704,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteSelf = true,
         deleteUsers = true,
         importGlobalSpeciesData = true,
+        manageDefaultProjectLeads = true,
         manageDeliverables = true,
         manageInternalTags = true,
         manageModuleEvents = true,
@@ -1900,6 +1902,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipantProject = true,
         deleteSelf = true,
         importGlobalSpeciesData = false,
+        manageDefaultProjectLeads = true,
         manageDeliverables = true,
         manageInternalTags = false,
         manageModuleEvents = true,
@@ -2683,6 +2686,7 @@ internal class PermissionTest : DatabaseTest() {
         manageModuleEventStatuses: Boolean = false,
         manageModules: Boolean = false,
         manageNotifications: Boolean = false,
+        manageDefaultProjectLeads: Boolean = false,
         readAllAcceleratorDetails: Boolean = false,
         readAllDeliverables: Boolean = false,
         readCohort: Boolean = false,
@@ -2733,6 +2737,10 @@ internal class PermissionTest : DatabaseTest() {
           importGlobalSpeciesData,
           user.canImportGlobalSpeciesData(),
           "Can import global species data")
+      assertEquals(
+          manageDefaultProjectLeads,
+          user.canManageDefaultProjectLeads(),
+          "Can manage default project leads")
       assertEquals(manageDeliverables, user.canManageDeliverables(), "Can manage deliverables")
       assertEquals(manageInternalTags, user.canManageInternalTags(), "Can manage internal tags")
       assertEquals(manageModuleEvents, user.canManageModuleEvents(), "Can manage module events")
