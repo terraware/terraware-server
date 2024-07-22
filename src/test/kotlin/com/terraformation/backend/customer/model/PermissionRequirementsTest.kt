@@ -522,6 +522,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun listReports() =
       allow { listReports(organizationId) } ifUser { canListReports(organizationId) }
 
+  @Test
+  fun manageDefaultProjectLeads() =
+      allow { manageDefaultProjectLeads() } ifUser { canManageDefaultProjectLeads() }
+
   @Test fun manageDeliverables() = allow { manageDeliverables() } ifUser { canManageDeliverables() }
 
   @Test fun manageModuleEvents() = allow { manageModuleEvents() } ifUser { canManageModuleEvents() }

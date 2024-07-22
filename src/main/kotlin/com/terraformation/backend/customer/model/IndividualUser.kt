@@ -326,6 +326,8 @@ data class IndividualUser(
 
   override fun canListReports(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
 
+  override fun canManageDefaultProjectLeads() = isAcceleratorAdmin()
+
   override fun canManageDeliverables() = isAcceleratorAdmin()
 
   override fun canManageDocumentProducer() = isTFExpertOrHigher()

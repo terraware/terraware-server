@@ -90,7 +90,11 @@ val ENUM_TABLES =
                     isLocalizable = false),
                 EnumTable("organization_types", isLocalizable = false),
                 EnumTable("plant_material_sourcing_methods"),
-                EnumTable("regions", listOf("countries\\.region_id")),
+                EnumTable(
+                    "regions",
+                    listOf(
+                        "accelerator\\.default_project_leads\\.region_id",
+                        "countries\\.region_id")),
                 EnumTable("report_statuses", listOf("reports\\.status_id")),
                 EnumTable("roles"),
                 EnumTable("seed_storage_behaviors"),
