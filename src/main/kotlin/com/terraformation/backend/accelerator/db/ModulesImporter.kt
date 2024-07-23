@@ -9,7 +9,6 @@ import com.terraformation.backend.importer.processCsvFile
 import jakarta.inject.Named
 import java.io.InputStream
 import java.time.InstantSource
-import org.hsqldb.Tokens.POSITION
 import org.jooq.DSLContext
 
 /** Imports the list of modules from a CSV file. */
