@@ -485,7 +485,6 @@ abstract class DatabaseBackedTest {
   protected val applicationHistoriesDao: ApplicationHistoriesDao by lazyDao()
   protected val applicationModulesDao: ApplicationModulesDao by lazyDao()
   protected val applicationsDao: ApplicationsDao by lazyDao()
-  protected val applicationModulesDao: ApplicationModulesDao by lazyDao()
   protected val automationsDao: AutomationsDao by lazyDao()
   protected val bagsDao: BagsDao by lazyDao()
   protected val batchDetailsHistoryDao: BatchDetailsHistoryDao by lazyDao()
