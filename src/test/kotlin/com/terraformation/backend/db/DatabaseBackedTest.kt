@@ -163,6 +163,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_SU
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
+import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentSavedVersionId
 import com.terraformation.backend.db.docprod.DocumentStatus
@@ -2266,7 +2267,7 @@ abstract class DatabaseBackedTest {
   fun insertApplicationModule(
       applicationId: Any,
       moduleId: Any,
-      status: ApplicationModuleStatus,
+      status: ApplicationModuleStatus = ApplicationModuleStatus.Incomplete,
   ) {
     val row =
         ApplicationModulesRow(
@@ -2956,6 +2957,9 @@ abstract class DatabaseBackedTest {
   protected fun insertVariable(
       deliverableId: Any? = null,
       deliverablePosition: Int? = null,
+      dependencyCondition: DependencyCondition? = null,
+      dependencyValue: String? = null,
+      dependencyVariableStableId: String? = null,
       description: String? = null,
       id: Any? = null,
       isList: Boolean = false,
@@ -2970,6 +2974,9 @@ abstract class DatabaseBackedTest {
         VariablesRow(
             deliverableId = deliverableId?.toIdWrapper { DeliverableId(it) },
             deliverablePosition = deliverablePosition,
+            dependencyConditionId = dependencyCondition,
+            dependencyValue = dependencyValue,
+            dependencyVariableStableId = dependencyVariableStableId,
             description = description,
             id = id?.toIdWrapper { VariableId(it) },
             isList = isList,

@@ -11,6 +11,7 @@ import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_HISTORIES
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_MODULES
@@ -189,6 +190,30 @@ class ApplicationStore(
       log.info(
           "Application $applicationId has status ${existing.status}; ignoring submission request")
       ApplicationSubmissionResult(existing, emptyList())
+    }
+  }
+
+  fun updateModuleStatus(
+      projectId: ProjectId,
+      moduleId: ModuleId,
+      status: ApplicationModuleStatus
+  ) {
+    val application =
+        fetchByProjectId(projectId).firstOrNull()
+            ?: throw ProjectApplicationNotFoundException(projectId)
+
+    requirePermissions { updateApplicationSubmissionStatus(application.id) }
+
+    val rowsUpdated =
+        dslContext
+            .update(APPLICATION_MODULES)
+            .set(APPLICATION_MODULES.APPLICATION_MODULE_STATUS_ID, status)
+            .where(APPLICATION_MODULES.APPLICATION_ID.eq(application.id))
+            .and(APPLICATION_MODULES.MODULE_ID.eq(moduleId))
+            .execute()
+
+    if (rowsUpdated == 0) {
+      throw ProjectModuleNotFoundException(projectId, moduleId)
     }
   }
 
