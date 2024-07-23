@@ -128,6 +128,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
               id = moduleId,
               name = "TestModule",
               phase = CohortPhase.Phase1FeasibilityStudy,
+              position = 1,
               additionalResources = "<b> Additional Resources </b>",
               cohorts =
                   listOf(
@@ -201,6 +202,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
               id = moduleId,
               name = "TestModule",
               phase = CohortPhase.Phase1FeasibilityStudy,
+              position = 1,
               additionalResources = "<b> Additional Resources </b>",
               cohorts =
                   listOf(
@@ -288,6 +290,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                   id = moduleId,
                   name = "TestModule",
                   phase = CohortPhase.Phase1FeasibilityStudy,
+                  position = 1,
                   additionalResources = "<b> Additional Resources </b>",
                   cohorts =
                       listOf(
@@ -375,6 +378,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                   id = moduleId,
                   name = "TestModule",
                   phase = CohortPhase.Phase1FeasibilityStudy,
+                  position = 1,
                   additionalResources = "<b> Additional Resources </b>",
                   cohorts = emptyList(),
                   eventDescriptions =

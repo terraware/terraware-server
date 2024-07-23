@@ -9,6 +9,7 @@ import com.terraformation.backend.importer.processCsvFile
 import jakarta.inject.Named
 import java.io.InputStream
 import java.time.InstantSource
+import org.hsqldb.Tokens.POSITION
 import org.jooq.DSLContext
 
 /** Imports the list of modules from a CSV file. */
@@ -42,7 +43,7 @@ class ModulesImporter(
     val now = clock.instant()
 
     dslContext.transaction { _ ->
-      processCsvFile(inputStream) { values, _, addError ->
+      processCsvFile(inputStream) { values, rowNumber, addError ->
         if (values.size != NUM_COLUMNS) {
           addError("Expected $NUM_COLUMNS columns but found ${values.size}")
           return@processCsvFile
@@ -82,6 +83,7 @@ class ModulesImporter(
                 .set(ONE_ON_ONE_SESSION_DESCRIPTION, oneOnOneInfo)
                 .set(WORKSHOP_DESCRIPTION, workshopInfo)
                 .set(PHASE_ID, CohortPhase.Phase1FeasibilityStudy)
+                .set(POSITION, rowNumber)
                 .set(CREATED_BY, userId)
                 .set(CREATED_TIME, now)
                 .set(MODIFIED_BY, userId)
@@ -97,6 +99,7 @@ class ModulesImporter(
                 .set(ONE_ON_ONE_SESSION_DESCRIPTION, oneOnOneInfo)
                 .set(WORKSHOP_DESCRIPTION, workshopInfo)
                 .set(PHASE_ID, phase)
+                .set(POSITION, rowNumber)
                 .set(MODIFIED_BY, userId)
                 .set(MODIFIED_TIME, now)
                 .execute()
