@@ -184,6 +184,9 @@ annotation class ApiResponse200Photo
                                 "${MediaType.IMAGE_JPEG_VALUE}, ${MediaType.IMAGE_PNG_VALUE}")])])
 annotation class RequestBodyPhotoFile
 
+/**
+ * Allows payload fields to have blank strings during deserialization
+ */
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FIELD)
 annotation class AllowBlankString
