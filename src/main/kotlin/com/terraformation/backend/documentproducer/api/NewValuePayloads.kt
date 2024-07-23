@@ -3,6 +3,7 @@ package com.terraformation.backend.documentproducer.api
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.terraformation.backend.api.AllowBlankString
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
@@ -138,7 +139,7 @@ data class NewSectionTextValuePayload(
                 "different positions, you can split it into multiple text values and put a " +
                 "citation on each of them.")
     override val citation: String?,
-    val textValue: String,
+    @AllowBlankString val textValue: String,
 ) : NewValuePayload {
   override val type: VariableValuePayloadType
     get() = VariableValuePayloadType.SectionText

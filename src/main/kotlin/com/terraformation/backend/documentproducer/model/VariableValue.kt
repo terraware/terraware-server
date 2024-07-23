@@ -1,5 +1,6 @@
 package com.terraformation.backend.documentproducer.model
 
+import com.terraformation.backend.api.AllowBlankString
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
@@ -95,7 +96,7 @@ data class NumberValue<ID : VariableValueId?>(
 
 sealed interface SectionValueFragment
 
-data class SectionValueText(val textValue: String) : SectionValueFragment
+data class SectionValueText(@AllowBlankString val textValue: String) : SectionValueFragment
 
 data class SectionValueVariable(
     val usedVariableId: VariableId,
