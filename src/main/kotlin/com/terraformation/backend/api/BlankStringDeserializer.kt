@@ -15,6 +15,21 @@ import com.fasterxml.jackson.databind.deser.std.StringDeserializer
  */
 class BlankStringDeserializer : JsonDeserializer<String?>() {
   override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): String? {
-    return StringDeserializer.instance.deserialize(parser, ctxt)?.ifBlank { null }
+    val clazz = handledType()
+    val allowBlankString =
+        if (clazz != null) {
+          val annotated = ctxt.config.introspectClassAnnotations(clazz).classInfo
+          val annotations = annotated.getAnnotations()
+          annotations.has(AllowBlankString::class.java)
+        } else {
+          false
+        }
+
+    val deserialized = StringDeserializer.instance.deserialize(parser, ctxt)
+    return if (allowBlankString) {
+      deserialized
+    } else {
+      deserialized?.ifBlank { null }
+    }
   }
 }

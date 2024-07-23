@@ -1,15 +1,33 @@
 package com.terraformation.backend.api
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.introspect.Annotated
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector
 import com.fasterxml.jackson.databind.module.SimpleModule
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
+class CustomAnnotationIntrospector : JacksonAnnotationIntrospector() {
+  override fun findKeyDeserializer(a: Annotated?): Any? {
+    val customAnnotation = a?.getAnnotation(AllowBlankString::class.java)
+    return if (customAnnotation != null) {
+      null
+    } else {
+      super.findKeyDeserializer(a)
+    }
+  }
+}
+
 @Configuration
 class SerializerConfiguration {
   @Bean
-  fun blankStringDeserializerModule(): SimpleModule {
-    return SimpleModule("BlankStringDeserializer")
-        .addDeserializer(String::class.java, BlankStringDeserializer())
+  fun blankStringDeserializerModule(): ObjectMapper {
+    val mapper = ObjectMapper()
+    val module = SimpleModule("BlankStringDeserializer")
+    module.addDeserializer(String::class.java, BlankStringDeserializer())
+    mapper.registerModule(module)
+    mapper.setAnnotationIntrospector(CustomAnnotationIntrospector())
+    return mapper
   }
 
   @Bean
