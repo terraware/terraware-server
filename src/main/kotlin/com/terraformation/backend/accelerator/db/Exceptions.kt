@@ -43,8 +43,14 @@ class ParticipantProjectSpeciesProjectNotFoundException(id: ProjectId) :
 class ProjectApplicationExistsException(projectId: ProjectId) :
     MismatchedStateException("Project $projectId already has an application")
 
+class ProjectApplicationNotFoundException(projectId: ProjectId) :
+    MismatchedStateException("Project $projectId has no application")
+
 class ProjectDocumentSettingsNotConfiguredException(id: ProjectId) :
     MismatchedStateException("Project $id document upload settings have not been configured")
+
+class ProjectModuleNotFoundException(projectId: ProjectId, moduleId: ModuleId) :
+    MismatchedStateException("Project $projectId is not associated with module $moduleId")
 
 class ProjectNotInCohortException(id: ProjectId) :
     MismatchedStateException("Project $id is not assigned to any cohorts")

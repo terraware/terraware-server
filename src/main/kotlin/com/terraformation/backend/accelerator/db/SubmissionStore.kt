@@ -22,6 +22,7 @@ import jakarta.inject.Named
 import java.time.InstantSource
 import java.time.LocalDate
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
@@ -33,6 +34,7 @@ class SubmissionStore(
   fun createSubmission(
       deliverableId: DeliverableId,
       projectId: ProjectId,
+      status: SubmissionStatus = SubmissionStatus.NotSubmitted,
   ) {
     requirePermissions { createSubmission(projectId) }
 
@@ -47,12 +49,12 @@ class SubmissionStore(
         .set(SUBMISSIONS.MODIFIED_BY, userId)
         .set(SUBMISSIONS.MODIFIED_TIME, now)
         .set(SUBMISSIONS.PROJECT_ID, projectId)
-        .set(SUBMISSIONS.SUBMISSION_STATUS_ID, SubmissionStatus.NotSubmitted)
+        .set(SUBMISSIONS.SUBMISSION_STATUS_ID, status)
         .onConflict()
         .doUpdate()
         .set(SUBMISSIONS.MODIFIED_BY, userId)
         .set(SUBMISSIONS.MODIFIED_TIME, now)
-        .set(SUBMISSIONS.SUBMISSION_STATUS_ID, SubmissionStatus.NotSubmitted)
+        .set(SUBMISSIONS.SUBMISSION_STATUS_ID, status)
         .execute()
   }
 
@@ -91,6 +93,32 @@ class SubmissionStore(
     }
 
     return submission
+  }
+
+  /**
+   * Returns true if all the deliverables in the same module as the specified one are marked as
+   * completed for a project.
+   */
+  fun moduleDeliverablesAllCompleted(deliverableId: DeliverableId, projectId: ProjectId): Boolean {
+    requirePermissions { readProjectDeliverables(projectId) }
+
+    val hasIncompleteDeliverables =
+        dslContext.fetchExists(
+            DSL.selectOne()
+                .from(DELIVERABLES)
+                .where(
+                    DELIVERABLES.MODULE_ID.eq(
+                        DSL.select(DELIVERABLES.MODULE_ID)
+                            .from(DELIVERABLES)
+                            .where(DELIVERABLES.ID.eq(deliverableId))))
+                .andNotExists(
+                    DSL.selectOne()
+                        .from(SUBMISSIONS)
+                        .where(SUBMISSIONS.PROJECT_ID.eq(projectId))
+                        .and(SUBMISSIONS.DELIVERABLE_ID.eq(DELIVERABLES.ID))
+                        .and(SUBMISSIONS.SUBMISSION_STATUS_ID.eq(SubmissionStatus.Completed))))
+
+    return !hasIncompleteDeliverables
   }
 
   fun updateSubmissionStatus(

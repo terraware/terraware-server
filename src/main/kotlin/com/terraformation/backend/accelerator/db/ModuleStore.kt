@@ -5,6 +5,7 @@ import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.accelerator.model.ModuleDeliverableModel
 import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
@@ -51,6 +52,14 @@ class ModuleStore(
   fun fetchAllModules(): List<ModuleModel> {
     requirePermissions { manageModules() }
     return fetch()
+  }
+
+  fun fetchCohortPhase(moduleId: ModuleId): CohortPhase {
+    return dslContext
+        .select(MODULES.PHASE_ID)
+        .from(MODULES)
+        .where(MODULES.ID.eq(moduleId))
+        .fetchOne(MODULES.PHASE_ID) ?: throw ModuleNotFoundException(moduleId)
   }
 
   private fun cohortsMultiset(): Field<List<CohortModuleModel>> {

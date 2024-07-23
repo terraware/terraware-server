@@ -46,6 +46,14 @@ class DeliverableStore(
         ?: throw DeliverableNotFoundException(deliverableId)
   }
 
+  fun fetchDeliverableModuleId(deliverableId: DeliverableId): ModuleId {
+    return dslContext
+        .select(DELIVERABLES.MODULE_ID)
+        .from(DELIVERABLES)
+        .where(DELIVERABLES.ID.eq(deliverableId))
+        .fetchOne(DELIVERABLES.MODULE_ID) ?: throw DeliverableNotFoundException(deliverableId)
+  }
+
   fun fetchDeliverableSubmissions(
       organizationId: OrganizationId? = null,
       participantId: ParticipantId? = null,
