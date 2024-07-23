@@ -16,12 +16,14 @@ import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.gis.GeometryFileParser
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.ws.rs.BadRequestException
 import java.time.Instant
+import org.geotools.util.ContentFormatException
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
@@ -43,6 +45,7 @@ import org.springframework.web.multipart.MultipartFile
 class ApplicationsController(
     private val applicationService: ApplicationService,
     private val applicationStore: ApplicationStore,
+    private val geometryFileParser: GeometryFileParser,
 ) {
   @Operation(summary = "Create a new application")
   @PostMapping
@@ -158,7 +161,16 @@ class ApplicationsController(
       @PathVariable applicationId: ApplicationId,
       @RequestPart file: MultipartFile
   ): SimpleSuccessResponsePayload {
-    TODO()
+    val geometry =
+        try {
+          geometryFileParser.parse(file.bytes, file.name)
+        } catch (e: ContentFormatException) {
+          throw BadRequestException(e.message)
+        }
+
+    applicationStore.updateBoundary(applicationId, geometry)
+
+    return SimpleSuccessResponsePayload()
   }
 }
 

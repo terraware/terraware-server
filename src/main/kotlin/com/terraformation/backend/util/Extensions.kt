@@ -22,6 +22,7 @@ import org.geotools.referencing.operation.projection.TransverseMercator
 import org.jooq.Field
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.GeometryCollection
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
@@ -134,6 +135,7 @@ fun GeometryFactory.createRectangle(
 fun Geometry.toMultiPolygon(): MultiPolygon {
   return when (this) {
     is MultiPolygon -> this
+    is GeometryCollection -> union().toMultiPolygon()
     is Polygon -> factory.createMultiPolygon(arrayOf(this))
     else -> throw IllegalArgumentException("Cannot convert $geometryType to MultiPolygon")
   }
