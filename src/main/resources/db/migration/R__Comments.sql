@@ -518,6 +518,7 @@ COMMENT ON TABLE accelerator.event_types IS '(Enum) Types of events for an accel
 COMMENT ON TABLE accelerator.events IS 'Events with meeting links and time within an acclerator module.';
 
 COMMENT ON TABLE accelerator.modules IS 'Possible steps in the workflow of a cohort phase.';
+COMMENT ON COLUMN accelerator.modules.position IS 'This model''s ordinal position in the modules spreadsheet. This can be used to present modules in the same order they appear in the spreadsheet.';
 
 COMMENT ON TABLE accelerator.participant_project_species IS 'Species that are associated to a participant project';
 
