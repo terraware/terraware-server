@@ -2,10 +2,12 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_DOCUMENTS
@@ -23,15 +25,17 @@ import org.jooq.impl.DSL
 class ApplicationDeliverableStore(
   private val dslContext: DSLContext,
 ) {
-  fun fetchApplicationDeliverableSubmissions(
+  fun fetch(
     organizationId: OrganizationId? = null,
     projectId: ProjectId? = null,
+    applicationId: ApplicationId? = null,
     deliverableId: DeliverableId? = null,
     moduleId: ModuleId? = null,
   ): List<DeliverableSubmissionModel> {
     requirePermissions {
       when {
         projectId != null -> readProjectDeliverables(projectId)
+        applicationId != null -> readApplication(applicationId)
         organizationId != null -> readOrganizationDeliverables(organizationId)
         else -> readAllDeliverables()
       }
@@ -41,6 +45,7 @@ class ApplicationDeliverableStore(
         listOfNotNull(
             when {
               projectId != null -> PROJECTS.ID.eq(projectId)
+              applicationId != null -> APPLICATIONS.ID.eq(applicationId)
               organizationId != null -> ORGANIZATIONS.ID.eq(organizationId)
               else -> null
             },
@@ -78,6 +83,8 @@ class ApplicationDeliverableStore(
         .on(DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID))
         .join(PROJECTS)
         .on(SUBMISSIONS.PROJECT_ID.eq(PROJECTS.ID))
+        .leftJoin(APPLICATIONS)
+        .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
         .join(ORGANIZATIONS)
         .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
         .where(conditions)
