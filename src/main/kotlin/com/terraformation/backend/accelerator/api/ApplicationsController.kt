@@ -13,6 +13,7 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationStatus
+import com.terraformation.backend.db.accelerator.tables.records.ApplicationHistoriesRecord
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -70,7 +71,9 @@ class ApplicationsController(
   fun getApplicationHistory(
       @PathVariable applicationId: ApplicationId
   ): GetApplicationHistoryResponsePayload {
-    TODO()
+    val history = applicationStore.fetchHistoryByApplicationId(applicationId)
+
+    return GetApplicationHistoryResponsePayload(history.map { ApplicationHistoryPayload(it) })
   }
 
   @GetMapping
@@ -230,7 +233,15 @@ data class ApplicationHistoryPayload(
     val internalComment: String?,
     val modifiedTime: Instant,
     val status: ApiApplicationStatus,
-)
+) {
+  constructor(
+      record: ApplicationHistoriesRecord
+  ) : this(
+      record.feedback,
+      record.internalComment,
+      record.modifiedTime!!,
+      ApiApplicationStatus.of(record.applicationStatusId!!))
+}
 
 data class ApplicationPayload(
     val boundary: Geometry?,
