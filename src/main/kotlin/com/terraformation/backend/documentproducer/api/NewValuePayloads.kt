@@ -139,8 +139,7 @@ data class NewSectionTextValuePayload(
                 "different positions, you can split it into multiple text values and put a " +
                 "citation on each of them.")
     override val citation: String?,
-    @AllowBlankString
-    val textValue: String,
+    @AllowBlankString val textValue: String,
 ) : NewValuePayload {
   override val type: VariableValuePayloadType
     get() = VariableValuePayloadType.SectionText
