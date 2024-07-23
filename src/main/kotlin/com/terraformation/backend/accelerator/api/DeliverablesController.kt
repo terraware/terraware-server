@@ -171,7 +171,7 @@ data class ListDeliverablesElement(
     val id: DeliverableId,
     val moduleId: ModuleId,
     val moduleName: String,
-    val moduleTitle: String,
+    val moduleTitle: String?,
     val name: String,
     @Schema(
         description =

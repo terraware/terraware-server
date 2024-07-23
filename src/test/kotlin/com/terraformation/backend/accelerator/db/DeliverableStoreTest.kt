@@ -35,6 +35,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadParticipant(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canReadProjectDeliverables(any()) } returns true
+    every { user.canReadModule(any()) } returns true
   }
 
   @Nested
@@ -466,11 +467,12 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadParticipant(any()) } returns false
       every { user.canReadProject(any()) } returns false
       every { user.canReadProjectDeliverables(any()) } returns false
+      every { user.canReadModule(any()) } returns false
 
       insertOrganization()
       val participantId = insertParticipant()
       val projectId = insertProject()
-      insertModule()
+      val moduleId = insertModule()
       val deliverableId = insertDeliverable()
 
       assertThrows<OrganizationNotFoundException> {
@@ -481,6 +483,9 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       }
       assertThrows<ProjectNotFoundException> {
         store.fetchDeliverableSubmissions(projectId = projectId)
+      }
+      assertThrows<ModuleNotFoundException> {
+        store.fetchDeliverableSubmissions(moduleId = moduleId)
       }
       assertThrows<AccessDeniedException> {
         store.fetchDeliverableSubmissions(deliverableId = deliverableId)

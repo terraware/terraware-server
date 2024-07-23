@@ -26,7 +26,7 @@ data class DeliverableSubmissionModel(
     val internalComment: String?,
     val moduleId: ModuleId,
     val moduleName: String,
-    val moduleTitle: String,
+    val moduleTitle: String?,
     val name: String,
     val organizationId: OrganizationId,
     val organizationName: String,

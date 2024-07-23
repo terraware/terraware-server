@@ -66,6 +66,7 @@ class DeliverableStore(
         projectId != null -> readProjectDeliverables(projectId)
         participantId != null -> readParticipant(participantId)
         organizationId != null -> readOrganizationDeliverables(organizationId)
+        moduleId != null -> readModule(moduleId)
         else -> readAllDeliverables()
       }
     }

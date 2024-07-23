@@ -2,6 +2,8 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.accelerator.model.ApplicationModuleModel
+import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.accelerator.model.PreScreenVariableValues
@@ -13,6 +15,12 @@ import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.DeliverableCategory
+import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.DeliverableType
+import com.terraformation.backend.db.accelerator.ModuleId
+import com.terraformation.backend.db.accelerator.SubmissionId
+import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationHistoriesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
@@ -50,8 +58,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertOrganization(countryCode = "US")
-    insertProject()
+    insertOrganization(countryCode = "US", name = "Organization 1")
+    insertProject(name = "Project A")
 
     every { user.adminOrganizations() } returns setOf(organizationId)
     every { user.canCreateApplication(any()) } returns true
@@ -145,7 +153,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               status = ApplicationStatus.PreCheck,
           )
 
-      org1ProjectId2 = insertProject(organizationId = organizationId)
+      org1ProjectId2 = insertProject(organizationId = organizationId, name = "Project B")
       org1Project2ApplicationId =
           insertApplication(
               projectId = org1ProjectId2,
@@ -156,8 +164,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               status = ApplicationStatus.PLReview,
           )
 
-      organizationId2 = insertOrganization(2)
-      org2ProjectId1 = insertProject(organizationId = organizationId2)
+      organizationId2 = insertOrganization(2, name = "Organization 2")
+      org2ProjectId1 = insertProject(organizationId = organizationId2, name = "Project C")
       org2Project1ApplicationId = insertApplication(projectId = org2ProjectId1)
 
       every { user.adminOrganizations() } returns setOf(organizationId, organizationId2)
@@ -369,6 +377,418 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
         assertThrows<ApplicationNotFoundException> {
           store.fetchHistoryByApplicationId(org1Project1ApplicationId)
         }
+      }
+    }
+
+    @Nested
+    inner class FetchModulesByApplicationId {
+      @Test
+      fun `returns modules with statuses associated with application`() {
+        val prescreenModule =
+            insertModule(
+                name = "Pre-screen",
+                overview = "Pre-screen Overview",
+                phase = CohortPhase.PreScreen,
+            )
+        val applicationModule =
+            insertModule(
+                name = "Application",
+                overview = "Application Overview",
+                phase = CohortPhase.Application)
+        insertModule(name = "Hidden module", phase = CohortPhase.Phase1FeasibilityStudy)
+
+        insertApplicationModule(
+            inserted.applicationId, prescreenModule, ApplicationModuleStatus.Complete)
+        insertApplicationModule(
+            inserted.applicationId, applicationModule, ApplicationModuleStatus.Incomplete)
+
+        val expected =
+            setOf(
+                ApplicationModuleModel(
+                    id = prescreenModule,
+                    name = "Pre-screen",
+                    phase = CohortPhase.PreScreen,
+                    overview = "Pre-screen Overview",
+                    applicationId = inserted.applicationId,
+                    applicationModuleStatus = ApplicationModuleStatus.Complete),
+                ApplicationModuleModel(
+                    id = applicationModule,
+                    name = "Application",
+                    phase = CohortPhase.Application,
+                    overview = "Application Overview",
+                    applicationId = inserted.applicationId,
+                    applicationModuleStatus = ApplicationModuleStatus.Incomplete),
+            )
+        val actual = store.fetchModulesByApplicationId(inserted.applicationId).toSet()
+
+        assertEquals(expected, actual)
+      }
+
+      @Test
+      fun `throws exception if no permission to read application`() {
+        every { user.canReadApplication(inserted.applicationId) } returns false
+
+        assertThrows<ApplicationNotFoundException> {
+          store.fetchModulesByApplicationId(inserted.applicationId)
+        }
+      }
+    }
+
+    @Nested
+    inner class FetchApplicationDeliverables {
+      private lateinit var prescreenModuleId: ModuleId
+      private lateinit var applicationModuleId: ModuleId
+      private lateinit var prescreenDeliverableId: DeliverableId
+      private lateinit var applicationDeliverableId: DeliverableId
+
+      private lateinit var submissionId1: SubmissionId
+      private lateinit var submissionId2: SubmissionId
+      private lateinit var submissionId3: SubmissionId
+      private lateinit var submissionId4: SubmissionId
+      private lateinit var submissionId5: SubmissionId
+      private lateinit var submissionId6: SubmissionId
+
+      @BeforeEach
+      fun setup() {
+        every { user.canReadProjectDeliverables(any()) } returns true
+        every { user.canReadOrganizationDeliverables(any()) } returns true
+        every { user.canReadModule(any()) } returns true
+        every { user.canReadAllDeliverables() } returns true
+
+        prescreenModuleId =
+            insertModule(
+                name = "Pre-screen",
+                overview = "Pre-screen Overview",
+                phase = CohortPhase.PreScreen,
+            )
+        applicationModuleId =
+            insertModule(
+                name = "Application",
+                overview = "Application Overview",
+                phase = CohortPhase.Application)
+
+        prescreenDeliverableId =
+            insertDeliverable(
+                descriptionHtml = "Pre-screen deliverable description",
+                deliverableCategoryId = DeliverableCategory.Compliance,
+                deliverableTypeId = DeliverableType.Questions,
+                moduleId = prescreenModuleId,
+                name = "Pre-screen deliverable",
+            )
+
+        applicationDeliverableId =
+            insertDeliverable(
+                descriptionHtml = "Application deliverable description",
+                deliverableCategoryId = DeliverableCategory.CarbonEligibility,
+                deliverableTypeId = DeliverableType.Questions,
+                moduleId = applicationModuleId,
+                name = "Application deliverable",
+            )
+
+        // Org 1 Project 1
+        submissionId1 =
+            insertSubmission(
+                deliverableId = prescreenDeliverableId,
+                feedback = "feedback 1",
+                internalComment = "comment 1",
+                projectId = org1ProjectId1,
+                submissionStatus = SubmissionStatus.InReview,
+            )
+
+        submissionId2 =
+            insertSubmission(
+                deliverableId = applicationDeliverableId,
+                feedback = "feedback 2",
+                internalComment = "comment 2",
+                projectId = org1ProjectId1,
+                submissionStatus = SubmissionStatus.InReview,
+            )
+
+        // Org 1 Project 2
+        submissionId3 =
+            insertSubmission(
+                deliverableId = prescreenDeliverableId,
+                feedback = "feedback 3",
+                internalComment = "comment 3",
+                projectId = org1ProjectId2,
+                submissionStatus = SubmissionStatus.InReview,
+            )
+
+        submissionId4 =
+            insertSubmission(
+                deliverableId = applicationDeliverableId,
+                feedback = "feedback 4",
+                internalComment = "comment 4",
+                projectId = org1ProjectId2,
+                submissionStatus = SubmissionStatus.InReview,
+            )
+
+        // Org 2 Project 1
+        submissionId5 =
+            insertSubmission(
+                deliverableId = prescreenDeliverableId,
+                feedback = "feedback 5",
+                internalComment = "comment 5",
+                projectId = org2ProjectId1,
+                submissionStatus = SubmissionStatus.InReview,
+            )
+
+        submissionId6 =
+            insertSubmission(
+                deliverableId = applicationDeliverableId,
+                feedback = "feedback 6",
+                internalComment = "comment 6",
+                projectId = org2ProjectId1,
+                submissionStatus = SubmissionStatus.InReview,
+            )
+      }
+
+      @Test
+      fun `filters by IDs`() {
+        val deliverableSubmissionModel1 =
+            DeliverableSubmissionModel(
+                category = DeliverableCategory.Compliance,
+                deliverableId = prescreenDeliverableId,
+                descriptionHtml = "Pre-screen deliverable description",
+                documents = emptyList(),
+                dueDate = null,
+                feedback = "feedback 1",
+                internalComment = "comment 1",
+                moduleId = prescreenModuleId,
+                moduleName = "Pre-screen",
+                moduleTitle = null,
+                name = "Pre-screen deliverable",
+                organizationId = organizationId,
+                organizationName = "Organization 1",
+                participantId = null,
+                participantName = null,
+                projectId = org1ProjectId1,
+                projectName = "Project A",
+                status = SubmissionStatus.InReview,
+                submissionId = submissionId1,
+                templateUrl = null,
+                type = DeliverableType.Questions,
+            )
+
+        val deliverableSubmissionModel2 =
+            deliverableSubmissionModel1.copy(
+                category = DeliverableCategory.CarbonEligibility,
+                deliverableId = applicationDeliverableId,
+                descriptionHtml = "Application deliverable description",
+                feedback = "feedback 2",
+                internalComment = "comment 2",
+                moduleId = applicationModuleId,
+                moduleName = "Application",
+                name = "Application deliverable",
+                submissionId = submissionId2,
+            )
+
+        val deliverableSubmissionModel3 =
+            deliverableSubmissionModel1.copy(
+                feedback = "feedback 3",
+                internalComment = "comment 3",
+                projectId = org1ProjectId2,
+                projectName = "Project B",
+                submissionId = submissionId3,
+            )
+
+        val deliverableSubmissionModel4 =
+            deliverableSubmissionModel2.copy(
+                feedback = "feedback 4",
+                internalComment = "comment 4",
+                projectId = org1ProjectId2,
+                projectName = "Project B",
+                submissionId = submissionId4,
+            )
+
+        val deliverableSubmissionModel5 =
+            deliverableSubmissionModel1.copy(
+                feedback = "feedback 5",
+                internalComment = "comment 5",
+                organizationId = organizationId2,
+                organizationName = "Organization 2",
+                projectId = org2ProjectId1,
+                projectName = "Project C",
+                submissionId = submissionId5,
+            )
+
+        val deliverableSubmissionModel6 =
+            deliverableSubmissionModel2.copy(
+                feedback = "feedback 6",
+                internalComment = "comment 6",
+                organizationId = organizationId2,
+                organizationName = "Organization 2",
+                projectId = org2ProjectId1,
+                projectName = "Project C",
+                submissionId = submissionId6,
+            )
+
+        assertEquals(
+            setOf(deliverableSubmissionModel1, deliverableSubmissionModel2),
+            store.fetchApplicationDeliverables(projectId = org1ProjectId1).toSet(),
+            "Fetch application deliverables by projectId for org1 project1")
+
+        assertEquals(
+            setOf(deliverableSubmissionModel3, deliverableSubmissionModel4),
+            store.fetchApplicationDeliverables(projectId = org1ProjectId2).toSet(),
+            "Fetch application deliverables by projectId for org1 project2")
+
+        assertEquals(
+            setOf(deliverableSubmissionModel5, deliverableSubmissionModel6),
+            store.fetchApplicationDeliverables(projectId = org2ProjectId1).toSet(),
+            "Fetch application deliverables by org2 project1")
+
+        assertEquals(
+            setOf(deliverableSubmissionModel1),
+            store
+                .fetchApplicationDeliverables(
+                    projectId = org1ProjectId1, deliverableId = prescreenDeliverableId)
+                .toSet(),
+            "Fetch application deliverables by projectId and deliverableId for org1 project1")
+
+        assertEquals(
+            setOf(deliverableSubmissionModel3),
+            store
+                .fetchApplicationDeliverables(
+                    projectId = org1ProjectId2, deliverableId = prescreenDeliverableId)
+                .toSet(),
+            "Fetch application deliverables by projectId and deliverableId for org1 project2")
+
+        assertEquals(
+            setOf(deliverableSubmissionModel5),
+            store
+                .fetchApplicationDeliverables(
+                    projectId = org2ProjectId1, deliverableId = prescreenDeliverableId)
+                .toSet(),
+            "Fetch application deliverables by projectId and deliverableId for org1 project2")
+
+        assertEquals(
+            setOf(deliverableSubmissionModel1, deliverableSubmissionModel2),
+            store.fetchApplicationDeliverables(applicationId = org1Project1ApplicationId).toSet(),
+            "Fetch application deliverables by applicationId for org1 project1")
+
+        assertEquals(
+            setOf(deliverableSubmissionModel3, deliverableSubmissionModel4),
+            store.fetchApplicationDeliverables(applicationId = org1Project2ApplicationId).toSet(),
+            "Fetch application deliverables by applicationId for org1 project2")
+
+        assertEquals(
+            setOf(deliverableSubmissionModel5, deliverableSubmissionModel6),
+            store.fetchApplicationDeliverables(applicationId = org2Project1ApplicationId).toSet(),
+            "Fetch application deliverables by applicationId for org2 project1")
+
+        assertEquals(
+            setOf(deliverableSubmissionModel2),
+            store
+                .fetchApplicationDeliverables(
+                    applicationId = org1Project1ApplicationId,
+                    deliverableId = applicationDeliverableId)
+                .toSet(),
+            "Fetch application deliverables by applicationId and deliverableId for org1 project1")
+
+        assertEquals(
+            setOf(deliverableSubmissionModel4),
+            store
+                .fetchApplicationDeliverables(
+                    applicationId = org1Project2ApplicationId,
+                    deliverableId = applicationDeliverableId)
+                .toSet(),
+            "Fetch application deliverables by applicationId and deliverableId for org1 project2")
+
+        assertEquals(
+            setOf(deliverableSubmissionModel6),
+            store
+                .fetchApplicationDeliverables(
+                    applicationId = org2Project1ApplicationId,
+                    deliverableId = applicationDeliverableId)
+                .toSet(),
+            "Fetch application deliverables by applicationId and deliverableId for org1 project2")
+
+        assertEquals(
+            setOf(
+                deliverableSubmissionModel1,
+                deliverableSubmissionModel2,
+                deliverableSubmissionModel3,
+                deliverableSubmissionModel4),
+            store.fetchApplicationDeliverables(organizationId = organizationId).toSet(),
+            "Fetch application deliverables by organizationId 1")
+
+        assertEquals(
+            setOf(deliverableSubmissionModel5, deliverableSubmissionModel6),
+            store.fetchApplicationDeliverables(organizationId = organizationId2).toSet(),
+            "Fetch application deliverables by organizationId 2")
+
+        assertEquals(
+            setOf(
+                deliverableSubmissionModel1,
+                deliverableSubmissionModel3,
+                deliverableSubmissionModel5),
+            store.fetchApplicationDeliverables(deliverableId = prescreenDeliverableId).toSet(),
+            "Fetch application deliverables by pre-screen deliverableId")
+
+        assertEquals(
+            setOf(
+                deliverableSubmissionModel2,
+                deliverableSubmissionModel4,
+                deliverableSubmissionModel6),
+            store.fetchApplicationDeliverables(deliverableId = applicationDeliverableId).toSet(),
+            "Fetch application deliverables by application deliverableId")
+
+        assertEquals(
+            setOf(
+                deliverableSubmissionModel1,
+                deliverableSubmissionModel3,
+                deliverableSubmissionModel5),
+            store.fetchApplicationDeliverables(moduleId = prescreenModuleId).toSet(),
+            "Fetch application deliverables by pre-screen moduleId")
+
+        assertEquals(
+            setOf(
+                deliverableSubmissionModel2,
+                deliverableSubmissionModel4,
+                deliverableSubmissionModel6),
+            store.fetchApplicationDeliverables(moduleId = applicationModuleId).toSet(),
+            "Fetch application deliverables by application moduleId")
+
+        assertEquals(
+            setOf(
+                deliverableSubmissionModel1,
+                deliverableSubmissionModel2,
+                deliverableSubmissionModel3,
+                deliverableSubmissionModel4,
+                deliverableSubmissionModel5,
+                deliverableSubmissionModel6),
+            store.fetchApplicationDeliverables().toSet(),
+            "Fetch application deliverables by application deliverableId")
+      }
+
+      @Test
+      fun `throws exception if no permission to read entities`() {
+        every { user.canReadAllDeliverables() } returns false
+        every { user.canReadOrganization(any()) } returns false
+        every { user.canReadOrganizationDeliverables(any()) } returns false
+        every { user.canReadProject(any()) } returns false
+        every { user.canReadProjectDeliverables(any()) } returns false
+        every { user.canReadModule(any()) } returns false
+        every { user.canReadApplication(any()) } returns false
+
+        assertThrows<OrganizationNotFoundException> {
+          store.fetchApplicationDeliverables(organizationId = organizationId)
+        }
+        assertThrows<ApplicationNotFoundException> {
+          store.fetchApplicationDeliverables(applicationId = org1Project1ApplicationId)
+        }
+        assertThrows<ProjectNotFoundException> {
+          store.fetchApplicationDeliverables(projectId = org1ProjectId1)
+        }
+        assertThrows<ModuleNotFoundException> {
+          store.fetchApplicationDeliverables(moduleId = prescreenModuleId)
+        }
+        assertThrows<AccessDeniedException> {
+          store.fetchApplicationDeliverables(deliverableId = prescreenDeliverableId)
+        }
+
+        assertThrows<AccessDeniedException> { store.fetchApplicationDeliverables() }
       }
     }
   }

@@ -9,12 +9,12 @@ import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import org.jooq.Record
 
 data class ApplicationModuleModel(
-  val id: ModuleId,
-  val name: String,
-  val phase: CohortPhase,
-  val overview: String? = null,
-  val applicationId: ApplicationId?,
-  val applicationModuleStatus: ApplicationModuleStatus?,
+    val id: ModuleId,
+    val name: String,
+    val phase: CohortPhase,
+    val overview: String? = null,
+    val applicationId: ApplicationId?,
+    val applicationModuleStatus: ApplicationModuleStatus?,
 ) {
   companion object {
     fun of(record: Record): ApplicationModuleModel {

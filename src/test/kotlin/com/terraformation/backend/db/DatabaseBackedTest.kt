@@ -2294,8 +2294,8 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertApplicationModule(
-      applicationId: Any,
-      moduleId: Any,
+      applicationId: Any = inserted.applicationId,
+      moduleId: Any = inserted.moduleId,
       status: ApplicationModuleStatus = ApplicationModuleStatus.Incomplete,
   ) {
     val row =
