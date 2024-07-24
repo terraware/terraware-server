@@ -412,7 +412,7 @@ data class GetApplicationModulesResponsePayload(val modules: List<ApplicationMod
     SuccessResponsePayload
 
 data class GetApplicationDeliverablesResponsePayload(
-    val modules: List<ApplicationDeliverablePayload>
+    val deliverables: List<ApplicationDeliverablePayload>
 ) : SuccessResponsePayload
 
 data class GetApplicationModuleDeliverablesResponsePayload(
