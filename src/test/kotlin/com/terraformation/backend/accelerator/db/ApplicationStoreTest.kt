@@ -75,7 +75,9 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
   inner class Create {
     @Test
     fun `populates initial values and creates history entry`() {
-      val moduleId = insertModule(phase = CohortPhase.PreScreen)
+      val prescreenModuleId = insertModule(phase = CohortPhase.PreScreen)
+      val applicationModuleId = insertModule(phase = CohortPhase.Application)
+      insertModule(name = "Not assigned", phase = CohortPhase.Phase1FeasibilityStudy)
       val now = Instant.ofEpochSecond(30)
       clock.instant = now
 
@@ -108,7 +110,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               ApplicationModulesRow(
                   applicationId = model.id,
-                  moduleId = moduleId,
+                  moduleId = prescreenModuleId,
+                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete),
+              ApplicationModulesRow(
+                  applicationId = model.id,
+                  moduleId = applicationModuleId,
                   applicationModuleStatusId = ApplicationModuleStatus.Incomplete)),
           applicationModulesDao.findAll())
     }
