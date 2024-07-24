@@ -1,3 +1,4 @@
+40643510155 SW-5681 Added application modules and deliverables endpoint (#2197)
 ff54d0471b0 SW-5681 Implemented application modules and deliverables fetch methods in the application store (#2194)
 528d0c8ceab SW-5699 Implement application history fetching (#2196)
 ee2876c13db SW-5627 Handle uploaded application boundaries (#2195)
