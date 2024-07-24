@@ -390,20 +390,31 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 overview = "Pre-screen Overview",
                 phase = CohortPhase.PreScreen,
             )
-        val applicationModule =
+        val applicationModule2 =
             insertModule(
-                name = "Application",
-                overview = "Application Overview",
-                phase = CohortPhase.Application)
+                name = "Application 2",
+                overview = "Application 2 Overview",
+                phase = CohortPhase.Application,
+                position = 2,
+            )
+
+        val applicationModule1 =
+            insertModule(
+                name = "Application 1",
+                overview = "Application 1 Overview",
+                phase = CohortPhase.Application,
+                position = 1)
         insertModule(name = "Hidden module", phase = CohortPhase.Phase1FeasibilityStudy)
 
         insertApplicationModule(
             inserted.applicationId, prescreenModule, ApplicationModuleStatus.Complete)
         insertApplicationModule(
-            inserted.applicationId, applicationModule, ApplicationModuleStatus.Incomplete)
+            inserted.applicationId, applicationModule1, ApplicationModuleStatus.Incomplete)
+        insertApplicationModule(
+            inserted.applicationId, applicationModule2, ApplicationModuleStatus.Incomplete)
 
         val expected =
-            setOf(
+            listOf(
                 ApplicationModuleModel(
                     id = prescreenModule,
                     name = "Pre-screen",
@@ -412,14 +423,21 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     applicationId = inserted.applicationId,
                     applicationModuleStatus = ApplicationModuleStatus.Complete),
                 ApplicationModuleModel(
-                    id = applicationModule,
-                    name = "Application",
+                    id = applicationModule1,
+                    name = "Application 1",
                     phase = CohortPhase.Application,
-                    overview = "Application Overview",
+                    overview = "Application 1 Overview",
+                    applicationId = inserted.applicationId,
+                    applicationModuleStatus = ApplicationModuleStatus.Incomplete),
+                ApplicationModuleModel(
+                    id = applicationModule2,
+                    name = "Application 2",
+                    phase = CohortPhase.Application,
+                    overview = "Application 2 Overview",
                     applicationId = inserted.applicationId,
                     applicationModuleStatus = ApplicationModuleStatus.Incomplete),
             )
-        val actual = store.fetchModulesByApplicationId(inserted.applicationId).toSet()
+        val actual = store.fetchModulesByApplicationId(inserted.applicationId).toList()
 
         assertEquals(expected, actual)
       }
@@ -438,15 +456,18 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     inner class FetchApplicationDeliverables {
       private lateinit var prescreenModuleId: ModuleId
       private lateinit var applicationModuleId: ModuleId
+      private lateinit var extraApplicationModuleId: ModuleId
+
       private lateinit var prescreenDeliverableId: DeliverableId
       private lateinit var applicationDeliverableId: DeliverableId
+      private lateinit var extraApplicationDeliverableId: DeliverableId
 
-      private lateinit var submissionId1: SubmissionId
-      private lateinit var submissionId2: SubmissionId
-      private lateinit var submissionId3: SubmissionId
-      private lateinit var submissionId4: SubmissionId
-      private lateinit var submissionId5: SubmissionId
-      private lateinit var submissionId6: SubmissionId
+      private lateinit var org1Project1PrescreenSubmission: SubmissionId
+      private lateinit var org1Project1ApplicationSubmission: SubmissionId
+      private lateinit var org1Project2PrescreenSubmission: SubmissionId
+      private lateinit var org2Project1PrescreenSubmission: SubmissionId
+      private lateinit var org2Project1ApplicationSubmission: SubmissionId
+      private lateinit var org2Project1ExtraApplicationSubmission: SubmissionId
 
       @BeforeEach
       fun setup() {
@@ -467,6 +488,23 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 overview = "Application Overview",
                 phase = CohortPhase.Application)
 
+        // Extra module only for org 2 project 1, not visible to Org 1.
+        extraApplicationModuleId =
+            insertModule(
+                name = "Extra Application",
+                overview = "Extra Application Overview",
+                phase = CohortPhase.Application)
+
+        insertApplicationModule(org1Project1ApplicationId, prescreenModuleId)
+        insertApplicationModule(org1Project1ApplicationId, applicationModuleId)
+
+        insertApplicationModule(org1Project2ApplicationId, prescreenModuleId)
+        insertApplicationModule(org1Project2ApplicationId, applicationModuleId)
+
+        insertApplicationModule(org2Project1ApplicationId, prescreenModuleId)
+        insertApplicationModule(org2Project1ApplicationId, applicationModuleId)
+        insertApplicationModule(org2Project1ApplicationId, extraApplicationModuleId)
+
         prescreenDeliverableId =
             insertDeliverable(
                 descriptionHtml = "Pre-screen deliverable description",
@@ -485,8 +523,17 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 name = "Application deliverable",
             )
 
+        extraApplicationDeliverableId =
+            insertDeliverable(
+                descriptionHtml = "Extra application deliverable description",
+                deliverableCategoryId = DeliverableCategory.FinancialViability,
+                deliverableTypeId = DeliverableType.Questions,
+                moduleId = extraApplicationModuleId,
+                name = "Extra application deliverable",
+            )
+
         // Org 1 Project 1
-        submissionId1 =
+        org1Project1PrescreenSubmission =
             insertSubmission(
                 deliverableId = prescreenDeliverableId,
                 feedback = "feedback 1",
@@ -495,7 +542,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 submissionStatus = SubmissionStatus.InReview,
             )
 
-        submissionId2 =
+        org1Project1ApplicationSubmission =
             insertSubmission(
                 deliverableId = applicationDeliverableId,
                 feedback = "feedback 2",
@@ -505,7 +552,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             )
 
         // Org 1 Project 2
-        submissionId3 =
+        org1Project2PrescreenSubmission =
             insertSubmission(
                 deliverableId = prescreenDeliverableId,
                 feedback = "feedback 3",
@@ -514,17 +561,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 submissionStatus = SubmissionStatus.InReview,
             )
 
-        submissionId4 =
-            insertSubmission(
-                deliverableId = applicationDeliverableId,
-                feedback = "feedback 4",
-                internalComment = "comment 4",
-                projectId = org1ProjectId2,
-                submissionStatus = SubmissionStatus.InReview,
-            )
+        // No submission for Org 1 Project 2 Application Deliverable
 
         // Org 2 Project 1
-        submissionId5 =
+        org2Project1PrescreenSubmission =
             insertSubmission(
                 deliverableId = prescreenDeliverableId,
                 feedback = "feedback 5",
@@ -533,7 +573,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 submissionStatus = SubmissionStatus.InReview,
             )
 
-        submissionId6 =
+        org2Project1ApplicationSubmission =
             insertSubmission(
                 deliverableId = applicationDeliverableId,
                 feedback = "feedback 6",
@@ -541,11 +581,20 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 projectId = org2ProjectId1,
                 submissionStatus = SubmissionStatus.InReview,
             )
+
+        org2Project1ExtraApplicationSubmission =
+            insertSubmission(
+                deliverableId = extraApplicationDeliverableId,
+                feedback = "feedback 7",
+                internalComment = "comment 7",
+                projectId = org2ProjectId1,
+                submissionStatus = SubmissionStatus.Completed,
+            )
       }
 
       @Test
       fun `filters by IDs`() {
-        val deliverableSubmissionModel1 =
+        val org1Project1PrescreenModel =
             DeliverableSubmissionModel(
                 category = DeliverableCategory.Compliance,
                 deliverableId = prescreenDeliverableId,
@@ -565,13 +614,13 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 projectId = org1ProjectId1,
                 projectName = "Project A",
                 status = SubmissionStatus.InReview,
-                submissionId = submissionId1,
+                submissionId = org1Project1PrescreenSubmission,
                 templateUrl = null,
                 type = DeliverableType.Questions,
             )
 
-        val deliverableSubmissionModel2 =
-            deliverableSubmissionModel1.copy(
+        val org1Project1ApplicationModel =
+            org1Project1PrescreenModel.copy(
                 category = DeliverableCategory.CarbonEligibility,
                 deliverableId = applicationDeliverableId,
                 descriptionHtml = "Application deliverable description",
@@ -580,66 +629,84 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 moduleId = applicationModuleId,
                 moduleName = "Application",
                 name = "Application deliverable",
-                submissionId = submissionId2,
+                submissionId = org1Project1ApplicationSubmission,
             )
 
-        val deliverableSubmissionModel3 =
-            deliverableSubmissionModel1.copy(
+        val org1Project2PrescreenModel =
+            org1Project1PrescreenModel.copy(
                 feedback = "feedback 3",
                 internalComment = "comment 3",
                 projectId = org1ProjectId2,
                 projectName = "Project B",
-                submissionId = submissionId3,
+                submissionId = org1Project2PrescreenSubmission,
             )
 
-        val deliverableSubmissionModel4 =
-            deliverableSubmissionModel2.copy(
-                feedback = "feedback 4",
-                internalComment = "comment 4",
+        val org1Project2ApplicationModel =
+            org1Project1ApplicationModel.copy(
+                feedback = null,
+                internalComment = null,
                 projectId = org1ProjectId2,
                 projectName = "Project B",
-                submissionId = submissionId4,
+                submissionId = null,
+                status = SubmissionStatus.NotSubmitted,
             )
 
-        val deliverableSubmissionModel5 =
-            deliverableSubmissionModel1.copy(
+        val org2Project1PrescreenModel =
+            org1Project1PrescreenModel.copy(
                 feedback = "feedback 5",
                 internalComment = "comment 5",
                 organizationId = organizationId2,
                 organizationName = "Organization 2",
                 projectId = org2ProjectId1,
                 projectName = "Project C",
-                submissionId = submissionId5,
+                submissionId = org2Project1PrescreenSubmission,
             )
 
-        val deliverableSubmissionModel6 =
-            deliverableSubmissionModel2.copy(
+        val org2Project1ApplicationModel =
+            org1Project1ApplicationModel.copy(
                 feedback = "feedback 6",
                 internalComment = "comment 6",
                 organizationId = organizationId2,
                 organizationName = "Organization 2",
                 projectId = org2ProjectId1,
                 projectName = "Project C",
-                submissionId = submissionId6,
+                submissionId = org2Project1ApplicationSubmission,
+            )
+
+        val org2Project1ExtraApplicationModel =
+            org2Project1ApplicationModel.copy(
+                category = DeliverableCategory.FinancialViability,
+                deliverableId = extraApplicationDeliverableId,
+                descriptionHtml = "Extra application deliverable description",
+                feedback = "feedback 7",
+                internalComment = "comment 7",
+                moduleId = extraApplicationModuleId,
+                moduleName = "Extra Application",
+                name = "Extra application deliverable",
+                submissionId = org2Project1ExtraApplicationSubmission,
+                status = SubmissionStatus.Completed,
             )
 
         assertEquals(
-            setOf(deliverableSubmissionModel1, deliverableSubmissionModel2),
+            setOf(org1Project1PrescreenModel, org1Project1ApplicationModel),
             store.fetchApplicationDeliverables(projectId = org1ProjectId1).toSet(),
             "Fetch application deliverables by projectId for org1 project1")
 
         assertEquals(
-            setOf(deliverableSubmissionModel3, deliverableSubmissionModel4),
+            setOf(org1Project2PrescreenModel, org1Project2ApplicationModel),
             store.fetchApplicationDeliverables(projectId = org1ProjectId2).toSet(),
             "Fetch application deliverables by projectId for org1 project2")
 
         assertEquals(
-            setOf(deliverableSubmissionModel5, deliverableSubmissionModel6),
+            setOf(
+                org2Project1PrescreenModel,
+                org2Project1ApplicationModel,
+                org2Project1ExtraApplicationModel),
             store.fetchApplicationDeliverables(projectId = org2ProjectId1).toSet(),
             "Fetch application deliverables by org2 project1")
 
         assertEquals(
-            setOf(deliverableSubmissionModel1),
+            setOf(org1Project1PrescreenModel),
             store
                 .fetchApplicationDeliverables(
                     projectId = org1ProjectId1, deliverableId = prescreenDeliverableId)
@@ -647,7 +714,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by projectId and deliverableId for org1 project1")
 
         assertEquals(
-            setOf(deliverableSubmissionModel3),
+            setOf(org1Project2PrescreenModel),
             store
                 .fetchApplicationDeliverables(
                     projectId = org1ProjectId2, deliverableId = prescreenDeliverableId)
@@ -655,7 +722,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by projectId and deliverableId for org1 project2")
 
         assertEquals(
-            setOf(deliverableSubmissionModel5),
+            setOf(org2Project1PrescreenModel),
             store
                 .fetchApplicationDeliverables(
                     projectId = org2ProjectId1, deliverableId = prescreenDeliverableId)
@@ -663,22 +730,25 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by projectId and deliverableId for org1 project2")
 
         assertEquals(
-            setOf(deliverableSubmissionModel1, deliverableSubmissionModel2),
+            setOf(org1Project1PrescreenModel, org1Project1ApplicationModel),
             store.fetchApplicationDeliverables(applicationId = org1Project1ApplicationId).toSet(),
             "Fetch application deliverables by applicationId for org1 project1")
 
         assertEquals(
-            setOf(deliverableSubmissionModel3, deliverableSubmissionModel4),
+            setOf(org1Project2PrescreenModel, org1Project2ApplicationModel),
             store.fetchApplicationDeliverables(applicationId = org1Project2ApplicationId).toSet(),
             "Fetch application deliverables by applicationId for org1 project2")
 
         assertEquals(
-            setOf(deliverableSubmissionModel5, deliverableSubmissionModel6),
+            setOf(
+                org2Project1PrescreenModel,
+                org2Project1ApplicationModel,
+                org2Project1ExtraApplicationModel),
             store.fetchApplicationDeliverables(applicationId = org2Project1ApplicationId).toSet(),
             "Fetch application deliverables by applicationId for org2 project1")
 
         assertEquals(
-            setOf(deliverableSubmissionModel2),
+            setOf(org1Project1ApplicationModel),
             store
                 .fetchApplicationDeliverables(
                     applicationId = org1Project1ApplicationId,
@@ -687,7 +757,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by applicationId and deliverableId for org1 project1")
 
         assertEquals(
-            setOf(deliverableSubmissionModel4),
+            setOf(org1Project2ApplicationModel),
             store
                 .fetchApplicationDeliverables(
                     applicationId = org1Project2ApplicationId,
@@ -696,7 +766,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             "Fetch application deliverables by applicationId and deliverableId for org1 project2")
 
         assertEquals(
-            setOf(deliverableSubmissionModel6),
+            setOf(org2Project1ApplicationModel),
             store
                 .fetchApplicationDeliverables(
                     applicationId = org2Project1ApplicationId,
@@ -706,58 +776,58 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
         assertEquals(
             setOf(
-                deliverableSubmissionModel1,
-                deliverableSubmissionModel2,
-                deliverableSubmissionModel3,
-                deliverableSubmissionModel4),
+                org1Project1PrescreenModel,
+                org1Project1ApplicationModel,
+                org1Project2PrescreenModel,
+                org1Project2ApplicationModel),
             store.fetchApplicationDeliverables(organizationId = organizationId).toSet(),
             "Fetch application deliverables by organizationId 1")
 
         assertEquals(
-            setOf(deliverableSubmissionModel5, deliverableSubmissionModel6),
+            setOf(
+                org2Project1PrescreenModel,
+                org2Project1ApplicationModel,
+                org2Project1ExtraApplicationModel),
             store.fetchApplicationDeliverables(organizationId = organizationId2).toSet(),
             "Fetch application deliverables by organizationId 2")
 
         assertEquals(
             setOf(
-                deliverableSubmissionModel1,
-                deliverableSubmissionModel3,
-                deliverableSubmissionModel5),
+                org1Project1PrescreenModel, org1Project2PrescreenModel, org2Project1PrescreenModel),
             store.fetchApplicationDeliverables(deliverableId = prescreenDeliverableId).toSet(),
             "Fetch application deliverables by pre-screen deliverableId")
 
         assertEquals(
             setOf(
-                deliverableSubmissionModel2,
-                deliverableSubmissionModel4,
-                deliverableSubmissionModel6),
+                org1Project1ApplicationModel,
+                org1Project2ApplicationModel,
+                org2Project1ApplicationModel),
             store.fetchApplicationDeliverables(deliverableId = applicationDeliverableId).toSet(),
             "Fetch application deliverables by application deliverableId")
 
         assertEquals(
             setOf(
-                deliverableSubmissionModel1,
-                deliverableSubmissionModel3,
-                deliverableSubmissionModel5),
+                org1Project1PrescreenModel, org1Project2PrescreenModel, org2Project1PrescreenModel),
             store.fetchApplicationDeliverables(moduleId = prescreenModuleId).toSet(),
             "Fetch application deliverables by pre-screen moduleId")
 
         assertEquals(
             setOf(
-                deliverableSubmissionModel2,
-                deliverableSubmissionModel4,
-                deliverableSubmissionModel6),
+                org1Project1ApplicationModel,
+                org1Project2ApplicationModel,
+                org2Project1ApplicationModel),
             store.fetchApplicationDeliverables(moduleId = applicationModuleId).toSet(),
             "Fetch application deliverables by application moduleId")
 
         assertEquals(
             setOf(
-                deliverableSubmissionModel1,
-                deliverableSubmissionModel2,
-                deliverableSubmissionModel3,
-                deliverableSubmissionModel4,
-                deliverableSubmissionModel5,
-                deliverableSubmissionModel6),
+                org1Project1PrescreenModel,
+                org1Project1ApplicationModel,
+                org1Project2PrescreenModel,
+                org1Project2ApplicationModel,
+                org2Project1PrescreenModel,
+                org2Project1ApplicationModel,
+                org2Project1ExtraApplicationModel),
             store.fetchApplicationDeliverables().toSet(),
             "Fetch application deliverables by application deliverableId")
       }
