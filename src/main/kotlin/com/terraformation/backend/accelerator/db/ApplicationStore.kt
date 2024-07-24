@@ -1,9 +1,12 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.model.ApplicationModuleModel
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
+import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.accelerator.model.PreScreenVariableValues
+import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -11,17 +14,25 @@ import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ModuleId
+import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.records.ApplicationHistoriesRecord
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_HISTORIES
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_MODULES
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_DOCUMENTS
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DOCUMENTS
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
@@ -106,6 +117,130 @@ class ApplicationStore(
           .orderBy(MODIFIED_TIME.desc())
           .fetch()
     }
+  }
+
+  fun fetchModulesByApplicationId(applicationId: ApplicationId): List<ApplicationModuleModel> {
+    requirePermissions { readApplication(applicationId) }
+
+    return with(MODULES) {
+      dslContext
+          .select(
+              asterisk(),
+              APPLICATION_MODULES.APPLICATION_ID,
+              APPLICATION_MODULES.APPLICATION_MODULE_STATUS_ID)
+          .from(this)
+          .join(APPLICATION_MODULES)
+          .on(APPLICATION_MODULES.MODULE_ID.eq(ID))
+          .where(DSL.or(PHASE_ID.eq(CohortPhase.PreScreen), PHASE_ID.eq(CohortPhase.Application)))
+          .and(APPLICATION_MODULES.APPLICATION_ID.eq(applicationId))
+          .orderBy(MODULES.PHASE_ID, MODULES.POSITION)
+          .fetch { ApplicationModuleModel.of(it) }
+    }
+  }
+
+  fun fetchApplicationDeliverables(
+      organizationId: OrganizationId? = null,
+      projectId: ProjectId? = null,
+      applicationId: ApplicationId? = null,
+      deliverableId: DeliverableId? = null,
+      moduleId: ModuleId? = null,
+  ): List<DeliverableSubmissionModel> {
+    requirePermissions {
+      when {
+        projectId != null -> readProjectDeliverables(projectId)
+        applicationId != null -> readApplication(applicationId)
+        organizationId != null -> readOrganizationDeliverables(organizationId)
+        moduleId != null -> readModule(moduleId)
+        else -> readAllDeliverables()
+      }
+    }
+
+    val conditions =
+        listOfNotNull(
+            when {
+              projectId != null -> PROJECTS.ID.eq(projectId)
+              applicationId != null -> APPLICATIONS.ID.eq(applicationId)
+              organizationId != null -> ORGANIZATIONS.ID.eq(organizationId)
+              else -> null
+            },
+            deliverableId?.let { DELIVERABLES.ID.eq(it) },
+            moduleId?.let { DELIVERABLES.MODULE_ID.eq(it) },
+            DSL.or(
+                MODULES.PHASE_ID.eq(CohortPhase.PreScreen),
+                MODULES.PHASE_ID.eq(CohortPhase.Application),
+            ))
+
+    val documentsMultiset =
+        DSL.multiset(
+                DSL.select(SUBMISSION_DOCUMENTS.asterisk())
+                    .from(SUBMISSION_DOCUMENTS)
+                    .where(SUBMISSION_DOCUMENTS.SUBMISSION_ID.eq(SUBMISSIONS.ID))
+                    .orderBy(SUBMISSION_DOCUMENTS.ID))
+            .convertFrom { result -> result.map { SubmissionDocumentModel.of(it) } }
+
+    return dslContext
+        .select(
+            DELIVERABLE_DOCUMENTS.TEMPLATE_URL,
+            DELIVERABLES.DELIVERABLE_CATEGORY_ID,
+            DELIVERABLES.DELIVERABLE_TYPE_ID,
+            DELIVERABLES.DESCRIPTION_HTML,
+            DELIVERABLES.ID,
+            DELIVERABLES.MODULE_ID,
+            DELIVERABLES.NAME,
+            documentsMultiset,
+            MODULES.NAME,
+            ORGANIZATIONS.ID,
+            ORGANIZATIONS.NAME,
+            PROJECTS.ID,
+            PROJECTS.NAME,
+            SUBMISSIONS.FEEDBACK,
+            SUBMISSIONS.ID,
+            SUBMISSIONS.INTERNAL_COMMENT,
+            SUBMISSIONS.SUBMISSION_STATUS_ID,
+        )
+        .from(DELIVERABLES)
+        .join(MODULES)
+        .on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
+        .join(APPLICATION_MODULES)
+        .on(MODULES.ID.eq(APPLICATION_MODULES.MODULE_ID))
+        .join(APPLICATIONS)
+        .on(APPLICATION_MODULES.APPLICATION_ID.eq(APPLICATIONS.ID))
+        .join(PROJECTS)
+        .on(APPLICATIONS.PROJECT_ID.eq(PROJECTS.ID))
+        .join(ORGANIZATIONS)
+        .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+        .leftJoin(SUBMISSIONS)
+        .on(DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID))
+        .and(SUBMISSIONS.PROJECT_ID.eq(PROJECTS.ID))
+        .leftJoin(DELIVERABLE_DOCUMENTS)
+        .on(DELIVERABLES.ID.eq(DELIVERABLE_DOCUMENTS.DELIVERABLE_ID))
+        .where(conditions)
+        .orderBy(DELIVERABLES.ID, PROJECTS.ID)
+        .fetch { record ->
+          DeliverableSubmissionModel(
+              category = record[DELIVERABLES.DELIVERABLE_CATEGORY_ID]!!,
+              deliverableId = record[DELIVERABLES.ID]!!,
+              descriptionHtml = record[DELIVERABLES.DESCRIPTION_HTML],
+              documents = record[documentsMultiset] ?: emptyList(),
+              dueDate = null,
+              feedback = record[SUBMISSIONS.FEEDBACK],
+              internalComment = record[SUBMISSIONS.INTERNAL_COMMENT],
+              moduleId = record[DELIVERABLES.MODULE_ID]!!,
+              moduleName = record[MODULES.NAME]!!,
+              moduleTitle = null,
+              name = record[DELIVERABLES.NAME]!!,
+              organizationId = record[ORGANIZATIONS.ID]!!,
+              organizationName = record[ORGANIZATIONS.NAME]!!,
+              participantId = null,
+              participantName = null,
+              projectId = record[PROJECTS.ID]!!,
+              projectName = record[PROJECTS.NAME]!!,
+              status = record[SUBMISSIONS.SUBMISSION_STATUS_ID] ?: SubmissionStatus.NotSubmitted,
+              submissionId = record[SUBMISSIONS.ID],
+              templateUrl = record[DELIVERABLE_DOCUMENTS.TEMPLATE_URL],
+              type = record[DELIVERABLES.DELIVERABLE_TYPE_ID]!!,
+          )
+        }
   }
 
   fun create(projectId: ProjectId): ExistingApplicationModel {

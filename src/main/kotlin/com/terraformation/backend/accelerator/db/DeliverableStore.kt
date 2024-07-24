@@ -66,6 +66,7 @@ class DeliverableStore(
         projectId != null -> readProjectDeliverables(projectId)
         participantId != null -> readParticipant(participantId)
         organizationId != null -> readOrganizationDeliverables(organizationId)
+        moduleId != null -> readModule(moduleId)
         else -> readAllDeliverables()
       }
     }
@@ -158,8 +159,8 @@ class DeliverableStore(
               name = record[DELIVERABLES.NAME]!!,
               organizationId = record[ORGANIZATIONS.ID]!!,
               organizationName = record[ORGANIZATIONS.NAME]!!,
-              participantId = record[PARTICIPANTS.ID]!!,
-              participantName = record[PARTICIPANTS.NAME]!!,
+              participantId = record[PARTICIPANTS.ID],
+              participantName = record[PARTICIPANTS.NAME],
               projectId = record[PROJECTS.ID]!!,
               projectName = record[PROJECTS.NAME]!!,
               status = record[SUBMISSIONS.SUBMISSION_STATUS_ID] ?: SubmissionStatus.NotSubmitted,
