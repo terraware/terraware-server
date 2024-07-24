@@ -6,6 +6,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.db.accelerator.ApplicationHistoryId
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
@@ -52,6 +53,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocuments
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshotsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
 import com.terraformation.backend.db.accelerator.tables.daos.UserDeliverableCategoriesDao
+import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationHistoriesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
@@ -2266,6 +2268,31 @@ abstract class DatabaseBackedTest {
     return row.id!!.also { inserted.applicationIds.add(it) }
   }
 
+  fun insertApplicationHistory(
+      applicationId: Any = inserted.applicationId,
+      boundary: Geometry? = null,
+      feedback: String? = null,
+      internalComment: String? = null,
+      modifiedBy: Any = currentUser().userId,
+      modifiedTime: Instant = Instant.EPOCH,
+      status: ApplicationStatus = ApplicationStatus.NotSubmitted,
+  ): ApplicationHistoryId {
+    val row =
+        ApplicationHistoriesRow(
+            applicationId = applicationId.toIdWrapper { ApplicationId(it) },
+            applicationStatusId = status,
+            boundary = boundary,
+            feedback = feedback,
+            internalComment = internalComment,
+            modifiedBy = modifiedBy.toIdWrapper { UserId(it) },
+            modifiedTime = modifiedTime,
+        )
+
+    applicationHistoriesDao.insert(row)
+
+    return row.id!!.also { inserted.applicationHistoryIds.add(it) }
+  }
+
   fun insertApplicationModule(
       applicationId: Any,
       moduleId: Any,
@@ -3077,6 +3104,7 @@ abstract class DatabaseBackedTest {
   @Suppress("unused")
   class Inserted {
     val accessionIds = mutableListOf<AccessionId>()
+    val applicationHistoryIds = mutableListOf<ApplicationHistoryId>()
     val applicationIds = mutableListOf<ApplicationId>()
     val automationIds = mutableListOf<AutomationId>()
     val batchIds = mutableListOf<BatchId>()
@@ -3119,6 +3147,9 @@ abstract class DatabaseBackedTest {
 
     val accessionId
       get() = accessionIds.last()
+
+    val applicationHistoryId
+      get() = applicationHistoryIds.last()
 
     val applicationId
       get() = applicationIds.last()

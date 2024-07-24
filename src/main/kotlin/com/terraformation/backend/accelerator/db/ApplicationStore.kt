@@ -12,6 +12,7 @@ import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ModuleId
+import com.terraformation.backend.db.accelerator.tables.records.ApplicationHistoriesRecord
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_HISTORIES
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_MODULES
@@ -93,6 +94,18 @@ class ApplicationStore(
     requirePermissions { readAllAcceleratorDetails() }
 
     return fetchByCondition(DSL.trueCondition())
+  }
+
+  fun fetchHistoryByApplicationId(applicationId: ApplicationId): List<ApplicationHistoriesRecord> {
+    requirePermissions { readApplication(applicationId) }
+
+    return with(APPLICATION_HISTORIES) {
+      dslContext
+          .selectFrom(APPLICATION_HISTORIES)
+          .where(APPLICATION_ID.eq(applicationId))
+          .orderBy(MODIFIED_TIME.desc())
+          .fetch()
+    }
   }
 
   fun create(projectId: ProjectId): ExistingApplicationModel {

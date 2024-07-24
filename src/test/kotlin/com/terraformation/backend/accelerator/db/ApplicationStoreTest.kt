@@ -16,6 +16,7 @@ import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationHistoriesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
+import com.terraformation.backend.db.accelerator.tables.records.ApplicationHistoriesRecord
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -313,6 +314,61 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       @Test
       fun `throws exception if no permission to read all accelerator details`() {
         assertThrows<AccessDeniedException> { store.fetchAll() }
+      }
+    }
+
+    @Nested
+    inner class FetchHistoryByApplicationId {
+      @Test
+      fun `returns history in reverse chronological order`() {
+        val earlierHistoryId =
+            insertApplicationHistory(
+                applicationId = org1Project1ApplicationId,
+                feedback = "feedback 1",
+                internalComment = "internal comment 1",
+                modifiedTime = Instant.ofEpochSecond(5),
+                status = ApplicationStatus.NotSubmitted)
+        val laterHistoryId =
+            insertApplicationHistory(
+                applicationId = org1Project1ApplicationId,
+                boundary = rectangle(1),
+                feedback = "feedback 2",
+                internalComment = "internal comment 2",
+                modifiedTime = Instant.ofEpochSecond(10),
+                status = ApplicationStatus.PassedPreScreen)
+
+        assertEquals(
+            listOf(
+                ApplicationHistoriesRecord(
+                    applicationId = org1Project1ApplicationId,
+                    applicationStatusId = ApplicationStatus.PassedPreScreen,
+                    boundary = rectangle(1),
+                    feedback = "feedback 2",
+                    id = laterHistoryId,
+                    internalComment = "internal comment 2",
+                    modifiedBy = user.userId,
+                    modifiedTime = Instant.ofEpochSecond(10),
+                ),
+                ApplicationHistoriesRecord(
+                    applicationId = org1Project1ApplicationId,
+                    applicationStatusId = ApplicationStatus.NotSubmitted,
+                    feedback = "feedback 1",
+                    id = earlierHistoryId,
+                    internalComment = "internal comment 1",
+                    modifiedBy = user.userId,
+                    modifiedTime = Instant.ofEpochSecond(5),
+                ),
+            ),
+            store.fetchHistoryByApplicationId(org1Project1ApplicationId))
+      }
+
+      @Test
+      fun `throws exception if no permission to read application`() {
+        every { user.canReadApplication(org1Project1ApplicationId) } returns false
+
+        assertThrows<ApplicationNotFoundException> {
+          store.fetchHistoryByApplicationId(org1Project1ApplicationId)
+        }
       }
     }
   }
