@@ -269,6 +269,7 @@ class ApplicationStore(
       insertHistory(applicationId)
 
       assignModules(applicationId, CohortPhase.PreScreen)
+      assignModules(applicationId, CohortPhase.Application)
 
       fetchOneById(applicationId)
     }
