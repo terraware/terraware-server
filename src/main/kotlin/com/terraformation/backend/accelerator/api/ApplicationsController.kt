@@ -16,13 +16,13 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
-import com.terraformation.backend.db.accelerator.tables.records.ApplicationHistoriesRecord
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.accelerator.tables.records.ApplicationHistoriesRecord
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -345,6 +345,7 @@ data class ApplicationDeliverablePayload(
     @Schema(description = "Optional description of the deliverable in HTML form.")
     val descriptionHtml: String?,
     val id: DeliverableId,
+    val internalComment: String?,
     val moduleId: ModuleId,
     val moduleName: String,
     val name: String,
@@ -361,6 +362,7 @@ data class ApplicationDeliverablePayload(
       model.category,
       model.descriptionHtml,
       model.deliverableId,
+      model.internalComment,
       model.moduleId,
       model.moduleName,
       model.name,
