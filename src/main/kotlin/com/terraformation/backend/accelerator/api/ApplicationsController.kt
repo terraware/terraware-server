@@ -111,12 +111,12 @@ class ApplicationsController(
   fun getApplicationModuleDeliverables(
       @PathVariable applicationId: ApplicationId,
       @PathVariable moduleId: ModuleId
-  ): GetApplicationModuleDeliverablesResponsePayload {
+  ): GetApplicationDeliverablesResponsePayload {
     val deliverables =
         applicationStore.fetchApplicationDeliverables(
             applicationId = applicationId, moduleId = moduleId)
 
-    return GetApplicationModuleDeliverablesResponsePayload(
+    return GetApplicationDeliverablesResponsePayload(
         deliverables.map { ApplicationDeliverablePayload(it) })
   }
 
@@ -412,10 +412,6 @@ data class GetApplicationModulesResponsePayload(val modules: List<ApplicationMod
     SuccessResponsePayload
 
 data class GetApplicationDeliverablesResponsePayload(
-    val deliverables: List<ApplicationDeliverablePayload>
-) : SuccessResponsePayload
-
-data class GetApplicationModuleDeliverablesResponsePayload(
     val deliverables: List<ApplicationDeliverablePayload>
 ) : SuccessResponsePayload
 

@@ -68,7 +68,7 @@ class DeliverablesController(
   fun listDeliverables(
       @Parameter(
           description =
-              "Filter deliverables for by modules. Can we used with other request params.")
+              "Filter deliverables by modules. Can be used with other request params.")
       @RequestParam
       moduleId: ModuleId? = null,
       @Parameter(
