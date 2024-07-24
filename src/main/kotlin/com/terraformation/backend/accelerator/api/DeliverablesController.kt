@@ -67,8 +67,7 @@ class DeliverablesController(
               "all accelerator projects.")
   fun listDeliverables(
       @Parameter(
-          description =
-              "Filter deliverables by modules. Can be used with other request params.")
+          description = "Filter deliverables by modules. Can be used with other request params.")
       @RequestParam
       moduleId: ModuleId? = null,
       @Parameter(
