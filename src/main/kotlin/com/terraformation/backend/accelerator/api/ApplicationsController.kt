@@ -3,7 +3,9 @@ package com.terraformation.backend.accelerator.api
 import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.backend.accelerator.ApplicationService
 import com.terraformation.backend.accelerator.db.ApplicationStore
+import com.terraformation.backend.accelerator.model.ApplicationModuleModel
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
+import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.InternalEndpoint
@@ -12,8 +14,15 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.ApplicationId
+import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.tables.records.ApplicationHistoriesRecord
+import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.DeliverableCategory
+import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.DeliverableType
+import com.terraformation.backend.db.accelerator.ModuleId
+import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -66,6 +75,17 @@ class ApplicationsController(
     return GetApplicationResponsePayload(ApplicationPayload(model))
   }
 
+  @GetMapping("/{applicationId}/deliverables")
+  @Operation(summary = "Get deliverables for an application")
+  fun getApplicationDeliverables(
+      @PathVariable applicationId: ApplicationId
+  ): GetApplicationDeliverablesResponsePayload {
+    val deliverables = applicationStore.fetchApplicationDeliverables(applicationId = applicationId)
+
+    return GetApplicationDeliverablesResponsePayload(
+        deliverables.map { ApplicationDeliverablePayload(it) })
+  }
+
   @GetMapping("/{applicationId}/history")
   @Operation(summary = "Get the history of changes to the metadata of an application")
   fun getApplicationHistory(
@@ -74,6 +94,30 @@ class ApplicationsController(
     val history = applicationStore.fetchHistoryByApplicationId(applicationId)
 
     return GetApplicationHistoryResponsePayload(history.map { ApplicationHistoryPayload(it) })
+  }
+
+  @GetMapping("/{applicationId}/modules")
+  @Operation(summary = "Get modules for an application")
+  fun getApplicationModules(
+      @PathVariable applicationId: ApplicationId
+  ): GetApplicationModulesResponsePayload {
+    val modules = applicationStore.fetchModulesByApplicationId(applicationId)
+
+    return GetApplicationModulesResponsePayload(modules.map { ApplicationModulePayload(it) })
+  }
+
+  @GetMapping("/{applicationId}/modules/{moduleId}/deliverables")
+  @Operation(summary = "Get deliverables for an application module")
+  fun getApplicationModuleDeliverables(
+      @PathVariable applicationId: ApplicationId,
+      @PathVariable moduleId: ModuleId
+  ): GetApplicationModuleDeliverablesResponsePayload {
+    val deliverables =
+        applicationStore.fetchApplicationDeliverables(
+            applicationId = applicationId, moduleId = moduleId)
+
+    return GetApplicationModuleDeliverablesResponsePayload(
+        deliverables.map { ApplicationDeliverablePayload(it) })
   }
 
   @GetMapping
@@ -276,6 +320,59 @@ data class ApplicationPayload(
   )
 }
 
+data class ApplicationModulePayload(
+    val applicationId: ApplicationId?,
+    val moduleId: ModuleId,
+    val name: String,
+    val phase: CohortPhase,
+    val overview: String? = null,
+    val status: ApplicationModuleStatus?,
+) {
+  constructor(
+      model: ApplicationModuleModel
+  ) : this(
+      model.applicationId,
+      model.id,
+      model.name,
+      model.phase,
+      model.overview,
+      model.applicationModuleStatus,
+  )
+}
+
+data class ApplicationDeliverablePayload(
+    val category: DeliverableCategory,
+    @Schema(description = "Optional description of the deliverable in HTML form.")
+    val descriptionHtml: String?,
+    val id: DeliverableId,
+    val moduleId: ModuleId,
+    val moduleName: String,
+    val name: String,
+    val organizationId: OrganizationId,
+    val organizationName: String,
+    val projectId: ProjectId,
+    val projectName: String,
+    val status: SubmissionStatus,
+    val type: DeliverableType,
+) {
+  constructor(
+      model: DeliverableSubmissionModel
+  ) : this(
+      model.category,
+      model.descriptionHtml,
+      model.deliverableId,
+      model.moduleId,
+      model.moduleName,
+      model.name,
+      model.organizationId,
+      model.organizationName,
+      model.projectId,
+      model.projectName,
+      model.status,
+      model.type,
+  )
+}
+
 data class CreateApplicationRequestPayload(val projectId: ProjectId)
 
 data class ReviewApplicationRequestPayload(
@@ -308,6 +405,17 @@ data class GetApplicationResponsePayload(val application: ApplicationPayload) :
 
 data class ListApplicationsResponsePayload(val applications: List<ApplicationPayload>) :
     SuccessResponsePayload
+
+data class GetApplicationModulesResponsePayload(val modules: List<ApplicationModulePayload>) :
+    SuccessResponsePayload
+
+data class GetApplicationDeliverablesResponsePayload(
+    val modules: List<ApplicationDeliverablePayload>
+) : SuccessResponsePayload
+
+data class GetApplicationModuleDeliverablesResponsePayload(
+    val modules: List<ApplicationDeliverablePayload>
+) : SuccessResponsePayload
 
 data class SubmitApplicationResponsePayload(
     val application: ApplicationPayload,

@@ -68,6 +68,11 @@ class DeliverablesController(
   fun listDeliverables(
       @Parameter(
           description =
+              "Filter deliverables for by modules. Can we used with other request params.")
+      @RequestParam
+      moduleId: ModuleId? = null,
+      @Parameter(
+          description =
               "List deliverables for projects belonging to this organization. Ignored if " +
                   "participantId or projectId is specified.")
       @RequestParam
@@ -83,7 +88,8 @@ class DeliverablesController(
       projectId: ProjectId? = null,
   ): ListDeliverablesResponsePayload {
     val models =
-        deliverableStore.fetchDeliverableSubmissions(organizationId, participantId, projectId)
+        deliverableStore.fetchDeliverableSubmissions(
+            organizationId, participantId, projectId, moduleId = moduleId)
 
     return ListDeliverablesResponsePayload(models.map { ListDeliverablesElement(it) })
   }
