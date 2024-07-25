@@ -191,6 +191,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 internalName = "internalName",
                 organizationId = organizationId,
                 projectId = org1ProjectId1,
+                projectName = "Project A",
                 status = ApplicationStatus.PreCheck),
             store.fetchOneById(org1Project1ApplicationId))
       }
@@ -223,6 +224,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     internalName = "internalName",
                     organizationId = organizationId,
                     projectId = org1ProjectId1,
+                    projectName = "Project A",
                     status = ApplicationStatus.PreCheck)),
             store.fetchByProjectId(org1ProjectId1))
       }
@@ -264,6 +266,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     internalName = "internalName",
                     organizationId = organizationId,
                     projectId = org1ProjectId1,
+                    projectName = "Project A",
                     status = ApplicationStatus.PreCheck),
                 ExistingApplicationModel(
                     boundary = rectangle(2),
@@ -274,6 +277,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     internalName = "internalName2",
                     organizationId = organizationId,
                     projectId = org1ProjectId2,
+                    projectName = "Project B",
                     status = ApplicationStatus.PLReview),
             ),
             store.fetchByOrganizationId(organizationId))
@@ -304,6 +308,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     internalName = "internalName",
                     organizationId = organizationId,
                     projectId = org1ProjectId1,
+                    projectName = "Project A",
                     status = ApplicationStatus.PreCheck),
                 ExistingApplicationModel(
                     boundary = rectangle(2),
@@ -314,12 +319,14 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     internalName = "internalName2",
                     organizationId = organizationId,
                     projectId = org1ProjectId2,
+                    projectName = "Project B",
                     status = ApplicationStatus.PLReview),
                 ExistingApplicationModel(
                     createdTime = Instant.EPOCH,
                     id = org2Project1ApplicationId,
                     organizationId = organizationId2,
                     projectId = org2ProjectId1,
+                    projectName = "Project C",
                     status = ApplicationStatus.NotSubmitted),
             ),
             store.fetchAll())

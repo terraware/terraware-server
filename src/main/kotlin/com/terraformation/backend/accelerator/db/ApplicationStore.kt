@@ -523,7 +523,10 @@ class ApplicationStore(
         }
 
     return dslContext
-        .select(APPLICATIONS.asterisk(), APPLICATIONS.projects.ORGANIZATION_ID)
+        .select(
+            APPLICATIONS.asterisk(),
+            APPLICATIONS.projects.ORGANIZATION_ID,
+            APPLICATIONS.projects.NAME)
         .from(APPLICATIONS)
         .where(conditionWithPermission)
         .orderBy(APPLICATIONS.ID)
