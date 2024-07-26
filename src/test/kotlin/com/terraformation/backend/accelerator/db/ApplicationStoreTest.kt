@@ -1149,10 +1149,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           result.problems)
 
       assertEquals(
-          "<ul>\n" +
-              "<li>${messages.applicationPreScreenFailureBadSize("United States", 15000, 100000)}\n" +
-              "<li>${messages.applicationPreScreenFailureTooFewSpecies(10)}\n" +
-              "</ul>",
+          "${messages.applicationPreScreenFailureBadSize("United States", 15000, 100000)}\n" +
+              messages.applicationPreScreenFailureTooFewSpecies(10),
           result.application.feedback)
 
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
