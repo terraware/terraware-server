@@ -328,6 +328,7 @@ class ApplicationStore(
       val problems = checkPreScreenCriteria(existing, preScreenVariableValues)
 
       if (problems.isNotEmpty()) {
+        updatePrescreenFeedback(applicationId, problems)
         updateStatus(applicationId, ApplicationStatus.FailedPreScreen)
       } else {
         updateStatus(applicationId, ApplicationStatus.PassedPreScreen)
@@ -363,6 +364,23 @@ class ApplicationStore(
 
     if (rowsUpdated == 0) {
       throw ProjectModuleNotFoundException(projectId, moduleId)
+    }
+  }
+
+  private fun updatePrescreenFeedback(applicationId: ApplicationId, feedback: List<String>) {
+    if (feedback.isNotEmpty()) {
+      val feedbackHtml =
+          feedback.joinToString(prefix = "<ul>\n<li>", postfix = "\n</ul>", separator = "\n<li>")
+
+      with(APPLICATIONS) {
+        dslContext
+            .update(APPLICATIONS)
+            .set(FEEDBACK, feedbackHtml)
+            .set(MODIFIED_BY, currentUser().userId)
+            .set(MODIFIED_TIME, clock.instant())
+            .where(ID.eq(applicationId))
+            .execute()
+      }
     }
   }
 

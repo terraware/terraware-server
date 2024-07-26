@@ -1135,6 +1135,30 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `writes problems as html list to feedback`() {
+      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 120000) }
+      val applicationId = insertApplication(boundary = boundary)
+
+      val result =
+          store.submit(applicationId, validVariables(boundary).copy(numSpeciesToBePlanted = 9))
+
+      assertEquals(
+          listOf(
+              messages.applicationPreScreenFailureBadSize("United States", 15000, 100000),
+              messages.applicationPreScreenFailureTooFewSpecies(10)),
+          result.problems)
+
+      assertEquals(
+          "<ul>\n" +
+              "<li>${messages.applicationPreScreenFailureBadSize("United States", 15000, 100000)}\n" +
+              "<li>${messages.applicationPreScreenFailureTooFewSpecies(10)}\n" +
+              "</ul>",
+          result.application.feedback)
+
+      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
+    }
+
+    @Test
     fun `updates status and creates history entry`() {
       val otherUserId = insertUser()
       val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) }
