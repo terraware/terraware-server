@@ -47,6 +47,7 @@ class DocumentUpgradeCalculator(
   private lateinit var existingValues: Map<VariableId, List<ExistingValue>>
   private lateinit var documentsRow: DocumentsRow
   private lateinit var oldManifestId: VariableManifestId
+  private lateinit var allVariables: Map<VariableId, Variable>
   private lateinit var newManifestVariables: Map<VariableId, Variable>
   /** Map of new variable ID to the list of older IDs it replaces. */
   private lateinit var previousVariableIds: Map<VariableId, List<VariableId>>
@@ -90,8 +91,11 @@ class DocumentUpgradeCalculator(
       throw IllegalArgumentException("No variables defined in manifest $newManifestId")
     }
 
+    // Used for finding SectionVariable fragment variables
+    allVariables = variableStore.fetchAllNonSectionVariables().associateBy { it.id }
+
     previousVariableIds =
-        newManifestVariables.values
+        (newManifestVariables.values + allVariables.values)
             .filter { it.replacesVariableId != null }
             .associate { it.id to variableStore.fetchReplacedVariables(it.id) }
 
@@ -210,8 +214,10 @@ class DocumentUpgradeCalculator(
               is SectionValueText -> sectionValue.value
               is SectionValueVariable -> {
                 val existingUsedVariableId = sectionValue.value.usedVariableId
+                // This needs to come from all variables, since variables now
+                // exist outside the context of a manifest
                 val newUsedVariableId =
-                    if (existingUsedVariableId in newManifestVariables) {
+                    if (existingUsedVariableId in allVariables) {
                       existingUsedVariableId
                     } else {
                       replacementVariableIds[existingUsedVariableId]
