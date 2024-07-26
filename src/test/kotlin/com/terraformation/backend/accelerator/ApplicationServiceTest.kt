@@ -80,6 +80,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               createdTime = Instant.EPOCH,
               id = applicationId,
               projectId = projectId,
+              projectName = "Project Name",
               organizationId = organizationId,
               status = ApplicationStatus.NotSubmitted)
       val submissionResult = ApplicationSubmissionResult(applicationModel, listOf("error"))
@@ -101,6 +102,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               createdTime = Instant.EPOCH,
               id = applicationId,
               projectId = projectId,
+              projectName = "Project Name",
               organizationId = organizationId,
               status = ApplicationStatus.PassedPreScreen)
       val submissionResult = ApplicationSubmissionResult(applicationModel, listOf("error"))
@@ -141,6 +143,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               id = applicationId,
               internalName = internalName,
               projectId = projectId,
+              projectName = "Project Name",
               organizationId = organizationId,
               status = ApplicationStatus.NotSubmitted,
           )

@@ -303,6 +303,7 @@ data class ApplicationPayload(
     val internalName: String?,
     val organizationId: OrganizationId,
     val projectId: ProjectId,
+    val projectName: String,
     val status: ApiApplicationStatus,
 ) {
   constructor(
@@ -316,6 +317,7 @@ data class ApplicationPayload(
       model.internalName,
       model.organizationId,
       model.projectId,
+      model.projectName,
       ApiApplicationStatus.of(model.status),
   )
 }

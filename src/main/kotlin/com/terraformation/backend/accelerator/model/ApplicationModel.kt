@@ -18,6 +18,7 @@ data class ExistingApplicationModel(
     val internalName: String? = null,
     val organizationId: OrganizationId,
     val projectId: ProjectId,
+    val projectName: String,
     val status: ApplicationStatus,
 ) {
   companion object {
@@ -32,6 +33,7 @@ data class ExistingApplicationModel(
             internalName = record[INTERNAL_NAME],
             organizationId = record[projects.ORGANIZATION_ID]!!,
             projectId = record[PROJECT_ID]!!,
+            projectName = record[projects.NAME]!!,
             status = record[APPLICATION_STATUS_ID]!!,
         )
       }
