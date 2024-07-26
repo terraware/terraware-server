@@ -1,3 +1,4 @@
+9cd39e24563 SW-5716 Added project name to Application API (#2199)
 8ac3a27f6ec Assigned both application and prescreen modules on application create (#2198)
 40643510155 SW-5681 Added application modules and deliverables endpoint (#2197)
 ff54d0471b0 SW-5681 Implemented application modules and deliverables fetch methods in the application store (#2194)
