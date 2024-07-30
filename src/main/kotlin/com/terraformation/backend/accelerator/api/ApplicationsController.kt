@@ -27,6 +27,7 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.gis.GeometryFileParser
+import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -288,7 +289,7 @@ data class ApplicationHistoryPayload(
 }
 
 data class ApplicationPayload(
-    val boundary: Geometry?,
+    val boundary: MultiPolygon?,
     val createdTime: Instant,
     val feedback: String?,
     val id: ApplicationId,
@@ -309,7 +310,7 @@ data class ApplicationPayload(
   constructor(
       model: ExistingApplicationModel
   ) : this(
-      model.boundary,
+      model.boundary?.toMultiPolygon(),
       model.createdTime,
       model.feedback,
       model.id,
