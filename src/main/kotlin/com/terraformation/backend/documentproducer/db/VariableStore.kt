@@ -101,6 +101,8 @@ class VariableStore(
             .select(ID)
             .from(VARIABLES)
             .where(STABLE_ID.eq(stableId))
+            .orderBy(ID.desc())
+            .limit(1)
             .fetchOne(VARIABLES.ID)
             ?.let { fetchVariable(it) }
       }
