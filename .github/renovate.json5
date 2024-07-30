@@ -33,6 +33,8 @@
         {
             "description": "Group Spring dependencies",
             "matchPackagePatterns": ["spring"],
+            // Until https://github.com/springdoc/springdoc-openapi/issues/2639 is fixed
+            "excludePackagePatterns": ["springdoc-openapi"],
             "groupName": "Spring dependencies"
         },
         {
