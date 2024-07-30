@@ -105,6 +105,7 @@ class ProjectAcceleratorDetailsStore(
             .set(COUNTRY_CODE, updated.countryCode)
             .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
+            .where(ID.eq(projectId))
             .execute()
       }
 
