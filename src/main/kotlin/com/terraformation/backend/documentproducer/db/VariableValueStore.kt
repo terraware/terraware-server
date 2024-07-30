@@ -1,5 +1,6 @@
 package com.terraformation.backend.documentproducer.db
 
+import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.asNonNullable
@@ -405,6 +406,7 @@ class VariableValueStore(
 
     val values = listValues(projectId, VariableValueId(maxValueIdBefore.value + 1), maxValueIdAfter)
     notifyForReview(projectId, values)
+    updateStatus(projectId, values)
 
     return values
   }
@@ -879,6 +881,21 @@ class VariableValueStore(
 
       eventPublisher.publishEvent(
           QuestionsDeliverableSubmittedEvent(deliverableId, projectId, highestValuesByVariables))
+    }
+  }
+
+  private fun updateStatus(
+      projectId: ProjectId,
+      values: List<ExistingValue>,
+  ) {
+    val variableRows =
+        values
+            .map { it.variableId }
+            .toSet()
+            .associateWith { variablesDao.fetchOneById(it) ?: throw VariableNotFoundException(it) }
+
+    variableRows.keys.forEach { variableId ->
+      eventPublisher.publishEvent(VariableValueUpdatedEvent(projectId, variableId))
     }
   }
 }
