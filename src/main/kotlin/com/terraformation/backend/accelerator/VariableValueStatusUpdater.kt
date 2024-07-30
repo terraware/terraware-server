@@ -7,7 +7,7 @@ import jakarta.inject.Named
 import org.springframework.context.event.EventListener
 
 @Named
-class VariableValueStatusNotifier(
+class VariableValueStatusUpdater(
     private val variableWorkflowStore: VariableWorkflowStore,
 ) {
 

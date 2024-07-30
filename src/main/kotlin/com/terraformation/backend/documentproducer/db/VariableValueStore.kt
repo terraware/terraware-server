@@ -891,10 +891,8 @@ class VariableValueStore(
     val variableRows =
         values
             .map { it.variableId }
-            .toSet()
-            .associateWith { variablesDao.fetchOneById(it) ?: throw VariableNotFoundException(it) }
 
-    variableRows.keys.forEach { variableId ->
+    variableRows.forEach { variableId ->
       eventPublisher.publishEvent(VariableValueUpdatedEvent(projectId, variableId))
     }
   }
