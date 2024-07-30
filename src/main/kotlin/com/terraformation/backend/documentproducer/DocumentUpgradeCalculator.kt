@@ -214,7 +214,7 @@ class DocumentUpgradeCalculator(
               is SectionValueText -> sectionValue.value
               is SectionValueVariable -> {
                 val existingUsedVariableId = sectionValue.value.usedVariableId
-                // This needs to come from all variables, since variables now
+                // This needs to come from all variables, since variables can
                 // exist outside the context of a manifest
                 val newUsedVariableId =
                     if (existingUsedVariableId in allVariables) {
