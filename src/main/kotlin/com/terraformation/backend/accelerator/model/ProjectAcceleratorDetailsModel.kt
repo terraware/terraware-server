@@ -14,7 +14,9 @@ import org.jooq.Field
 import org.jooq.Record
 
 data class ProjectAcceleratorDetailsModel(
+    val annualCarbon: BigDecimal? = null,
     val applicationReforestableLand: BigDecimal? = null,
+    val carbonCapacity: BigDecimal? = null,
     val confirmedReforestableLand: BigDecimal? = null,
     val countryCode: String? = null,
     val dealDescription: String? = null,
@@ -34,6 +36,7 @@ data class ProjectAcceleratorDetailsModel(
     val projectId: ProjectId,
     val projectLead: String? = null,
     val region: Region? = null,
+    val totalCarbon: BigDecimal? = null,
     val totalExpansionPotential: BigDecimal? = null,
     val whatNeedsToBeTrue: String? = null,
 ) {
@@ -44,7 +47,9 @@ data class ProjectAcceleratorDetailsModel(
     ): ProjectAcceleratorDetailsModel {
       return with(PROJECT_ACCELERATOR_DETAILS) {
         ProjectAcceleratorDetailsModel(
+            annualCarbon = record[ANNUAL_CARBON],
             applicationReforestableLand = record[APPLICATION_REFORESTABLE_LAND],
+            carbonCapacity = record[CARBON_CAPACITY],
             confirmedReforestableLand = record[CONFIRMED_REFORESTABLE_LAND],
             countryCode = record[PROJECTS.COUNTRY_CODE],
             dealDescription = record[DEAL_DESCRIPTION],
@@ -64,6 +69,7 @@ data class ProjectAcceleratorDetailsModel(
             projectId = record[PROJECTS.ID]!!,
             projectLead = record[PROJECT_LEAD],
             region = record[COUNTRIES.REGION_ID],
+            totalCarbon = record[TOTAL_CARBON],
             totalExpansionPotential = record[TOTAL_EXPANSION_POTENTIAL],
             whatNeedsToBeTrue = record[WHAT_NEEDS_TO_BE_TRUE],
         )
