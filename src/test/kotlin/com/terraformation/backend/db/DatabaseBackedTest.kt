@@ -731,7 +731,9 @@ abstract class DatabaseBackedTest {
 
   protected fun insertProjectAcceleratorDetails(
       row: ProjectAcceleratorDetailsRow = ProjectAcceleratorDetailsRow(),
+      annualCarbon: Number? = row.annualCarbon,
       applicationReforestableLand: Number? = row.applicationReforestableLand,
+      carbonCapacity: Number? = row.carbonCapacity,
       confirmedReforestableLand: Number? = row.confirmedReforestableLand,
       dealDescription: String? = row.dealDescription,
       dealStage: DealStage? = row.dealStageId,
@@ -748,12 +750,15 @@ abstract class DatabaseBackedTest {
       pipeline: Pipeline? = row.pipelineId,
       projectId: Any = row.projectId ?: inserted.projectId,
       projectLead: String? = row.projectLead,
+      totalCarbon: Number? = row.totalCarbon,
       totalExpansionPotential: Number? = row.totalExpansionPotential,
       whatNeedsToBeTrue: String? = row.whatNeedsToBeTrue,
   ): ProjectAcceleratorDetailsRow {
     val rowWithDefaults =
         ProjectAcceleratorDetailsRow(
+            annualCarbon = annualCarbon?.toBigDecimal(),
             applicationReforestableLand = applicationReforestableLand?.toBigDecimal(),
+            carbonCapacity = carbonCapacity?.toBigDecimal(),
             confirmedReforestableLand = confirmedReforestableLand?.toBigDecimal(),
             dealDescription = dealDescription,
             dealStageId = dealStage,
@@ -770,6 +775,7 @@ abstract class DatabaseBackedTest {
             pipelineId = pipeline,
             projectId = projectId.toIdWrapper { ProjectId(it) },
             projectLead = projectLead,
+            totalCarbon = totalCarbon?.toBigDecimal(),
             totalExpansionPotential = totalExpansionPotential?.toBigDecimal(),
             whatNeedsToBeTrue = whatNeedsToBeTrue,
         )

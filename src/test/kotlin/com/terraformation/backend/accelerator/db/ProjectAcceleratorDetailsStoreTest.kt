@@ -48,7 +48,9 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       val detailsRow =
           insertProjectAcceleratorDetails(
+              annualCarbon = BigDecimal(7),
               applicationReforestableLand = BigDecimal(1),
+              carbonCapacity = BigDecimal(8),
               confirmedReforestableLand = BigDecimal(2),
               dealDescription = "description",
               dealStage = DealStage.Phase0DocReview,
@@ -65,13 +67,16 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               pipeline = Pipeline.AcceleratorProjects,
               projectId = projectId,
               projectLead = "lead",
+              totalCarbon = BigDecimal(9),
               totalExpansionPotential = BigDecimal(3),
               whatNeedsToBeTrue = "needs",
           )
 
       assertEquals(
           ProjectAcceleratorDetailsModel(
+              annualCarbon = detailsRow.annualCarbon,
               applicationReforestableLand = detailsRow.applicationReforestableLand,
+              carbonCapacity = detailsRow.carbonCapacity,
               confirmedReforestableLand = detailsRow.confirmedReforestableLand,
               countryCode = "KE",
               dealDescription = detailsRow.dealDescription,
@@ -91,6 +96,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               projectLead = detailsRow.projectLead,
               region = Region.SubSaharanAfrica,
+              totalCarbon = detailsRow.totalCarbon,
               totalExpansionPotential = detailsRow.totalExpansionPotential,
               whatNeedsToBeTrue = detailsRow.whatNeedsToBeTrue,
           ),
@@ -128,7 +134,9 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       val updatedDetails =
           ProjectAcceleratorDetailsModel(
+              annualCarbon = BigDecimal(7),
               applicationReforestableLand = BigDecimal(1),
+              carbonCapacity = BigDecimal(8),
               confirmedReforestableLand = BigDecimal(2),
               countryCode = "JP",
               dealDescription = "description",
@@ -147,6 +155,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               pipeline = Pipeline.AcceleratorProjects,
               projectId = projectId,
               projectLead = "lead",
+              totalCarbon = BigDecimal(9),
               totalExpansionPotential = BigDecimal(3),
               whatNeedsToBeTrue = "needs",
           )
@@ -187,7 +196,9 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       val updatedDetails =
           ProjectAcceleratorDetailsModel(
+              annualCarbon = BigDecimal(70),
               applicationReforestableLand = BigDecimal(10),
+              carbonCapacity = BigDecimal(80),
               confirmedReforestableLand = BigDecimal(20),
               countryCode = "JP",
               dealDescription = "new description",
@@ -206,6 +217,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               pipeline = Pipeline.AcceleratorProjects,
               projectId = projectId,
               projectLead = "new lead",
+              totalCarbon = BigDecimal(90),
               totalExpansionPotential = BigDecimal(30),
               whatNeedsToBeTrue = "new needs",
           )
