@@ -1,3 +1,4 @@
+7bc2ebf0ef4 Fix document upgrade for section variable injections (#2202)
 981ff6a1d4c Populate default values for documents that are created, even if there are other documents in the system. The condition wasn't checking the manifest ID, so it was failing for all documents after at least one exists in the system for the project (#2201)
 7ad8291dc1f SW-5709 Save prescreen problems as feedback (#2200)
 9cd39e24563 SW-5716 Added project name to Application API (#2199)
