@@ -1,3 +1,4 @@
+d612d610e5e SW-5702 Added submit full application functionality to /submit endpoint (#2209)
 78b5f3c81a9 Return application boundaries as MultiPolygon (#2206)
 69b9030606b Exclude springdoc-openapi from Renovate group (#2204)
 7bc2ebf0ef4 Fix document upgrade for section variable injections (#2202)
