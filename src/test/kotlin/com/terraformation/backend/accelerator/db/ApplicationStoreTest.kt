@@ -1164,7 +1164,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `updates status and creates history entry`() {
+    fun `updates status and creates history entry for submitting prescreen`() {
       val otherUserId = insertUser()
       val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) }
       val applicationId = insertApplication(boundary = boundary, createdBy = otherUserId)
@@ -1210,6 +1210,63 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `updates status and creates history entry for submitting full application if all modules are completed`() {
+      val otherUserId = insertUser()
+      val applicationId =
+          insertApplication(createdBy = otherUserId, status = ApplicationStatus.PassedPreScreen)
+      val initial = applicationsDao.findAll().single()
+
+      val moduleId1 = insertModule(phase = CohortPhase.Application)
+      val moduleId2 = insertModule(phase = CohortPhase.Application)
+
+      insertApplicationModule(applicationId, moduleId1, ApplicationModuleStatus.Complete)
+      insertApplicationModule(applicationId, moduleId2, ApplicationModuleStatus.Complete)
+
+      clock.instant = Instant.ofEpochSecond(30)
+      store.submit(applicationId)
+
+      assertEquals(
+          listOf(
+              initial.copy(
+                  applicationStatusId = ApplicationStatus.Submitted,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant)),
+          applicationsDao.findAll())
+
+      assertEquals(
+          listOf(
+              ApplicationHistoriesRow(
+                  applicationId = applicationId,
+                  boundary = initial.boundary,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+                  applicationStatusId = ApplicationStatus.Submitted)),
+          applicationHistoriesDao.findAll().map { it.copy(id = null) })
+    }
+
+    @Test
+    fun `detects incomplete modules for submitting full application`() {
+      val otherUserId = insertUser()
+      val applicationId =
+          insertApplication(createdBy = otherUserId, status = ApplicationStatus.PassedPreScreen)
+      val initial = applicationsDao.findAll()
+
+      val moduleId1 = insertModule(phase = CohortPhase.Application)
+      val moduleId2 = insertModule(phase = CohortPhase.Application)
+
+      insertApplicationModule(applicationId, moduleId1, ApplicationModuleStatus.Complete)
+      insertApplicationModule(applicationId, moduleId2, ApplicationModuleStatus.Incomplete)
+
+      val result = store.submit(applicationId)
+      assertEquals(listOf(messages.applicationModulesIncomplete()), result.problems)
+      assertEquals(initial, applicationsDao.findAll())
+      assertEquals(
+          emptyList<ApplicationHistoriesRow>(),
+          applicationHistoriesDao.findAll(),
+          "Should not have inserted any history rows")
+    }
+
+    @Test
     fun `does not update existing module status on resubmit`() {
       val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) }
       val applicationId = insertApplication(boundary = boundary)
@@ -1238,7 +1295,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does nothing if application is already submitted`() {
-      val applicationId = insertApplication(status = ApplicationStatus.PassedPreScreen)
+      val applicationId = insertApplication(status = ApplicationStatus.Submitted)
       val initial = applicationsDao.findAll()
 
       clock.instant = Instant.ofEpochSecond(30)

@@ -74,6 +74,8 @@ class Messages {
   fun applicationPreScreenFailureTooFewSpecies(minimum: Int) =
       getMessage("applicationPreScreen.failure.tooFewSpecies", minimum)
 
+  fun applicationModulesIncomplete() = getMessage("application.failure.modulesIncomplete")
+
   fun csvBadHeader() = getMessage("csvBadHeader")
 
   fun csvRequiredFieldMissing() = getMessage("csvRequiredFieldMissing")
