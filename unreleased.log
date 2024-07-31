@@ -1,3 +1,4 @@
+2071cee6121 SW-5741 Always set application internal name (#2219)
 5222ce646ad Update weighted scores to use SocialImpact (#2218)
 d511aceac6d SW-5728 Rename "community" to "social impact" (#2216)
 53abf658e85 Make shapefile feature names case-insensitive (#2217)
