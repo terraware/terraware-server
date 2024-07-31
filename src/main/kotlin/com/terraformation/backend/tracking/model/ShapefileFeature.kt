@@ -57,7 +57,7 @@ data class ShapefileFeature(
                 property.type.binding == String::class.java ||
                     Number::class.java.isAssignableFrom(property.type.binding)
               }
-              .associate { "${it.name}" to "${it.value}" }
+              .associate { "${it.name}".lowercase() to "${it.value}" }
 
       return ShapefileFeature(geometry, properties, crs)
     }
