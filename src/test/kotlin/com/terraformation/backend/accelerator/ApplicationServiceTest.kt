@@ -83,6 +83,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               projectName = "Project Name",
               organizationId = organizationId,
+              organizationName = "Organization 1",
               status = ApplicationStatus.NotSubmitted)
       val submissionResult = ApplicationSubmissionResult(applicationModel, listOf("error"))
 
@@ -106,6 +107,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               projectName = "Project Name",
               organizationId = organizationId,
+              organizationName = "Organization 1",
               status = ApplicationStatus.PassedPreScreen)
       val submissionResult = ApplicationSubmissionResult(applicationModel, listOf("error"))
 
@@ -147,6 +149,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               projectName = "Project Name",
               organizationId = organizationId,
+              organizationName = "Organization 1",
               status = ApplicationStatus.NotSubmitted,
           )
 
