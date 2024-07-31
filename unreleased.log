@@ -1,3 +1,6 @@
+97c68a85cc2 Fix variable fetch for "replaced" variables (#2208)
+60caf62d242 Update dependency net.logstash.logback:logstash-logback-encoder to v8 (#2211)
+c312e4a6867 Updated translations from Phrase (#2215)
 d14a660ebd2 SW-5725 Add project accelerator details fields (#2212)
 d612d610e5e SW-5702 Added submit full application functionality to /submit endpoint (#2209)
 78b5f3c81a9 Return application boundaries as MultiPolygon (#2206)
