@@ -169,6 +169,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `updates details for project with existing details`() {
       val projectId = insertProject(countryCode = "KE")
+      val otherProjectId = insertProject(countryCode = "GB")
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Agroforestry)
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Mangroves)
 
@@ -222,10 +223,18 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               whatNeedsToBeTrue = "new needs",
           )
 
+      val otherDetails = store.fetchOneById(otherProjectId)
+
       store.update(projectId) { updatedDetails }
 
       assertEquals(
-          updatedDetails.copy(region = Region.EastAsiaPacific), store.fetchOneById(projectId))
+          updatedDetails.copy(region = Region.EastAsiaPacific),
+          store.fetchOneById(projectId),
+          "Should have updated project details")
+      assertEquals(
+          otherDetails,
+          store.fetchOneById(otherProjectId),
+          "Should not have updated details of other project")
     }
 
     @Test
