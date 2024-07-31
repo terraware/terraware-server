@@ -229,12 +229,8 @@ class ManifestImporter(
                   val variableRow =
                       if (variableStableId.isNotEmpty()) {
                         val referencedVariable =
-                            if (defaultTextVariableByStableId.containsKey(variableStableId)) {
-                              defaultTextVariableByStableId[variableStableId]
-                            } else {
-                              defaultTextVariableByStableId.computeIfAbsent(variableStableId) {
-                                variableStore.fetchByStableId(variableStableId)
-                              }
+                            defaultTextVariableByStableId.computeIfAbsent(variableStableId) {
+                              variableStore.fetchByStableId(variableStableId)
                             }
 
                         if (referencedVariable != null) {

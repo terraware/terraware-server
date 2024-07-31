@@ -41,6 +41,52 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
+  inner class FetchByStableId {
+    @Test
+    fun `fetches the correct variable for a given stable ID`() {
+      val variableName = "Variable 1"
+      val stableId = "1"
+
+      val variableId1 =
+          insertNumberVariable(
+              insertVariable(name = variableName, stableId = stableId, type = VariableType.Number))
+      val variableId2 =
+          insertNumberVariable(
+              insertVariable(
+                  name = variableName,
+                  stableId = stableId,
+                  type = VariableType.Number,
+                  replacesVariableId = variableId1))
+      val variableId3 =
+          insertNumberVariable(
+              insertVariable(
+                  name = variableName,
+                  stableId = stableId,
+                  type = VariableType.Number,
+                  replacesVariableId = variableId2))
+
+      val expected =
+          NumberVariable(
+              base =
+                  BaseVariableProperties(
+                      id = variableId3,
+                      manifestId = null,
+                      name = variableName,
+                      position = 0,
+                      replacesVariableId = variableId2,
+                      stableId = stableId,
+                  ),
+              decimalPlaces = 0,
+              minValue = null,
+              maxValue = null)
+
+      val actual = store.fetchByStableId(stableId)
+
+      assertEquals(expected, actual)
+    }
+  }
+
+  @Nested
   inner class FetchVariable {
     @Test
     fun `fetches nested sections`() {
