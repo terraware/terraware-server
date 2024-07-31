@@ -56,7 +56,6 @@ data class ProjectScoreModel<INSTANT : Instant?>(
      */
     private val phase0Weights =
         mapOf(
-            ScoreCategory.Community to 1.0,
             ScoreCategory.ExpansionPotential to 0.25,
             ScoreCategory.ExperienceAndUnderstanding to 0.25,
             ScoreCategory.Finance to 2.0,
@@ -65,6 +64,7 @@ data class ProjectScoreModel<INSTANT : Instant?>(
             ScoreCategory.Legal to 1.0,
             ScoreCategory.OperationalCapacity to 1.0,
             ScoreCategory.ResponsivenessAndAttentionToDetail to 0.25,
+            ScoreCategory.SocialImpact to 1.0,
             ScoreCategory.ValuesAlignment to 0.25,
         )
 

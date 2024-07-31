@@ -15,12 +15,12 @@ class ProjectScoreModelTest {
     fun `treats project lead scores as a single score in the average`() {
       val scores =
           listOf(
-              newModel(ScoreCategory.Community, 1),
               newModel(ScoreCategory.Finance, 1),
               newModel(ScoreCategory.Forestry, 1),
               newModel(ScoreCategory.GIS, 1),
               newModel(ScoreCategory.Legal, 1),
               newModel(ScoreCategory.OperationalCapacity, 1),
+              newModel(ScoreCategory.SocialImpact, 1),
               // Project lead categories have scores of 2
               newModel(ScoreCategory.ExpansionPotential, 2),
               newModel(ScoreCategory.ExperienceAndUnderstanding, 2),
@@ -38,7 +38,6 @@ class ProjectScoreModelTest {
     fun `gives double weight to finance score`() {
       val scores =
           listOf(
-              newModel(ScoreCategory.Community, 1),
               newModel(ScoreCategory.Finance, 2),
               newModel(ScoreCategory.Forestry, 1),
               newModel(ScoreCategory.GIS, 1),
@@ -47,6 +46,7 @@ class ProjectScoreModelTest {
               newModel(ScoreCategory.ExpansionPotential, 1),
               newModel(ScoreCategory.ExperienceAndUnderstanding, 1),
               newModel(ScoreCategory.ResponsivenessAndAttentionToDetail, 1),
+              newModel(ScoreCategory.SocialImpact, 1),
               newModel(ScoreCategory.ValuesAlignment, 1),
           )
 
@@ -61,7 +61,6 @@ class ProjectScoreModelTest {
     fun `returns null if required score is missing`() {
       val scores =
           listOf(
-              newModel(ScoreCategory.Community, 1),
               newModel(ScoreCategory.ExpansionPotential, 1),
               newModel(ScoreCategory.ExperienceAndUnderstanding, 1),
               newModel(ScoreCategory.Finance, 1),
@@ -70,6 +69,7 @@ class ProjectScoreModelTest {
               newModel(ScoreCategory.Legal, 1),
               newModel(ScoreCategory.OperationalCapacity, 1),
               newModel(ScoreCategory.ResponsivenessAndAttentionToDetail, 1),
+              newModel(ScoreCategory.SocialImpact, 1),
               // Missing ValuesAlignment
           )
 
@@ -83,7 +83,7 @@ class ProjectScoreModelTest {
     fun `treats project lead scores as a single score in the average`() {
       val scores =
           listOf(
-              newModel(ScoreCategory.Community, 1),
+              newModel(ScoreCategory.SocialImpact, 1),
               // Project lead categories have scores of 2
               newModel(ScoreCategory.ExpansionPotential, 2),
               newModel(ScoreCategory.ValuesAlignment, 3),
@@ -99,9 +99,9 @@ class ProjectScoreModelTest {
     fun `calculates average of whichever scores have values`() {
       val scores =
           listOf(
-              newModel(ScoreCategory.Community, 1),
-              newModel(ScoreCategory.GIS, null),
               newModel(ScoreCategory.ExpansionPotential, 2),
+              newModel(ScoreCategory.GIS, null),
+              newModel(ScoreCategory.SocialImpact, 1),
           )
 
       assertEquals(
@@ -113,8 +113,8 @@ class ProjectScoreModelTest {
     fun `returns null if no scores are available`() {
       val scores =
           listOf(
-              newModel(ScoreCategory.Community, null),
               newModel(ScoreCategory.ExpansionPotential, null),
+              newModel(ScoreCategory.SocialImpact, null),
           )
 
       assertNull(ProjectScoreModel.totalScore(CohortPhase.Phase1FeasibilityStudy, scores))
