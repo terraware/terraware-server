@@ -119,8 +119,21 @@ class ApplicationStore(
     }
   }
 
-  fun fetchModulesByApplicationId(applicationId: ApplicationId): List<ApplicationModuleModel> {
+  fun fetchModulesByApplicationId(
+      applicationId: ApplicationId,
+      phase: CohortPhase? = null,
+  ): List<ApplicationModuleModel> {
     requirePermissions { readApplication(applicationId) }
+
+    val phaseCondition =
+        when (phase) {
+          CohortPhase.PreScreen -> MODULES.PHASE_ID.eq(CohortPhase.PreScreen)
+          CohortPhase.Application -> MODULES.PHASE_ID.eq(CohortPhase.Application)
+          else ->
+              DSL.or(
+                  MODULES.PHASE_ID.eq(CohortPhase.PreScreen),
+                  MODULES.PHASE_ID.eq(CohortPhase.Application))
+        }
 
     return with(MODULES) {
       dslContext
@@ -131,7 +144,7 @@ class ApplicationStore(
           .from(this)
           .join(APPLICATION_MODULES)
           .on(APPLICATION_MODULES.MODULE_ID.eq(ID))
-          .where(DSL.or(PHASE_ID.eq(CohortPhase.PreScreen), PHASE_ID.eq(CohortPhase.Application)))
+          .where(phaseCondition)
           .and(APPLICATION_MODULES.APPLICATION_ID.eq(applicationId))
           .orderBy(MODULES.PHASE_ID, MODULES.POSITION)
           .fetch { ApplicationModuleModel.of(it) }
@@ -336,6 +349,15 @@ class ApplicationStore(
       }
 
       ApplicationSubmissionResult(fetchOneById(applicationId), problems)
+    } else if (existing.status == ApplicationStatus.PassedPreScreen) {
+      val modules = fetchModulesByApplicationId(existing.id, CohortPhase.Application)
+      if (modules.all { it.applicationModuleStatus == ApplicationModuleStatus.Complete }) {
+        updateStatus(applicationId, ApplicationStatus.Submitted)
+        ApplicationSubmissionResult(fetchOneById(applicationId), emptyList())
+      } else {
+        log.info("Application $applicationId has incomplete modules.")
+        ApplicationSubmissionResult(existing, listOf(messages.applicationModulesIncomplete()))
+      }
     } else {
       log.info(
           "Application $applicationId has status ${existing.status}; ignoring submission request")

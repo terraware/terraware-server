@@ -57,7 +57,9 @@ class ProjectAcceleratorDetailsStore(
       with(PROJECT_ACCELERATOR_DETAILS) {
         dslContext
             .insertInto(this)
+            .set(ANNUAL_CARBON, updated.annualCarbon)
             .set(APPLICATION_REFORESTABLE_LAND, updated.applicationReforestableLand)
+            .set(CARBON_CAPACITY, updated.carbonCapacity)
             .set(CONFIRMED_REFORESTABLE_LAND, updated.confirmedReforestableLand)
             .set(DEAL_DESCRIPTION, updated.dealDescription)
             .set(DEAL_STAGE_ID, updated.dealStage)
@@ -74,11 +76,14 @@ class ProjectAcceleratorDetailsStore(
             .set(PIPELINE_ID, updated.pipeline)
             .set(PROJECT_ID, projectId)
             .set(PROJECT_LEAD, updated.projectLead)
+            .set(TOTAL_CARBON, updated.totalCarbon)
             .set(TOTAL_EXPANSION_POTENTIAL, updated.totalExpansionPotential)
             .set(WHAT_NEEDS_TO_BE_TRUE, updated.whatNeedsToBeTrue)
             .onConflict(PROJECT_ID)
             .doUpdate()
+            .set(ANNUAL_CARBON, updated.annualCarbon)
             .set(APPLICATION_REFORESTABLE_LAND, updated.applicationReforestableLand)
+            .set(CARBON_CAPACITY, updated.carbonCapacity)
             .set(CONFIRMED_REFORESTABLE_LAND, updated.confirmedReforestableLand)
             .set(DEAL_DESCRIPTION, updated.dealDescription)
             .set(DEAL_STAGE_ID, updated.dealStage)
@@ -94,6 +99,7 @@ class ProjectAcceleratorDetailsStore(
             .set(PER_HECTARE_BUDGET, updated.perHectareBudget)
             .set(PIPELINE_ID, updated.pipeline)
             .set(PROJECT_LEAD, updated.projectLead)
+            .set(TOTAL_CARBON, updated.totalCarbon)
             .set(TOTAL_EXPANSION_POTENTIAL, updated.totalExpansionPotential)
             .set(WHAT_NEEDS_TO_BE_TRUE, updated.whatNeedsToBeTrue)
             .execute()
@@ -105,6 +111,7 @@ class ProjectAcceleratorDetailsStore(
             .set(COUNTRY_CODE, updated.countryCode)
             .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
+            .where(ID.eq(projectId))
             .execute()
       }
 

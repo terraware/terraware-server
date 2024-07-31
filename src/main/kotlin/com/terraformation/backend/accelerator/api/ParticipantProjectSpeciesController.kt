@@ -72,6 +72,7 @@ class ParticipantProjectSpeciesController(
                 projectId = payload.projectId,
                 rationale = payload.rationale,
                 speciesId = payload.speciesId,
+                speciesNativeCategory = payload.speciesNativeCategory,
             ))
 
     return GetParticipantProjectSpeciesResponsePayload(ParticipantProjectSpeciesPayload(model))

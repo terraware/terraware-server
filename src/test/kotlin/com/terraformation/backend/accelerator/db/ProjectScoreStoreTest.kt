@@ -62,7 +62,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
       insertProjectScore(
           phase = CohortPhase.Phase0DueDiligence,
-          category = ScoreCategory.Community,
+          category = ScoreCategory.SocialImpact,
           score = -1,
           createdTime = time3)
 

@@ -45,7 +45,7 @@ class ProjectScoresController(
           PhaseScores(
               phase,
               scoreModels.map { Score(it.category, it.modifiedTime, it.qualitative, it.score) },
-              ProjectScoreModel.totalScore(scoreModels))
+              ProjectScoreModel.totalScore(phase, scoreModels))
         }
 
     return GetProjectScoresResponsePayload(phaseScores)

@@ -27,7 +27,9 @@ class ProjectAcceleratorDetailsTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       with(PROJECT_ACCELERATOR_DETAILS) {
         listOf(
+            bigDecimalField("annualCarbon", ANNUAL_CARBON),
             bigDecimalField("applicationReforestableLand", APPLICATION_REFORESTABLE_LAND),
+            bigDecimalField("carbonCapacity", CARBON_CAPACITY),
             bigDecimalField("confirmedReforestableLand", CONFIRMED_REFORESTABLE_LAND),
             textField("dealDescription", DEAL_DESCRIPTION),
             nonLocalizableEnumField("dealStage", DEAL_STAGE_ID),
@@ -43,6 +45,7 @@ class ProjectAcceleratorDetailsTable(tables: SearchTables) : SearchTable() {
             bigDecimalField("perHectareBudget", PER_HECTARE_BUDGET),
             nonLocalizableEnumField("pipeline", PIPELINE_ID),
             textField("projectLead", PROJECT_LEAD),
+            bigDecimalField("totalCarbon", TOTAL_CARBON),
             bigDecimalField("totalExpansionPotential", TOTAL_EXPANSION_POTENTIAL),
             textField("whatNeedsToBeTrue", WHAT_NEEDS_TO_BE_TRUE),
         )

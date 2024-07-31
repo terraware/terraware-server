@@ -61,7 +61,9 @@ class ProjectAcceleratorDetailsController(
 }
 
 data class ProjectAcceleratorDetailsPayload(
+    val annualCarbon: BigDecimal?,
     val applicationReforestableLand: BigDecimal?,
+    val carbonCapacity: BigDecimal?,
     val confirmedReforestableLand: BigDecimal?,
     val countryCode: String?,
     val dealDescription: String?,
@@ -81,13 +83,16 @@ data class ProjectAcceleratorDetailsPayload(
     val projectId: ProjectId,
     val projectLead: String?,
     val region: Region?,
+    val totalCarbon: BigDecimal?,
     val totalExpansionPotential: BigDecimal?,
     val whatNeedsToBeTrue: String?,
 ) {
   constructor(
       model: ProjectAcceleratorDetailsModel
   ) : this(
+      annualCarbon = model.annualCarbon,
       applicationReforestableLand = model.applicationReforestableLand,
+      carbonCapacity = model.carbonCapacity,
       confirmedReforestableLand = model.confirmedReforestableLand,
       countryCode = model.countryCode,
       dealDescription = model.dealDescription,
@@ -107,6 +112,7 @@ data class ProjectAcceleratorDetailsPayload(
       projectId = model.projectId,
       projectLead = model.projectLead,
       region = model.region,
+      totalCarbon = model.totalCarbon,
       totalExpansionPotential = model.totalExpansionPotential,
       whatNeedsToBeTrue = model.whatNeedsToBeTrue,
   )
@@ -117,7 +123,9 @@ data class GetProjectAcceleratorDetailsResponsePayload(
 ) : SuccessResponsePayload
 
 data class UpdateProjectAcceleratorDetailsRequestPayload(
+    val annualCarbon: BigDecimal?,
     val applicationReforestableLand: BigDecimal?,
+    val carbonCapacity: BigDecimal?,
     val confirmedReforestableLand: BigDecimal?,
     val countryCode: String?,
     val dealDescription: String?,
@@ -143,12 +151,15 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
     val perHectareBudget: BigDecimal?,
     val pipeline: Pipeline?,
     val projectLead: String?,
+    val totalCarbon: BigDecimal?,
     val totalExpansionPotential: BigDecimal?,
     val whatNeedsToBeTrue: String?,
 ) {
   fun applyTo(model: ProjectAcceleratorDetailsModel): ProjectAcceleratorDetailsModel =
       model.copy(
+          annualCarbon = annualCarbon,
           applicationReforestableLand = applicationReforestableLand,
+          carbonCapacity = carbonCapacity,
           confirmedReforestableLand = confirmedReforestableLand,
           countryCode = countryCode,
           dealDescription = dealDescription,
@@ -166,6 +177,7 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
           perHectareBudget = perHectareBudget,
           pipeline = pipeline,
           projectLead = projectLead,
+          totalCarbon = totalCarbon,
           totalExpansionPotential = totalExpansionPotential,
           whatNeedsToBeTrue = whatNeedsToBeTrue,
       )
