@@ -3,6 +3,7 @@ package com.terraformation.backend.documentproducer.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
@@ -497,6 +498,27 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
             listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))))
 
         eventPublisher.assertEventNotPublished<QuestionsDeliverableSubmittedEvent>()
+      }
+
+      @Test
+      fun `publishes event if a variable value is updated`() {
+        val variableId =
+            insertVariableManifestEntry(
+                insertTextVariable(
+                    id =
+                        insertVariable(
+                            deliverableId = inserted.deliverableId,
+                            deliverablePosition = 0,
+                            type = VariableType.Text)))
+
+        val updatedValues =
+            store.updateValues(
+                listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))))
+
+        updatedValues.forEach { value ->
+          eventPublisher.assertEventPublished(
+              VariableValueUpdatedEvent(inserted.projectId, value.variableId))
+        }
       }
     }
   }
