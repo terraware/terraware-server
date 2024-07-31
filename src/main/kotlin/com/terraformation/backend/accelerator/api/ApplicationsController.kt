@@ -326,6 +326,7 @@ data class ApplicationPayload(
       )
     }
   }
+}
 
 data class ApplicationModulePayload(
     val applicationId: ApplicationId?,
