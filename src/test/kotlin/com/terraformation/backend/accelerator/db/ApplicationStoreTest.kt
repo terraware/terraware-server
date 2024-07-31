@@ -90,6 +90,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   createdBy = user.userId,
                   createdTime = now,
                   id = model.id,
+                  internalName = "XXX_Organization 1",
                   modifiedBy = user.userId,
                   modifiedTime = now,
                   projectId = inserted.projectId,
@@ -172,7 +173,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       organizationId2 = insertOrganization(2, name = "Organization 2")
       org2ProjectId1 = insertProject(organizationId = organizationId2, name = "Project C")
-      org2Project1ApplicationId = insertApplication(projectId = org2ProjectId1)
+      org2Project1ApplicationId =
+          insertApplication(projectId = org2ProjectId1, internalName = "internalName3")
 
       every { user.adminOrganizations() } returns setOf(organizationId, organizationId2)
     }
@@ -324,6 +326,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 ExistingApplicationModel(
                     createdTime = Instant.EPOCH,
                     id = org2Project1ApplicationId,
+                    internalName = "internalName3",
                     organizationId = organizationId2,
                     projectId = org2ProjectId1,
                     projectName = "Project C",
@@ -1039,7 +1042,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
         insertProject()
         val boundary = Turtle(origin).makePolygon { rectangle(10000, minHectares - 10) }
-        val applicationId = insertApplication(boundary = boundary)
+        val applicationId = insertApplication(boundary = boundary, internalName = country)
 
         val result = store.submit(applicationId, validVariables(boundary))
 
@@ -1336,9 +1339,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class UpdateBoundary {
     @Test
-    fun `updates boundary and sets internal name if not already set`() {
+    fun `updates boundary and sets internal name if country part not already set`() {
       val otherUserId = insertUser()
-      val applicationId = insertApplication(createdBy = otherUserId)
+      val applicationId =
+          insertApplication(createdBy = otherUserId, internalName = "XXX_Organization 1")
       val boundary = Turtle(point(0, 51)).makePolygon { rectangle(100, 100) }
 
       clock.instant = Instant.ofEpochSecond(30)
@@ -1439,6 +1443,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               createdBy = otherUserId,
               createdTime = Instant.EPOCH,
               id = applicationId,
+              internalName = "XXX",
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               projectId = inserted.projectId,

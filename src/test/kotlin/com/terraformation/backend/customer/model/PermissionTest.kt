@@ -413,6 +413,7 @@ internal class PermissionTest : DatabaseTest() {
       insertApplication(
           createdBy = userId,
           id = applicationId,
+          internalName = "XXX_$applicationId",
           projectId = ProjectId(applicationId.value),
       )
     }

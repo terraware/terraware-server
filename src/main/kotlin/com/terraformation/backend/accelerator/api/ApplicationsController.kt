@@ -73,7 +73,7 @@ class ApplicationsController(
   fun getApplication(@PathVariable applicationId: ApplicationId): GetApplicationResponsePayload {
     val model = applicationStore.fetchOneById(applicationId)
 
-    return GetApplicationResponsePayload(ApplicationPayload(model))
+    return GetApplicationResponsePayload(ApplicationPayload.of(model))
   }
 
   @GetMapping("/{applicationId}/deliverables")
@@ -152,7 +152,7 @@ class ApplicationsController(
                   "One of organizationId, projectId, or listAll must be specified")
         }
 
-    return ListApplicationsResponsePayload(models.map { ApplicationPayload(it) })
+    return ListApplicationsResponsePayload(models.map { ApplicationPayload.of(it) })
   }
 
   @Operation(
@@ -307,20 +307,23 @@ data class ApplicationPayload(
     val projectName: String,
     val status: ApiApplicationStatus,
 ) {
-  constructor(
-      model: ExistingApplicationModel
-  ) : this(
-      model.boundary?.toMultiPolygon(),
-      model.createdTime,
-      model.feedback,
-      model.id,
-      model.internalComment,
-      model.internalName,
-      model.organizationId,
-      model.projectId,
-      model.projectName,
-      ApiApplicationStatus.of(model.status),
-  )
+  companion object {
+    fun of(model: ExistingApplicationModel): ApplicationPayload {
+      val exposeInternalFields = currentUser().canReadAllAcceleratorDetails()
+      return ApplicationPayload(
+          boundary = model.boundary?.toMultiPolygon(),
+          createdTime = model.createdTime,
+          feedback = model.feedback,
+          id = model.id,
+          internalComment = if (exposeInternalFields) model.internalComment else null,
+          internalName = if (exposeInternalFields) model.internalName else null,
+          organizationId = model.organizationId,
+          projectId = model.projectId,
+          projectName = model.projectName,
+          status = ApiApplicationStatus.of(model.status),
+      )
+    }
+  }
 }
 
 data class ApplicationModulePayload(
@@ -430,5 +433,5 @@ data class SubmitApplicationResponsePayload(
 ) : SuccessResponsePayload {
   constructor(
       result: ApplicationSubmissionResult
-  ) : this(ApplicationPayload(result.application), result.problems)
+  ) : this(ApplicationPayload.of(result.application), result.problems)
 }

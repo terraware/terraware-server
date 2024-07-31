@@ -10,6 +10,7 @@ import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
@@ -63,6 +64,9 @@ class ApplicationStore(
           "KE" to 3000,
           "TZ" to 3000,
       )
+
+  /** Internal name country prefix used when country can't be determined from boundary. */
+  private val defaultInternalNamePrefix = "XXX"
 
   /**
    * How far the total of the per-land-use-type hectare counts is allowed to vary from the size of
@@ -261,6 +265,12 @@ class ApplicationStore(
 
     val userId = currentUser().userId
     val now = clock.instant()
+    val organizationName =
+        dslContext
+            .select(PROJECTS.organizations.NAME)
+            .from(PROJECTS)
+            .where(PROJECTS.ID.eq(projectId))
+            .fetchOne(PROJECTS.organizations.NAME) ?: throw ProjectNotFoundException(projectId)
 
     return dslContext.transactionResult { _ ->
       val applicationId =
@@ -270,6 +280,7 @@ class ApplicationStore(
                 .set(APPLICATION_STATUS_ID, ApplicationStatus.NotSubmitted)
                 .set(CREATED_BY, userId)
                 .set(CREATED_TIME, now)
+                .set(INTERNAL_NAME, defaultInternalNamePrefix)
                 .set(MODIFIED_BY, userId)
                 .set(MODIFIED_TIME, now)
                 .set(PROJECT_ID, projectId)
@@ -283,6 +294,8 @@ class ApplicationStore(
 
       assignModules(applicationId, CohortPhase.PreScreen)
       assignModules(applicationId, CohortPhase.Application)
+
+      updateInternalName(applicationId, "${defaultInternalNamePrefix}_$organizationName")
 
       fetchOneById(applicationId)
     }
@@ -420,9 +433,10 @@ class ApplicationStore(
   }
 
   /**
-   * Updates an application's project boundary. If the application doesn't yet have an internal
-   * name, and the boundary is within a single country, sets the internal name based on the country
-   * and organization name.
+   * Updates an application's project boundary. If the application doesn't yet have an internal name
+   * or the internal name's prefix is [defaultInternalNamePrefix] rather than a country code, and
+   * the boundary is within a single country, sets the internal name based on the country and
+   * organization name.
    */
   fun updateBoundary(applicationId: ApplicationId, boundary: Geometry) {
     requirePermissions { updateApplicationBoundary(applicationId) }
@@ -430,7 +444,7 @@ class ApplicationStore(
     dslContext.transaction { _ ->
       val existing = fetchOneById(applicationId)
 
-      if (existing.internalName == null) {
+      if (existing.internalName.startsWith(defaultInternalNamePrefix)) {
         val countries = countryDetector.getCountries(boundary)
 
         if (countries.size == 1) {
