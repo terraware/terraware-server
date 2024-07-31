@@ -79,6 +79,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
           ExistingApplicationModel(
               createdTime = Instant.EPOCH,
               id = applicationId,
+              internalName = "XXX",
               projectId = projectId,
               projectName = "Project Name",
               organizationId = organizationId,
@@ -101,6 +102,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
           ExistingApplicationModel(
               createdTime = Instant.EPOCH,
               id = applicationId,
+              internalName = "XXX",
               projectId = projectId,
               projectName = "Project Name",
               organizationId = organizationId,

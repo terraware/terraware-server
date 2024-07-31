@@ -2248,7 +2248,7 @@ abstract class DatabaseBackedTest {
       feedback: String? = null,
       id: Any? = null,
       internalComment: String? = null,
-      internalName: String? = null,
+      internalName: String = "XXX",
       projectId: Any = inserted.projectId,
       modifiedBy: Any = createdBy,
       modifiedTime: Instant = createdTime,
