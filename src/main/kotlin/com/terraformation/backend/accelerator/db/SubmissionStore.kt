@@ -67,8 +67,7 @@ class SubmissionStore(
 
     val submission =
         dslContext
-            .select(
-                DELIVERABLES.ID, SUBMISSIONS.ID, COHORT_MODULES.START_DATE, COHORT_MODULES.END_DATE)
+            .select(DELIVERABLES.ID, SUBMISSIONS.ID)
             .from(DELIVERABLES)
             .join(MODULES)
             .on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))

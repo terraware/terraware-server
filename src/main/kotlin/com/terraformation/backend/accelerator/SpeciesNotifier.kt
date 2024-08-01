@@ -90,10 +90,10 @@ class SpeciesNotifier(
         val deliverableSubmission =
             submissionStore.fetchMostRecentSpeciesDeliverableSubmission(event.projectId)
 
-        deliverableSubmission?.also {
+        if (deliverableSubmission != null) {
           eventPublisher.publishEvent(
               ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
-                  deliverableId = it.deliverableId,
+                  deliverableId = deliverableSubmission.deliverableId,
                   projectId = event.projectId,
                   speciesId = event.newParticipantProjectSpecies.speciesId))
         }

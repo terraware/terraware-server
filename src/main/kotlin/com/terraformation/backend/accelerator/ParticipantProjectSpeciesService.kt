@@ -207,8 +207,8 @@ class ParticipantProjectSpeciesService(
   }
 
   /**
-   * Is a Participant Project Species is created, and there is either an active or recent
-   * deliverable, a submission must be created for the deliverable. If a submission is created, we
+   * If a Participant Project Species is created, and there is either an active or recent
+   * deliverable, a submission must be created for the deliverable.
    */
   private fun ensureSubmission(
       existingModel: ExistingParticipantProjectSpeciesModel
@@ -236,8 +236,7 @@ class ParticipantProjectSpeciesService(
           ParticipantProjectSpeciesAddedEvent(
               deliverableId = deliverableId,
               participantProjectSpecies = participantProjectSpecies,
-          ),
-      )
+          ))
     }
   }
 }

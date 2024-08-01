@@ -14,7 +14,9 @@ import org.jooq.Record
 import org.jooq.impl.DSL
 
 data class ParticipantProjectsForSpecies(
-    // This deliverable ID is associated to the active or most recent cohort module, if available
+    /**
+     * This deliverable ID is associated to the active or most recent cohort module, if available
+     */
     val deliverableId: DeliverableId? = null,
     val participantProjectSpeciesId: ParticipantProjectSpeciesId,
     val participantProjectSpeciesSubmissionStatus: SubmissionStatus,
