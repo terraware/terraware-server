@@ -27,6 +27,8 @@ import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import java.time.Instant
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -177,7 +179,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `creates an entity for each project ID and species ID pairing and ensures there is a submission for each project deliverable`() {
+    fun `creates an entity for each project ID and species ID pairing and ensures there is a submission for each active project deliverable`() {
       val cohortId = insertCohort()
       val participantId = insertParticipant(cohortId = cohortId)
       val moduleId = insertModule()
@@ -226,8 +228,111 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       // that have multiple species added to them. This does not test for correct-ness of the
       // create operations
       verify(exactly = 1) {
-        submissionStore.fetchActiveSpeciesDeliverableSubmission(projectId1)
-        submissionStore.fetchActiveSpeciesDeliverableSubmission(projectId2)
+        submissionStore.fetchMostRecentSpeciesDeliverableSubmission(projectId1)
+        submissionStore.fetchMostRecentSpeciesDeliverableSubmission(projectId2)
+      }
+    }
+
+    @Test
+    fun `creates an entity for each project ID and species ID pairing and ensures there is a submission for each most recent project deliverable, if there is no active one`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+
+      // This cohort module goes from 0 to 6 days
+      val moduleIdOld = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdOld)
+      insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
+
+      // This cohort module goes from 7 to 13 days
+      val moduleIdMostRecent = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdMostRecent)
+      val deliverableIdMostRecent =
+          insertDeliverable(
+              moduleId = moduleIdMostRecent, deliverableTypeId = DeliverableType.Species)
+
+      // The clock is between these two cohort modules
+
+      // This cohort module goes from 21 to 27 days
+      val moduleIdFuture = insertModule()
+      insertCohortModule(
+          cohortId = cohortId,
+          endDate = LocalDate.EPOCH.plusDays(27),
+          moduleId = moduleIdFuture,
+          startDate = LocalDate.EPOCH.plusDays(21))
+      insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
+
+      // Between the most recent and future module
+      clock.instant = Instant.EPOCH.plus(20, ChronoUnit.DAYS)
+
+      val projectId1 = insertProject(participantId = participantId)
+      val projectId2 = insertProject(participantId = participantId)
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+
+      val existingModels =
+          service.create(setOf(projectId1, projectId2), setOf(speciesId1, speciesId2))
+
+      val userId = currentUser().userId
+      val now = clock.instant
+
+      assertEquals(
+          listOf(
+              SubmissionsRow(
+                  createdBy = userId,
+                  createdTime = now,
+                  deliverableId = deliverableIdMostRecent,
+                  modifiedBy = userId,
+                  modifiedTime = now,
+                  projectId = projectId1,
+                  submissionStatusId = SubmissionStatus.NotSubmitted),
+              SubmissionsRow(
+                  createdBy = userId,
+                  createdTime = now,
+                  deliverableId = deliverableIdMostRecent,
+                  modifiedBy = userId,
+                  modifiedTime = now,
+                  projectId = projectId2,
+                  submissionStatusId = SubmissionStatus.NotSubmitted)),
+          submissionsDao.fetchByDeliverableId(deliverableIdMostRecent).map { it.copy(id = null) })
+
+      eventPublisher.assertEventsPublished(
+          existingModels.toSet().map {
+            ParticipantProjectSpeciesAddedEvent(
+                deliverableId = deliverableIdMostRecent, participantProjectSpecies = it)
+          })
+
+      // This test is to ensure that we do not over-fetch deliverable submissions for projects
+      // that have multiple species added to them. This does not test for correct-ness of the
+      // create operations
+      verify(exactly = 1) {
+        submissionStore.fetchMostRecentSpeciesDeliverableSubmission(projectId1)
+        submissionStore.fetchMostRecentSpeciesDeliverableSubmission(projectId2)
+      }
+    }
+
+    @Test
+    fun `creates an entity for each project ID and species ID pairing even if there isn't any associated deliverable`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+
+      val projectId1 = insertProject(participantId = participantId)
+      val projectId2 = insertProject(participantId = participantId)
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+
+      service.create(setOf(projectId1, projectId2), setOf(speciesId1, speciesId2))
+
+      assertEquals(emptyList<SubmissionsRow>(), submissionsDao.findAll().map { it.copy(id = null) })
+
+      eventPublisher.assertNoEventsPublished(
+          "No events published for species added to deliverables")
+
+      // This test is to ensure that we do not over-fetch deliverable submissions for projects
+      // that have multiple species added to them. This does not test for correct-ness of the
+      // create operations
+      verify(exactly = 1) {
+        submissionStore.fetchMostRecentSpeciesDeliverableSubmission(projectId1)
+        submissionStore.fetchMostRecentSpeciesDeliverableSubmission(projectId2)
       }
     }
   }
