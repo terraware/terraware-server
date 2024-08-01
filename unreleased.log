@@ -1,3 +1,4 @@
+24b7752926b SW-5672 Remove the requirement of an active deliverable when managing participant project species (#2223)
 0de28c1c284 Update dependency software.amazon.awssdk:bom to v2.26.27 (#2225)
 d6857499a20 SW-5737 Improve robustness of shapefile import (#2222)
 64f474c52bb SW-5628 Revert change to default Student's t value (#2221)
