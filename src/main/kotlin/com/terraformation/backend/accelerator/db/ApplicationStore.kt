@@ -579,7 +579,9 @@ class ApplicationStore(
         .select(
             APPLICATIONS.asterisk(),
             APPLICATIONS.projects.ORGANIZATION_ID,
-            APPLICATIONS.projects.NAME)
+            APPLICATIONS.projects.NAME,
+            APPLICATIONS.projects.organizations.NAME,
+        )
         .from(APPLICATIONS)
         .where(conditionWithPermission)
         .orderBy(APPLICATIONS.ID)

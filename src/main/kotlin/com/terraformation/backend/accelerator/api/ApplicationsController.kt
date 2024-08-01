@@ -303,6 +303,7 @@ data class ApplicationPayload(
                 "internal user.")
     val internalName: String?,
     val organizationId: OrganizationId,
+    val organizationName: String,
     val projectId: ProjectId,
     val projectName: String,
     val status: ApiApplicationStatus,
@@ -318,6 +319,7 @@ data class ApplicationPayload(
           internalComment = if (exposeInternalFields) model.internalComment else null,
           internalName = if (exposeInternalFields) model.internalName else null,
           organizationId = model.organizationId,
+          model.organizationName,
           projectId = model.projectId,
           projectName = model.projectName,
           status = ApiApplicationStatus.of(model.status),
