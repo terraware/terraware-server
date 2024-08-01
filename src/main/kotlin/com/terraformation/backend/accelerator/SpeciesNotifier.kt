@@ -88,13 +88,15 @@ class SpeciesNotifier(
 
       if (lastModifiedTime == event.newParticipantProjectSpecies.modifiedTime) {
         val deliverableSubmission =
-            submissionStore.fetchActiveSpeciesDeliverableSubmission(event.projectId)
+            submissionStore.fetchMostRecentSpeciesDeliverableSubmission(event.projectId)
 
-        eventPublisher.publishEvent(
-            ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
-                deliverableId = deliverableSubmission.deliverableId,
-                projectId = event.projectId,
-                speciesId = event.newParticipantProjectSpecies.speciesId))
+        deliverableSubmission?.also {
+          eventPublisher.publishEvent(
+              ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
+                  deliverableId = it.deliverableId,
+                  projectId = event.projectId,
+                  speciesId = event.newParticipantProjectSpecies.speciesId))
+        }
       }
     }
   }

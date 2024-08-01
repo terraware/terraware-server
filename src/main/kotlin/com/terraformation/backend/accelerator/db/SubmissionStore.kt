@@ -58,16 +58,17 @@ class SubmissionStore(
         .execute()
   }
 
-  fun fetchActiveSpeciesDeliverableSubmission(
+  fun fetchMostRecentSpeciesDeliverableSubmission(
       projectId: ProjectId,
-  ): ExistingSpeciesDeliverableSubmissionModel {
+  ): ExistingSpeciesDeliverableSubmissionModel? {
     requirePermissions { readProjectDeliverables(projectId) }
 
     val today = LocalDate.ofInstant(clock.instant(), TimeZones.UTC)
 
     val submission =
         dslContext
-            .select(DELIVERABLES.ID, SUBMISSIONS.ID)
+            .select(
+                DELIVERABLES.ID, SUBMISSIONS.ID, COHORT_MODULES.START_DATE, COHORT_MODULES.END_DATE)
             .from(DELIVERABLES)
             .join(MODULES)
             .on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
@@ -77,18 +78,18 @@ class SubmissionStore(
             .on(COHORT_MODULES.COHORT_ID.eq(PARTICIPANTS.COHORT_ID))
             .join(PROJECTS)
             .on(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID))
-            .leftOuterJoin(SUBMISSIONS)
+            .leftJoin(SUBMISSIONS)
             .on(
                 DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID),
                 PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
             .where(COHORT_MODULES.START_DATE.lessOrEqual(today))
-            .and(COHORT_MODULES.END_DATE.greaterOrEqual(today))
             .and(PROJECTS.ID.eq(projectId))
             .and(DELIVERABLES.DELIVERABLE_TYPE_ID.eq(DeliverableType.Species))
+            .orderBy(COHORT_MODULES.END_DATE.desc())
+            .limit(1)
             .fetchOne { ExistingSpeciesDeliverableSubmissionModel.of(it) }
-            ?: throw SpeciesDeliverableNotFoundException(projectId)
 
-    if (submission.submissionId != null) {
+    if (submission?.submissionId != null) {
       requirePermissions { readSubmission(submission.submissionId) }
     }
 

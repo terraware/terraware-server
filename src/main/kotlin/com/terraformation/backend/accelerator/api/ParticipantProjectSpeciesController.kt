@@ -212,7 +212,10 @@ data class GetParticipantProjectSpeciesResponsePayload(
 ) : SuccessResponsePayload
 
 data class ParticipantProjectForSpeciesPayload(
-    val activeDeliverableId: DeliverableId?,
+    @Schema(
+        description =
+            "This deliverable ID is associated to the active or most recent cohort module, if available.")
+    val deliverableId: DeliverableId?,
     val participantProjectSpeciesId: ParticipantProjectSpeciesId,
     val participantProjectSpeciesSubmissionStatus: SubmissionStatus,
     val participantProjectSpeciesNativeCategory: SpeciesNativeCategory?,
@@ -223,7 +226,7 @@ data class ParticipantProjectForSpeciesPayload(
   constructor(
       model: ParticipantProjectsForSpecies
   ) : this(
-      activeDeliverableId = model.activeDeliverableId,
+      deliverableId = model.deliverableId,
       participantProjectSpeciesId = model.participantProjectSpeciesId,
       participantProjectSpeciesSubmissionStatus = model.participantProjectSpeciesSubmissionStatus,
       participantProjectSpeciesNativeCategory = model.participantProjectSpeciesNativeCategory,

@@ -12,6 +12,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
+import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -39,7 +40,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class FetchActiveSpeciesDeliverable {
     @Test
-    fun `fetches the deliverable ID if no submission present`() {
+    fun `fetches the deliverable ID if no submission present for an active deliverable`() {
       val cohortId = insertCohort()
       val participantId = insertParticipant(cohortId = cohortId)
       val projectId = insertProject(participantId = participantId)
@@ -67,11 +68,51 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
               deliverableId = deliverableIdActive,
               submissionId = null,
           ),
-          store.fetchActiveSpeciesDeliverableSubmission(projectId))
+          store.fetchMostRecentSpeciesDeliverableSubmission(projectId))
     }
 
     @Test
-    fun `fetches both deliverable ID and submission ID if present`() {
+    fun `fetches the deliverable ID if no submission present for the most recent inactive deliverable if there is no active deliverable`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId = insertProject(participantId = participantId)
+
+      // Module goes from epoch -> epoch + 6 days
+      val moduleIdOld = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdOld)
+      insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
+
+      // Module goes from epoch + 6 days -> epoch + 12 days
+      val moduleIdMostRecent = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdMostRecent)
+      val deliverableIdMostRecent =
+          insertDeliverable(
+              moduleId = moduleIdMostRecent, deliverableTypeId = DeliverableType.Species)
+
+      // Clock date is between these two modules
+
+      // Module goes from epoch + 20 days -> epoch + 30 days
+      val moduleIdFuture = insertModule()
+      insertCohortModule(
+          cohortId = cohortId,
+          endDate = LocalDate.EPOCH.plusDays(30),
+          moduleId = moduleIdFuture,
+          startDate = LocalDate.EPOCH.plusDays(20))
+      insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
+
+      // Set clock to a week after the most recent module deliverable was active
+      clock.instant = Instant.EPOCH.plus(19, ChronoUnit.DAYS)
+
+      assertEquals(
+          ExistingSpeciesDeliverableSubmissionModel(
+              deliverableId = deliverableIdMostRecent,
+              submissionId = null,
+          ),
+          store.fetchMostRecentSpeciesDeliverableSubmission(projectId))
+    }
+
+    @Test
+    fun `fetches both deliverable ID and submission ID if present for active deliverable`() {
       val cohortId = insertCohort()
       val participantId = insertParticipant(cohortId = cohortId)
       val projectId = insertProject(participantId = participantId)
@@ -105,7 +146,53 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
               deliverableId = deliverableIdActive,
               submissionId = submissionIdActive,
           ),
-          store.fetchActiveSpeciesDeliverableSubmission(projectId))
+          store.fetchMostRecentSpeciesDeliverableSubmission(projectId))
+    }
+
+    @Test
+    fun `fetches both deliverable ID and submission ID if present for most recent deliverable if there is no active deliverable`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId = insertProject(participantId = participantId)
+
+      // Module goes from epoch -> epoch + 6 days
+      val moduleIdOld = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdOld)
+      val deliverableIdOld =
+          insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
+      insertSubmission(deliverableId = deliverableIdOld, projectId = projectId)
+
+      // Module goes from epoch + 6 days -> epoch + 12 days
+      val moduleIdMostRecent = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdMostRecent)
+      val deliverableIdActive =
+          insertDeliverable(
+              moduleId = moduleIdMostRecent, deliverableTypeId = DeliverableType.Species)
+      val submissionIdActive =
+          insertSubmission(deliverableId = deliverableIdActive, projectId = projectId)
+
+      // Clock date is between these two modules
+
+      // Module goes from epoch + 20 days -> epoch + 30 days
+      val moduleIdFuture = insertModule()
+      insertCohortModule(
+          cohortId = cohortId,
+          endDate = LocalDate.EPOCH.plusDays(30),
+          moduleId = moduleIdFuture,
+          startDate = LocalDate.EPOCH.plusDays(20))
+      val deliverableIdFuture =
+          insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
+      insertSubmission(deliverableId = deliverableIdFuture, projectId = projectId)
+
+      // Set clock to a week after the most recent module deliverable was active
+      clock.instant = Instant.EPOCH.plus(19, ChronoUnit.DAYS)
+
+      assertEquals(
+          ExistingSpeciesDeliverableSubmissionModel(
+              deliverableId = deliverableIdActive,
+              submissionId = submissionIdActive,
+          ),
+          store.fetchMostRecentSpeciesDeliverableSubmission(projectId))
     }
 
     @Test
@@ -123,7 +210,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadSubmission(submissionId) } returns false
 
       assertThrows<SubmissionNotFoundException> {
-        store.fetchActiveSpeciesDeliverableSubmission(projectId)
+        store.fetchMostRecentSpeciesDeliverableSubmission(projectId)
       }
     }
 
@@ -134,7 +221,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadProjectDeliverables(projectId) } returns false
 
       assertThrows<AccessDeniedException> {
-        store.fetchActiveSpeciesDeliverableSubmission(projectId)
+        store.fetchMostRecentSpeciesDeliverableSubmission(projectId)
       }
     }
   }

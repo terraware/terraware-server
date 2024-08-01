@@ -21,6 +21,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import io.mockk.every
 import java.time.Instant
+import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -208,7 +209,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               ParticipantProjectsForSpecies(
-                  activeDeliverableId = deliverableId,
+                  deliverableId = deliverableId,
                   participantProjectSpeciesId = participantProjectSpeciesId1,
                   participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
                   participantProjectSpeciesNativeCategory = null,
@@ -216,7 +217,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectName = "Project 1",
                   speciesId = speciesId),
               ParticipantProjectsForSpecies(
-                  activeDeliverableId = deliverableId,
+                  deliverableId = deliverableId,
                   participantProjectSpeciesId = participantProjectSpeciesId2,
                   participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
                   participantProjectSpeciesNativeCategory = null,
@@ -227,15 +228,35 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `fetches the projects a species is associated to by species ID without an active deliverable`() {
+    fun `fetches the projects a species is associated to by species ID with the most recent deliverable if there is no active deliverable`() {
       val cohortId = insertCohort()
 
+      // This cohort module goes from 0 to 6 days
       val moduleIdOld = insertModule()
       insertCohortModule(cohortId = cohortId, moduleId = moduleIdOld)
       insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
 
-      // Ensure the previously created module is in the past, so there is no active deliverable
-      clock.instant = Instant.EPOCH.plus(7, ChronoUnit.DAYS)
+      // This cohort module goes from 7 to 13 days
+      val moduleIdMostRecent = insertModule()
+      insertCohortModule(cohortId = cohortId, moduleId = moduleIdMostRecent)
+      val deliverableIdMostRecent =
+          insertDeliverable(
+              moduleId = moduleIdMostRecent, deliverableTypeId = DeliverableType.Species)
+
+      // The clock is between these two modules
+
+      // This cohort module goes from 21 to 27 days
+      val moduleIdFuture = insertModule()
+      insertCohortModule(
+          cohortId = cohortId,
+          endDate = LocalDate.EPOCH.plusDays(27),
+          moduleId = moduleIdFuture,
+          startDate = LocalDate.EPOCH.plusDays(21),
+      )
+      insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
+
+      // Between the most recent and future module
+      clock.instant = Instant.EPOCH.plus(20, ChronoUnit.DAYS)
 
       val participantId = insertParticipant(cohortId = cohortId)
       val projectId1 = insertProject(participantId = participantId)
@@ -250,7 +271,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               ParticipantProjectsForSpecies(
-                  activeDeliverableId = null,
+                  deliverableId = deliverableIdMostRecent,
                   participantProjectSpeciesId = participantProjectSpeciesId1,
                   participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
                   participantProjectSpeciesNativeCategory = null,
@@ -258,7 +279,41 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectName = "Project 1",
                   speciesId = speciesId),
               ParticipantProjectsForSpecies(
-                  activeDeliverableId = null,
+                  deliverableId = deliverableIdMostRecent,
+                  participantProjectSpeciesId = participantProjectSpeciesId2,
+                  participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
+                  participantProjectSpeciesNativeCategory = null,
+                  projectId = projectId2,
+                  projectName = "Project 2",
+                  speciesId = speciesId)),
+          store.fetchParticipantProjectsForSpecies(speciesId))
+    }
+
+    @Test
+    fun `fetches the projects a species is associated to by species ID without an active or recent deliverable`() {
+      val cohortId = insertCohort()
+      val participantId = insertParticipant(cohortId = cohortId)
+      val projectId1 = insertProject(participantId = participantId)
+      val projectId2 = insertProject(participantId = participantId)
+
+      val speciesId = insertSpecies()
+      val participantProjectSpeciesId1 =
+          insertParticipantProjectSpecies(projectId = projectId1, speciesId = speciesId)
+      val participantProjectSpeciesId2 =
+          insertParticipantProjectSpecies(projectId = projectId2, speciesId = speciesId)
+
+      assertEquals(
+          listOf(
+              ParticipantProjectsForSpecies(
+                  deliverableId = null,
+                  participantProjectSpeciesId = participantProjectSpeciesId1,
+                  participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
+                  participantProjectSpeciesNativeCategory = null,
+                  projectId = projectId1,
+                  projectName = "Project 1",
+                  speciesId = speciesId),
+              ParticipantProjectsForSpecies(
+                  deliverableId = null,
                   participantProjectSpeciesId = participantProjectSpeciesId2,
                   participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
                   participantProjectSpeciesNativeCategory = null,
@@ -290,7 +345,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               ParticipantProjectsForSpecies(
-                  activeDeliverableId = null,
+                  deliverableId = null,
                   participantProjectSpeciesId = participantProjectSpeciesId1,
                   participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
                   participantProjectSpeciesNativeCategory = null,
@@ -298,7 +353,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectName = "Project 1",
                   speciesId = speciesId),
               ParticipantProjectsForSpecies(
-                  activeDeliverableId = null,
+                  deliverableId = null,
                   participantProjectSpeciesId = participantProjectSpeciesId2,
                   participantProjectSpeciesSubmissionStatus = SubmissionStatus.NotSubmitted,
                   participantProjectSpeciesNativeCategory = null,

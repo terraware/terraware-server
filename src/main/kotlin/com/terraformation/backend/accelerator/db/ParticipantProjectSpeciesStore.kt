@@ -139,13 +139,14 @@ class ParticipantProjectSpeciesStore(
 
     return dslContext
         .select(
-            DELIVERABLES.ID,
+            DSL.max(DELIVERABLES.ID),
             PROJECTS.NAME,
             PROJECTS.ID,
             PARTICIPANT_PROJECT_SPECIES.ID,
             PARTICIPANT_PROJECT_SPECIES.SUBMISSION_STATUS_ID,
             PARTICIPANT_PROJECT_SPECIES.SPECIES_NATIVE_CATEGORY_ID,
-            SPECIES.ID)
+            SPECIES.ID,
+            DSL.max(COHORT_MODULES.END_DATE))
         .from(SPECIES)
         .join(PARTICIPANT_PROJECT_SPECIES)
         .on(SPECIES.ID.eq(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID))
@@ -156,7 +157,6 @@ class ParticipantProjectSpeciesStore(
         .leftOuterJoin(COHORT_MODULES)
         .on(
             COHORT_MODULES.COHORT_ID.eq(PARTICIPANTS.COHORT_ID),
-            COHORT_MODULES.END_DATE.greaterOrEqual(today),
             COHORT_MODULES.START_DATE.lessOrEqual(today))
         .leftOuterJoin(MODULES)
         .on(COHORT_MODULES.MODULE_ID.eq(MODULES.ID))
@@ -165,11 +165,12 @@ class ParticipantProjectSpeciesStore(
             DELIVERABLES.MODULE_ID.eq(MODULES.ID),
             DELIVERABLES.DELIVERABLE_TYPE_ID.eq(DeliverableType.Species))
         .where(SPECIES.ID.eq(speciesId))
+        .groupBy(PROJECTS.ID, PARTICIPANT_PROJECT_SPECIES.ID, SPECIES.ID)
         .fetch { record ->
           if (user.canReadProjectDeliverables(record[PROJECTS.ID]!!)) {
             ParticipantProjectsForSpecies.of(record)
           } else {
-            ParticipantProjectsForSpecies.of(record).copy(activeDeliverableId = null)
+            ParticipantProjectsForSpecies.of(record).copy(deliverableId = null)
           }
         }
         .filter { user.canReadProject(it.projectId) }

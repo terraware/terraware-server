@@ -11,9 +11,11 @@ import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import org.jooq.Record
+import org.jooq.impl.DSL
 
 data class ParticipantProjectsForSpecies(
-    val activeDeliverableId: DeliverableId? = null,
+    // This deliverable ID is associated to the active or most recent cohort module, if available
+    val deliverableId: DeliverableId? = null,
     val participantProjectSpeciesId: ParticipantProjectSpeciesId,
     val participantProjectSpeciesSubmissionStatus: SubmissionStatus,
     val participantProjectSpeciesNativeCategory: SpeciesNativeCategory?,
@@ -24,7 +26,7 @@ data class ParticipantProjectsForSpecies(
   companion object {
     fun of(record: Record): ParticipantProjectsForSpecies {
       return ParticipantProjectsForSpecies(
-          activeDeliverableId = record[DELIVERABLES.ID],
+          deliverableId = record[DSL.max(DELIVERABLES.ID)],
           participantProjectSpeciesId = record[PARTICIPANT_PROJECT_SPECIES.ID]!!,
           projectId = record[PROJECTS.ID]!!,
           projectName = record[PROJECTS.NAME]!!,

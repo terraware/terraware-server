@@ -53,19 +53,8 @@ class ParticipantProjectSpeciesService(
     return dslContext.transactionResult { _ ->
       val existingModel = participantProjectSpeciesStore.create(model)
 
-      // If a submission doesn't exist for the deliverable, create one
-      val deliverableSubmission =
-          submissionStore.fetchActiveSpeciesDeliverableSubmission(model.projectId)
-      if (deliverableSubmission.submissionId == null) {
-        submissionStore.createSubmission(deliverableSubmission.deliverableId, model.projectId)
-      }
-
-      eventPublisher.publishEvent(
-          ParticipantProjectSpeciesAddedEvent(
-              deliverableId = deliverableSubmission.deliverableId,
-              participantProjectSpecies = existingModel,
-          ),
-      )
+      val deliverableId = ensureSubmission(existingModel)
+      publishAddedEvent(deliverableId, existingModel)
 
       existingModel
     }
@@ -83,31 +72,21 @@ class ParticipantProjectSpeciesService(
       val existingModels = participantProjectSpeciesStore.create(projectIds, speciesIds)
 
       // Used to save relatively expensive queries for projects which we know have submissions
-      val projectDeliverableIds = mutableMapOf<ProjectId, DeliverableId>()
+      val projectDeliverableIds = mutableMapOf<ProjectId, DeliverableId?>()
+      val checkedProjects = mutableListOf<ProjectId>()
 
-      existingModels.forEach { participantProjectSpecies ->
-        projectDeliverableIds[participantProjectSpecies.projectId]?.let {
-          publishAddedEvent(it, participantProjectSpecies)
+      existingModels.forEach { existingModel ->
+        projectDeliverableIds[existingModel.projectId]?.let { publishAddedEvent(it, existingModel) }
+
+        if (checkedProjects.contains(existingModel.projectId)) {
           return@forEach
         }
 
-        // A submission must exist for every project that is getting a new species assigned
-        val deliverableSubmission =
-            submissionStore.fetchActiveSpeciesDeliverableSubmission(
-                participantProjectSpecies.projectId)
-        if (deliverableSubmission.submissionId == null) {
-          submissionStore.createSubmission(
-              deliverableSubmission.deliverableId,
-              participantProjectSpecies.projectId,
-          )
-        }
+        val deliverableId = ensureSubmission(existingModel)
+        publishAddedEvent(deliverableId, existingModel)
 
-        projectDeliverableIds[participantProjectSpecies.projectId] =
-            deliverableSubmission.deliverableId
-        publishAddedEvent(
-            projectDeliverableIds[participantProjectSpecies.projectId]!!,
-            participantProjectSpecies,
-        )
+        projectDeliverableIds[existingModel.projectId] = deliverableId
+        checkedProjects.add(existingModel.projectId)
       }
 
       existingModels
@@ -227,15 +206,38 @@ class ParticipantProjectSpeciesService(
     return fileService.readFile(snapshotRow.fileId!!)
   }
 
+  /**
+   * Is a Participant Project Species is created, and there is either an active or recent
+   * deliverable, a submission must be created for the deliverable. If a submission is created, we
+   */
+  private fun ensureSubmission(
+      existingModel: ExistingParticipantProjectSpeciesModel
+  ): DeliverableId? {
+    val deliverableSubmission =
+        submissionStore.fetchMostRecentSpeciesDeliverableSubmission(existingModel.projectId)
+
+    // If a deliverable exists, but not a submission, create one
+    if (deliverableSubmission != null && deliverableSubmission.submissionId == null) {
+      submissionStore.createSubmission(deliverableSubmission.deliverableId, existingModel.projectId)
+    }
+
+    return deliverableSubmission?.deliverableId
+  }
+
+  /**
+   * Publish an event that a participant project species was added to a deliverable, if it exists
+   */
   private fun publishAddedEvent(
-      deliverableId: DeliverableId,
+      deliverableId: DeliverableId?,
       participantProjectSpecies: ExistingParticipantProjectSpeciesModel
   ) {
-    eventPublisher.publishEvent(
-        ParticipantProjectSpeciesAddedEvent(
-            deliverableId = deliverableId,
-            participantProjectSpecies = participantProjectSpecies,
-        ),
-    )
+    if (deliverableId != null) {
+      eventPublisher.publishEvent(
+          ParticipantProjectSpeciesAddedEvent(
+              deliverableId = deliverableId,
+              participantProjectSpecies = participantProjectSpecies,
+          ),
+      )
+    }
   }
 }
