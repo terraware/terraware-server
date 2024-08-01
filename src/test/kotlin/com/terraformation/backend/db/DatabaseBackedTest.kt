@@ -1060,7 +1060,7 @@ abstract class DatabaseBackedTest {
       deliverableId: Any? = inserted.deliverableId,
       feedback: String? = null,
       modifiedBy: UserId = createdBy,
-      modifiedTime: Instant = Instant.EPOCH,
+      modifiedTime: Instant = createdTime,
       id: Any? = null,
       internalComment: String? = null,
       projectId: Any? = inserted.projectId,
