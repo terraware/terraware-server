@@ -35,6 +35,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -233,6 +234,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         NotificationMessage("facility idle title", "facility idle body")
     every { messages.moduleEventStartingNotification(any(), any()) } returns
         NotificationMessage("module event starting title", "module event starting body")
+    every { messages.moduleRecordedSessionNotification(any()) } returns
+        NotificationMessage("module recorded title", "module recorded body")
     every { user.canCreateAccession(facilityId) } returns true
     every { user.canCreateAutomation(any()) } returns true
     every { user.canCreateNotification(any(), organizationId) } returns true
@@ -899,6 +902,23 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 localUrl = webAppUrls.moduleEvent(moduleId, eventId, otherOrgId, otherProjectId),
                 organizationId = otherOrgId),
         ))
+  }
+
+  @Test
+  fun `should use alternate notification text for recorded session events`() {
+    insertOrganizationUser(role = Role.Admin)
+    val moduleId = insertModule()
+    val eventId = insertEvent(moduleId = moduleId, eventType = EventType.RecordedSession)
+    val projectId = insertProject()
+    insertEventProject(eventId, projectId)
+
+    service.on(ModuleEventStartingEvent(eventId))
+
+    assertNotification(
+        NotificationType.EventReminder,
+        "module recorded title",
+        "module recorded body",
+        webAppUrls.moduleEvent(moduleId, eventId, organizationId, projectId))
   }
 
   @Test

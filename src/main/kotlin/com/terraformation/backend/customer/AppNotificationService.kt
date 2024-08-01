@@ -24,6 +24,7 @@ import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.accelerator.DeliverableCategory
+import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationType
@@ -428,10 +429,14 @@ class AppNotificationService(
       val moduleEvent = moduleEventStore.fetchOneById(event.eventId)
       val module = moduleStore.fetchOneById(moduleEvent.moduleId)
       val renderMessage = {
-        messages.moduleEventStartingNotification(
-            moduleEvent.eventType,
-            module.name,
-        )
+        if (moduleEvent.eventType == EventType.RecordedSession) {
+          messages.moduleRecordedSessionNotification(module.name)
+        } else {
+          messages.moduleEventStartingNotification(
+              moduleEvent.eventType,
+              module.name,
+          )
+        }
       }
       moduleEvent.projects!!.forEach {
         val organizationId = parentStore.getOrganizationId(it)!!

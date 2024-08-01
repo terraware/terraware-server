@@ -27,7 +27,8 @@ class ModulesImporter(
     private const val COLUMN_LIVE_SESSION_INFO = COLUMN_ADDITIONAL_RESOURCES + 1
     private const val COLUMN_ONE_ON_ONE_INFO = COLUMN_LIVE_SESSION_INFO + 1
     private const val COLUMN_WORKSHOP_INFO = COLUMN_ONE_ON_ONE_INFO + 1
-    private const val NUM_COLUMNS = COLUMN_WORKSHOP_INFO + 1
+    private const val COLUMN_RECORDED_SESSION_INFO = COLUMN_WORKSHOP_INFO + 1
+    private const val NUM_COLUMNS = COLUMN_RECORDED_SESSION_INFO + 1
 
     /** Lookup table for phases with both lower-case names and numeric IDs. */
     private val phases: Map<String, CohortPhase> =
@@ -57,6 +58,7 @@ class ModulesImporter(
         val liveSessionInfo = values[COLUMN_LIVE_SESSION_INFO]
         val oneOnOneInfo = values[COLUMN_ONE_ON_ONE_INFO]
         val workshopInfo = values[COLUMN_WORKSHOP_INFO]
+        val recordedSessionInfo = values[COLUMN_RECORDED_SESSION_INFO]
 
         if (moduleId == null) {
           addError("Missing or invalid module ID")
@@ -81,6 +83,7 @@ class ModulesImporter(
                 .set(LIVE_SESSION_DESCRIPTION, liveSessionInfo)
                 .set(ONE_ON_ONE_SESSION_DESCRIPTION, oneOnOneInfo)
                 .set(WORKSHOP_DESCRIPTION, workshopInfo)
+                .set(RECORDED_SESSION_DESCRIPTION, recordedSessionInfo)
                 .set(PHASE_ID, CohortPhase.Phase1FeasibilityStudy)
                 .set(POSITION, rowNumber)
                 .set(CREATED_BY, userId)
@@ -97,6 +100,7 @@ class ModulesImporter(
                 .set(LIVE_SESSION_DESCRIPTION, liveSessionInfo)
                 .set(ONE_ON_ONE_SESSION_DESCRIPTION, oneOnOneInfo)
                 .set(WORKSHOP_DESCRIPTION, workshopInfo)
+                .set(RECORDED_SESSION_DESCRIPTION, recordedSessionInfo)
                 .set(PHASE_ID, phase)
                 .set(POSITION, rowNumber)
                 .set(MODIFIED_BY, userId)

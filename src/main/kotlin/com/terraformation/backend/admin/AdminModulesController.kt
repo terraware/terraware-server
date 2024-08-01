@@ -115,7 +115,7 @@ class AdminModulesController(
       model: Model,
       @PathVariable moduleId: String,
       @RequestParam startTime: String,
-      @RequestParam endTime: String,
+      @RequestParam endTime: String?,
       @RequestParam eventTypeId: Int,
       @RequestParam meetingUrl: URI?,
       @RequestParam recordingUrl: URI?,
@@ -124,17 +124,19 @@ class AdminModulesController(
       redirectAttributes: RedirectAttributes
   ): String {
     try {
+      val eventArgs = EventArgs(eventTypeId, startTime, endTime)
+
       val event =
           eventStore.create(
               ModuleId(moduleId),
-              EventType.forId(eventTypeId)
-                  ?: throw IllegalArgumentException("Event Type not recognized"),
-              dateStringToInstant(startTime),
-              dateStringToInstant(endTime),
+              eventArgs.eventType,
+              eventArgs.startTime,
+              eventArgs.endTime,
               meetingUrl,
               recordingUrl,
               slidesUrl,
               toAdd?.toSet() ?: emptySet())
+
       redirectAttributes.successMessage = "Event created. id=${event.id}"
     } catch (e: Exception) {
       log.warn("Create event failed", e)
@@ -149,7 +151,7 @@ class AdminModulesController(
       @PathVariable moduleId: String,
       @RequestParam id: EventId,
       @RequestParam startTime: String,
-      @RequestParam endTime: String,
+      @RequestParam endTime: String?,
       @RequestParam meetingUrl: URI?,
       @RequestParam recordingUrl: URI?,
       @RequestParam slidesUrl: URI?,
@@ -158,6 +160,7 @@ class AdminModulesController(
       redirectAttributes: RedirectAttributes
   ): String {
     val event = eventStore.fetchOneById(id)
+    val eventArgs = EventArgs(event.eventType, startTime, endTime)
 
     val projects =
         (event.projects ?: emptySet()).plus(toAdd ?: emptySet()).minus(toRemove ?: emptySet())
@@ -165,8 +168,8 @@ class AdminModulesController(
     try {
       eventStore.updateEvent(id) {
         event.copy(
-            startTime = dateStringToInstant(startTime),
-            endTime = dateStringToInstant(endTime),
+            startTime = eventArgs.startTime,
+            endTime = eventArgs.endTime,
             meetingUrl = meetingUrl,
             recordingUrl = recordingUrl,
             slidesUrl = slidesUrl,
@@ -245,4 +248,28 @@ class AdminModulesController(
   private fun redirectToModulesHome() = "redirect:/admin/modules"
 
   private fun redirectToModule(moduleId: ModuleId) = "redirect:/admin/modules/$moduleId"
+
+  /** Parsing logic for event arguments whose interpretation can vary based on event type. */
+  private inner class EventArgs(
+      val eventType: EventType,
+      startTimeString: String,
+      endTimeString: String?
+  ) {
+    val startTime: Instant = dateStringToInstant(startTimeString)
+    val endTime: Instant =
+        when {
+          eventType == EventType.RecordedSession -> startTime
+          endTimeString != null -> dateStringToInstant(endTimeString)
+          else -> throw IllegalArgumentException("No end time specified")
+        }
+
+    constructor(
+        eventTypeId: Int,
+        startTimeString: String,
+        endTimeString: String?
+    ) : this(
+        EventType.forId(eventTypeId) ?: throw IllegalArgumentException("Event type not recognized"),
+        startTimeString,
+        endTimeString)
+  }
 }

@@ -191,7 +191,8 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 INSERT INTO accelerator.event_types (id, name)
 VALUES (1, 'One-on-One Session'),
        (2, 'Workshop'),
-       (3, 'Live Session')
+       (3, 'Live Session'),
+       (4, 'Recorded Session')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO facility_connection_states (id, name)

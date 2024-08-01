@@ -76,6 +76,9 @@ data class ModuleModel(
                       record[MODULES.ONE_ON_ONE_SESSION_DESCRIPTION]?.let {
                         EventType.OneOnOneSession to it
                       },
+                      record[MODULES.RECORDED_SESSION_DESCRIPTION]?.let {
+                        EventType.RecordedSession to it
+                      },
                       record[MODULES.WORKSHOP_DESCRIPTION]?.let { EventType.Workshop to it },
                   )
                   .toMap(),
