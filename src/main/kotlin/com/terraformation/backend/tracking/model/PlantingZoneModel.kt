@@ -402,15 +402,15 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
 
   companion object {
     // Default values of the three parameters that determine how many monitoring plots should be
-    // required in each observation. The "Student's t" value is a constant based on an 80%
+    // required in each observation. The "Student's t" value is a constant based on a 90%
     // confidence level and should rarely need to change, but the other two will be adjusted by
     // admins based on the conditions at the planting site. These defaults mean that planting zones
-    // will have 7 permanent clusters and 9 temporary plots.
+    // will have 11 permanent clusters and 14 temporary plots.
     val DEFAULT_ERROR_MARGIN = BigDecimal(100)
-    val DEFAULT_STUDENTS_T = BigDecimal("1.282")
+    val DEFAULT_STUDENTS_T = BigDecimal("1.645")
     val DEFAULT_VARIANCE = BigDecimal(40000)
-    const val DEFAULT_NUM_PERMANENT_CLUSTERS = 7
-    const val DEFAULT_NUM_TEMPORARY_PLOTS = 9
+    const val DEFAULT_NUM_PERMANENT_CLUSTERS = 11
+    const val DEFAULT_NUM_TEMPORARY_PLOTS = 14
 
     /** Target planting density to use if not included in zone properties. */
     val DEFAULT_TARGET_PLANTING_DENSITY = BigDecimal(1500)

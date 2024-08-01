@@ -137,7 +137,7 @@ class PlantingSiteEditCalculatorTest {
                         existingModel = existing.plantingZones[0],
                         monitoringPlotsRemoved = emptySet(),
                         numPermanentClustersToAdd =
-                            PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * 200 / 500,
+                            PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * 200 / 700,
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Update(

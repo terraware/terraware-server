@@ -435,8 +435,8 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
               newSite(width = 600),
               newSite(width = 600) {
                 zone {
-                  extraPermanentClusters = 1
-                  numPermanentClusters = 8
+                  extraPermanentClusters = 2
+                  numPermanentClusters = 13
                 }
               })
 
