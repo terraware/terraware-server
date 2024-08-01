@@ -117,6 +117,7 @@ class DeliverableStore(
             SUBMISSIONS.FEEDBACK,
             SUBMISSIONS.ID,
             SUBMISSIONS.INTERNAL_COMMENT,
+            SUBMISSIONS.MODIFIED_TIME,
             SUBMISSIONS.SUBMISSION_STATUS_ID,
             dueDateField,
         )
@@ -153,6 +154,7 @@ class DeliverableStore(
               dueDate = record[dueDateField]!!,
               feedback = record[SUBMISSIONS.FEEDBACK],
               internalComment = record[SUBMISSIONS.INTERNAL_COMMENT],
+              modifiedTime = record[SUBMISSIONS.MODIFIED_TIME],
               moduleId = record[DELIVERABLES.MODULE_ID]!!,
               moduleName = record[MODULES.NAME]!!,
               moduleTitle = record[COHORT_MODULES.TITLE]!!,

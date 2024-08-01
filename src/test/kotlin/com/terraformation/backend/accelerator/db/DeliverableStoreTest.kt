@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.db.DatabaseTest
@@ -24,7 +25,7 @@ import org.springframework.security.access.AccessDeniedException
 
 class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-
+  private val clock = TestClock()
   private val store: DeliverableStore by lazy { DeliverableStore(dslContext) }
 
   @BeforeEach
@@ -70,6 +71,9 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       //   Module 2
       //   Participant 3
       //     Project 4 (organization 2)
+
+      val now = Instant.ofEpochSecond(30)
+      clock.instant = now
 
       val cohortId1 = insertCohort(id = 1)
       val cohortId2 = insertCohort(id = 2)
@@ -123,6 +127,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           insertSubmission(
               deliverableId = deliverableId1,
               feedback = "feedback",
+              modifiedTime = now,
               internalComment = "comment",
               projectId = projectId1,
               submissionStatus = SubmissionStatus.InReview)
@@ -163,6 +168,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           copy(
               documents = emptyList(),
               feedback = null,
+              modifiedTime = null,
               internalComment = null,
               status = SubmissionStatus.NotSubmitted,
               submissionId = null,
@@ -195,6 +201,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               dueDate = LocalDate.of(2024, 1, 2),
               feedback = "feedback",
               internalComment = "comment",
+              modifiedTime = now,
               moduleId = moduleId1,
               moduleName = "Name 1",
               moduleTitle = "Module 1",

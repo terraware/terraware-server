@@ -213,6 +213,7 @@ class ApplicationStore(
             SUBMISSIONS.FEEDBACK,
             SUBMISSIONS.ID,
             SUBMISSIONS.INTERNAL_COMMENT,
+            SUBMISSIONS.MODIFIED_TIME,
             SUBMISSIONS.SUBMISSION_STATUS_ID,
         )
         .from(DELIVERABLES)
@@ -242,6 +243,7 @@ class ApplicationStore(
               dueDate = null,
               feedback = record[SUBMISSIONS.FEEDBACK],
               internalComment = record[SUBMISSIONS.INTERNAL_COMMENT],
+              modifiedTime = record[SUBMISSIONS.MODIFIED_TIME],
               moduleId = record[DELIVERABLES.MODULE_ID]!!,
               moduleName = record[MODULES.NAME]!!,
               moduleTitle = null,
