@@ -1,3 +1,4 @@
+d6a6332a3db SW-5686 When answer is updated for a Variable the status doesn't go back to In Review (#2205)
 0434534be0e SW-5742 Added organization name to application model and controller (#2220)
 2071cee6121 SW-5741 Always set application internal name (#2219)
 5222ce646ad Update weighted scores to use SocialImpact (#2218)
