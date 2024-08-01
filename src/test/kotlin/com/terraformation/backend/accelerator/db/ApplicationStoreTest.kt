@@ -492,12 +492,16 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       private lateinit var org2Project1ApplicationSubmission: SubmissionId
       private lateinit var org2Project1ExtraApplicationSubmission: SubmissionId
 
+      private val now = Instant.ofEpochSecond(30)
+
       @BeforeEach
       fun setup() {
         every { user.canReadProjectDeliverables(any()) } returns true
         every { user.canReadOrganizationDeliverables(any()) } returns true
         every { user.canReadModule(any()) } returns true
         every { user.canReadAllDeliverables() } returns true
+
+        clock.instant = now
 
         prescreenModuleId =
             insertModule(
@@ -560,6 +564,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             insertSubmission(
                 deliverableId = prescreenDeliverableId,
                 feedback = "feedback 1",
+                modifiedTime = now,
                 internalComment = "comment 1",
                 projectId = org1ProjectId1,
                 submissionStatus = SubmissionStatus.InReview,
@@ -569,6 +574,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             insertSubmission(
                 deliverableId = applicationDeliverableId,
                 feedback = "feedback 2",
+                modifiedTime = now,
                 internalComment = "comment 2",
                 projectId = org1ProjectId1,
                 submissionStatus = SubmissionStatus.InReview,
@@ -579,6 +585,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             insertSubmission(
                 deliverableId = prescreenDeliverableId,
                 feedback = "feedback 3",
+                modifiedTime = now,
                 internalComment = "comment 3",
                 projectId = org1ProjectId2,
                 submissionStatus = SubmissionStatus.InReview,
@@ -591,6 +598,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             insertSubmission(
                 deliverableId = prescreenDeliverableId,
                 feedback = "feedback 5",
+                modifiedTime = now,
                 internalComment = "comment 5",
                 projectId = org2ProjectId1,
                 submissionStatus = SubmissionStatus.InReview,
@@ -600,6 +608,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             insertSubmission(
                 deliverableId = applicationDeliverableId,
                 feedback = "feedback 6",
+                modifiedTime = now,
                 internalComment = "comment 6",
                 projectId = org2ProjectId1,
                 submissionStatus = SubmissionStatus.InReview,
@@ -609,6 +618,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             insertSubmission(
                 deliverableId = extraApplicationDeliverableId,
                 feedback = "feedback 7",
+                modifiedTime = now,
                 internalComment = "comment 7",
                 projectId = org2ProjectId1,
                 submissionStatus = SubmissionStatus.Completed,
@@ -626,6 +636,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 dueDate = null,
                 feedback = "feedback 1",
                 internalComment = "comment 1",
+                modifiedTime = clock.instant,
                 moduleId = prescreenModuleId,
                 moduleName = "Pre-screen",
                 moduleTitle = null,
@@ -667,6 +678,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
         val org1Project2ApplicationModel =
             org1Project1ApplicationModel.copy(
                 feedback = null,
+                modifiedTime = null,
                 internalComment = null,
                 projectId = org1ProjectId2,
                 projectName = "Project B",

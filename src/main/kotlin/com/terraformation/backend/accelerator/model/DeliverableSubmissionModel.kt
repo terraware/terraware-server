@@ -10,6 +10,7 @@ import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import java.net.URI
+import java.time.Instant
 import java.time.LocalDate
 
 /**
@@ -24,6 +25,7 @@ data class DeliverableSubmissionModel(
     val dueDate: LocalDate?,
     val feedback: String?,
     val internalComment: String?,
+    val modifiedTime: Instant?,
     val moduleId: ModuleId,
     val moduleName: String,
     val moduleTitle: String?,
