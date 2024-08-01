@@ -1055,11 +1055,11 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertSubmission(
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
       deliverableId: Any? = inserted.deliverableId,
       feedback: String? = null,
-      modifiedBy: UserId = currentUser().userId,
+      modifiedBy: UserId = createdBy,
       modifiedTime: Instant = Instant.EPOCH,
       id: Any? = null,
       internalComment: String? = null,
