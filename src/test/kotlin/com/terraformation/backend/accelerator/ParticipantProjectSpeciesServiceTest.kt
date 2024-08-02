@@ -22,10 +22,13 @@ import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import com.terraformation.backend.species.model.ExistingSpeciesModel
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -443,6 +446,14 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
           speciesId = speciesId3,
           submissionStatus = SubmissionStatus.Rejected)
 
+      // If an old snapshot exists, it will get deleted when the new one is created
+      val deletedFileUri = URI("http://deletedsnapshot.file")
+      val fileIdOld = insertFile(storageUrl = deletedFileUri)
+      val submissionSnapshotIdOld =
+          insertSubmissionSnapshot(fileId = fileIdOld, submissionId = submissionId)
+
+      every { thumbnailStore.deleteThumbnails(any()) } just Runs
+
       service.on(
           DeliverableStatusUpdatedEvent(
               deliverableId = deliverableId,
@@ -452,18 +463,21 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
               submissionId = submissionId))
 
       val submissionSnapshot = submissionSnapshotsDao.fetchBySubmissionId(submissionId).first()
-
       assertEquals(submissionId, submissionSnapshot.submissionId, "Submission ID")
 
-      val stream = fileService.readFile(submissionSnapshot.fileId!!)
-
+      val actual = String(fileService.readFile(submissionSnapshot.fileId!!).readAllBytes())
       val expected =
           "Project ID,Species ID,Status,Rationale,Feedback,Internal Comment,Native / Non-Native,Species Scientific Name,Species Common Name\r\n" +
               "$projectId,$speciesId1,Approved,,,,Non-native,Species 1,\r\n" +
               "$projectId,$speciesId2,In Review,It is a great tree,,,Native,Species 2,\r\n" +
               "$projectId,$speciesId3,Rejected,,Need to know native status,,,Species 3,Common name 3\r\n"
+      assertEquals(expected, actual, "CSV contents")
 
-      assertEquals(expected, String(stream.readAllBytes()), "CSV contents")
+      // The old snapshot row and file should have been deleted
+      val submissionSnapshotOld = submissionSnapshotsDao.fetchById(submissionSnapshotIdOld)
+      assertEquals(emptyList<SubmissionSnapshotsRow>(), submissionSnapshotOld)
+      fileStore.assertFileNotExists(
+          deletedFileUri, "Earlier snapshot file should have been deleted")
     }
 
     @Test

@@ -14,6 +14,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
+import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshotsDao
@@ -24,6 +25,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.species.event.SpeciesEditedEvent
 import jakarta.inject.Named
 import java.io.ByteArrayInputStream
@@ -120,8 +122,10 @@ class ParticipantProjectSpeciesService(
   }
 
   /**
-   * When a species deliverable status is updated to "approved", we save a snapshot of the species
-   * list and reference it in the deliverable submission
+   * When a species deliverable status is updated to "Approved", we save a snapshot of the species
+   * list and reference it in the deliverable submission. Since a deliverable can be "reset", and
+   * therefore can move to the "Approved" status more than once, if a submission snapshot already
+   * exists for the submission, it will be deleted and a new one will be created.
    */
   @EventListener
   fun on(event: DeliverableStatusUpdatedEvent) {
@@ -168,19 +172,15 @@ class ParticipantProjectSpeciesService(
         }
 
     val inputStream = ByteArrayInputStream(stream.toByteArray())
+    val submissionId = event.submissionId
     val timestamp = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").format(ZonedDateTime.now(clock))
-    val filename = "species-list-snapshot-${event.submissionId}-$timestamp.csv"
+    val filename = "species-list-snapshot-$submissionId-$timestamp.csv"
     val metadata =
         FileMetadata.of(MediaType.valueOf("text/csv").toString(), filename, stream.size().toLong())
 
-    fileService.storeFile("species-list-deliverable", inputStream, metadata, null) { fileId ->
-      with(SUBMISSION_SNAPSHOTS) {
-        dslContext
-            .insertInto(this)
-            .set(SUBMISSION_ID, event.submissionId)
-            .set(FILE_ID, fileId)
-            .execute()
-      }
+    dslContext.transaction { _ ->
+      deleteSubmissionSnapshotFile(submissionId)
+      createSubmissionSnapshotFile(inputStream, metadata, submissionId)
     }
   }
 
@@ -205,6 +205,38 @@ class ParticipantProjectSpeciesService(
 
     return fileService.readFile(snapshotRow.fileId!!)
   }
+
+  private fun createSubmissionSnapshotFile(
+      inputStream: ByteArrayInputStream,
+      metadata: NewFileMetadata,
+      submissionId: SubmissionId
+  ) =
+      fileService.storeFile("species-list-deliverable", inputStream, metadata, null) { fileId ->
+        with(SUBMISSION_SNAPSHOTS) {
+          dslContext
+              .insertInto(SUBMISSION_SNAPSHOTS)
+              .set(SUBMISSION_ID, submissionId)
+              .set(FILE_ID, fileId)
+              .execute()
+        }
+      }
+
+  /** Delete a submission snapshot file, if it exists */
+  private fun deleteSubmissionSnapshotFile(submissionId: SubmissionId) =
+      with(SUBMISSION_SNAPSHOTS) {
+        val fileId =
+            dslContext
+                .select(FILE_ID)
+                .from(SUBMISSION_SNAPSHOTS)
+                .where(SUBMISSION_ID.eq(submissionId))
+                .fetchOne(FILE_ID)
+
+        if (fileId != null) {
+          fileService.deleteFile(fileId) {
+            dslContext.deleteFrom(SUBMISSION_SNAPSHOTS).where(FILE_ID.eq(fileId)).execute()
+          }
+        }
+      }
 
   /**
    * If a Participant Project Species is created, and there is either an active or recent
