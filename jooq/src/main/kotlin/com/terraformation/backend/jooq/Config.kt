@@ -186,6 +186,7 @@ val ID_WRAPPERS =
                     "ParticipantProjectSpeciesId", listOf("participant_project_species\\.id")),
                 IdWrapper("SubmissionDocumentId", listOf("submission_documents\\.id")),
                 IdWrapper("SubmissionId", listOf("submissions\\.id", ".*\\.submission_id")),
+                IdWrapper("SubmissionSnapshotId", listOf("submission_snapshots\\.id")),
             ),
         "docprod" to
             listOf(

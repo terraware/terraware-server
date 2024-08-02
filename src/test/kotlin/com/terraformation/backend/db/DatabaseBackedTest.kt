@@ -27,6 +27,7 @@ import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.accelerator.ScoreCategory
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
+import com.terraformation.backend.db.accelerator.SubmissionSnapshotId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationHistoriesDao
@@ -74,6 +75,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ProjectScoresRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVoteDecisionsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionDocumentsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.UserDeliverableCategoriesRow
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -1118,6 +1120,25 @@ abstract class DatabaseBackedTest {
     submissionDocumentsDao.insert(row)
 
     return row.id!!.also { inserted.submissionDocumentIds.add(it) }
+  }
+
+  fun insertSubmissionSnapshot(
+      id: Any? = null,
+      fileId: Any? = inserted.fileId,
+      submissionId: Any? = inserted.submissionId,
+  ): SubmissionSnapshotId {
+    nextSubmissionNumber++
+
+    val row =
+        SubmissionSnapshotsRow(
+            id = id?.toIdWrapper { SubmissionSnapshotId(it) },
+            fileId = fileId?.toIdWrapper { FileId(it) },
+            submissionId = submissionId?.toIdWrapper { SubmissionId(it) },
+        )
+
+    submissionSnapshotsDao.insert(row)
+
+    return row.id!!.also { inserted.submissionSnapshotIds.add(it) }
   }
 
   /** Creates a user that can be referenced by various tests. */
@@ -3143,8 +3164,9 @@ abstract class DatabaseBackedTest {
     val reportIds = mutableListOf<ReportId>()
     val speciesIds = mutableListOf<SpeciesId>()
     val subLocationIds = mutableListOf<SubLocationId>()
-    val submissionIds = mutableListOf<SubmissionId>()
     val submissionDocumentIds = mutableListOf<SubmissionDocumentId>()
+    val submissionIds = mutableListOf<SubmissionId>()
+    val submissionSnapshotIds = mutableListOf<SubmissionSnapshotId>()
     val uploadIds = mutableListOf<UploadId>()
     val userIds = mutableListOf<UserId>()
     val variableIds = mutableListOf<VariableId>()
