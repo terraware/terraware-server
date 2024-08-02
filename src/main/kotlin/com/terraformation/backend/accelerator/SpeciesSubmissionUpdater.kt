@@ -30,16 +30,13 @@ class SpeciesSubmissionUpdater(
               .where(PROJECT_ID.eq(projectId))
               .and(DELIVERABLE_ID.eq(deliverableId))
               .fetchOne()
-              ?.map { Triple(it[FEEDBACK], it[INTERNAL_COMMENT], it[SUBMISSION_STATUS_ID]!!) }
               /** If there is no submission, there is nothing to do */
               ?: return
         }
 
-    if (submissionStatus != SubmissionStatus.Approved) {
-      return
+    if (submissionStatus == SubmissionStatus.Approved) {
+      submissionStore.updateSubmissionStatus(
+          deliverableId, projectId, SubmissionStatus.NotSubmitted, feedback, internalComment)
     }
-
-    submissionStore.updateSubmissionStatus(
-        deliverableId, projectId, SubmissionStatus.NotSubmitted, feedback, internalComment)
   }
 }

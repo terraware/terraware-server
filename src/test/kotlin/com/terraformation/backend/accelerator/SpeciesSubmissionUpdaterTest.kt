@@ -43,7 +43,7 @@ class SpeciesSubmissionUpdaterTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class NotifyIfNoNewerAddedSpecies {
+  inner class ResetSubmission {
     @Test
     fun `resets the submission status if it exists and is currently 'Approved'`() {
       val cohortId = insertCohort()
@@ -115,6 +115,8 @@ class SpeciesSubmissionUpdaterTest : DatabaseTest(), RunsAsUser {
       val participantProjectSpeciesId =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
 
+      val before = submissionsDao.fetchOneById(submissionId)
+
       updater.on(
           ParticipantProjectSpeciesAddedEvent(
               deliverableId = deliverableId,
@@ -126,24 +128,9 @@ class SpeciesSubmissionUpdaterTest : DatabaseTest(), RunsAsUser {
                       submissionStatus = SubmissionStatus.NotSubmitted,
                   )))
 
-      val userId = currentUser().userId
-      val now = clock.instant
+      val after = submissionsDao.fetchOneById(submissionId)
 
-      val actual = submissionsDao.fetchOneById(submissionId)
-      val expected =
-          SubmissionsRow(
-              createdBy = userId,
-              createdTime = now,
-              deliverableId = deliverableId,
-              feedback = "So far so good",
-              id = submissionId,
-              internalComment = "Internal comment",
-              modifiedBy = userId,
-              modifiedTime = now,
-              projectId = projectId,
-              submissionStatusId = SubmissionStatus.InReview)
-
-      assertEquals(expected, actual, "The submission's status was not updated to 'Not Submitted'")
+      assertEquals(before, after, "The submission was modified")
     }
   }
 }
