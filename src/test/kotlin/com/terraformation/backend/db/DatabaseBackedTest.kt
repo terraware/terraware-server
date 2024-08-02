@@ -1127,8 +1127,6 @@ abstract class DatabaseBackedTest {
       fileId: Any? = inserted.fileId,
       submissionId: Any? = inserted.submissionId,
   ): SubmissionSnapshotId {
-    nextSubmissionNumber++
-
     val row =
         SubmissionSnapshotsRow(
             id = id?.toIdWrapper { SubmissionSnapshotId(it) },

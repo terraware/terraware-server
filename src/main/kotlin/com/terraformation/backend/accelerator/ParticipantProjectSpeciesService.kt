@@ -124,7 +124,7 @@ class ParticipantProjectSpeciesService(
   /**
    * When a species deliverable status is updated to "Approved", we save a snapshot of the species
    * list and reference it in the deliverable submission. Since a deliverable can be "reset", and
-   * therefor can move to the "Approved" status more than once, if a submission snapshot already
+   * therefore can move to the "Approved" status more than once, if a submission snapshot already
    * exists for the submission, it will be deleted and a new one will be created.
    */
   @EventListener
