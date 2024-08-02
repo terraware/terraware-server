@@ -35,27 +35,35 @@ class SubmissionStore(
       deliverableId: DeliverableId,
       projectId: ProjectId,
       status: SubmissionStatus = SubmissionStatus.NotSubmitted,
-  ) {
+  ): SubmissionId {
     requirePermissions { createSubmission(projectId) }
+
+    if (status != SubmissionStatus.NotSubmitted && status != SubmissionStatus.Completed) {
+      throw IllegalArgumentException("Cannot create submissions in $status")
+    }
 
     val now = clock.instant()
     val userId = currentUser().userId
 
-    dslContext
-        .insertInto(SUBMISSIONS)
-        .set(SUBMISSIONS.CREATED_BY, userId)
-        .set(SUBMISSIONS.CREATED_TIME, now)
-        .set(SUBMISSIONS.DELIVERABLE_ID, deliverableId)
-        .set(SUBMISSIONS.MODIFIED_BY, userId)
-        .set(SUBMISSIONS.MODIFIED_TIME, now)
-        .set(SUBMISSIONS.PROJECT_ID, projectId)
-        .set(SUBMISSIONS.SUBMISSION_STATUS_ID, status)
-        .onConflict()
-        .doUpdate()
-        .set(SUBMISSIONS.MODIFIED_BY, userId)
-        .set(SUBMISSIONS.MODIFIED_TIME, now)
-        .set(SUBMISSIONS.SUBMISSION_STATUS_ID, status)
-        .execute()
+    val result =
+        dslContext
+            .insertInto(SUBMISSIONS)
+            .set(SUBMISSIONS.CREATED_BY, userId)
+            .set(SUBMISSIONS.CREATED_TIME, now)
+            .set(SUBMISSIONS.DELIVERABLE_ID, deliverableId)
+            .set(SUBMISSIONS.MODIFIED_BY, userId)
+            .set(SUBMISSIONS.MODIFIED_TIME, now)
+            .set(SUBMISSIONS.PROJECT_ID, projectId)
+            .set(SUBMISSIONS.SUBMISSION_STATUS_ID, status)
+            .onConflict(SUBMISSIONS.PROJECT_ID, SUBMISSIONS.DELIVERABLE_ID)
+            .doUpdate()
+            .set(SUBMISSIONS.MODIFIED_BY, userId)
+            .set(SUBMISSIONS.MODIFIED_TIME, now)
+            .set(SUBMISSIONS.SUBMISSION_STATUS_ID, status)
+            .returning(SUBMISSIONS.ID)
+            .fetchOne { it[SUBMISSIONS.ID] }
+
+    return result ?: throw ProjectDeliverableNotFoundException(deliverableId, projectId)
   }
 
   fun fetchMostRecentSpeciesDeliverableSubmission(
