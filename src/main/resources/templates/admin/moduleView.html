@@ -85,14 +85,15 @@
         <div th:utext="${module.eventDescriptions.get(event)}"> Event Description </div>
 
         <h4> Sessions </h4>
+
         <table>
             <thead>
             <tr>
                 <th>ID</th>
                 <th>Status</th>
                 <th>Start Time</th>
-                <th>End Time</th>
-                <th>Meeting Link</th>
+                <th th:if="${event != T(com.terraformation.backend.db.accelerator.EventType).RecordedSession}">End Time</th>
+                <th th:if="${event != T(com.terraformation.backend.db.accelerator.EventType).RecordedSession}">Meeting Link</th>
                 <th>Recording Link</th>
                 <th>Slides Link</th>
                 <th>Remove projects</th>
@@ -113,14 +114,14 @@
                            th:form="|update-${eventSession.id}|"
                            th:value="${#temporals.format(eventSession.startTime.atZone('UTC'), dateFormat)}" />
                 </td>
-                <td>
+                <td th:if="${event != T(com.terraformation.backend.db.accelerator.EventType).RecordedSession}">
                     <input type="datetime-local"
                            name="endTime"
                            required
                            th:form="|update-${eventSession.id}|"
                            th:value="${#temporals.format(eventSession.endTime.atZone('UTC'), dateFormat)}" />
                 </td>
-                <td>
+                <td th:if="${event != T(com.terraformation.backend.db.accelerator.EventType).RecordedSession}">
                     <input type="url"
                            name="meetingUrl"
                            th:form="|update-${eventSession.id}|"
@@ -194,13 +195,13 @@
                            required
                            th:form="|add-${event.getId()}|" />
                 </td>
-                <td>
+                <td th:if="${event != T(com.terraformation.backend.db.accelerator.EventType).RecordedSession}">
                     <input type="datetime-local"
                            name="endTime"
                            required
                            th:form="|add-${event.getId()}|" />
                 </td>
-                <td>
+                <td th:if="${event != T(com.terraformation.backend.db.accelerator.EventType).RecordedSession}">
                     <input type="url"
                            name="meetingUrl"
                            th:form="|add-${event.getId()}|" />

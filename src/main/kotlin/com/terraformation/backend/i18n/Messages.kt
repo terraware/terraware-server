@@ -191,6 +191,11 @@ class Messages {
                   eventType.getDisplayName(currentLocale()),
                   moduleName))
 
+  fun moduleRecordedSessionNotification(moduleName: String): NotificationMessage =
+      NotificationMessage(
+          title = getMessage("notification.module.recordedSession.title"),
+          body = getMessage("notification.module.recordedSession.body", moduleName))
+
   fun nurserySeedlingBatchReadyNotification(
       batchNumber: String,
       facilityName: String
