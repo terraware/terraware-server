@@ -110,9 +110,11 @@ internal class DeviceManagerStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `insert throws exception if facility ID specified and user cannot update facility`() {
-    every { user.canUpdateFacility(facilityId) } returns false
+    every { user.canUpdateFacility(inserted.facilityId) } returns false
 
-    assertThrows<AccessDeniedException> { store.insert(newRow(id = null, facilityId = facilityId)) }
+    assertThrows<AccessDeniedException> {
+      store.insert(newRow(id = null, facilityId = inserted.facilityId))
+    }
   }
 
   @Test

@@ -63,6 +63,8 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   protected lateinit var parentStore: ParentStore
   protected lateinit var speciesStore: SpeciesStore
 
+  protected lateinit var facilityId: FacilityId
+
   @BeforeEach
   protected fun init() {
     parentStore = ParentStore(dslContext)
@@ -107,7 +109,8 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             speciesGrowthFormsDao,
             speciesProblemsDao)
 
-    insertSiteData()
+    insertOrganization()
+    facilityId = insertFacility()
   }
 
   protected fun createAccessionWithViabilityTest(): AccessionModel {

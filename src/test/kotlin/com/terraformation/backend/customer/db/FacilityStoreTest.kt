@@ -58,6 +58,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   private val eventPublisher = TestEventPublisher()
   private lateinit var store: FacilityStore
 
+  private lateinit var facilityId: FacilityId
   private val subLocationId = SubLocationId(1000)
   private lateinit var timeZone: ZoneId
 
@@ -85,7 +86,8 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateTimeseries(any()) } returns true
 
     timeZone = ZoneId.of("Pacific/Honolulu")
-    insertSiteData()
+    insertOrganization()
+    facilityId = insertFacility()
   }
 
   @Test
@@ -259,8 +261,10 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   fun `withIdleFacilities detects newly-idle facilities`() {
     clock.instant = Instant.EPOCH.plus(30, ChronoUnit.MINUTES)
 
-    val facilityIds = setOf(FacilityId(101), FacilityId(102))
-    facilityIds.forEach { id -> insertFacility(id, idleAfterTime = Instant.EPOCH) }
+    val facilityIds =
+        setOf(
+            insertFacility(idleAfterTime = Instant.EPOCH),
+            insertFacility(idleAfterTime = Instant.EPOCH))
 
     val actual = mutableSetOf<FacilityId>()
 
@@ -435,10 +439,10 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create uses next facility number for facility type`() {
-    insertFacility(11, type = FacilityType.Nursery, facilityNumber = 1)
-    insertFacility(12, type = FacilityType.Nursery, facilityNumber = 2)
-    insertFacility(13, type = FacilityType.SeedBank, facilityNumber = 2)
-    insertFacility(14, type = FacilityType.SeedBank, facilityNumber = 3)
+    insertFacility(type = FacilityType.Nursery, facilityNumber = 1)
+    insertFacility(type = FacilityType.Nursery, facilityNumber = 2)
+    insertFacility(type = FacilityType.SeedBank, facilityNumber = 2)
+    insertFacility(type = FacilityType.SeedBank, facilityNumber = 3)
 
     val model =
         store.create(
@@ -638,11 +642,10 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `withNotificationsDue ignores facilities that are not yet scheduled`() {
-    val notDueFacilityId = FacilityId(1001)
-    insertFacility(notDueFacilityId, nextNotificationTime = clock.instant().plusSeconds(1))
-
     val expected = setOf(facilityId)
     val actual = mutableSetOf<FacilityId>()
+
+    insertFacility(nextNotificationTime = clock.instant().plusSeconds(1))
 
     store.withNotificationsDue { actual.add(it.id) }
 
@@ -651,12 +654,12 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `withNotificationsDue rolls back and continues to next facility on exception`() {
-    val otherFacilityId = FacilityId(facilityId.value + 1)
-    insertFacility(otherFacilityId)
+    val rolledBackFacilityId = inserted.facilityId
+    val otherFacilityId = insertFacility()
 
     store.withNotificationsDue { facility ->
       insertNotification(NotificationId(facility.id.value))
-      if (facility.id == facilityId) {
+      if (facility.id == rolledBackFacilityId) {
         throw Exception("I have failed")
       }
     }

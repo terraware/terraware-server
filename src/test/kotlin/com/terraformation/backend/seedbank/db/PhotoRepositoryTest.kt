@@ -8,7 +8,6 @@ import com.terraformation.backend.customer.event.OrganizationDeletionStartedEven
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -276,15 +275,13 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `OrganizationDeletionStartedEvent listener deletes photos from all facilities in organization`() {
-    val sameOrgFacilityId = FacilityId(2)
     val sameOrgAccessionId = AccessionId(2)
     val otherOrganizationId = OrganizationId(2)
-    val otherOrgFacilityId = FacilityId(3)
     val otherOrgAccessionId = AccessionId(3)
 
+    val sameOrgFacilityId = insertFacility()
     insertOrganization(otherOrganizationId)
-    insertFacility(sameOrgFacilityId)
-    insertFacility(otherOrgFacilityId, otherOrganizationId)
+    val otherOrgFacilityId = insertFacility()
     insertAccession(id = sameOrgAccessionId, facilityId = sameOrgFacilityId)
     insertAccession(id = otherOrgAccessionId, facilityId = otherOrgFacilityId)
 

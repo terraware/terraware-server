@@ -18,6 +18,8 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var permissionStore: PermissionStore
 
+  private lateinit var org1FacilityId: FacilityId
+  private lateinit var org2FacilityId: FacilityId
   private lateinit var org2Owner: UserId
   private lateinit var org1Contributor2Manager: UserId
 
@@ -30,15 +32,14 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchFacilityRoles includes all facilities in organizations the user is in`() {
     insertTestData()
     assertEquals(
-        mapOf(FacilityId(1000) to Role.Contributor, FacilityId(2000) to Role.Manager),
+        mapOf(org1FacilityId to Role.Contributor, org2FacilityId to Role.Manager),
         permissionStore.fetchFacilityRoles(org1Contributor2Manager))
   }
 
   @Test
   fun `fetchFacilityRoles only includes facilities in organizations the user is in`() {
     insertTestData()
-    assertEquals(
-        mapOf(FacilityId(2000) to Role.Owner), permissionStore.fetchFacilityRoles(org2Owner))
+    assertEquals(mapOf(org2FacilityId to Role.Owner), permissionStore.fetchFacilityRoles(org2Owner))
   }
 
   @Test
@@ -81,9 +82,9 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
    * Inserts some test data to exercise the fetch methods. The data set:
    * ```
    * - Organization 1
-   *   - Facility 1000
+   *   - Facility org1FacilityId
    * - Organization 2
-   *   - Facility 2000
+   *   - Facility org2FacilityId
    *
    * - User
    *   - Org 1 role: manager
@@ -95,15 +96,10 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
    * ```
    */
   private fun insertTestData() {
-    val structure =
-        mapOf(
-            OrganizationId(1) to listOf(FacilityId(1000)),
-            OrganizationId(2) to listOf(FacilityId(2000)))
-
-    structure.forEach { (organizationId, facilities) ->
-      insertOrganization(organizationId)
-      facilities.forEach { facilityId -> insertFacility(facilityId, organizationId) }
-    }
+    insertOrganization(1)
+    org1FacilityId = insertFacility()
+    insertOrganization(2)
+    org2FacilityId = insertFacility()
 
     configureUser(mapOf(1 to Role.Manager))
     org2Owner = configureUser(mapOf(2 to Role.Owner))

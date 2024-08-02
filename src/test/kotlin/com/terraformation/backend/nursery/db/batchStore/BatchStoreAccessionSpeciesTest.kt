@@ -1,7 +1,6 @@
 package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.assertIsEventListener
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
@@ -11,8 +10,7 @@ import org.junit.jupiter.api.Test
 internal class BatchStoreAccessionSpeciesTest : BatchStoreTest() {
   @Test
   fun `updates affected batches`() {
-    val seedBankFacilityId = FacilityId(2)
-    insertFacility(id = seedBankFacilityId, type = FacilityType.SeedBank)
+    val seedBankFacilityId = insertFacility(type = FacilityType.SeedBank)
     val accessionId = insertAccession(facilityId = seedBankFacilityId)
     val otherAccessionId = insertAccession(facilityId = seedBankFacilityId)
     val otherSpeciesId = insertSpecies()

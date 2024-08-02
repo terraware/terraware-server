@@ -109,7 +109,8 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
             overallProgress = 30,
         )
 
-    val existingRow = insertDeviceManager(456, balenaId = device.id, facilityId = 100)
+    val existingRow =
+        insertDeviceManager(456, balenaId = device.id, facilityId = inserted.facilityId)
 
     clock.instant = Instant.ofEpochSecond(200)
     every { balenaClient.listModifiedDevices(any()) } returns listOf(device)

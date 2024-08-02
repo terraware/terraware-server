@@ -386,7 +386,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
                           buildCompletedDateEditable = true,
                           buildStartedDate = null,
                           buildStartedDateEditable = true,
-                          id = FacilityId(1),
+                          id = inserted.facilityId,
                           name = "bank",
                           notes = "notes",
                           operationStartedDate = null,
@@ -485,9 +485,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `saves seed bank and nursery information`() {
-      insertFacility(1)
-      insertFacility(2)
-      insertFacility(3, type = FacilityType.Nursery)
+      val facilityId1 = insertFacility()
+      val facilityId2 = insertFacility()
+      val facilityId3 = insertFacility(type = FacilityType.Nursery)
       val body =
           ReportBodyModelV1(
               organizationName = "org",
@@ -495,7 +495,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
               seedBanks =
                   listOf(
                       ReportBodyModelV1.SeedBank(
-                          id = FacilityId(1),
+                          id = facilityId1,
                           name = "bank",
                           buildStartedDate = LocalDate.EPOCH,
                           buildCompletedDate = LocalDate.EPOCH,
@@ -503,7 +503,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
                           workers = ReportBodyModelV1.Workers(1, 1, 1),
                       ),
                       ReportBodyModelV1.SeedBank(
-                          id = FacilityId(2),
+                          id = facilityId2,
                           selected = false,
                           name = "bank",
                           buildStartedDate = LocalDate.EPOCH,
@@ -515,7 +515,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
               nurseries =
                   listOf(
                       ReportBodyModelV1.Nursery(
-                          id = FacilityId(3),
+                          id = facilityId3,
                           name = "nursery",
                           buildStartedDate = LocalDate.EPOCH,
                           buildCompletedDate = LocalDate.EPOCH,
@@ -532,17 +532,17 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       store.submit(reportId)
 
-      val seedBankResult = getFacilityById(FacilityId(1))
+      val seedBankResult = getFacilityById(facilityId1)
       assertEquals(seedBankResult.buildStartedDate, LocalDate.EPOCH)
       assertEquals(seedBankResult.buildCompletedDate, LocalDate.EPOCH)
       assertEquals(seedBankResult.operationStartedDate, LocalDate.EPOCH)
 
-      val unselectedSeedBankResult = getFacilityById(FacilityId(2))
+      val unselectedSeedBankResult = getFacilityById(facilityId2)
       assertNull(unselectedSeedBankResult.buildStartedDate)
       assertNull(unselectedSeedBankResult.buildCompletedDate)
       assertNull(unselectedSeedBankResult.operationStartedDate)
 
-      val nurseryResult = getFacilityById(FacilityId(3))
+      val nurseryResult = getFacilityById(facilityId3)
       assertEquals(nurseryResult.buildStartedDate, LocalDate.EPOCH)
       assertEquals(nurseryResult.buildCompletedDate, LocalDate.EPOCH)
       assertEquals(nurseryResult.operationStartedDate, LocalDate.EPOCH)
@@ -551,7 +551,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if report is incomplete`() {
-      insertFacility(1)
+      insertFacility()
       val body =
           ReportBodyModelV1(
               organizationName = "org",

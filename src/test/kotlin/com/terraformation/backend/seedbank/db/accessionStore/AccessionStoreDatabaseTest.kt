@@ -2,7 +2,6 @@ package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.db.AccessionSpeciesHasDeliveriesException
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -182,8 +181,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     val speciesId2 = insertSpecies()
     val initial = store.create(accessionModel(speciesId = speciesId1))
 
-    val nurseryFacilityId = FacilityId(2)
-    insertFacility(nurseryFacilityId, type = FacilityType.Nursery)
+    val nurseryFacilityId = insertFacility(type = FacilityType.Nursery)
     insertBatch(BatchesRow(accessionId = initial.id!!))
     insertWithdrawal()
     insertBatchWithdrawal()
@@ -299,9 +297,9 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
     assertFalse(initial.hasDeliveries, "Should not have delivery after initial creation")
 
-    val nurseryFacilityId = FacilityId(2)
-    insertFacility(nurseryFacilityId, type = FacilityType.Nursery)
-    insertBatch(BatchesRow(accessionId = initial.id!!))
+    val seedBankFacilityId = inserted.facilityId
+    val nurseryFacilityId = insertFacility(type = FacilityType.Nursery)
+    insertBatch(BatchesRow(accessionId = initial.id!!, facilityId = nurseryFacilityId))
     insertWithdrawal()
     insertBatchWithdrawal()
     insertPlantingSite()
@@ -311,7 +309,10 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     assertTrue(withDelivery.hasDeliveries, "Delivery should be indicated in accession")
 
     val otherAccession =
-        store.fetchOneById(store.create(accessionModel(speciesId = speciesId)).id!!)
+        store.fetchOneById(
+            store
+                .create(accessionModel(facilityId = seedBankFacilityId, speciesId = speciesId))
+                .id!!)
     assertFalse(
         otherAccession.hasDeliveries, "Delivery existence should not affect other accessions")
   }

@@ -9,7 +9,6 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.i18n.Messages
@@ -94,9 +93,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
     insertBatch(facilityId = nurseryFacilityId, speciesId = speciesId)
   }
   private val projectId by lazy { insertProject() }
-  private val nurseryFacilityId by lazy {
-    insertFacility(FacilityId(2), type = FacilityType.Nursery)
-  }
+  private val nurseryFacilityId by lazy { insertFacility(type = FacilityType.Nursery) }
   private val plantingSiteId1 by lazy { insertPlantingSite() }
   private val plantingSiteId2 by lazy { insertPlantingSite() }
   private val speciesId by lazy { insertSpecies() }
@@ -112,10 +109,10 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
         speciesId = otherOrgSpeciesId)
   }
   private val otherOrgNurseryFacilityId by lazy {
-    insertFacility(FacilityId(3), type = FacilityType.Nursery, organizationId = otherOrganizationId)
+    insertFacility(type = FacilityType.Nursery, organizationId = otherOrganizationId)
   }
   private val otherOrgSeedBankFacilityId by lazy {
-    insertFacility(FacilityId(4), organizationId = otherOrganizationId)
+    insertFacility(organizationId = otherOrganizationId)
   }
   private val otherOrgPlantingSiteId by lazy {
     insertPlantingSite(organizationId = otherOrganizationId)

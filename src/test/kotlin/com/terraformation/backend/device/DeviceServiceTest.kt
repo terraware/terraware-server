@@ -62,23 +62,27 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
     )
   }
 
-  private val bmuRow =
-      DevicesRow(
-          facilityId = facilityId,
-          name = "PV",
-          deviceType = "BMU",
-          make = "Blue Ion",
-          model = "LV",
-      )
+  private lateinit var facilityId: FacilityId
 
-  private val omniSenseRow =
-      DevicesRow(
-          facilityId = facilityId,
-          deviceType = "sensor",
-          name = "0123ABCD",
-          make = "OmniSense",
-          model = "S-11",
-      )
+  private val bmuRow: DevicesRow by lazy {
+    DevicesRow(
+        facilityId = facilityId,
+        name = "PV",
+        deviceType = "BMU",
+        make = "Blue Ion",
+        model = "LV",
+    )
+  }
+
+  private val omniSenseRow: DevicesRow by lazy {
+    DevicesRow(
+        facilityId = facilityId,
+        deviceType = "sensor",
+        name = "0123ABCD",
+        make = "OmniSense",
+        model = "S-11",
+    )
+  }
 
   /** Expected temperature and humidity ranges for temperature sensors. */
   data class OmniSense(
@@ -135,7 +139,8 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadFacility(any()) } returns true
     every { user.canUpdateDevice(any()) } returns true
 
-    insertSiteData()
+    insertOrganization()
+    facilityId = insertFacility()
   }
 
   @Test
@@ -283,8 +288,7 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createDefaultDevices does nothing if facility has no default template category`() {
-    val desalFacilityId = FacilityId(2)
-    insertFacility(desalFacilityId, type = FacilityType.Desalination)
+    val desalFacilityId = insertFacility(type = FacilityType.Desalination)
     deviceTemplatesDao.insert(
         DeviceTemplatesRow(
             categoryId = DeviceTemplateCategory.SeedBankDefault,

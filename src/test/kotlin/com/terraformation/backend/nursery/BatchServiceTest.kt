@@ -6,6 +6,7 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.PlantingType
@@ -54,6 +55,7 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
         dslContext)
   }
 
+  private lateinit var facilityId: FacilityId
   private val plantingSiteId by lazy { insertPlantingSite() }
   private val speciesId1 by lazy { insertSpecies(1) }
   private val speciesId2 by lazy { insertSpecies(2) }
@@ -68,7 +70,7 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateDelivery(any()) } returns true
 
     insertOrganization()
-    insertFacility(type = FacilityType.Nursery)
+    facilityId = insertFacility(type = FacilityType.Nursery)
   }
 
   @Test

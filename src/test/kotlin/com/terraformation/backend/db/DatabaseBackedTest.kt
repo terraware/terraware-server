@@ -412,7 +412,6 @@ abstract class DatabaseBackedTest {
   // ID values inserted by insertSiteData(). These are used in most database-backed tests. They are
   // marked as final so they can be referenced in constructor-initialized properties in subclasses.
   protected val organizationId: OrganizationId = OrganizationId(1)
-  protected val facilityId: FacilityId = FacilityId(100)
 
   /** IDs of entities that have been inserted using the `insert` helper methods during this test. */
   val inserted = Inserted()
@@ -644,10 +643,10 @@ abstract class DatabaseBackedTest {
   private var nextFacilityNumber = 1
 
   fun insertFacility(
-      id: Any = this.facilityId,
-      organizationId: Any = this.organizationId,
-      name: String = "Facility $id",
-      description: String? = "Description $id",
+      id: Any? = null,
+      organizationId: Any = inserted.organizationId,
+      name: String = "Facility $nextFacilityNumber",
+      description: String? = "Description $nextFacilityNumber",
       createdBy: UserId = currentUser().userId,
       type: FacilityType = FacilityType.SeedBank,
       maxIdleMinutes: Int = 30,
@@ -661,11 +660,11 @@ abstract class DatabaseBackedTest {
       buildCompletedDate: LocalDate? = null,
       operationStartedDate: LocalDate? = null,
       capacity: Int? = null,
-      facilityNumber: Int = nextFacilityNumber++,
+      facilityNumber: Int = nextFacilityNumber,
   ): FacilityId {
-    return with(FACILITIES) {
-      val insertedId = id.toIdWrapper { FacilityId(it) }
+    nextFacilityNumber++
 
+    return with(FACILITIES) {
       dslContext
           .insertInto(FACILITIES)
           .set(BUILD_COMPLETED_DATE, buildCompletedDate)
@@ -676,7 +675,7 @@ abstract class DatabaseBackedTest {
           .set(CREATED_TIME, Instant.EPOCH)
           .set(DESCRIPTION, description)
           .set(FACILITY_NUMBER, facilityNumber)
-          .set(ID, insertedId)
+          .apply { id?.toIdWrapper { FacilityId(it) }?.let { set(ID, it) } }
           .set(IDLE_AFTER_TIME, idleAfterTime)
           .set(IDLE_SINCE_TIME, idleSinceTime)
           .set(LAST_NOTIFICATION_DATE, lastNotificationDate)
@@ -917,7 +916,7 @@ abstract class DatabaseBackedTest {
 
   protected fun insertDevice(
       id: Any,
-      facilityId: Any = this.facilityId,
+      facilityId: Any = inserted.facilityId,
       name: String = "device $id",
       createdBy: UserId = currentUser().userId,
       type: String = "type"
@@ -945,7 +944,7 @@ abstract class DatabaseBackedTest {
 
   protected fun insertAutomation(
       id: Any,
-      facilityId: Any = this.facilityId,
+      facilityId: Any = inserted.facilityId,
       name: String = "automation $id",
       type: String = AutomationModel.SENSOR_BOUNDS_TYPE,
       deviceId: Any? = "$id".toLong(),
@@ -1225,7 +1224,7 @@ abstract class DatabaseBackedTest {
   /** Adds a sub-location to a facility. */
   fun insertSubLocation(
       id: Any? = null,
-      facilityId: Any = this.facilityId,
+      facilityId: Any = inserted.facilityId,
       name: String = id?.let { "Location $it" } ?: "Location ${nextSubLocationNumber++}",
       createdBy: UserId = currentUser().userId,
   ): SubLocationId {
@@ -1357,7 +1356,7 @@ abstract class DatabaseBackedTest {
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       dataSourceId: DataSource = row.dataSourceId ?: DataSource.Web,
-      facilityId: Any = row.facilityId ?: this.facilityId,
+      facilityId: Any = row.facilityId ?: inserted.facilityId,
       id: Any? = row.id,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
@@ -1393,7 +1392,7 @@ abstract class DatabaseBackedTest {
       addedDate: LocalDate = row.addedDate ?: LocalDate.EPOCH,
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
-      facilityId: Any = row.facilityId ?: this.facilityId,
+      facilityId: Any = row.facilityId ?: inserted.facilityId,
       germinatingQuantity: Int = row.germinatingQuantity ?: 0,
       id: Any? = row.id,
       notReadyQuantity: Int = row.notReadyQuantity ?: 0,
@@ -1489,7 +1488,7 @@ abstract class DatabaseBackedTest {
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       destinationFacilityId: Any? = row.destinationFacilityId,
-      facilityId: Any = row.facilityId ?: this.facilityId,
+      facilityId: Any = row.facilityId ?: inserted.facilityId,
       id: Any? = row.id,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,

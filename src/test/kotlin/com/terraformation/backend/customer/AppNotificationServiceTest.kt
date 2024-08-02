@@ -103,6 +103,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Autowired private lateinit var config: TerrawareServerConfig
 
+  private lateinit var facilityId: FacilityId
   private lateinit var otherUserId: UserId
 
   private val clock = TestClock()
@@ -131,6 +132,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     val objectMapper = jacksonObjectMapper()
     val publisher = TestEventPublisher()
+
+    insertOrganization()
+    facilityId = insertFacility()
 
     parentStore = ParentStore(dslContext)
 
@@ -257,7 +261,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.locale } returns Locale.ENGLISH
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
 
-    insertSiteData()
     otherUserId = insertUser()
   }
 
@@ -317,13 +320,12 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun `should store nursery seedling batch ready notification`() {
     insertOrganizationUser()
 
-    val facilityId = FacilityId(1000)
     val nurseryName = "my nursery"
     val speciesId = SpeciesId(100)
     val batchId = BatchId(100)
     val batchNumber = "22-2-001"
 
-    insertFacility(id = facilityId, type = FacilityType.Nursery, name = nurseryName)
+    val facilityId = insertFacility(type = FacilityType.Nursery, name = nurseryName)
     insertSpecies(speciesId)
     insertBatch(
         BatchesRow(
@@ -361,7 +363,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val automationId = AutomationId(1)
     val deviceId = DeviceId(1)
     val timeseriesName = "test timeseries"
-    val facilityName = "Facility $facilityId"
+    val facilityName = "Facility 1"
     val badValue = 5.678
 
     insertOrganizationUser()
@@ -387,7 +389,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val automationId = AutomationId(1)
     val automationName = "automation name"
     val automationType = "unknown"
-    val facilityName = "Facility $facilityId"
+    val facilityName = "Facility 1"
     val message = "message"
 
     insertOrganizationUser()

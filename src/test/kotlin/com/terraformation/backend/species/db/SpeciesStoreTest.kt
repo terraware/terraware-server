@@ -9,7 +9,6 @@ import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
@@ -645,7 +644,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
         NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "unused"))
 
     // create a batch with 'other' species
-    insertFacility(id = FacilityId(200))
+    insertFacility()
     insertBatch(speciesId = created)
 
     // create another org batch
@@ -653,7 +652,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val other =
         store.createSpecies(
             NewSpeciesModel(id = null, organizationId = otherOrgId, scientificName = "other"))
-    insertFacility(id = FacilityId(300))
+    insertFacility()
     insertBatch(speciesId = other)
 
     val expected = listOf(store.fetchSpeciesById(created))
@@ -671,7 +670,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
         NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "unused"))
 
     // create an accession with 'other' species
-    insertFacility(id = FacilityId(200))
+    insertFacility()
     insertAccession(row = AccessionsRow(speciesId = created))
 
     // create another org accession
@@ -679,7 +678,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val other =
         store.createSpecies(
             NewSpeciesModel(id = null, organizationId = otherOrgId, scientificName = "other"))
-    insertFacility(id = FacilityId(300))
+    insertFacility()
     insertAccession(row = AccessionsRow(speciesId = other))
 
     val expected = listOf(store.fetchSpeciesById(created))
@@ -697,7 +696,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
         NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "unused"))
 
     // create plantings with 'other' species
-    insertFacility(id = FacilityId(200))
+    insertFacility()
     insertPlantingSite()
     insertPlantingZone()
     insertPlantingSubzone()
@@ -710,7 +709,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val other =
         store.createSpecies(
             NewSpeciesModel(id = null, organizationId = otherOrgId, scientificName = "other"))
-    insertFacility(id = FacilityId(300))
+    insertFacility()
     insertPlantingSite()
     insertPlantingZone()
     insertPlantingSubzone()
