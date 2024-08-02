@@ -386,7 +386,7 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="event_types" numRows="3" remarks="(Enum) Types of events for an accelerator module" schema="accelerator" type="TABLE">
+      <table name="event_types" numRows="4" remarks="(Enum) Types of events for an accelerator module" schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="event_type_id" foreignKey="events_event_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="events"/>
          </column>
@@ -430,7 +430,7 @@
          <index name="events_pkey" unique="true">
             <column ascending="true" name="id"/>
          </index>
-         <checkConstraint constraint="((start_time &lt; end_time))" name="times_start_before_end"/>
+         <checkConstraint constraint="((start_time &lt;= end_time))" name="times_start_before_end"/>
       </table>
       <table name="modules" numRows="0" remarks="Possible steps in the workflow of a cohort phase." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -458,6 +458,7 @@
             <parent column="id" foreignKey="modules_phase_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohort_phases"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="position" nullable="false" remarks="This model's ordinal position in the modules spreadsheet. This can be used to present modules in the same order they appear in the spreadsheet." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="recorded_session_description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="modules_pkey" unique="true">
             <column ascending="true" name="id"/>
