@@ -46,6 +46,9 @@ class ProjectApplicationExistsException(projectId: ProjectId) :
 class ProjectApplicationNotFoundException(projectId: ProjectId) :
     MismatchedStateException("Project $projectId has no application")
 
+class ProjectDeliverableNotFoundException(deliverableId: DeliverableId, projectId: ProjectId) :
+    EntityNotFoundException("Deliverable $deliverableId not found for project $projectId")
+
 class ProjectDocumentSettingsNotConfiguredException(id: ProjectId) :
     MismatchedStateException("Project $id document upload settings have not been configured")
 

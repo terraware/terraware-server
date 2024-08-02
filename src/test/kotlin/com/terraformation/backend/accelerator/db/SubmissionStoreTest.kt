@@ -227,6 +227,97 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
+  inner class CreateSubmission {
+    @BeforeEach
+    fun setUp() {
+      every { user.canCreateSubmission(any()) } returns true
+    }
+
+    @Test
+    fun `creates submission if needed`() {
+      insertModule()
+      val projectId = insertProject()
+      val deliverableId = insertDeliverable()
+
+      val submissionId = store.createSubmission(deliverableId, projectId)
+
+      assertEquals(
+          listOf(
+              SubmissionsRow(
+                  createdBy = user.userId,
+                  createdTime = clock.instant,
+                  deliverableId = deliverableId,
+                  id = submissionId,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+                  projectId = projectId,
+                  submissionStatusId = SubmissionStatus.NotSubmitted)),
+          submissionsDao.findAll())
+    }
+
+    @Test
+    fun `updates existing submission`() {
+      insertModule()
+      val projectId = insertProject()
+      val deliverableId = insertDeliverable()
+
+      val submissionId = insertSubmission(submissionStatus = SubmissionStatus.NotSubmitted)
+
+      clock.instant = Instant.ofEpochSecond(123)
+
+      store.createSubmission(deliverableId, projectId, SubmissionStatus.Completed)
+
+      assertEquals(
+          listOf(
+              SubmissionsRow(
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  deliverableId = deliverableId,
+                  id = submissionId,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+                  projectId = projectId,
+                  submissionStatusId = SubmissionStatus.Completed)),
+          submissionsDao.findAll())
+    }
+
+    @Test
+    fun `throws exception if creating submission for status other than Not Submitted or Completed`() {
+      insertModule()
+      val projectId = insertProject()
+      val deliverableId = insertDeliverable()
+
+      val illegalStatuses =
+          setOf(
+              SubmissionStatus.Approved,
+              SubmissionStatus.Rejected,
+              SubmissionStatus.InReview,
+              SubmissionStatus.NeedsTranslation,
+              SubmissionStatus.NotNeeded,
+          )
+
+      illegalStatuses.forEach {
+        assertThrows<IllegalArgumentException> {
+          store.createSubmission(deliverableId, projectId, it)
+        }
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to create submission`() {
+      insertModule()
+      val projectId = insertProject()
+      val deliverableId = insertDeliverable()
+
+      every { user.canCreateSubmission(projectId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.createSubmission(deliverableId, projectId, SubmissionStatus.NotSubmitted)
+      }
+    }
+  }
+
+  @Nested
   inner class UpdateSubmissionStatus {
     @BeforeEach
     fun setUp() {
