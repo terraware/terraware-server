@@ -17,17 +17,18 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
 
   private val generator: IdentifierGenerator by lazy { IdentifierGenerator(clock, dslContext) }
 
+  private lateinit var organizationId: OrganizationId
+
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    organizationId = insertOrganization()
   }
 
   @Test
   fun `identifiers are allocated per organization and per type`() {
     clock.instant = Instant.parse("2022-01-01T00:00:00Z")
 
-    val otherOrganizationId = OrganizationId(2)
-    insertOrganization(otherOrganizationId)
+    val otherOrganizationId = insertOrganization()
 
     val org1AccessionIdentifier1 =
         generator.generateIdentifier(organizationId, IdentifierType.ACCESSION, 1)

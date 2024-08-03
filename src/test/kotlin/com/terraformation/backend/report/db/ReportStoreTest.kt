@@ -68,9 +68,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     )
   }
 
+  private lateinit var organizationId: OrganizationId
+
   @BeforeEach
   fun setUp() {
-    insertSiteData()
+    organizationId = insertOrganization()
+    insertFacility()
 
     every { user.canCreateReport(any()) } returns true
     every { user.canDeleteReport(any()) } returns true
@@ -596,13 +599,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class FindOrganizationsForCreate {
-    private val nonReportingOrganizationId = OrganizationId(2)
-    private val missingReportOrganizationId = OrganizationId(3)
+    private lateinit var nonReportingOrganizationId: OrganizationId
+    private lateinit var missingReportOrganizationId: OrganizationId
 
     @BeforeEach
     fun setUp() {
-      insertOrganization(nonReportingOrganizationId)
-      insertOrganization(missingReportOrganizationId)
+      nonReportingOrganizationId = insertOrganization()
+      missingReportOrganizationId = insertOrganization()
       insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
       insertOrganizationInternalTag(missingReportOrganizationId, InternalTagIds.Reporter)
     }
@@ -610,7 +613,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `ignores reports from earlier quarters`() {
       val twoQuartersAgo = defaultTime.minusMonths(6)
-      insertReport(quarter = twoQuartersAgo.quarter, year = twoQuartersAgo.year)
+      insertReport(
+          organizationId = organizationId,
+          quarter = twoQuartersAgo.quarter,
+          year = twoQuartersAgo.year)
 
       assertEquals(
           listOf(organizationId, missingReportOrganizationId), store.findOrganizationsForCreate())
@@ -618,7 +624,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `only includes organizations without existing reports`() {
-      insertReport(quarter = defaultTime.quarter - 1, year = defaultTime.year)
+      insertReport(
+          organizationId = organizationId,
+          quarter = defaultTime.quarter - 1,
+          year = defaultTime.year)
 
       assertEquals(listOf(missingReportOrganizationId), store.findOrganizationsForCreate())
     }
@@ -673,8 +682,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
           store.fetchSettingsByOrganization(organizationId),
           "Organization reports should be disabled")
 
-      val otherOrganizationId = insertOrganization(2)
-      insertOrganizationReportSettings(organizationId = otherOrganizationId, isEnabled = true)
+      val otherOrganizationId = insertOrganization()
+      insertOrganizationReportSettings(isEnabled = true)
 
       assertEquals(
           ReportSettingsModel(
@@ -783,8 +792,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if projects are in wrong organization`() {
-      val otherOrganizationId = insertOrganization(2)
-      val otherProjectId = insertProject(organizationId = otherOrganizationId)
+      insertOrganization()
+      val otherProjectId = insertProject()
 
       assertThrows<ProjectInDifferentOrganizationException> {
         store.updateSettings(

@@ -14,7 +14,6 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
-import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.net.URI
@@ -34,11 +33,13 @@ import org.junit.jupiter.params.provider.ValueSource
 internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
   override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(NOTIFICATIONS, ORGANIZATIONS)
+    get() = listOf(NOTIFICATIONS)
 
   private val clock = TestClock()
   private lateinit var permissionStore: PermissionStore
   private lateinit var store: NotificationStore
+
+  private lateinit var organizationId: OrganizationId
 
   private fun notificationModel(
       globalNotification: Boolean = false,
@@ -70,6 +71,8 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
+    organizationId = insertOrganization()
+
     permissionStore = PermissionStore(dslContext)
     store = NotificationStore(dslContext, clock)
 
@@ -82,8 +85,6 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCountNotifications() } returns true
 
     every { user.organizationRoles } returns mapOf(organizationId to Role.Owner)
-
-    insertSiteData()
   }
 
   @Test

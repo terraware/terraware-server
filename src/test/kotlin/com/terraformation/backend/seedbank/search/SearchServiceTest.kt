@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -70,6 +71,7 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
   protected lateinit var accessionId1: AccessionId
   protected lateinit var accessionId2: AccessionId
   protected lateinit var facilityId: FacilityId
+  protected lateinit var organizationId: OrganizationId
   protected lateinit var speciesId1: SpeciesId
   protected lateinit var speciesId2: SpeciesId
 
@@ -77,7 +79,7 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
   protected fun init() {
     searchService = SearchService(dslContext)
 
-    insertOrganization()
+    organizationId = insertOrganization()
     facilityId = insertFacility()
 
     clock.instant = Instant.parse("2020-06-15T00:00:00.00Z")

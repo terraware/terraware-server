@@ -13,7 +13,7 @@ internal class SearchServicePermissionTest : SearchServiceTest() {
     val memberFacilityId = inserted.facilityId
 
     // A facility in an org the user isn't in
-    insertOrganization(2)
+    insertOrganization()
     val otherFacilityId = insertFacility()
     insertAccession(facilityId = otherFacilityId)
 

@@ -6,6 +6,7 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.ObservationStore
@@ -68,9 +69,11 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
 
   private val gen = ShapefileGenerator(defaultPermanentClusters = 1, defaultTemporaryPlots = 2)
 
+  private lateinit var organizationId: OrganizationId
+
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    organizationId = insertOrganization()
     insertFacility(type = FacilityType.Nursery)
     insertSpecies()
 

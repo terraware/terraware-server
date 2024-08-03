@@ -54,8 +54,6 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
 
   override val user: TerrawareUser = mockUser()
 
-  private lateinit var photoStorageUrl: URI
-
   private val accessionId = AccessionId(12345)
   private val accessionNumber = "ZYXWVUTSRQPO"
   private val contentType = MediaType.IMAGE_JPEG_VALUE
@@ -67,6 +65,9 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   private val sixPixelPng: ByteArray by lazy {
     javaClass.getResourceAsStream("/file/sixPixels.png").use { it.readAllBytes() }
   }
+
+  private lateinit var organizationId: OrganizationId
+  private lateinit var photoStorageUrl: URI
 
   @BeforeEach
   fun setUp() {
@@ -99,7 +100,8 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
     fileService = FileService(dslContext, clock, mockk(), filesDao, fileStore, thumbnailStore)
     repository = PhotoRepository(accessionPhotosDao, dslContext, fileService, ImageUtils(fileStore))
 
-    insertSiteData()
+    organizationId = insertOrganization()
+    insertFacility()
     insertAccession(id = accessionId, number = accessionNumber)
   }
 
@@ -276,11 +278,10 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `OrganizationDeletionStartedEvent listener deletes photos from all facilities in organization`() {
     val sameOrgAccessionId = AccessionId(2)
-    val otherOrganizationId = OrganizationId(2)
     val otherOrgAccessionId = AccessionId(3)
 
     val sameOrgFacilityId = insertFacility()
-    insertOrganization(otherOrganizationId)
+    insertOrganization()
     val otherOrgFacilityId = insertFacility()
     insertAccession(id = sameOrgAccessionId, facilityId = sameOrgFacilityId)
     insertAccession(id = otherOrgAccessionId, facilityId = otherOrgFacilityId)

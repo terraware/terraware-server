@@ -1,7 +1,6 @@
 package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SubLocationId
@@ -156,9 +155,8 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
 
   @Test
   fun `throws exception if project is not in same organization as nursery`() {
-    val otherOrganizationId = OrganizationId(2)
-    insertOrganization(otherOrganizationId)
-    val otherOrgProjectId = insertProject(organizationId = otherOrganizationId)
+    insertOrganization()
+    val otherOrgProjectId = insertProject()
 
     assertThrows<ProjectInDifferentOrganizationException> {
       store.updateDetails(batchId = batchId, version = 1) { it.copy(projectId = otherOrgProjectId) }

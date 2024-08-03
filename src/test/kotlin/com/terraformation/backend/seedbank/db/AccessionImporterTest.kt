@@ -10,6 +10,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.UploadNotAwaitingActionException
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadProblemType
@@ -132,6 +133,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
   private val userStore: UserStore = mockk()
 
   private lateinit var facilityId: FacilityId
+  private lateinit var organizationId: OrganizationId
   private val uploadId = UploadId(1)
 
   @BeforeEach
@@ -149,7 +151,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateUpload(any()) } returns true
     every { userStore.fetchOneById(userId) } returns user
 
-    insertOrganization()
+    organizationId = insertOrganization()
     facilityId = insertFacility()
   }
 

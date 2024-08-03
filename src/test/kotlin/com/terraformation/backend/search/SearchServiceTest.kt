@@ -22,7 +22,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    val organizationId = insertOrganization()
     insertOrganizationUser(currentUser().userId, inserted.organizationId)
     every { user.canReadOrganization(inserted.organizationId) } returns true
     every { user.organizationRoles } returns mapOf(organizationId to Role.Contributor)

@@ -81,8 +81,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       val participantId2 = insertParticipant(id = 2, cohortId = cohortId1)
       val participantId3 = insertParticipant(id = 3, cohortId = cohortId2)
 
-      val organizationId1 = insertOrganization(id = 1)
-      val organizationId2 = insertOrganization(id = 2)
+      val organizationId1 = insertOrganization()
+      val organizationId2 = insertOrganization()
       val projectId1 =
           insertProject(id = 1, organizationId = organizationId1, participantId = participantId1)
       val projectId2 =
@@ -476,7 +476,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadProjectDeliverables(any()) } returns false
       every { user.canReadModule(any()) } returns false
 
-      insertOrganization()
+      val organizationId = insertOrganization()
       val participantId = insertParticipant()
       val projectId = insertProject()
       val moduleId = insertModule()

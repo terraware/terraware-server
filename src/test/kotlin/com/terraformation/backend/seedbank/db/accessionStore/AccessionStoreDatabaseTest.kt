@@ -3,7 +3,6 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.db.AccessionSpeciesHasDeliveriesException
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.CollectionSource
@@ -196,9 +195,8 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
   @Test
   fun `update throws exception if project is in a different organization`() {
     val projectId = insertProject()
-    val otherOrganizationId = OrganizationId(2)
-    insertOrganization(otherOrganizationId)
-    val otherOrgProjectId = insertProject(organizationId = otherOrganizationId)
+    insertOrganization()
+    val otherOrgProjectId = insertProject()
 
     val initial = store.create(accessionModel(projectId = projectId))
 

@@ -471,7 +471,7 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
 
     @Test
     fun `throws exception if no permission to update site`() {
-      val existing = store.createPlantingSite(newSite())
+      val existing = store.createPlantingSite(newSite().copy(organizationId = organizationId))
 
       every { user.canUpdatePlantingSite(any()) } returns false
 
@@ -507,7 +507,8 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
 
       // createPlantingSite doesn't create monitoring plots since they are expected to be created
       // on demand later on, so we need to create them ourselves.
-      val existingWithoutPlots = store.createPlantingSite(initial)
+      val existingWithoutPlots =
+          store.createPlantingSite(initial.copy(organizationId = organizationId))
 
       initial.plantingZones.forEach { initialZone ->
         val existingZone = existingWithoutPlots.plantingZones.single { it.name == initialZone.name }

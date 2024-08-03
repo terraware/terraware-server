@@ -1,7 +1,6 @@
 package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
@@ -979,8 +978,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
   @Test
   fun `throws exception if destination facility is in a different organization`() {
-    val otherOrganizationId = OrganizationId(2)
-    insertOrganization(otherOrganizationId)
+    insertOrganization()
     val otherOrgFacilityId = insertFacility(type = FacilityType.Nursery)
 
     assertThrows<CrossOrganizationNurseryTransferNotAllowedException> {

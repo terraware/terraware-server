@@ -8,6 +8,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_DETAILS_HISTORY
@@ -47,11 +48,12 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   protected lateinit var facilityId: FacilityId
+  protected lateinit var organizationId: OrganizationId
   protected lateinit var speciesId: SpeciesId
 
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    organizationId = insertOrganization()
     facilityId = insertFacility(name = "Nursery", type = FacilityType.Nursery)
     speciesId = insertSpecies()
 

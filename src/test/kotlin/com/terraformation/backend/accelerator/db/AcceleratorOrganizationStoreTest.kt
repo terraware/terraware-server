@@ -31,10 +31,10 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchWithUnassignedProjects {
     @Test
     fun `only returns unassigned projects in Accelerator tagged organizations`() {
-      val acceleratorOrgId1 = insertOrganization(1)
-      val acceleratorOrgId2 = insertOrganization(2)
-      val nonAcceleratorOrgId = insertOrganization(3)
-      val untaggedOrgId = insertOrganization(4)
+      val acceleratorOrgId1 = insertOrganization()
+      val acceleratorOrgId2 = insertOrganization()
+      val nonAcceleratorOrgId = insertOrganization()
+      val untaggedOrgId = insertOrganization()
       val participantId = insertParticipant()
       val currentUserId = user.userId
 
@@ -44,10 +44,10 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
       insertProject(organizationId = nonAcceleratorOrgId)
       insertProject(organizationId = untaggedOrgId)
-      insertProject(organizationId = 1, participantId = participantId)
-      val unassignedProjectId1 = insertProject(organizationId = 1, name = "A")
-      val unassignedProjectId2 = insertProject(organizationId = 2, name = "C")
-      val unassignedProjectId3 = insertProject(organizationId = 2, name = "B")
+      insertProject(organizationId = acceleratorOrgId1, participantId = participantId)
+      val unassignedProjectId1 = insertProject(organizationId = acceleratorOrgId1, name = "A")
+      val unassignedProjectId2 = insertProject(organizationId = acceleratorOrgId2, name = "C")
+      val unassignedProjectId3 = insertProject(organizationId = acceleratorOrgId2, name = "B")
 
       assertEquals(
           mapOf(
@@ -110,11 +110,11 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
   inner class FindAll {
     @Test
     fun `returns both assigned and unassigned projects in Accelerator tagged organizations`() {
-      val acceleratorOrgId1 = insertOrganization(1)
-      val acceleratorOrgId2 = insertOrganization(2)
-      val acceleratorOrgIdWithoutProjects = insertOrganization(3)
-      val nonAcceleratorOrgId = insertOrganization(4)
-      val untaggedOrgId = insertOrganization(5)
+      val acceleratorOrgId1 = insertOrganization()
+      val acceleratorOrgId2 = insertOrganization()
+      val acceleratorOrgIdWithoutProjects = insertOrganization()
+      val nonAcceleratorOrgId = insertOrganization()
+      val untaggedOrgId = insertOrganization()
       val participantId = insertParticipant()
       val currentUserId = user.userId
 
@@ -126,9 +126,10 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
       insertProject(organizationId = nonAcceleratorOrgId)
       insertProject(organizationId = untaggedOrgId)
       val assignedProjectId =
-          insertProject(organizationId = 1, name = "D", participantId = participantId)
-      val unassignedProjectId1 = insertProject(organizationId = 1, name = "A")
-      val unassignedProjectId2 = insertProject(organizationId = 2, name = "C")
+          insertProject(
+              organizationId = acceleratorOrgId1, name = "D", participantId = participantId)
+      val unassignedProjectId1 = insertProject(organizationId = acceleratorOrgId1, name = "A")
+      val unassignedProjectId2 = insertProject(organizationId = acceleratorOrgId2, name = "C")
 
       assertEquals(
           mapOf(

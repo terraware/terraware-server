@@ -5,7 +5,6 @@ import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.SubLocationAtWrongFacilityException
 import com.terraformation.backend.db.SubLocationNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.BatchDetailsHistoryId
@@ -174,9 +173,8 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
 
   @Test
   fun `throws exception if project is not from same organization as nursery`() {
-    val otherOrganizationId = OrganizationId(2)
-    insertOrganization(otherOrganizationId)
-    val projectId = insertProject(organizationId = otherOrganizationId)
+    insertOrganization()
+    val projectId = insertProject()
 
     assertThrows<ProjectInDifferentOrganizationException> {
       store.create(makeNewBatchModel().copy(projectId = projectId))

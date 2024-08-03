@@ -22,6 +22,7 @@ import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -85,12 +86,13 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var applicationId: ApplicationId
   private lateinit var applicationModuleId: ModuleId
+  private lateinit var organizationId: OrganizationId
   private lateinit var preScreenModuleId: ModuleId
   private lateinit var projectId: ProjectId
 
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    organizationId = insertOrganization()
     insertOrganizationUser(role = Role.Admin)
 
     projectId = insertProject()

@@ -10,6 +10,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
@@ -113,6 +114,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
 
   private val uploadId = UploadId(1)
   private lateinit var facilityId: FacilityId
+  private lateinit var organizationId: OrganizationId
   private lateinit var subLocationId: SubLocationId
 
   @BeforeEach
@@ -128,7 +130,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateUpload(any()) } returns true
     every { userStore.fetchOneById(userId) } returns user
 
-    insertOrganization()
+    organizationId = insertOrganization()
     facilityId = insertFacility(type = FacilityType.Nursery)
     subLocationId = insertSubLocation(name = "Location 1")
   }

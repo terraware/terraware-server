@@ -18,6 +18,8 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var permissionStore: PermissionStore
 
+  private lateinit var organizationId1: OrganizationId
+  private lateinit var organizationId2: OrganizationId
   private lateinit var org1FacilityId: FacilityId
   private lateinit var org2FacilityId: FacilityId
   private lateinit var org2Owner: UserId
@@ -46,14 +48,14 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchOrganizationRoles only includes organizations the user is in`() {
     insertTestData()
     assertEquals(
-        mapOf(OrganizationId(2) to Role.Owner), permissionStore.fetchOrganizationRoles(org2Owner))
+        mapOf(organizationId2 to Role.Owner), permissionStore.fetchOrganizationRoles(org2Owner))
   }
 
   @Test
   fun `fetchOrganizationRoles includes all organizations the user is in`() {
     insertTestData()
     assertEquals(
-        mapOf(OrganizationId(1) to Role.Contributor, OrganizationId(2) to Role.Manager),
+        mapOf(organizationId1 to Role.Contributor, organizationId2 to Role.Manager),
         permissionStore.fetchOrganizationRoles(org1Contributor2Manager))
   }
 
@@ -96,17 +98,18 @@ internal class PermissionStoreTest : DatabaseTest(), RunsAsUser {
    * ```
    */
   private fun insertTestData() {
-    insertOrganization(1)
+    organizationId1 = insertOrganization()
     org1FacilityId = insertFacility()
-    insertOrganization(2)
+    organizationId2 = insertOrganization()
     org2FacilityId = insertFacility()
 
-    configureUser(mapOf(1 to Role.Manager))
-    org2Owner = configureUser(mapOf(2 to Role.Owner))
-    org1Contributor2Manager = configureUser(mapOf(1 to Role.Contributor, 2 to Role.Manager))
+    configureUser(mapOf(organizationId1 to Role.Manager))
+    org2Owner = configureUser(mapOf(organizationId2 to Role.Owner))
+    org1Contributor2Manager =
+        configureUser(mapOf(organizationId1 to Role.Contributor, organizationId2 to Role.Manager))
   }
 
-  private fun configureUser(roles: Map<Int, Role>): UserId {
+  private fun configureUser(roles: Map<OrganizationId, Role>): UserId {
     val userId = insertUser()
     roles.forEach { (orgId, role) -> insertOrganizationUser(userId, orgId, role) }
     return userId

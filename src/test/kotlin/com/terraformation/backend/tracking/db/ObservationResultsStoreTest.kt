@@ -5,6 +5,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
@@ -37,11 +38,6 @@ import org.junit.jupiter.api.assertThrows
 class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
-  private lateinit var plantingSiteId: PlantingSiteId
-  private lateinit var plotIds: Map<String, MonitoringPlotId>
-  private lateinit var subzoneIds: Map<String, PlantingSubzoneId>
-  private lateinit var zoneIds: Map<String, PlantingZoneId>
-
   private val allSpeciesNames = mutableSetOf<String>()
   private val permanentPlotNames = mutableSetOf<String>()
   private val speciesIds = mutableMapOf<String, SpeciesId>()
@@ -66,9 +62,15 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   }
   private val resultsStore by lazy { ObservationResultsStore(dslContext) }
 
+  private lateinit var organizationId: OrganizationId
+  private lateinit var plantingSiteId: PlantingSiteId
+  private lateinit var plotIds: Map<String, MonitoringPlotId>
+  private lateinit var subzoneIds: Map<String, PlantingSubzoneId>
+  private lateinit var zoneIds: Map<String, PlantingZoneId>
+
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    organizationId = insertOrganization()
     plantingSiteId = insertPlantingSite(areaHa = BigDecimal(2500))
 
     every { user.canReadObservation(any()) } returns true

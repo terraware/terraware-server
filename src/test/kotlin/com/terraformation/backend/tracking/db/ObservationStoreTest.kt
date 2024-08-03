@@ -76,11 +76,12 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     ObservationTestHelper(this, store, user.userId)
   }
 
+  private lateinit var organizationId: OrganizationId
   private lateinit var plantingSiteId: PlantingSiteId
 
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    organizationId = insertOrganization()
     plantingSiteId = insertPlantingSite()
 
     every { user.canCreateObservation(any()) } returns true
@@ -1831,8 +1832,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
         insertObservationPlot(monitoringPlotId = insertMonitoringPlot())
 
         // Make sure we're actually filtering by planting site
-        val otherOrganizationId = insertOrganization(OrganizationId(2))
-        insertPlantingSite(organizationId = otherOrganizationId)
+        insertOrganization()
+        insertPlantingSite()
         insertPlantingZone()
         insertPlantingSubzone()
         insertMonitoringPlot()

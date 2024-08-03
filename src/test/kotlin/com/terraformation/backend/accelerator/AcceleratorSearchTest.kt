@@ -8,6 +8,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.default_schema.LandUseModelType
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.toGibberish
@@ -30,9 +31,11 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
   private val searchService: SearchService by lazy { SearchService(dslContext) }
   private val searchTables = SearchTables(clock)
 
+  private lateinit var organizationId: OrganizationId
+
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    organizationId = insertOrganization()
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
     insertParticipant()
     insertProject(countryCode = "KE", participantId = inserted.participantId)
@@ -137,10 +140,10 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
     insertOrganizationUser()
 
-    val otherAcceleratorOrgId = insertOrganization(2)
+    val otherAcceleratorOrgId = insertOrganization()
     insertOrganizationInternalTag(otherAcceleratorOrgId, InternalTagIds.Accelerator)
 
-    insertOrganization(3)
+    insertOrganization()
 
     val prefix = SearchFieldPrefix(searchTables.organizations)
     val fields = listOf(prefix.resolve("name"))
@@ -162,7 +165,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
     insertOrganizationUser()
 
-    val otherAcceleratorOrgId = insertOrganization(2)
+    val otherAcceleratorOrgId = insertOrganization()
     insertOrganizationInternalTag(otherAcceleratorOrgId, InternalTagIds.Accelerator)
 
     val prefix = SearchFieldPrefix(searchTables.organizations)
@@ -179,7 +182,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
     insertOrganizationUser()
 
-    val nonAcceleratorOrgId = insertOrganization(2)
+    val nonAcceleratorOrgId = insertOrganization()
     insertProject(organizationId = nonAcceleratorOrgId)
 
     val prefix = SearchFieldPrefix(searchTables.projects)
@@ -197,7 +200,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
     insertOrganizationUser()
 
-    val otherAcceleratorOrgId = insertOrganization(2)
+    val otherAcceleratorOrgId = insertOrganization()
     insertOrganizationInternalTag(otherAcceleratorOrgId, InternalTagIds.Accelerator)
     insertProject(organizationId = otherAcceleratorOrgId)
 
@@ -211,7 +214,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can filter organizations by internal tag to only retrieve accelerator data`() {
-    val nonAcceleratorOrgId = insertOrganization(2)
+    val nonAcceleratorOrgId = insertOrganization()
 
     insertOrganizationUser(organizationId = organizationId, role = Role.TerraformationContact)
     insertOrganizationUser(organizationId = nonAcceleratorOrgId, role = Role.Admin)
@@ -359,7 +362,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
             organizationId = inserted.organizationId, participantId = inserted.participantId)
 
     val otherUser = insertUser()
-    val otherOrganization = insertOrganization(id = 100, createdBy = otherUser)
+    val otherOrganization = insertOrganization(createdBy = otherUser)
     insertOrganizationUser(
         userId = otherUser, organizationId = otherOrganization, role = Role.Admin)
     val otherParticipant = insertParticipant(cohortId = inserted.cohortId)

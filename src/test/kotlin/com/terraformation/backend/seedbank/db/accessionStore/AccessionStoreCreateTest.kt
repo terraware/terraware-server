@@ -4,7 +4,6 @@ import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.IDENTIFIER_SEQUENCES
@@ -247,9 +246,8 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `throws exception if project is in different organization than facility`() {
-    val otherOrganizationId = OrganizationId(2)
-    insertOrganization(otherOrganizationId)
-    val projectId = insertProject(organizationId = otherOrganizationId)
+    insertOrganization()
+    val projectId = insertProject()
 
     assertThrows<ProjectInDifferentOrganizationException> {
       store.create(accessionModel(projectId = projectId))

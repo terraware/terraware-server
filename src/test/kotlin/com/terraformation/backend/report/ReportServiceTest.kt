@@ -159,8 +159,12 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
     )
   }
 
+  private lateinit var organizationId: OrganizationId
+
   @BeforeEach
   fun setUp() {
+    organizationId = insertOrganization()
+
     every { user.canCreateReport(any()) } returns true
     every { user.canDeleteReport(any()) } returns true
     every { user.canListReports(any()) } returns true
@@ -172,7 +176,6 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateReport(any()) } returns true
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
 
-    insertOrganization()
     insertOrganizationUser(user.userId, organizationId, Role.Admin)
   }
 
@@ -480,11 +483,9 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates reports for organizations that need them`() {
-      val nonReportingOrganization = OrganizationId(2)
-      val alreadyInProgressOrganization = OrganizationId(3)
+      insertOrganization()
+      val alreadyInProgressOrganization = insertOrganization()
 
-      insertOrganization(nonReportingOrganization)
-      insertOrganization(alreadyInProgressOrganization)
       insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
       insertOrganizationInternalTag(alreadyInProgressOrganization, InternalTagIds.Reporter)
       insertReport(organizationId = alreadyInProgressOrganization, quarter = 4, year = 1969)
@@ -590,11 +591,9 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   inner class DeleteOrganization {
     @Test
     fun `deletes all reports for organization when organization deletion starts`() {
-      val otherOrganizationId = OrganizationId(2)
-
-      insertOrganization(otherOrganizationId)
       insertReport(year = 2000)
       insertReport(year = 2001)
+      val otherOrganizationId = insertOrganization()
       val otherOrgReportId = insertReport(organizationId = otherOrganizationId)
 
       service.on(OrganizationDeletionStartedEvent(organizationId))

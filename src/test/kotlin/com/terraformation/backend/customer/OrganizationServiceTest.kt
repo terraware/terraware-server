@@ -22,12 +22,10 @@ import com.terraformation.backend.db.InvalidTerraformationContactEmail
 import com.terraformation.backend.db.OrganizationHasOtherUsersException
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.UserNotFoundForEmailException
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationUsersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.default_schema.tables.records.OrganizationUsersRecord
-import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.mockUser
@@ -40,8 +38,6 @@ import java.util.UUID
 import org.jobrunr.jobs.JobId
 import org.jobrunr.jobs.lambdas.IocJobLambda
 import org.jobrunr.scheduling.JobScheduler
-import org.jooq.Record
-import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -54,8 +50,6 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
-  override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(ORGANIZATIONS)
 
   @Autowired private lateinit var config: TerrawareServerConfig
 
@@ -105,7 +99,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   fun `deleteOrganization throws exception if organization has users other than the current one`() {
     val otherUserId = insertUser()
 
-    insertOrganization()
+    val organizationId = insertOrganization()
     insertOrganizationUser(role = Role.Owner)
     insertOrganizationUser(otherUserId)
 
@@ -114,7 +108,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteOrganization throws exception if user has no permission to delete organization`() {
-    val organizationId = OrganizationId(1)
+    val organizationId = insertOrganization()
     every { user.canDeleteOrganization(organizationId) } returns false
 
     assertThrows<AccessDeniedException> { service.deleteOrganization(organizationId) }
@@ -122,7 +116,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteOrganization removes current user from organization`() {
-    insertOrganization()
+    val organizationId = insertOrganization()
     insertOrganizationUser(role = Role.Owner)
 
     service.deleteOrganization(organizationId)
@@ -135,7 +129,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `deleteOrganization removes Terraformation Contact user from organization`() {
     val tfContactUserId = insertUser(email = "tfcontact@terraformation.com")
-    insertOrganization()
+    val organizationId = insertOrganization()
     insertOrganizationUser(role = Role.Owner)
     insertOrganizationUser(userId = tfContactUserId, role = Role.TerraformationContact)
 
@@ -148,7 +142,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteOrganization publishes event on success`() {
-    insertOrganization()
+    val organizationId = insertOrganization()
     insertOrganizationUser(role = Role.Owner)
 
     service.deleteOrganization(organizationId)
@@ -158,17 +152,12 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `UserDeletionStartedEvent handler removes user from all their organizations`() {
-    val soloOrganizationId1 = OrganizationId(1)
-    val soloOrganizationId2 = OrganizationId(2)
-    val sharedOrganizationId = OrganizationId(3)
-    val unrelatedOrganizationId = OrganizationId(4)
+    val soloOrganizationId1 = insertOrganization()
+    val soloOrganizationId2 = insertOrganization()
+    val sharedOrganizationId = insertOrganization()
+    val unrelatedOrganizationId = insertOrganization()
 
     val otherUserId = insertUser()
-
-    insertOrganization(soloOrganizationId1)
-    insertOrganization(soloOrganizationId2)
-    insertOrganization(sharedOrganizationId)
-    insertOrganization(unrelatedOrganizationId)
 
     insertOrganizationUser(user.userId, soloOrganizationId1, Role.Owner)
     insertOrganizationUser(user.userId, soloOrganizationId2, Role.Owner)
@@ -223,7 +212,8 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     val slot = slot<IocJobLambda<OrganizationService>>()
     every { scheduler.enqueue(capture(slot)) } answers { JobId(UUID.randomUUID()) }
 
-    insertSiteData()
+    val organizationId = insertOrganization()
+    insertFacility()
 
     service.on(OrganizationAbandonedEvent(organizationId))
 
@@ -247,11 +237,9 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `UserAddedToOrganization event is published when existing user is added to an organization`() {
-    val organizationId = OrganizationId(1)
-
     val otherUserId = insertUser(email = "existingUser@email.com")
 
-    insertOrganization(organizationId)
+    val organizationId = insertOrganization()
 
     every { user.canAddOrganizationUser(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, Role.Contributor) } returns true
@@ -267,9 +255,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `UserAddedToTerraware event is published when new user is added to an organization`() {
     val newUserEmail = "newuser@email.com"
-    val organizationId = OrganizationId(1)
-
-    insertOrganization(organizationId)
+    val organizationId = insertOrganization()
 
     every { user.canAddOrganizationUser(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, Role.Contributor) } returns true
@@ -287,6 +273,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `assigning a Terraformation Contact throws exception without permission`() {
+    val organizationId = insertOrganization()
     every { user.canAddTerraformationContact(organizationId) } returns false
     assertThrows<AccessDeniedException> {
       service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
@@ -295,6 +282,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `assigning a Terraformation Contact throws exception when user does not exist`() {
+    val organizationId = insertOrganization()
     every { user.canAddTerraformationContact(organizationId) } returns true
     assertThrows<UserNotFoundForEmailException> {
       service.assignTerraformationContact("tfcontact@terraformation.com", organizationId)
@@ -304,7 +292,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `assigning a Terraformation Contact throws exception for non-terraformation emails`() {
     insertUser(email = "tfcontact@nonterraformation.com")
-    insertOrganization(organizationId)
+    val organizationId = insertOrganization()
 
     every { user.canAddTerraformationContact(organizationId) } returns true
 
@@ -316,7 +304,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `assigns a brand new Terraformation Contact`() {
     insertUser(email = "tfcontact@terraformation.com")
-    insertOrganization(organizationId)
+    val organizationId = insertOrganization()
 
     assertNull(
         organizationStore.fetchTerraformationContact(organizationId),
@@ -336,7 +324,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   fun `removes existing Terraformation Contact and assigns a new one`() {
     insertUser(email = "tfcontact@terraformation.com")
     insertUser(email = "tfcontactnew@terraformation.com")
-    insertOrganization(organizationId)
+    val organizationId = insertOrganization()
 
     every { user.canAddTerraformationContact(organizationId) } returns true
     every { user.canRemoveTerraformationContact(organizationId) } returns true
@@ -359,7 +347,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `removes existing Terraformation Contact and sets the role for reassigned Terraformation Contact if user already exists`() {
     insertUser(email = "tfcontact@terraformation.com")
-    insertOrganization(organizationId)
+    val organizationId = insertOrganization()
 
     every { user.canAddTerraformationContact(organizationId) } returns true
     every { user.canRemoveTerraformationContact(organizationId) } returns true

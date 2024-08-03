@@ -6,7 +6,6 @@ import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
@@ -66,7 +65,7 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
 
     every { fileStore.newUrl(any(), any(), any()) } returns storageUrl
     every { fileStore.write(storageUrl, any()) } just Runs
-    insertOrganization()
+    val organizationId = insertOrganization()
 
     val expected =
         listOf(
@@ -198,7 +197,6 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `OrganizationDeletionStartedEvent listener deletes all uploads in organization`() {
-    val otherOrganizationId = OrganizationId(2)
     val uploadId1 = UploadId(1)
     val uploadId2 = UploadId(2)
     val otherOrgUploadId = UploadId(3)
@@ -209,8 +207,8 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
     every { fileStore.delete(any()) } just Runs
     every { user.canReadOrganization(any()) } returns true
 
-    insertOrganization(organizationId)
-    insertOrganization(otherOrganizationId)
+    val organizationId = insertOrganization()
+    val otherOrganizationId = insertOrganization()
     insertUpload(uploadId1, organizationId = organizationId, storageUrl = storageUrl1)
     insertUpload(uploadId2, organizationId = organizationId, storageUrl = storageUrl2)
     insertUpload(

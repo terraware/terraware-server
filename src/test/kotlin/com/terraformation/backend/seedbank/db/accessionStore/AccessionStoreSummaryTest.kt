@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -19,8 +18,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
   fun countByState() {
     val facilityId = inserted.facilityId
     val sameOrgFacilityId = insertFacility()
-    val otherOrganizationId = OrganizationId(2)
-    insertOrganization(otherOrganizationId)
+    insertOrganization()
     val otherOrgFacilityId = insertFacility()
 
     val toCreate =
@@ -77,8 +75,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
   fun `getSummaryStatistics counts seeds remaining`() {
     val facilityId = inserted.facilityId
     val sameOrgFacilityId = insertFacility()
-    val otherOrganizationId = OrganizationId(2)
-    insertOrganization(otherOrganizationId)
+    insertOrganization()
     val otherOrgFacilityId = insertFacility()
 
     listOf(
@@ -153,7 +150,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
   fun `getSummaryStatistics estimates seeds remaining by weight`() {
     val facilityId = inserted.facilityId
     val sameOrgFacilityId = insertFacility()
-    insertOrganization(2)
+    insertOrganization()
     val otherOrgFacilityId = insertFacility()
 
     listOf(
@@ -258,7 +255,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
   fun `getSummaryStatistics counts total withdrawn quantity`() {
     val facilityId = inserted.facilityId
     val sameOrgFacilityId = insertFacility()
-    insertOrganization(2)
+    insertOrganization()
     val otherOrgFacilityId = insertFacility()
 
     listOf(
@@ -343,8 +340,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
   fun `getSummaryStatistics counts unknown-quantity accessions`() {
     val facilityId = inserted.facilityId
     val sameOrgFacilityId = insertFacility()
-    val otherOrganizationId = OrganizationId(2)
-    insertOrganization(otherOrganizationId)
+    insertOrganization()
     val otherOrgFacilityId = insertFacility()
 
     listOf(
@@ -435,7 +431,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
     val facilityId = inserted.facilityId
     val sameOrgFacilityId = insertFacility()
 
-    val otherOrganizationId = insertOrganization(2)
+    val otherOrganizationId = insertOrganization()
     val otherOrgFacilityId = insertFacility()
 
     val speciesId = SpeciesId(1)
@@ -497,7 +493,7 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
   fun `getSummaryStatistics does not count deleted species`() {
     val facilityId = inserted.facilityId
     val sameOrgFacilityId = insertFacility()
-    val otherOrganizationId = insertOrganization(2)
+    val otherOrganizationId = insertOrganization()
     val otherOrgFacilityId = insertFacility()
 
     val speciesId = SpeciesId(1)

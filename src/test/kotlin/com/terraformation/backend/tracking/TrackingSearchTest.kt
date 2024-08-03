@@ -5,7 +5,6 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -38,7 +37,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    val organizationId = insertOrganization()
     insertOrganizationUser()
 
     every { user.organizationRoles } returns mapOf(organizationId to Role.Contributor)
@@ -352,10 +351,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `search for plots excludes planting sites in other organizations`() {
-    val otherOrganizationId = OrganizationId(2)
-
-    insertOrganization(otherOrganizationId)
-    insertPlantingSite(organizationId = otherOrganizationId)
+    insertOrganization()
+    insertPlantingSite()
     insertPlantingZone()
     insertPlantingSubzone()
 

@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -52,10 +53,14 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
   override val tablesToResetSequences: List<Table<out Record>>
     get() = listOf(WITHDRAWALS)
 
+  private lateinit var organizationId: OrganizationId
   private val speciesId by lazy { insertSpecies(42) }
 
   @BeforeEach
   fun setup() {
+    organizationId = insertOrganization()
+    insertFacility()
+
     store = WithdrawalStore(dslContext, clock, Messages(), ParentStore(dslContext))
 
     clock.instant = Instant.ofEpochSecond(1000)
@@ -63,8 +68,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadOrganization(organizationId) } returns true
     every { user.canReadOrganizationUser(organizationId, any()) } returns true
     every { user.canSetWithdrawalUser(any()) } returns true
-
-    insertSiteData()
 
     // Insert a minimal accession in a state that allows withdrawals.
     with(ACCESSIONS) {

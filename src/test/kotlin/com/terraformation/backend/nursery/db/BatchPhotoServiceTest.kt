@@ -8,6 +8,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchPhotoId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchPhotosRow
@@ -59,13 +60,16 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   private val metadata = FileMetadata.of(MediaType.IMAGE_JPEG_VALUE, "filename", 123L)
-  private val batchId: BatchId by lazy { insertBatch() }
+
+  private lateinit var batchId: BatchId
+  private lateinit var organizationId: OrganizationId
 
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    organizationId = insertOrganization()
     insertSpecies()
     insertFacility(type = FacilityType.Nursery)
+    batchId = insertBatch()
 
     every { thumbnailStore.deleteThumbnails(any()) } just Runs
     every { user.canReadBatch(any()) } returns true
@@ -221,9 +225,9 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
     insertFacility(type = FacilityType.Nursery)
     val facility2BatchId = insertBatch()
 
-    val otherOrganizationId = insertOrganization(2)
+    insertOrganization()
     insertFacility(type = FacilityType.Nursery)
-    val otherOrgBatchId = insertBatch(organizationId = otherOrganizationId)
+    val otherOrgBatchId = insertBatch()
 
     storePhoto()
     storePhoto()
