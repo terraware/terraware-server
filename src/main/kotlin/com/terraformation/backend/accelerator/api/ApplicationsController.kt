@@ -302,6 +302,7 @@ data class ApplicationPayload(
             "Internal-only reference name of application. Only set if the current user is an " +
                 "internal user.")
     val internalName: String?,
+    val modifiedTime: Instant?,
     val organizationId: OrganizationId,
     val organizationName: String,
     val projectId: ProjectId,
@@ -318,8 +319,9 @@ data class ApplicationPayload(
           id = model.id,
           internalComment = if (exposeInternalFields) model.internalComment else null,
           internalName = if (exposeInternalFields) model.internalName else null,
+          modifiedTime = model.modifiedTme,
           organizationId = model.organizationId,
-          model.organizationName,
+          organizationName = model.organizationName,
           projectId = model.projectId,
           projectName = model.projectName,
           status = ApiApplicationStatus.of(model.status),

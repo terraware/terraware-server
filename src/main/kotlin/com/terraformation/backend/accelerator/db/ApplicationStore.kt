@@ -577,17 +577,26 @@ class ApplicationStore(
           }
         }
 
+    val modifiedTimeField =
+        DSL.field(
+            DSL.select(APPLICATION_HISTORIES.MODIFIED_TIME)
+                .from(APPLICATION_HISTORIES)
+                .where(APPLICATION_HISTORIES.APPLICATION_ID.eq(APPLICATIONS.ID))
+                .orderBy(APPLICATION_HISTORIES.MODIFIED_TIME.desc())
+                .limit(1))
+
     return dslContext
         .select(
             APPLICATIONS.asterisk(),
             APPLICATIONS.projects.ORGANIZATION_ID,
             APPLICATIONS.projects.NAME,
             APPLICATIONS.projects.organizations.NAME,
+            modifiedTimeField,
         )
         .from(APPLICATIONS)
         .where(conditionWithPermission)
         .orderBy(APPLICATIONS.ID)
-        .fetch { ExistingApplicationModel.of(it) }
+        .fetch { ExistingApplicationModel.of(it, modifiedTimeField) }
   }
 
   private fun checkPreScreenCriteria(
