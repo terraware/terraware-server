@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentSavedVersionId
 import com.terraformation.backend.db.docprod.DocumentStatus
@@ -25,6 +26,7 @@ import com.terraformation.backend.documentproducer.model.NewDocumentModel
 import com.terraformation.backend.documentproducer.model.NewSavedVersionModel
 import jakarta.inject.Named
 import java.time.InstantSource
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
@@ -99,19 +101,10 @@ class DocumentStore(
     return ExistingSavedVersionModel(versionsRow)
   }
 
-  fun findAll(): List<ExistingDocumentModel> {
-    return documentsDao
-        .findAll()
-        .map { ExistingDocumentModel(it) }
-        .filter { currentUser().canReadDocument(it.id) }
-  }
+  fun findAll(): List<ExistingDocumentModel> = fetchByCondition()
 
-  fun fetchByProjectId(projectId: ProjectId): List<ExistingDocumentModel> {
-    return documentsDao
-        .fetchByProjectId(projectId)
-        .map { ExistingDocumentModel(it) }
-        .filter { currentUser().canReadDocument(it.id) }
-  }
+  fun fetchByProjectId(projectId: ProjectId): List<ExistingDocumentModel> =
+      fetchByCondition(DOCUMENTS.PROJECT_ID.eq(projectId))
 
   fun fetchDocumentById(documentId: DocumentId): DocumentsRow {
     requirePermissions { readDocument(documentId) }
@@ -133,13 +126,6 @@ class DocumentStore(
     }
 
     return ExistingSavedVersionModel(versionsRow)
-  }
-
-  fun fetchProjectId(documentId: DocumentId): ProjectId {
-    requirePermissions { readDocument(documentId) }
-
-    return dslContext.fetchValue(DOCUMENTS.PROJECT_ID, DOCUMENTS.ID.eq(documentId))
-        ?: throw DocumentNotFoundException(documentId)
   }
 
   /** Returns a list of saved versions in reverse chronological order. */
@@ -242,4 +228,15 @@ class DocumentStore(
         .fetchOne(VARIABLE_MANIFESTS.ID)
         ?: throw MissingVariableManifestException(documentTemplateId)
   }
+
+  private fun fetchByCondition(condition: Condition? = null): List<ExistingDocumentModel> =
+      dslContext
+          .select(DOCUMENTS.asterisk(), PROJECTS.NAME)
+          .from(DOCUMENTS)
+          .join(PROJECTS)
+          .on(DOCUMENTS.PROJECT_ID.eq(PROJECTS.ID))
+          .where(condition)
+          .fetch()
+          .filter { currentUser().canReadDocument(it[DOCUMENTS.ID]!!) }
+          .map { ExistingDocumentModel.of(it) }
 }

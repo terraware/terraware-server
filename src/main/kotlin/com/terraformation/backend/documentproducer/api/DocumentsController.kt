@@ -173,6 +173,7 @@ data class DocumentPayload(
     val name: String,
     val ownedBy: UserId,
     val projectId: ProjectId,
+    val projectName: String?,
     val status: DocumentStatus,
     val variableManifestId: VariableManifestId,
 ) {
@@ -188,6 +189,7 @@ data class DocumentPayload(
       name = model.name,
       ownedBy = model.ownedBy,
       projectId = model.projectId,
+      projectName = model.projectName,
       status = model.status,
       variableManifestId = model.variableManifestId,
   )
