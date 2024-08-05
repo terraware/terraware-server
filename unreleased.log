@@ -1,3 +1,4 @@
+6adbfe88117 Updated translations from Phrase (#2232)
 c7cbe1c0a27 SW-5753 Updated create submission behavior to handle collisions (#2230)
 113c963ade0 SW-5605 Stop using hardwired facility IDs in tests (#2231)
 f777bbf6ff7 SW-5672 Delete old species list snapshots when creating new ones (#2229)
