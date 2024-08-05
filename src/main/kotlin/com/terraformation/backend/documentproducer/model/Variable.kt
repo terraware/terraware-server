@@ -52,6 +52,12 @@ interface BaseVariable {
   /** Whether this variable can have multiple values. Cannot vary between manifests. */
   val isList: Boolean
 
+  /**
+   * Whether this variable is required to be set if it appears in a questionnaire deliverable and
+   * its conditions are met.
+   */
+  val isRequired: Boolean
+
   /** Which manifest this object's per-manifest values come from. Can vary between manifests. */
   val manifestId: VariableManifestId?
 
@@ -89,6 +95,7 @@ data class BaseVariableProperties(
     override val description: String? = null,
     override val id: VariableId,
     override val isList: Boolean = false,
+    override val isRequired: Boolean = false,
     override val manifestId: VariableManifestId?,
     override val name: String,
     override val position: Int,

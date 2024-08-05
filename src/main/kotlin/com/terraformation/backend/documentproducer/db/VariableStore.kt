@@ -288,6 +288,7 @@ class VariableStore(
                 description = variablesRow.description,
                 id = variableId,
                 isList = variablesRow.isList!!,
+                isRequired = variablesRow.isRequired == true,
                 manifestId = manifestId,
                 name = variablesRow.name!!,
                 // TODO: Figure out how to order non-manifest variables

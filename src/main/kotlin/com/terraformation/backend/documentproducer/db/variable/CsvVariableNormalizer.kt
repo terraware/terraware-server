@@ -84,6 +84,7 @@ class CsvVariableNormalizer {
               },
           dependencyValue = values[VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VALUE],
           internalOnly = normalizeBoolean(values[VARIABLE_CSV_COLUMN_INDEX_INTERNAL_ONLY]),
+          isRequired = normalizeBoolean(values[VARIABLE_CSV_COLUMN_INDEX_IS_REQUIRED]),
           position = index + 2,
           variablePath = getVariablePath(name, parent),
           parentPath = getParentPath(parent))

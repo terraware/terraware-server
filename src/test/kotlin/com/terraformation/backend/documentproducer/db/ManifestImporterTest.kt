@@ -556,7 +556,8 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
       insertModule()
       insertDeliverable(id = 27)
-      insertDeliverable(id = 123)
+      insertDeliverable(id = 102)
+      insertDeliverable(id = 103)
 
       // We have to import the variables sheet first otherwise variables referenced within
       // default text entries will fail to import because the underlying variable is missing

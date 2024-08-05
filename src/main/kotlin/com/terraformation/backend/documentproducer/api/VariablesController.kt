@@ -110,6 +110,9 @@ interface VariablePayload {
   val isList: Boolean
     get() = model.isList
 
+  val isRequired: Boolean
+    get() = model.isRequired
+
   val name: String
     get() = model.name
 

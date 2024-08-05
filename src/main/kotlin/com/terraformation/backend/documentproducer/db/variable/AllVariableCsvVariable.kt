@@ -55,6 +55,8 @@ data class AllVariableCsvVariable(
     val dependencyValue: String?,
     /** Column 19/S - Internal Only */
     val internalOnly: Boolean,
+    /** Column 20/T - Required? */
+    val isRequired: Boolean,
 
     /** These are calculated during the import */
     /** The position of this variable within the associated deliverable, if applicable * */
@@ -82,6 +84,7 @@ data class AllVariableCsvVariable(
           id = variableId,
           internalOnly = internalOnly,
           isList = isList,
+          isRequired = isRequired,
           name = name,
           replacesVariableId = replacesVariableId,
           stableId = stableId,

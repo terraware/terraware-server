@@ -47,6 +47,8 @@ const val VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VALUE =
     VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_CONDITION + 1
 // Column 19/S
 const val VARIABLE_CSV_COLUMN_INDEX_INTERNAL_ONLY = VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VALUE + 1
+// Column 20/T
+const val VARIABLE_CSV_COLUMN_INDEX_IS_REQUIRED = VARIABLE_CSV_COLUMN_INDEX_INTERNAL_ONLY + 1
 
 class VariableCsvValidator(messages: Messages, val deliverableStore: DeliverableStore) :
     CsvValidator(messages) {
@@ -73,6 +75,7 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
           null,
           null,
           this::validateDeliverable,
+          null,
           null,
           null,
           null,

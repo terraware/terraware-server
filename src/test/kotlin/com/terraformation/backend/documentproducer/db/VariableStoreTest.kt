@@ -70,6 +70,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
               base =
                   BaseVariableProperties(
                       id = variableId3,
+                      isRequired = false,
                       manifestId = null,
                       name = variableName,
                       position = 0,
@@ -118,6 +119,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
               base =
                   BaseVariableProperties(
                       id = sectionId1,
+                      isRequired = false,
                       manifestId = inserted.variableManifestId,
                       name = "1",
                       position = 0,
@@ -129,6 +131,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       SectionVariable(
                           BaseVariableProperties(
                               id = sectionId2,
+                              isRequired = false,
                               manifestId = inserted.variableManifestId,
                               name = "1.1",
                               position = 1,
@@ -140,6 +143,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                                   SectionVariable(
                                       BaseVariableProperties(
                                           id = sectionId3a,
+                                          isRequired = false,
                                           manifestId = inserted.variableManifestId,
                                           name = "1.1.1",
                                           position = 2,
@@ -150,6 +154,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                                   SectionVariable(
                                       BaseVariableProperties(
                                           id = sectionId3b,
+                                          isRequired = false,
                                           manifestId = inserted.variableManifestId,
                                           name = "1.1.2",
                                           position = 3,
@@ -201,7 +206,8 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
               insertVariable(
                   type = VariableType.Number,
                   deliverableId = deliverableId1,
-                  deliverablePosition = 1))
+                  deliverablePosition = 1,
+                  isRequired = true))
       insertNumberVariable(
           insertVariable(
               type = VariableType.Number, deliverableId = deliverableId2, deliverablePosition = 0))
@@ -214,6 +220,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                           deliverableId = deliverableId1,
                           deliverablePosition = 0,
                           id = variableId1,
+                          isRequired = false,
                           manifestId = null,
                           name = "Variable 1",
                           position = 0,
@@ -228,6 +235,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                           deliverableId = deliverableId1,
                           deliverablePosition = 1,
                           id = variableId2,
+                          isRequired = true,
                           manifestId = null,
                           name = "Variable 2",
                           position = 0,
