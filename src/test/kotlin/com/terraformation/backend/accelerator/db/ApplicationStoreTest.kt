@@ -182,7 +182,12 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     @Nested
     inner class FetchOneById {
       @Test
-      fun `fetches application data`() {
+      fun `fetches application data with latest modified time`() {
+        insertApplicationHistory(
+            org1Project1ApplicationId, modifiedTime = clock.instant.plusSeconds(600))
+        insertApplicationHistory(
+            org1Project1ApplicationId, modifiedTime = clock.instant.plusSeconds(120))
+
         assertEquals(
             ExistingApplicationModel(
                 boundary = rectangle(1),
@@ -191,6 +196,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 id = org1Project1ApplicationId,
                 internalComment = "internal comment",
                 internalName = "internalName",
+                modifiedTme = clock.instant.plusSeconds(600),
                 organizationId = organizationId,
                 organizationName = "Organization 1",
                 projectId = org1ProjectId1,
@@ -225,6 +231,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     id = org1Project1ApplicationId,
                     internalComment = "internal comment",
                     internalName = "internalName",
+                    modifiedTme = null,
                     organizationId = organizationId,
                     organizationName = "Organization 1",
                     projectId = org1ProjectId1,
@@ -268,6 +275,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     id = org1Project1ApplicationId,
                     internalComment = "internal comment",
                     internalName = "internalName",
+                    modifiedTme = null,
                     organizationId = organizationId,
                     organizationName = "Organization 1",
                     projectId = org1ProjectId1,
@@ -280,6 +288,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     id = org1Project2ApplicationId,
                     internalComment = "internal comment 2",
                     internalName = "internalName2",
+                    modifiedTme = null,
                     organizationId = organizationId,
                     organizationName = "Organization 1",
                     projectId = org1ProjectId2,
@@ -312,6 +321,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     id = org1Project1ApplicationId,
                     internalComment = "internal comment",
                     internalName = "internalName",
+                    modifiedTme = null,
                     organizationId = organizationId,
                     organizationName = "Organization 1",
                     projectId = org1ProjectId1,
@@ -324,6 +334,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     id = org1Project2ApplicationId,
                     internalComment = "internal comment 2",
                     internalName = "internalName2",
+                    modifiedTme = null,
                     organizationId = organizationId,
                     organizationName = "Organization 1",
                     projectId = org1ProjectId2,
@@ -333,6 +344,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     createdTime = Instant.EPOCH,
                     id = org2Project1ApplicationId,
                     internalName = "internalName3",
+                    modifiedTme = null,
                     organizationId = organizationId2,
                     organizationName = "Organization 2",
                     projectId = org2ProjectId1,
