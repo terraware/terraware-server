@@ -404,6 +404,7 @@ class VariableImporter(
       return csvVariable.description == variable.description &&
           csvVariable.deliverablePosition == variable.deliverablePosition &&
           csvVariable.isList == variable.isList &&
+          csvVariable.isRequired == variable.isRequired &&
           csvVariable.name == variable.name &&
           csvVariable.stableId == variable.stableId &&
           when (csvVariable.dataType) {

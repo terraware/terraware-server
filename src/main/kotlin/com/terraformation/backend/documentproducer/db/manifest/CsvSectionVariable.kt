@@ -43,6 +43,7 @@ data class CsvSectionVariable(
           description = description,
           id = variableId,
           isList = true,
+          isRequired = false,
           name = name,
           replacesVariableId = replacesVariableId,
           stableId = stableId,

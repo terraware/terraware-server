@@ -629,6 +629,7 @@ class VariableTest {
       BaseVariableProperties(
           id = VariableId(id),
           isList = isList,
+          isRequired = false,
           manifestId = VariableManifestId(2),
           name = "Test",
           position = 0,
