@@ -18,8 +18,6 @@ import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.net.URI
 import java.time.Instant
-import org.jooq.Record
-import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -32,8 +30,6 @@ import org.junit.jupiter.params.provider.ValueSource
 
 internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
-  override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(NOTIFICATIONS)
 
   private val clock = TestClock()
   private lateinit var permissionStore: PermissionStore
@@ -103,9 +99,8 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should fetch a notification by id`() {
     val toCreate = notificationModel()
-    val id = NotificationId(1)
+    val id = store.create(toCreate, organizationId)
     val expected = toModel(toCreate, id)
-    store.create(toCreate, organizationId)
     assertEquals(
         expected, store.fetchById(id), "Notification fetched by id does not match what was created")
   }
@@ -117,9 +112,8 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
   ) {
     val orgId = if (globalNotifications) null else organizationId
     val model = notificationModel(globalNotifications)
-    val expected = (1..5).map { id -> toModel(model, NotificationId(id.toLong())) }
-
-    repeat(5) { store.create(model, organizationId) }
+    val createdIds = (1..5).map { store.create(model, organizationId) }
+    val expected = createdIds.map { id -> toModel(model, id) }
 
     assertEquals(
         expected,
@@ -133,12 +127,10 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
       globalNotifications: Boolean
   ) {
     val orgId = if (globalNotifications) null else organizationId
-    val id1 = NotificationId(1)
-    val id2 = NotificationId(2)
 
     // create 2 notifications of each type
-    store.create(notificationModel(globalNotifications), organizationId)
-    store.create(notificationModel(globalNotifications), organizationId)
+    val id1 = store.create(notificationModel(globalNotifications), organizationId)
+    val id2 = store.create(notificationModel(globalNotifications), organizationId)
     store.create(notificationModel(!globalNotifications), organizationId)
     store.create(notificationModel(!globalNotifications), organizationId)
 
@@ -162,10 +154,8 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should mark a notification as read`() {
-    val id = NotificationId(1)
-
     // create a notification
-    store.create(notificationModel(), organizationId)
+    val id = store.create(notificationModel(), organizationId)
 
     assertFalse(store.fetchById(id).isRead, "Expected notification to be unread upon create")
 
@@ -183,10 +173,8 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should return count information on unread notifications`() {
-    val id = NotificationId(1)
-
     // create 2 notifications of each type
-    store.create(notificationModel(), organizationId)
+    val id = store.create(notificationModel(), organizationId)
     store.create(notificationModel(), organizationId)
     store.create(notificationModel(true), organizationId)
     store.create(notificationModel(true), organizationId)
