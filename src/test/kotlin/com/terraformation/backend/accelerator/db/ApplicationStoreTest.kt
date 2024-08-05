@@ -1198,6 +1198,28 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `clears feedback for passing prescreen`() {
+      val otherUserId = insertUser()
+      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) }
+      val applicationId =
+          insertApplication(boundary = boundary, createdBy = otherUserId, feedback = "feedback")
+      val initial = applicationsDao.findAll().single()
+
+      clock.instant = Instant.ofEpochSecond(30)
+
+      store.submit(applicationId, validVariables(boundary))
+
+      assertEquals(
+          listOf(
+              initial.copy(
+                  applicationStatusId = ApplicationStatus.PassedPreScreen,
+                  feedback = null,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant)),
+          applicationsDao.findAll())
+    }
+
+    @Test
     fun `updates status and creates history entry for submitting prescreen`() {
       val otherUserId = insertUser()
       val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) }

@@ -354,9 +354,9 @@ class ApplicationStore(
       }
 
       val problems = checkPreScreenCriteria(existing, preScreenVariableValues)
+      updatePrescreenFeedback(applicationId, problems)
 
       if (problems.isNotEmpty()) {
-        updatePrescreenFeedback(applicationId, problems)
         updateStatus(applicationId, ApplicationStatus.FailedPreScreen)
       } else {
         updateStatus(applicationId, ApplicationStatus.PassedPreScreen)
@@ -405,18 +405,21 @@ class ApplicationStore(
   }
 
   private fun updatePrescreenFeedback(applicationId: ApplicationId, feedback: List<String>) {
-    if (feedback.isNotEmpty()) {
-      val feedbackLines = feedback.joinToString(separator = "\n")
+    val feedbackField =
+        if (feedback.isNotEmpty()) {
+          feedback.joinToString(separator = "\n")
+        } else {
+          null
+        }
 
-      with(APPLICATIONS) {
-        dslContext
-            .update(APPLICATIONS)
-            .set(FEEDBACK, feedbackLines)
-            .set(MODIFIED_BY, currentUser().userId)
-            .set(MODIFIED_TIME, clock.instant())
-            .where(ID.eq(applicationId))
-            .execute()
-      }
+    with(APPLICATIONS) {
+      dslContext
+          .update(APPLICATIONS)
+          .set(FEEDBACK, feedbackField)
+          .set(MODIFIED_BY, currentUser().userId)
+          .set(MODIFIED_TIME, clock.instant())
+          .where(ID.eq(applicationId))
+          .execute()
     }
   }
 
