@@ -38,7 +38,6 @@ data class ExistingDocumentModel(
       name = row.name!!,
       ownedBy = row.ownedBy!!,
       projectId = row.projectId!!,
-      projectName = null,
       status = row.statusId!!,
       variableManifestId = row.variableManifestId!!,
   )
