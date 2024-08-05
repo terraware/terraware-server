@@ -1,3 +1,4 @@
+0ae61309397 SW-5780 Remove sequence reset from AccessionImporterTest (#2241)
 9aac8c48c20 SW-5697 Add required flag to variables (#2238)
 713713a07e2 Update database dependencies (#2235)
 485dc29f7ac Update dependency com.google.apis:google-api-services-drive to v3-rev20240722-2.0.0 (#2236)
