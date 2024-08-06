@@ -2,12 +2,10 @@ package com.terraformation.backend.documentproducer.model
 
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentStatus
 import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableManifestId
-import com.terraformation.backend.db.docprod.tables.pojos.DocumentsRow
 import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
 import java.time.Instant
 import org.jooq.Record
@@ -22,28 +20,12 @@ data class ExistingDocumentModel(
     val name: String,
     val ownedBy: UserId,
     val projectId: ProjectId,
-    val projectName: String? = null,
+    val projectName: String,
     val status: DocumentStatus,
     val variableManifestId: VariableManifestId,
 ) {
-  constructor(
-      row: DocumentsRow,
-  ) : this(
-      createdBy = row.createdBy!!,
-      createdTime = row.createdTime!!,
-      documentTemplateId = row.documentTemplateId!!,
-      id = row.id!!,
-      modifiedBy = row.modifiedBy!!,
-      modifiedTime = row.modifiedTime!!,
-      name = row.name!!,
-      ownedBy = row.ownedBy!!,
-      projectId = row.projectId!!,
-      status = row.statusId!!,
-      variableManifestId = row.variableManifestId!!,
-  )
-
   companion object {
-    fun of(record: Record): ExistingDocumentModel {
+    fun of(record: Record, projectName: String): ExistingDocumentModel {
       return ExistingDocumentModel(
           createdBy = record[DOCUMENTS.CREATED_BY]!!,
           createdTime = record[DOCUMENTS.CREATED_TIME]!!,
@@ -54,7 +36,7 @@ data class ExistingDocumentModel(
           name = record[DOCUMENTS.NAME]!!,
           ownedBy = record[DOCUMENTS.OWNED_BY]!!,
           projectId = record[DOCUMENTS.PROJECT_ID]!!,
-          projectName = record[PROJECTS.NAME]!!,
+          projectName = projectName,
           status = record[DOCUMENTS.STATUS_ID]!!,
           variableManifestId = record[DOCUMENTS.VARIABLE_MANIFEST_ID]!!,
       )

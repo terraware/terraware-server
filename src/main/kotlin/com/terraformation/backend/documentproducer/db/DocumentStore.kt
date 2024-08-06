@@ -67,7 +67,7 @@ class DocumentStore(
 
     documentsDao.insert(row)
 
-    return ExistingDocumentModel(row)
+    return fetchOneById(row.id!!)
   }
 
   fun createSavedVersion(model: NewSavedVersionModel): ExistingSavedVersionModel {
@@ -105,6 +105,10 @@ class DocumentStore(
 
   fun fetchByProjectId(projectId: ProjectId): List<ExistingDocumentModel> =
       fetchByCondition(DOCUMENTS.PROJECT_ID.eq(projectId))
+
+  fun fetchOneById(documentId: DocumentId): ExistingDocumentModel =
+      fetchByCondition(DOCUMENTS.ID.eq(documentId)).firstOrNull()
+          ?: throw DocumentNotFoundException(documentId)
 
   fun fetchDocumentById(documentId: DocumentId): DocumentsRow {
     requirePermissions { readDocument(documentId) }
@@ -238,5 +242,5 @@ class DocumentStore(
           .where(condition)
           .fetch()
           .filter { currentUser().canReadDocument(it[DOCUMENTS.ID]!!) }
-          .map { ExistingDocumentModel.of(it) }
+          .map { ExistingDocumentModel.of(it, it[PROJECTS.NAME]!!) }
 }

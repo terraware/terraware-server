@@ -75,8 +75,7 @@ class DocumentsController(
   @Operation(summary = "Gets a document.")
   @GetMapping("/{id}")
   fun getDocument(@PathVariable("id") id: DocumentId): GetDocumentResponsePayload {
-    return GetDocumentResponsePayload(
-        DocumentPayload(ExistingDocumentModel(documentStore.fetchDocumentById(id))))
+    return GetDocumentResponsePayload(DocumentPayload(documentStore.fetchOneById(id)))
   }
 
   @Operation(summary = "Updates a document.")
