@@ -75,8 +75,7 @@ class DocumentsController(
   @Operation(summary = "Gets a document.")
   @GetMapping("/{id}")
   fun getDocument(@PathVariable("id") id: DocumentId): GetDocumentResponsePayload {
-    return GetDocumentResponsePayload(
-        DocumentPayload(ExistingDocumentModel(documentStore.fetchDocumentById(id))))
+    return GetDocumentResponsePayload(DocumentPayload(documentStore.fetchOneById(id)))
   }
 
   @Operation(summary = "Updates a document.")
@@ -173,6 +172,7 @@ data class DocumentPayload(
     val name: String,
     val ownedBy: UserId,
     val projectId: ProjectId,
+    val projectName: String,
     val status: DocumentStatus,
     val variableManifestId: VariableManifestId,
 ) {
@@ -188,6 +188,7 @@ data class DocumentPayload(
       name = model.name,
       ownedBy = model.ownedBy,
       projectId = model.projectId,
+      projectName = model.projectName,
       status = model.status,
       variableManifestId = model.variableManifestId,
   )
