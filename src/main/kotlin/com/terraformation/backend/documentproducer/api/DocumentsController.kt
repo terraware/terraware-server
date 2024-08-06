@@ -172,7 +172,7 @@ data class DocumentPayload(
     val name: String,
     val ownedBy: UserId,
     val projectId: ProjectId,
-    val projectName: String?,
+    val projectName: String,
     val status: DocumentStatus,
     val variableManifestId: VariableManifestId,
 ) {
