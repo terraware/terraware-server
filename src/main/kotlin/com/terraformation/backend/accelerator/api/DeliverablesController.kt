@@ -166,6 +166,19 @@ class DeliverablesController(
 
     return SimpleSuccessResponsePayload()
   }
+
+  @ApiResponseSimpleSuccess
+  @Operation(summary = "Marks a submission from a project as completed.")
+  @PostMapping("/{deliverableId}/submissions/{projectId}/complete")
+  fun completeSubmission(
+      @PathVariable deliverableId: DeliverableId,
+      @PathVariable projectId: ProjectId
+  ): SimpleSuccessResponsePayload {
+    // "Create" operation updates status of existing submission if there is one.
+    submissionStore.createSubmission(deliverableId, projectId, SubmissionStatus.Completed)
+
+    return SimpleSuccessResponsePayload()
+  }
 }
 
 data class ListDeliverablesElement(
