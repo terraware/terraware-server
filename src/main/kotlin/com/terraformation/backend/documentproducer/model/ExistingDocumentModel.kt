@@ -3,6 +3,7 @@ package com.terraformation.backend.documentproducer.model
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.DocumentSavedVersionId
 import com.terraformation.backend.db.docprod.DocumentStatus
 import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableManifestId
@@ -15,6 +16,7 @@ data class ExistingDocumentModel(
     val createdTime: Instant,
     val documentTemplateId: DocumentTemplateId,
     val id: DocumentId,
+    val lastSavedVersionId: DocumentSavedVersionId? = null,
     val modifiedBy: UserId,
     val modifiedTime: Instant,
     val name: String,
@@ -25,12 +27,17 @@ data class ExistingDocumentModel(
     val variableManifestId: VariableManifestId,
 ) {
   companion object {
-    fun of(record: Record, projectName: String): ExistingDocumentModel {
+    fun of(
+        record: Record,
+        projectName: String,
+        lastSavedVersionId: DocumentSavedVersionId? = null
+    ): ExistingDocumentModel {
       return ExistingDocumentModel(
           createdBy = record[DOCUMENTS.CREATED_BY]!!,
           createdTime = record[DOCUMENTS.CREATED_TIME]!!,
           documentTemplateId = record[DOCUMENTS.DOCUMENT_TEMPLATE_ID]!!,
           id = record[DOCUMENTS.ID]!!,
+          lastSavedVersionId = lastSavedVersionId,
           modifiedBy = record[DOCUMENTS.MODIFIED_BY]!!,
           modifiedTime = record[DOCUMENTS.MODIFIED_TIME]!!,
           name = record[DOCUMENTS.NAME]!!,

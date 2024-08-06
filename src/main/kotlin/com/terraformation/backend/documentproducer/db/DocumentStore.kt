@@ -101,7 +101,7 @@ class DocumentStore(
     return ExistingSavedVersionModel(versionsRow)
   }
 
-  fun findAll(): List<ExistingDocumentModel> = fetchByCondition()
+  fun fetchAll(): List<ExistingDocumentModel> = fetchByCondition()
 
   fun fetchByProjectId(projectId: ProjectId): List<ExistingDocumentModel> =
       fetchByCondition(DOCUMENTS.PROJECT_ID.eq(projectId))
@@ -233,14 +233,23 @@ class DocumentStore(
         ?: throw MissingVariableManifestException(documentTemplateId)
   }
 
-  private fun fetchByCondition(condition: Condition? = null): List<ExistingDocumentModel> =
-      dslContext
-          .select(DOCUMENTS.asterisk(), PROJECTS.NAME)
-          .from(DOCUMENTS)
-          .join(PROJECTS)
-          .on(DOCUMENTS.PROJECT_ID.eq(PROJECTS.ID))
-          .where(condition)
-          .fetch()
-          .filter { currentUser().canReadDocument(it[DOCUMENTS.ID]!!) }
-          .map { ExistingDocumentModel.of(it, it[PROJECTS.NAME]!!) }
+  private fun fetchByCondition(condition: Condition? = null): List<ExistingDocumentModel> {
+    val lastSavedVersionIdField =
+        with(DOCUMENT_SAVED_VERSIONS) {
+          DSL.field(
+              DSL.select(DSL.max(ID))
+                  .from(DOCUMENT_SAVED_VERSIONS)
+                  .where(DOCUMENT_ID.eq(DOCUMENTS.ID)))
+        }
+
+    return dslContext
+        .select(DOCUMENTS.asterisk(), PROJECTS.NAME, lastSavedVersionIdField)
+        .from(DOCUMENTS)
+        .join(PROJECTS)
+        .on(DOCUMENTS.PROJECT_ID.eq(PROJECTS.ID))
+        .where(condition)
+        .fetch()
+        .filter { currentUser().canReadDocument(it[DOCUMENTS.ID]!!) }
+        .map { ExistingDocumentModel.of(it, it[PROJECTS.NAME]!!, it[lastSavedVersionIdField]) }
+  }
 }
