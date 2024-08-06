@@ -101,7 +101,7 @@ class DocumentStore(
     return ExistingSavedVersionModel(versionsRow)
   }
 
-  fun findAll(): List<ExistingDocumentModel> = fetchByCondition()
+  fun fetchAll(): List<ExistingDocumentModel> = fetchByCondition()
 
   fun fetchByProjectId(projectId: ProjectId): List<ExistingDocumentModel> =
       fetchByCondition(DOCUMENTS.PROJECT_ID.eq(projectId))
@@ -237,11 +237,9 @@ class DocumentStore(
     val lastSavedVersionIdField =
         with(DOCUMENT_SAVED_VERSIONS) {
           DSL.field(
-              DSL.select(ID)
+              DSL.select(DSL.max(ID))
                   .from(DOCUMENT_SAVED_VERSIONS)
-                  .where(DOCUMENT_ID.eq(DOCUMENTS.ID))
-                  .orderBy(CREATED_TIME.desc())
-                  .limit(1))
+                  .where(DOCUMENT_ID.eq(DOCUMENTS.ID)))
         }
 
     return dslContext

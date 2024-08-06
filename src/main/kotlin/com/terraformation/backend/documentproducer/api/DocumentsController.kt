@@ -56,7 +56,7 @@ class DocumentsController(
         if (projectId != null) {
           documentStore.fetchByProjectId(projectId)
         } else {
-          documentStore.findAll()
+          documentStore.fetchAll()
         }
 
     return ListDocumentsResponsePayload(models.map { DocumentPayload(it) })
