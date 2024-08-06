@@ -1,3 +1,4 @@
+f2e85dc2f10 SW-5697 Add endpoint to complete a submission (#2243)
 573f418afe6 Update dependency black to v24.8.0 (#2239)
 0ae61309397 SW-5780 Remove sequence reset from AccessionImporterTest (#2241)
 9aac8c48c20 SW-5697 Add required flag to variables (#2238)
