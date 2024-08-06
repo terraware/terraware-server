@@ -1,3 +1,4 @@
+1e205a816c3 SW-5764 Add latestSavedVersionId to the "get documents" API response payload (#2242)
 f9b62f02846 SW-5763 Include project name with list document responses, delete unused function in DocumentStore (#2240)
 f2e85dc2f10 SW-5697 Add endpoint to complete a submission (#2243)
 573f418afe6 Update dependency black to v24.8.0 (#2239)
