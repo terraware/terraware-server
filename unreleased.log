@@ -1,3 +1,4 @@
+cb54f2186e3 SW-5761 Add requested subzones to admin UI (#2245)
 a001465ce19 SW-5761 Store requested subzone IDs for observations (#2244)
 1e205a816c3 SW-5764 Add latestSavedVersionId to the "get documents" API response payload (#2242)
 f9b62f02846 SW-5763 Include project name with list document responses, delete unused function in DocumentStore (#2240)
