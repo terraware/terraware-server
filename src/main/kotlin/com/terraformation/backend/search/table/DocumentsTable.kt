@@ -36,10 +36,14 @@ class DocumentsTable(tables: SearchTables) : SearchTable() {
           idWrapperField("id", DOCUMENTS.ID) { DocumentId(it) },
           integerField(
               "lastSavedVersionId",
-              DSL.field(
-                  DSL.select(DSL.max(DOCUMENTS.ID).cast(SQLDataType.INTEGER))
-                      .from(DOCUMENT_SAVED_VERSIONS)
-                      .where(DOCUMENT_SAVED_VERSIONS.DOCUMENT_ID.eq(DOCUMENTS.ID)))),
+              with(DOCUMENT_SAVED_VERSIONS) {
+                DSL.field(
+                    DSL.select(ID.cast(SQLDataType.INTEGER))
+                        .from(DOCUMENT_SAVED_VERSIONS)
+                        .where(DOCUMENT_ID.eq(DOCUMENTS.ID))
+                        .orderBy(ID.desc())
+                        .limit(1))
+              }),
           timestampField("modifiedTime", DOCUMENTS.MODIFIED_TIME, nullable = false),
           textField("name", DOCUMENTS.NAME, nullable = false),
           idWrapperField("projectId", DOCUMENTS.PROJECT_ID) { ProjectId(it) },
