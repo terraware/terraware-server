@@ -5,9 +5,9 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentSavedVersionId
-import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
 import com.terraformation.backend.db.docprod.tables.references.DOCUMENT_SAVED_VERSIONS
+import com.terraformation.backend.db.docprod.tables.references.DOCUMENT_TEMPLATES
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -23,16 +23,16 @@ class DocumentsTable(tables: SearchTables) : SearchTable() {
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {
-      listOf(projects.asSingleValueSublist("project", PROJECTS.ID.eq(DOCUMENTS.PROJECT_ID)))
+      listOf(
+          projects.asSingleValueSublist("project", PROJECTS.ID.eq(DOCUMENTS.PROJECT_ID)),
+          documentTemplates.asSingleValueSublist(
+              "documentTemplate", DOCUMENT_TEMPLATES.ID.eq(DOCUMENTS.DOCUMENT_TEMPLATE_ID)))
     }
   }
 
   override val fields: List<SearchField> =
       listOf(
           timestampField("createdTime", DOCUMENTS.CREATED_TIME, nullable = false),
-          idWrapperField("documentTemplateId", DOCUMENTS.DOCUMENT_TEMPLATE_ID) {
-            DocumentTemplateId(it)
-          },
           idWrapperField("id", DOCUMENTS.ID) { DocumentId(it) },
           idWrapperField(
               "lastSavedVersionId",
