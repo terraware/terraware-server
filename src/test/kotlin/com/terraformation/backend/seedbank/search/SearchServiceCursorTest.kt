@@ -18,7 +18,7 @@ internal class SearchServiceCursorTest : SearchServiceTest() {
         listOf(
             mapOf(
                 "speciesName" to "Kousa Dogwood",
-                "id" to "1000",
+                "id" to "$accessionId1",
                 "accessionNumber" to "XYZ",
                 "plantsCollectedFrom" to "1",
                 "active" to "Active",
@@ -37,7 +37,7 @@ internal class SearchServiceCursorTest : SearchServiceTest() {
             listOf(
                 mapOf(
                     "speciesName" to "Other Dogwood",
-                    "id" to "1001",
+                    "id" to "$accessionId2",
                     "accessionNumber" to "ABCDEFG",
                     "plantsCollectedFrom" to "2",
                     "active" to "Active",

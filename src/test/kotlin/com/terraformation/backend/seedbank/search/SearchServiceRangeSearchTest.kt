@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.search
 
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchResults
@@ -11,8 +10,7 @@ import org.junit.jupiter.api.assertThrows
 internal class SearchServiceRangeSearchTest : SearchServiceTest() {
   @Test
   fun `can do range search on integer field`() {
-    accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(treesCollectedFrom = 500))
+    accessionsDao.update(accessionsDao.fetchOneById(accessionId2)!!.copy(treesCollectedFrom = 500))
     val fields = listOf(plantsCollectedFromField)
     val searchNode =
         FieldNode(plantsCollectedFromField, listOf("2", "3000"), SearchFilterType.Range)
@@ -23,7 +21,7 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf(
-                    "id" to "1001",
+                    "id" to "$accessionId2",
                     "accessionNumber" to "ABCDEFG",
                     "plantsCollectedFrom" to "500")))
 
@@ -32,8 +30,7 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
 
   @Test
   fun `can do range search on integer field with no minimum`() {
-    accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(treesCollectedFrom = 500))
+    accessionsDao.update(accessionsDao.fetchOneById(accessionId2)!!.copy(treesCollectedFrom = 500))
     val fields = listOf(plantsCollectedFromField)
     val searchNode = FieldNode(plantsCollectedFromField, listOf(null, "3"), SearchFilterType.Range)
 
@@ -41,15 +38,18 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
 
     val expected =
         SearchResults(
-            listOf(mapOf("id" to "1000", "accessionNumber" to "XYZ", "plantsCollectedFrom" to "1")))
+            listOf(
+                mapOf(
+                    "id" to "$accessionId1",
+                    "accessionNumber" to "XYZ",
+                    "plantsCollectedFrom" to "1")))
 
     assertEquals(expected, result)
   }
 
   @Test
   fun `can do range search on integer field with no maximum`() {
-    accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(treesCollectedFrom = 500))
+    accessionsDao.update(accessionsDao.fetchOneById(accessionId2)!!.copy(treesCollectedFrom = 500))
     val fields = listOf(plantsCollectedFromField)
     val searchNode = FieldNode(plantsCollectedFromField, listOf("2", null), SearchFilterType.Range)
 
@@ -59,7 +59,7 @@ internal class SearchServiceRangeSearchTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf(
-                    "id" to "1001",
+                    "id" to "$accessionId2",
                     "accessionNumber" to "ABCDEFG",
                     "plantsCollectedFrom" to "500")))
 

@@ -23,8 +23,8 @@ internal class SearchServicePermissionTest : SearchServiceTest() {
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
-                mapOf("id" to "1000", "accessionNumber" to "XYZ"),
+                mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
+                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
             ))
 
     val actual =

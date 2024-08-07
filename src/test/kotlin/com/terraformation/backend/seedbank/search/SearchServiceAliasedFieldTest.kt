@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.search
 
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.tables.pojos.BagsRow
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
@@ -17,8 +16,8 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
     val fields = listOf(bagNumberField, bagNumberFlattenedField)
     val sortOrder = fields.map { SearchSortField(it) }
 
-    bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "A"))
-    bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "B"))
+    bagsDao.insert(BagsRow(accessionId = accessionId1, bagNumber = "A"))
+    bagsDao.insert(BagsRow(accessionId = accessionId1, bagNumber = "B"))
 
     val result =
         searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
@@ -27,19 +26,19 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf(
-                    "id" to "1000",
+                    "id" to "$accessionId1",
                     "bagNumber" to "A",
                     "bags_number" to "A",
                     "accessionNumber" to "XYZ",
                 ),
                 mapOf(
-                    "id" to "1000",
+                    "id" to "$accessionId1",
                     "bagNumber" to "B",
                     "bags_number" to "B",
                     "accessionNumber" to "XYZ",
                 ),
                 mapOf(
-                    "id" to "1001",
+                    "id" to "$accessionId2",
                     "accessionNumber" to "ABCDEFG",
                 ),
             ))
@@ -53,12 +52,12 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf(
-                    "id" to "1001",
+                    "id" to "$accessionId2",
                     "accessionNumber" to "ABCDEFG",
                     "plantsCollectedFromAlias" to "2",
                 ),
                 mapOf(
-                    "id" to "1000",
+                    "id" to "$accessionId1",
                     "accessionNumber" to "XYZ",
                     "plantsCollectedFromAlias" to "1",
                 ),
@@ -78,12 +77,12 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf(
-                    "id" to "1001",
+                    "id" to "$accessionId2",
                     "accessionNumber" to "ABCDEFG",
                     "alias(raw)" to "2",
                 ),
                 mapOf(
-                    "id" to "1000",
+                    "id" to "$accessionId1",
                     "accessionNumber" to "XYZ",
                     "alias(raw)" to "1",
                 ),
@@ -97,7 +96,8 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
   fun `can use aliased field in search criteria`() {
     val criteria = FieldNode(plantsCollectedFromAlias, listOf("2"))
 
-    val expected = SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")))
+    val expected =
+        SearchResults(listOf(mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG")))
 
     val actual = searchAccessions(facilityId, emptyList(), criteria = criteria)
     assertEquals(expected, actual)
@@ -110,8 +110,8 @@ internal class SearchServiceAliasedFieldTest : SearchServiceTest() {
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to "1000", "accessionNumber" to "XYZ"),
-                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
+                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
+                mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
             ))
 
     val actual =

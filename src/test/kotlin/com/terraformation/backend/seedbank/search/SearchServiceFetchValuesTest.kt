@@ -1,8 +1,6 @@
 package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.db.default_schema.Role
-import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.search.FieldNode
@@ -21,7 +19,7 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
 
   @Test
   fun `renders null values as null, not as a string`() {
-    accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1000))!!.copy(speciesId = null))
+    accessionsDao.update(accessionsDao.fetchOneById(accessionId1)!!.copy(speciesId = null))
     val values = searchService.fetchValues(rootPrefix, speciesNameField, NoConditionNode())
     assertEquals(listOf("Other Dogwood", null), values)
   }
@@ -48,14 +46,13 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
 
   @Test
   fun `exact-or-fuzzy search of accession number with value that is an exact substring match`() {
-    accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1000))!!.copy(number = "ABCD"))
-    accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1001))!!.copy(number = "ABCEF"))
+    accessionsDao.update(accessionsDao.fetchOneById(accessionId1)!!.copy(number = "ABCD"))
+    accessionsDao.update(accessionsDao.fetchOneById(accessionId2)!!.copy(number = "ABCEF"))
     insertAccession(
         AccessionsRow(
-            id = AccessionId(1002),
             number = "ZABCDY",
             stateId = AccessionState.Processing,
-            speciesId = SpeciesId(10001),
+            speciesId = speciesId2,
             treesCollectedFrom = 2))
     val values =
         searchService.fetchValues(
@@ -68,15 +65,14 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
   @Test
   fun `exact-or-fuzzy search of collection site name with value that is an exact substring match`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(collectionSiteName = "Location 10"))
+        accessionsDao.fetchOneById(accessionId1)!!.copy(collectionSiteName = "Location 10"))
     accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(collectionSiteName = "Location 11"))
+        accessionsDao.fetchOneById(accessionId2)!!.copy(collectionSiteName = "Location 11"))
     insertAccession(
         AccessionsRow(
-            id = AccessionId(1002),
             number = "IJK",
             stateId = AccessionState.Processing,
-            speciesId = SpeciesId(10001),
+            speciesId = speciesId2,
             treesCollectedFrom = 2,
             collectionSiteName = "Location 2"))
     val values =
@@ -135,7 +131,7 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
   @Test
   fun `can filter on computed column value`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(stateId = AccessionState.UsedUp))
+        accessionsDao.fetchOneById(accessionId1)!!.copy(stateId = AccessionState.UsedUp))
     val values =
         searchService.fetchValues(
             rootPrefix, activeField, FieldNode(activeField, listOf("Inactive")))

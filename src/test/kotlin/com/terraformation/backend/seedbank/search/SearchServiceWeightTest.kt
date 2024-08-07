@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.search
 
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
@@ -14,18 +13,18 @@ import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 
 internal class SearchServiceWeightTest : SearchServiceTest() {
-  // Sets accession 1001 to 1kg and accession 1000 to another value.
+  /** Sets accession 1's weight to the specified value and accession 2's to 1kg. */
   private fun setAccessionWeights(otherWeight: SeedQuantityModel = grams(800)) {
     accessionsDao.update(
         accessionsDao
-            .fetchOneById(AccessionId(1000))!!
+            .fetchOneById(accessionId1)!!
             .copy(
                 remainingGrams = otherWeight.grams,
                 remainingQuantity = otherWeight.quantity,
                 remainingUnitsId = otherWeight.units))
     accessionsDao.update(
         accessionsDao
-            .fetchOneById(AccessionId(1001))!!
+            .fetchOneById(accessionId2)!!
             .copy(
                 remainingGrams = BigDecimal(1000),
                 remainingQuantity = BigDecimal(1),
@@ -43,7 +42,8 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
             listOf("900000 Milligrams", "650,000.000001 Pounds"),
             SearchFilterType.Range)
 
-    val expected = SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")))
+    val expected =
+        SearchResults(listOf(mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG")))
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
@@ -57,7 +57,8 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(remainingGramsField, listOf("1000"))
 
-    val expected = SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")))
+    val expected =
+        SearchResults(listOf(mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG")))
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
@@ -94,7 +95,7 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
             listOf(
                 mapOf(
                     "accessionNumber" to "ABCDEFG",
-                    "id" to "1001",
+                    "id" to "$accessionId2",
                     "remainingKilograms" to "1",
                     "remainingMilligrams" to "1,000,000",
                     "remainingOunces" to "35.274",
@@ -116,7 +117,7 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
           val searchNode = FieldNode(remainingPoundsField, listOf("2.205"), SearchFilterType.Fuzzy)
 
           val expected =
-              SearchResults(listOf(mapOf("accessionNumber" to "ABCDEFG", "id" to "1001")))
+              SearchResults(listOf(mapOf("accessionNumber" to "ABCDEFG", "id" to "$accessionId2")))
 
           val result = searchAccessions(facilityId, emptyList(), searchNode)
 
@@ -128,8 +129,8 @@ internal class SearchServiceWeightTest : SearchServiceTest() {
           val expected =
               SearchResults(
                   listOf(
-                      mapOf("accessionNumber" to "ABCDEFG", "id" to "1001"),
-                      mapOf("accessionNumber" to "XYZ", "id" to "1000")))
+                      mapOf("accessionNumber" to "ABCDEFG", "id" to "$accessionId2"),
+                      mapOf("accessionNumber" to "XYZ", "id" to "$accessionId1")))
 
           val result = searchAccessions(facilityId, emptyList(), searchNode)
 

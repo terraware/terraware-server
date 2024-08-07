@@ -79,6 +79,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshot
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.UserDeliverableCategoriesRow
 import com.terraformation.backend.db.default_schema.AutomationId
+import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -98,6 +99,7 @@ import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.db.default_schema.SubLocationId
@@ -984,7 +986,7 @@ abstract class DatabaseBackedTest {
           if (speciesId != null) "Species $speciesId" else "Species ${nextSpeciesNumber++}",
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
-      modifiedTime: Instant = Instant.EPOCH,
+      modifiedTime: Instant = createdTime,
       organizationId: Any = this.organizationId,
       deletedTime: Instant? = null,
       checkedTime: Instant? = null,
@@ -994,6 +996,9 @@ abstract class DatabaseBackedTest {
       growthForms: Set<GrowthForm> = emptySet(),
       plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod> = emptySet(),
       successionalGroups: Set<SuccessionalGroup> = emptySet(),
+      rare: Boolean? = null,
+      conservationCategory: ConservationCategory? = null,
+      seedStorageBehavior: SeedStorageBehavior? = null,
   ): SpeciesId {
     val speciesIdWrapper = speciesId?.toIdWrapper { SpeciesId(it) }
     val organizationIdWrapper = organizationId.toIdWrapper { OrganizationId(it) }
@@ -1004,6 +1009,7 @@ abstract class DatabaseBackedTest {
               .insertInto(SPECIES)
               .set(CHECKED_TIME, checkedTime)
               .set(COMMON_NAME, commonName)
+              .set(CONSERVATION_CATEGORY_ID, conservationCategory)
               .set(CREATED_BY, createdBy)
               .set(CREATED_TIME, createdTime)
               .set(DELETED_BY, if (deletedTime != null) createdBy else null)
@@ -1013,7 +1019,9 @@ abstract class DatabaseBackedTest {
               .set(MODIFIED_BY, createdBy)
               .set(MODIFIED_TIME, modifiedTime)
               .set(ORGANIZATION_ID, organizationIdWrapper)
+              .set(RARE, rare)
               .set(SCIENTIFIC_NAME, scientificName)
+              .set(SEED_STORAGE_BEHAVIOR_ID, seedStorageBehavior)
               .returning(ID)
               .fetchOne(ID)!!
         }

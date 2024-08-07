@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.db.default_schema.Role
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.tables.pojos.BagsRow
 import com.terraformation.backend.i18n.Locales
@@ -29,8 +28,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
     val fields = listOf(bagNumberField)
     val sortOrder = fields.map { SearchSortField(it) }
 
-    bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "A"))
-    bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "B"))
+    bagsDao.insert(BagsRow(accessionId = accessionId1, bagNumber = "A"))
+    bagsDao.insert(BagsRow(accessionId = accessionId1, bagNumber = "B"))
 
     val result =
         searchAccessions(
@@ -43,12 +42,12 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf(
-                    "id" to "1000",
+                    "id" to "$accessionId1",
                     "bagNumber" to "A",
                     "accessionNumber" to "XYZ",
                 ),
                 mapOf(
-                    "id" to "1000",
+                    "id" to "$accessionId1",
                     "bagNumber" to "B",
                     "accessionNumber" to "XYZ",
                 ),
@@ -62,8 +61,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
     val fields = listOf(bagNumberFlattenedField)
     val sortOrder = fields.map { SearchSortField(it) }
 
-    bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "A"))
-    bagsDao.insert(BagsRow(accessionId = AccessionId(1000), bagNumber = "B"))
+    bagsDao.insert(BagsRow(accessionId = accessionId1, bagNumber = "A"))
+    bagsDao.insert(BagsRow(accessionId = accessionId1, bagNumber = "B"))
 
     val result =
         searchAccessions(facilityId, fields, criteria = NoConditionNode(), sortOrder = sortOrder)
@@ -72,17 +71,17 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf(
-                    "id" to "1000",
+                    "id" to "$accessionId1",
                     "bags_number" to "A",
                     "accessionNumber" to "XYZ",
                 ),
                 mapOf(
-                    "id" to "1000",
+                    "id" to "$accessionId1",
                     "bags_number" to "B",
                     "accessionNumber" to "XYZ",
                 ),
                 mapOf(
-                    "id" to "1001",
+                    "id" to "$accessionId2",
                     "accessionNumber" to "ABCDEFG",
                 ),
             ))
@@ -104,14 +103,14 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
             listOf(
                 mapOf(
                     "speciesName" to "Other Dogwood",
-                    "id" to "1001",
+                    "id" to "$accessionId2",
                     "accessionNumber" to "ABCDEFG",
                     "plantsCollectedFrom" to "2",
                     "active" to "Active",
                 ),
                 mapOf(
                     "speciesName" to "Kousa Dogwood",
-                    "id" to "1000",
+                    "id" to "$accessionId1",
                     "accessionNumber" to "XYZ",
                     "plantsCollectedFrom" to "1",
                     "active" to "Active",
@@ -163,7 +162,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
   @Test
   fun `can filter on computed fields whose raw values are being queried`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(stateId = AccessionState.UsedUp))
+        accessionsDao.fetchOneById(accessionId1)!!.copy(stateId = AccessionState.UsedUp))
 
     val fields = listOf(accessionNumberField, stateField)
     val searchNode = FieldNode(activeField, listOf("Inactive"))
@@ -172,7 +171,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
 
     val expected =
         SearchResults(
-            listOf(mapOf("id" to "1000", "accessionNumber" to "XYZ", "state" to "Used Up")))
+            listOf(
+                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ", "state" to "Used Up")))
 
     assertEquals(expected, result)
   }
@@ -180,9 +180,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
   @Test
   fun `exact search on text fields is case- and accent-insensitive`() {
     accessionsDao.update(
-        accessionsDao
-            .fetchOneById(AccessionId(1001))!!
-            .copy(processingNotes = "Sómé Mätching Nótes"))
+        accessionsDao.fetchOneById(accessionId2)!!.copy(processingNotes = "Sómé Mätching Nótes"))
 
     val fields = listOf(accessionNumberField)
     val searchNode =
@@ -190,7 +188,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
 
     val result = searchAccessions(facilityId, fields, searchNode)
 
-    val expected = SearchResults(listOf(mapOf("id" to "1001", "accessionNumber" to "ABCDEFG")))
+    val expected =
+        SearchResults(listOf(mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG")))
 
     assertEquals(expected, result)
   }
@@ -265,7 +264,7 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf(
-                    "id" to "1000",
+                    "id" to "$accessionId1",
                     "accessionNumber" to "XYZ",
                     "species_checkedTime" to checkedTimeString)))
 
@@ -288,8 +287,8 @@ internal class SearchServiceBasicSearchTest : SearchServiceTest() {
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
-                mapOf("id" to "1000", "accessionNumber" to "XYZ"),
+                mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
+                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
             ))
 
     val actual =

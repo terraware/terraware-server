@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.search
 
+import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchResults
@@ -11,11 +12,15 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class SearchServiceDateFieldSearchTest : SearchServiceTest() {
+  private lateinit var accessionIdJan1: AccessionId
+  private lateinit var accessionIdJan2: AccessionId
+  private lateinit var accessionIdJan8: AccessionId
+
   @BeforeEach
   fun insertReceivedDateExamples() {
-    listOf(1, 2, 8).forEach { day ->
-      insertAccession(number = "JAN$day", receivedDate = LocalDate.of(2021, 1, day))
-    }
+    accessionIdJan1 = insertAccession(number = "JAN1", receivedDate = LocalDate.of(2021, 1, 1))
+    accessionIdJan2 = insertAccession(number = "JAN2", receivedDate = LocalDate.of(2021, 1, 2))
+    accessionIdJan8 = insertAccession(number = "JAN8", receivedDate = LocalDate.of(2021, 1, 8))
   }
 
   @Test
@@ -23,7 +28,8 @@ internal class SearchServiceDateFieldSearchTest : SearchServiceTest() {
     val fields = listOf(accessionNumberField)
     val searchNode = FieldNode(receivedDateField, listOf("2021-01-02"), SearchFilterType.Exact)
 
-    val expected = SearchResults(listOf(mapOf("id" to "2", "accessionNumber" to "JAN2")))
+    val expected =
+        SearchResults(listOf(mapOf("id" to "$accessionIdJan2", "accessionNumber" to "JAN2")))
     val actual = searchAccessions(facilityId, fields, searchNode)
 
     assertEquals(expected, actual)
@@ -38,9 +44,9 @@ internal class SearchServiceDateFieldSearchTest : SearchServiceTest() {
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG"),
-                mapOf("id" to "2", "accessionNumber" to "JAN2"),
-                mapOf("id" to "1000", "accessionNumber" to "XYZ"),
+                mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG"),
+                mapOf("id" to "$accessionIdJan2", "accessionNumber" to "JAN2"),
+                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
             ))
     val actual = searchAccessions(facilityId, fields, searchNode)
 
@@ -57,8 +63,8 @@ internal class SearchServiceDateFieldSearchTest : SearchServiceTest() {
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to "2", "accessionNumber" to "JAN2"),
-                mapOf("id" to "3", "accessionNumber" to "JAN8")))
+                mapOf("id" to "$accessionIdJan2", "accessionNumber" to "JAN2"),
+                mapOf("id" to "$accessionIdJan8", "accessionNumber" to "JAN8")))
     val actual = searchAccessions(facilityId, fields, searchNode, sortOrder)
 
     assertEquals(expected, actual)
@@ -71,7 +77,8 @@ internal class SearchServiceDateFieldSearchTest : SearchServiceTest() {
     val searchNode =
         FieldNode(receivedDateField, listOf("2021-01-07", null), SearchFilterType.Range)
 
-    val expected = SearchResults(listOf(mapOf("id" to "3", "accessionNumber" to "JAN8")))
+    val expected =
+        SearchResults(listOf(mapOf("id" to "$accessionIdJan8", "accessionNumber" to "JAN8")))
     val actual = searchAccessions(facilityId, fields, searchNode, sortOrder)
 
     assertEquals(expected, actual)
@@ -87,8 +94,8 @@ internal class SearchServiceDateFieldSearchTest : SearchServiceTest() {
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to "1", "accessionNumber" to "JAN1"),
-                mapOf("id" to "2", "accessionNumber" to "JAN2")))
+                mapOf("id" to "$accessionIdJan1", "accessionNumber" to "JAN1"),
+                mapOf("id" to "$accessionIdJan2", "accessionNumber" to "JAN2")))
     val actual = searchAccessions(facilityId, fields, searchNode, sortOrder)
 
     assertEquals(expected, actual)
