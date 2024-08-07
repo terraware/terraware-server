@@ -283,7 +283,8 @@ data class IndividualUser(
       isTFExpertOrHigher() ||
           isManagerOrHigher(parentStore.getOrganizationId(participantProjectSpeciesId))
 
-  override fun canDeletePlantingSite(plantingSiteId: PlantingSiteId) = isSuperAdmin()
+  override fun canDeletePlantingSite(plantingSiteId: PlantingSiteId) =
+      isAdminOrHigher(parentStore.getOrganizationId(plantingSiteId))
 
   override fun canDeleteProject(projectId: ProjectId) =
       isAdminOrHigher(parentStore.getOrganizationId(projectId))
