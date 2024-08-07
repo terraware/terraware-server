@@ -34,6 +34,7 @@ class SearchController(
     tables: SearchTables,
     private val searchService: SearchService
 ) {
+  private val documentsTable = tables.documents
   private val organizationsTable = tables.organizations
 
   @Operation(summary = "Searches for data matching a supplied set of search criteria.")
@@ -152,7 +153,9 @@ class SearchController(
 
   private fun resolvePrefix(prefix: String?): SearchFieldPrefix {
     val table =
-        if (prefix != null) {
+        if (prefix == "documents") {
+          documentsTable
+        } else if (prefix != null) {
           organizationsTable.resolveTable(prefix)
         } else {
           organizationsTable
