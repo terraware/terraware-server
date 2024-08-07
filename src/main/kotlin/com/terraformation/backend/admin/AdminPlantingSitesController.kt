@@ -80,6 +80,11 @@ class AdminPlantingSitesController(
     val plantCounts = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId)
     val organization = organizationStore.fetchOneById(plantingSite.organizationId)
     val reportedPlants = plantingSiteStore.countReportedPlants(plantingSiteId)
+    val subzonesById =
+        plantingSite.plantingZones
+            .flatMap { it.plantingSubzones }
+            .sortedBy { it.fullName }
+            .associateBy { it.id }
 
     val allOrganizations =
         if (currentUser().canMovePlantingSiteToAnyOrg(plantingSiteId)) {
@@ -148,6 +153,7 @@ class AdminPlantingSitesController(
     model.addAttribute("plotCounts", plotCounts)
     model.addAttribute("reportedPlants", reportedPlants)
     model.addAttribute("site", plantingSite)
+    model.addAttribute("subzonesById", subzonesById)
 
     return "/admin/plantingSite"
   }
@@ -634,6 +640,7 @@ class AdminPlantingSitesController(
       @RequestParam plantingSiteId: PlantingSiteId,
       @RequestParam startDate: String,
       @RequestParam endDate: String,
+      @RequestParam requestedSubzoneIds: Set<PlantingSubzoneId>? = null,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
@@ -643,6 +650,7 @@ class AdminPlantingSitesController(
                   endDate = LocalDate.parse(endDate),
                   id = null,
                   plantingSiteId = plantingSiteId,
+                  requestedSubzoneIds = requestedSubzoneIds ?: emptySet(),
                   startDate = LocalDate.parse(startDate),
                   state = ObservationState.Upcoming))
 
