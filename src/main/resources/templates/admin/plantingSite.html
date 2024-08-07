@@ -367,11 +367,18 @@
 
     <h3>Observations</h3>
 
-    <table>
+    <table border="1">
         <tr>
             <th>ID</th>
             <th>Start</th>
             <th>End</th>
+            <th>
+                Requested Subzones
+                <br/>
+                <small>
+                    If none, use whole site
+                </small>
+            </th>
             <th>State</th>
             <th></th>
         </tr>
@@ -380,6 +387,12 @@
             <td th:text="${observation.id}">1</td>
             <td th:text="${observation.startDate}">2023-01-01</td>
             <td th:text="${observation.endDate}">2023-01-31</td>
+            <td>
+                    <div th:each="subzoneId : ${observation.requestedSubzoneIds}"
+                        th:text="|${subzonesById.get(subzoneId).fullName} (${subzoneId})|">
+                        abc-123 (456)
+                    </div>
+            </td>
             <td th:text="${observation.state}">Upcoming</td>
             <td>
                 <th:block th:text="${observationMessages[observation.id]}"></th:block>
@@ -400,6 +413,15 @@
             </td>
             <td>
                 <input type="date" form="createObservation" name="endDate" th:value="${nextObservationEnd}"/>
+            </td>
+            <td>
+                <select multiple form="createObservation" name="requestedSubzoneIds">
+                    <option th:each="subzone : ${subzonesById.values()}"
+                            th:text="|${subzone.fullName} (${subzone.id})|"
+                            th:value="${subzone.id}">
+                        abc-123 (456)
+                    </option>
+                </select>
             </td>
             <td></td>
             <td>
