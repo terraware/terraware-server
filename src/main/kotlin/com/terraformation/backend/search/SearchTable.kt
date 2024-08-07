@@ -257,11 +257,8 @@ abstract class SearchTable {
       nullable: Boolean = true
   ) = GeometryField(fieldName, databaseField, this, nullable)
 
-  fun <T : Any> idWrapperField(
-      fieldName: String,
-      databaseField: TableField<*, T?>,
-      fromLong: (Long) -> T
-  ) = IdWrapperField(fieldName, databaseField, this, fromLong)
+  fun <T : Any> idWrapperField(fieldName: String, databaseField: Field<T?>, fromLong: (Long) -> T) =
+      IdWrapperField(fieldName, databaseField, this, fromLong)
 
   fun integerField(
       fieldName: String,
