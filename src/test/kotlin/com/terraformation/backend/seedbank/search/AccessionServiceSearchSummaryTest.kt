@@ -6,7 +6,6 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.mockUser
@@ -69,18 +68,16 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `returns exact-match statistics for exact-or-fuzzy searches if there are exact matches`() {
-    val speciesId1 = insertSpecies(1)
-    val speciesId2 = insertSpecies(2)
+    val speciesId1 = insertSpecies()
+    val speciesId2 = insertSpecies()
     insertAccession(
         AccessionsRow(
-            id = AccessionId(1),
             number = "22-1-001",
             remainingQuantity = BigDecimal.TEN,
             remainingUnitsId = SeedQuantityUnits.Seeds,
             speciesId = speciesId1))
     insertAccession(
         AccessionsRow(
-            id = AccessionId(2),
             number = "22-1-002",
             remainingQuantity = BigDecimal.ONE,
             remainingUnitsId = SeedQuantityUnits.Kilograms,

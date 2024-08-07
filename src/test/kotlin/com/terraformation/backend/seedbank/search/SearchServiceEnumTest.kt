@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.search
 
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
@@ -22,9 +21,9 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
   @Test
   fun `sorts enum fields by display name rather than ID`() {
     accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(stateId = AccessionState.Drying))
+        accessionsDao.fetchOneById(accessionId2)!!.copy(stateId = AccessionState.Drying))
     accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(stateId = AccessionState.Processing))
+        accessionsDao.fetchOneById(accessionId1)!!.copy(stateId = AccessionState.Processing))
 
     val fields = listOf(stateField)
     val sortOrder = listOf(SearchSortField(stateField, SearchDirection.Descending))
@@ -35,8 +34,8 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to "1000", "accessionNumber" to "XYZ", "state" to "Processing"),
-                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG", "state" to "Drying"),
+                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ", "state" to "Processing"),
+                mapOf("id" to "$accessionId2", "accessionNumber" to "ABCDEFG", "state" to "Drying"),
             ))
 
     assertEquals(expected, result)
@@ -51,7 +50,9 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
 
     val expected =
         SearchResults(
-            listOf(mapOf("id" to "1000", "accessionNumber" to "XYZ", "state" to "In Storage")))
+            listOf(
+                mapOf(
+                    "id" to "$accessionId1", "accessionNumber" to "XYZ", "state" to "In Storage")))
 
     assertEquals(expected, result)
   }
@@ -59,9 +60,9 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
   @Test
   fun `can search on enum in child table`() {
     viabilityTestsDao.insert(
-        ViabilityTestsRow(accessionId = AccessionId(1000), testType = ViabilityTestType.Lab),
-        ViabilityTestsRow(accessionId = AccessionId(1000), testType = ViabilityTestType.Nursery),
-        ViabilityTestsRow(accessionId = AccessionId(1001), testType = ViabilityTestType.Lab),
+        ViabilityTestsRow(accessionId = accessionId1, testType = ViabilityTestType.Lab),
+        ViabilityTestsRow(accessionId = accessionId1, testType = ViabilityTestType.Nursery),
+        ViabilityTestsRow(accessionId = accessionId2, testType = ViabilityTestType.Lab),
     )
 
     val fields = listOf(viabilityTestsTypeField)
@@ -72,10 +73,17 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
         SearchResults(
             listOf(
                 mapOf(
-                    "id" to "1001", "accessionNumber" to "ABCDEFG", "viabilityTests_type" to "Lab"),
-                mapOf("id" to "1000", "accessionNumber" to "XYZ", "viabilityTests_type" to "Lab"),
+                    "id" to "$accessionId2",
+                    "accessionNumber" to "ABCDEFG",
+                    "viabilityTests_type" to "Lab"),
                 mapOf(
-                    "id" to "1000", "accessionNumber" to "XYZ", "viabilityTests_type" to "Nursery"),
+                    "id" to "$accessionId1",
+                    "accessionNumber" to "XYZ",
+                    "viabilityTests_type" to "Lab"),
+                mapOf(
+                    "id" to "$accessionId1",
+                    "accessionNumber" to "XYZ",
+                    "viabilityTests_type" to "Nursery"),
             ))
 
     val actual =
@@ -90,10 +98,10 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
     val gibberishAwaitingProcessing = "UHJvY2Vzc2luZw QXdhaXRpbmc"
 
     accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(stateId = AccessionState.Drying))
+        accessionsDao.fetchOneById(accessionId2)!!.copy(stateId = AccessionState.Drying))
     accessionsDao.update(
         accessionsDao
-            .fetchOneById(AccessionId(1000))!!
+            .fetchOneById(accessionId1)!!
             .copy(stateId = AccessionState.AwaitingProcessing))
 
     val fields = listOf(stateField)
@@ -102,9 +110,12 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to "1001", "state" to gibberishDrying, "accessionNumber" to "ABCDEFG"),
                 mapOf(
-                    "id" to "1000",
+                    "id" to "$accessionId2",
+                    "state" to gibberishDrying,
+                    "accessionNumber" to "ABCDEFG"),
+                mapOf(
+                    "id" to "$accessionId1",
                     "state" to gibberishAwaitingProcessing,
                     "accessionNumber" to "XYZ"),
             ))
@@ -134,7 +145,7 @@ internal class SearchServiceEnumTest : SearchServiceTest() {
                 mapOf(
                     "accessionNumber" to "XYZ",
                     "active" to gibberishActive,
-                    "id" to "1000",
+                    "id" to "$accessionId1",
                     "state" to gibberishInStorage,
                 )))
 

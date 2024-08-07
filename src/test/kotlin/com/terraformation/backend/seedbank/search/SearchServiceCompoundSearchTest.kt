@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.search
 
+import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.search.AndNode
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NotNode
@@ -12,9 +13,12 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class SearchServiceCompoundSearchTest : SearchServiceTest() {
+  private lateinit var accessionIds: List<AccessionId>
+
   @BeforeEach
   fun insertTreesCollectedFromExamples() {
-    (10..20).forEach { value -> insertAccession(number = "$value", treesCollectedFrom = value) }
+    accessionIds =
+        (10..20).map { value -> insertAccession(number = "$value", treesCollectedFrom = value) }
   }
 
   @Test
@@ -84,9 +88,7 @@ internal class SearchServiceCompoundSearchTest : SearchServiceTest() {
     val expected =
         SearchResults(
             expectedValues.map { value ->
-              // We create accession numbers 10 through 20 and the ID sequence starts at 1
-              val id = value - 9
-              mapOf("id" to "$id", "accessionNumber" to "$value")
+              mapOf("id" to "${accessionIds[value - 10]}", "accessionNumber" to "$value")
             })
     val actual = searchAccessions(facilityId, listOf(accessionNumberField), searchNode)
 

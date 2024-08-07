@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.search
 
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.SearchFilterType
@@ -11,8 +10,7 @@ import org.junit.jupiter.api.Test
 internal class SearchServiceNullValueTest : SearchServiceTest() {
   @Test
   fun `search leaves out null values`() {
-    accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(processingNotes = "Notes"))
+    accessionsDao.update(accessionsDao.fetchOneById(accessionId2)!!.copy(processingNotes = "Notes"))
 
     val fields = listOf(processingNotesField)
 
@@ -21,8 +19,11 @@ internal class SearchServiceNullValueTest : SearchServiceTest() {
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG", "processingNotes" to "Notes"),
-                mapOf("id" to "1000", "accessionNumber" to "XYZ"),
+                mapOf(
+                    "id" to "$accessionId2",
+                    "accessionNumber" to "ABCDEFG",
+                    "processingNotes" to "Notes"),
+                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
             ))
 
     assertEquals(expected, result)
@@ -30,11 +31,9 @@ internal class SearchServiceNullValueTest : SearchServiceTest() {
 
   @Test
   fun `can do exact search for null values`() {
-    insertAccession(number = "MISSING")
-    accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(processingNotes = "Notes"))
-    accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(processingNotes = "Other"))
+    val missingAccessionId = insertAccession(number = "MISSING")
+    accessionsDao.update(accessionsDao.fetchOneById(accessionId2)!!.copy(processingNotes = "Notes"))
+    accessionsDao.update(accessionsDao.fetchOneById(accessionId1)!!.copy(processingNotes = "Other"))
 
     val fields = listOf(processingNotesField)
     val searchNode = FieldNode(processingNotesField, listOf("Notes", null))
@@ -44,8 +43,11 @@ internal class SearchServiceNullValueTest : SearchServiceTest() {
     val expected =
         SearchResults(
             listOf(
-                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG", "processingNotes" to "Notes"),
-                mapOf("id" to "1", "accessionNumber" to "MISSING"),
+                mapOf(
+                    "id" to "$accessionId2",
+                    "accessionNumber" to "ABCDEFG",
+                    "processingNotes" to "Notes"),
+                mapOf("id" to "$missingAccessionId", "accessionNumber" to "MISSING"),
             ))
 
     assertEquals(expected, result)
@@ -53,8 +55,7 @@ internal class SearchServiceNullValueTest : SearchServiceTest() {
 
   @Test
   fun `fuzzy search treats null values as no-ops`() {
-    accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1001))!!.copy(processingNotes = "Notes"))
+    accessionsDao.update(accessionsDao.fetchOneById(accessionId2)!!.copy(processingNotes = "Notes"))
 
     val fields = listOf(processingNotesField)
     val searchNode =
@@ -63,8 +64,11 @@ internal class SearchServiceNullValueTest : SearchServiceTest() {
     assertEquals(
         SearchResults(
             listOf(
-                mapOf("id" to "1001", "accessionNumber" to "ABCDEFG", "processingNotes" to "Notes"),
-                mapOf("id" to "1000", "accessionNumber" to "XYZ"),
+                mapOf(
+                    "id" to "$accessionId2",
+                    "accessionNumber" to "ABCDEFG",
+                    "processingNotes" to "Notes"),
+                mapOf("id" to "$accessionId1", "accessionNumber" to "XYZ"),
             )),
         searchAccessions(facilityId, fields, searchNode))
   }

@@ -9,7 +9,6 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
@@ -17,7 +16,6 @@ import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
-import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.search.AndNode
 import com.terraformation.backend.search.FieldNode
@@ -33,14 +31,10 @@ import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
-import org.jooq.Record
-import org.jooq.Table
 import org.junit.jupiter.api.BeforeEach
 
 internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
-  override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(ACCESSIONS)
 
   protected lateinit var searchService: SearchService
 
@@ -73,7 +67,11 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
   protected val viabilityTestSeedsTestedField = rootPrefix.resolve("viabilityTests_seedsTested")
   protected val viabilityTestsTypeField = rootPrefix.resolve("viabilityTests_type")
 
+  protected lateinit var accessionId1: AccessionId
+  protected lateinit var accessionId2: AccessionId
   protected lateinit var facilityId: FacilityId
+  protected lateinit var speciesId1: SpeciesId
+  protected lateinit var speciesId2: SpeciesId
 
   @BeforeEach
   protected fun init() {
@@ -90,9 +88,8 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
     val now = Instant.now()
 
-    speciesDao.insert(
-        SpeciesRow(
-            id = SpeciesId(10000),
+    speciesId1 =
+        insertSpecies(
             scientificName = "Kousa Dogwood",
             initialScientificName = "Kousa Dogwood",
             checkedTime = checkedTime,
@@ -100,70 +97,61 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
             rare = false,
             createdBy = user.userId,
             createdTime = now,
-            modifiedBy = user.userId,
-            modifiedTime = now,
-            organizationId = organizationId))
-    speciesDao.insert(
-        SpeciesRow(
-            id = SpeciesId(10001),
+            organizationId = organizationId)
+    speciesId2 =
+        insertSpecies(
             scientificName = "Other Dogwood",
             initialScientificName = "Other Dogwood",
             commonName = "Common 2",
             rare = true,
-            conservationCategoryId = ConservationCategory.Endangered,
-            seedStorageBehaviorId = SeedStorageBehavior.Orthodox,
+            conservationCategory = ConservationCategory.Endangered,
+            seedStorageBehavior = SeedStorageBehavior.Orthodox,
             createdBy = user.userId,
             createdTime = now,
-            modifiedBy = user.userId,
-            modifiedTime = now,
-            organizationId = organizationId))
-    speciesDao.insert(
-        SpeciesRow(
-            id = SpeciesId(10002),
-            scientificName = "Deleted species",
-            initialScientificName = "Deleted species",
-            createdBy = user.userId,
-            createdTime = now,
-            modifiedBy = user.userId,
-            modifiedTime = now,
-            deletedBy = user.userId,
-            deletedTime = now,
-            organizationId = organizationId))
+            organizationId = organizationId)
+    insertSpecies(
+        scientificName = "Deleted species",
+        initialScientificName = "Deleted species",
+        createdBy = user.userId,
+        createdTime = now,
+        modifiedTime = now,
+        deletedTime = now,
+        organizationId = organizationId)
 
-    insertAccession(
-        AccessionsRow(
-            number = "XYZ",
-            stateId = AccessionState.InStorage,
-            collectedDate = LocalDate.of(2019, 3, 2),
-            collectionSiteCity = "city",
-            collectionSiteCountryCode = "UG",
-            collectionSiteCountrySubdivision = "subdivision",
-            collectionSiteLandowner = "landowner",
-            collectionSiteName = "siteName",
-            collectionSiteNotes = "siteNotes",
-            collectionSourceId = CollectionSource.Reintroduced,
-            dataSourceId = DataSource.SeedCollectorApp,
-            founderId = "plantId",
-            id = AccessionId(1000),
-            speciesId = SpeciesId(10000),
-            totalWithdrawnCount = 6,
-            totalWithdrawnWeightGrams = BigDecimal(5000),
-            totalWithdrawnWeightQuantity = BigDecimal(5),
-            totalWithdrawnWeightUnitsId = SeedQuantityUnits.Kilograms,
-            treesCollectedFrom = 1,
-        ))
-    insertAccession(
-        AccessionsRow(
-            id = AccessionId(1001),
-            number = "ABCDEFG",
-            stateId = AccessionState.Processing,
-            speciesId = SpeciesId(10001),
-            treesCollectedFrom = 2))
+    accessionId1 =
+        insertAccession(
+            AccessionsRow(
+                number = "XYZ",
+                stateId = AccessionState.InStorage,
+                collectedDate = LocalDate.of(2019, 3, 2),
+                collectionSiteCity = "city",
+                collectionSiteCountryCode = "UG",
+                collectionSiteCountrySubdivision = "subdivision",
+                collectionSiteLandowner = "landowner",
+                collectionSiteName = "siteName",
+                collectionSiteNotes = "siteNotes",
+                collectionSourceId = CollectionSource.Reintroduced,
+                dataSourceId = DataSource.SeedCollectorApp,
+                founderId = "plantId",
+                speciesId = speciesId1,
+                totalWithdrawnCount = 6,
+                totalWithdrawnWeightGrams = BigDecimal(5000),
+                totalWithdrawnWeightQuantity = BigDecimal(5),
+                totalWithdrawnWeightUnitsId = SeedQuantityUnits.Kilograms,
+                treesCollectedFrom = 1,
+            ))
+    accessionId2 =
+        insertAccession(
+            AccessionsRow(
+                number = "ABCDEFG",
+                stateId = AccessionState.Processing,
+                speciesId = speciesId2,
+                treesCollectedFrom = 2))
 
     accessionCollectorsDao.insert(
-        AccessionCollectorsRow(AccessionId(1000), 0, "collector 1"),
-        AccessionCollectorsRow(AccessionId(1000), 1, "collector 2"),
-        AccessionCollectorsRow(AccessionId(1000), 2, "collector 3"),
+        AccessionCollectorsRow(accessionId1, 0, "collector 1"),
+        AccessionCollectorsRow(accessionId1, 1, "collector 2"),
+        AccessionCollectorsRow(accessionId1, 2, "collector 3"),
     )
   }
 

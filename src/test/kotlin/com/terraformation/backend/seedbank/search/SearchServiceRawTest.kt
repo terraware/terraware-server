@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.search
 
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.use
@@ -13,11 +12,11 @@ import org.junit.jupiter.api.Test
 internal class SearchServiceRawTest : SearchServiceTest() {
   @Test
   fun `can search for raw and localized fields at the same time`() {
-    accessionsDao.update(accessionsDao.fetchOneById(AccessionId(1000))!!.copy(estSeedCount = 12000))
+    accessionsDao.update(accessionsDao.fetchOneById(accessionId1)!!.copy(estSeedCount = 12000))
 
     val fields =
         listOf(rootPrefix.resolve("estimatedCount"), rootPrefix.resolve("estimatedCount(raw)"))
-    val criteria = FieldNode(accessionIdField, listOf("1000"))
+    val criteria = FieldNode(accessionIdField, listOf("$accessionId1"))
 
     val result = searchService.search(rootPrefix, fields, criteria)
 
@@ -29,8 +28,7 @@ internal class SearchServiceRawTest : SearchServiceTest() {
 
   @Test
   fun `accepts raw values as search criteria`() {
-    accessionsDao.update(
-        accessionsDao.fetchOneById(AccessionId(1000))!!.copy(treesCollectedFrom = 8000))
+    accessionsDao.update(accessionsDao.fetchOneById(accessionId1)!!.copy(treesCollectedFrom = 8000))
 
     val rawActiveField = rootPrefix.resolve("active(raw)")
     val rawPlantsField = rootPrefix.resolve("plantsCollectedFrom(raw)")
@@ -65,7 +63,7 @@ internal class SearchServiceRawTest : SearchServiceTest() {
             listOf(
                 mapOf(
                     "active(raw)" to "Active",
-                    "id" to "1000",
+                    "id" to "$accessionId1",
                     "plantsCollectedFrom(raw)" to "8000",
                     "species_rare(raw)" to "false",
                     "state(raw)" to "In Storage",
