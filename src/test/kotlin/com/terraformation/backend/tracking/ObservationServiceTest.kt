@@ -113,6 +113,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
+        observationRequestedSubzonesDao,
         recordedPlantsDao)
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {

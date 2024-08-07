@@ -292,6 +292,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "observation_plot_conditions" to setOf(ALL, TRACKING),
                   "observation_plot_positions" to setOf(ALL, TRACKING),
                   "observation_plots" to setOf(ALL, TRACKING),
+                  "observation_requested_subzones" to setOf(ALL, TRACKING),
                   "observation_states" to setOf(ALL, TRACKING),
                   "observations" to setOf(ALL, TRACKING),
                   "observed_plot_coordinates" to setOf(ALL, TRACKING),
