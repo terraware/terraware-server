@@ -769,13 +769,19 @@ data class ListObservationResultsResponsePayload(
 data class ScheduleObservationRequestPayload(
     @Schema(
         description =
-            "The end date for this observation, should be limited to 2 months from the start date .")
+            "The end date for this observation, should be limited to 2 months from the start date.")
     val endDate: LocalDate,
     @Schema(description = "Which planting site this observation needs to be scheduled for.")
     val plantingSiteId: PlantingSiteId,
     @Schema(
         description =
-            "The start date for this observation, can be up to a year from the date this schedule request occurs on.")
+            "If this observation should only cover specific parts of the planting site, the IDs " +
+                "of the subzones it should include.")
+    val requestedSubzoneIds: Set<PlantingSubzoneId>? = null,
+    @Schema(
+        description =
+            "The start date for this observation, can be up to a year from the date this " +
+                "schedule request occurs on.")
     val startDate: LocalDate,
 ) {
   fun toModel() =
@@ -783,6 +789,7 @@ data class ScheduleObservationRequestPayload(
           endDate = endDate,
           id = null,
           plantingSiteId = plantingSiteId,
+          requestedSubzoneIds = requestedSubzoneIds ?: emptySet(),
           startDate = startDate,
           state = ObservationState.Upcoming)
 }
