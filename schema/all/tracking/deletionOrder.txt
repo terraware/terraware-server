@@ -12,6 +12,7 @@ planting_subzone_populations
 planting_subzone_histories
 planting_site_populations
 planting_site_notifications
+observation_requested_subzones
 planting_seasons
 planting_zone_histories
 deliveries

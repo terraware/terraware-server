@@ -18,6 +18,7 @@ planting_site_notifications
 planting_site_populations
 planting_subzone_populations
 planting_zone_populations
+observation_requested_subzones
 planting_subzone_histories
 observation_plot_conditions
 observed_plot_species_totals
