@@ -101,7 +101,11 @@ class ObservationService(
               val permanentPlotIds = plantingZone.choosePermanentPlots(plantedSubzoneIds)
               val temporaryPlotIds =
                   plantingZone
-                      .chooseTemporaryPlots(plantedSubzoneIds, gridOrigin, plantingSite.exclusion)
+                      .chooseTemporaryPlots(
+                          plantedSubzoneIds,
+                          gridOrigin,
+                          plantingSite.exclusion,
+                          observation.requestedSubzoneIds)
                       .map { plotBoundary ->
                         plantingSiteStore.createTemporaryPlot(
                             plantingSite.id, plantingZone.id, plotBoundary)

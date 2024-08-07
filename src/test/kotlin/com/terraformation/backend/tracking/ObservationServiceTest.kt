@@ -421,6 +421,104 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `only includes plots in requested, planted subzones`() {
+      // Given a planting site with this structure:
+      //
+      // +---------------------------------------------------------------------+
+      // |                                Zone 1                               |
+      // +-------------+-------------+-------------+-------------+-------------+
+      // |  Subzone 1  |  Subzone 2  |  Subzone 3  |  Subzone 4  |  Subzone 5  |
+      // |  (planted)  |  (planted)  | (unplanted) | (unplanted) |  (planted)  |
+      // +-------------+-------------+-------------+-------------+-------------+
+      //
+      // Zone 1: 1 permanent cluster, 6 temporary plots
+      //   Subzone 2: 2 permanent plots (half of cluster)
+      //   Subzone 3: 2 permanent plots (other half of cluster)
+      //
+      // When the observation is requested for subzones 1, 2 and 3, the obseervation should include
+      // two temporary plots in subzone 1 and one temporary plot in subzone 2:
+      //
+      // - Five temporary plots are allocated evenly across the subzones
+      // - The remaining temporary plot is placed in the subzone with the fewest number of permanent
+      //   plots (this is subzones 1, 4, and 5, with 0 each) with priority to planted and requested
+      //   subzones (which means subzone 1 gets it, for a total of two plots including the one from
+      //   the "evenly allocated across subzones" step).
+      // - Subzones that are not both planted AND requested are not included in the observation:
+      //   - Subzone 1 is both requested and planted, so it is included
+      //   - Subzone 2 is both requested and planted, so it is included
+      //   - Subzone 3 is requested but not planted
+      //   - Subzone 4 is neither reqested nor planted
+      //   - Subzone 5 is planted but not requested
+
+      plantingSiteId = insertPlantingSite(x = 0, width = 15, gridOrigin = point(1))
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+
+      insertPlantingZone(
+          x = 0, width = 15, height = 2, numPermanentClusters = 1, numTemporaryPlots = 6)
+      val subzoneIds =
+          listOf(PlantingSubzoneId(0)) +
+              (0..4).map { index -> insertPlantingSubzone(x = 3 * index, width = 3) }
+
+      // Pre-existing permanent cluster straddling subzones 2 and 3
+      insertMonitoringPlot(
+          x = 5,
+          y = 0,
+          plantingSubzoneId = subzoneIds[2],
+          permanentCluster = 1,
+          permanentClusterSubplot = 1)
+      insertMonitoringPlot(
+          x = 5,
+          y = 1,
+          plantingSubzoneId = subzoneIds[2],
+          permanentCluster = 1,
+          permanentClusterSubplot = 2)
+      insertMonitoringPlot(
+          x = 6,
+          y = 0,
+          plantingSubzoneId = subzoneIds[3],
+          permanentCluster = 1,
+          permanentClusterSubplot = 3)
+      insertMonitoringPlot(
+          x = 6,
+          y = 1,
+          plantingSubzoneId = subzoneIds[3],
+          permanentCluster = 1,
+          permanentClusterSubplot = 4)
+
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting(plantingSubzoneId = subzoneIds[1])
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting(plantingSubzoneId = subzoneIds[2])
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting(plantingSubzoneId = subzoneIds[5])
+
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+      insertObservationRequestedSubzone(plantingSubzoneId = subzoneIds[1])
+      insertObservationRequestedSubzone(plantingSubzoneId = subzoneIds[2])
+      insertObservationRequestedSubzone(plantingSubzoneId = subzoneIds[3])
+
+      service.startObservation(observationId)
+
+      val subzoneIdsByMonitoringPlot =
+          monitoringPlotsDao.findAll().associate { it.id to it.plantingSubzoneId }
+      val numTemporaryPlotsBySubzone =
+          observationPlotsDao
+              .findAll()
+              .filter { !it.isPermanent!! }
+              .groupBy { subzoneIdsByMonitoringPlot[it.monitoringPlotId] }
+              .mapValues { it.value.size }
+
+      assertEquals(
+          mapOf(subzoneIds[1] to 2, subzoneIds[2] to 1),
+          numTemporaryPlotsBySubzone,
+          "Number of temporary plots by subzone")
+    }
+
+    @Test
     fun `throws exception if observation already started`() {
       insertPlantingZone()
       insertPlantingSubzone()

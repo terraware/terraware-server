@@ -262,7 +262,80 @@ class PlantingZoneModelTest {
     }
 
     @Test
-    fun `excludes plots that would have been placed in unplanted subzones`() {
+    fun `places excess plots in requested and planted subzones if no difference in permanent plots`() {
+      val model =
+          plantingZoneModel(
+              numPermanentClusters = 3,
+              numTemporaryPlots = 5,
+              subzones =
+                  listOf(
+                      plantingSubzoneModel(
+                          id = 1,
+                          plots =
+                              listOf(
+                                  monitoringPlotModel(10, permanentCluster = 1),
+                                  monitoringPlotModel(11, permanentCluster = 1),
+                                  monitoringPlotModel(12, permanentCluster = 1),
+                                  monitoringPlotModel(13, permanentCluster = 1),
+                                  monitoringPlotModel(14),
+                                  monitoringPlotModel(15))),
+                      plantingSubzoneModel(
+                          id = 2,
+                          plots =
+                              listOf(
+                                  monitoringPlotModel(20, permanentCluster = 2),
+                                  monitoringPlotModel(21, permanentCluster = 2),
+                                  monitoringPlotModel(22, permanentCluster = 2),
+                                  monitoringPlotModel(23, permanentCluster = 2),
+                                  monitoringPlotModel(24),
+                                  monitoringPlotModel(25))),
+                      plantingSubzoneModel(
+                          id = 3,
+                          plots = monitoringPlotModels(temporaryIds = listOf(30, 31, 32, 33, 34)))))
+
+      val availablePlotIds =
+          listOf(
+              monitoringPlotIds(14, 15),
+              monitoringPlotIds(24, 25),
+              monitoringPlotIds(30, 31, 32, 33, 34),
+          )
+
+      repeatTest {
+        val chosenIds =
+            model
+                .chooseTemporaryPlots(plantingSubzoneIds(1, 2), siteOrigin)
+                .map { model.findMonitoringPlot(it)?.id }
+                .toSet()
+
+        val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
+
+        assertEquals(
+            listOf(2, 1, 0),
+            numChosenPerSubzone,
+            "Number of plots chosen in each subzone (with unplanted)")
+      }
+
+      repeatTest {
+        val chosenIds =
+            model
+                .chooseTemporaryPlots(
+                    plantingSubzoneIds(1, 2, 3),
+                    siteOrigin,
+                    requestedSubzoneIds = plantingSubzoneIds(1, 2))
+                .map { model.findMonitoringPlot(it)?.id }
+                .toSet()
+
+        val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
+
+        assertEquals(
+            listOf(2, 1, 0),
+            numChosenPerSubzone,
+            "Number of plots chosen in each subzone (with unrequested)")
+      }
+    }
+
+    @Test
+    fun `excludes plots that would have been placed in unplanted or unrequested subzones`() {
       val model =
           plantingZoneModel(
               numTemporaryPlots = 5,
@@ -294,7 +367,28 @@ class PlantingZoneModelTest {
 
         val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
 
-        assertEquals(listOf(0, 2, 2), numChosenPerSubzone, "Number of plots chosen in each subzone")
+        assertEquals(
+            listOf(0, 2, 2),
+            numChosenPerSubzone,
+            "Number of plots chosen in each subzone (with unplanted)")
+      }
+
+      repeatTest {
+        val chosenIds =
+            model
+                .chooseTemporaryPlots(
+                    plantingSubzoneIds(1, 2, 3),
+                    siteOrigin,
+                    requestedSubzoneIds = plantingSubzoneIds(2, 3))
+                .map { model.findMonitoringPlot(it)?.id }
+                .toSet()
+
+        val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
+
+        assertEquals(
+            listOf(0, 2, 2),
+            numChosenPerSubzone,
+            "Number of plots chosen in each subzone (with unrequested)")
       }
     }
 
