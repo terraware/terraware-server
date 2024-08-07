@@ -33,6 +33,7 @@ class SearchTables(clock: Clock) {
   val countries = CountriesTable(this)
   val countrySubdivisions = CountrySubdivisionsTable(this)
   val deliveries = DeliveriesTable(this)
+  val documents = DocumentsTable(this)
   val draftPlantingSites = DraftPlantingSitesTable(this)
   val events = EventsTable(this)
   val facilities = FacilitiesTable(this)
