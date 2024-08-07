@@ -1,3 +1,4 @@
+7609aa31bcb Add DocumentsTable to Search API (#2248)
 f31f6f3c2f3 SW-5782 Implemented notifications for application results (#2251)
 5370c665510 Allow org admins to delete planting sites (#2250)
 3d866e8f42c SW-5780 Use dynamic IDs in seedbank search tests (#2249)
