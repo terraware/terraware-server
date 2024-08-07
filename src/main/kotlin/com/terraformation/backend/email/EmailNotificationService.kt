@@ -1,14 +1,17 @@
 package com.terraformation.backend.email
 
+import com.terraformation.backend.accelerator.db.ApplicationNotFoundException
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
+import com.terraformation.backend.accelerator.event.ApplicationStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
+import com.terraformation.backend.accelerator.model.ExternalApplicationStatus
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
@@ -40,6 +43,9 @@ import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.email.model.AccessionDryingEnd
+import com.terraformation.backend.email.model.ApplicationAccepted
+import com.terraformation.backend.email.model.ApplicationNotAccepted
+import com.terraformation.backend.email.model.ApplicationWaitlist
 import com.terraformation.backend.email.model.DeliverableReadyForReview
 import com.terraformation.backend.email.model.DeliverableStatusUpdated
 import com.terraformation.backend.email.model.DeviceUnresponsive
@@ -623,6 +629,30 @@ class EmailNotificationService(
             organizationName = organization.name,
             plantingSiteName = event.plantingSiteEdit.existingModel.name,
         ))
+  }
+
+  @EventListener
+  fun on(event: ApplicationStatusUpdatedEvent) {
+    val organizationId =
+        parentStore.getOrganizationId(event.applicationId)
+            ?: throw ApplicationNotFoundException(event.applicationId)
+
+    val applicationUrl = webAppUrls.applicationReview(event.applicationId).toString()
+    val emailModel =
+        when (event.applicationStatus) {
+          ExternalApplicationStatus.Accepted -> ApplicationAccepted(config, applicationUrl)
+          ExternalApplicationStatus.NotAccepted -> ApplicationNotAccepted(config, applicationUrl)
+          ExternalApplicationStatus.Waitlist -> ApplicationWaitlist(config, applicationUrl)
+          else ->
+              throw IllegalArgumentException(
+                  "Application status ${event.applicationStatus} does not require notifications")
+        }
+
+    emailService.sendOrganizationNotification(
+        organizationId,
+        emailModel,
+        requireOptIn = false,
+        roles = setOf(Role.Owner, Role.Admin, Role.Manager))
   }
 
   @EventListener

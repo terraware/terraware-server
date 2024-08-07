@@ -1,6 +1,7 @@
 package com.terraformation.backend.i18n
 
 import com.terraformation.backend.accelerator.MODULE_EVENT_NOTIFICATION_LEAD_TIME
+import com.terraformation.backend.accelerator.model.ExternalApplicationStatus
 import com.terraformation.backend.db.LocalizableEnum
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.default_schema.ConservationCategory
@@ -75,6 +76,28 @@ class Messages {
       getMessage("applicationPreScreen.failure.tooFewSpecies", minimum)
 
   fun applicationModulesIncomplete() = getMessage("application.failure.modulesIncomplete")
+
+  fun applicationStatusUpdatedNotifcation(status: ExternalApplicationStatus): NotificationMessage =
+      when (status) {
+        ExternalApplicationStatus.Accepted ->
+            NotificationMessage(
+                getMessage("notification.application.accepted.app.title"),
+                getMessage("notification.application.accepted.app.body"),
+            )
+        ExternalApplicationStatus.NotAccepted ->
+            NotificationMessage(
+                getMessage("notification.application.notAccepted.app.title"),
+                getMessage("notification.application.notAccepted.app.body"),
+            )
+        ExternalApplicationStatus.Waitlist ->
+            NotificationMessage(
+                getMessage("notification.application.waitlist.app.title"),
+                getMessage("notification.application.waitlist.app.body"),
+            )
+        else ->
+            throw IllegalArgumentException(
+                "Application status $status does not require notifications")
+      }
 
   fun csvBadHeader() = getMessage("csvBadHeader")
 

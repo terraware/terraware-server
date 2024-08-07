@@ -3,6 +3,7 @@ package com.terraformation.backend.email
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
+import com.terraformation.backend.accelerator.event.ApplicationStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
@@ -10,6 +11,7 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEve
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
+import com.terraformation.backend.accelerator.model.ExternalApplicationStatus
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
@@ -30,6 +32,7 @@ import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.NotificationJobFinishedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
+import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ParticipantId
@@ -202,6 +205,7 @@ internal class EmailNotificationServiceTest {
           verbosity = 0)
   private val accessionId = AccessionId(13)
   private val accessionNumber = "202201010001"
+  private val applicationId = ApplicationId(1)
   private val plantingSite =
       ExistingPlantingSiteModel(
           boundary = multiPolygon(1),
@@ -274,6 +278,7 @@ internal class EmailNotificationServiceTest {
     every { parentStore.getFacilityId(accessionId) } returns facility.id
     every { parentStore.getFacilityName(accessionId) } returns facility.name
     every { parentStore.getOrganizationId(accessionId) } returns organization.id
+    every { parentStore.getOrganizationId(applicationId) } returns organization.id
     every { parentStore.getOrganizationId(facility.id) } returns organization.id
     every { parentStore.getOrganizationId(upcomingObservation.id) } returns organization.id
     every { parentStore.getOrganizationId(plantingSite.id) } returns organization.id
@@ -1020,6 +1025,15 @@ internal class EmailNotificationServiceTest {
     service.on(event)
 
     assertRecipientsEqual(emptySet())
+  }
+
+  @Test
+  fun `applicationStatusUpdated should notify organization`() {
+    val event = ApplicationStatusUpdatedEvent(applicationId, ExternalApplicationStatus.Accepted)
+
+    service.on(event)
+
+    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test

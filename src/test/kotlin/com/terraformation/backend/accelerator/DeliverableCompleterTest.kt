@@ -47,7 +47,13 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
   private val completer: DeliverableCompleter by lazy {
     DeliverableCompleter(
         ApplicationStore(
-            clock, countriesDao, CountryDetector(), dslContext, Messages(), organizationsDao),
+            clock,
+            countriesDao,
+            CountryDetector(),
+            dslContext,
+            eventPublisher,
+            Messages(),
+            organizationsDao),
         DeliverableStore(dslContext),
         ModuleStore(dslContext),
         SubmissionStore(clock, dslContext, eventPublisher),

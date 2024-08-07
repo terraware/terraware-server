@@ -1,9 +1,11 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.ApplicationReviewedEvent
 import com.terraformation.backend.accelerator.model.ApplicationModuleModel
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
+import com.terraformation.backend.accelerator.model.ExternalApplicationStatus
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.accelerator.model.PreScreenVariableValues
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
@@ -45,6 +47,7 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.Geometry
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class ApplicationStore(
@@ -52,6 +55,7 @@ class ApplicationStore(
     private val countriesDao: CountriesDao,
     private val countryDetector: CountryDetector,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val messages: Messages,
     private val organizationsDao: OrganizationsDao,
 ) {
@@ -320,6 +324,13 @@ class ApplicationStore(
           .set(INTERNAL_COMMENT, modified.internalComment)
           .where(ID.eq(applicationId))
           .execute()
+    }
+
+    val externalModifiedStatus = ExternalApplicationStatus.of(modified.status)
+
+    if (ExternalApplicationStatus.of(existing.status) != externalModifiedStatus &&
+        externalModifiedStatus.shouldNotify()) {
+      notifyApplicationReviewed(applicationId, externalModifiedStatus)
     }
 
     updateStatus(applicationId, modified.status)
@@ -667,5 +678,12 @@ class ApplicationStore(
     }
 
     return problems
+  }
+
+  private fun notifyApplicationReviewed(
+      applicationId: ApplicationId,
+      status: ExternalApplicationStatus
+  ) {
+    eventPublisher.publishEvent(ApplicationReviewedEvent(applicationId, status))
   }
 }

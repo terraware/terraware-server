@@ -7,6 +7,7 @@ import com.terraformation.backend.accelerator.model.ApplicationModuleModel
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
+import com.terraformation.backend.accelerator.model.ExternalApplicationStatus
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.RequireGlobalRole
@@ -250,21 +251,37 @@ enum class ApiApplicationStatus(@get:JsonValue val jsonValue: String) {
     fun of(status: ApplicationStatus): ApiApplicationStatus {
       val exposeInternalStatuses = currentUser().canReadAllAcceleratorDetails()
 
+      if (!exposeInternalStatuses) {
+        return of(ExternalApplicationStatus.of(status))
+      }
+
       return when (status) {
         ApplicationStatus.Accepted -> Accepted
-        ApplicationStatus.CarbonEligible -> if (exposeInternalStatuses) CarbonEligible else InReview
+        ApplicationStatus.CarbonEligible -> CarbonEligible
         ApplicationStatus.FailedPreScreen -> FailedPreScreen
-        ApplicationStatus.IssueActive -> if (exposeInternalStatuses) IssueActive else Waitlist
-        ApplicationStatus.IssuePending -> if (exposeInternalStatuses) IssuePending else Waitlist
-        ApplicationStatus.IssueResolved -> if (exposeInternalStatuses) IssueResolved else Waitlist
-        ApplicationStatus.NeedsFollowUp -> if (exposeInternalStatuses) NeedsFollowUp else InReview
+        ApplicationStatus.IssueActive -> IssueActive
+        ApplicationStatus.IssuePending -> IssuePending
+        ApplicationStatus.IssueResolved -> IssueResolved
+        ApplicationStatus.NeedsFollowUp -> NeedsFollowUp
         ApplicationStatus.NotAccepted -> NotAccepted
         ApplicationStatus.NotSubmitted -> NotSubmitted
         ApplicationStatus.PassedPreScreen -> PassedPreScreen
-        ApplicationStatus.PLReview -> if (exposeInternalStatuses) PLReview else InReview
-        ApplicationStatus.PreCheck -> if (exposeInternalStatuses) PreCheck else InReview
-        ApplicationStatus.ReadyForReview -> if (exposeInternalStatuses) ReadyForReview else InReview
-        ApplicationStatus.Submitted -> if (exposeInternalStatuses) Submitted else InReview
+        ApplicationStatus.PLReview -> PLReview
+        ApplicationStatus.PreCheck -> PreCheck
+        ApplicationStatus.ReadyForReview -> ReadyForReview
+        ApplicationStatus.Submitted -> Submitted
+      }
+    }
+
+    fun of(externalStatus: ExternalApplicationStatus): ApiApplicationStatus {
+      return when (externalStatus) {
+        ExternalApplicationStatus.NotSubmitted -> NotSubmitted
+        ExternalApplicationStatus.FailedPreScreen -> FailedPreScreen
+        ExternalApplicationStatus.PassedPreScreen -> PassedPreScreen
+        ExternalApplicationStatus.InReview -> InReview
+        ExternalApplicationStatus.Accepted -> Accepted
+        ExternalApplicationStatus.NotAccepted -> NotAccepted
+        ExternalApplicationStatus.Waitlist -> Waitlist
       }
     }
   }
