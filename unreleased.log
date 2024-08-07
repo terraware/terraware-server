@@ -1,3 +1,4 @@
+06a98052d5f SW-5761 Restrict plot selection to requested subzones (#2246)
 cb54f2186e3 SW-5761 Add requested subzones to admin UI (#2245)
 a001465ce19 SW-5761 Store requested subzone IDs for observations (#2244)
 1e205a816c3 SW-5764 Add latestSavedVersionId to the "get documents" API response payload (#2242)
