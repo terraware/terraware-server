@@ -2,6 +2,7 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -99,6 +100,10 @@ class WebAppUrls(
         .queryParam("stage", state)
         .queryParam("facilityId", facilityId)
         .build()
+  }
+
+  fun applicationReview(applicationId: ApplicationId): URI {
+    return UriBuilder.fromPath("/applications/$applicationId/review").build()
   }
 
   fun fullNurseryInventory(organizationId: OrganizationId): URI {

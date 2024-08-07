@@ -85,6 +85,30 @@ abstract class EmailTemplateModel(config: TerrawareServerConfig) {
       DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(currentLocale()).format(date)
 }
 
+class ApplicationAccepted(
+    config: TerrawareServerConfig,
+    val applicationUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "application/accepted"
+}
+
+class ApplicationNotAccepted(
+    config: TerrawareServerConfig,
+    val applicationUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "application/notAccepted"
+}
+
+class ApplicationWaitlist(
+    config: TerrawareServerConfig,
+    val applicationUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "application/waitlist"
+}
+
 class FacilityAlertRequested(
     config: TerrawareServerConfig,
     val body: String,

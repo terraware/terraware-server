@@ -5,6 +5,7 @@ import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
+import com.terraformation.backend.accelerator.event.ApplicationStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
@@ -460,6 +461,23 @@ class AppNotificationService(
           NotificationType.DeliverableStatusUpdated,
           renderMessage,
           deliverableUrl,
+          setOf(Role.Owner, Role.Admin, Role.Manager))
+    }
+  }
+
+  @EventListener
+  fun on(event: ApplicationStatusUpdatedEvent) {
+    systemUser.run {
+      val organizationId = parentStore.getOrganizationId(event.applicationId)!!
+      val renderMessage = { messages.applicationStatusUpdatedNotifcation(event.applicationStatus) }
+      val applicationUrl = webAppUrls.applicationReview(event.applicationId)
+
+      log.info("Creating app notifications for application ${event.applicationId} status updated")
+      insertOrganizationNotifications(
+          organizationId,
+          NotificationType.ApplicationStatusUpdate,
+          renderMessage,
+          applicationUrl,
           setOf(Role.Owner, Role.Admin, Role.Manager))
     }
   }
