@@ -14,21 +14,25 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationIdConverter
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertaintyConverter
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservationRequestedSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
@@ -58,6 +62,7 @@ import java.time.ZoneOffset
 import kotlin.math.roundToInt
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.Field
 import org.jooq.Record
 import org.jooq.TableField
 import org.jooq.impl.DSL
@@ -70,16 +75,29 @@ class ObservationStore(
     private val observationsDao: ObservationsDao,
     private val observationPlotConditionsDao: ObservationPlotConditionsDao,
     private val observationPlotsDao: ObservationPlotsDao,
+    private val observationRequestedSubzonesDao: ObservationRequestedSubzonesDao,
     private val recordedPlantsDao: RecordedPlantsDao,
 ) {
+  private val requestedSubzoneIdsField: Field<Set<PlantingSubzoneId>> =
+      with(OBSERVATION_REQUESTED_SUBZONES) {
+        DSL.multiset(
+                DSL.select(PLANTING_SUBZONE_ID)
+                    .from(OBSERVATION_REQUESTED_SUBZONES)
+                    .where(OBSERVATION_ID.eq(OBSERVATIONS.ID)))
+            .convertFrom { result -> result.map { it[PLANTING_SUBZONE_ID]!! }.toSet() }
+      }
+
   private val log = perClassLogger()
 
   fun fetchObservationById(observationId: ObservationId): ExistingObservationModel {
     requirePermissions { readObservation(observationId) }
 
-    return dslContext.selectFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(observationId)).fetchOne {
-      ObservationModel.of(it)
-    } ?: throw ObservationNotFoundException(observationId)
+    return dslContext
+        .select(OBSERVATIONS.asterisk(), requestedSubzoneIdsField)
+        .from(OBSERVATIONS)
+        .where(OBSERVATIONS.ID.eq(observationId))
+        .fetchOne { ObservationModel.of(it, requestedSubzoneIdsField) }
+        ?: throw ObservationNotFoundException(observationId)
   }
 
   fun fetchObservationsByOrganization(
@@ -88,20 +106,22 @@ class ObservationStore(
     requirePermissions { readOrganization(organizationId) }
 
     return dslContext
-        .selectFrom(OBSERVATIONS)
+        .select(OBSERVATIONS.asterisk(), requestedSubzoneIdsField)
+        .from(OBSERVATIONS)
         .where(OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId))
         .orderBy(OBSERVATIONS.START_DATE, OBSERVATIONS.ID)
-        .fetch { ObservationModel.of(it) }
+        .fetch { ObservationModel.of(it, requestedSubzoneIdsField) }
   }
 
   fun fetchInProgressObservation(plantingSiteId: PlantingSiteId): ExistingObservationModel? {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return dslContext
-        .selectFrom(OBSERVATIONS)
+        .select(OBSERVATIONS.asterisk(), requestedSubzoneIdsField)
+        .from(OBSERVATIONS)
         .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
         .and(OBSERVATIONS.STATE_ID.eq(ObservationState.InProgress))
-        .fetchOne { ObservationModel.of(it) }
+        .fetchOne { ObservationModel.of(it, requestedSubzoneIdsField) }
   }
 
   fun fetchObservationsByPlantingSite(
@@ -110,10 +130,11 @@ class ObservationStore(
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return dslContext
-        .selectFrom(OBSERVATIONS)
+        .select(OBSERVATIONS.asterisk(), requestedSubzoneIdsField)
+        .from(OBSERVATIONS)
         .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
         .orderBy(OBSERVATIONS.START_DATE, OBSERVATIONS.ID)
-        .fetch { ObservationModel.of(it) }
+        .fetch { ObservationModel.of(it, requestedSubzoneIdsField) }
   }
 
   fun fetchObservationPlotDetails(observationId: ObservationId): List<AssignedPlotDetails> {
@@ -261,7 +282,7 @@ class ObservationStore(
             OBSERVATIONS.plantingSites.organizations.TIME_ZONE)
 
     return dslContext
-        .select(OBSERVATIONS.asterisk(), timeZoneField)
+        .select(OBSERVATIONS.asterisk(), requestedSubzoneIdsField, timeZoneField)
         .from(OBSERVATIONS)
         .where(conditions)
         .orderBy(OBSERVATIONS.ID)
@@ -270,7 +291,7 @@ class ObservationStore(
           val todayAtSite = LocalDate.ofInstant(clock.instant(), timeZone)
 
           if (predicate(todayAtSite, record)) {
-            ObservationModel.of(record)
+            ObservationModel.of(record, requestedSubzoneIdsField)
           } else {
             null
           }
@@ -357,10 +378,12 @@ class ObservationStore(
     return dslContext.transactionResult { _ ->
       val model =
           dslContext
-              .selectFrom(OBSERVATIONS)
+              .select(OBSERVATIONS.asterisk(), requestedSubzoneIdsField)
+              .from(OBSERVATIONS)
               .where(OBSERVATIONS.ID.eq(observationId))
               .forUpdate()
-              .fetchOne { ObservationModel.of(it) }
+              .of(OBSERVATIONS)
+              .fetchOne { ObservationModel.of(it, requestedSubzoneIdsField) }
               ?: throw ObservationNotFoundException(observationId)
 
       func(model)
@@ -379,18 +402,40 @@ class ObservationStore(
   fun createObservation(newModel: NewObservationModel): ObservationId {
     requirePermissions { createObservation(newModel.plantingSiteId) }
 
-    val row =
-        ObservationsRow(
-            createdTime = clock.instant(),
-            endDate = newModel.endDate,
-            plantingSiteId = newModel.plantingSiteId,
-            startDate = newModel.startDate,
-            stateId = ObservationState.Upcoming,
-        )
+    // Validate that all the requested subzones are part of the requested planting site.
+    if (newModel.requestedSubzoneIds.isNotEmpty()) {
+      val subzonesInRequestedSite =
+          dslContext
+              .select(PLANTING_SUBZONES.ID)
+              .from(PLANTING_SUBZONES)
+              .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(newModel.plantingSiteId))
+              .and(PLANTING_SUBZONES.ID.`in`(newModel.requestedSubzoneIds))
+              .fetchSet(PLANTING_SUBZONES.ID.asNonNullable())
 
-    observationsDao.insert(row)
+      if (subzonesInRequestedSite != newModel.requestedSubzoneIds) {
+        val missingSubzoneIds = newModel.requestedSubzoneIds - subzonesInRequestedSite
+        throw PlantingSubzoneNotFoundException(missingSubzoneIds.first())
+      }
+    }
 
-    return row.id!!
+    return dslContext.transactionResult { _ ->
+      val row =
+          ObservationsRow(
+              createdTime = clock.instant(),
+              endDate = newModel.endDate,
+              plantingSiteId = newModel.plantingSiteId,
+              startDate = newModel.startDate,
+              stateId = ObservationState.Upcoming,
+          )
+
+      observationsDao.insert(row)
+
+      newModel.requestedSubzoneIds.forEach { subzoneId ->
+        observationRequestedSubzonesDao.insert(ObservationRequestedSubzonesRow(row.id, subzoneId))
+      }
+
+      row.id!!
+    }
   }
 
   fun rescheduleObservation(

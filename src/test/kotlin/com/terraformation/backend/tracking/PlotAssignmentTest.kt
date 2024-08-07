@@ -35,6 +35,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
+        observationRequestedSubzonesDao,
         recordedPlantsDao)
   }
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }

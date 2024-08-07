@@ -69,6 +69,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
+        observationRequestedSubzonesDao,
         recordedPlantsDao)
   }
   private val helper: ObservationTestHelper by lazy {
@@ -105,9 +106,10 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       val observationId2 = insertObservation(endDate = endDate1, startDate = startDate1)
       insertPlantingZone()
-      insertPlantingSubzone()
+      val subzoneId = insertPlantingSubzone()
       insertMonitoringPlot()
       insertObservationPlot()
+      insertObservationRequestedSubzone()
 
       // Observation in a different planting site
       insertPlantingSite()
@@ -119,6 +121,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   endDate = endDate1,
                   id = observationId2,
                   plantingSiteId = plantingSiteId,
+                  requestedSubzoneIds = setOf(subzoneId),
                   startDate = startDate1,
                   state = ObservationState.InProgress,
               ),
@@ -574,6 +577,11 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
   inner class CreateObservation {
     @Test
     fun `saves fields that are relevant to a new observation`() {
+      insertPlantingZone()
+      val subzoneId1 = insertPlantingSubzone()
+      val subzoneId2 = insertPlantingSubzone()
+      insertPlantingSubzone() // Should not be included in observation
+
       val observationId =
           store.createObservation(
               NewObservationModel(
@@ -581,6 +589,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   endDate = LocalDate.of(2020, 1, 31),
                   id = null,
                   plantingSiteId = plantingSiteId,
+                  requestedSubzoneIds = setOf(subzoneId1, subzoneId2),
                   startDate = LocalDate.of(2020, 1, 1),
                   state = ObservationState.Completed,
               ))
@@ -599,6 +608,30 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val actual = observationsDao.fetchOneById(observationId)
 
       assertEquals(expected, actual)
+
+      assertEquals(
+          setOf(subzoneId1, subzoneId2),
+          observationRequestedSubzonesDao.findAll().map { it.plantingSubzoneId }.toSet(),
+          "Subzone IDs")
+    }
+
+    @Test
+    fun `throws exception if requested subzone is not in correct site`() {
+      insertPlantingSite()
+      insertPlantingZone()
+      val otherSiteSubzoneId = insertPlantingSubzone()
+
+      assertThrows<PlantingSubzoneNotFoundException> {
+        store.createObservation(
+            NewObservationModel(
+                endDate = LocalDate.of(2020, 1, 31),
+                id = null,
+                plantingSiteId = plantingSiteId,
+                requestedSubzoneIds = setOf(otherSiteSubzoneId),
+                startDate = LocalDate.of(2020, 1, 1),
+                state = ObservationState.Upcoming,
+            ))
+      }
     }
 
     @Test

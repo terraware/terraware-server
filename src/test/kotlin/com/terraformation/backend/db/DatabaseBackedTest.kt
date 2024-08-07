@@ -281,6 +281,7 @@ import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservationRequestedSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservedPlotCoordinatesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonsDao
@@ -301,6 +302,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.DraftPlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotCoordinatesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
@@ -528,6 +530,7 @@ abstract class DatabaseBackedTest {
   protected val observationPhotosDao: ObservationPhotosDao by lazyDao()
   protected val observationPlotConditionsDao: ObservationPlotConditionsDao by lazyDao()
   protected val observationPlotsDao: ObservationPlotsDao by lazyDao()
+  protected val observationRequestedSubzonesDao: ObservationRequestedSubzonesDao by lazyDao()
   protected val observationsDao: ObservationsDao by lazyDao()
   protected val observedPlotCoordinatesDao: ObservedPlotCoordinatesDao by lazyDao()
   protected val organizationInternalTagsDao: OrganizationInternalTagsDao by lazyDao()
@@ -2189,6 +2192,14 @@ abstract class DatabaseBackedTest {
         )
 
     observationPlotsDao.insert(rowWithDefaults)
+  }
+
+  fun insertObservationRequestedSubzone(
+      observationId: ObservationId = inserted.observationId,
+      plantingSubzoneId: PlantingSubzoneId = inserted.plantingSubzoneId
+  ) {
+    observationRequestedSubzonesDao.insert(
+        ObservationRequestedSubzonesRow(observationId, plantingSubzoneId))
   }
 
   fun insertObservedCoordinates(

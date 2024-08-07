@@ -61,6 +61,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
+        observationRequestedSubzonesDao,
         recordedPlantsDao)
   }
   private val resultsStore by lazy { ObservationResultsStore(dslContext) }
