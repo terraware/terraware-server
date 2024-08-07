@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.DocumentSavedVersionId
 import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
 import com.terraformation.backend.db.docprod.tables.references.DOCUMENT_SAVED_VERSIONS
@@ -15,7 +16,6 @@ import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.TableField
 import org.jooq.impl.DSL
-import org.jooq.impl.SQLDataType
 
 class DocumentsTable(tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -23,7 +23,7 @@ class DocumentsTable(tables: SearchTables) : SearchTable() {
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {
-      listOf(projects.asMultiValueSublist("projects", PROJECTS.ID.eq(DOCUMENTS.PROJECT_ID)))
+      listOf(projects.asSingleValueSublist("project", PROJECTS.ID.eq(DOCUMENTS.PROJECT_ID)))
     }
   }
 
@@ -34,16 +34,18 @@ class DocumentsTable(tables: SearchTables) : SearchTable() {
             DocumentTemplateId(it)
           },
           idWrapperField("id", DOCUMENTS.ID) { DocumentId(it) },
-          integerField(
+          idWrapperField(
               "lastSavedVersionId",
               with(DOCUMENT_SAVED_VERSIONS) {
                 DSL.field(
-                    DSL.select(ID.cast(SQLDataType.INTEGER))
+                    DSL.select(ID)
                         .from(DOCUMENT_SAVED_VERSIONS)
                         .where(DOCUMENT_ID.eq(DOCUMENTS.ID))
                         .orderBy(ID.desc())
                         .limit(1))
-              }),
+              }) {
+                DocumentSavedVersionId(it)
+              },
           timestampField("modifiedTime", DOCUMENTS.MODIFIED_TIME, nullable = false),
           textField("name", DOCUMENTS.NAME, nullable = false),
           idWrapperField("projectId", DOCUMENTS.PROJECT_ID) { ProjectId(it) },

@@ -4,13 +4,13 @@ import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
 import org.jooq.Condition
-import org.jooq.TableField
+import org.jooq.Field
 import org.jooq.impl.DSL
 
 /** Search field for ID columns that use wrapper types. */
 class IdWrapperField<T : Any>(
     override val fieldName: String,
-    override val databaseField: TableField<*, T?>,
+    override val databaseField: Field<T?>,
     override val table: SearchTable,
     private val fromLong: (Long) -> T,
 ) : SingleColumnSearchField<T>() {

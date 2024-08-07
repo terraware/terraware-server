@@ -7,7 +7,6 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.search.SearchFieldNotExportableException
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchService
-import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.table.SearchTables
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -35,7 +34,6 @@ class SearchController(
     tables: SearchTables,
     private val searchService: SearchService
 ) {
-  private val nonOrganizationTables = mapOf<String, SearchTable>("documents" to tables.documents)
   private val organizationsTable = tables.organizations
 
   @Operation(summary = "Searches for data matching a supplied set of search criteria.")
@@ -154,9 +152,7 @@ class SearchController(
 
   private fun resolvePrefix(prefix: String?): SearchFieldPrefix {
     val table =
-        if (nonOrganizationTables.containsKey(prefix)) {
-          nonOrganizationTables[prefix]!!
-        } else if (prefix != null) {
+        if (prefix != null) {
           organizationsTable.resolveTable(prefix)
         } else {
           organizationsTable
