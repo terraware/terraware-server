@@ -8,7 +8,6 @@ import com.terraformation.backend.db.docprod.DocumentStatus
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.tables.pojos.VariableValuesRow
-import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -24,8 +23,6 @@ import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
 
 class DocumentsControllerTest : ControllerIntegrationTest() {
-  override val tablesToResetSequences = listOf(DOCUMENTS)
-
   private val path = "/api/v1/document-producer/documents"
 
   @BeforeEach
@@ -68,13 +65,15 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
       mockMvc
           .post(path) { content = payload }
-          .andExpectJson(
-              """
+          .andExpectJson {
+            val documentId = documentsDao.findAll().first().id!!
+
+            """
                 {
                   "document": {
                     "createdBy": ${inserted.userId},
                     "createdTime": "${Instant.EPOCH}",
-                    "id": 1,
+                    "id": $documentId,
                     "modifiedBy": ${inserted.userId},
                     "modifiedTime": "${Instant.EPOCH}",
                     "name": "Test document",
@@ -84,8 +83,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
                   }
                 }
               """
-                  .trimIndent(),
-          )
+          }
     }
 
     @Test

@@ -3,8 +3,8 @@ package com.terraformation.backend.documentproducer.api
 import com.terraformation.backend.api.ControllerIntegrationTest
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.docprod.VariableType
-import com.terraformation.backend.db.docprod.VariableValueId
-import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
+import com.terraformation.backend.db.docprod.tables.pojos.VariableImageValuesRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariableValuesRow
 import com.terraformation.backend.file.InMemoryFileStore
 import java.net.URI
 import org.junit.jupiter.api.Assertions.*
@@ -20,8 +20,6 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.multipart
 
 class ImagesControllerTest : ControllerIntegrationTest() {
-  override val tablesToResetSequences = listOf(VARIABLE_VALUES)
-
   @Autowired private lateinit var fileStore: InMemoryFileStore
 
   @BeforeEach
@@ -109,6 +107,8 @@ class ImagesControllerTest : ControllerIntegrationTest() {
       val fileData = byteArrayOf(1, 2, 3, 4)
       val filename = "test.jpg"
 
+      lateinit var imageValuesRow: VariableImageValuesRow
+
       mockMvc
           .multipart(
               HttpMethod.POST, "/api/v1/document-producer/projects/${inserted.projectId}/images") {
@@ -117,16 +117,17 @@ class ImagesControllerTest : ControllerIntegrationTest() {
                 part(MockPart("variableId", "$imageVariableId".toByteArray()))
                 part(MockPart("listPosition", "0".toByteArray()))
               }
-          .andExpectJson(
-              """
+          .andExpectJson {
+            imageValuesRow = variableImageValuesDao.findAll().single()
+
+            """
                 {
-                  "valueId": 1,
+                  "valueId": ${imageValuesRow.variableValueId},
                   "status": "ok"
                 }
               """
-                  .trimIndent())
+          }
 
-      val imageValuesRow = variableImageValuesDao.findAll().single()
       assertEquals(caption, imageValuesRow.caption, "Caption")
 
       val filesRow = filesDao.findAll().single()
@@ -152,6 +153,8 @@ class ImagesControllerTest : ControllerIntegrationTest() {
       val filename = "test.jpg"
       val listPosition = 1
 
+      lateinit var valuesRow: VariableValuesRow
+
       mockMvc
           .multipart(
               HttpMethod.POST, "/api/v1/document-producer/projects/${inserted.projectId}/images") {
@@ -161,19 +164,20 @@ class ImagesControllerTest : ControllerIntegrationTest() {
                 part(MockPart("listPosition", "$listPosition".toByteArray()))
                 part(MockPart("rowValueId", "$rowValueId".toByteArray()))
               }
-          .andExpectJson(
-              """
+          .andExpectJson {
+            valuesRow = variableValuesDao.findAll().maxBy { it.id!!.value }
+
+            """
                 {
-                  "valueId": 3,
+                  "valueId": ${valuesRow.id},
                   "status": "ok"
                 }
               """
-                  .trimIndent())
+          }
 
-      val valuesRow = variableValuesDao.fetchOneById(VariableValueId(3))!!
       assertEquals(1, valuesRow.listPosition, "New value should be at list position 1")
 
-      val tableRowRows = variableValueTableRowsDao.fetchByVariableValueId(VariableValueId(3))
+      val tableRowRows = variableValueTableRowsDao.fetchByVariableValueId(valuesRow.id!!)
       assertEquals(
           listOf(rowValueId),
           tableRowRows.map { it.tableRowValueId },
@@ -192,6 +196,8 @@ class ImagesControllerTest : ControllerIntegrationTest() {
       val fileData = byteArrayOf(1, 2, 3, 4)
       val filename = "test.jpg"
 
+      lateinit var valuesRows: List<VariableValuesRow>
+
       mockMvc
           .multipart(
               HttpMethod.POST, "/api/v1/document-producer/projects/${inserted.projectId}/images") {
@@ -199,17 +205,20 @@ class ImagesControllerTest : ControllerIntegrationTest() {
                 part(MockPart("caption", caption.toByteArray()))
                 part(MockPart("variableId", "$imageVariableId".toByteArray()))
               }
-          .andExpectJson(
-              """
+          .andExpectJson {
+            valuesRows = variableValuesDao.findAll()
+            val newValueId = valuesRows.maxOf { it.id!!.value }
+
+            """
                 {
-                  "valueId": 3,
+                  "valueId": $newValueId,
                   "status": "ok"
                 }
               """
-                  .trimIndent())
+          }
 
-      val valuesRow = variableValuesDao.fetchOneById(VariableValueId(3))!!
-      assertEquals(2, valuesRow.listPosition, "List position of new value")
+      assertEquals(
+          setOf(0, 1, 2), valuesRows.map { it.listPosition }.toSet(), "List positions of values")
     }
 
     @Test
