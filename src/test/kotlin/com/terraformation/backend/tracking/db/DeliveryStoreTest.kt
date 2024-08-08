@@ -5,7 +5,6 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
@@ -162,8 +161,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `requires that planting site be owned by same organization as withdrawal`() {
-      val otherOrgId = OrganizationId(2)
-      insertOrganization(otherOrgId)
+      val otherOrgId = insertOrganization()
       plantingSitesDao.update(
           plantingSitesDao.fetchOneById(plantingSiteId)!!.copy(organizationId = otherOrgId))
 

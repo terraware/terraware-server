@@ -200,7 +200,7 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
     val otherUser = insertUser()
     val otherCohort = insertCohort()
     val otherParticipant = insertParticipant(cohortId = otherCohort)
-    val otherOrganization = insertOrganization(100)
+    val otherOrganization = insertOrganization()
     insertOrganizationUser(otherUser, otherOrganization)
     insertProject(participantId = otherParticipant, organizationId = otherOrganization)
 

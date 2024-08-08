@@ -173,7 +173,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     val rootSeedsGerminatedField = viabilityTestResultsPrefix.resolve("seedsGerminated")
     val orgNameField =
         viabilityTestResultsPrefix.resolve("viabilityTest.accession.facility.organization.name")
-    val orgName = "Organization $organizationId"
+    val orgName = "Organization 1"
 
     val result =
         searchService.search(
@@ -199,7 +199,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     val rootSeedsGerminatedField = viabilityTestResultsPrefix.resolve("seedsGerminated")
     val flattenedFieldName = "viabilityTest_accession_facility_organization_name"
     val orgNameField = viabilityTestResultsPrefix.resolve(flattenedFieldName)
-    val orgName = "Organization $organizationId"
+    val orgName = "Organization 1"
 
     val result =
         searchService.search(
@@ -966,7 +966,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             mapOf(
                 "createdTime" to "1970-01-01T00:00:00Z",
                 "facilities" to expectedFacilities,
-                "id" to "1",
+                "id" to "$organizationId",
                 "name" to "Organization 1",
                 "members" to expectedOrganizationUsers,
                 "species" to expectedSpecies,
@@ -1008,7 +1008,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
   fun `all fields are valid sort keys`() {
     val prefix = SearchFieldPrefix(tables.organizations)
 
-    val expected = listOf(mapOf("id" to "1"))
+    val expected = listOf(mapOf("id" to "$organizationId"))
     val searchFields = listOf(prefix.resolve("id"))
 
     prefix.searchTable.getAllFieldNames().forEach { fieldName ->
@@ -1061,7 +1061,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     val order = listOf(SearchSortField(bagNumberField))
 
     // A facility in an org the user isn't in
-    insertOrganization(2)
+    insertOrganization()
     val otherFacilityId = insertFacility()
 
     accessionsDao.update(
@@ -1083,7 +1083,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     val order = listOf(SearchSortField(seedsGerminatedField))
 
     // A facility in an org the user isn't in
-    insertOrganization(2)
+    insertOrganization()
     val otherFacilityId = insertFacility()
 
     accessionsDao.update(

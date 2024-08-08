@@ -413,10 +413,6 @@ abstract class DatabaseBackedTest {
   protected val tablesToResetSequences: List<Table<out Record>>
     get() = emptyList()
 
-  // ID values inserted by insertSiteData(). These are used in most database-backed tests. They are
-  // marked as final so they can be referenced in constructor-initialized properties in subclasses.
-  protected val organizationId: OrganizationId = OrganizationId(1)
-
   /** IDs of entities that have been inserted using the `insert` helper methods during this test. */
   val inserted = Inserted()
 
@@ -619,9 +615,11 @@ abstract class DatabaseBackedTest {
     insertFacility()
   }
 
+  private var nextOrganizationNumber = 1
+
   protected fun insertOrganization(
-      id: Any? = this.organizationId,
-      name: String = "Organization $id",
+      id: OrganizationId? = null,
+      name: String = "Organization ${nextOrganizationNumber++}",
       countryCode: String? = null,
       countrySubdivisionCode: String? = null,
       createdBy: UserId = currentUser().userId,
@@ -634,7 +632,7 @@ abstract class DatabaseBackedTest {
           .set(COUNTRY_SUBDIVISION_CODE, countrySubdivisionCode)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
-          .apply { if (id != null) set(ID, id.toIdWrapper { OrganizationId(it) }) }
+          .apply { if (id != null) set(ID, id) }
           .set(NAME, name)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
@@ -649,7 +647,7 @@ abstract class DatabaseBackedTest {
 
   fun insertFacility(
       id: Any? = null,
-      organizationId: Any = inserted.organizationId,
+      organizationId: OrganizationId = inserted.organizationId,
       name: String = "Facility $nextFacilityNumber",
       description: String? = "Description $nextFacilityNumber",
       createdBy: UserId = currentUser().userId,
@@ -691,7 +689,7 @@ abstract class DatabaseBackedTest {
           .set(NAME, name)
           .set(NEXT_NOTIFICATION_TIME, nextNotificationTime)
           .set(OPERATION_STARTED_DATE, operationStartedDate)
-          .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
+          .set(ORGANIZATION_ID, organizationId)
           .set(TIME_ZONE, timeZone)
           .set(TYPE_ID, type)
           .returning(ID)
@@ -708,7 +706,7 @@ abstract class DatabaseBackedTest {
 
   protected fun insertProject(
       id: Any? = null,
-      organizationId: Any = this.organizationId,
+      organizationId: OrganizationId = inserted.organizationId,
       name: String = if (id != null) "Project $id" else "Project ${nextProjectNumber++}",
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
@@ -726,7 +724,7 @@ abstract class DatabaseBackedTest {
             modifiedBy = createdBy,
             modifiedTime = createdTime,
             name = name,
-            organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+            organizationId = organizationId,
             participantId = participantId?.toIdWrapper { ParticipantId(it) },
         )
 
@@ -990,7 +988,7 @@ abstract class DatabaseBackedTest {
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       modifiedTime: Instant = createdTime,
-      organizationId: Any = this.organizationId,
+      organizationId: OrganizationId = inserted.organizationId,
       deletedTime: Instant? = null,
       checkedTime: Instant? = null,
       initialScientificName: String = scientificName,
@@ -1004,7 +1002,6 @@ abstract class DatabaseBackedTest {
       seedStorageBehavior: SeedStorageBehavior? = null,
   ): SpeciesId {
     val speciesIdWrapper = speciesId?.toIdWrapper { SpeciesId(it) }
-    val organizationIdWrapper = organizationId.toIdWrapper { OrganizationId(it) }
 
     val actualSpeciesId =
         with(SPECIES) {
@@ -1021,7 +1018,7 @@ abstract class DatabaseBackedTest {
               .set(INITIAL_SCIENTIFIC_NAME, initialScientificName)
               .set(MODIFIED_BY, createdBy)
               .set(MODIFIED_TIME, modifiedTime)
-              .set(ORGANIZATION_ID, organizationIdWrapper)
+              .set(ORGANIZATION_ID, organizationId)
               .set(RARE, rare)
               .set(SCIENTIFIC_NAME, scientificName)
               .set(SEED_STORAGE_BEHAVIOR_ID, seedStorageBehavior)
@@ -1211,7 +1208,7 @@ abstract class DatabaseBackedTest {
   /** Adds a user to an organization. */
   fun insertOrganizationUser(
       userId: Any = currentUser().userId,
-      organizationId: Any = this.organizationId,
+      organizationId: OrganizationId = inserted.organizationId,
       role: Role = Role.Contributor,
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
@@ -1223,7 +1220,7 @@ abstract class DatabaseBackedTest {
           .set(CREATED_TIME, createdTime)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, createdTime)
-          .set(ORGANIZATION_ID, organizationId.toIdWrapper { OrganizationId(it) })
+          .set(ORGANIZATION_ID, organizationId)
           .set(ROLE_ID, role)
           .set(USER_ID, userId.toIdWrapper { UserId(it) })
           .execute()
@@ -1407,7 +1404,7 @@ abstract class DatabaseBackedTest {
       germinatingQuantity: Int = row.germinatingQuantity ?: 0,
       id: Any? = row.id,
       notReadyQuantity: Int = row.notReadyQuantity ?: 0,
-      organizationId: Any = row.organizationId ?: this.organizationId,
+      organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       projectId: Any? = row.projectId,
       readyQuantity: Int = row.readyQuantity ?: 0,
       readyByDate: LocalDate? = row.readyByDate,
@@ -1461,7 +1458,7 @@ abstract class DatabaseBackedTest {
             modifiedBy = createdBy,
             modifiedTime = createdTime,
             notReadyQuantity = notReadyQuantity,
-            organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+            organizationId = organizationId,
             projectId = projectId?.toIdWrapper { ProjectId(it) },
             readyQuantity = readyQuantity,
             readyByDate = readyByDate,
@@ -1563,7 +1560,7 @@ abstract class DatabaseBackedTest {
       exclusion: Geometry? = row.exclusion,
       gridOrigin: Geometry? = row.gridOrigin,
       id: Any? = row.id,
-      organizationId: Any = row.organizationId ?: this.organizationId,
+      organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: id?.let { "Site $id" } ?: "Site ${nextPlantingSiteNumber++}",
@@ -1594,7 +1591,7 @@ abstract class DatabaseBackedTest {
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
-            organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+            organizationId = organizationId,
             projectId = projectId?.toIdWrapper { ProjectId(it) },
             timeZone = timeZone,
         )
@@ -1864,7 +1861,7 @@ abstract class DatabaseBackedTest {
       name: String = row.name ?: "Draft site ${nextDraftPlantingSiteNumber++}",
       numPlantingSubzones: Int? = row.numPlantingSubzones,
       numPlantingZones: Int? = row.numPlantingZones,
-      organizationId: Any = row.organizationId ?: this.organizationId,
+      organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       projectId: Any? = row.projectId,
       timeZone: ZoneId? = row.timeZone,
   ): DraftPlantingSiteId {
@@ -1880,7 +1877,7 @@ abstract class DatabaseBackedTest {
             name = name,
             numPlantingSubzones = numPlantingSubzones,
             numPlantingZones = numPlantingZones,
-            organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+            organizationId = organizationId,
             projectId = projectId?.toIdWrapper { ProjectId(it) },
             timeZone = timeZone,
         )
@@ -2051,7 +2048,7 @@ abstract class DatabaseBackedTest {
       id: Any? = row.id,
       lockedBy: Any? = row.lockedBy,
       lockedTime: Instant? = row.lockedTime ?: lockedBy?.let { Instant.EPOCH },
-      organizationId: Any = row.organizationId ?: this.organizationId,
+      organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       projectId: Any? = row.projectId,
       projectName: String? = row.projectName,
       quarter: Int = row.quarter ?: 1,
@@ -2076,7 +2073,7 @@ abstract class DatabaseBackedTest {
             id = id?.toIdWrapper { ReportId(it) },
             lockedBy = lockedBy?.toIdWrapper { UserId(it) },
             lockedTime = lockedTime,
-            organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+            organizationId = organizationId,
             projectId = projectIdWrapper,
             projectName = projectNameWithDefault,
             quarter = quarter,
@@ -2092,13 +2089,13 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertOrganizationReportSettings(
-      organizationId: Any = this.organizationId,
+      organizationId: OrganizationId = inserted.organizationId,
       isEnabled: Boolean = true,
   ) {
     val row =
         OrganizationReportSettingsRow(
             isEnabled = isEnabled,
-            organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+            organizationId = organizationId,
         )
 
     organizationReportSettingsDao.insert(row)
@@ -2267,7 +2264,7 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertOrganizationInternalTag(
-      organizationId: Any = this.organizationId,
+      organizationId: OrganizationId = inserted.organizationId,
       tagId: InternalTagId = InternalTagIds.Reporter,
       createdBy: Any = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
@@ -2275,7 +2272,7 @@ abstract class DatabaseBackedTest {
     organizationInternalTagsDao.insert(
         OrganizationInternalTagsRow(
             internalTagId = tagId,
-            organizationId = organizationId.toIdWrapper { OrganizationId(it) },
+            organizationId = organizationId,
             createdBy = createdBy.toIdWrapper { UserId(it) },
             createdTime = createdTime))
   }

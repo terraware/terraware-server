@@ -107,7 +107,7 @@ private constructor(
   var exclusion: MultiPolygon? = null
   var gridOrigin: Point = geometryFactory.createPoint(boundary.envelope.coordinates[0])
   var name: String = "Site"
-  var organizationId: OrganizationId = OrganizationId(1)
+  var organizationId: OrganizationId = OrganizationId(-1)
 
   private var currentSubzoneId: Long = 0
   private var currentZoneId: Long = 0

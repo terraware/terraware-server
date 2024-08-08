@@ -100,6 +100,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
           username = "email",
       )
 
+  private lateinit var organizationId: OrganizationId
+
   // Don't insert the mock user by default.
   override fun insertMockUser() {}
 
@@ -107,11 +109,11 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     every { config.keycloak } returns keycloakConfig
 
-    every { user.canAddOrganizationUser(organizationId) } returns true
-    every { user.canCreateApiKey(organizationId) } returns true
-    every { user.canReadOrganization(organizationId) } returns true
-    every { user.canRemoveOrganizationUser(organizationId, any()) } returns true
-    every { user.canSetOrganizationUserRole(organizationId, Role.Contributor) } returns true
+    every { user.canAddOrganizationUser(any()) } returns true
+    every { user.canCreateApiKey(any()) } returns true
+    every { user.canReadOrganization(any()) } returns true
+    every { user.canRemoveOrganizationUser(any(), any()) } returns true
+    every { user.canSetOrganizationUserRole(any(), Role.Contributor) } returns true
     every { user.canReadGlobalRoles() } returns true
     every { user.canUpdateGlobalRoles() } returns true
 
@@ -303,7 +305,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       val userId = insertUser()
       every { user.userId } returns userId
 
-      insertOrganization()
+      organizationId = insertOrganization()
     }
 
     @Test
@@ -350,7 +352,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       val userId = insertUser()
       every { user.userId } returns userId
 
-      insertOrganization()
+      organizationId = insertOrganization()
     }
 
     @Test
@@ -497,7 +499,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       val userId = insertUser()
       every { user.userId } returns userId
 
-      insertOrganization()
+      organizationId = insertOrganization()
       insertOrganizationUser()
     }
 
@@ -531,10 +533,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetchPreferences returns null if no preferences for organization`() {
-      val otherOrganizationId = OrganizationId(50)
-
-      insertOrganization(otherOrganizationId)
-      insertOrganizationUser(organizationId = otherOrganizationId)
+      val otherOrganizationId = insertOrganization()
+      insertOrganizationUser()
 
       insertPreferences()
       insertPreferences(organizationId = otherOrganizationId)
@@ -678,7 +678,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
     fun `deletes user preferences`() {
       val userId = insertUser(authId = authId)
       every { user.userId } returns userId
-      insertOrganization()
+
+      organizationId = insertOrganization()
 
       userStore.updatePreferences(null, JSONB.valueOf("""{"key":"value"}"""))
       userStore.updatePreferences(organizationId, JSONB.valueOf("""{"key":"value"}"""))
@@ -771,20 +772,18 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       val userId = insertUser()
       every { user.userId } returns userId
 
-      insertOrganization()
+      organizationId = insertOrganization()
     }
 
     @Test
     fun `returns opted-in users`() {
-      val otherOrganizationId = OrganizationId(2)
-
       val optedInNonMember =
           insertUser(email = "optedInNonMember@x.com", emailNotificationsEnabled = true)
       val optedInMember =
           insertUser(email = "optedInMember@x.com", emailNotificationsEnabled = true)
       val optedOutMember = insertUser(email = "optedOutMember@x.com")
 
-      insertOrganization(otherOrganizationId)
+      val otherOrganizationId = insertOrganization()
 
       insertOrganizationUser(optedInNonMember, otherOrganizationId)
       insertOrganizationUser(optedInMember, organizationId)

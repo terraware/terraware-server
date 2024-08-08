@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
@@ -462,9 +461,8 @@ internal class PlantingSiteStoreCreateSiteTest : PlantingSiteStoreTest() {
 
     @Test
     fun `throws exception if project is in a different organization`() {
-      val otherOrganizationId = OrganizationId(2)
-      insertOrganization(otherOrganizationId)
-      val projectId = insertProject(organizationId = otherOrganizationId)
+      insertOrganization()
+      val projectId = insertProject()
 
       assertThrows<ProjectInDifferentOrganizationException> {
         store.createPlantingSite(

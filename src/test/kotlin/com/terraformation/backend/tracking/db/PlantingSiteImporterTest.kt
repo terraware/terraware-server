@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
@@ -45,12 +46,14 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
   private val resourcesDir = "src/test/resources/tracking"
 
+  private lateinit var organizationId: OrganizationId
+
   @BeforeEach
   fun setUp() {
     every { user.canCreatePlantingSite(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
 
-    insertOrganization()
+    organizationId = insertOrganization()
     insertOrganizationUser()
   }
 

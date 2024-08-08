@@ -67,9 +67,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
         organizationsDao)
   }
 
+  private lateinit var organizationId: OrganizationId
+
   @BeforeEach
   fun setUp() {
-    insertOrganization(countryCode = "US", name = "Organization 1")
+    organizationId = insertOrganization(countryCode = "US", name = "Organization 1")
     insertProject(name = "Project A")
 
     every { user.adminOrganizations() } returns setOf(organizationId)
@@ -182,7 +184,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               status = ApplicationStatus.PLReview,
           )
 
-      organizationId2 = insertOrganization(2, name = "Organization 2")
+      organizationId2 = insertOrganization(name = "Organization 2")
       org2ProjectId1 = insertProject(organizationId = organizationId2, name = "Project C")
       org2Project1ApplicationId =
           insertApplication(projectId = org2ProjectId1, internalName = "internalName3")

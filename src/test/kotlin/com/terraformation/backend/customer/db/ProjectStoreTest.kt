@@ -33,14 +33,15 @@ import org.springframework.security.access.AccessDeniedException
 class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val projectId: ProjectId by lazy {
-    insertProject(description = "Description 1", name = "Project 1")
-  }
-
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val store: ProjectStore by lazy {
     ProjectStore(clock, dslContext, eventPublisher, projectsDao)
+  }
+
+  private lateinit var organizationId: OrganizationId
+  private val projectId: ProjectId by lazy {
+    insertProject(description = "Description 1", name = "Project 1")
   }
 
   @BeforeEach
@@ -53,7 +54,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateProject(any()) } returns true
     every { user.canUpdateProjectDocumentSettings(any()) } returns true
 
-    insertSiteData()
+    organizationId = insertOrganization()
   }
 
   @Nested
@@ -139,12 +140,11 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchByOrganizationId {
     @Test
     fun `fetches projects`() {
+      val currentUserId = user.userId
       val projectId1 = insertProject(description = "Description 1", name = "Project 1")
       val projectId2 = insertProject(name = "Project 2")
-      val otherOrganizationId = OrganizationId(2)
-      val currentUserId = user.userId
-      insertOrganization(otherOrganizationId)
-      insertProject(name = "Other org project", organizationId = otherOrganizationId)
+      insertOrganization()
+      insertProject(name = "Other org project")
 
       val expected =
           setOf(
@@ -186,12 +186,10 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
   inner class FindAll {
     @Test
     fun `fetches projects across organizations`() {
-      val otherUserOrganizationId = OrganizationId(2)
-      val nonMemberOrganizationId = OrganizationId(3)
       val currentUserId = user.userId
+      val otherUserOrganizationId = insertOrganization()
+      val nonMemberOrganizationId = insertOrganization()
 
-      insertOrganization(otherUserOrganizationId)
-      insertOrganization(nonMemberOrganizationId)
       insertOrganizationUser(organizationId = otherUserOrganizationId)
 
       every { user.organizationRoles } returns

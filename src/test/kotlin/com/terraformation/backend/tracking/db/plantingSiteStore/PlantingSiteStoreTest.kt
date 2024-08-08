@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import io.mockk.every
@@ -31,9 +32,11 @@ internal abstract class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
   protected lateinit var timeZone: ZoneId
 
+  protected lateinit var organizationId: OrganizationId
+
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    organizationId = insertOrganization()
     timeZone = ZoneId.of("Pacific/Honolulu")
 
     every { user.canCreatePlantingSite(any()) } returns true

@@ -9,6 +9,7 @@ import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
+import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
@@ -48,6 +49,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var store: SpeciesStore
 
+  private lateinit var organizationId: OrganizationId
+
   @BeforeEach
   fun setUp() {
     store =
@@ -65,7 +68,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateSpecies(any()) } returns true
     every { user.canDeleteSpecies(any()) } returns true
 
-    insertSiteData()
+    organizationId = insertOrganization()
   }
 
   @Test
@@ -133,8 +136,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createSpecies allows the same name to be used in different organizations`() {
-    val otherOrgId = OrganizationId(2)
-    insertOrganization(otherOrgId.value)
+    val otherOrgId = insertOrganization()
 
     val model = NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "test")
     store.createSpecies(model)
@@ -304,7 +306,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
         )
     val speciesId = store.createSpecies(initial)
 
-    val bogusOrganizationId = OrganizationId(10000)
+    val bogusOrganizationId = OrganizationId(-1)
     val bogusInstant = Instant.ofEpochSecond(1000)
 
     val newInstant = Instant.ofEpochSecond(500)
@@ -501,6 +503,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val speciesId4 = insertSpecies(scientificName = "Species 4", deletedTime = Instant.EPOCH)
       insertSpecies(scientificName = "Species 5")
 
+      insertFacility(type = FacilityType.Nursery)
       insertPlantingSite()
       insertPlantingZone()
 
@@ -648,7 +651,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     insertBatch(speciesId = created)
 
     // create another org batch
-    val otherOrgId = insertOrganization(id = OrganizationId(2))
+    val otherOrgId = insertOrganization()
     val other =
         store.createSpecies(
             NewSpeciesModel(id = null, organizationId = otherOrgId, scientificName = "other"))
@@ -674,7 +677,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     insertAccession(row = AccessionsRow(speciesId = created))
 
     // create another org accession
-    val otherOrgId = insertOrganization(id = OrganizationId(2))
+    val otherOrgId = insertOrganization()
     val other =
         store.createSpecies(
             NewSpeciesModel(id = null, organizationId = otherOrgId, scientificName = "other"))
@@ -705,7 +708,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     insertPlanting(speciesId = created)
 
     // create another org planting
-    val otherOrgId = insertOrganization(id = OrganizationId(2))
+    val otherOrgId = insertOrganization()
     val other =
         store.createSpecies(
             NewSpeciesModel(id = null, organizationId = otherOrgId, scientificName = "other"))

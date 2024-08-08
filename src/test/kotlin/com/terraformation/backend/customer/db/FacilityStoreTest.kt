@@ -59,6 +59,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var store: FacilityStore
 
   private lateinit var facilityId: FacilityId
+  private lateinit var organizationId: OrganizationId
   private val subLocationId = SubLocationId(1000)
   private lateinit var timeZone: ZoneId
 
@@ -86,7 +87,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateTimeseries(any()) } returns true
 
     timeZone = ZoneId.of("Pacific/Honolulu")
-    insertOrganization()
+    organizationId = insertOrganization()
     facilityId = insertFacility()
   }
 
@@ -495,10 +496,9 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update updates all editable fields`() {
-    val otherOrganizationId = OrganizationId(10)
     val otherTimeZone = ZoneId.of("Europe/Paris")
 
-    insertOrganization(otherOrganizationId)
+    val otherOrganizationId = insertOrganization()
     insertOrganizationUser(organizationId = otherOrganizationId, role = Role.Admin)
 
     val initial =

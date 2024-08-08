@@ -7,6 +7,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalPhotosRow
 import com.terraformation.backend.file.FileService
@@ -54,9 +55,11 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
   private val metadata = FileMetadata.of(MediaType.IMAGE_JPEG_VALUE, "filename", 123L)
   private val withdrawalId: WithdrawalId by lazy { insertWithdrawal() }
 
+  private lateinit var organizationId: OrganizationId
+
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    organizationId = insertOrganization()
     insertFacility(type = FacilityType.Nursery)
 
     every { thumbnailStore.deleteThumbnails(any()) } just Runs
@@ -133,7 +136,7 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
     val facilityId2 = insertFacility(type = FacilityType.Nursery)
     val facility2WithdrawalId = insertWithdrawal(facilityId = facilityId2)
-    insertOrganization(2)
+    insertOrganization()
     insertFacility(type = FacilityType.Nursery)
     val otherOrgWithdrawalId = insertWithdrawal()
 

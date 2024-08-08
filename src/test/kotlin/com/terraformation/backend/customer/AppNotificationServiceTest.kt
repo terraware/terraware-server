@@ -106,6 +106,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   @Autowired private lateinit var config: TerrawareServerConfig
 
   private lateinit var facilityId: FacilityId
+  private lateinit var organizationId: OrganizationId
   private lateinit var otherUserId: UserId
 
   private val clock = TestClock()
@@ -135,7 +136,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val objectMapper = jacksonObjectMapper()
     val publisher = TestEventPublisher()
 
-    insertOrganization()
+    organizationId = insertOrganization()
     facilityId = insertFacility()
 
     parentStore = ParentStore(dslContext)
@@ -898,7 +899,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     // Other project in different org
     val thirdUserId = insertUser()
-    val otherOrgId = insertOrganization(300)
+    val otherOrgId = insertOrganization()
     insertOrganizationUser(thirdUserId, otherOrgId)
     val otherProjectId = insertProject(organizationId = otherOrgId)
 

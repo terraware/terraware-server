@@ -101,7 +101,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       val oldTimeZone = ZoneId.of("America/New_York")
       val newTimeZone = ZoneId.of("America/Buenos_Aires")
 
-      insertOrganization(timeZone = oldTimeZone)
+      val organizationId = insertOrganization(timeZone = oldTimeZone)
       insertPlantingSite(timeZone = oldTimeZone)
       val plantingSiteWithoutTimeZone1 =
           plantingSiteStore.fetchSiteById(insertPlantingSite(), PlantingSiteDepth.Site)

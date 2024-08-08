@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.SpeciesInUseException
 import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.db.SpeciesChecker
@@ -43,8 +44,12 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     SpeciesService(dslContext, eventPublisher, speciesChecker, speciesStore)
   }
 
+  private lateinit var organizationId: OrganizationId
+
   @BeforeEach
   fun setUp() {
+    organizationId = insertOrganization()
+
     every { speciesChecker.checkSpecies(any()) } just Runs
     every { speciesChecker.recheckSpecies(any(), any()) } just Runs
     every { user.canCreateSpecies(organizationId) } returns true
@@ -52,8 +57,6 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadSpecies(any()) } returns true
     every { user.canUpdateSpecies(any()) } returns true
     every { user.canDeleteSpecies(any()) } returns true
-
-    insertSiteData()
   }
 
   @Test

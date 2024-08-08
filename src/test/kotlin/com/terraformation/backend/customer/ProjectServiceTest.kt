@@ -10,7 +10,6 @@ import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
@@ -98,7 +97,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
   private val plantingSiteId2 by lazy { insertPlantingSite() }
   private val speciesId by lazy { insertSpecies() }
 
-  private val otherOrganizationId by lazy { insertOrganization(OrganizationId(2)) }
+  private val otherOrganizationId by lazy { insertOrganization() }
   private val otherOrgAccessionId by lazy {
     insertAccession(facilityId = otherOrgSeedBankFacilityId)
   }

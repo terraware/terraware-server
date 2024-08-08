@@ -29,7 +29,6 @@ import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationManagedLocationTypesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserPreferencesRow
-import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -38,8 +37,6 @@ import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 import org.jooq.JSONB
-import org.jooq.Record
-import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -49,8 +46,6 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
-  override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(ORGANIZATIONS)
 
   private val clock = TestClock()
   private lateinit var permissionStore: PermissionStore
@@ -89,7 +84,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     )
   }
 
-  override lateinit var organizationId: OrganizationId
+  private lateinit var organizationId: OrganizationId
   private lateinit var timeZone: ZoneId
 
   @BeforeEach
@@ -97,12 +92,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     permissionStore = PermissionStore(dslContext)
     store = OrganizationStore(clock, dslContext, organizationsDao, publisher)
 
-    organizationId =
-        insertOrganization(
-            id = null,
-            name = "Organization 1",
-            countryCode = "US",
-            countrySubdivisionCode = "US-HI")
+    organizationId = insertOrganization(countryCode = "US", countrySubdivisionCode = "US-HI")
     insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
     facilityId = insertFacility()
 
@@ -225,7 +215,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         row.copy(
             createdBy = user.userId,
             createdTime = clock.instant(),
-            id = OrganizationId(2),
+            id = createdModel.id,
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
         )
@@ -642,9 +632,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `removeUser removes user from requested organization`() {
     val model = configureUser(organizationUserModel())
 
-    val otherOrgId = OrganizationId(5)
-    insertOrganization(otherOrgId)
-    insertOrganizationUser(model.userId, otherOrgId)
+    val otherOrgId = insertOrganization()
+    insertOrganizationUser(model.userId)
 
     dslContext
         .insertInto(

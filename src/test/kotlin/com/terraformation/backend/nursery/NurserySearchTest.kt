@@ -42,17 +42,18 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
   private val numberFormat = NumberFormat.getIntegerInstance()
 
   private lateinit var facilityId: FacilityId
+  private lateinit var organizationId: OrganizationId
 
   @BeforeEach
   fun setUp() {
-    insertOrganization(organizationId)
+    organizationId = insertOrganization()
     insertOrganizationUser(user.userId, organizationId, Role.Manager)
     facilityId = insertFacility(name = "Nursery", type = FacilityType.Nursery)
   }
 
   @Nested
   inner class SummaryTables {
-    private val organizationId2 = OrganizationId(2)
+    private lateinit var organizationId2: OrganizationId
     private val speciesId1 = SpeciesId(1)
     private val speciesId2 = SpeciesId(2)
     private val org2SpeciesId = SpeciesId(3)
@@ -62,20 +63,17 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
 
     @BeforeEach
     fun insertBatches() {
-      insertOrganization(organizationId2)
-      insertOrganizationUser(user.userId, organizationId2, Role.Contributor)
-
-      insertSubLocation(subLocationId)
-      facilityId2 = insertFacility(name = "Other Nursery", type = FacilityType.Nursery)
-      org2FacilityId =
-          insertFacility(
-              name = "Other Org Nursery",
-              organizationId = organizationId2,
-              type = FacilityType.Nursery)
-
       insertSpecies(speciesId1)
       insertSpecies(speciesId2)
-      insertSpecies(org2SpeciesId, organizationId = organizationId2)
+      insertSubLocation(subLocationId)
+
+      facilityId2 = insertFacility(name = "Other Nursery", type = FacilityType.Nursery)
+
+      organizationId2 = insertOrganization()
+      insertOrganizationUser(user.userId, role = Role.Contributor)
+      org2FacilityId = insertFacility(name = "Other Org Nursery", type = FacilityType.Nursery)
+
+      insertSpecies(org2SpeciesId)
 
       every { user.facilityRoles } returns
           mapOf(
@@ -87,6 +85,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
 
       insertBatch(
           addedDate = LocalDate.of(2021, 3, 4),
+          organizationId = organizationId,
           facilityId = facilityId,
           germinatingQuantity = 1,
           notReadyQuantity = 2,
@@ -96,6 +95,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       insertBatchSubLocation()
       insertBatch(
           addedDate = LocalDate.of(2022, 9, 2),
+          organizationId = organizationId,
           facilityId = facilityId,
           germinatingQuantity = 8,
           notReadyQuantity = 16,
@@ -106,6 +106,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       insertBatch(
           BatchesRow(readyByDate = LocalDate.of(2022, 10, 2)),
           addedDate = LocalDate.of(2022, 9, 3),
+          organizationId = organizationId,
           facilityId = facilityId2,
           germinatingQuantity = 64,
           notReadyQuantity = 128,
@@ -114,6 +115,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       )
       insertBatch(
           addedDate = LocalDate.of(2022, 9, 4),
+          organizationId = organizationId,
           facilityId = facilityId,
           germinatingQuantity = 512,
           notReadyQuantity = 1024,
@@ -507,7 +509,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           numPlants = 3, plantingTypeId = PlantingType.ReassignmentTo, speciesId = speciesId2)
 
       // Withdrawal for another organization shouldn't be visible.
-      insertOrganization(3)
+      insertOrganization()
       insertFacility()
       insertWithdrawal()
 

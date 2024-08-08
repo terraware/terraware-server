@@ -276,7 +276,7 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
             organizationId = inserted.organizationId, participantId = inserted.participantId)
 
     val otherUser = insertUser()
-    val otherOrganization = insertOrganization(id = 100, createdBy = otherUser)
+    val otherOrganization = insertOrganization(createdBy = otherUser)
     insertOrganizationUser(
         userId = otherUser, organizationId = otherOrganization, role = Role.Admin)
     val otherParticipant = insertParticipant(cohortId = inserted.cohortId)

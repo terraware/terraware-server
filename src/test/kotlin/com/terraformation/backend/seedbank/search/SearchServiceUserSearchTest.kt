@@ -20,7 +20,7 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
   private val organizationsPrefix = SearchFieldPrefix(tables.organizations)
   private val usersPrefix = SearchFieldPrefix(tables.users)
 
-  private val otherOrganizationId = OrganizationId(2)
+  private lateinit var otherOrganizationId: OrganizationId
   private lateinit var bothOrgsUserId: UserId
   private lateinit var otherOrgUserId: UserId
   private lateinit var deviceManagerUserId: UserId
@@ -31,10 +31,10 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
     bothOrgsUserId = insertUser()
     otherOrgUserId = insertUser()
 
-    insertOrganization(otherOrganizationId)
+    otherOrganizationId = insertOrganization()
 
-    insertOrganizationUser(deviceManagerUserId)
-    insertOrganizationUser(bothOrgsUserId, role = Role.Admin)
+    insertOrganizationUser(deviceManagerUserId, organizationId)
+    insertOrganizationUser(bothOrgsUserId, organizationId, Role.Admin)
     insertOrganizationUser(bothOrgsUserId, otherOrganizationId, Role.Admin)
     insertOrganizationUser(otherOrgUserId, otherOrganizationId)
   }

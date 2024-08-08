@@ -13,7 +13,7 @@ internal class PlantingSiteStoreMoveTest : PlantingSiteStoreTest() {
   inner class MovePlantingSite {
     @Test
     fun `updates organization ID`() {
-      val otherOrganizationId = insertOrganization(2)
+      val otherOrganizationId = insertOrganization()
       val plantingSiteId = insertPlantingSite()
       val before = plantingSitesDao.fetchOneById(plantingSiteId)!!
       val newTime = Instant.ofEpochSecond(1000)

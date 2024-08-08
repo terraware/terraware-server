@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
@@ -64,9 +65,13 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   protected lateinit var speciesStore: SpeciesStore
 
   protected lateinit var facilityId: FacilityId
+  protected lateinit var organizationId: OrganizationId
 
   @BeforeEach
   protected fun init() {
+    organizationId = insertOrganization()
+    facilityId = insertFacility()
+
     parentStore = ParentStore(dslContext)
 
     every { user.canCreateAccession(any()) } returns true
@@ -108,9 +113,6 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
             speciesEcosystemTypesDao,
             speciesGrowthFormsDao,
             speciesProblemsDao)
-
-    insertOrganization()
-    facilityId = insertFacility()
   }
 
   protected fun createAccessionWithViabilityTest(): AccessionModel {

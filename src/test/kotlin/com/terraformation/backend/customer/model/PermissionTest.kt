@@ -233,7 +233,8 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     facilityIds.forEach { facilityId ->
-      val organizationId = facilityId.value / 1000
+      val organizationId = OrganizationId(facilityId.value / 1000)
+      val speciesId = SpeciesId(organizationId.value)
 
       insertFacility(facilityId, organizationId, createdBy = userId)
       insertDevice(facilityId.value, facilityId, createdBy = userId)
@@ -251,7 +252,7 @@ internal class PermissionTest : DatabaseTest() {
           id = facilityId.value,
           facilityId = facilityId,
           organizationId = organizationId,
-          speciesId = organizationId,
+          speciesId = speciesId,
       )
       insertWithdrawal(
           createdBy = userId,
@@ -327,7 +328,7 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     draftPlantingSiteIds.forEach { draftPlantingSiteId ->
-      val organizationId = draftPlantingSiteId.value / 1000
+      val organizationId = OrganizationId(draftPlantingSiteId.value / 1000)
       insertDraftPlantingSite(
           createdBy = userId,
           id = draftPlantingSiteId,

@@ -2,7 +2,6 @@ package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
-import com.terraformation.backend.db.default_schema.OrganizationId
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -52,8 +51,7 @@ internal class AccessionStoreMultiFacilityTest : AccessionStoreTest() {
   @Test
   fun `update does not write to database if facility id to update does not belong to same organization as previous facility`() {
     val initialFacilityId = inserted.facilityId
-    val anotherOrgId = OrganizationId(5)
-    insertOrganization(anotherOrgId, "dev-2")
+    insertOrganization()
     val facilityIdInAnotherOrg = insertFacility()
 
     every { user.canUpdateAccession(any()) } returns true

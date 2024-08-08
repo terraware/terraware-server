@@ -30,9 +30,11 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   private val sampleData = JSONB.valueOf("{\"foo\":\"bar\"}")
   private val timeZone = ZoneId.of("Pacific/Honolulu")
 
+  private lateinit var organizationId: OrganizationId
+
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    organizationId = insertOrganization()
 
     every { user.canCreateDraftPlantingSite(any()) } returns true
     every { user.canDeleteDraftPlantingSite(any()) } returns true
@@ -112,9 +114,8 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if project is in wrong organization`() {
-      val otherOrgId = OrganizationId(2)
-      insertOrganization(otherOrgId)
-      insertProject(organizationId = otherOrgId)
+      insertOrganization()
+      insertProject()
 
       assertThrows<ProjectInDifferentOrganizationException> {
         store.create(JSONB.valueOf("{}"), "Name", organizationId, projectId = inserted.projectId)
@@ -200,8 +201,7 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if callback attempts to change read-only field`() {
-      val otherOrgId = OrganizationId(2)
-      insertOrganization(otherOrgId)
+      val otherOrgId = insertOrganization()
       insertDraftPlantingSite()
 
       assertThrows<AccessDeniedException> {
@@ -211,11 +211,10 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if project is in wrong organization`() {
-      val otherOrgId = OrganizationId(2)
-      insertOrganization(otherOrgId)
-      insertProject(organizationId = otherOrgId)
-
       insertDraftPlantingSite()
+
+      val otherOrgId = insertOrganization()
+      insertProject(organizationId = otherOrgId)
 
       assertThrows<ProjectInDifferentOrganizationException> {
         store.update(inserted.draftPlantingSiteId) { it.projectId = inserted.projectId }

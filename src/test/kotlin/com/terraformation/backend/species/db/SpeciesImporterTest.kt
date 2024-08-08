@@ -8,6 +8,7 @@ import com.terraformation.backend.db.UploadNotAwaitingActionException
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
@@ -96,12 +97,14 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
   private val storageUrl = URI.create("file:///test")
   private val uploadId = UploadId(10)
+
+  private lateinit var organizationId: OrganizationId
   private lateinit var userId: UserId
 
   @BeforeEach
   fun setUp() {
     userId = user.userId
-    insertOrganization()
+    organizationId = insertOrganization()
 
     every { speciesChecker.checkAllUncheckedSpecies(organizationId) } just Runs
     every { user.canCreateSpecies(organizationId) } returns true

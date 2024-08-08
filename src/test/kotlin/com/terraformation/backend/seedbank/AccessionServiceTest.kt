@@ -225,6 +225,7 @@ internal class AccessionServiceTest : DatabaseTest(), RunsAsUser {
     private val batchId = BatchId(1)
     private val seedBankFacilityId = FacilityId(1)
     private val nurseryFacilityId = FacilityId(2)
+    private val organizationId = OrganizationId(1)
 
     private val accession =
         AccessionModel(

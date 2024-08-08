@@ -6,7 +6,6 @@ import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.InternalTagIsSystemDefinedException
 import com.terraformation.backend.db.default_schema.InternalTagId
-import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.pojos.InternalTagsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInternalTagsRow
 import com.terraformation.backend.mockUser
@@ -110,10 +109,9 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchOrganizationsByTagId returns tagged organizations`() {
+    val organizationId = insertOrganization()
     val otherTagId = insertInternalTag()
-    val otherOrganizationId = OrganizationId(2)
-    insertOrganization(organizationId)
-    insertOrganization(otherOrganizationId)
+    val otherOrganizationId = insertOrganization()
     insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
     insertOrganizationInternalTag(otherOrganizationId, otherTagId)
 
@@ -124,9 +122,8 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchAllOrganizationTagIds handles organizations with multiple tags`() {
-    val otherOrganizationId = OrganizationId(2)
-    insertOrganization(organizationId)
-    insertOrganization(otherOrganizationId)
+    val organizationId = insertOrganization()
+    val otherOrganizationId = insertOrganization()
     insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
     insertOrganizationInternalTag(organizationId, InternalTagIds.Testing)
     insertOrganizationInternalTag(otherOrganizationId, InternalTagIds.Testing)
@@ -141,9 +138,8 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchTagsByOrganization returns correct tag IDs`() {
-    val otherOrganizationId = OrganizationId(2)
-    insertOrganization(organizationId)
-    insertOrganization(otherOrganizationId)
+    val organizationId = insertOrganization()
+    val otherOrganizationId = insertOrganization()
     insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
     insertOrganizationInternalTag(organizationId, InternalTagIds.Testing)
     insertOrganizationInternalTag(otherOrganizationId, InternalTagIds.Internal)
@@ -162,9 +158,8 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `updateOrganizationTags inserts and deletes values`() {
-    val otherOrganizationId = OrganizationId(2)
-    insertOrganization(organizationId)
-    insertOrganization(otherOrganizationId)
+    val organizationId = insertOrganization()
+    val otherOrganizationId = insertOrganization()
     insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
     insertOrganizationInternalTag(organizationId, InternalTagIds.Internal)
     insertOrganizationInternalTag(otherOrganizationId, InternalTagIds.Reporter)
@@ -201,7 +196,7 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `write methods throw AccessDeniedException if no permission to manage internal tags`() {
-    insertOrganization()
+    val organizationId = insertOrganization()
     val tagId = insertInternalTag()
 
     every { user.canManageInternalTags() } returns false
@@ -221,7 +216,7 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `read methods throw AccessDeniedException if no permission to read internal tags`() {
-    insertOrganization()
+    val organizationId = insertOrganization()
     val tagId = insertInternalTag()
 
     every { user.canManageInternalTags() } returns false

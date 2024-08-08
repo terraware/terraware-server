@@ -15,6 +15,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.default_schema.LandUseModelType
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.gis.CountryDetector
@@ -56,9 +57,11 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
   private val applicationId = ApplicationId(1)
   private val projectId = ProjectId(3)
 
+  private lateinit var organizationId: OrganizationId
+
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    organizationId = insertOrganization()
     insertProject()
 
     every { user.canReadProject(any()) } returns true
