@@ -370,6 +370,12 @@ data class ObservationPayload(
     val numUnclaimedPlots: Int,
     val plantingSiteId: PlantingSiteId,
     val plantingSiteName: String,
+    @ArraySchema(
+        arraySchema =
+            Schema(
+                description =
+                    "If specific subzones were requested for this observation, their IDs."))
+    val requestedSubzoneIds: Set<PlantingSubzoneId>?,
     @Schema(description = "Date this observation started.") //
     val startDate: LocalDate,
     val state: ObservationState,
@@ -386,6 +392,7 @@ data class ObservationPayload(
       numUnclaimedPlots = counts?.totalUnclaimed ?: 0,
       plantingSiteId = model.plantingSiteId,
       plantingSiteName = plantingSiteName,
+      requestedSubzoneIds = model.requestedSubzoneIds.ifEmpty { null },
       startDate = model.startDate,
       state = model.state,
   )
