@@ -42,6 +42,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HI
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_NOTIFICATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.log.perClassLogger
@@ -210,6 +211,25 @@ class PlantingSiteStore(
 
     val zoneTotalSinceField = DSL.sum(PLANTING_ZONE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION)
     val zoneTotalPlantsField = DSL.sum(PLANTING_ZONE_POPULATIONS.TOTAL_PLANTS)
+    val subzoneTotalPlantsField = DSL.sum(PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS)
+    val subzonesField =
+        DSL.multiset(
+                DSL.select(
+                        PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID, subzoneTotalPlantsField)
+                    .from(PLANTING_SUBZONE_POPULATIONS)
+                    .join(PLANTING_SUBZONES)
+                    .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                    .where(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
+                    .groupBy(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID)
+                    .having(subzoneTotalPlantsField.gt(BigDecimal.ZERO)))
+            .convertFrom { result ->
+              result.map { record ->
+                PlantingSiteReportedPlantTotals.PlantingSubzone(
+                    record[PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID]!!,
+                    record[subzoneTotalPlantsField]!!.toInt())
+              }
+            }
+
     val zoneTotals =
         dslContext
             .select(
@@ -217,7 +237,8 @@ class PlantingSiteStore(
                 PLANTING_ZONES.AREA_HA,
                 PLANTING_ZONES.TARGET_PLANTING_DENSITY,
                 zoneTotalSinceField,
-                zoneTotalPlantsField)
+                zoneTotalPlantsField,
+                subzonesField)
             .from(PLANTING_ZONES)
             .leftJoin(PLANTING_ZONE_POPULATIONS)
             .on(PLANTING_ZONE_POPULATIONS.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
@@ -233,6 +254,7 @@ class PlantingSiteStore(
               PlantingSiteReportedPlantTotals.PlantingZone(
                   id = record[PLANTING_ZONES.ID.asNonNullable()],
                   plantsSinceLastObservation = record[zoneTotalSinceField]?.toInt() ?: 0,
+                  plantingSubzones = record[subzonesField] ?: emptyList(),
                   targetPlants = targetPlants.toInt(),
                   totalPlants = record[zoneTotalPlantsField]?.toInt() ?: 0,
               )

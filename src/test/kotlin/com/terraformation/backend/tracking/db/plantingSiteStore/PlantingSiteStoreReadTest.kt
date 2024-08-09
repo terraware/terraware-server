@@ -75,24 +75,39 @@ internal class PlantingSiteStoreReadTest : PlantingSiteStoreTest() {
     }
 
     @Test
-    fun `returns correct zone-level totals`() {
+    fun `returns correct zone-level and subzone-level totals`() {
       val plantingSiteId = insertPlantingSite()
+
       val plantingZoneId1 =
           insertPlantingZone(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
+      val plantingSubzoneId1a = insertPlantingSubzone()
       insertSpecies()
+      insertPlantingSubzonePopulation(totalPlants = 5)
       insertPlantingZonePopulation(plantsSinceLastObservation = 1, totalPlants = 10)
       insertPlantingSitePopulation(plantsSinceLastObservation = 1, totalPlants = 10)
+      val plantingSubzoneId1b = insertPlantingSubzone()
+      insertPlantingSubzonePopulation(totalPlants = 5)
       insertSpecies()
+      insertPlantingSubzonePopulation(totalPlants = 20)
       insertPlantingZonePopulation(plantsSinceLastObservation = 2, totalPlants = 20)
+
       val plantingZoneId2 =
           insertPlantingZone(areaHa = BigDecimal(101), targetPlantingDensity = BigDecimal(4))
+      val plantingSubzoneId2 = insertPlantingSubzone()
+      insertPlantingSubzonePopulation(totalPlants = 50)
       insertPlantingZonePopulation(plantsSinceLastObservation = 4, totalPlants = 40)
       insertPlantingSitePopulation(plantsSinceLastObservation = 6, totalPlants = 60)
       insertSpecies()
+      insertPlantingSubzonePopulation(totalPlants = 55)
       insertPlantingZonePopulation(plantsSinceLastObservation = 8, totalPlants = 80)
       insertPlantingSitePopulation(plantsSinceLastObservation = 8, totalPlants = 80)
+
       val emptyPlantingZoneId =
           insertPlantingZone(areaHa = BigDecimal(50), targetPlantingDensity = BigDecimal(5))
+      insertPlantingSubzone()
+
+      // Note that the zone/subzone/site totals don't all add up correctly here; that's intentional
+      // to make sure the values are coming from the right places.
 
       val expected =
           PlantingSiteReportedPlantTotals(
@@ -104,16 +119,32 @@ internal class PlantingSiteStoreReadTest : PlantingSiteStoreTest() {
                           plantsSinceLastObservation = 3,
                           targetPlants = 20,
                           totalPlants = 30,
+                          plantingSubzones =
+                              listOf(
+                                  PlantingSiteReportedPlantTotals.PlantingSubzone(
+                                      id = plantingSubzoneId1a,
+                                      totalPlants = 5,
+                                  ),
+                                  PlantingSiteReportedPlantTotals.PlantingSubzone(
+                                      id = plantingSubzoneId1b,
+                                      totalPlants = 25,
+                                  )),
                       ),
                       PlantingSiteReportedPlantTotals.PlantingZone(
                           id = plantingZoneId2,
                           plantsSinceLastObservation = 12,
                           targetPlants = 404,
                           totalPlants = 120,
-                      ),
+                          plantingSubzones =
+                              listOf(
+                                  PlantingSiteReportedPlantTotals.PlantingSubzone(
+                                      id = plantingSubzoneId2,
+                                      totalPlants = 105,
+                                  ))),
                       PlantingSiteReportedPlantTotals.PlantingZone(
                           id = emptyPlantingZoneId,
                           plantsSinceLastObservation = 0,
+                          plantingSubzones = emptyList(),
                           targetPlants = 250,
                           totalPlants = 0,
                       ),
