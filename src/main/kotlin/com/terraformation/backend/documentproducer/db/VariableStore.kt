@@ -108,13 +108,16 @@ class VariableStore(
       }
 
   fun fetchDeliverableVariables(deliverableId: DeliverableId): List<Variable> =
-      dslContext
-          .select(VARIABLES.ID)
-          .from(VARIABLES)
-          .where(VARIABLES.DELIVERABLE_ID.eq(deliverableId))
-          .orderBy(VARIABLES.DELIVERABLE_POSITION)
-          .fetch(VARIABLES.ID.asNonNullable())
-          .map { fetchVariable(it) }
+      with(VARIABLES) {
+        dslContext
+            .select(DSL.max(ID))
+            .from(VARIABLES)
+            .where(DELIVERABLE_ID.eq(deliverableId))
+            .groupBy(STABLE_ID)
+            .fetch()
+            .map { fetchVariable(it[DSL.max(ID)]!!) }
+            .sortedBy { it.deliverablePosition }
+      }
 
   /**
    * Returns a list of the top-level variables in a manifest in position order. Child sections and

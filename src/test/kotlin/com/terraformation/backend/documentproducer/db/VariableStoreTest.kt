@@ -200,17 +200,39 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
               insertVariable(
                   type = VariableType.Number,
                   deliverableId = deliverableId1,
-                  deliverablePosition = 0))
+                  deliverablePosition = 1,
+                  name = "Variable 1",
+                  stableId = "1"))
+
+      // This variable had a new version created
       val variableId2 =
           insertNumberVariable(
               insertVariable(
                   type = VariableType.Number,
                   deliverableId = deliverableId1,
-                  deliverablePosition = 1,
-                  isRequired = true))
+                  // This version should appear first since the position is lower than variable 1's
+                  deliverablePosition = 0,
+                  isRequired = false,
+                  name = "Variable 2",
+                  stableId = "2"))
+      val variableId3 =
+          insertNumberVariable(
+              insertVariable(
+                  type = VariableType.Number,
+                  deliverableId = deliverableId1,
+                  deliverablePosition = 0,
+                  isRequired = true,
+                  name = "Variable 2",
+                  replacesVariableId = variableId2,
+                  stableId = "2"))
+
+      // Another variable unrelated to the requested deliverable
       insertNumberVariable(
           insertVariable(
-              type = VariableType.Number, deliverableId = deliverableId2, deliverablePosition = 0))
+              type = VariableType.Number,
+              deliverableId = deliverableId2,
+              deliverablePosition = 0,
+              stableId = "3"))
 
       val expected =
           listOf(
@@ -219,6 +241,21 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       BaseVariableProperties(
                           deliverableId = deliverableId1,
                           deliverablePosition = 0,
+                          id = variableId3,
+                          isRequired = true,
+                          manifestId = null,
+                          name = "Variable 2",
+                          position = 0,
+                          stableId = "2",
+                          replacesVariableId = variableId2),
+                  decimalPlaces = 0,
+                  minValue = null,
+                  maxValue = null),
+              NumberVariable(
+                  base =
+                      BaseVariableProperties(
+                          deliverableId = deliverableId1,
+                          deliverablePosition = 1,
                           id = variableId1,
                           isRequired = false,
                           manifestId = null,
@@ -228,23 +265,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       ),
                   decimalPlaces = 0,
                   minValue = null,
-                  maxValue = null),
-              NumberVariable(
-                  base =
-                      BaseVariableProperties(
-                          deliverableId = deliverableId1,
-                          deliverablePosition = 1,
-                          id = variableId2,
-                          isRequired = true,
-                          manifestId = null,
-                          name = "Variable 2",
-                          position = 0,
-                          stableId = "2",
-                      ),
-                  decimalPlaces = 0,
-                  minValue = null,
-                  maxValue = null),
-          )
+                  maxValue = null))
 
       val actual = store.fetchDeliverableVariables(deliverableId1)
 
