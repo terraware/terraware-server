@@ -1,3 +1,4 @@
+0cc641fdcfd SW-5795 Use dynamic device and automation IDs in tests (#2261)
 30b52dc99c4 SW-5795 Use dynamic IDs in PermissionTest (#2260)
 ab63556b44e SW-5795 Use dynamic IDs in controller tests (#2257)
 ff6c296dbfb SW-5761 Add subzones to reported plants endpoint (#2258)
