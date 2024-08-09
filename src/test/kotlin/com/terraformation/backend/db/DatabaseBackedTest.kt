@@ -917,10 +917,11 @@ abstract class DatabaseBackedTest {
     deliverableProjectDueDatesDao.insert(row)
   }
 
+  private var nextDeviceNumber = 1
+
   protected fun insertDevice(
-      id: Any? = null,
       facilityId: FacilityId = inserted.facilityId,
-      name: String = "device $id",
+      name: String = "device ${nextDeviceNumber++}",
       createdBy: UserId = currentUser().userId,
       type: String = "type"
   ): DeviceId {
@@ -930,8 +931,7 @@ abstract class DatabaseBackedTest {
           .set(ADDRESS, "address")
           .set(CREATED_BY, createdBy)
           .set(DEVICE_TYPE, type)
-          .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
-          .apply { id?.toIdWrapper { DeviceId(it) }?.let { set(ID, it) } }
+          .set(FACILITY_ID, facilityId)
           .set(MAKE, "make")
           .set(MODEL, "model")
           .set(MODIFIED_BY, createdBy)
@@ -943,10 +943,11 @@ abstract class DatabaseBackedTest {
     }
   }
 
+  var nextAutomationNumber = 1
+
   protected fun insertAutomation(
-      id: Any? = null,
       facilityId: FacilityId = inserted.facilityId,
-      name: String = "automation $id",
+      name: String = "automation ${nextAutomationNumber++}",
       type: String = AutomationModel.SENSOR_BOUNDS_TYPE,
       deviceId: Any? = inserted.deviceId,
       timeseriesName: String? = "timeseries",
@@ -961,7 +962,6 @@ abstract class DatabaseBackedTest {
           .set(CREATED_TIME, Instant.EPOCH)
           .set(DEVICE_ID, deviceId?.toIdWrapper { DeviceId(it) })
           .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
-          .apply { id?.toIdWrapper { AutomationId(it) }?.let { set(ID, it) } }
           .set(LOWER_THRESHOLD, lowerThreshold)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)

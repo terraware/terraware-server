@@ -6,8 +6,6 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.default_schema.AutomationId
-import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.*
@@ -23,27 +21,22 @@ internal class AutomationStoreTest : DatabaseTest(), RunsAsUser {
     AutomationStore(automationsDao, clock, dslContext, objectMapper, ParentStore(dslContext))
   }
 
-  private val deviceId = DeviceId(1000)
-
   @BeforeEach
   fun setUp() {
     every { user.canListAutomations(any()) } returns true
     every { user.canReadDevice(any()) } returns true
 
     insertSiteData()
-    insertDevice(deviceId)
   }
 
   @Test
   fun `fetchByDeviceId filters by device ID`() {
-    val otherDeviceId = DeviceId(1001)
+    val deviceId = insertDevice()
+    val automationId = insertAutomation()
+    insertDevice()
+    insertAutomation()
 
-    insertDevice(otherDeviceId)
-
-    insertAutomation(1, deviceId = deviceId)
-    insertAutomation(2, deviceId = otherDeviceId)
-
-    val expectedRow = automationsDao.fetchOneById(AutomationId(1))!!
+    val expectedRow = automationsDao.fetchOneById(automationId)!!
     val expected = listOf(AutomationModel(expectedRow, objectMapper))
     val actual = store.fetchByDeviceId(deviceId)
 

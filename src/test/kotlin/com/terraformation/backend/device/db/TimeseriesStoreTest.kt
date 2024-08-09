@@ -32,8 +32,7 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private lateinit var store: TimeseriesStore
 
-  private val deviceId = DeviceId(1)
-
+  private lateinit var deviceId: DeviceId
   private lateinit var timeseriesRow: TimeseriesRow
 
   @BeforeEach
@@ -41,7 +40,7 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
     store = TimeseriesStore(clock, dslContext)
 
     insertSiteData()
-    insertDevice(deviceId)
+    deviceId = insertDevice()
 
     every { user.canCreateTimeseries(any()) } returns true
     every { user.canReadDevice(any()) } returns true
