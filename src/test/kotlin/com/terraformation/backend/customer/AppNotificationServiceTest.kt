@@ -40,8 +40,6 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
-import com.terraformation.backend.db.default_schema.AutomationId
-import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -363,15 +361,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store sensor bounds alert notification`() {
-    val automationId = AutomationId(1)
-    val deviceId = DeviceId(1)
     val timeseriesName = "test timeseries"
     val facilityName = "Facility 1"
     val badValue = 5.678
 
     insertOrganizationUser()
-    insertDevice(deviceId)
-    insertAutomation(automationId, deviceId = deviceId, timeseriesName = timeseriesName)
+    val deviceId = insertDevice()
+    val automationId = insertAutomation(timeseriesName = timeseriesName)
 
     every {
       messages.sensorBoundsAlert(
@@ -389,14 +385,14 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store unknown automation triggered notification`() {
-    val automationId = AutomationId(1)
     val automationName = "automation name"
     val automationType = "unknown"
     val facilityName = "Facility 1"
     val message = "message"
 
     insertOrganizationUser()
-    insertAutomation(automationId, name = automationName, type = automationType, deviceId = null)
+    val automationId =
+        insertAutomation(name = automationName, type = automationType, deviceId = null)
 
     val title = "Automation $automationId triggered at $facilityName"
     every { messages.unknownAutomationTriggered(automationName, facilityName, message) } returns
@@ -413,11 +409,10 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store device unresponsive notification`() {
-    val deviceId = DeviceId(1)
     val deviceName = "test device"
+    val deviceId = insertDevice(name = deviceName, type = "sensor")
 
     insertOrganizationUser()
-    insertDevice(deviceId, name = deviceName, type = "sensor")
 
     every { messages.deviceUnresponsive(deviceName) } returns
         NotificationMessage("unresponsive title", "unresponsive body")
