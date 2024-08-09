@@ -21,6 +21,7 @@ import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.table.SearchTables
 import io.mockk.every
+import java.util.UUID
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -287,15 +288,16 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `searches cohorts and participants`() {
-    val cohortId1 = insertCohort()
-    val participantId2 = insertParticipant(cohortId = cohortId1)
+    val suffix = "${UUID.randomUUID()}"
+    val cohortId1 = insertCohort(name = "Cohort 1 $suffix")
+    val participantId2 = insertParticipant(cohortId = cohortId1, name = "Participant 2 $suffix")
     val projectId2 = insertProject(participantId = participantId2)
     val projectId3 = insertProject(participantId = participantId2)
-    val participantId3 = insertParticipant(cohortId = cohortId1)
+    val participantId3 = insertParticipant(cohortId = cohortId1, name = "Participant 3 $suffix")
 
     // Test setup already inserts a participant+project with no cohort; also insert a second cohort
-    insertCohort()
-    insertParticipant(cohortId = inserted.cohortId)
+    insertCohort(name = "Cohort 2 $suffix")
+    insertParticipant(cohortId = inserted.cohortId, name = "Participant 4 $suffix")
     insertProject(participantId = inserted.participantId)
 
     val prefix = SearchFieldPrefix(searchTables.cohorts)
@@ -317,14 +319,14 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
             listOf(
                 mapOf(
                     "id" to "$cohortId1",
-                    "name" to "Cohort 1",
+                    "name" to "Cohort 1 $suffix",
                     "numParticipants" to "2",
                     "phase" to "Phase 0 - Due Diligence",
                     "participants" to
                         listOf(
                             mapOf(
                                 "id" to "$participantId2",
-                                "name" to "Participant 2",
+                                "name" to "Participant 2 $suffix",
                                 "projects" to
                                     listOf(
                                         mapOf(
@@ -338,13 +340,14 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                                     )),
                             mapOf(
                                 "id" to "$participantId3",
-                                "name" to "Participant 3",
+                                "name" to "Participant 3 $suffix",
                             ),
                         ),
                 )))
 
     val actual =
-        searchService.search(prefix, fields, FieldNode(prefix.resolve("name"), listOf("Cohort 1")))
+        searchService.search(
+            prefix, fields, FieldNode(prefix.resolve("name"), listOf("Cohort 1 $suffix")))
 
     assertJsonEquals(expected, actual)
   }

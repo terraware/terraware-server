@@ -92,6 +92,7 @@ import java.time.Duration
 import java.time.Instant
 import java.time.LocalDate
 import java.util.Locale
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -807,7 +808,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should store species added to project notification`() {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
-    val participantId = insertParticipant()
+    val participantName = "Participant ${UUID.randomUUID()}"
+    val participantId = insertParticipant(name = participantName)
     val projectId = insertProject(participantId = participantId)
     val speciesId = insertSpecies()
     insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
@@ -815,7 +817,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val deliverableId = insertDeliverable()
 
     every {
-      messages.participantProjectSpeciesAddedToProject("Participant 1", "Project 1", "Species 1")
+      messages.participantProjectSpeciesAddedToProject(participantName, "Project 1", "Species 1")
     } returns NotificationMessage("species added title", "species added body")
 
     service.on(
@@ -834,7 +836,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should store species approved species edited notification`() {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
-    val participantId = insertParticipant()
+    val participantName = "Participant ${UUID.randomUUID()}"
+    val participantId = insertParticipant(name = participantName)
     val projectId = insertProject(participantId = participantId)
     val speciesId = insertSpecies()
     insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
@@ -842,7 +845,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val deliverableId = insertDeliverable()
 
     every {
-      messages.participantProjectSpeciesApprovedSpeciesEdited("Participant 1", "Species 1")
+      messages.participantProjectSpeciesApprovedSpeciesEdited(participantName, "Species 1")
     } returns NotificationMessage("species edited title", "species edited body")
 
     service.on(
