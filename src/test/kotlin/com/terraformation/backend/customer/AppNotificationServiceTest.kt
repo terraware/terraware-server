@@ -85,6 +85,7 @@ import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.util.mockDeliverable
 import io.mockk.every
 import io.mockk.mockk
 import java.net.URI
@@ -100,6 +101,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
+  val deliverable = mockDeliverable()
 
   @Autowired private lateinit var config: TerrawareServerConfig
 
@@ -261,6 +263,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadSpecies(any()) } returns true
     every { user.locale } returns Locale.ENGLISH
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
+    every {
+      deliverableStore.fetchDeliverableSubmissions()
+    } returns listOf(deliverable)
 
     otherUserId = insertUser()
   }
