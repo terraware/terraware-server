@@ -10,9 +10,9 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
+import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
-import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.search.AndNode
@@ -34,7 +34,6 @@ import org.junit.jupiter.api.Test
 
 internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-  override val tablesToResetSequences = listOf(BATCHES)
 
   private val clock = TestClock()
   private val searchService: SearchService by lazy { SearchService(dslContext) }
@@ -54,18 +53,23 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class SummaryTables {
     private lateinit var organizationId2: OrganizationId
-    private val speciesId1 = SpeciesId(1)
-    private val speciesId2 = SpeciesId(2)
-    private val org2SpeciesId = SpeciesId(3)
+    private lateinit var speciesId1: SpeciesId
+    private lateinit var speciesId2: SpeciesId
+    private lateinit var org2SpeciesId: SpeciesId
     private lateinit var facilityId2: FacilityId
     private lateinit var org2FacilityId: FacilityId
-    private val subLocationId = SubLocationId(1)
+    private lateinit var subLocationId: SubLocationId
+    private lateinit var batchId1: BatchId
+    private lateinit var batchId2: BatchId
+    private lateinit var batchId3: BatchId
+    private lateinit var batchId4: BatchId
+    private lateinit var org2BatchId: BatchId
 
     @BeforeEach
     fun insertBatches() {
-      insertSpecies(speciesId1)
-      insertSpecies(speciesId2)
-      insertSubLocation(subLocationId)
+      speciesId1 = insertSpecies()
+      speciesId2 = insertSpecies()
+      subLocationId = insertSubLocation()
 
       facilityId2 = insertFacility(name = "Other Nursery", type = FacilityType.Nursery)
 
@@ -73,7 +77,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       insertOrganizationUser(user.userId, role = Role.Contributor)
       org2FacilityId = insertFacility(name = "Other Org Nursery", type = FacilityType.Nursery)
 
-      insertSpecies(org2SpeciesId)
+      org2SpeciesId = insertSpecies()
 
       every { user.facilityRoles } returns
           mapOf(
@@ -83,54 +87,59 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       every { user.organizationRoles } returns
           mapOf(organizationId to Role.Manager, organizationId2 to Role.Contributor)
 
-      insertBatch(
-          addedDate = LocalDate.of(2021, 3, 4),
-          organizationId = organizationId,
-          facilityId = facilityId,
-          germinatingQuantity = 1,
-          notReadyQuantity = 2,
-          readyQuantity = 4,
-          speciesId = speciesId1,
-      )
+      batchId1 =
+          insertBatch(
+              addedDate = LocalDate.of(2021, 3, 4),
+              organizationId = organizationId,
+              facilityId = facilityId,
+              germinatingQuantity = 1,
+              notReadyQuantity = 2,
+              readyQuantity = 4,
+              speciesId = speciesId1,
+          )
       insertBatchSubLocation()
-      insertBatch(
-          addedDate = LocalDate.of(2022, 9, 2),
-          organizationId = organizationId,
-          facilityId = facilityId,
-          germinatingQuantity = 8,
-          notReadyQuantity = 16,
-          readyQuantity = 32,
-          speciesId = speciesId1,
-          version = 2,
-      )
-      insertBatch(
-          BatchesRow(readyByDate = LocalDate.of(2022, 10, 2)),
-          addedDate = LocalDate.of(2022, 9, 3),
-          organizationId = organizationId,
-          facilityId = facilityId2,
-          germinatingQuantity = 64,
-          notReadyQuantity = 128,
-          readyQuantity = 256,
-          speciesId = speciesId1,
-      )
-      insertBatch(
-          addedDate = LocalDate.of(2022, 9, 4),
-          organizationId = organizationId,
-          facilityId = facilityId,
-          germinatingQuantity = 512,
-          notReadyQuantity = 1024,
-          readyQuantity = 2048,
-          speciesId = speciesId2,
-      )
-      insertBatch(
-          addedDate = LocalDate.of(2022, 11, 15),
-          organizationId = organizationId2,
-          facilityId = org2FacilityId,
-          germinatingQuantity = 4096,
-          notReadyQuantity = 8192,
-          readyQuantity = 16384,
-          speciesId = org2SpeciesId,
-      )
+      batchId2 =
+          insertBatch(
+              addedDate = LocalDate.of(2022, 9, 2),
+              organizationId = organizationId,
+              facilityId = facilityId,
+              germinatingQuantity = 8,
+              notReadyQuantity = 16,
+              readyQuantity = 32,
+              speciesId = speciesId1,
+              version = 2,
+          )
+      batchId3 =
+          insertBatch(
+              BatchesRow(readyByDate = LocalDate.of(2022, 10, 2)),
+              addedDate = LocalDate.of(2022, 9, 3),
+              organizationId = organizationId,
+              facilityId = facilityId2,
+              germinatingQuantity = 64,
+              notReadyQuantity = 128,
+              readyQuantity = 256,
+              speciesId = speciesId1,
+          )
+      batchId4 =
+          insertBatch(
+              addedDate = LocalDate.of(2022, 9, 4),
+              organizationId = organizationId,
+              facilityId = facilityId,
+              germinatingQuantity = 512,
+              notReadyQuantity = 1024,
+              readyQuantity = 2048,
+              speciesId = speciesId2,
+          )
+      org2BatchId =
+          insertBatch(
+              addedDate = LocalDate.of(2022, 11, 15),
+              organizationId = organizationId2,
+              facilityId = org2FacilityId,
+              germinatingQuantity = 4096,
+              notReadyQuantity = 8192,
+              readyQuantity = 16384,
+              speciesId = org2SpeciesId,
+          )
     }
 
     @Test
@@ -162,7 +171,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           SearchResults(
               listOf(
                   mapOf(
-                      "species_id" to "1",
+                      "species_id" to "$speciesId1",
                       "germinatingQuantity" to number(1 + 8 + 64),
                       "notReadyQuantity" to number(2 + 16 + 128),
                       "readyQuantity" to number(4 + 32 + 256),
@@ -187,7 +196,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                               ),
                           )),
                   mapOf(
-                      "species_id" to "2",
+                      "species_id" to "$speciesId2",
                       "germinatingQuantity" to number(512),
                       "notReadyQuantity" to number(1024),
                       "readyQuantity" to number(2048),
@@ -243,11 +252,11 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                           listOf(
                               mapOf(
                                   "species_id" to "$speciesId1",
-                                  "species_scientificName" to "Species $speciesId1",
+                                  "species_scientificName" to "Species 1",
                               ),
                               mapOf(
                                   "species_id" to "$speciesId2",
-                                  "species_scientificName" to "Species $speciesId2",
+                                  "species_scientificName" to "Species 2",
                               ),
                           ),
                       "totalQuantity" to number(2 + 4 + 16 + 32 + 1024 + 2048),
@@ -263,7 +272,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                           listOf(
                               mapOf(
                                   "species_id" to "$speciesId1",
-                                  "species_scientificName" to "Species $speciesId1",
+                                  "species_scientificName" to "Species 1",
                               ),
                           ),
                       "totalQuantity" to number(128 + 256),
@@ -294,7 +303,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           SearchResults(
               listOf(
                   mapOf(
-                      "species_id" to "1",
+                      "species_id" to "$speciesId1",
                       "facility_id" to "$facilityId2",
                       "facility_name" to "Other Nursery",
                       "germinatingQuantity" to number(64),
@@ -308,13 +317,13 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
     fun `batches table returns correct totals`() {
       insertWithdrawal(facilityId = facilityId)
       insertBatchWithdrawal(
-          batchId = 1,
+          batchId = batchId1,
           germinatingQuantityWithdrawn = 512,
           notReadyQuantityWithdrawn = 1024,
           readyQuantityWithdrawn = 2048,
       )
       insertBatchWithdrawal(
-          batchId = 2,
+          batchId = batchId2,
           germinatingQuantityWithdrawn = 4096,
           notReadyQuantityWithdrawn = 8192,
           readyQuantityWithdrawn = 16384,
@@ -322,13 +331,14 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
 
       insertWithdrawal(facilityId = facilityId)
       insertBatchWithdrawal(
-          batchId = 2,
+          batchId = batchId2,
           germinatingQuantityWithdrawn = 32768,
           notReadyQuantityWithdrawn = 65536,
           readyQuantityWithdrawn = 131072,
       )
       insertBatchWithdrawal(
-          batchId = 4, // different species in same withdrawal; shouldn't be included in total
+          batchId =
+              batchId4, // different species in same withdrawal; shouldn't be included in total
           germinatingQuantityWithdrawn = 262144,
           notReadyQuantityWithdrawn = 524288,
           readyQuantityWithdrawn = 1048576,
@@ -358,7 +368,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           SearchResults(
               listOf(
                   mapOf(
-                      "id" to "1",
+                      "id" to "$batchId1",
                       "batchNumber" to "1",
                       "germinatingQuantity" to number(1),
                       "notReadyQuantity" to number(2),
@@ -376,7 +386,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "version" to number(1),
                   ),
                   mapOf(
-                      "id" to "2",
+                      "id" to "$batchId2",
                       "batchNumber" to "2",
                       "germinatingQuantity" to number(8),
                       "notReadyQuantity" to number(16),
@@ -388,7 +398,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "version" to number(2),
                   ),
                   mapOf(
-                      "id" to "3",
+                      "id" to "$batchId3",
                       "batchNumber" to "3",
                       "germinatingQuantity" to number(64),
                       "notReadyQuantity" to number(128),
@@ -438,8 +448,8 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       insertPlantingSite()
       insertPlantingZone()
 
-      val facility1Species1BatchId = 1
-      val facility1Species2BatchId = 4
+      val facility1Species1BatchId = batchId1
+      val facility1Species2BatchId = batchId4
       val facility2Species2BatchId =
           insertBatch(
               facilityId = facilityId2,
@@ -459,7 +469,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
 
       insertBatchWithdrawal(
           batchId = facility1Species1BatchId,
-          destinationBatchId = 3,
+          destinationBatchId = batchId3,
           readyQuantityWithdrawn = 1,
       )
       insertBatchWithdrawal(
