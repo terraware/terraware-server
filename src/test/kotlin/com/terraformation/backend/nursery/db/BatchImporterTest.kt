@@ -112,7 +112,6 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         userStore)
   }
 
-  private val uploadId = UploadId(1)
   private lateinit var facilityId: FacilityId
   private lateinit var organizationId: OrganizationId
   private lateinit var subLocationId: SubLocationId
@@ -295,7 +294,9 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `rejects files with validation errors`() {
-    insertBatchUpload(headerAnd("ShortName,,1,1,2022-01-01,\n"), UploadStatus.AwaitingValidation)
+    val uploadId =
+        insertBatchUpload(
+            headerAnd("ShortName,,1,1,2022-01-01,\n"), UploadStatus.AwaitingValidation)
 
     importer.validateCsv(uploadId)
 
@@ -320,7 +321,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `uses new name if a species has been renamed`() {
     val speciesId = insertSpecies(scientificName = "New name", initialScientificName = "Old name")
-    insertBatchUpload(headerAnd("Old name,,,,2022-01-01,"))
+    val uploadId = insertBatchUpload(headerAnd("Old name,,,,2022-01-01,"))
 
     importer.importCsv(uploadId, false)
 
@@ -343,7 +344,6 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     every { uploadService.receive(any(), any(), any(), any(), any(), any(), any()) } answers
         {
           insertBatchUpload(csvContent, UploadStatus.AwaitingValidation, locale)
-          uploadId
         }
 
     locale.use { importer.receiveCsv(csvContent.inputStream(), filename, facilityId) }
@@ -354,14 +354,16 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         UploadStatus.AwaitingProcessing,
-        uploadsDao.fetchOneById(uploadId)?.statusId,
+        uploadsDao.fetchOneById(inserted.uploadId)?.statusId,
         "Status after validation")
 
     // Import
     slot.captured.accept(importer)
 
     assertEquals(
-        UploadStatus.Completed, uploadsDao.fetchOneById(uploadId)?.statusId, "Status after import")
+        UploadStatus.Completed,
+        uploadsDao.fetchOneById(inserted.uploadId)?.statusId,
+        "Status after import")
 
     assertEquals(
         expectedSpecies, speciesDao.findAll().sortedBy { it.id!!.value }, "Imported species")
@@ -395,14 +397,13 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
       body: ByteArray,
       status: UploadStatus = UploadStatus.AwaitingProcessing,
       locale: Locale = Locale.ENGLISH,
-  ) {
+  ): UploadId {
     every { fileStore.read(any()) } answers
         {
           SizedInputStream(body.inputStream(), body.size.toLong())
         }
 
-    insertUpload(
-        id = uploadId,
+    return insertUpload(
         facilityId = facilityId,
         locale = locale,
         organizationId = organizationId,
@@ -412,6 +413,6 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
   }
 
   private fun assertStatus(expected: UploadStatus) {
-    assertEquals(expected, uploadsDao.fetchOneById(uploadId)?.statusId, "Upload status")
+    assertEquals(expected, uploadsDao.fetchOneById(inserted.uploadId)?.statusId, "Upload status")
   }
 }

@@ -10,7 +10,6 @@ import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadsRow
-import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.use
 import com.terraformation.backend.mockUser
@@ -35,7 +34,6 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-  override val tablesToResetSequences = listOf(UPLOADS)
 
   private val clock = TestClock()
   private val fileStore: FileStore = mockk()
@@ -47,7 +45,6 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   private val storageUrl = URI.create("file:///test")
-  private val uploadId = UploadId(1)
 
   @BeforeEach
   fun setUp() {
@@ -74,7 +71,6 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 filename = fileName,
-                id = UploadId(1),
                 locale = Locales.GIBBERISH,
                 organizationId = organizationId,
                 statusId = UploadStatus.AwaitingValidation,
@@ -82,14 +78,10 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
                 typeId = type,
             ))
 
-    val uploadId =
-        Locales.GIBBERISH.use {
-          service.receive(stream, fileName, contentType, type, organizationId)
-        }
+    Locales.GIBBERISH.use { service.receive(stream, fileName, contentType, type, organizationId) }
 
     val actual = uploadsDao.findAll()
-    assertEquals(expected[0].id, uploadId, "Upload ID")
-    assertEquals(expected, actual, "Uploads row")
+    assertEquals(expected, actual.map { it.copy(id = null) }, "Uploads row")
   }
 
   @Test
@@ -110,7 +102,7 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
   fun `delete deletes file from file store`() {
     every { fileStore.delete(storageUrl) } just Runs
 
-    insertUpload(uploadId, storageUrl = storageUrl)
+    val uploadId = insertUpload(storageUrl = storageUrl)
 
     service.delete(uploadId)
 
@@ -122,7 +114,7 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
   fun `delete deletes file from database even if file store deletion fails`() {
     every { fileStore.delete(storageUrl) } throws NoSuchFileException("x")
 
-    insertUpload(uploadId, storageUrl = storageUrl)
+    val uploadId = insertUpload(storageUrl = storageUrl)
 
     service.delete(uploadId)
 
@@ -133,14 +125,11 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
   fun `delete throws exception if no permission to delete upload`() {
     every { user.canDeleteUpload(any()) } returns false
 
-    assertThrows<AccessDeniedException> { service.delete(uploadId) }
+    assertThrows<AccessDeniedException> { service.delete(UploadId(1)) }
   }
 
   @Test
   fun `expireOldUploads only removes old uploads`() {
-    val twoWeekOldId = UploadId(1)
-    val weekOldId = UploadId(2)
-    val recentId = UploadId(3)
     val twoWeekOldStorageUrl = URI.create("file:///twoweek")
     val weekOldStorageUrl = URI.create("file:///week")
     val recentStorageUrl = URI.create("file:///recent")
@@ -150,17 +139,15 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
     every { fileStore.delete(twoWeekOldStorageUrl) } just Runs
     every { fileStore.delete(weekOldStorageUrl) } just Runs
 
-    insertUpload(
-        twoWeekOldId, createdTime = now - Duration.ofDays(14), storageUrl = twoWeekOldStorageUrl)
-    insertUpload(weekOldId, createdTime = now - Duration.ofDays(7), storageUrl = weekOldStorageUrl)
-    insertUpload(recentId, createdTime = now - Duration.ofDays(6), storageUrl = recentStorageUrl)
+    insertUpload(createdTime = now - Duration.ofDays(14), storageUrl = twoWeekOldStorageUrl)
+    insertUpload(createdTime = now - Duration.ofDays(7), storageUrl = weekOldStorageUrl)
+    val recentId =
+        insertUpload(createdTime = now - Duration.ofDays(6), storageUrl = recentStorageUrl)
 
     service.expireOldUploads(DailyTaskTimeArrivedEvent())
 
-    val expectedIds = listOf(recentId)
+    assertEquals(listOf(recentId), uploadsDao.findAll().map { it.id!! })
 
-    val actualIds = dslContext.select(UPLOADS.ID).from(UPLOADS).fetch(UPLOADS.ID)
-    assertEquals(expectedIds, actualIds)
     verifySequence {
       fileStore.delete(twoWeekOldStorageUrl)
       fileStore.delete(weekOldStorageUrl)
@@ -171,7 +158,7 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
   fun `expireOldUploads deletes database row if file does not exist`() {
     every { fileStore.delete(storageUrl) } throws NoSuchFileException("")
 
-    insertUpload(1, createdTime = clock.instant() - Duration.ofDays(7), storageUrl = storageUrl)
+    insertUpload(createdTime = clock.instant() - Duration.ofDays(7), storageUrl = storageUrl)
 
     service.expireOldUploads(DailyTaskTimeArrivedEvent())
 
@@ -180,26 +167,18 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `expireOldUploads does not delete database row if file deletion fails`() {
-    val uploadId = UploadId(1)
-
     every { fileStore.delete(storageUrl) } throws IOException("oops")
 
-    insertUpload(
-        uploadId, createdTime = clock.instant() - Duration.ofDays(7), storageUrl = storageUrl)
+    val uploadId =
+        insertUpload(createdTime = clock.instant() - Duration.ofDays(7), storageUrl = storageUrl)
 
     service.expireOldUploads(DailyTaskTimeArrivedEvent())
 
-    val expectedIds = listOf(uploadId)
-
-    val actualIds = dslContext.select(UPLOADS.ID).from(UPLOADS).fetch(UPLOADS.ID)
-    assertEquals(expectedIds, actualIds)
+    assertEquals(listOf(uploadId), uploadsDao.findAll().map { it.id!! })
   }
 
   @Test
   fun `OrganizationDeletionStartedEvent listener deletes all uploads in organization`() {
-    val uploadId1 = UploadId(1)
-    val uploadId2 = UploadId(2)
-    val otherOrgUploadId = UploadId(3)
     val storageUrl1 = URI("file:///1")
     val storageUrl2 = URI("file:///1")
     val otherOrgStorageUrl = URI("file:///3")
@@ -209,10 +188,10 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
 
     val organizationId = insertOrganization()
     val otherOrganizationId = insertOrganization()
-    insertUpload(uploadId1, organizationId = organizationId, storageUrl = storageUrl1)
-    insertUpload(uploadId2, organizationId = organizationId, storageUrl = storageUrl2)
-    insertUpload(
-        otherOrgUploadId, organizationId = otherOrganizationId, storageUrl = otherOrgStorageUrl)
+    insertUpload(organizationId = organizationId, storageUrl = storageUrl1)
+    insertUpload(organizationId = organizationId, storageUrl = storageUrl2)
+    val otherOrgUploadId =
+        insertUpload(organizationId = otherOrganizationId, storageUrl = otherOrgStorageUrl)
 
     service.on(OrganizationDeletionStartedEvent(organizationId))
 

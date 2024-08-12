@@ -55,7 +55,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
 internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
-  override val tablesToResetSequences = listOf(SPECIES, SPECIES_PROBLEMS, UPLOADS, UPLOAD_PROBLEMS)
+  override val tablesToResetSequences = listOf(SPECIES, SPECIES_PROBLEMS, UPLOAD_PROBLEMS)
   override val user = mockUser()
 
   private val clock = TestClock()
@@ -96,7 +96,6 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
       "Scientific Name,Common Name,Family,IUCN Category,Rare,Growth Form,Seed Storage Behavior,Ecosystem Types"
 
   private val storageUrl = URI.create("file:///test")
-  private val uploadId = UploadId(10)
 
   private lateinit var organizationId: OrganizationId
   private lateinit var userId: UserId
@@ -108,19 +107,19 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     every { speciesChecker.checkAllUncheckedSpecies(organizationId) } just Runs
     every { user.canCreateSpecies(organizationId) } returns true
-    every { user.canDeleteUpload(uploadId) } returns true
+    every { user.canDeleteUpload(any()) } returns true
     every { user.canReadOrganization(organizationId) } returns true
     every { user.canReadSpecies(any()) } returns true
-    every { user.canReadUpload(uploadId) } returns true
+    every { user.canReadUpload(any()) } returns true
     every { user.canUpdateSpecies(any()) } returns true
-    every { user.canUpdateUpload(uploadId) } returns true
+    every { user.canUpdateUpload(any()) } returns true
     every { userStore.fetchOneById(userId) } returns user
   }
 
   @Test
   fun `receiveCsv schedules validate job`() {
     every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
-    every { uploadService.receive(any(), any(), any(), any(), any()) } returns uploadId
+    every { uploadService.receive(any(), any(), any(), any(), any()) } returns UploadId(1)
 
     importer.receiveCsv(ByteArrayInputStream(ByteArray(1)), "test", organizationId)
 
@@ -135,11 +134,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
       every { fileStore.read(storageUrl) } returns sizedInputStream(template)
       every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
 
-      insertUpload(
-          uploadId,
-          organizationId = organizationId,
-          storageUrl = storageUrl,
-          type = UploadType.SpeciesCSV)
+      val uploadId =
+          insertUpload(
+              organizationId = organizationId,
+              storageUrl = storageUrl,
+              type = UploadType.SpeciesCSV)
 
       importer.validateCsv(uploadId)
 
@@ -164,15 +163,15 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `cancelProcessing throws exception if upload is not awaiting user action`() {
-    insertUpload(uploadId, status = UploadStatus.Processing)
+    val uploadId = insertUpload(status = UploadStatus.Processing)
 
     assertThrows<UploadNotAwaitingActionException> { importer.cancelProcessing(uploadId) }
   }
 
   @Test
   fun `cancelProcessing deletes upload if it is awaiting user action`() {
+    val uploadId = insertUpload(status = UploadStatus.AwaitingUserAction)
     every { uploadService.delete(uploadId) } just Runs
-    insertUpload(uploadId, status = UploadStatus.AwaitingUserAction)
 
     importer.cancelProcessing(uploadId)
 
@@ -181,15 +180,15 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `resolveWarnings throws exception if upload is not awaiting user action`() {
-    insertUpload(uploadId, status = UploadStatus.Processing)
+    val uploadId = insertUpload(status = UploadStatus.Processing)
 
     assertThrows<UploadNotAwaitingActionException> { importer.resolveWarnings(uploadId, true) }
   }
 
   @Test
   fun `resolveWarnings schedules import job`() {
+    val uploadId = insertUpload(status = UploadStatus.AwaitingUserAction)
     every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
-    insertUpload(uploadId, status = UploadStatus.AwaitingUserAction)
 
     importer.resolveWarnings(uploadId, true)
 
@@ -199,12 +198,12 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `validateCsv detects existing scientific names`() {
     every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nExisting name,,,,,,,")
-    insertUpload(
-        uploadId,
-        organizationId = organizationId,
-        status = UploadStatus.AwaitingValidation,
-        storageUrl = storageUrl)
-    insertSpecies(1, "Existing name")
+    val uploadId =
+        insertUpload(
+            organizationId = organizationId,
+            status = UploadStatus.AwaitingValidation,
+            storageUrl = storageUrl)
+    insertSpecies(scientificName = "Existing name")
 
     importer.validateCsv(uploadId)
 
@@ -231,11 +230,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         {
           sizedInputStream("$header\nInitial name,,,,,,,")
         }
-    insertUpload(
-        uploadId,
-        organizationId = organizationId,
-        status = UploadStatus.AwaitingProcessing,
-        storageUrl = storageUrl)
+    val uploadId =
+        insertUpload(
+            organizationId = organizationId,
+            status = UploadStatus.AwaitingProcessing,
+            storageUrl = storageUrl)
     insertSpecies(2, "Corrected name", initialScientificName = "Initial name")
 
     importer.validateCsv(uploadId)
@@ -260,12 +259,12 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun `validateCsv does not treat deleted species as name collisions`() {
     every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nExisting name,,,,,,,")
     every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
-    insertUpload(
-        uploadId,
-        organizationId = organizationId,
-        status = UploadStatus.AwaitingValidation,
-        storageUrl = storageUrl)
     insertSpecies(1, "Existing name", deletedTime = Instant.EPOCH)
+    val uploadId =
+        insertUpload(
+            organizationId = organizationId,
+            status = UploadStatus.AwaitingValidation,
+            storageUrl = storageUrl)
 
     importer.validateCsv(uploadId)
 
@@ -276,11 +275,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `validateCsv sets upload status to Invalid if there are validation errors`() {
     every { fileStore.read(storageUrl) } returns sizedInputStream("bogus")
-    insertUpload(
-        uploadId,
-        organizationId = organizationId,
-        status = UploadStatus.AwaitingValidation,
-        storageUrl = storageUrl)
+    val uploadId =
+        insertUpload(
+            organizationId = organizationId,
+            status = UploadStatus.AwaitingValidation,
+            storageUrl = storageUrl)
 
     importer.validateCsv(uploadId)
 
@@ -304,11 +303,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun `validateCsv schedules import if there are no validation errors`() {
     every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nNew name,,,,,,,")
     every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
-    insertUpload(
-        uploadId,
-        organizationId = organizationId,
-        status = UploadStatus.AwaitingValidation,
-        storageUrl = storageUrl)
+    val uploadId =
+        insertUpload(
+            organizationId = organizationId,
+            status = UploadStatus.AwaitingValidation,
+            storageUrl = storageUrl)
 
     importer.validateCsv(uploadId)
 
@@ -322,11 +321,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
             "$header\nNew—name a–b,Common,Family,NT,false,Shrub,Recalcitrant,\"Tundra \r\n Mangroves \r\n\"") // note the dash types in the scientific name
-    insertUpload(
-        uploadId,
-        organizationId = organizationId,
-        status = UploadStatus.AwaitingProcessing,
-        storageUrl = storageUrl)
+    val uploadId =
+        insertUpload(
+            organizationId = organizationId,
+            status = UploadStatus.AwaitingProcessing,
+            storageUrl = storageUrl)
     insertSpecies(2, "Existing name")
 
     importer.importCsv(uploadId, true)
@@ -383,11 +382,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `importCsv throws exception if upload is not awaiting processing`() {
-    insertUpload(
-        uploadId,
-        organizationId = organizationId,
-        status = UploadStatus.AwaitingValidation,
-        storageUrl = storageUrl)
+    val uploadId =
+        insertUpload(
+            organizationId = organizationId,
+            status = UploadStatus.AwaitingValidation,
+            storageUrl = storageUrl)
 
     assertThrows<IllegalStateException> { importer.importCsv(uploadId, true) }
   }
@@ -399,11 +398,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             "$header\n" +
                 "Existing name,Common,Family,en,false,Shrub,Recalcitrant,Tundra\n" +
                 "Initial name,New common,NewFamily,lc,true,Shrub,Recalcitrant,")
-    insertUpload(
-        uploadId,
-        organizationId = organizationId,
-        status = UploadStatus.AwaitingProcessing,
-        storageUrl = storageUrl)
+    val uploadId =
+        insertUpload(
+            organizationId = organizationId,
+            status = UploadStatus.AwaitingProcessing,
+            storageUrl = storageUrl)
     insertSpecies(
         2,
         "Existing name",
@@ -475,11 +474,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun `importCsv prefers current name over initial name when updating existing species`() {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream("$header\nDuplicate name,New common,NewFamily,vu,true,Shrub,Recalcitrant,")
-    insertUpload(
-        uploadId,
-        organizationId = organizationId,
-        status = UploadStatus.AwaitingProcessing,
-        storageUrl = storageUrl)
+    val uploadId =
+        insertUpload(
+            organizationId = organizationId,
+            status = UploadStatus.AwaitingProcessing,
+            storageUrl = storageUrl)
     insertSpecies(2, "Duplicate name", initialScientificName = "Initial name")
     insertSpecies(3, "Nonduplicate name", initialScientificName = "Duplicate name")
 
@@ -526,11 +525,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             "$header\n" +
                 "Existing name,Common,Family,EN,false,Shrub,Recalcitrant,Tundra\n" +
                 "Initial name,New common,NewFamily,LC,true,Shrub,Recalcitrant,")
-    insertUpload(
-        uploadId,
-        organizationId = organizationId,
-        status = UploadStatus.AwaitingProcessing,
-        storageUrl = storageUrl)
+    val uploadId =
+        insertUpload(
+            organizationId = organizationId,
+            status = UploadStatus.AwaitingProcessing,
+            storageUrl = storageUrl)
     insertSpecies(
         10,
         "Existing name",
@@ -566,11 +565,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream(
             "$header\nExisting name,Common,Family,EN,false,Shrub,Recalcitrant,Tundra\n")
-    insertUpload(
-        uploadId,
-        organizationId = organizationId,
-        status = UploadStatus.AwaitingProcessing,
-        storageUrl = storageUrl)
+    val uploadId =
+        insertUpload(
+            organizationId = organizationId,
+            status = UploadStatus.AwaitingProcessing,
+            storageUrl = storageUrl)
     insertSpecies(
         2,
         "Existing name",
@@ -619,11 +618,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun `importCsv does not apply renames from deleted species`() {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream("$header\nInitial name,New common,NewFamily,,true,Shrub,Recalcitrant,")
-    insertUpload(
-        uploadId,
-        organizationId = organizationId,
-        status = UploadStatus.AwaitingProcessing,
-        storageUrl = storageUrl)
+    val uploadId =
+        insertUpload(
+            organizationId = organizationId,
+            status = UploadStatus.AwaitingProcessing,
+            storageUrl = storageUrl)
     insertSpecies(
         2, "Renamed name", deletedTime = Instant.EPOCH, initialScientificName = "Initial name")
 
@@ -669,11 +668,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   fun `importCsv rolls back changes and sets upload to failed if an error occurs`() {
     every { fileStore.read(storageUrl) } returns
         sizedInputStream("$header\nNew name,Common,Family,CR,false,Shrub,Recalcitrant,")
-    insertUpload(
-        uploadId,
-        organizationId = organizationId,
-        status = UploadStatus.AwaitingProcessing,
-        storageUrl = storageUrl)
+    val uploadId =
+        insertUpload(
+            organizationId = organizationId,
+            status = UploadStatus.AwaitingProcessing,
+            storageUrl = storageUrl)
     // Species ID will collide with the autogenerated primary key
     insertSpecies(1, "Existing name")
 
@@ -697,12 +696,12 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
         sizedInputStream(
             "$header\n" +
                 "New name,,,EW,$gibberishTrue,$gibberishShrub,$gibberishRecalcitrant,$gibberishMangroves")
-    insertUpload(
-        uploadId,
-        locale = Locales.GIBBERISH,
-        organizationId = organizationId,
-        status = UploadStatus.AwaitingProcessing,
-        storageUrl = storageUrl)
+    val uploadId =
+        insertUpload(
+            locale = Locales.GIBBERISH,
+            organizationId = organizationId,
+            status = UploadStatus.AwaitingProcessing,
+            storageUrl = storageUrl)
 
     val expected =
         listOf(
@@ -725,7 +724,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     assertEquals(expected, actual)
   }
 
-  private fun assertStatus(expectedStatus: UploadStatus, id: UploadId = uploadId) {
+  private fun assertStatus(expectedStatus: UploadStatus, id: UploadId = inserted.uploadId) {
     val actualStatus =
         dslContext
             .select(UPLOADS.STATUS_ID)

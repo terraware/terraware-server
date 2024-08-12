@@ -134,7 +134,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var facilityId: FacilityId
   private lateinit var organizationId: OrganizationId
-  private val uploadId = UploadId(1)
 
   @BeforeEach
   fun setUp() {
@@ -366,7 +365,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
       every { uploadService.receive(any(), any(), any(), any(), any(), any(), any()) } answers
           {
             insertAccessionUpload(csvContent, UploadStatus.AwaitingValidation, locale)
-            uploadId
           }
 
       locale.use { importer.receiveCsv(csvContent.inputStream(), filename, facilityId) }
@@ -379,7 +377,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           emptyList<UploadProblemsRow>(), uploadProblemsDao.findAll(), "Problems after validation")
       assertEquals(
           UploadStatus.AwaitingProcessing,
-          uploadsDao.fetchOneById(uploadId)?.statusId,
+          uploadsDao.fetchOneById(inserted.uploadId)?.statusId,
           "Status after validation")
 
       // Import
@@ -387,7 +385,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           UploadStatus.Completed,
-          uploadsDao.fetchOneById(uploadId)?.statusId,
+          uploadsDao.fetchOneById(inserted.uploadId)?.statusId,
           "Status after import")
 
       val actualSpecies = speciesDao.findAll().sortedBy { it.id!!.value }
@@ -439,7 +437,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `schedules validate job`() {
       every { scheduler.enqueue<AccessionImporter>(any()) } returns JobId(UUID.randomUUID())
-      every { uploadService.receive(any(), any(), any(), any(), any(), any()) } returns uploadId
+      every { uploadService.receive(any(), any(), any(), any(), any(), any()) } returns UploadId(1)
 
       importer.receiveCsv(ByteArrayInputStream(ByteArray(1)), "test", facilityId)
 
@@ -505,7 +503,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           ",Species name,,,,",
           UploadStatus.Invalid,
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 2,
@@ -521,14 +518,12 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               ",Bad name?,,,,,2022-03-04,,,,,,,,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MissingRequiredValue,
               isError = true,
               position = 2,
               field = "Species (Scientific Name)",
               message = messages.csvScientificNameMissing()),
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 3,
@@ -536,7 +531,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               message = messages.csvScientificNameTooShort(),
               value = "Name"),
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 4,
@@ -544,7 +538,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               message = messages.csvScientificNameTooLong(),
               value = "A very long name with too many words"),
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 5,
@@ -565,14 +558,12 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               ",Scientific name,,,,,20220304,,,,,,,,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MissingRequiredValue,
               isError = true,
               position = 2,
               field = "Collection Date",
               message = messages.csvRequiredFieldMissing()),
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 3,
@@ -580,7 +571,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               message = messages.csvDateMalformed(),
               value = "January 6"),
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 4,
@@ -588,7 +578,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               message = messages.csvDateMalformed(),
               value = "2022-99-99"),
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 5,
@@ -596,7 +585,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               message = messages.csvDateMalformed(),
               value = "2022/03/04"),
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 6,
@@ -604,7 +592,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               message = messages.csvDateMalformed(),
               value = "2022-3-4"),
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 7,
@@ -622,7 +609,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               ",Scientific name,,,,Withdrawn,2022-03-04,,,,,,,,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.UnrecognizedValue,
               isError = true,
               position = 2,
@@ -630,7 +616,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               message = messages.accessionCsvStatusInvalid(),
               value = "Bogus"),
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.UnrecognizedValue,
               isError = true,
               position = 3,
@@ -646,7 +631,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           ",Scientific name,,1,Seeds,Used Up,2023-01-01,,,,,,,,,,,,",
           UploadStatus.Invalid,
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 2,
@@ -662,7 +646,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           ",Scientific name,,,,,2022-03-04,,,,,,,,Unknown,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.UnrecognizedValue,
               isError = true,
               position = 2,
@@ -679,7 +662,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               ",Scientific name,,,,,2022-03-04,,,,,,,,,,,91,1\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 2,
@@ -687,7 +669,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               message = messages.accessionCsvLatitudeInvalid(),
               value = "xyzzy"),
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 3,
@@ -695,7 +676,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               message = messages.accessionCsvLatitudeInvalid(),
               value = "-91"),
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 4,
@@ -713,7 +693,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               ",Scientific name,,,,,2022-03-04,,,,,,,,,,,1,181\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 2,
@@ -721,7 +700,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               message = messages.accessionCsvLongitudeInvalid(),
               value = "xyzzy"),
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 3,
@@ -729,7 +707,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               message = messages.accessionCsvLongitudeInvalid(),
               value = "-181"),
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 4,
@@ -746,7 +723,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               ",Scientific name,,,,,2022-03-04,,,,,,,,,,,1,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MissingRequiredValue,
               isError = true,
               position = 2,
@@ -754,7 +730,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               message = messages.accessionCsvLatitudeLongitude(),
               value = null),
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MissingRequiredValue,
               isError = true,
               position = 3,
@@ -770,7 +745,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           ",Scientific name,,,,,2022-03-04,,,,,Unknown,,,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.UnrecognizedValue,
               isError = true,
               position = 2,
@@ -787,7 +761,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           "123,Scientific name,,,,,2022-03-04,,,,,,,,,,,,\n",
           UploadStatus.AwaitingUserAction,
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.DuplicateValue,
               isError = false,
               position = 2,
@@ -803,7 +776,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
               "123,Other name,,,,,2022-03-05,,,,,,,,,,,,\n",
           UploadStatus.Invalid,
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.DuplicateValue,
               isError = true,
               position = 3,
@@ -818,7 +790,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           byteArrayOf(),
           UploadStatus.Invalid,
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MissingRequiredValue,
               isError = true,
               position = 1,
@@ -831,7 +802,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           "a,b,c,d\n".toByteArray(),
           UploadStatus.Invalid,
           UploadProblemsRow(
-              uploadId = uploadId,
               typeId = UploadProblemType.MalformedValue,
               isError = true,
               position = 1,
@@ -853,7 +823,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         locale: Locale = Locale.ENGLISH,
         vararg problems: UploadProblemsRow
     ) {
-      insertAccessionUpload(body, UploadStatus.AwaitingValidation, locale)
+      val uploadId = insertAccessionUpload(body, UploadStatus.AwaitingValidation, locale)
       importer.validateCsv(uploadId)
       assertValidationResult(status, *problems)
     }
@@ -863,15 +833,18 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
         status: UploadStatus,
         vararg problems: UploadProblemsRow
     ) {
-      insertAccessionUpload(body, UploadStatus.AwaitingValidation)
+      val uploadId = insertAccessionUpload(body, UploadStatus.AwaitingValidation)
       importer.validateCsv(uploadId)
       assertValidationResult(status, *problems)
     }
 
     private fun assertValidationResult(status: UploadStatus, vararg problems: UploadProblemsRow) {
       assertEquals(
-          problems.toList(),
-          uploadProblemsDao.findAll().sortedBy { it.id?.value }.map { it.copy(id = null) },
+          problems.toList().map { it.copy(uploadId = inserted.uploadId) },
+          uploadProblemsDao
+              .findAll()
+              .sortedBy { it.id?.value }
+              .map { it.copy(id = null, uploadId = inserted.uploadId) },
           "Upload problems")
       assertStatus(status)
     }
@@ -881,15 +854,15 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
   inner class CancelProcessing {
     @Test
     fun `throws exception if upload is not awaiting user action`() {
-      insertAccessionUpload(status = UploadStatus.Processing)
+      val uploadId = insertAccessionUpload(status = UploadStatus.Processing)
 
       assertThrows<UploadNotAwaitingActionException> { importer.cancelProcessing(uploadId) }
     }
 
     @Test
     fun `deletes upload if it is awaiting user action`() {
+      val uploadId = insertAccessionUpload(status = UploadStatus.AwaitingUserAction)
       every { uploadService.delete(uploadId) } just Runs
-      insertAccessionUpload(status = UploadStatus.AwaitingUserAction)
 
       importer.cancelProcessing(uploadId)
 
@@ -901,7 +874,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
   inner class ResolveWarnings {
     @Test
     fun `throws exception if upload is not awaiting user action`() {
-      insertAccessionUpload(status = UploadStatus.Processing)
+      val uploadId = insertAccessionUpload(status = UploadStatus.Processing)
 
       assertThrows<UploadNotAwaitingActionException> { importer.resolveWarnings(uploadId, true) }
     }
@@ -909,7 +882,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `schedules import job`() {
       every { scheduler.enqueue<AccessionImporter>(any()) } returns JobId(UUID.randomUUID())
-      insertAccessionUpload(status = UploadStatus.AwaitingUserAction)
+      val uploadId = insertAccessionUpload(status = UploadStatus.AwaitingUserAction)
 
       importer.resolveWarnings(uploadId, true)
 
@@ -921,8 +894,9 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
   inner class ImportCsv {
     @Test
     fun `uses Seeds as default quantity units if not specified`() {
-      insertAccessionUpload(
-          ",Species name,,10,,,2022-03-04,,,,,,,,,,,,\n", UploadStatus.AwaitingProcessing)
+      val uploadId =
+          insertAccessionUpload(
+              ",Species name,,10,,,2022-03-04,,,,,,,,,,,,\n", UploadStatus.AwaitingProcessing)
 
       importer.importCsv(uploadId, false)
 
@@ -934,10 +908,11 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `overwrites existing accession data if requested`() {
-      insertAccessionUpload(
-          "123,Species name,New common name,10,Seeds,Processing,2022-03-04,New Site," +
-              "New Landowner,New City,New State,GB,New Notes,New Collector,Other,2,New ID,5,4\n",
-          UploadStatus.AwaitingProcessing)
+      val uploadId =
+          insertAccessionUpload(
+              "123,Species name,New common name,10,Seeds,Processing,2022-03-04,New Site," +
+                  "New Landowner,New City,New State,GB,New Notes,New Collector,Other,2,New ID,5,4\n",
+              UploadStatus.AwaitingProcessing)
 
       val speciesId = insertSpecies(scientificName = "Species name", commonName = "Old common name")
       val accessionId =
@@ -1058,8 +1033,9 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `uses new name if a species has been renamed`() {
       val speciesId = insertSpecies(scientificName = "New name", initialScientificName = "Old name")
-      insertAccessionUpload(
-          ",Old name,,,,,2022-03-04,,,,,,,,,,,,\n", UploadStatus.AwaitingProcessing)
+      val uploadId =
+          insertAccessionUpload(
+              ",Old name,,,,,2022-03-04,,,,,,,,,,,,\n", UploadStatus.AwaitingProcessing)
 
       importer.importCsv(uploadId, false)
 
@@ -1071,7 +1047,8 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `ignores template example rows`() {
-      insertAccessionUpload(importer.getCsvTemplate(), UploadStatus.AwaitingProcessing)
+      val uploadId =
+          insertAccessionUpload(importer.getCsvTemplate(), UploadStatus.AwaitingProcessing)
 
       importer.importCsv(uploadId, true)
 
@@ -1080,11 +1057,12 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `ignores empty rows`() {
-      insertAccessionUpload(
-          ",\" \",, ,,, ,,,,,,,,,,,,\n" +
-              ",Species name,,10,,,2022-03-04,,,,,,,,,,,,\n" +
-              ",,,,,,,,,,,,,,,,,,\n",
-          UploadStatus.AwaitingProcessing)
+      val uploadId =
+          insertAccessionUpload(
+              ",\" \",, ,,, ,,,,,,,,,,,,\n" +
+                  ",Species name,,10,,,2022-03-04,,,,,,,,,,,,\n" +
+                  ",,,,,,,,,,,,,,,,,,\n",
+              UploadStatus.AwaitingProcessing)
 
       importer.importCsv(uploadId, false)
 
@@ -1095,10 +1073,11 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `accepts country codes and names`() {
-      insertAccessionUpload(
-          ",Species name,,,,,2022-03-04,,,,,uganda,,,,,,,\n" +
-              ",Species name,,,,,2022-03-04,,,,,gB,,,,,,,\n",
-          UploadStatus.AwaitingProcessing)
+      val uploadId =
+          insertAccessionUpload(
+              ",Species name,,,,,2022-03-04,,,,,uganda,,,,,,,\n" +
+                  ",Species name,,,,,2022-03-04,,,,,gB,,,,,,,\n",
+              UploadStatus.AwaitingProcessing)
 
       importer.importCsv(uploadId, false)
 
@@ -1117,11 +1096,12 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
       val us = "United States".toGibberish()
       val wild = "Wild".toGibberish()
 
-      insertAccessionUpload(
-          ",Species name,Common name,1 234,$grams,$drying,2023-01-01,Site,Landowner,City," +
-              "$california,$us,Description,Collector,$wild,1,ID,\"-13,45\",\"18,5578\"",
-          UploadStatus.AwaitingProcessing,
-          Locales.GIBBERISH)
+      val uploadId =
+          insertAccessionUpload(
+              ",Species name,Common name,1 234,$grams,$drying,2023-01-01,Site,Landowner,City," +
+                  "$california,$us,Description,Collector,$wild,1,ID,\"-13,45\",\"18,5578\"",
+              UploadStatus.AwaitingProcessing,
+              Locales.GIBBERISH)
 
       importer.importCsv(uploadId, false)
 
@@ -1166,27 +1146,26 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
       body: String = "",
       status: UploadStatus = UploadStatus.AwaitingUserAction,
       locale: Locale = Locale.ENGLISH,
-  ) {
+  ): UploadId {
     val header =
         javaClass.getResourceAsStream("/seedbank/accession/HeaderRows.csv")!!.use { inputStream ->
           inputStream.readAllBytes().decodeToString().trim()
         }
 
-    insertAccessionUpload("$header\n$body".toByteArray(), status, locale)
+    return insertAccessionUpload("$header\n$body".toByteArray(), status, locale)
   }
 
   private fun insertAccessionUpload(
       body: ByteArray,
       status: UploadStatus = UploadStatus.AwaitingUserAction,
       locale: Locale = Locale.ENGLISH,
-  ) {
+  ): UploadId {
     every { fileStore.read(any()) } answers
         {
           SizedInputStream(body.inputStream(), body.size.toLong())
         }
 
-    insertUpload(
-        id = uploadId,
+    return insertUpload(
         facilityId = facilityId,
         locale = locale,
         organizationId = organizationId,
@@ -1196,6 +1175,6 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
   }
 
   private fun assertStatus(expected: UploadStatus) {
-    assertEquals(expected, uploadsDao.fetchOneById(uploadId)?.statusId, "Upload status")
+    assertEquals(expected, uploadsDao.fetchOneById(inserted.uploadId)?.statusId, "Upload status")
   }
 }
