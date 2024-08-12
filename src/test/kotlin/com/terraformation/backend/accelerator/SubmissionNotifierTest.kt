@@ -21,6 +21,7 @@ import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSta
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
 import com.terraformation.backend.documentproducer.model.ExistingVariableWorkflowHistoryModel
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.util.mockDeliverable
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -108,10 +109,12 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
       insertSubmissionDocument()
       val documentId = insertSubmissionDocument()
 
+      val deliverable = mockDeliverable()
+
       notifier.notifyIfNoNewerUploads(
           DeliverableDocumentUploadedEvent(deliverableId, documentId, projectId))
 
-      eventPublisher.assertEventPublished(DeliverableReadyForReviewEvent(deliverableId, projectId))
+      eventPublisher.assertEventPublished(DeliverableReadyForReviewEvent(deliverable, projectId))
     }
   }
 
@@ -148,11 +151,13 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
     fun `publishes event if these are the latest variable values`() {
       val valueId = insertValue(variableId = inserted.variableId, textValue = "Only")
 
+      val deliverable = mockDeliverable()
+
       notifier.notifyIfNoNewerSubmissions(
           QuestionsDeliverableSubmittedEvent(
               deliverableId, projectId, mapOf(inserted.variableId to valueId)))
 
-      eventPublisher.assertEventPublished(DeliverableReadyForReviewEvent(deliverableId, projectId))
+      eventPublisher.assertEventPublished(DeliverableReadyForReviewEvent(deliverable, projectId))
     }
   }
 
