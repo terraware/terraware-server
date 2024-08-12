@@ -38,7 +38,8 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     every { balenaClient.listModifiedDevices(any()) } returns emptyList()
 
-    insertSiteData()
+    insertOrganization()
+    insertFacility()
   }
 
   @Test

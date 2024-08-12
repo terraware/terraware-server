@@ -26,7 +26,8 @@ internal class AutomationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canListAutomations(any()) } returns true
     every { user.canReadDevice(any()) } returns true
 
-    insertSiteData()
+    insertOrganization()
+    insertFacility()
   }
 
   @Test

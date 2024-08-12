@@ -128,7 +128,8 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateBatch(any()) } returns true
     every { user.canUpdatePlantingSite(any()) } returns true
 
-    insertSiteData()
+    insertOrganization()
+    insertFacility()
   }
 
   @Nested
