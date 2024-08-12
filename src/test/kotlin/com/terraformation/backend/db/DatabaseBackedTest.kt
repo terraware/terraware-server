@@ -606,15 +606,6 @@ abstract class DatabaseBackedTest {
   protected val withdrawalPhotosDao: WithdrawalPhotosDao by lazyDao()
   protected val withdrawalsDao: WithdrawalsDao by lazyDao()
 
-  /**
-   * Creates a user, organization, project, site, and facility that can be referenced by various
-   * tests.
-   */
-  fun insertSiteData() {
-    insertOrganization()
-    insertFacility()
-  }
-
   private var nextOrganizationNumber = 1
 
   protected fun insertOrganization(

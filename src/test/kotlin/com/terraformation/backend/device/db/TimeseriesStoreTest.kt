@@ -39,7 +39,8 @@ internal class TimeseriesStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     store = TimeseriesStore(clock, dslContext)
 
-    insertSiteData()
+    insertOrganization()
+    insertFacility()
     deviceId = insertDevice()
 
     every { user.canCreateTimeseries(any()) } returns true

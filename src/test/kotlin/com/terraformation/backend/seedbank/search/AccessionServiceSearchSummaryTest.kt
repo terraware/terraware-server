@@ -60,8 +60,9 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    insertSiteData()
+    insertOrganization()
     insertOrganizationUser()
+    insertFacility()
 
     every { user.facilityRoles } returns mapOf(inserted.facilityId to Role.Contributor)
   }
