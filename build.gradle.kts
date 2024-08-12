@@ -98,7 +98,7 @@ dependencies {
   implementation("com.opencsv:opencsv:5.9")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.8.0")
   implementation("commons-validator:commons-validator:1.9.0")
-  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.2.1") {
+  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.2.2") {
     exclude("org.apache.tomcat")
   }
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
@@ -119,7 +119,7 @@ dependencies {
   implementation("org.geotools:gt-xml:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-core:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-kml:$geoToolsVersion")
-  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:7.2.2")
+  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:7.2.3")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
