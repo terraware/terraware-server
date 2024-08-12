@@ -1,7 +1,5 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
-import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryId
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
@@ -40,10 +38,9 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 historyTypeId = AccessionQuantityHistoryType.Observed,
-                id = AccessionQuantityHistoryId(1),
                 remainingQuantity = BigDecimal.TEN,
                 remainingUnitsId = SeedQuantityUnits.Seeds)),
-        accessionQuantityHistoryDao.findAll())
+        accessionQuantityHistoryDao.findAll().map { it.copy(id = null) })
   }
 
   @Test
@@ -275,7 +272,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
     assertEquals(
         listOf(
             AccessionStateHistoryRow(
-                accessionId = AccessionId(1),
+                accessionId = initial.id,
                 newStateId = AccessionState.AwaitingCheckIn,
                 reason = "Accession created",
                 updatedBy = user.userId,

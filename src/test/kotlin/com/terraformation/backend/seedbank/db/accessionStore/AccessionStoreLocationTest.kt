@@ -1,8 +1,5 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
-import com.terraformation.backend.db.default_schema.SubLocationId
-import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.GeolocationId
 import com.terraformation.backend.seedbank.model.Geolocation
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -20,14 +17,8 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
                     setOf(
                         Geolocation(BigDecimal(1), BigDecimal(2), BigDecimal(100)),
                         Geolocation(BigDecimal(3), BigDecimal(4)))))
-    val initialGeos = geolocationsDao.fetchByAccessionId(AccessionId(1))
+    val initialGeos = geolocationsDao.fetchByAccessionId(initial.id!!)
 
-    // Insertion order is not defined by the API.
-
-    assertEquals(
-        setOf(GeolocationId(1), GeolocationId(2)),
-        initialGeos.map { it.id }.toSet(),
-        "Initial location IDs")
     assertEquals(100.0, initialGeos.firstNotNullOf { it.gpsAccuracy }, 0.1, "Accuracy is recorded")
 
     val desired =
@@ -39,12 +30,10 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
 
     store.update(desired)
 
-    val updatedGeos = geolocationsDao.fetchByAccessionId(AccessionId(1))
+    val updatedGeos = geolocationsDao.fetchByAccessionId(initial.id!!)
 
     assertTrue(
-        updatedGeos.any {
-          it.id == GeolocationId(3) && it.latitude?.toInt() == 5 && it.longitude?.toInt() == 6
-        },
+        updatedGeos.any { it.latitude?.toInt() == 5 && it.longitude?.toInt() == 6 },
         "New geo inserted")
     assertTrue(updatedGeos.none { it.latitude == BigDecimal(3) }, "Missing geo deleted")
     assertEquals(
@@ -55,16 +44,15 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
 
   @Test
   fun `valid sub-locations are accepted`() {
-    val locationId = SubLocationId(12345678)
     val locationName = "Test Location"
-    insertSubLocation(locationId, name = locationName)
+    val locationId = insertSubLocation(name = locationName)
 
     val initial = store.create(accessionModel())
     store.update(initial.copy(subLocation = locationName))
 
     assertEquals(
         locationId,
-        accessionsDao.fetchOneById(AccessionId(1))?.subLocationId,
+        accessionsDao.fetchOneById(initial.id!!)?.subLocationId,
         "Existing sub-location ID was used")
 
     val updated = store.fetchOneById(initial.id!!)

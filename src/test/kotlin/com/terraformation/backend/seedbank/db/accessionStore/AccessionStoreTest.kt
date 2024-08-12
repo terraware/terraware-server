@@ -11,16 +11,9 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.ViabilityTestType
-import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
-import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_QUANTITY_HISTORY
-import com.terraformation.backend.db.seedbank.tables.references.BAGS
-import com.terraformation.backend.db.seedbank.tables.references.GEOLOCATIONS
-import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
-import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.db.AccessionStore
@@ -39,23 +32,10 @@ import io.mockk.every
 import java.time.Clock
 import java.time.Duration
 import java.time.LocalDate
-import org.jooq.Record
-import org.jooq.Table
 import org.junit.jupiter.api.BeforeEach
 
 internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   override val user: IndividualUser = mockUser()
-
-  override val tablesToResetSequences: List<Table<out Record>>
-    get() =
-        listOf(
-            ACCESSION_QUANTITY_HISTORY,
-            ACCESSIONS,
-            BAGS,
-            GEOLOCATIONS,
-            VIABILITY_TESTS,
-            SPECIES,
-            WITHDRAWALS)
 
   protected val clock = TestClock()
   protected val publisher = TestEventPublisher()

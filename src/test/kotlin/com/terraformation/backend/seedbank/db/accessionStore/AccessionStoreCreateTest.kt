@@ -7,8 +7,6 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.IDENTIFIER_SEQUENCES
-import com.terraformation.backend.db.seedbank.AccessionId
-import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryId
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.CollectionSource
@@ -38,11 +36,11 @@ import org.springframework.security.access.AccessDeniedException
 internal class AccessionStoreCreateTest : AccessionStoreTest() {
   @Test
   fun `create of empty accession populates default values`() {
-    store.create(accessionModel())
+    val accessionId = store.create(accessionModel()).id!!
 
     assertEquals(
         AccessionsRow(
-            id = AccessionId(1),
+            id = accessionId,
             facilityId = facilityId,
             createdBy = user.userId,
             createdTime = clock.instant(),
@@ -51,15 +49,14 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
             modifiedTime = clock.instant(),
             number = "70-1-1-001",
             stateId = AccessionState.AwaitingCheckIn),
-        accessionsDao.fetchOneById(AccessionId(1)))
+        accessionsDao.fetchOneById(accessionId))
   }
 
   @Test
   fun `create of accession with processing notes is supported`() {
-    store.create(accessionModel(processingNotes = "test processing notes"))
+    val accessionId = store.create(accessionModel(processingNotes = "test processing notes")).id!!
 
-    assertEquals(
-        "test processing notes", accessionsDao.fetchOneById(AccessionId(1))?.processingNotes)
+    assertEquals("test processing notes", accessionsDao.fetchOneById(accessionId)?.processingNotes)
   }
 
   @Test
@@ -87,17 +84,17 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create with isManualState allows initial state to be set`() {
-    store.create(accessionModel(state = AccessionState.Processing))
+    val accessionId = store.create(accessionModel(state = AccessionState.Processing)).id!!
 
-    val row = accessionsDao.fetchOneById(AccessionId(1))!!
+    val row = accessionsDao.fetchOneById(accessionId)!!
     assertEquals(AccessionState.Processing, row.stateId)
   }
 
   @Test
   fun `create with isManualState defaults to Awaiting Check-In if not supplied by caller`() {
-    store.create(accessionModel())
+    val accessionId = store.create(accessionModel()).id!!
 
-    val row = accessionsDao.fetchOneById(AccessionId(1))!!
+    val row = accessionsDao.fetchOneById(accessionId)!!
     assertEquals(AccessionState.AwaitingCheckIn, row.stateId)
   }
 
@@ -150,10 +147,9 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 historyTypeId = AccessionQuantityHistoryType.Observed,
-                id = AccessionQuantityHistoryId(1),
                 remainingQuantity = BigDecimal.TEN,
                 remainingUnitsId = SeedQuantityUnits.Seeds)),
-        accessionQuantityHistoryDao.findAll())
+        accessionQuantityHistoryDao.findAll().map { it.copy(id = null) })
   }
 
   @Test

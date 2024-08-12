@@ -1337,6 +1337,8 @@ abstract class DatabaseBackedTest {
     }
   }
 
+  private var nextAccessionNumber = 1
+
   /**
    * Inserts a new accession with reasonable defaults for required fields.
    *
@@ -1351,11 +1353,10 @@ abstract class DatabaseBackedTest {
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       dataSourceId: DataSource = row.dataSourceId ?: DataSource.Web,
-      facilityId: Any = row.facilityId ?: inserted.facilityId,
-      id: Any? = row.id,
+      facilityId: FacilityId = row.facilityId ?: inserted.facilityId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      number: String? = row.number ?: id?.let { "$it" },
+      number: String? = row.number ?: "${nextAccessionNumber++}",
       receivedDate: LocalDate? = row.receivedDate,
       stateId: AccessionState = row.stateId ?: AccessionState.Processing,
       treesCollectedFrom: Int? = row.treesCollectedFrom,
@@ -1365,8 +1366,7 @@ abstract class DatabaseBackedTest {
             createdBy = createdBy,
             createdTime = createdTime,
             dataSourceId = dataSourceId,
-            facilityId = facilityId.toIdWrapper { FacilityId(it) },
-            id = id?.toIdWrapper { AccessionId(it) },
+            facilityId = facilityId,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             number = number,

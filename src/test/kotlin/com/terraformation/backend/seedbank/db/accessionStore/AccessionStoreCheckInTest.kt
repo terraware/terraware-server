@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionStateHistoryRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
@@ -26,7 +25,7 @@ internal class AccessionStoreCheckInTest : AccessionStoreTest() {
     assertEquals(
         listOf(
             AccessionStateHistoryRow(
-                accessionId = AccessionId(1),
+                accessionId = initial.id,
                 newStateId = AccessionState.AwaitingProcessing,
                 oldStateId = AccessionState.AwaitingCheckIn,
                 reason = "Accession has been checked in",

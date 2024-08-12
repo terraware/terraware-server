@@ -1,13 +1,10 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.db.default_schema.SeedTreatment
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
-import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestSeedType
 import com.terraformation.backend.db.seedbank.ViabilityTestSubstrate
 import com.terraformation.backend.db.seedbank.ViabilityTestType
-import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.seedbank.grams
@@ -32,27 +29,27 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
   fun `viability tests are inserted by update`() {
     val startDate = LocalDate.EPOCH
 
-    create()
-        .andUpdate { it.copy(remaining = seeds(101)) }
-        .andUpdate {
-          it.addViabilityTest(
-              ViabilityTestModel(
-                  seedsTested = 1, startDate = startDate, testType = ViabilityTestType.Lab))
-        }
+    val initial =
+        create()
+            .andUpdate { it.copy(remaining = seeds(101)) }
+            .andUpdate {
+              it.addViabilityTest(
+                  ViabilityTestModel(
+                      seedsTested = 1, startDate = startDate, testType = ViabilityTestType.Lab))
+            }
 
-    val updatedTests = viabilityTestsDao.fetchByAccessionId(AccessionId(1))
+    val updatedTests = viabilityTestsDao.fetchByAccessionId(initial.id!!)
     assertEquals(
         listOf(
             ViabilityTestsRow(
-                accessionId = AccessionId(1),
-                id = ViabilityTestId(1),
+                accessionId = initial.id,
                 seedsSown = 1,
                 startDate = startDate,
                 testType = ViabilityTestType.Lab,
             )),
-        updatedTests)
+        updatedTests.map { it.copy(id = null) })
 
-    val updatedAccession = store.fetchOneById(AccessionId(1))
+    val updatedAccession = store.fetchOneById(initial.id!!)
     assertNull(updatedAccession.totalViabilityPercent, "Total viability percent should not be set")
     assertNull(
         updatedAccession.viabilityTests.first().testResults,
@@ -84,12 +81,12 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
                         treatment = SeedTreatment.Scarify)))
     store.update(desired)
 
-    val updatedTests = viabilityTestsDao.fetchByAccessionId(AccessionId(1))
+    val updatedTests = viabilityTestsDao.fetchByAccessionId(initial.id!!)
     assertEquals(
         listOf(
             ViabilityTestsRow(
-                id = ViabilityTestId(1),
-                accessionId = AccessionId(1),
+                id = initial.viabilityTests[0].id,
+                accessionId = initial.id,
                 testType = ViabilityTestType.Lab,
                 seedTypeId = ViabilityTestSeedType.Fresh,
                 treatmentId = SeedTreatment.Scarify,
@@ -187,12 +184,12 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
                         testType = ViabilityTestType.Lab)))
     store.update(desired)
 
-    val viabilityTests = viabilityTestsDao.fetchByAccessionId(AccessionId(1))
+    val viabilityTests = viabilityTestsDao.fetchByAccessionId(initial.id!!)
     assertEquals(1, viabilityTests.size, "Number of viability tests after update")
     assertEquals(37, viabilityTests[0].totalPercentGerminated, "totalPercentGerminated")
     assertEquals(75, viabilityTests[0].totalSeedsGerminated, "totalSeedsGerminated")
 
-    val testResults = viabilityTestResultsDao.fetchByTestId(ViabilityTestId(1))
+    val testResults = viabilityTestResultsDao.fetchByTestId(initial.viabilityTests[0].id!!)
     assertEquals(1, testResults.size, "Number of test results after update")
     assertTrue(
         testResults.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
@@ -230,14 +227,14 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
                                 ViabilityTestResultModel(
                                     recordingDate = localDate, seedsGerminated = 75)))))
     store.update(desired)
-    val testResults = viabilityTestResultsDao.fetchByTestId(ViabilityTestId(1))
+    val testResults = viabilityTestResultsDao.fetchByTestId(initial.viabilityTests[0].id!!)
 
     assertEquals(1, testResults.size, "Number of test results after update")
     assertTrue(
         testResults.any { it.recordingDate == localDate && it.seedsGerminated == 75 },
         "First test result preserved")
 
-    val updatedViabilityTest = viabilityTestsDao.fetchOneById(ViabilityTestId(1))!!
+    val updatedViabilityTest = viabilityTestsDao.fetchOneById(initial.viabilityTests[0].id!!)!!
     assertEquals(7, updatedViabilityTest.totalPercentGerminated, "totalPercentGerminated")
     assertEquals(75, updatedViabilityTest.totalSeedsGerminated, "totalSeedsGerminated")
   }
@@ -254,14 +251,13 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
                 createdTime = clock.instant(),
                 date = test.startDate!!,
                 estimatedCount = 5,
-                id = WithdrawalId(1),
                 purpose = WithdrawalPurpose.ViabilityTesting,
                 viabilityTestId = test.id,
                 withdrawn = SeedQuantityModel(BigDecimal(5), SeedQuantityUnits.Seeds),
                 withdrawnByName = user.fullName,
                 withdrawnByUserId = user.userId,
             )),
-        accession.withdrawals)
+        accession.withdrawals.map { it.copy(id = null) })
   }
 
   @Test
