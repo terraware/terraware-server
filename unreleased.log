@@ -1,3 +1,6 @@
+64882aa1621 Update plugin dev.monosoul.jooq-docker to v6.1.1 (#2264)
+7a53ae0bb7f Update dependency com.google.apis:google-api-services-drive to v3-rev20240730-2.0.0 (#2263)
+a315fc1effb Update Spring dependencies (#2262)
 0cc641fdcfd SW-5795 Use dynamic device and automation IDs in tests (#2261)
 30b52dc99c4 SW-5795 Use dynamic IDs in PermissionTest (#2260)
 ab63556b44e SW-5795 Use dynamic IDs in controller tests (#2257)
