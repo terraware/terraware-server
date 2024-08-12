@@ -12,7 +12,6 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UploadId
-import com.terraformation.backend.db.default_schema.UploadProblemId
 import com.terraformation.backend.db.default_schema.UploadProblemType
 import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
@@ -21,10 +20,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesEcosyste
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesGrowthFormsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
-import com.terraformation.backend.db.default_schema.tables.references.SPECIES
-import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
-import com.terraformation.backend.db.default_schema.tables.references.UPLOAD_PROBLEMS
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.UploadService
@@ -33,6 +29,7 @@ import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.i18n.use
+import com.terraformation.backend.mapTo1IndexedIds
 import com.terraformation.backend.mockUser
 import io.mockk.Runs
 import io.mockk.every
@@ -55,7 +52,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
 internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
-  override val tablesToResetSequences = listOf(SPECIES, SPECIES_PROBLEMS, UPLOAD_PROBLEMS)
   override val user = mockUser()
 
   private val clock = TestClock()
@@ -105,10 +101,10 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     userId = user.userId
     organizationId = insertOrganization()
 
-    every { speciesChecker.checkAllUncheckedSpecies(organizationId) } just Runs
-    every { user.canCreateSpecies(organizationId) } returns true
+    every { speciesChecker.checkAllUncheckedSpecies(any()) } just Runs
+    every { user.canCreateSpecies(any()) } returns true
     every { user.canDeleteUpload(any()) } returns true
-    every { user.canReadOrganization(organizationId) } returns true
+    every { user.canReadOrganization(any()) } returns true
     every { user.canReadSpecies(any()) } returns true
     every { user.canReadUpload(any()) } returns true
     every { user.canUpdateSpecies(any()) } returns true
@@ -207,21 +203,17 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     importer.validateCsv(uploadId)
 
-    val expectedProblems =
+    assertStatus(UploadStatus.AwaitingUserAction)
+    assertProblems(
         listOf(
             UploadProblemsRow(
-                UploadProblemId(1),
-                uploadId,
-                UploadProblemType.DuplicateValue,
-                false,
-                2,
-                "Scientific Name",
-                messages.speciesCsvScientificNameExists(),
-                "Existing name"))
-
-    val actualProblems = uploadProblemsDao.findAll()
-    assertEquals(expectedProblems, actualProblems, "Upload problems")
-    assertStatus(UploadStatus.AwaitingUserAction)
+                uploadId = uploadId,
+                typeId = UploadProblemType.DuplicateValue,
+                isError = false,
+                position = 2,
+                field = "Scientific Name",
+                message = messages.speciesCsvScientificNameExists(),
+                value = "Existing name")))
   }
 
   @Test
@@ -239,32 +231,28 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     importer.validateCsv(uploadId)
 
-    val expectedProblems =
+    assertProblems(
         listOf(
             UploadProblemsRow(
-                UploadProblemId(1),
-                uploadId,
-                UploadProblemType.DuplicateValue,
-                false,
-                2,
-                "Scientific Name",
-                messages.speciesCsvScientificNameExists(),
-                "Corrected name (Initial name)"))
-
-    val actualProblems = uploadProblemsDao.findAll()
-    assertEquals(expectedProblems, actualProblems)
+                uploadId = uploadId,
+                typeId = UploadProblemType.DuplicateValue,
+                isError = false,
+                position = 2,
+                field = "Scientific Name",
+                message = messages.speciesCsvScientificNameExists(),
+                value = "Corrected name (Initial name)")))
   }
 
   @Test
   fun `validateCsv does not treat deleted species as name collisions`() {
     every { fileStore.read(storageUrl) } returns sizedInputStream("$header\nExisting name,,,,,,,")
     every { scheduler.enqueue<SpeciesImporter>(any()) } returns JobId(UUID.randomUUID())
-    insertSpecies(1, "Existing name", deletedTime = Instant.EPOCH)
     val uploadId =
         insertUpload(
             organizationId = organizationId,
             status = UploadStatus.AwaitingValidation,
             storageUrl = storageUrl)
+    insertSpecies(scientificName = "Existing name", deletedTime = Instant.EPOCH)
 
     importer.validateCsv(uploadId)
 
@@ -283,20 +271,16 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     importer.validateCsv(uploadId)
 
-    val expectedProblems =
+    assertStatus(UploadStatus.Invalid)
+    assertProblems(
         listOf(
             UploadProblemsRow(
-                UploadProblemId(1),
-                uploadId,
-                UploadProblemType.MalformedValue,
-                true,
-                1,
-                null,
-                messages.csvBadHeader()))
-
-    val actualProblems = uploadProblemsDao.findAll()
-    assertEquals(expectedProblems, actualProblems, "Upload problems")
-    assertStatus(UploadStatus.Invalid)
+                uploadId = uploadId,
+                typeId = UploadProblemType.MalformedValue,
+                isError = true,
+                position = 1,
+                field = null,
+                message = messages.csvBadHeader())))
   }
 
   @Test
@@ -326,14 +310,23 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
             storageUrl = storageUrl)
-    insertSpecies(2, "Existing name")
+    insertSpecies(scientificName = "Existing name")
 
     importer.importCsv(uploadId, true)
 
     val expectedSpecies =
-        setOf(
+        listOf(
             SpeciesRow(
                 id = SpeciesId(1),
+                organizationId = organizationId,
+                scientificName = "Existing name",
+                initialScientificName = "Existing name",
+                createdBy = userId,
+                createdTime = Instant.EPOCH,
+                modifiedBy = userId,
+                modifiedTime = Instant.EPOCH),
+            SpeciesRow(
+                id = SpeciesId(2),
                 organizationId = organizationId,
                 scientificName = "New-name a-b", // dashes replaced by hyphens
                 initialScientificName = "New-name a-b",
@@ -346,24 +339,19 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 createdTime = Instant.EPOCH,
                 modifiedBy = userId,
                 modifiedTime = Instant.EPOCH),
-            SpeciesRow(
-                id = SpeciesId(2),
-                organizationId = organizationId,
-                scientificName = "Existing name",
-                initialScientificName = "Existing name",
-                createdBy = userId,
-                createdTime = Instant.EPOCH,
-                modifiedBy = userId,
-                modifiedTime = Instant.EPOCH),
         )
 
-    val actualSpecies = speciesDao.findAll().toSet()
-    assertEquals(expectedSpecies, actualSpecies)
+    val actualSpecies = speciesDao.findAll()
+    val mappedSpeciesIds = mapTo1IndexedIds(actualSpecies, ::SpeciesId, SpeciesRow::id)
+    assertEquals(
+        expectedSpecies.map { it.copy(id = null) }.toSet(),
+        actualSpecies.map { it.copy(id = null) }.toSet())
 
+    val mappedSpeciesId2 = mappedSpeciesIds[SpeciesId(2)]
     val expectedEcosystemTypes =
         setOf(
-            SpeciesEcosystemTypesRow(SpeciesId(1), EcosystemType.Tundra),
-            SpeciesEcosystemTypesRow(SpeciesId(1), EcosystemType.Mangroves),
+            SpeciesEcosystemTypesRow(mappedSpeciesId2, EcosystemType.Tundra),
+            SpeciesEcosystemTypesRow(mappedSpeciesId2, EcosystemType.Mangroves),
         )
 
     val actualEcosystemTypes = speciesEcosystemTypesDao.findAll().toSet()
@@ -371,7 +359,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     val expectedGrowthForms =
         setOf(
-            SpeciesGrowthFormsRow(SpeciesId(1), GrowthForm.Shrub),
+            SpeciesGrowthFormsRow(mappedSpeciesId2, GrowthForm.Shrub),
         )
 
     val actualGrowthForms = speciesGrowthFormsDao.findAll().toSet()
@@ -403,16 +391,16 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
             storageUrl = storageUrl)
-    insertSpecies(
-        2,
-        "Existing name",
-        ecosystemTypes = setOf(EcosystemType.Mangroves),
-        growthForms = setOf(GrowthForm.Shrub))
-    insertSpecies(
-        3,
-        "New name",
-        growthForms = setOf(GrowthForm.Shrub),
-        initialScientificName = "Initial name")
+    val speciesId1 =
+        insertSpecies(
+            scientificName = "Existing name",
+            ecosystemTypes = setOf(EcosystemType.Mangroves),
+            growthForms = setOf(GrowthForm.Shrub))
+    val speciesId2 =
+        insertSpecies(
+            scientificName = "New name",
+            growthForms = setOf(GrowthForm.Shrub),
+            initialScientificName = "Initial name")
 
     val now = clock.instant() + Duration.ofDays(1)
     clock.instant = now
@@ -422,7 +410,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val expectedSpecies =
         setOf(
             SpeciesRow(
-                id = SpeciesId(2),
+                id = speciesId1,
                 organizationId = organizationId,
                 scientificName = "Existing name",
                 initialScientificName = "Existing name",
@@ -436,7 +424,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 modifiedBy = userId,
                 modifiedTime = now),
             SpeciesRow(
-                id = SpeciesId(3),
+                id = speciesId2,
                 organizationId = organizationId,
                 scientificName = "New name",
                 initialScientificName = "Initial name",
@@ -453,15 +441,15 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val actualSpecies = speciesDao.findAll().toSet()
     assertEquals(expectedSpecies, actualSpecies)
 
-    val expectedEcosystemTypes = setOf(SpeciesEcosystemTypesRow(SpeciesId(2), EcosystemType.Tundra))
+    val expectedEcosystemTypes = setOf(SpeciesEcosystemTypesRow(speciesId1, EcosystemType.Tundra))
 
     val actualEcosystemTypes = speciesEcosystemTypesDao.findAll().toSet()
     assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
 
     val expectedGrowthForms =
         setOf(
-            SpeciesGrowthFormsRow(SpeciesId(2), GrowthForm.Shrub),
-            SpeciesGrowthFormsRow(SpeciesId(3), GrowthForm.Shrub),
+            SpeciesGrowthFormsRow(speciesId1, GrowthForm.Shrub),
+            SpeciesGrowthFormsRow(speciesId2, GrowthForm.Shrub),
         )
 
     val actualGrowthForms = speciesGrowthFormsDao.findAll().toSet()
@@ -479,8 +467,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
             storageUrl = storageUrl)
-    insertSpecies(2, "Duplicate name", initialScientificName = "Initial name")
-    insertSpecies(3, "Nonduplicate name", initialScientificName = "Duplicate name")
+    val speciesId1 =
+        insertSpecies(scientificName = "Duplicate name", initialScientificName = "Initial name")
+    val speciesId2 =
+        insertSpecies(
+            scientificName = "Nonduplicate name", initialScientificName = "Duplicate name")
 
     val now = clock.instant() + Duration.ofDays(1)
     clock.instant = now
@@ -490,7 +481,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val expected =
         setOf(
             SpeciesRow(
-                id = SpeciesId(2),
+                id = speciesId1,
                 organizationId = organizationId,
                 scientificName = "Duplicate name",
                 initialScientificName = "Initial name",
@@ -504,7 +495,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 modifiedBy = userId,
                 modifiedTime = now),
             SpeciesRow(
-                id = SpeciesId(3),
+                id = speciesId2,
                 organizationId = organizationId,
                 scientificName = "Nonduplicate name",
                 initialScientificName = "Duplicate name",
@@ -530,12 +521,12 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
             storageUrl = storageUrl)
-    insertSpecies(
-        10,
-        "Existing name",
-        growthForms = setOf(GrowthForm.Shrub),
-        ecosystemTypes = setOf(EcosystemType.Mangroves))
-    insertSpecies(11, "New name", initialScientificName = "Initial name")
+    val speciesId1 =
+        insertSpecies(
+            scientificName = "Existing name",
+            growthForms = setOf(GrowthForm.Shrub),
+            ecosystemTypes = setOf(EcosystemType.Mangroves))
+    insertSpecies(scientificName = "New name", initialScientificName = "Initial name")
 
     clock.instant = Instant.EPOCH + Duration.ofDays(1)
 
@@ -547,12 +538,12 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     assertEquals(expectedSpecies, actual)
 
     val expectedEcosystemTypes =
-        setOf(SpeciesEcosystemTypesRow(SpeciesId(10), EcosystemType.Mangroves))
+        setOf(SpeciesEcosystemTypesRow(speciesId1, EcosystemType.Mangroves))
 
     val actualEcosystemTypes = speciesEcosystemTypesDao.findAll().toSet()
     assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
 
-    val expectedGrowthForms = setOf(SpeciesGrowthFormsRow(SpeciesId(10), GrowthForm.Shrub))
+    val expectedGrowthForms = setOf(SpeciesGrowthFormsRow(speciesId1, GrowthForm.Shrub))
 
     val actualGrowthForms = speciesGrowthFormsDao.findAll().toSet()
     assertEquals(expectedGrowthForms, actualGrowthForms)
@@ -570,11 +561,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
             storageUrl = storageUrl)
-    insertSpecies(
-        2,
-        "Existing name",
-        deletedTime = Instant.EPOCH,
-        ecosystemTypes = setOf(EcosystemType.Mangroves))
+    val speciesId1 =
+        insertSpecies(
+            scientificName = "Existing name",
+            deletedTime = Instant.EPOCH,
+            ecosystemTypes = setOf(EcosystemType.Mangroves))
 
     val now = clock.instant() + Duration.ofDays(1)
     clock.instant = now
@@ -584,7 +575,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val expectedSpecies =
         listOf(
             SpeciesRow(
-                id = SpeciesId(2),
+                id = speciesId1,
                 organizationId = organizationId,
                 scientificName = "Existing name",
                 initialScientificName = "Existing name",
@@ -601,12 +592,12 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val actualSpecies = speciesDao.findAll()
     assertEquals(expectedSpecies, actualSpecies)
 
-    val expectedEcosystemTypes = setOf(SpeciesEcosystemTypesRow(SpeciesId(2), EcosystemType.Tundra))
+    val expectedEcosystemTypes = setOf(SpeciesEcosystemTypesRow(speciesId1, EcosystemType.Tundra))
 
     val actualEcosystemTypes = speciesEcosystemTypesDao.findAll().toSet()
     assertEquals(expectedEcosystemTypes, actualEcosystemTypes)
 
-    val expectedGrowthForms = setOf(SpeciesGrowthFormsRow(SpeciesId(2), GrowthForm.Shrub))
+    val expectedGrowthForms = setOf(SpeciesGrowthFormsRow(speciesId1, GrowthForm.Shrub))
 
     val actualGrowthForms = speciesGrowthFormsDao.findAll().toSet()
     assertEquals(expectedGrowthForms, actualGrowthForms)
@@ -624,7 +615,9 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             status = UploadStatus.AwaitingProcessing,
             storageUrl = storageUrl)
     insertSpecies(
-        2, "Renamed name", deletedTime = Instant.EPOCH, initialScientificName = "Initial name")
+        scientificName = "Renamed name",
+        deletedTime = Instant.EPOCH,
+        initialScientificName = "Initial name")
 
     val now = clock.instant() + Duration.ofDays(1)
     clock.instant = now
@@ -634,7 +627,6 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val expected =
         listOf(
             SpeciesRow(
-                id = SpeciesId(2),
                 organizationId = organizationId,
                 scientificName = "Renamed name",
                 initialScientificName = "Initial name",
@@ -645,7 +637,6 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 modifiedBy = userId,
                 modifiedTime = Instant.EPOCH),
             SpeciesRow(
-                id = SpeciesId(1),
                 organizationId = organizationId,
                 scientificName = "Initial name",
                 initialScientificName = "Initial name",
@@ -659,29 +650,38 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 modifiedTime = now),
         )
 
-    val actual = speciesDao.findAll()
-    assertEquals(expected.toSet(), actual.toSet())
+    assertEquals(expected.toSet(), speciesDao.findAll().map { it.copy(id = null) }.toSet())
     assertStatus(UploadStatus.Completed)
   }
 
   @Test
-  fun `importCsv rolls back changes and sets upload to failed if an error occurs`() {
+  fun `importCsv sets upload to failed if an error occurs`() {
+    val failingSpeciesStore = mockk<SpeciesStore>()
+    val failingImporter =
+        SpeciesImporter(
+            dslContext,
+            fileStore,
+            messages,
+            scheduler,
+            speciesChecker,
+            failingSpeciesStore,
+            uploadProblemsDao,
+            uploadsDao,
+            uploadService,
+            uploadStore,
+            userStore)
+    every { failingSpeciesStore.importSpecies(any(), any()) } throws RuntimeException("Failed!")
     every { fileStore.read(storageUrl) } returns
-        sizedInputStream("$header\nNew name,Common,Family,CR,false,Shrub,Recalcitrant,")
+        sizedInputStream("$header\nNew name,Common,Family,CR,false,Shrub,Recalcitrant,Tundra")
+
     val uploadId =
         insertUpload(
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
             storageUrl = storageUrl)
-    // Species ID will collide with the autogenerated primary key
-    insertSpecies(1, "Existing name")
 
-    val expected = speciesDao.findAll()
+    failingImporter.importCsv(uploadId, true)
 
-    importer.importCsv(uploadId, true)
-
-    val actual = speciesDao.findAll()
-    assertEquals(expected, actual)
     assertStatus(UploadStatus.ProcessingFailed)
   }
 
@@ -706,7 +706,6 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
     val expected =
         listOf(
             SpeciesRow(
-                id = SpeciesId(1),
                 organizationId = organizationId,
                 scientificName = "New name",
                 initialScientificName = "New name",
@@ -720,7 +719,11 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     importer.importCsv(uploadId, true)
 
-    val actual = speciesDao.findAll()
+    assertEquals(expected, speciesDao.findAll().map { it.copy(id = null) })
+  }
+
+  private fun assertProblems(expected: List<UploadProblemsRow>) {
+    val actual = uploadProblemsDao.findAll().sortedBy { it.id!!.value }.map { it.copy(id = null) }
     assertEquals(expected, actual)
   }
 
