@@ -615,11 +615,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val projectId = insertProject(participantId = participantId)
     insertModule()
     val deliverableId = insertDeliverable()
+    val deliverable =
+        deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
+    service.on(DeliverableReadyForReviewEvent(deliverable, projectId))
 
     assertNotification(
         type = NotificationType.DeliverableReadyForReview,
@@ -639,11 +641,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     insertUserDeliverableCategory(DeliverableCategory.GIS, user.userId)
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
+    val deliverable =
+        deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
+    service.on(DeliverableReadyForReviewEvent(deliverable, projectId))
 
     assertNotification(
         type = NotificationType.DeliverableReadyForReview,
@@ -664,11 +668,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     insertUserDeliverableCategory(DeliverableCategory.Compliance, user.userId)
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
+    val deliverable =
+        deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
+    service.on(DeliverableReadyForReviewEvent(deliverable, projectId))
 
     assertNotifications(emptyList())
   }
@@ -688,11 +694,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     // being the contact overrides the category filtering.
     insertUserDeliverableCategory(DeliverableCategory.Compliance, tfContact)
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
+    val deliverable =
+        deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
+    service.on(DeliverableReadyForReviewEvent(deliverable, projectId))
 
     assertNotifications(
         listOf(
@@ -724,11 +732,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val projectId = insertProject(participantId = participantId)
     insertModule()
     val deliverableId = insertDeliverable()
+    val deliverable =
+        deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
+    service.on(DeliverableReadyForReviewEvent(deliverable, projectId))
 
     assertNotifications(
         listOf(
