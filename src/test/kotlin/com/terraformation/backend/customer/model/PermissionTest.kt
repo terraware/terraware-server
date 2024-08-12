@@ -29,7 +29,6 @@ import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
-import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
@@ -87,7 +86,8 @@ import org.springframework.beans.factory.annotation.Autowired
  * in-memory computations.
  *
  * Most of the tests are done against a canned set of organization data that allows testing various
- * permutations of objects:
+ * permutations of objects.
+ *
  * ```
  * Organization 1 - Two of everything
  *   Facility 1000
@@ -104,6 +104,11 @@ import org.springframework.beans.factory.annotation.Autowired
  *
  * Upload 1 - created by the test's default user ID
  * ```
+ *
+ * The code refers to entities using the fixed IDs listed above so that any error messages that
+ * include the failing IDs are easy to interpret. The actual IDs in the database are dynamic
+ * (allocated by the database at insert time) and there is a mapping between the fixed and actual
+ * IDs.
  *
  * The basic structure of each test is to:
  * 1. Grant the user a role in an organization. In most cases, you will add them to organization 1
@@ -169,8 +174,6 @@ internal class PermissionTest : DatabaseTest() {
   private lateinit var sameOrgUserId: UserId
   private lateinit var otherUserIds: Map<OrganizationId, UserId>
 
-  private val uploadId = UploadId(1)
-
   private val participantIds = listOf(1, 3, 4).map { ParticipantId(it.toLong()) }
   private val cohortIds = listOf(1, 3, 4).map { CohortId(it.toLong()) }
   private val globalRoles = setOf(GlobalRole.SuperAdmin)
@@ -191,6 +194,8 @@ internal class PermissionTest : DatabaseTest() {
   private inline fun <reified T> List<T>.forOrg1() = filterStartsWith("1")
 
   private inline fun <reified T> List<T>.forFacility1000() = filterStartsWith("1000")
+
+  private val mappedIds = mutableMapOf<Any, Any>()
 
   @BeforeEach
   fun setUp() {
@@ -215,11 +220,12 @@ internal class PermissionTest : DatabaseTest() {
     sameOrgUserId = insertUser()
 
     organizationIds.forEach { organizationId ->
-      insertOrganization(organizationId, createdBy = userId)
-      insertSpecies(organizationId.value, organizationId = organizationId, createdBy = userId)
+      putDatabaseId(organizationId, insertOrganization(createdBy = userId))
+      putDatabaseId(SpeciesId(organizationId.value), insertSpecies(createdBy = userId))
     }
 
-    insertOrganizationInternalTag(OrganizationId(4), InternalTagIds.Accelerator, createdBy = userId)
+    insertOrganizationInternalTag(
+        getDatabaseId(OrganizationId(4)), InternalTagIds.Accelerator, createdBy = userId)
 
     otherUserIds =
         mapOf(
@@ -229,194 +235,184 @@ internal class PermissionTest : DatabaseTest() {
             OrganizationId(4) to insertUser())
 
     otherUserIds.forEach { (organizationId, otherUserId) ->
-      insertOrganizationUser(otherUserId, organizationId, createdBy = userId)
+      insertOrganizationUser(otherUserId, getDatabaseId(organizationId), createdBy = userId)
     }
 
     facilityIds.forEach { facilityId ->
-      val organizationId = OrganizationId(facilityId.value / 1000)
-      val speciesId = SpeciesId(organizationId.value)
+      val organizationIdInDatabase = getDatabaseId(OrganizationId(facilityId.value / 1000))
+      val speciesIdInDatabase = getDatabaseId(SpeciesId(facilityId.value / 1000))
 
-      insertFacility(facilityId, organizationId, createdBy = userId)
-      insertDevice(facilityId.value, facilityId, createdBy = userId)
-      insertAutomation(facilityId.value, facilityId, createdBy = userId)
-      insertAccession(id = facilityId.value, facilityId = facilityId, createdBy = userId)
-      viabilityTestsDao.insert(
+      putDatabaseId(
+          facilityId, insertFacility(organizationId = organizationIdInDatabase, createdBy = userId))
+
+      putDatabaseId(DeviceId(facilityId.value), insertDevice(createdBy = userId))
+      putDatabaseId(AutomationId(facilityId.value), insertAutomation(createdBy = userId))
+
+      putDatabaseId(AccessionId(facilityId.value), insertAccession(createdBy = userId))
+      val viabilityTestsRow =
           ViabilityTestsRow(
-              accessionId = AccessionId(facilityId.value),
-              id = ViabilityTestId(facilityId.value),
-              seedsSown = 1,
-              testType = ViabilityTestType.Lab))
+              accessionId = inserted.accessionId, seedsSown = 1, testType = ViabilityTestType.Lab)
+      viabilityTestsDao.insert(viabilityTestsRow)
+      putDatabaseId(ViabilityTestId(facilityId.value), viabilityTestsRow.id!!)
 
-      insertBatch(
-          createdBy = userId,
-          id = facilityId.value,
-          facilityId = facilityId,
-          organizationId = organizationId,
-          speciesId = speciesId,
-      )
-      insertWithdrawal(
-          createdBy = userId,
-          facilityId = facilityId,
-          id = facilityId.value,
-          purpose = WithdrawalPurpose.OutPlant,
-      )
+      putDatabaseId(
+          BatchId(facilityId.value),
+          insertBatch(
+              createdBy = userId,
+              organizationId = organizationIdInDatabase,
+              speciesId = speciesIdInDatabase))
+      putDatabaseId(
+          WithdrawalId(facilityId.value),
+          insertWithdrawal(createdBy = userId, purpose = WithdrawalPurpose.OutPlant))
     }
 
-    subLocationIds.forEach { insertSubLocation(it, facilityId = it.value, createdBy = userId) }
+    subLocationIds.forEach { subLocationId ->
+      putDatabaseId(
+          subLocationId,
+          insertSubLocation(
+              facilityId = getDatabaseId(FacilityId(subLocationId.value)), createdBy = userId))
+    }
 
     deviceManagerIds.forEach { deviceManagerId ->
       val facilityId = FacilityId(deviceManagerId.value)
-      deviceManagersDao.insert(
+      val deviceManagersRow =
           DeviceManagersRow(
               balenaId = BalenaDeviceId(deviceManagerId.value),
               balenaUuid = UUID.randomUUID().toString(),
               balenaModifiedTime = Instant.EPOCH,
               deviceName = "$deviceManagerId",
-              id = deviceManagerId,
               isOnline = true,
               createdTime = Instant.EPOCH,
               refreshedTime = Instant.EPOCH,
               sensorKitId = "$deviceManagerId",
-              facilityId = if (facilityId in facilityIds) facilityId else null,
-              userId = if (facilityId in facilityIds) sameOrgUserId else null))
+              facilityId = if (facilityId in facilityIds) getDatabaseId(facilityId) else null,
+              userId = if (facilityId in facilityIds) sameOrgUserId else null,
+          )
+      deviceManagersDao.insert(deviceManagersRow)
+      putDatabaseId(deviceManagerId, deviceManagersRow.id!!)
     }
 
     plantingSiteIds.forEach { plantingSiteId ->
-      val organizationId = OrganizationId(plantingSiteId.value / 1000)
-      insertPlantingSite(
-          createdBy = userId,
-          id = plantingSiteId,
-          organizationId = organizationId,
-      )
-      insertDelivery(
-          createdBy = userId,
-          id = plantingSiteId.value,
-          plantingSiteId = plantingSiteId.value,
-          withdrawalId = plantingSiteId.value,
-      )
-      insertPlanting(
-          createdBy = userId,
-          deliveryId = plantingSiteId.value,
-          id = plantingSiteId.value,
-          speciesId = organizationId.value,
-      )
+      putDatabaseId(
+          plantingSiteId,
+          insertPlantingSite(
+              createdBy = userId,
+              organizationId = getDatabaseId(OrganizationId(plantingSiteId.value / 1000))))
+      putDatabaseId(
+          DeliveryId(plantingSiteId.value),
+          insertDelivery(
+              createdBy = userId, withdrawalId = getDatabaseId(WithdrawalId(plantingSiteId.value))))
+      putDatabaseId(
+          PlantingId(plantingSiteId.value),
+          insertPlanting(
+              createdBy = userId,
+              speciesId = getDatabaseId(SpeciesId(plantingSiteId.value / 1000))))
     }
 
     plantingZoneIds.forEach { plantingZoneId ->
-      insertPlantingZone(
-          createdBy = userId,
-          id = plantingZoneId,
-          plantingSiteId = PlantingSiteId(plantingZoneId.value),
-      )
+      putDatabaseId(
+          plantingZoneId,
+          insertPlantingZone(
+              createdBy = userId,
+              plantingSiteId = getDatabaseId(PlantingSiteId(plantingZoneId.value))))
     }
 
     plantingSubzoneIds.forEach { plantingSubzoneId ->
-      insertPlantingSubzone(
-          createdBy = userId,
-          id = plantingSubzoneId,
-          plantingSiteId = PlantingSiteId(plantingSubzoneId.value),
-          plantingZoneId = PlantingZoneId(plantingSubzoneId.value),
-      )
+      putDatabaseId(
+          plantingSubzoneId,
+          insertPlantingSubzone(
+              createdBy = userId,
+              plantingSiteId = getDatabaseId(PlantingSiteId(plantingSubzoneId.value)),
+              plantingZoneId = getDatabaseId(PlantingZoneId(plantingSubzoneId.value))))
     }
 
     monitoringPlotIds.forEach { monitoringPlotId ->
-      insertMonitoringPlot(
-          createdBy = userId,
-          id = monitoringPlotId,
-          plantingSubzoneId = PlantingSubzoneId(monitoringPlotId.value),
-      )
+      putDatabaseId(
+          monitoringPlotId,
+          insertMonitoringPlot(
+              createdBy = userId,
+              plantingSubzoneId = getDatabaseId(PlantingSubzoneId(monitoringPlotId.value))))
     }
 
     draftPlantingSiteIds.forEach { draftPlantingSiteId ->
-      val organizationId = OrganizationId(draftPlantingSiteId.value / 1000)
-      insertDraftPlantingSite(
-          createdBy = userId,
-          id = draftPlantingSiteId,
-          organizationId = organizationId,
-      )
+      putDatabaseId(
+          draftPlantingSiteId,
+          insertDraftPlantingSite(
+              createdBy = userId,
+              organizationId = getDatabaseId(OrganizationId(draftPlantingSiteId.value / 1000))))
     }
 
     reportIds.forEach { reportId ->
-      val organizationId = OrganizationId(reportId.value)
-      insertReport(id = reportId, organizationId = organizationId)
+      putDatabaseId(
+          reportId, insertReport(organizationId = getDatabaseId(OrganizationId(reportId.value))))
     }
 
     observationIds.forEach { observationId ->
-      val plantingSiteId = PlantingSiteId(observationId.value)
-      insertObservation(id = observationId, plantingSiteId = plantingSiteId)
+      putDatabaseId(
+          observationId,
+          insertObservation(plantingSiteId = getDatabaseId(PlantingSiteId(observationId.value))))
     }
 
-    cohortIds.forEach { cohortId -> insertCohort(createdBy = userId, id = cohortId) }
+    cohortIds.forEach { cohortId -> putDatabaseId(cohortId, insertCohort(createdBy = userId)) }
 
     participantIds.forEach { participantId ->
-      val cohortId = CohortId(participantId.value)
-      insertParticipant(createdBy = userId, id = participantId, cohortId = cohortId)
+      putDatabaseId(
+          participantId,
+          insertParticipant(
+              createdBy = userId, cohortId = getDatabaseId(CohortId(participantId.value))))
     }
 
     projectIds.forEach { projectId ->
-      val organizationId = OrganizationId(projectId.value / 1000)
-      val participantId = ParticipantId(projectId.value / 1000)
-      insertProject(
-          createdBy = userId,
-          id = projectId,
-          organizationId = organizationId,
-          participantId = participantId,
-      )
+      putDatabaseId(
+          projectId,
+          insertProject(
+              createdBy = userId,
+              organizationId = getDatabaseId(OrganizationId(projectId.value / 1000)),
+              participantId = getDatabaseId(ParticipantId(projectId.value / 1000))))
     }
 
     moduleIds.forEach { moduleId ->
-      val cohortId = CohortId(moduleId.value / 1000)
-      insertModule(
-          createdBy = userId,
-          id = moduleId,
-      )
+      putDatabaseId(moduleId, insertModule(createdBy = userId))
 
-      insertCohortModule(cohortId, moduleId)
+      insertCohortModule(getDatabaseId(CohortId(moduleId.value / 1000)), inserted.moduleId)
     }
 
     deliverableIds.forEach { deliverableId ->
-      val moduleId = ModuleId(deliverableId.value)
-      insertDeliverable(
-          createdBy = userId,
-          id = deliverableId,
-          moduleId = moduleId,
-      )
+      putDatabaseId(
+          deliverableId,
+          insertDeliverable(
+              createdBy = userId, moduleId = getDatabaseId(ModuleId(deliverableId.value))))
 
       submissionIds.forEach { submissionId ->
-        insertSubmission(
-            createdBy = userId,
-            deliverableId = deliverableId,
-            id = submissionId,
-            projectId = ProjectId(submissionId.value),
-        )
+        putDatabaseId(
+            submissionId,
+            insertSubmission(
+                createdBy = userId, projectId = getDatabaseId(ProjectId(submissionId.value))))
       }
     }
 
     moduleEventIds.forEach { eventId ->
-      val moduleId = ModuleId(eventId.value)
-      insertEvent(
-          createdBy = userId,
-          id = eventId,
-          moduleId = moduleId,
-      )
-      insertEventProject(eventId, ProjectId(eventId.value))
+      putDatabaseId(
+          eventId,
+          insertEvent(createdBy = userId, moduleId = getDatabaseId(ModuleId(eventId.value))))
+      insertEventProject(projectId = getDatabaseId(ProjectId(eventId.value)))
     }
 
     participantProjectSpeciesIds.forEach { participantProjectSpeciesId ->
-      insertParticipantProjectSpecies(
-          createdBy = userId,
-          id = participantProjectSpeciesId.value,
-          modifiedBy = userId,
-          projectId = ProjectId(participantProjectSpeciesId.value))
+      putDatabaseId(
+          participantProjectSpeciesId,
+          insertParticipantProjectSpecies(
+              createdBy = userId,
+              projectId = getDatabaseId(ProjectId(participantProjectSpeciesId.value))))
     }
 
     applicationIds.forEach { applicationId ->
-      insertApplication(
-          createdBy = userId,
-          id = applicationId,
-          internalName = "XXX_$applicationId",
-          projectId = ProjectId(applicationId.value),
-      )
+      putDatabaseId(
+          applicationId,
+          insertApplication(
+              createdBy = userId,
+              internalName = "XXX_$applicationId",
+              projectId = getDatabaseId(ProjectId(applicationId.value))))
     }
   }
 
@@ -1207,8 +1203,8 @@ internal class PermissionTest : DatabaseTest() {
     val facilityId = facilityIds.first()
     deviceManagersDao.update(
         deviceManagersDao
-            .fetchOneById(deviceManagerId)!!
-            .copy(facilityId = facilityId, userId = userId))
+            .fetchOneById(getDatabaseId(deviceManagerId))!!
+            .copy(facilityId = getDatabaseId(facilityId), userId = userId))
 
     givenRole(org1Id, Role.Contributor)
 
@@ -2257,7 +2253,7 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `user can access their own uploads`() {
-    insertUpload(uploadId, createdBy = userId)
+    val uploadId = insertUpload(createdBy = userId)
 
     assertTrue(user.canReadUpload(uploadId), "Can read upload")
     assertTrue(user.canUpdateUpload(uploadId), "Can update upload")
@@ -2266,7 +2262,7 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `user cannot access uploads of other users`() {
-    insertUpload(uploadId, createdBy = sameOrgUserId)
+    val uploadId = insertUpload(createdBy = sameOrgUserId)
 
     assertFalse(user.canReadUpload(uploadId), "Can read upload")
     assertFalse(user.canUpdateUpload(uploadId), "Can update upload")
@@ -2275,9 +2271,8 @@ internal class PermissionTest : DatabaseTest() {
 
   @Test
   fun `admin user can read but not write draft planting sites of other users in same org`() {
-    val otherUserDraftSiteId = DraftPlantingSiteId(1002)
-    insertDraftPlantingSite(
-        id = otherUserDraftSiteId, createdBy = sameOrgUserId, organizationId = org1Id)
+    val otherUserDraftSiteId =
+        insertDraftPlantingSite(createdBy = sameOrgUserId, organizationId = getDatabaseId(org1Id))
 
     givenRole(org1Id, Role.Admin)
 
@@ -2286,12 +2281,20 @@ internal class PermissionTest : DatabaseTest() {
     assertFalse(user.canUpdateDraftPlantingSite(otherUserDraftSiteId), "Can update draft site")
   }
 
+  @Suppress("UNCHECKED_CAST")
+  private fun <T : Any> getDatabaseId(idInTest: T): T = mappedIds[idInTest] as T
+
+  private fun <T : Any> putDatabaseId(idInTest: T, idInDatabase: T): T {
+    mappedIds[idInTest] = idInDatabase
+    return idInDatabase
+  }
+
   private fun givenRole(organizationId: OrganizationId, role: Role) {
     with(ORGANIZATION_USERS) {
       dslContext
           .insertInto(ORGANIZATION_USERS)
           .set(USER_ID, userId)
-          .set(ORGANIZATION_ID, organizationId)
+          .set(ORGANIZATION_ID, getDatabaseId(organizationId))
           .set(ROLE_ID, role)
           .set(CREATED_BY, userId)
           .set(CREATED_TIME, Instant.EPOCH)
@@ -2396,77 +2399,78 @@ internal class PermissionTest : DatabaseTest() {
         updateOrganization: Boolean = false,
     ) {
       organizations.forEach { organizationId ->
+        val idInDatabase = getDatabaseId(organizationId)
         assertEquals(
             addOrganizationUser,
-            user.canAddOrganizationUser(organizationId),
+            user.canAddOrganizationUser(idInDatabase),
             "Can add organization $organizationId user")
         assertEquals(
             createDraftPlantingSite,
-            user.canCreateDraftPlantingSite(organizationId),
+            user.canCreateDraftPlantingSite(idInDatabase),
             "Can create draft planting site in organization $organizationId")
         assertEquals(
             createFacility,
-            user.canCreateFacility(organizationId),
+            user.canCreateFacility(idInDatabase),
             "Can create facility in organization $organizationId")
         assertEquals(
             createPlantingSite,
-            user.canCreatePlantingSite(organizationId),
+            user.canCreatePlantingSite(idInDatabase),
             "Can create planting site in organization $organizationId")
         assertEquals(
             createProject,
-            user.canCreateProject(organizationId),
+            user.canCreateProject(idInDatabase),
             "Can create project in organization $organizationId")
         assertEquals(
             createReport,
-            user.canCreateReport(organizationId),
+            user.canCreateReport(idInDatabase),
             "Can create report in organization $organizationId")
         assertEquals(
             createSpecies,
-            user.canCreateSpecies(organizationId),
+            user.canCreateSpecies(idInDatabase),
             "Can create species in organization $organizationId")
         assertEquals(
             deleteOrganization,
-            user.canDeleteOrganization(organizationId),
+            user.canDeleteOrganization(idInDatabase),
             "Can delete organization $organizationId")
         assertEquals(
             listFacilities,
-            user.canListFacilities(organizationId),
+            user.canListFacilities(idInDatabase),
             "Can list facilities in organization $organizationId")
         assertEquals(
             listOrganizationUsers,
-            user.canListOrganizationUsers(organizationId),
+            user.canListOrganizationUsers(idInDatabase),
             "Can list users in organization $organizationId")
         assertEquals(
             listReports,
-            user.canListReports(organizationId),
+            user.canListReports(idInDatabase),
             "Can list reports in organization $organizationId")
         assertEquals(
             readOrganization,
-            user.canReadOrganization(organizationId),
+            user.canReadOrganization(idInDatabase),
             "Can read organization $organizationId")
         assertEquals(
             readOrganizationDeliverables,
-            user.canReadOrganizationDeliverables(organizationId),
+            user.canReadOrganizationDeliverables(idInDatabase),
             "Can read deliverables for organization $organizationId")
         assertEquals(
             readOrganizationSelf,
-            user.canReadOrganizationUser(organizationId, userId),
+            user.canReadOrganizationUser(idInDatabase, userId),
             "Can read self in organization $organizationId")
         assertEquals(
             readOrganizationUser,
-            user.canReadOrganizationUser(organizationId, otherUserIds[organizationId]!!),
+            user.canReadOrganizationUser(idInDatabase, otherUserIds[organizationId]!!),
             "Can read user in organization $organizationId")
         assertEquals(
             removeOrganizationSelf,
-            user.canRemoveOrganizationUser(organizationId, userId),
+            user.canRemoveOrganizationUser(idInDatabase, userId),
             "Can remove self from organization $organizationId")
         assertEquals(
             removeOrganizationUser,
-            user.canRemoveOrganizationUser(organizationId, otherUserIds[organizationId]!!),
+            user.canRemoveOrganizationUser(idInDatabase, otherUserIds[organizationId]!!),
             "Can remove user from organization $organizationId")
         assertEquals(
             updateOrganization,
-            user.canUpdateOrganization(organizationId),
+            user.canUpdateOrganization(idInDatabase),
             "Can update organization $organizationId")
 
         uncheckedOrgs.remove(organizationId)
@@ -2485,34 +2489,36 @@ internal class PermissionTest : DatabaseTest() {
         updateFacility: Boolean = false,
     ) {
       facilities.forEach { facilityId ->
+        val idInDatabase = getDatabaseId(facilityId)
+
         assertEquals(
             createAccession,
-            user.canCreateAccession(facilityId),
+            user.canCreateAccession(idInDatabase),
             "Can create accession at facility $facilityId")
         assertEquals(
             createAutomation,
-            user.canCreateAutomation(facilityId),
+            user.canCreateAutomation(idInDatabase),
             "Can create automation at facility $facilityId")
         assertEquals(
             createBatch,
-            user.canCreateBatch(facilityId),
+            user.canCreateBatch(idInDatabase),
             "Can create seedling batch at facility $facilityId")
         assertEquals(
             createDevice,
-            user.canCreateDevice(facilityId),
+            user.canCreateDevice(idInDatabase),
             "Can create device at facility $facilityId")
         assertEquals(
             createSubLocation,
-            user.canCreateSubLocation(facilityId),
+            user.canCreateSubLocation(idInDatabase),
             "Can create sub-location at facility $facilityId")
         assertEquals(
             listAutomations,
-            user.canListAutomations(facilityId),
+            user.canListAutomations(idInDatabase),
             "Can list automations at facility $facilityId")
         assertEquals(
-            sendAlert, user.canSendAlert(facilityId), "Can send alert for facility $facilityId")
+            sendAlert, user.canSendAlert(idInDatabase), "Can send alert for facility $facilityId")
         assertEquals(
-            updateFacility, user.canUpdateFacility(facilityId), "Can update facility $facilityId")
+            updateFacility, user.canUpdateFacility(idInDatabase), "Can update facility $facilityId")
 
         uncheckedFacilities.remove(facilityId)
       }
@@ -2527,23 +2533,25 @@ internal class PermissionTest : DatabaseTest() {
         uploadPhoto: Boolean = false,
     ) {
       accessions.forEach { accessionId ->
+        val idInDatabase = getDatabaseId(accessionId)
+
         assertEquals(
             deleteAccession,
-            user.canDeleteAccession(accessionId),
+            user.canDeleteAccession(idInDatabase),
             "Can delete accession $accessionId")
         assertEquals(
-            readAccession, user.canReadAccession(accessionId), "Can read accession $accessionId")
+            readAccession, user.canReadAccession(idInDatabase), "Can read accession $accessionId")
         assertEquals(
             setWithdrawalUser,
-            user.canSetWithdrawalUser(accessionId),
+            user.canSetWithdrawalUser(idInDatabase),
             "Can set withdrawal user for accession $accessionId")
         assertEquals(
             updateAccession,
-            user.canUpdateAccession(accessionId),
+            user.canUpdateAccession(idInDatabase),
             "Can update accession $accessionId")
         assertEquals(
             uploadPhoto,
-            user.canUploadPhoto(accessionId),
+            user.canUploadPhoto(idInDatabase),
             "Can upload photo for accession $accessionId")
 
         uncheckedAccessions.remove(accessionId)
@@ -2558,21 +2566,23 @@ internal class PermissionTest : DatabaseTest() {
         updateAutomation: Boolean = false,
     ) {
       automations.forEach { automationId ->
+        val idInDatabase = getDatabaseId(automationId)
+
         assertEquals(
             deleteAutomation,
-            user.canDeleteAutomation(automationId),
+            user.canDeleteAutomation(idInDatabase),
             "Can delete automation $automationId")
         assertEquals(
             readAutomation,
-            user.canReadAutomation(automationId),
+            user.canReadAutomation(idInDatabase),
             "Can read automation $automationId")
         assertEquals(
             triggerAutomation,
-            user.canTriggerAutomation(automationId),
+            user.canTriggerAutomation(idInDatabase),
             "Can trigger automation $automationId")
         assertEquals(
             updateAutomation,
-            user.canUpdateAutomation(automationId),
+            user.canUpdateAutomation(idInDatabase),
             "Can update automation $automationId")
 
         uncheckedAutomations.remove(automationId)
@@ -2585,13 +2595,15 @@ internal class PermissionTest : DatabaseTest() {
         updateDeviceManager: Boolean = false,
     ) {
       deviceManagerIds.forEach { deviceManagerId ->
+        val idInDatabase = getDatabaseId(deviceManagerId)
+
         assertEquals(
             readDeviceManager,
-            user.canReadDeviceManager(deviceManagerId),
+            user.canReadDeviceManager(idInDatabase),
             "Can read device manager $deviceManagerId")
         assertEquals(
             updateDeviceManager,
-            user.canUpdateDeviceManager(deviceManagerId),
+            user.canUpdateDeviceManager(idInDatabase),
             "Can update device manager $deviceManagerId")
 
         uncheckedDeviceManagers.remove(deviceManagerId)
@@ -2607,19 +2619,22 @@ internal class PermissionTest : DatabaseTest() {
         updateTimeseries: Boolean = false,
     ) {
       devices.forEach { deviceId ->
+        val idInDatabase = getDatabaseId(deviceId)
+
         assertEquals(
             createTimeseries,
-            user.canCreateTimeseries(deviceId),
+            user.canCreateTimeseries(idInDatabase),
             "Can create timeseries for device $deviceId")
-        assertEquals(readDevice, user.canReadDevice(deviceId), "Can read device $deviceId")
+        assertEquals(readDevice, user.canReadDevice(idInDatabase), "Can read device $deviceId")
         assertEquals(
             readTimeseries,
-            user.canReadTimeseries(deviceId),
+            user.canReadTimeseries(idInDatabase),
             "Can read timeseries for device $deviceId")
-        assertEquals(updateDevice, user.canUpdateDevice(deviceId), "Can update device $deviceId")
+        assertEquals(
+            updateDevice, user.canUpdateDevice(idInDatabase), "Can update device $deviceId")
         assertEquals(
             updateTimeseries,
-            user.canUpdateTimeseries(deviceId),
+            user.canUpdateTimeseries(idInDatabase),
             "Can update timeseries for device $deviceId")
 
         uncheckedDevices.remove(deviceId)
@@ -2633,11 +2648,13 @@ internal class PermissionTest : DatabaseTest() {
         updateSpecies: Boolean = false,
     ) {
       speciesIds.forEach { speciesId ->
+        val idInDatabase = getDatabaseId(speciesId)
+
         assertEquals(
-            deleteSpecies, user.canDeleteSpecies(speciesId), "Can delete species $speciesId")
-        assertEquals(readSpecies, user.canReadSpecies(speciesId), "Can read species $speciesId")
+            deleteSpecies, user.canDeleteSpecies(idInDatabase), "Can delete species $speciesId")
+        assertEquals(readSpecies, user.canReadSpecies(idInDatabase), "Can read species $speciesId")
         assertEquals(
-            updateSpecies, user.canUpdateSpecies(speciesId), "Can update species $speciesId")
+            updateSpecies, user.canUpdateSpecies(idInDatabase), "Can update species $speciesId")
 
         uncheckedSpecies.remove(speciesId)
       }
@@ -2650,17 +2667,19 @@ internal class PermissionTest : DatabaseTest() {
         updateSubLocation: Boolean = false,
     ) {
       subLocationIds.forEach { subLocationId ->
+        val idInDatabase = getDatabaseId(subLocationId)
+
         assertEquals(
             deleteSubLocation,
-            user.canDeleteSubLocation(subLocationId),
+            user.canDeleteSubLocation(idInDatabase),
             "Can delete sub-location $subLocationId")
         assertEquals(
             readSubLocation,
-            user.canReadSubLocation(subLocationId),
+            user.canReadSubLocation(idInDatabase),
             "Can read sub-location $subLocationId")
         assertEquals(
             updateSubLocation,
-            user.canUpdateSubLocation(subLocationId),
+            user.canUpdateSubLocation(idInDatabase),
             "Can update sub-location $subLocationId")
 
         uncheckedSubLocations.remove(subLocationId)
@@ -2709,30 +2728,34 @@ internal class PermissionTest : DatabaseTest() {
         updateParticipant: Boolean = false,
         updateSpecificGlobalRoles: Boolean = false,
     ) {
+      val cohortId = getDatabaseId(cohortIds[0])
+      val participantId = getDatabaseId(participantIds[0])
+      val projectId = getDatabaseId(projectIds[0])
+
       assertEquals(
           addAnyOrganizationUser, user.canAddAnyOrganizationUser(), "Can add any organization user")
       assertEquals(
           addCohortParticipant,
-          user.canAddCohortParticipant(cohortIds[0], participantIds[0]),
+          user.canAddCohortParticipant(cohortId, participantId),
           "Can add cohort participant")
       assertEquals(
           addParticipantProject,
-          user.canAddParticipantProject(participantIds[0], projectIds[0]),
+          user.canAddParticipantProject(participantId, projectId),
           "Can add participant project")
       assertEquals(createCohort, user.canCreateCohort(), "Can create cohort")
       assertEquals(createCohortModule, user.canCreateCohortModule(), "Can create cohort module")
       assertEquals(createDeviceManager, user.canCreateDeviceManager(), "Can create device manager")
       assertEquals(createParticipant, user.canCreateParticipant(), "Can create participant")
-      assertEquals(deleteCohort, user.canDeleteCohort(cohortIds[0]), "Can delete cohort")
+      assertEquals(deleteCohort, user.canDeleteCohort(cohortId), "Can delete cohort")
       assertEquals(
           deleteCohortParticipant,
-          user.canDeleteCohortParticipant(cohortIds[0], participantIds[0]),
+          user.canDeleteCohortParticipant(cohortId, participantId),
           "Can delete cohort participant")
       assertEquals(
-          deleteParticipant, user.canDeleteParticipant(participantIds[0]), "Can delete participant")
+          deleteParticipant, user.canDeleteParticipant(participantId), "Can delete participant")
       assertEquals(
           deleteParticipantProject,
-          user.canDeleteParticipantProject(participantIds[0], projectIds[0]),
+          user.canDeleteParticipantProject(participantId, projectId),
           "Can delete participant project")
       assertEquals(deleteSelf, user.canDeleteSelf(), "Can delete self")
       assertEquals(deleteSupportIssue, user.canDeleteSupportIssue(), "Can delete support issue")
@@ -2759,10 +2782,10 @@ internal class PermissionTest : DatabaseTest() {
           user.canReadAllAcceleratorDetails(),
           "Can read all accelerator details")
       assertEquals(readAllDeliverables, user.canReadAllDeliverables(), "Can read all deliverables")
-      assertEquals(readCohort, user.canReadCohort(cohortIds[0]), "Can read cohort")
+      assertEquals(readCohort, user.canReadCohort(cohortId), "Can read cohort")
       assertEquals(
           readCohortParticipants,
-          user.canReadCohortParticipants(cohortIds[0]),
+          user.canReadCohortParticipants(cohortId),
           "Can read cohort participants")
       assertEquals(readCohorts, user.canReadCohorts(), "Can read all cohorts")
       assertEquals(readGlobalRoles, user.canReadGlobalRoles(), "Can read global roles")
@@ -2771,20 +2794,19 @@ internal class PermissionTest : DatabaseTest() {
           readModuleEventParticipants,
           user.canReadModuleEventParticipants(),
           "Can read module event participants")
-      assertEquals(
-          readParticipant, user.canReadParticipant(participantIds[0]), "Can read participant")
+      assertEquals(readParticipant, user.canReadParticipant(participantId), "Can read participant")
       assertEquals(
           regenerateAllDeviceManagerTokens,
           user.canRegenerateAllDeviceManagerTokens(),
           "Can regenerate all device manager tokens")
       assertEquals(setTestClock, user.canSetTestClock(), "Can set test clock")
       assertEquals(updateAppVersions, user.canUpdateAppVersions(), "Can update app versions")
-      assertEquals(updateCohort, user.canUpdateCohort(cohortIds[0]), "Can update cohort")
+      assertEquals(updateCohort, user.canUpdateCohort(cohortId), "Can update cohort")
       assertEquals(
           updateDeviceTemplates, user.canUpdateDeviceTemplates(), "Can update device templates")
       assertEquals(updateGlobalRoles, user.canUpdateGlobalRoles(), "Can update global roles")
       assertEquals(
-          updateParticipant, user.canUpdateParticipant(participantIds[0]), "Can update participant")
+          updateParticipant, user.canUpdateParticipant(participantId), "Can update participant")
       assertEquals(
           updateSpecificGlobalRoles,
           user.canUpdateSpecificGlobalRoles(globalRoles),
@@ -2798,9 +2820,11 @@ internal class PermissionTest : DatabaseTest() {
         readViabilityTest: Boolean = false,
     ) {
       viabilityTestIds.forEach { viabilityTestId ->
+        val idInDatabase = getDatabaseId(viabilityTestId)
+
         assertEquals(
             readViabilityTest,
-            user.canReadViabilityTest(viabilityTestId),
+            user.canReadViabilityTest(idInDatabase),
             "Can read viability test $viabilityTestId")
 
         uncheckedViabilityTests.remove(viabilityTestId)
@@ -2814,9 +2838,11 @@ internal class PermissionTest : DatabaseTest() {
         updateBatch: Boolean = false,
     ) {
       batchIds.forEach { batchId ->
-        assertEquals(deleteBatch, user.canDeleteBatch(batchId), "Can delete batch $batchId")
-        assertEquals(readBatch, user.canReadBatch(batchId), "Can read batch $batchId")
-        assertEquals(updateBatch, user.canUpdateBatch(batchId), "Can update batch $batchId")
+        val idInDatabase = getDatabaseId(batchId)
+
+        assertEquals(deleteBatch, user.canDeleteBatch(idInDatabase), "Can delete batch $batchId")
+        assertEquals(readBatch, user.canReadBatch(idInDatabase), "Can read batch $batchId")
+        assertEquals(updateBatch, user.canUpdateBatch(idInDatabase), "Can update batch $batchId")
 
         uncheckedBatches.remove(batchId)
       }
@@ -2828,13 +2854,15 @@ internal class PermissionTest : DatabaseTest() {
         readWithdrawal: Boolean = false,
     ) {
       withdrawalIds.forEach { withdrawalId ->
+        val idInDatabase = getDatabaseId(withdrawalId)
+
         assertEquals(
             createWithdrawalPhoto,
-            user.canCreateWithdrawalPhoto(withdrawalId),
+            user.canCreateWithdrawalPhoto(idInDatabase),
             "Can create photo for withdrawal $withdrawalId")
         assertEquals(
             readWithdrawal,
-            user.canReadWithdrawal(withdrawalId),
+            user.canReadWithdrawal(idInDatabase),
             "Can read withdrawal $withdrawalId")
 
         uncheckedWithdrawals.remove(withdrawalId)
@@ -2852,33 +2880,35 @@ internal class PermissionTest : DatabaseTest() {
         updatePlantingSite: Boolean = false,
     ) {
       plantingSiteIds.forEach { plantingSiteId ->
+        val idInDatabase = getDatabaseId(plantingSiteId)
+
         assertEquals(
             createDelivery,
-            user.canCreateDelivery(plantingSiteId),
+            user.canCreateDelivery(idInDatabase),
             "Can create delivery at planting site $plantingSiteId")
         assertEquals(
             createObservation,
-            user.canCreateObservation(plantingSiteId),
+            user.canCreateObservation(idInDatabase),
             "Can create observation of planting site $plantingSiteId")
         assertEquals(
             deletePlantingSite,
-            user.canDeletePlantingSite(plantingSiteId),
+            user.canDeletePlantingSite(idInDatabase),
             "Can delete planting site $plantingSiteId")
         assertEquals(
             movePlantingSiteToAnyOrg,
-            user.canMovePlantingSiteToAnyOrg(plantingSiteId),
+            user.canMovePlantingSiteToAnyOrg(idInDatabase),
             "Can move planting site $plantingSiteId")
         assertEquals(
             readPlantingSite,
-            user.canReadPlantingSite(plantingSiteId),
+            user.canReadPlantingSite(idInDatabase),
             "Can read planting site $plantingSiteId")
         assertEquals(
             scheduleObservation,
-            user.canScheduleObservation(plantingSiteId),
+            user.canScheduleObservation(idInDatabase),
             "Can schedule observation $plantingSiteId")
         assertEquals(
             updatePlantingSite,
-            user.canUpdatePlantingSite(plantingSiteId),
+            user.canUpdatePlantingSite(idInDatabase),
             "Can update planting site $plantingSiteId")
 
         uncheckedPlantingSites.remove(plantingSiteId)
@@ -2891,13 +2921,15 @@ internal class PermissionTest : DatabaseTest() {
         updatePlantingSubzone: Boolean = false,
     ) {
       plantingSubzoneIds.forEach { plantingSubzoneId ->
+        val idInDatabase = getDatabaseId(plantingSubzoneId)
+
         assertEquals(
             readPlantingSubzone,
-            user.canReadPlantingSubzone(plantingSubzoneId),
+            user.canReadPlantingSubzone(idInDatabase),
             "Can read planting subzone $plantingSubzoneId")
         assertEquals(
             updatePlantingSubzone,
-            user.canUpdatePlantingSubzone(plantingSubzoneId),
+            user.canUpdatePlantingSubzone(idInDatabase),
             "Can update planting subzone $plantingSubzoneId")
 
         uncheckedPlantingSubzones.remove(plantingSubzoneId)
@@ -2910,13 +2942,15 @@ internal class PermissionTest : DatabaseTest() {
         updatePlantingZone: Boolean = false,
     ) {
       plantingZoneIds.forEach { plantingZoneId ->
+        val idInDatabase = getDatabaseId(plantingZoneId)
+
         assertEquals(
             readPlantingZone,
-            user.canReadPlantingZone(plantingZoneId),
+            user.canReadPlantingZone(idInDatabase),
             "Can read planting zone $plantingZoneId")
         assertEquals(
             updatePlantingZone,
-            user.canUpdatePlantingZone(plantingZoneId),
+            user.canUpdatePlantingZone(idInDatabase),
             "Can update planting zone $plantingZoneId")
 
         uncheckedPlantingZones.remove(plantingZoneId)
@@ -2928,9 +2962,11 @@ internal class PermissionTest : DatabaseTest() {
         readMonitoringPlot: Boolean = false,
     ) {
       monitoringPlotIds.forEach { monitoringPlotId ->
+        val idInDatabase = getDatabaseId(monitoringPlotId)
+
         assertEquals(
             readMonitoringPlot,
-            user.canReadMonitoringPlot(monitoringPlotId),
+            user.canReadMonitoringPlot(idInDatabase),
             "Can read monitoring plot $monitoringPlotId")
 
         uncheckedMonitoringPlots.remove(monitoringPlotId)
@@ -2944,17 +2980,19 @@ internal class PermissionTest : DatabaseTest() {
         updateDraftPlantingSite: Boolean = false,
     ) {
       draftPlantingSiteIds.forEach { draftPlantingSiteId ->
+        val idInDatabase = getDatabaseId(draftPlantingSiteId)
+
         assertEquals(
             deleteDraftPlantingSite,
-            user.canDeleteDraftPlantingSite(draftPlantingSiteId),
+            user.canDeleteDraftPlantingSite(idInDatabase),
             "Can delete draft planting site $draftPlantingSiteId")
         assertEquals(
             readDraftPlantingSite,
-            user.canReadDraftPlantingSite(draftPlantingSiteId),
+            user.canReadDraftPlantingSite(idInDatabase),
             "Can read draft planting site $draftPlantingSiteId")
         assertEquals(
             updateDraftPlantingSite,
-            user.canUpdateDraftPlantingSite(draftPlantingSiteId),
+            user.canUpdateDraftPlantingSite(idInDatabase),
             "Can update draft planting site $draftPlantingSiteId")
 
         uncheckedDraftPlantingSites.remove(draftPlantingSiteId)
@@ -2967,10 +3005,12 @@ internal class PermissionTest : DatabaseTest() {
         updateDelivery: Boolean = false,
     ) {
       deliveryIds.forEach { deliveryId ->
+        val idInDatabase = getDatabaseId(deliveryId)
+
         assertEquals(
-            readDelivery, user.canReadDelivery(deliveryId), "Can read delivery $deliveryId")
+            readDelivery, user.canReadDelivery(idInDatabase), "Can read delivery $deliveryId")
         assertEquals(
-            updateDelivery, user.canUpdateDelivery(deliveryId), "Can update delivery $deliveryId")
+            updateDelivery, user.canUpdateDelivery(idInDatabase), "Can update delivery $deliveryId")
 
         uncheckedDeliveries.remove(deliveryId)
       }
@@ -2981,8 +3021,10 @@ internal class PermissionTest : DatabaseTest() {
         readPlanting: Boolean = false,
     ) {
       plantingIds.forEach { plantingId ->
+        val idInDatabase = getDatabaseId(plantingId)
+
         assertEquals(
-            readPlanting, user.canReadPlanting(plantingId), "Can read planting $plantingId")
+            readPlanting, user.canReadPlanting(idInDatabase), "Can read planting $plantingId")
 
         uncheckedPlantings.remove(plantingId)
       }
@@ -2995,9 +3037,13 @@ internal class PermissionTest : DatabaseTest() {
         updateReport: Boolean = false,
     ) {
       reportIds.forEach { reportId ->
-        assertEquals(deleteReport, user.canDeleteReport(reportId), "Can delete report $reportId")
-        assertEquals(readReport, user.canReadReport(reportId), "Can read report $reportId")
-        assertEquals(updateReport, user.canUpdateReport(reportId), "Can update report $reportId")
+        val idInDatabase = getDatabaseId(reportId)
+
+        assertEquals(
+            deleteReport, user.canDeleteReport(idInDatabase), "Can delete report $reportId")
+        assertEquals(readReport, user.canReadReport(idInDatabase), "Can read report $reportId")
+        assertEquals(
+            updateReport, user.canUpdateReport(idInDatabase), "Can update report $reportId")
 
         uncheckedReports.remove(reportId)
       }
@@ -3012,25 +3058,27 @@ internal class PermissionTest : DatabaseTest() {
         updateObservation: Boolean = false,
     ) {
       observationIds.forEach { observationId ->
+        val idInDatabase = getDatabaseId(observationId)
+
         assertEquals(
             manageObservation,
-            user.canManageObservation(observationId),
+            user.canManageObservation(idInDatabase),
             "Can manage observation $observationId")
         assertEquals(
             readObservation,
-            user.canReadObservation(observationId),
+            user.canReadObservation(idInDatabase),
             "Can read observation $observationId")
         assertEquals(
             replaceObservationPlot,
-            user.canReplaceObservationPlot(observationId),
+            user.canReplaceObservationPlot(idInDatabase),
             "Can replace plot in observation $observationId")
         assertEquals(
             rescheduleObservation,
-            user.canRescheduleObservation(observationId),
+            user.canRescheduleObservation(idInDatabase),
             "Can reschedule observation $observationId")
         assertEquals(
             updateObservation,
-            user.canUpdateObservation(observationId),
+            user.canUpdateObservation(idInDatabase),
             "Can update observation $observationId")
 
         uncheckedObservations.remove(observationId)
@@ -3061,67 +3109,71 @@ internal class PermissionTest : DatabaseTest() {
         updateSubmissionStatus: Boolean = false,
     ) {
       projectIds.forEach { projectId ->
+        val idInDatabase = getDatabaseId(projectId)
+
         assertEquals(
             createApplication,
-            user.canCreateApplication(projectId),
+            user.canCreateApplication(idInDatabase),
             "Can create application in project $projectId")
         assertEquals(
             createSubmission,
-            user.canCreateSubmission(projectId),
+            user.canCreateSubmission(idInDatabase),
             "Can create submission for project $projectId")
         assertEquals(
             createParticipantProjectSpecies,
-            user.canCreateParticipantProjectSpecies(projectId),
+            user.canCreateParticipantProjectSpecies(idInDatabase),
             "Can create participant project species for project $projectId")
         assertEquals(
-            deleteProject, user.canDeleteProject(projectId), "Can delete project $projectId")
+            deleteProject, user.canDeleteProject(idInDatabase), "Can delete project $projectId")
         assertEquals(readDefaultVoters, user.canReadDefaultVoters(), "Can read default voters")
         assertEquals(
             readInternalVariableWorkflowDetails,
-            user.canReadInternalVariableWorkflowDetails(projectId),
+            user.canReadInternalVariableWorkflowDetails(idInDatabase),
             "Can read variable owners for project $projectId")
         assertEquals(
-            readProjectModules, user.canReadProjectModules(projectId), "Can read project modules")
-        assertEquals(readProject, user.canReadProject(projectId), "Can read project $projectId")
+            readProjectModules,
+            user.canReadProjectModules(idInDatabase),
+            "Can read project modules")
+        assertEquals(readProject, user.canReadProject(idInDatabase), "Can read project $projectId")
         assertEquals(
             readProjectAcceleratorDetails,
-            user.canReadProjectAcceleratorDetails(projectId),
+            user.canReadProjectAcceleratorDetails(idInDatabase),
             "Can read accelerator details for project $projectId")
         assertEquals(
             readProjectDeliverables,
-            user.canReadProjectDeliverables(projectId),
+            user.canReadProjectDeliverables(idInDatabase),
             "Can read deliverables for project $projectId")
         assertEquals(
             readProjectScores,
-            user.canReadProjectScores(projectId),
+            user.canReadProjectScores(idInDatabase),
             "Can read scores for project $projectId")
         assertEquals(
             readProjectVotes,
-            user.canReadProjectVotes(projectId),
+            user.canReadProjectVotes(idInDatabase),
             "Can read votes for project $projectId")
         assertEquals(
             updateDefaultVoters, user.canUpdateDefaultVoters(), "Can update default voters")
         assertEquals(
             updateInternalVariableWorkflowDetails,
-            user.canUpdateInternalVariableWorkflowDetails(projectId),
+            user.canUpdateInternalVariableWorkflowDetails(idInDatabase),
             "Can update variable owners for project $projectId")
         assertEquals(
-            updateProject, user.canUpdateProject(projectId), "Can update project $projectId")
+            updateProject, user.canUpdateProject(idInDatabase), "Can update project $projectId")
         assertEquals(
             updateProjectAcceleratorDetails,
-            user.canUpdateProjectAcceleratorDetails(projectId),
+            user.canUpdateProjectAcceleratorDetails(idInDatabase),
             "Can update accelerator details for project $projectId")
         assertEquals(
             updateProjectDocumentSettings,
-            user.canUpdateProjectDocumentSettings(projectId),
+            user.canUpdateProjectDocumentSettings(idInDatabase),
             "Can update project document settings for project $projectId")
         assertEquals(
             updateProjectScores,
-            user.canUpdateProjectScores(projectId),
+            user.canUpdateProjectScores(idInDatabase),
             "Can update scores for project $projectId")
         assertEquals(
             updateProjectVotes,
-            user.canUpdateProjectVotes(projectId),
+            user.canUpdateProjectVotes(idInDatabase),
             "Can update votes for project $projectId")
 
         assertEquals(
@@ -3138,8 +3190,12 @@ internal class PermissionTest : DatabaseTest() {
         readModuleEvent: Boolean = false,
     ) {
       eventIds.forEach { eventId ->
+        val idInDatabase = getDatabaseId(eventId)
+
         assertEquals(
-            readModuleEvent, user.canReadModuleEvent(eventId), "Can read module event $eventId")
+            readModuleEvent,
+            user.canReadModuleEvent(idInDatabase),
+            "Can read module event $eventId")
 
         uncheckedModuleEvents.remove(eventId)
       }
@@ -3151,10 +3207,12 @@ internal class PermissionTest : DatabaseTest() {
         readModuleDetails: Boolean = false,
     ) {
       moduleIds.forEach { moduleId ->
-        assertEquals(readModule, user.canReadModule(moduleId), "Can read module $moduleId")
+        val idInDatabase = getDatabaseId(moduleId)
+
+        assertEquals(readModule, user.canReadModule(idInDatabase), "Can read module $moduleId")
         assertEquals(
             readModuleDetails,
-            user.canReadModuleDetails(moduleId),
+            user.canReadModuleDetails(idInDatabase),
             "Can read module details $moduleId")
 
         uncheckedModules.remove(moduleId)
@@ -3168,19 +3226,21 @@ internal class PermissionTest : DatabaseTest() {
         updateParticipantProjectSpecies: Boolean = false,
     ) {
       participantProjectSpeciesIds.forEach { participantProjectSpeciesId ->
+        val idInDatabase = getDatabaseId(participantProjectSpeciesId)
+
         assertEquals(
             deleteParticipantProjectSpecies,
-            user.canDeleteParticipantProjectSpecies(participantProjectSpeciesId),
+            user.canDeleteParticipantProjectSpecies(idInDatabase),
             "Can delete participant project species $participantProjectSpeciesId")
 
         assertEquals(
             readParticipantProjectSpecies,
-            user.canReadParticipantProjectSpecies(participantProjectSpeciesId),
+            user.canReadParticipantProjectSpecies(idInDatabase),
             "Can read participant project species $participantProjectSpeciesId")
 
         assertEquals(
             updateParticipantProjectSpecies,
-            user.canUpdateParticipantProjectSpecies(participantProjectSpeciesId),
+            user.canUpdateParticipantProjectSpecies(idInDatabase),
             "Can update participant project species $participantProjectSpeciesId")
 
         uncheckedParticipantProjectSpecies.remove(participantProjectSpeciesId)
@@ -3192,9 +3252,11 @@ internal class PermissionTest : DatabaseTest() {
         readSubmission: Boolean = false,
     ) {
       submissionIds.forEach { submissionId ->
+        val idInDatabase = getDatabaseId(submissionId)
+
         assertEquals(
             readSubmission,
-            user.canReadSubmission(submissionId),
+            user.canReadSubmission(idInDatabase),
             "Can read submission $submissionId")
 
         uncheckedSubmissions.remove(submissionId)
@@ -3246,21 +3308,23 @@ internal class PermissionTest : DatabaseTest() {
       applicationIds
           .filter { it in uncheckedApplications }
           .forEach { applicationId ->
+            val idInDatabase = getDatabaseId(applicationId)
+
             assertEquals(
                 readApplication,
-                user.canReadApplication(applicationId),
+                user.canReadApplication(idInDatabase),
                 "Can read application $applicationId")
             assertEquals(
                 reviewApplication,
-                user.canReviewApplication(applicationId),
+                user.canReviewApplication(idInDatabase),
                 "Can review application $applicationId")
             assertEquals(
                 updateApplicationBoundary,
-                user.canUpdateApplicationBoundary(applicationId),
+                user.canUpdateApplicationBoundary(idInDatabase),
                 "Can update application boundary $applicationId")
             assertEquals(
                 updateApplicationSubmissionStatus,
-                user.canUpdateApplicationSubmissionStatus(applicationId),
+                user.canUpdateApplicationSubmissionStatus(idInDatabase),
                 "Can update submission status of application $applicationId")
 
             uncheckedApplications.remove(applicationId)

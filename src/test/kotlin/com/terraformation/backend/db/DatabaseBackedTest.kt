@@ -917,55 +917,51 @@ abstract class DatabaseBackedTest {
     deliverableProjectDueDatesDao.insert(row)
   }
 
+  private var nextDeviceNumber = 1
+
   protected fun insertDevice(
-      id: Any,
-      facilityId: Any = inserted.facilityId,
-      name: String = "device $id",
+      facilityId: FacilityId = inserted.facilityId,
+      name: String = "device ${nextDeviceNumber++}",
       createdBy: UserId = currentUser().userId,
       type: String = "type"
-  ) {
-    with(DEVICES) {
-      val insertedId = id.toIdWrapper { DeviceId(it) }
-
+  ): DeviceId {
+    return with(DEVICES) {
       dslContext
           .insertInto(DEVICES)
           .set(ADDRESS, "address")
           .set(CREATED_BY, createdBy)
           .set(DEVICE_TYPE, type)
-          .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
-          .set(ID, insertedId)
+          .set(FACILITY_ID, facilityId)
           .set(MAKE, "make")
           .set(MODEL, "model")
           .set(MODIFIED_BY, createdBy)
           .set(NAME, name)
           .set(PROTOCOL, "protocol")
-          .execute()
-
-      inserted.deviceIds.add(insertedId)
+          .returning(ID)
+          .fetchOne(ID)!!
+          .also { inserted.deviceIds.add(it) }
     }
   }
 
+  var nextAutomationNumber = 1
+
   protected fun insertAutomation(
-      id: Any,
-      facilityId: Any = inserted.facilityId,
-      name: String = "automation $id",
+      facilityId: FacilityId = inserted.facilityId,
+      name: String = "automation ${nextAutomationNumber++}",
       type: String = AutomationModel.SENSOR_BOUNDS_TYPE,
-      deviceId: Any? = "$id".toLong(),
+      deviceId: Any? = inserted.deviceId,
       timeseriesName: String? = "timeseries",
       lowerThreshold: Double? = 10.0,
       upperThreshold: Double? = 20.0,
       createdBy: UserId = currentUser().userId,
-  ) {
-    with(AUTOMATIONS) {
-      val insertedId = id.toIdWrapper { AutomationId(it) }
-
+  ): AutomationId {
+    return with(AUTOMATIONS) {
       dslContext
           .insertInto(AUTOMATIONS)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
           .set(DEVICE_ID, deviceId?.toIdWrapper { DeviceId(it) })
           .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
-          .set(ID, insertedId)
           .set(LOWER_THRESHOLD, lowerThreshold)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
@@ -973,9 +969,9 @@ abstract class DatabaseBackedTest {
           .set(TIMESERIES_NAME, timeseriesName)
           .set(TYPE, type)
           .set(UPPER_THRESHOLD, upperThreshold)
-          .execute()
-
-      inserted.automationIds.add(insertedId)
+          .returning(ID)
+          .fetchOne(ID)!!
+          .also { inserted.automationIds.add(it) }
     }
   }
 
@@ -1287,7 +1283,7 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertUpload(
-      id: Any,
+      id: Any? = null,
       type: UploadType = UploadType.SpeciesCSV,
       fileName: String = "$id.csv",
       storageUrl: URI = URI.create("file:///$id.csv"),
@@ -1298,10 +1294,8 @@ abstract class DatabaseBackedTest {
       organizationId: OrganizationId? = null,
       facilityId: FacilityId? = null,
       locale: Locale = Locale.ENGLISH,
-  ) {
-    with(UPLOADS) {
-      val insertedId = id.toIdWrapper { UploadId(it) }
-
+  ): UploadId {
+    return with(UPLOADS) {
       dslContext
           .insertInto(UPLOADS)
           .set(CONTENT_TYPE, contentType)
@@ -1309,15 +1303,15 @@ abstract class DatabaseBackedTest {
           .set(CREATED_TIME, createdTime)
           .set(FACILITY_ID, facilityId)
           .set(FILENAME, fileName)
-          .set(ID, insertedId)
+          .apply { id?.toIdWrapper { UploadId(it) }?.let { set(ID, it) } }
           .set(LOCALE, locale)
           .set(ORGANIZATION_ID, organizationId)
           .set(STATUS_ID, status)
           .set(STORAGE_URL, storageUrl)
           .set(TYPE_ID, type)
-          .execute()
-
-      inserted.uploadIds.add(insertedId)
+          .returning(ID)
+          .fetchOne(ID)!!
+          .also { inserted.uploadIds.add(it) }
     }
   }
 
@@ -2381,7 +2375,7 @@ abstract class DatabaseBackedTest {
       feedback: String? = null,
       id: Any? = null,
       internalComment: String? = null,
-      modifiedBy: Any = currentUser().userId,
+      modifiedBy: Any = createdBy,
       modifiedTime: Instant = Instant.EPOCH,
       projectId: Any = inserted.projectId,
       rationale: String? = null,

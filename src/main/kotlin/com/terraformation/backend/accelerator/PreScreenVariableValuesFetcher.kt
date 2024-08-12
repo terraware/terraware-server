@@ -40,7 +40,7 @@ class PreScreenVariableValuesFetcher(
             LandUseModelType.SustainableTimber to "9",
         )
 
-    val preScreenDeliverableId = DeliverableId(22)
+    val preScreenDeliverableId = DeliverableId(102)
 
     private val log = perClassLogger()
   }

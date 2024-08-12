@@ -11,7 +11,6 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.SubLocationInUseException
 import com.terraformation.backend.db.SubLocationNameExistsException
-import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -238,8 +237,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `updateLastTimeseriesTimes resets idle timestamps`() {
-    val deviceId = DeviceId(1)
-    insertDevice(deviceId)
+    val deviceId = insertDevice()
 
     val initial = facilitiesDao.fetchOneById(facilityId)!!
     facilitiesDao.update(

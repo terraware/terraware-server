@@ -21,7 +21,7 @@ plugins {
   // Uncomment the kapt line in the dependencies block if you enable this.
   // kotlin("kapt")
 
-  id("dev.monosoul.jooq-docker") version "6.1.0"
+  id("dev.monosoul.jooq-docker") version "6.1.1"
   id("com.diffplug.spotless") version "6.25.0"
   id("org.springframework.boot") version "3.3.2"
   id("io.spring.dependency-management") version "1.1.6"
@@ -94,11 +94,11 @@ dependencies {
   implementation("com.dropbox.core:dropbox-core-sdk:7.0.0")
   implementation("com.google.api-client:google-api-client:2.6.0")
   implementation("com.google.auth:google-auth-library-oauth2-http:1.24.0")
-  implementation("com.google.apis:google-api-services-drive:v3-rev20240722-2.0.0")
+  implementation("com.google.apis:google-api-services-drive:v3-rev20240730-2.0.0")
   implementation("com.opencsv:opencsv:5.9")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.8.0")
   implementation("commons-validator:commons-validator:1.9.0")
-  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.2.1") {
+  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.2.2") {
     exclude("org.apache.tomcat")
   }
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
@@ -119,7 +119,7 @@ dependencies {
   implementation("org.geotools:gt-xml:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-core:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-kml:$geoToolsVersion")
-  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:7.2.2")
+  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:7.2.3")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
