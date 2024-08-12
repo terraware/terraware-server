@@ -20,12 +20,9 @@ import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
-import com.terraformation.backend.db.default_schema.tables.references.SPECIES
-import com.terraformation.backend.db.default_schema.tables.references.UPLOAD_PROBLEMS
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchSubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
-import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.UploadService
@@ -33,6 +30,7 @@ import com.terraformation.backend.file.UploadStore
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.use
+import com.terraformation.backend.mapTo1IndexedIds
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.db.SpeciesStore
 import io.mockk.CapturingSlot
@@ -46,16 +44,12 @@ import java.util.UUID
 import org.jobrunr.jobs.JobId
 import org.jobrunr.jobs.lambdas.IocJobLambda
 import org.jobrunr.scheduling.JobScheduler
-import org.jooq.Record
-import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-  override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(BATCHES, SPECIES, UPLOAD_PROBLEMS)
 
   private val clock = TestClock()
   private val fileStore: FileStore = mockk()
@@ -325,9 +319,15 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
 
     importer.importCsv(uploadId, false)
 
-    assertEquals(speciesId, batchesDao.fetchOneById(BatchId(1))?.speciesId)
+    assertEquals(speciesId, batchesDao.findAll().first().speciesId)
   }
 
+  /**
+   * Runs a scenario with a successful import and verifies that the expected rows have been inserted
+   * into the database.
+   *
+   * The IDs in the expected entity lists are assumed to start with 1.
+   */
   private fun runHappyPath(
       filename: String,
       locale: Locale,
@@ -365,14 +365,23 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         uploadsDao.fetchOneById(inserted.uploadId)?.statusId,
         "Status after import")
 
+    val actualSpecies = speciesDao.findAll().sortedBy { it.id!!.value }
+    val actualBatches = batchesDao.findAll().sortedBy { it.id!!.value }
+    val mappedSpeciesIds = mapTo1IndexedIds(actualSpecies, ::SpeciesId, SpeciesRow::id)
+    val mappedBatchIds = mapTo1IndexedIds(actualBatches, ::BatchId, BatchesRow::id)
+
     assertEquals(
-        expectedSpecies, speciesDao.findAll().sortedBy { it.id!!.value }, "Imported species")
+        expectedSpecies.map { it.copy(id = null) },
+        actualSpecies.map { it.copy(id = null) },
+        "Imported species")
 
     assertJsonEquals(
-        expectedBatches, batchesDao.findAll().sortedBy { it.id!!.value }, "Imported batches")
+        expectedBatches.map { it.copy(id = null, speciesId = mappedSpeciesIds[it.speciesId]) },
+        actualBatches.map { it.copy(id = null) },
+        "Imported batches")
 
     assertJsonEquals(
-        expectedSubLocations,
+        expectedSubLocations.map { it.copy(batchId = mappedBatchIds[it.batchId]) },
         batchSubLocationsDao
             .findAll()
             .sortedWith(
