@@ -82,8 +82,7 @@ class SubmissionNotifier(
         val maxDocumentId = deliverable.documents.map { it.id }.maxBy { it.value }
 
         if (maxDocumentId == event.documentId) {
-          eventPublisher.publishEvent(
-              DeliverableReadyForReviewEvent(event.deliverableId, event.projectId))
+          eventPublisher.publishEvent(DeliverableReadyForReviewEvent(deliverable, event.projectId))
         }
       } else {
         log.error("Deliverable ${event.deliverableId} not found for project ${event.projectId}")
@@ -97,14 +96,19 @@ class SubmissionNotifier(
    */
   fun notifyIfNoNewerSubmissions(event: QuestionsDeliverableSubmittedEvent) {
     systemUser.run {
+      val deliverable =
+          deliverableStore
+              .fetchDeliverableSubmissions(
+                  projectId = event.projectId, deliverableId = event.deliverableId)
+              .firstOrNull()
+
       val allValuesLatest =
           event.currentValueIds.all {
             variableValueStore.fetchMaxValueId(event.projectId, it.key) == it.value
           }
 
-      if (allValuesLatest) {
-        eventPublisher.publishEvent(
-            DeliverableReadyForReviewEvent(event.deliverableId, event.projectId))
+      if (deliverable != null && allValuesLatest) {
+        eventPublisher.publishEvent(DeliverableReadyForReviewEvent(deliverable, event.projectId))
       }
     }
   }

@@ -584,7 +584,8 @@ class EmailNotificationService(
       return
     }
 
-    val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
+    val deliverableCategory =
+        deliverableStore.fetchDeliverableCategory(event.deliverable.deliverableId)
     val participant = participantStore.fetchOneById(project.participantId)
 
     sendToAccelerator(
@@ -592,8 +593,9 @@ class EmailNotificationService(
         DeliverableReadyForReview(
             config,
             webAppUrls
-                .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
+                .fullAcceleratorConsoleDeliverable(event.deliverable.deliverableId, event.projectId)
                 .toString(),
+            event.deliverable,
             participant.name),
         deliverableCategory)
   }

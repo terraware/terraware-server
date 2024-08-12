@@ -13,6 +13,15 @@
                 <mj-text mj-class="text-body03">
                   A deliverable was submitted by ${participantName} and is ready for review for approval.
                 </mj-text>
+                <mj-text mj-class="text-body03">
+                    <b>Project:</b> ${deliverable.projectName}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                    <b>Deliverable:</b> ${deliverable.name}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                    <b>Category:</b> ${deliverable.category}
+                </mj-text>
                 <mj-button mj-class="btn-productive-primary-md"
                            href="${deliverableUrl?no_esc}">Review in Terraware
                 </mj-button>
