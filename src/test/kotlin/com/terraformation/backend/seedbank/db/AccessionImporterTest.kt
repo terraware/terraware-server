@@ -385,7 +385,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           UploadStatus.Completed,
-          uploadsDao.fetchOneById(uploadId)?.statusId,
+          uploadsDao.fetchOneById(inserted.uploadId)?.statusId,
           "Status after import")
 
       val actualSpecies = speciesDao.findAll().sortedBy { it.id!!.value }
