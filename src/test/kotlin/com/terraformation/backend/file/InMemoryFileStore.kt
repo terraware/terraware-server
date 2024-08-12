@@ -17,14 +17,22 @@ import org.springframework.http.MediaType
 @Priority(1) // Higher priority than the non-test implementations of FileStore
 class InMemoryFileStore(private val pathGenerator: PathGenerator? = null) :
     FileStore, BeanTestDouble {
-  private var counter = 0
-  private val deletedFiles = mutableSetOf<URI>()
+  private val threadState = ThreadLocal.withInitial { State() }
 
-  val files = mutableMapOf<URI, ByteArray>()
+  private var counter: Int
+    get() = threadState.get().counter
+    set(value) {
+      threadState.get().counter = value
+    }
+
+  private val deletedFiles
+    get() = threadState.get().deletedFiles
+
+  val files
+    get() = threadState.get().files
 
   override fun resetState() {
-    files.clear()
-    counter = 0
+    threadState.remove()
   }
 
   fun assertFileNotExists(
@@ -84,4 +92,14 @@ class InMemoryFileStore(private val pathGenerator: PathGenerator? = null) :
   }
 
   private fun getFile(url: URI) = files[url] ?: throw NoSuchFileException("$url")
+
+  /**
+   * Per-thread state of the file store. A test running in one thread shouldn't interact with
+   * another test running in another thread.
+   */
+  private class State {
+    var counter = 0
+    val deletedFiles = mutableSetOf<URI>()
+    val files = mutableMapOf<URI, ByteArray>()
+  }
 }
