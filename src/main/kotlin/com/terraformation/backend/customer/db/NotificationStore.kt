@@ -105,9 +105,12 @@ class NotificationStore(
    *   notifications, the organization id in the notification model will be null, hence this
    *   additional organization id parameter to capture context.
    */
-  fun create(notification: CreateNotificationModel, targetOrganizationId: OrganizationId) {
+  fun create(
+      notification: CreateNotificationModel,
+      targetOrganizationId: OrganizationId
+  ): NotificationId {
     requirePermissions { createNotification(notification.userId, targetOrganizationId) }
-    with(NOTIFICATIONS) {
+    return with(NOTIFICATIONS) {
       with(notification) {
         dslContext
             .insertInto(NOTIFICATIONS)
@@ -118,7 +121,8 @@ class NotificationStore(
             .set(BODY, body)
             .set(LOCAL_URL, localUrl)
             .set(CREATED_TIME, clock.instant())
-            .execute()
+            .returning(ID)
+            .fetchOne(ID)!!
       }
     }
   }
