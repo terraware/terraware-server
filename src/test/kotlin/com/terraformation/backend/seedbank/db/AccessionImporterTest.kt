@@ -39,6 +39,7 @@ import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.i18n.use
+import com.terraformation.backend.mapTo1IndexedIds
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.db.SpeciesStore
 import io.mockk.CapturingSlot
@@ -340,12 +341,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
      * Runs a scenario with a successful import and verifies that the expected rows have been
      * inserted into the database.
      *
-     * Since the database can generate different IDs depending on which tests have run before this
-     * one, but we want to verify that the relationships between different rows are correct (e.g.,
-     * that a geolocation is associated with the correct accession), the IDs in the rows here are
-     * treated as indexes (starting at 1) into the ordered list of actual IDs from the database.
-     * That is, `AccessionId(1)` in one of the arguments means, "The lowest-numbered accession ID in
-     * the database."
+     * The IDs in the expected entity lists are assumed to start with 1.
      */
     private fun runHappyPath(
         filename: String,
@@ -390,15 +386,8 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
       val actualSpecies = speciesDao.findAll().sortedBy { it.id!!.value }
       val actualAccessions = accessionsDao.findAll().sortedBy { it.id!!.value }
-
-      val mappedSpeciesIds =
-          actualSpecies
-              .mapIndexed { index, speciesRow -> SpeciesId(index + 1L) to speciesRow.id!! }
-              .toMap()
-      val mappedAccessionIds =
-          actualAccessions
-              .mapIndexed { index, accessionsRow -> AccessionId(index + 1L) to accessionsRow.id!! }
-              .toMap()
+      val mappedSpeciesIds = mapTo1IndexedIds(actualSpecies, ::SpeciesId, SpeciesRow::id)
+      val mappedAccessionIds = mapTo1IndexedIds(actualAccessions, ::AccessionId, AccessionsRow::id)
 
       assertEquals(
           expectedSpecies.map { it.copy(id = null) },
