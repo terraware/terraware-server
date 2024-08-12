@@ -7,6 +7,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.db.SRID
+import com.terraformation.backend.seedbank.db.AccessionImporterTest
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
@@ -144,3 +145,41 @@ fun Number.toBigDecimal(): BigDecimal =
       // return the same values they do.
       else -> BigDecimal(toString())
     }
+
+/**
+ * Returns a map from 1-indexed IDs to the actual IDs from a list of entities.
+ *
+ * For example, if you have a list of `SpeciesRow` objects whose IDs are `SpeciesId(8)`,
+ * `SpeciesId(10)`, and `SpeciesId(11)`, this would return
+ *
+ * ```
+ * mapOf(
+ *     SpeciesId(1) to SpeciesId(8),
+ *     SpeciesId(2) to SpeciesId(10),
+ *     SpeciesId(3) to SpeciesId(11))
+ * ```
+ *
+ * This is used in tests that insert new entities and need to assert that other entities refer to
+ * the correct IDs; the expected values are constructed with hardwired IDs starting with 1 and the
+ * references in the expected values use those 1-indexed IDs. Once the entities are created, this
+ * function is called to map the 1-indexed IDs to the actual ones, and the expected references are
+ * then replaced with the corresponding actual IDs by looking them up in the map.
+ *
+ * @see AccessionImporterTest.HappyPath.runHappyPath
+ */
+fun <T : Any, FAKE_ID : Any, ACTUAL_ID : Any> mapTo1IndexedIds(
+    entities: List<T>,
+    newIdFunc: (Long) -> FAKE_ID,
+    getIdFunc: (T) -> ACTUAL_ID?
+): Map<FAKE_ID, ACTUAL_ID> {
+  return entities
+      .mapIndexed { index, entity ->
+        val fakeId = newIdFunc(index + 1L)
+        val actualId =
+            getIdFunc(entity)
+                ?: throw IllegalArgumentException(
+                    "Null ID in ${entity.javaClass.simpleName} at index $index")
+        fakeId to actualId
+      }
+      .toMap()
+}
