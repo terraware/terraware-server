@@ -1,3 +1,4 @@
+2fc3e468452 Remove DatabaseBackedTest.insertSiteData() (#2273)
 3befda41312 SW-5780 Use dynamic IDs in search tests (#2272)
 b604ad3c924 SW-5605 Make in-memory test doubles thread-safe (#2271)
 c14be03608b SW-5795 Use dynamic IDs in CSV importer tests (#2270)
