@@ -17,11 +17,14 @@ import com.terraformation.backend.documentproducer.model.Variable
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.math.BigDecimal
+import org.springframework.beans.factory.annotation.Value
 
 @Named
 class PreScreenVariableValuesFetcher(
     private val variableStore: VariableStore,
     private val variableValueStore: VariableValueStore,
+    @Value("102") // From deliverables spreadsheet
+    val preScreenDeliverableId: DeliverableId,
 ) {
   companion object {
     const val STABLE_ID_NUM_SPECIES = "22"
@@ -39,8 +42,6 @@ class PreScreenVariableValuesFetcher(
             LandUseModelType.Silvopasture to "17",
             LandUseModelType.SustainableTimber to "9",
         )
-
-    val preScreenDeliverableId = DeliverableId(102)
 
     private val log = perClassLogger()
   }

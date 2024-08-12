@@ -8,6 +8,7 @@ import com.terraformation.backend.accelerator.model.PreScreenVariableValues
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableSelectOptionId
@@ -51,9 +52,11 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
             variableSectionValuesDao,
             variableSelectOptionValuesDao,
             variableValuesDao,
-            variableValueTableRowsDao))
+            variableValueTableRowsDao),
+        deliverableId)
   }
 
+  private lateinit var deliverableId: DeliverableId
   private lateinit var numSpeciesVariableId: VariableId
   private lateinit var projectTypeVariableId: VariableId
   private lateinit var totalExpansionPotentialVariableId: VariableId
@@ -66,7 +69,7 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
     insertOrganization()
     insertProject()
     insertModule(phase = CohortPhase.PreScreen)
-    insertDeliverable(id = PreScreenVariableValuesFetcher.preScreenDeliverableId)
+    deliverableId = insertDeliverable()
 
     numSpeciesVariableId =
         insertNumberVariable(

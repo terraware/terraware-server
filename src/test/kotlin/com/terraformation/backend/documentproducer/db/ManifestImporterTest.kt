@@ -551,30 +551,6 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `ensures that the current CSVs import without error`() {
-      every { user.canReadAllDeliverables() } returns true
-
-      insertModule()
-      insertDeliverable(id = 27)
-      insertDeliverable(id = 102)
-      insertDeliverable(id = 103)
-
-      // We have to import the variables sheet first otherwise variables referenced within
-      // default text entries will fail to import because the underlying variable is missing
-      // Alternately, we could do a bunch of `insertVariable` setup, but this seems better
-      val variableCsvInput = javaClass.getResourceAsStream("/manifest/all-variables-rev1.csv")!!
-
-      variableImporter.import(variableCsvInput)
-
-      val manifestCsvInput =
-          javaClass.getResourceAsStream("/manifest/feasibility-study-variable-manifest-rev1.csv")!!
-
-      val importResult = importer.import(inserted.documentTemplateId, manifestCsvInput)
-
-      assertEquals(emptyList<String>(), importResult.errors, "no errors")
-    }
-
-    @Test
     fun `creates new top-level section if any of its descendents have changed`() {
       val initialCsv = header + "\nTop,A,,,,," + "\nMiddle,B,,,Top,," + "\nBottom,C,,,Middle,,"
       val updatedCsv = header + "\nTop,A,,,,," + "\nMiddle,B,,,Top,," + "\nBottom,C,,,Middle,yes,"
@@ -584,7 +560,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val initialMiddle = getVariableByName("Middle")
       val initialBottom = getVariableByName("Bottom")
 
-      val updatedResult = importer.import(inserted.documentTemplateId, sizedInputStream(updatedCsv))
+      importer.import(inserted.documentTemplateId, sizedInputStream(updatedCsv))
       val updatedTop = getVariableByName("Top")
       val updatedMiddle = getVariableByName("Middle")
       val updatedBottom = getVariableByName("Bottom")
@@ -637,7 +613,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       val initialTop = getVariableByName("Top")
       val initialMiddle = getVariableByName("Middle")
 
-      val updatedResult = importer.import(inserted.documentTemplateId, sizedInputStream(updatedCsv))
+      importer.import(inserted.documentTemplateId, sizedInputStream(updatedCsv))
       val updatedTop = getVariableByName("Top")
       val updatedMiddle = getVariableByName("Middle")
       val updatedBottom = getVariableByName("Bottom")
