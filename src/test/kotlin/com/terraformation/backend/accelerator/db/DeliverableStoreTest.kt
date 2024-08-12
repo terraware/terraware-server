@@ -86,21 +86,19 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       val organizationId1 = insertOrganization()
       val organizationId2 = insertOrganization()
       val projectId1 =
-          insertProject(id = 1, organizationId = organizationId1, participantId = participantId1)
+          insertProject(organizationId = organizationId1, participantId = participantId1)
       val projectId2 =
-          insertProject(id = 2, organizationId = organizationId1, participantId = participantId2)
+          insertProject(organizationId = organizationId1, participantId = participantId2)
       val projectId3 =
-          insertProject(id = 3, organizationId = organizationId2, participantId = participantId1)
+          insertProject(organizationId = organizationId2, participantId = participantId1)
       val projectId4 =
-          insertProject(id = 4, organizationId = organizationId2, participantId = participantId3)
+          insertProject(organizationId = organizationId2, participantId = participantId3)
 
-      val moduleId1 = insertModule(id = 1, name = "Name 1")
-      val deliverableId1 = insertDeliverable(id = 1, moduleId = 1)
-      val deliverableId2 =
-          insertDeliverable(
-              id = 2, deliverableCategoryId = DeliverableCategory.Compliance, moduleId = 1)
-      val moduleId2 = insertModule(id = 2, name = "Name 2")
-      val deliverableId3 = insertDeliverable(id = 3, moduleId = 2, descriptionHtml = null)
+      val moduleId1 = insertModule(name = "Name 1")
+      val deliverableId1 = insertDeliverable()
+      val deliverableId2 = insertDeliverable(deliverableCategoryId = DeliverableCategory.Compliance)
+      val moduleId2 = insertModule(name = "Name 2")
+      val deliverableId3 = insertDeliverable(descriptionHtml = null)
       insertDeliverableDocument(templateUrl = "https://example.com/")
 
       insertCohortModule(
@@ -408,15 +406,14 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       val participantWithDueDate = insertParticipant(cohortId = cohortWithDueDate)
       val participantWithoutDueDate = insertParticipant(cohortId = cohortWithoutDueDate)
 
-      val moduleId = insertModule(id = 1)
-      val deliverableId = insertDeliverable(id = 1, moduleId = 1)
+      val moduleId = insertModule()
+      val deliverableId = insertDeliverable()
 
       insertOrganization()
 
-      val projectWithProjectDueDate = insertProject(id = 1, participantId = participantWithDueDate)
-      val projectWithCohortDueDate = insertProject(id = 2, participantId = participantWithDueDate)
-      val projectWithDefaultDueDate =
-          insertProject(id = 3, participantId = participantWithoutDueDate)
+      val projectWithProjectDueDate = insertProject(participantId = participantWithDueDate)
+      val projectWithCohortDueDate = insertProject(participantId = participantWithDueDate)
+      val projectWithDefaultDueDate = insertProject(participantId = participantWithoutDueDate)
 
       val cohortModuleEndDate = LocalDate.of(2024, 1, 2)
 

@@ -1751,7 +1751,6 @@ abstract class DatabaseBackedTest {
   fun insertModule(
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
-      id: Any? = null,
       name: String = "Module $nextModuleNumber",
       position: Int = nextModuleNumber,
       overview: String? = null,
@@ -1768,7 +1767,6 @@ abstract class DatabaseBackedTest {
         ModulesRow(
             createdBy = createdBy,
             createdTime = createdTime,
-            id = id?.toIdWrapper { ModuleId(it) },
             modifiedBy = createdBy,
             modifiedTime = createdTime,
             name = name,

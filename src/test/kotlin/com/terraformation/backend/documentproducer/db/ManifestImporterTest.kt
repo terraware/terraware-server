@@ -564,14 +564,16 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       // Alternately, we could do a bunch of `insertVariable` setup, but this seems better
       val variableCsvInput = javaClass.getResourceAsStream("/manifest/all-variables-rev1.csv")!!
 
-      variableImporter.import(variableCsvInput)
+      val variableImportResult = variableImporter.import(variableCsvInput)
+
+      assertEquals(emptyList<String>(), variableImportResult.errors, "Errors from variable import")
 
       val manifestCsvInput =
           javaClass.getResourceAsStream("/manifest/feasibility-study-variable-manifest-rev1.csv")!!
 
       val importResult = importer.import(inserted.documentTemplateId, manifestCsvInput)
 
-      assertEquals(emptyList<String>(), importResult.errors, "no errors")
+      assertEquals(emptyList<String>(), importResult.errors, "Errors from manifest import")
     }
 
     @Test

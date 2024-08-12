@@ -405,22 +405,6 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `ensures that the current CSV imports without error`() {
-      every { user.canReadAllDeliverables() } returns true
-
-      insertModule()
-      insertDeliverable(id = 27)
-      insertDeliverable(id = 102)
-      insertDeliverable(id = 103)
-
-      val csvInput = javaClass.getResourceAsStream("/manifest/all-variables-rev1.csv")!!
-
-      val importResult = importer.import(csvInput)
-
-      assertEquals(emptyList<String>(), importResult.errors, "no errors")
-    }
-
-    @Test
     fun `reuses existing select variable`() {
       val testCsv =
           header +
