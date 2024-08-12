@@ -387,7 +387,8 @@ class AppNotificationService(
       }
 
       val participant = participantStore.fetchOneById(project.participantId)
-      val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverable.deliverableId)
+      val deliverableCategory =
+          deliverableStore.fetchDeliverableCategory(event.deliverable.deliverableId)
       val deliverableUrl =
           webAppUrls.acceleratorConsoleDeliverable(event.deliverable.deliverableId, event.projectId)
       val renderMessage = { messages.deliverableReadyForReview(participant.name) }
