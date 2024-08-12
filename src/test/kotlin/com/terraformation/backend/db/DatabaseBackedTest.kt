@@ -1282,11 +1282,12 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!.also { inserted.fileIds.add(it) }
   }
 
+  private var nextUploadNumber = 1
+
   fun insertUpload(
-      id: Any? = null,
       type: UploadType = UploadType.SpeciesCSV,
-      fileName: String = "$id.csv",
-      storageUrl: URI = URI.create("file:///$id.csv"),
+      fileName: String = "${nextUploadNumber}.csv",
+      storageUrl: URI = URI.create("file:///${nextUploadNumber}.csv"),
       contentType: String = "text/csv",
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
@@ -1295,6 +1296,8 @@ abstract class DatabaseBackedTest {
       facilityId: FacilityId? = null,
       locale: Locale = Locale.ENGLISH,
   ): UploadId {
+    nextUploadNumber++
+
     return with(UPLOADS) {
       dslContext
           .insertInto(UPLOADS)
@@ -1303,7 +1306,6 @@ abstract class DatabaseBackedTest {
           .set(CREATED_TIME, createdTime)
           .set(FACILITY_ID, facilityId)
           .set(FILENAME, fileName)
-          .apply { id?.toIdWrapper { UploadId(it) }?.let { set(ID, it) } }
           .set(LOCALE, locale)
           .set(ORGANIZATION_ID, organizationId)
           .set(STATUS_ID, status)
