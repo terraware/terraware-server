@@ -1,3 +1,4 @@
+31c60615f15 SW-5780 Remove sequence reset from NotificationStoreTest (#2266)
 64882aa1621 Update plugin dev.monosoul.jooq-docker to v6.1.1 (#2264)
 7a53ae0bb7f Update dependency com.google.apis:google-api-services-drive to v3-rev20240730-2.0.0 (#2263)
 a315fc1effb Update Spring dependencies (#2262)
