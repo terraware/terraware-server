@@ -1,7 +1,6 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionPhotosRow
 import java.net.URI
 import java.time.Instant
@@ -26,8 +25,7 @@ internal class AccessionStorePhotoTest : AccessionStoreTest() {
         )
     filesDao.insert(filesRow)
 
-    accessionPhotosDao.insert(
-        AccessionPhotosRow(accessionId = AccessionId(1), fileId = filesRow.id))
+    accessionPhotosDao.insert(AccessionPhotosRow(accessionId = initial.id!!, fileId = filesRow.id))
 
     val fetched = store.fetchOneById(initial.id!!)
 

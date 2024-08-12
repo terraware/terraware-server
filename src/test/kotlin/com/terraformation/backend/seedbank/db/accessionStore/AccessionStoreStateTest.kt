@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionStateHistoryRow
@@ -47,7 +46,7 @@ internal class AccessionStoreStateTest : AccessionStoreTest() {
     assertEquals(
         listOf(
             AccessionStateHistoryRow(
-                accessionId = AccessionId(1),
+                accessionId = initial.id!!,
                 newStateId = AccessionState.InStorage,
                 oldStateId = AccessionState.Drying,
                 reason = "Accession has been edited",
