@@ -263,9 +263,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadSpecies(any()) } returns true
     every { user.locale } returns Locale.ENGLISH
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
-    every {
-      deliverableStore.fetchDeliverableSubmissions()
-    } returns listOf(deliverable)
+    every { deliverableStore.fetchDeliverableSubmissions() } returns listOf(deliverable)
 
     otherUserId = insertUser()
   }
