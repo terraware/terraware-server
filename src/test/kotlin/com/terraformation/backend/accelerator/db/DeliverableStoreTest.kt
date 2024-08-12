@@ -16,6 +16,7 @@ import io.mockk.every
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -75,11 +76,12 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       val now = Instant.ofEpochSecond(30)
       clock.instant = now
 
-      val cohortId1 = insertCohort(id = 1)
-      val cohortId2 = insertCohort(id = 2)
-      val participantId1 = insertParticipant(id = 1, cohortId = cohortId1)
-      val participantId2 = insertParticipant(id = 2, cohortId = cohortId1)
-      val participantId3 = insertParticipant(id = 3, cohortId = cohortId2)
+      val suffix = "${UUID.randomUUID()}"
+      val cohortId1 = insertCohort()
+      val cohortId2 = insertCohort()
+      val participantId1 = insertParticipant(cohortId = cohortId1, name = "Participant 1 $suffix")
+      val participantId2 = insertParticipant(cohortId = cohortId1, name = "Participant 2 $suffix")
+      val participantId3 = insertParticipant(cohortId = cohortId2, name = "Participant 3 $suffix")
 
       val organizationId1 = insertOrganization()
       val organizationId2 = insertOrganization()
@@ -137,7 +139,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       fun DeliverableSubmissionModel.forProject2() =
           copy(
               participantId = participantId2,
-              participantName = "Participant 2",
+              participantName = "Participant 2 $suffix",
               projectId = projectId2,
               projectName = "Project 2",
           )
@@ -147,7 +149,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               organizationId = organizationId2,
               organizationName = "Organization 2",
               participantId = participantId1,
-              participantName = "Participant 1",
+              participantName = "Participant 1 $suffix",
               projectId = projectId3,
               projectName = "Project 3",
           )
@@ -159,7 +161,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               organizationId = organizationId2,
               organizationName = "Organization 2",
               participantId = participantId3,
-              participantName = "Participant 3",
+              participantName = "Participant 3 $suffix",
               projectId = projectId4,
               projectName = "Project 4",
           )
@@ -209,7 +211,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               organizationId = organizationId1,
               organizationName = "Organization 1",
               participantId = participantId1,
-              participantName = "Participant 1",
+              participantName = "Participant 1 $suffix",
               projectId = projectId1,
               projectName = "Project 1",
               status = SubmissionStatus.InReview,
@@ -400,11 +402,11 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `returns due dates according to cohort or project overrides`() {
-      val cohortWithDueDate = insertCohort(id = 1)
-      val cohortWithoutDueDate = insertCohort(id = 2)
+      val cohortWithDueDate = insertCohort()
+      val cohortWithoutDueDate = insertCohort()
 
-      val participantWithDueDate = insertParticipant(id = 1, cohortId = cohortWithDueDate)
-      val participantWithoutDueDate = insertParticipant(id = 3, cohortId = cohortWithoutDueDate)
+      val participantWithDueDate = insertParticipant(cohortId = cohortWithDueDate)
+      val participantWithoutDueDate = insertParticipant(cohortId = cohortWithoutDueDate)
 
       val moduleId = insertModule(id = 1)
       val deliverableId = insertDeliverable(id = 1, moduleId = 1)

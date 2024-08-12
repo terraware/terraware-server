@@ -2344,22 +2344,18 @@ abstract class DatabaseBackedTest {
     applicationModulesDao.insert(row)
   }
 
-  private var nextParticipantNumber = 1
-
   fun insertParticipant(
-      id: Any? = null,
-      name: String = "Participant ${nextParticipantNumber++}",
-      createdBy: Any = currentUser().userId,
+      name: String = "Participant ${UUID.randomUUID()}",
+      createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
-      cohortId: Any? = null,
+      cohortId: CohortId? = null,
   ): ParticipantId {
     val row =
         ParticipantsRow(
-            cohortId = cohortId?.toIdWrapper { CohortId(it) },
-            createdBy = createdBy.toIdWrapper { UserId(it) },
+            cohortId = cohortId,
+            createdBy = createdBy,
             createdTime = createdTime,
-            id = id?.toIdWrapper { ParticipantId(it) },
-            modifiedBy = createdBy.toIdWrapper { UserId(it) },
+            modifiedBy = createdBy,
             modifiedTime = createdTime,
             name = name,
         )
@@ -2403,21 +2399,17 @@ abstract class DatabaseBackedTest {
     return row.id!!.also { inserted.participantProjectSpeciesIds.add(it) }
   }
 
-  private var nextCohortNumber = 1
-
   fun insertCohort(
-      id: Any? = null,
-      name: String = "Cohort ${nextCohortNumber++}",
+      name: String = "Cohort ${UUID.randomUUID()}",
       phase: CohortPhase = CohortPhase.Phase0DueDiligence,
-      createdBy: Any = currentUser().userId,
+      createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
   ): CohortId {
     val row =
         CohortsRow(
-            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdBy = createdBy,
             createdTime = createdTime,
-            id = id?.toIdWrapper { CohortId(it) },
-            modifiedBy = createdBy.toIdWrapper { UserId(it) },
+            modifiedBy = createdBy,
             modifiedTime = createdTime,
             name = name,
             phaseId = phase,
