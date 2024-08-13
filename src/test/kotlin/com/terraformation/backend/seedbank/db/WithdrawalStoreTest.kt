@@ -8,19 +8,15 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
-import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestType
-import com.terraformation.backend.db.seedbank.WithdrawalId
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.WithdrawalsRow
-import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
-import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.grams
@@ -31,8 +27,6 @@ import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
-import org.jooq.Record
-import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -45,21 +39,16 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
 
-  private val accessionId = AccessionId(9999)
-  private val batchId1 = BatchId(9997)
-  private val batchId2 = BatchId(9996)
-  private val viabilityTestId = ViabilityTestId(9998)
-
-  override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(WITHDRAWALS)
-
+  private lateinit var accessionId: AccessionId
   private lateinit var organizationId: OrganizationId
-  private val speciesId by lazy { insertSpecies(42) }
+  private lateinit var speciesId: SpeciesId
 
   @BeforeEach
   fun setup() {
     organizationId = insertOrganization()
     insertFacility()
+    speciesId = insertSpecies()
+    accessionId = insertAccession(stateId = AccessionState.InStorage)
 
     store = WithdrawalStore(dslContext, clock, Messages(), ParentStore(dslContext))
 
@@ -68,31 +57,14 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadOrganization(organizationId) } returns true
     every { user.canReadOrganizationUser(organizationId, any()) } returns true
     every { user.canSetWithdrawalUser(any()) } returns true
-
-    // Insert a minimal accession in a state that allows withdrawals.
-    with(ACCESSIONS) {
-      dslContext
-          .insertInto(ACCESSIONS)
-          .set(ID, accessionId)
-          .set(CREATED_BY, user.userId)
-          .set(CREATED_TIME, clock.instant())
-          .set(DATA_SOURCE_ID, DataSource.FileImport)
-          .set(FACILITY_ID, inserted.facilityId)
-          .set(MODIFIED_BY, user.userId)
-          .set(MODIFIED_TIME, clock.instant())
-          .set(STATE_ID, AccessionState.InStorage)
-          .execute()
-    }
   }
 
   @Test
   fun `fetches existing withdrawals`() {
     val otherUserId = insertUser(firstName = "Other", lastName = "User")
 
-    // Insert batches that are linked to the withdrawals
-    for (batchId in setOf(batchId1, batchId2)) {
-      insertBatch(id = batchId, readyQuantity = 1, speciesId = speciesId)
-    }
+    val batchId1 = insertBatch(readyQuantity = 1, speciesId = speciesId)
+    val batchId2 = insertBatch(readyQuantity = 1, speciesId = speciesId)
 
     val pojos =
         listOf(
@@ -136,7 +108,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 createdTime = Instant.EPOCH,
                 date = pojos[0].date!!,
                 destination = pojos[0].destination,
-                id = WithdrawalId(1),
                 notes = pojos[0].notes,
                 purpose = pojos[0].purposeId,
                 staffResponsible = pojos[0].staffResponsible,
@@ -150,7 +121,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 createdTime = Instant.ofEpochSecond(30),
                 date = pojos[1].date!!,
                 destination = pojos[1].destination,
-                id = WithdrawalId(2),
                 notes = pojos[1].notes,
                 purpose = pojos[1].purposeId,
                 staffResponsible = pojos[1].staffResponsible,
@@ -164,7 +134,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
     val actual = store.fetchWithdrawals(accessionId)
 
-    assertEquals(expected, actual.toSet())
+    assertEquals(expected, actual.map { it.copy(id = null) }.toSet())
   }
 
   @Test
@@ -180,13 +150,12 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         )
 
     val expected =
-        setOf(
+        listOf(
             WithdrawalModel(
                 accessionId = accessionId,
                 createdTime = clock.instant(),
                 date = newWithdrawal.date,
                 destination = newWithdrawal.destination,
-                id = WithdrawalId(1),
                 notes = newWithdrawal.notes,
                 purpose = newWithdrawal.purpose,
                 staffResponsible = newWithdrawal.staffResponsible,
@@ -200,7 +169,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
     val actual = store.fetchWithdrawals(accessionId)
 
-    assertEquals(expected, actual.toSet())
+    assertEquals(expected, actual.map { it.copy(id = null) })
   }
 
   @Test
@@ -220,13 +189,12 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         )
 
     val expected =
-        setOf(
+        listOf(
             WithdrawalModel(
                 accessionId = accessionId,
                 batchId = batchId,
                 createdTime = clock.instant(),
                 date = newWithdrawal.date,
-                id = WithdrawalId(1),
                 notes = newWithdrawal.notes,
                 purpose = newWithdrawal.purpose,
                 staffResponsible = newWithdrawal.staffResponsible,
@@ -240,7 +208,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
     val actual = store.fetchWithdrawals(accessionId)
 
-    assertEquals(expected, actual.toSet())
+    assertEquals(expected, actual.map { it.copy(id = null) })
   }
 
   @Test
@@ -260,13 +228,12 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         )
 
     val expected =
-        setOf(
+        listOf(
             WithdrawalModel(
                 accessionId = accessionId,
                 createdTime = clock.instant(),
                 date = newWithdrawal.date,
                 destination = newWithdrawal.destination,
-                id = WithdrawalId(1),
                 notes = newWithdrawal.notes,
                 purpose = newWithdrawal.purpose,
                 staffResponsible = newWithdrawal.staffResponsible,
@@ -280,7 +247,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
     val actual = store.fetchWithdrawals(accessionId)
 
-    assertEquals(expected, actual.toSet())
+    assertEquals(expected, actual.map { it.copy(id = null) })
   }
 
   @Test
@@ -329,7 +296,6 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
                 createdTime = clock.instant(),
                 date = LocalDate.now(),
                 destination = "dest 1",
-                id = WithdrawalId(1),
                 notes = "notes 1",
                 purpose = WithdrawalPurpose.Other,
                 staffResponsible = "staff 1",
@@ -343,7 +309,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
     val actual = store.fetchWithdrawals(accessionId)
 
-    assertEquals(expected, actual)
+    assertEquals(expected, actual.map { it.copy(id = null) })
   }
 
   @Test
@@ -365,7 +331,7 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         WithdrawalModel(
             date = LocalDate.now(),
             purpose = WithdrawalPurpose.Other,
-            viabilityTestId = viabilityTestId,
+            viabilityTestId = ViabilityTestId(9999),
             withdrawn = grams(1))
 
     assertThrows<IllegalArgumentException> {
@@ -375,9 +341,10 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `accepts new viability testing withdrawals with test IDs`() {
-    viabilityTestsDao.insert(
-        ViabilityTestsRow(
-            id = viabilityTestId, accessionId = accessionId, testType = ViabilityTestType.Lab))
+    val viabilityTestsRow =
+        ViabilityTestsRow(accessionId = accessionId, testType = ViabilityTestType.Lab)
+    viabilityTestsDao.insert(viabilityTestsRow)
+    val viabilityTestId = viabilityTestsRow.id!!
 
     val desired =
         WithdrawalModel(
@@ -387,13 +354,12 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             withdrawn = seeds(1))
 
     val expected =
-        setOf(
+        listOf(
             WithdrawalModel(
                 accessionId = accessionId,
                 createdTime = clock.instant(),
                 date = desired.date,
                 destination = desired.destination,
-                id = WithdrawalId(1),
                 notes = desired.notes,
                 purpose = desired.purpose,
                 staffResponsible = desired.staffResponsible,
@@ -408,14 +374,15 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
 
     val actual = store.fetchWithdrawals(accessionId)
 
-    assertEquals(expected, actual.toSet())
+    assertEquals(expected, actual.map { it.copy(id = null) })
   }
 
   @Test
   fun `does not allow modifying test IDs on existing viability testing withdrawals`() {
-    viabilityTestsDao.insert(
-        ViabilityTestsRow(
-            id = viabilityTestId, accessionId = accessionId, testType = ViabilityTestType.Lab))
+    val viabilityTestsRow =
+        ViabilityTestsRow(accessionId = accessionId, testType = ViabilityTestType.Lab)
+    viabilityTestsDao.insert(viabilityTestsRow)
+    val viabilityTestId = viabilityTestsRow.id!!
 
     val initial =
         WithdrawalModel(
@@ -445,22 +412,26 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             staffResponsible = "staff 1",
             withdrawn = grams(1),
         )
+
+    store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
+    val afterInsert = store.fetchWithdrawals(accessionId)
+
     val desired =
         initial.copy(
-            id = WithdrawalId(1),
+            id = afterInsert[0].id!!,
             destination = "updated dest",
             notes = "updated notes",
             purpose = null,
             withdrawn = grams(2))
 
     val expected =
-        setOf(
+        listOf(
             WithdrawalModel(
                 accessionId = accessionId,
                 createdTime = clock.instant(),
                 date = desired.date,
                 destination = desired.destination,
-                id = WithdrawalId(1),
+                id = afterInsert[0].id!!,
                 notes = desired.notes,
                 purpose = desired.purpose,
                 staffResponsible = desired.staffResponsible,
@@ -470,14 +441,11 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             ),
         )
 
-    store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
-    val afterInsert = store.fetchWithdrawals(accessionId)
-
     store.updateWithdrawals(accessionId, afterInsert, listOf(desired))
 
     val actual = store.fetchWithdrawals(accessionId)
 
-    assertEquals(expected, actual.toSet())
+    assertEquals(expected, actual)
   }
 
   @Test
@@ -494,9 +462,13 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             withdrawn = grams(1),
             withdrawnByUserId = otherUserId,
         )
+
+    store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
+    val afterInsert = store.fetchWithdrawals(accessionId)
+
     val desired =
         initial.copy(
-            id = WithdrawalId(1),
+            id = afterInsert[0].id!!,
             destination = "updated dest",
             notes = "updated notes",
             purpose = null,
@@ -505,13 +477,13 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
         )
 
     val expected =
-        setOf(
+        listOf(
             WithdrawalModel(
                 accessionId = accessionId,
                 createdTime = clock.instant(),
                 date = desired.date,
                 destination = desired.destination,
-                id = WithdrawalId(1),
+                id = afterInsert[0].id,
                 notes = desired.notes,
                 purpose = desired.purpose,
                 staffResponsible = desired.staffResponsible,
@@ -521,16 +493,13 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             ),
         )
 
-    store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
-    val afterInsert = store.fetchWithdrawals(accessionId)
-
     every { user.canSetWithdrawalUser(accessionId) } returns false
 
     store.updateWithdrawals(accessionId, afterInsert, listOf(desired))
 
     val actual = store.fetchWithdrawals(accessionId)
 
-    assertEquals(expected, actual.toSet())
+    assertEquals(expected, actual)
   }
 
   @Test
@@ -542,10 +511,12 @@ internal class WithdrawalStoreTest : DatabaseTest(), RunsAsUser {
             purpose = WithdrawalPurpose.Other,
             withdrawn = grams(1),
         )
-    val desired = initial.copy(id = WithdrawalId(1), purpose = WithdrawalPurpose.ViabilityTesting)
 
     store.updateWithdrawals(accessionId, emptyList(), listOf(initial))
     val afterInsert = store.fetchWithdrawals(accessionId)
+
+    val desired =
+        initial.copy(id = afterInsert[0].id!!, purpose = WithdrawalPurpose.ViabilityTesting)
 
     assertThrows<IllegalArgumentException>("Cannot switch purpose to viability testing") {
       store.updateWithdrawals(accessionId, afterInsert, listOf(desired))

@@ -3,7 +3,6 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.db.AccessionSpeciesHasDeliveriesException
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
@@ -75,6 +74,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
   @Test
   fun `update writes all API payload fields to database`() {
+    val speciesId = insertSpecies()
     val projectId = insertProject()
     val subLocationName = "Test Location"
     val today = LocalDate.now(clock)
@@ -105,7 +105,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             receivedDate = today,
             remainingQuantity = kilograms(15),
             remainingQuantityNotes = "more seeds",
-            speciesId = SpeciesId(1),
+            speciesId = speciesId,
             state = AccessionStateV2.Drying,
             subLocation = subLocationName,
             subsetCount = 5,
@@ -138,8 +138,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
       }
     }
 
-    insertSpecies(1)
-    insertSubLocation(1, name = subLocationName)
+    insertSubLocation(name = subLocationName)
 
     val initial = store.create(accessionModel(source = DataSource.SeedCollectorApp))
     val stored = store.updateAndFetch(update.applyToModel(initial))
@@ -207,6 +206,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
   @Test
   fun `delete removes data from child tables`() {
+    val speciesId = insertSpecies()
     val subLocationName = "Test Location"
     val today = LocalDate.now(clock)
     val update =
@@ -223,7 +223,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             facilityId = facilityId,
             receivedDate = today,
             remainingQuantity = seeds(100),
-            speciesId = SpeciesId(1),
+            speciesId = speciesId,
             state = AccessionStateV2.InStorage,
             subLocation = subLocationName,
         )
@@ -238,8 +238,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
             notes = "notes",
             withdrawnQuantity = seeds(41))
 
-    insertSpecies(1)
-    insertSubLocation(1, name = subLocationName)
+    insertSubLocation(name = subLocationName)
 
     val initial = store.create(accessionModel())
     val accessionId = initial.id!!
@@ -272,11 +271,10 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
   @Test
   fun `fetchOneById uses species names from species table`() {
-    val speciesId = SpeciesId(1)
     val oldScientificName = "Test Scientific Name"
     val newScientificName = "New Scientific Name"
     val commonName = "Test Common Name"
-    insertSpecies(speciesId, scientificName = oldScientificName, commonName = commonName)
+    val speciesId = insertSpecies(scientificName = oldScientificName, commonName = commonName)
 
     val initial = store.create(accessionModel(speciesId = speciesId))
 

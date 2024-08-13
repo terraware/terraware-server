@@ -1,6 +1,5 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
-import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.AccessionState
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -26,10 +25,8 @@ internal class AccessionStoreManualStateTest : AccessionStoreTest() {
 
   @Test
   fun `update with isManualState uses caller-supplied species ID`() {
-    val oldSpeciesId = SpeciesId(1)
-    val newSpeciesId = SpeciesId(2)
-    insertSpecies(oldSpeciesId, "Old species")
-    insertSpecies(newSpeciesId, "New species")
+    val oldSpeciesId = insertSpecies(scientificName = "Old species")
+    val newSpeciesId = insertSpecies(scientificName = "New species")
 
     val initial = store.create(accessionModel(speciesId = oldSpeciesId))
     val updated =

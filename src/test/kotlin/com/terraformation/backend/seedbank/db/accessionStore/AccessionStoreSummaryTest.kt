@@ -1,7 +1,5 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
-import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
@@ -434,14 +432,10 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
     val otherOrganizationId = insertOrganization()
     val otherOrgFacilityId = insertFacility()
 
-    val speciesId = SpeciesId(1)
-    val sameOrgSpeciesId = SpeciesId(2)
-    val inactiveAccessionSpeciesId = SpeciesId(3)
-    val otherOrgSpeciesId = SpeciesId(4)
-    insertSpecies(speciesId)
-    insertSpecies(sameOrgSpeciesId)
-    insertSpecies(inactiveAccessionSpeciesId)
-    insertSpecies(otherOrgSpeciesId, organizationId = otherOrganizationId)
+    val speciesId = insertSpecies()
+    val sameOrgSpeciesId = insertSpecies()
+    val otherOrgSpeciesId = insertSpecies(organizationId = otherOrganizationId)
+    insertSpecies()
 
     listOf(
             // No species ID
@@ -493,18 +487,14 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
   fun `getSummaryStatistics does not count deleted species`() {
     val facilityId = inserted.facilityId
     val sameOrgFacilityId = insertFacility()
+
+    val speciesId = insertSpecies()
+    val sameOrgSpeciesId = insertSpecies()
+    insertSpecies()
+
     val otherOrganizationId = insertOrganization()
     val otherOrgFacilityId = insertFacility()
-
-    val speciesId = SpeciesId(1)
-    val sameOrgSpeciesId = SpeciesId(2)
-    val inactiveAccessionSpeciesId = SpeciesId(3)
-    val otherOrgSpeciesId = SpeciesId(4)
-
-    insertSpecies(speciesId)
-    insertSpecies(sameOrgSpeciesId)
-    insertSpecies(inactiveAccessionSpeciesId)
-    insertSpecies(otherOrgSpeciesId, organizationId = otherOrganizationId)
+    val otherOrgSpeciesId = insertSpecies(organizationId = otherOrganizationId)
 
     listOf(
             // No species ID
@@ -572,11 +562,8 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
   fun `countActiveInSubLocation only counts active accessions in location`() {
     every { user.canReadSubLocation(any()) } returns true
 
-    val subLocationId = SubLocationId(1)
-    val otherSubLocationId = SubLocationId(2)
-
-    insertSubLocation(subLocationId)
-    insertSubLocation(otherSubLocationId)
+    val subLocationId = insertSubLocation()
+    val otherSubLocationId = insertSubLocation()
 
     insertAccession(
         AccessionsRow(stateId = AccessionState.InStorage, subLocationId = subLocationId))
