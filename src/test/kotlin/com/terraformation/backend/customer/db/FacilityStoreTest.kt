@@ -17,11 +17,8 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
-import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SubLocationsRow
-import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
-import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
@@ -37,8 +34,6 @@ import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
-import org.jooq.Record
-import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
@@ -49,8 +44,6 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
-  override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(FACILITIES, SUB_LOCATIONS)
 
   private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
@@ -59,7 +52,6 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var facilityId: FacilityId
   private lateinit var organizationId: OrganizationId
-  private val subLocationId = SubLocationId(1000)
   private lateinit var timeZone: ZoneId
 
   @BeforeEach
@@ -119,18 +111,16 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createSubLocation throws exception if sub-location name already in use`() {
-    insertSubLocation(500, name = "New name")
+    insertSubLocation(name = "New name")
 
     assertThrows<SubLocationNameExistsException> { store.createSubLocation(facilityId, "New name") }
   }
 
   @Test
   fun `fetchSubLocations returns values the user has permission to see`() {
-    val otherId = SubLocationId(1001)
-    val invisibleId = SubLocationId(1002)
-    insertSubLocation(subLocationId)
-    insertSubLocation(otherId)
-    insertSubLocation(invisibleId)
+    val subLocationId = insertSubLocation()
+    val otherId = insertSubLocation()
+    val invisibleId = insertSubLocation()
 
     every { user.canReadSubLocation(invisibleId) } returns false
 
@@ -143,7 +133,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteSubLocation deletes sub-location with inactive accessions`() {
-    insertSubLocation(subLocationId)
+    val subLocationId = insertSubLocation()
     val accessionId =
         insertAccession(
             AccessionsRow(stateId = AccessionState.UsedUp, subLocationId = subLocationId))
@@ -161,7 +151,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteSubLocation throws exception if sub-location has active accessions`() {
-    insertSubLocation(subLocationId)
+    val subLocationId = insertSubLocation()
 
     with(ACCESSIONS) {
       dslContext
@@ -182,7 +172,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteSubLocation throws exception if user lacks permission`() {
-    insertSubLocation(subLocationId)
+    val subLocationId = insertSubLocation()
 
     every { user.canDeleteSubLocation(subLocationId) } returns false
 
@@ -192,7 +182,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `updateSubLocation updates correct values`() {
     val otherUserId = insertUser()
-    insertSubLocation(subLocationId, createdBy = otherUserId)
+    val subLocationId = insertSubLocation(createdBy = otherUserId)
 
     val newTime = Instant.EPOCH.plusSeconds(30)
     clock.instant = newTime
@@ -217,7 +207,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `updateSubLocation throws exception if user lacks permission`() {
-    insertSubLocation(subLocationId)
+    val subLocationId = insertSubLocation()
 
     every { user.canUpdateSubLocation(subLocationId) } returns false
 
@@ -226,9 +216,8 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `updateSubLocation throws exception if new name is already in use`() {
-    val otherSubLocationId = SubLocationId(2)
-    insertSubLocation(subLocationId, name = "Existing name")
-    insertSubLocation(otherSubLocationId, name = "New name")
+    insertSubLocation(name = "Existing name")
+    val otherSubLocationId = insertSubLocation(name = "New name")
 
     assertThrows<SubLocationNameExistsException> {
       store.updateSubLocation(otherSubLocationId, "Existing name")
@@ -344,7 +333,6 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 facilityId = model.id,
-                id = SubLocationId(1),
                 modifiedBy = user.userId,
                 modifiedTime = Instant.EPOCH,
                 name = "SL1",
@@ -353,13 +341,12 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
                 facilityId = model.id,
-                id = SubLocationId(2),
                 modifiedBy = user.userId,
                 modifiedTime = Instant.EPOCH,
                 name = "SL2",
             ),
         ),
-        subLocations.toSet())
+        subLocations.map { it.copy(id = null) }.toSet())
   }
 
   @Test

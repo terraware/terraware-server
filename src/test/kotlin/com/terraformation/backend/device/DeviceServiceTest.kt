@@ -17,7 +17,6 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.tables.pojos.AutomationsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceTemplatesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
-import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.i18n.Messages
@@ -36,7 +35,6 @@ import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.security.access.AccessDeniedException
 
 internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
-  override val tablesToResetSequences = listOf(DEVICES)
   override val user: TerrawareUser = mockUser()
 
   private val clock = TestClock()
@@ -330,7 +328,6 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
                 deviceType = template.deviceType,
                 enabled = true,
                 facilityId = facilityId,
-                id = DeviceId(1),
                 make = template.make,
                 model = template.model,
                 modifiedBy = user.userId,
@@ -341,7 +338,7 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
                 verbosity = template.verbosity,
             ))
 
-    val actual = devicesDao.findAll()
+    val actual = devicesDao.findAll().map { it.copy(id = null) }
     assertEquals(expected, actual)
   }
 
