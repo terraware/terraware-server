@@ -54,15 +54,16 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
     )
   }
 
+  // This is only returned by the mock ApplicationStore, not inserted into the database.
   private val applicationId = ApplicationId(1)
-  private val projectId = ProjectId(3)
 
   private lateinit var organizationId: OrganizationId
+  private lateinit var projectId: ProjectId
 
   @BeforeEach
   fun setUp() {
     organizationId = insertOrganization()
-    insertProject()
+    projectId = insertProject()
 
     every { user.canReadProject(any()) } returns true
     every { user.canUpdateApplicationSubmissionStatus(any()) } returns true

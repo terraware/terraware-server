@@ -697,13 +697,12 @@ abstract class DatabaseBackedTest {
   private var nextProjectNumber = 1
 
   protected fun insertProject(
-      id: Any? = null,
       organizationId: OrganizationId = inserted.organizationId,
-      name: String = if (id != null) "Project $id" else "Project ${nextProjectNumber++}",
+      name: String = "Project ${nextProjectNumber++}",
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       description: String? = null,
-      participantId: Any? = null,
+      participantId: ParticipantId? = null,
       countryCode: String? = null,
   ): ProjectId {
     val row =
@@ -712,12 +711,11 @@ abstract class DatabaseBackedTest {
             createdBy = createdBy,
             createdTime = createdTime,
             description = description,
-            id = id?.toIdWrapper { ProjectId(it) },
             modifiedBy = createdBy,
             modifiedTime = createdTime,
             name = name,
             organizationId = organizationId,
-            participantId = participantId?.toIdWrapper { ParticipantId(it) },
+            participantId = participantId,
         )
 
     projectsDao.insert(row)
