@@ -36,6 +36,8 @@ import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.DeliverableType
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
@@ -123,7 +125,6 @@ internal class EmailNotificationServiceTest {
   private val adminUser: IndividualUser = mockk()
   private val automationStore: AutomationStore = mockk()
   private val config: TerrawareServerConfig = mockk()
-  private val deliverable: DeliverableSubmissionModel = mockk()
   private val deliverableStore: DeliverableStore = mockk()
   private val deviceStore: DeviceStore = mockk()
   private val facilityStore: FacilityStore = mockk()
@@ -246,6 +247,31 @@ internal class EmailNotificationServiceTest {
           state = ObservationState.Upcoming)
 
   private val deliverableCategory = DeliverableCategory.Compliance
+  private val deliverable =
+      DeliverableSubmissionModel(
+          category = deliverableCategory,
+          deliverableId = DeliverableId(1),
+          descriptionHtml = null,
+          documents = emptyList(),
+          dueDate = null,
+          feedback = null,
+          internalComment = null,
+          modifiedTime = null,
+          moduleId = ModuleId(1),
+          moduleName = "Module",
+          moduleTitle = null,
+          name = "Deliverable name",
+          organizationId = organization.id,
+          organizationName = organization.name,
+          participantId = participant.id,
+          participantName = participant.name,
+          projectId = project.id,
+          projectName = project.name,
+          status = SubmissionStatus.Completed,
+          submissionId = SubmissionId(1),
+          templateUrl = null,
+          type = DeliverableType.Questions,
+      )
 
   private val organizationRecipients = setOf("org1@terraware.io", "org2@terraware.io")
 

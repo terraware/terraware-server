@@ -263,7 +263,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadSpecies(any()) } returns true
     every { user.locale } returns Locale.ENGLISH
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
-    every { deliverableStore.fetchDeliverableSubmissions() } returns listOf(deliverable)
 
     otherUserId = insertUser()
   }
@@ -612,6 +611,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
     insertModule()
+    insertCohortModule()
     val deliverableId = insertDeliverable()
     val deliverable =
         deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
@@ -634,6 +634,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertModule()
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
     val cohortId = insertCohort()
+    insertCohortModule()
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
 
@@ -661,6 +662,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
 
     val cohortId = insertCohort()
+    insertCohortModule()
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
 
@@ -685,6 +687,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser(tfContact, role = Role.TerraformationContact)
 
     val cohortId = insertCohort()
+    insertCohortModule()
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
 
@@ -729,6 +732,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
     insertModule()
+    insertCohortModule()
     val deliverableId = insertDeliverable()
     val deliverable =
         deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
