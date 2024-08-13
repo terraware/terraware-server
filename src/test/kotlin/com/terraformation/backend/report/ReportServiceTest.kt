@@ -26,11 +26,9 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
@@ -67,7 +65,6 @@ import org.junit.jupiter.api.assertThrows
 
 class ReportServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-  override val tablesToResetSequences = listOf(REPORTS)
 
   private val clock = TestClock()
   private val googleDriveWriter: GoogleDriveWriter = mockk()
@@ -213,6 +210,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       insertSampleWithdrawals(speciesId, nurseryId, plantingSiteId)
 
+      val created = service.create(organizationId)
+
       val expected =
           ReportModel(
               ReportBodyModelV1(
@@ -266,15 +265,13 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                   totalSeedBanks = 1,
               ),
               ReportMetadata(
-                  ReportId(1),
+                  created.id,
                   organizationId = organizationId,
                   quarter = 4,
                   status = ReportStatus.New,
                   year = 1969,
               ),
           )
-
-      val created = service.create(organizationId)
 
       val actual = reportStore.fetchOneById(created.id)
 
@@ -362,6 +359,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       // it has no batches for the project in question.
       insertSampleWithdrawals(speciesId, nonProjectNurseryId, projectPlantingSiteId)
 
+      val created = service.create(organizationId, projectId)
+
       val expected =
           ReportModel(
               ReportBodyModelV1(
@@ -427,7 +426,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                   totalSeedBanks = 2,
               ),
               ReportMetadata(
-                  ReportId(1),
+                  created.id,
                   organizationId = organizationId,
                   projectId = projectId,
                   projectName = "Test Project",
@@ -436,8 +435,6 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                   year = 1969,
               ),
           )
-
-      val created = service.create(organizationId, projectId)
 
       val actual = reportStore.fetchOneById(created.id)
 
