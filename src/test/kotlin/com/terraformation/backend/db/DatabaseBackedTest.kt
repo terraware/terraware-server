@@ -997,9 +997,7 @@ abstract class DatabaseBackedTest {
   private var nextSpeciesNumber = 1
 
   fun insertSpecies(
-      speciesId: Any? = null,
-      scientificName: String =
-          if (speciesId != null) "Species $speciesId" else "Species ${nextSpeciesNumber++}",
+      scientificName: String = "Species ${nextSpeciesNumber++}",
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       modifiedTime: Instant = createdTime,
@@ -1016,8 +1014,6 @@ abstract class DatabaseBackedTest {
       conservationCategory: ConservationCategory? = null,
       seedStorageBehavior: SeedStorageBehavior? = null,
   ): SpeciesId {
-    val speciesIdWrapper = speciesId?.toIdWrapper { SpeciesId(it) }
-
     val actualSpeciesId =
         with(SPECIES) {
           dslContext
@@ -1029,7 +1025,6 @@ abstract class DatabaseBackedTest {
               .set(CREATED_TIME, createdTime)
               .set(DELETED_BY, if (deletedTime != null) createdBy else null)
               .set(DELETED_TIME, deletedTime)
-              .apply { speciesIdWrapper?.let { set(ID, it) } }
               .set(INITIAL_SCIENTIFIC_NAME, initialScientificName)
               .set(MODIFIED_BY, createdBy)
               .set(MODIFIED_TIME, modifiedTime)

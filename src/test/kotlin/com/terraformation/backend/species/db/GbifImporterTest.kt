@@ -31,8 +31,6 @@ import io.mockk.mockk
 import io.mockk.slot
 import java.net.URI
 import java.nio.file.NoSuchFileException
-import org.jooq.Record
-import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -46,9 +44,6 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
   private val fileStore: FileStore = mockk()
   private val lockService: LockService = mockk()
   private lateinit var importer: GbifImporter
-
-  override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(GBIF_NAMES)
 
   override val user: TerrawareUser = mockUser()
 
@@ -153,25 +148,23 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
             ),
             listOf(
                 GbifNamesRow(
-                    id = GbifNameId(1),
                     taxonId = GbifTaxonId(12),
                     name = "Species? SpecificSpecies subsp. InfraSpecies",
                     language = null,
                     isScientific = true),
                 GbifNamesRow(
-                    id = GbifNameId(2),
                     taxonId = GbifTaxonId(12),
                     name = "My Species",
                     language = "en",
                     isScientific = false),
                 GbifNamesRow(
-                    id = GbifNameId(3),
                     taxonId = GbifTaxonId(12),
                     name = "My Spécies 2",
                     language = null,
                     isScientific = false),
             ),
             listOf(
+                // See actualData doc for notes on how name IDs work here.
                 GbifNameWordsRow(gbifNameId = GbifNameId(1), word = "infraspecies"),
                 GbifNameWordsRow(gbifNameId = GbifNameId(1), word = "species?"),
                 GbifNameWordsRow(gbifNameId = GbifNameId(1), word = "specificspecies"),
@@ -228,15 +221,17 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
         .set(GBIF_DISTRIBUTIONS.TAXON_ID, GbifTaxonId(1))
         .set(GBIF_DISTRIBUTIONS.THREAT_STATUS, "endangered")
         .execute()
-    dslContext
-        .insertInto(GBIF_NAMES)
-        .set(GBIF_NAMES.TAXON_ID, GbifTaxonId(1))
-        .set(GBIF_NAMES.IS_SCIENTIFIC, true)
-        .set(GBIF_NAMES.NAME, "name")
-        .execute()
+    val nameId =
+        dslContext
+            .insertInto(GBIF_NAMES)
+            .set(GBIF_NAMES.TAXON_ID, GbifTaxonId(1))
+            .set(GBIF_NAMES.IS_SCIENTIFIC, true)
+            .set(GBIF_NAMES.NAME, "name")
+            .returning(GBIF_NAMES.ID)
+            .fetchOne(GBIF_NAMES.ID)
     dslContext
         .insertInto(GBIF_NAME_WORDS)
-        .set(GBIF_NAME_WORDS.GBIF_NAME_ID, GbifNameId(1))
+        .set(GBIF_NAME_WORDS.GBIF_NAME_ID, nameId)
         .set(GBIF_NAME_WORDS.WORD, "word")
         .execute()
 
@@ -380,6 +375,19 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
       val nameWords: List<GbifNameWordsRow>
   )
 
+  /**
+   * Returns the actual data from the database. This is mostly a straight dump of the table
+   * contents, with the exception of name IDs.
+   *
+   * In [GbifData.names], the name IDs are set to null, but the rows are still sorted by the
+   * original IDs.
+   *
+   * In [GbifData.nameWords], the name IDs are set to the ordinal position of the name ID in the
+   * list of the actual IDs. That is, if the actual inserted name IDs are 46, 47, and 55,
+   * [GbifData.nameWords] will have `GbifNameId(1)` instead of 46, `GbifNameId(2)` instead of 47,
+   * and `GbifNameId(3)` instead of 55. This allows tests to assert that name words are associated
+   * with the correct names.
+   */
   private fun actualData(): GbifData {
     val taxa =
         dslContext
@@ -401,6 +409,7 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
 
     val names =
         dslContext.selectFrom(GBIF_NAMES).orderBy(GBIF_NAMES.ID).fetchInto(GbifNamesRow::class.java)
+    val nameIdMap = names.mapIndexed { index, row -> row.id to GbifNameId(index + 1L) }.toMap()
 
     val nameWords =
         dslContext
@@ -408,6 +417,11 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
             .orderBy(GBIF_NAME_WORDS.GBIF_NAME_ID, GBIF_NAME_WORDS.WORD)
             .fetchInto(GbifNameWordsRow::class.java)
 
-    return GbifData(taxa, distributions, vernacularNames, names, nameWords)
+    return GbifData(
+        taxa,
+        distributions,
+        vernacularNames,
+        names.map { it.copy(id = null) },
+        nameWords.map { it.copy(gbifNameId = nameIdMap[it.gbifNameId]) })
   }
 }
