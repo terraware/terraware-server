@@ -446,27 +446,6 @@ abstract class DatabaseBackedTest {
       }
 
   /**
-   * Turns a value into a type-safe ID wrapper.
-   *
-   * This allows us to call `insertOrganization(1)` or `insertOrganization(OrganizationId(1))` when
-   * setting up test data.
-   *
-   * @receiver A value to convert to a wrapped ID. Can be a number in either raw or string form (in
-   *   which case it is turned into a Long and passed to [wrapperConstructor]) or an ID of the
-   *   desired type (in which case it is returned to the caller).
-   */
-  protected final inline fun <R : Any, reified T : Any> R.toIdWrapper(
-      wrapperConstructor: (Long) -> T
-  ): T {
-    return when (this) {
-      is T -> this
-      is Number -> wrapperConstructor(toLong())
-      is String -> wrapperConstructor(toLong())
-      else -> throw IllegalArgumentException("Unsupported ID type ${javaClass.name}")
-    }
-  }
-
-  /**
    * Creates a lazily-instantiated jOOQ DAO object. In most cases, type inference will figure out
    * which DAO class to instantiate.
    */
@@ -612,7 +591,6 @@ abstract class DatabaseBackedTest {
   private var nextOrganizationNumber = 1
 
   protected fun insertOrganization(
-      id: OrganizationId? = null,
       name: String = "Organization ${nextOrganizationNumber++}",
       countryCode: String? = null,
       countrySubdivisionCode: String? = null,
@@ -626,7 +604,6 @@ abstract class DatabaseBackedTest {
           .set(COUNTRY_SUBDIVISION_CODE, countrySubdivisionCode)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
-          .apply { if (id != null) set(ID, id) }
           .set(NAME, name)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
@@ -742,7 +719,7 @@ abstract class DatabaseBackedTest {
       numNativeSpecies: Int? = row.numNativeSpecies,
       perHectareBudget: Number? = row.perHectareBudget,
       pipeline: Pipeline? = row.pipelineId,
-      projectId: Any = row.projectId ?: inserted.projectId,
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
       projectLead: String? = row.projectLead,
       totalCarbon: Number? = row.totalCarbon,
       totalExpansionPotential: Number? = row.totalExpansionPotential,
@@ -767,7 +744,7 @@ abstract class DatabaseBackedTest {
             numNativeSpecies = numNativeSpecies,
             perHectareBudget = perHectareBudget?.toBigDecimal(),
             pipelineId = pipeline,
-            projectId = projectId.toIdWrapper { ProjectId(it) },
+            projectId = projectId,
             projectLead = projectLead,
             totalCarbon = totalCarbon?.toBigDecimal(),
             totalExpansionPotential = totalExpansionPotential?.toBigDecimal(),
@@ -780,17 +757,15 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertProjectLandUseModelType(
-      projectId: Any = inserted.projectId,
+      projectId: ProjectId = inserted.projectId,
       landUseModelType: LandUseModelType = LandUseModelType.OtherLandUseModel,
   ) {
     projectLandUseModelTypesDao.insert(
-        ProjectLandUseModelTypesRow(
-            landUseModelTypeId = landUseModelType,
-            projectId = projectId.toIdWrapper { ProjectId(it) }))
+        ProjectLandUseModelTypesRow(landUseModelTypeId = landUseModelType, projectId = projectId))
   }
 
   protected fun insertProjectScore(
-      projectId: Any = inserted.projectId,
+      projectId: ProjectId = inserted.projectId,
       phase: CohortPhase = CohortPhase.Phase0DueDiligence,
       category: ScoreCategory = ScoreCategory.Legal,
       score: Int? = null,
@@ -805,7 +780,7 @@ abstract class DatabaseBackedTest {
             modifiedBy = createdBy,
             modifiedTime = createdTime,
             phaseId = phase,
-            projectId = projectId.toIdWrapper { ProjectId(it) },
+            projectId = projectId,
             qualitative = qualitative,
             score = score,
             scoreCategoryId = category,
@@ -862,14 +837,14 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertDeliverableCohortDueDate(
-      deliverableId: Any = inserted.deliverableId,
-      cohortId: Any = inserted.cohortId,
+      deliverableId: DeliverableId = inserted.deliverableId,
+      cohortId: CohortId = inserted.cohortId,
       dueDate: LocalDate,
   ) {
     val row =
         DeliverableCohortDueDatesRow(
-            cohortId = cohortId.toIdWrapper { CohortId(it) },
-            deliverableId = deliverableId.toIdWrapper { DeliverableId(it) },
+            cohortId = cohortId,
+            deliverableId = deliverableId,
             dueDate = dueDate,
         )
 
@@ -877,12 +852,12 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertDeliverableDocument(
-      deliverableId: Any = inserted.deliverableId,
+      deliverableId: DeliverableId = inserted.deliverableId,
       templateUrl: Any? = null,
   ) {
     val row =
         DeliverableDocumentsRow(
-            deliverableId = deliverableId.toIdWrapper { DeliverableId(it) },
+            deliverableId = deliverableId,
             deliverableTypeId = DeliverableType.Document,
             templateUrl = templateUrl?.let { URI.create("$it") },
         )
@@ -891,15 +866,15 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertDeliverableProjectDueDate(
-      deliverableId: Any = inserted.deliverableId,
-      projectId: Any = inserted.projectId,
+      deliverableId: DeliverableId = inserted.deliverableId,
+      projectId: ProjectId = inserted.projectId,
       dueDate: LocalDate,
   ) {
     val row =
         DeliverableProjectDueDatesRow(
-            deliverableId = deliverableId.toIdWrapper { DeliverableId(it) },
+            deliverableId = deliverableId,
             dueDate = dueDate,
-            projectId = projectId.toIdWrapper { ProjectId(it) },
+            projectId = projectId,
         )
 
     deliverableProjectDueDatesDao.insert(row)
@@ -1072,26 +1047,24 @@ abstract class DatabaseBackedTest {
   fun insertSubmission(
       createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
-      deliverableId: Any? = inserted.deliverableId,
+      deliverableId: DeliverableId? = inserted.deliverableId,
       feedback: String? = null,
       modifiedBy: UserId = createdBy,
       modifiedTime: Instant = createdTime,
-      id: Any? = null,
       internalComment: String? = null,
-      projectId: Any? = inserted.projectId,
+      projectId: ProjectId? = inserted.projectId,
       submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted,
   ): SubmissionId {
     val row =
         SubmissionsRow(
             createdBy = createdBy,
             createdTime = createdTime,
-            deliverableId = deliverableId?.toIdWrapper { DeliverableId(it) },
+            deliverableId = deliverableId,
             feedback = feedback,
-            id = id?.toIdWrapper { SubmissionId(it) },
             internalComment = internalComment,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
-            projectId = projectId?.toIdWrapper { ProjectId(it) },
+            projectId = projectId,
             submissionStatusId = submissionStatus,
         )
 
@@ -1107,12 +1080,11 @@ abstract class DatabaseBackedTest {
       createdTime: Instant = Instant.EPOCH,
       description: String? = null,
       documentStore: DocumentStore = DocumentStore.Google,
-      id: Any? = null,
       location: String = "Location $nextSubmissionNumber",
       name: String = "Submission Document $nextSubmissionNumber",
       originalName: String? = "Original Name $nextSubmissionNumber",
-      projectId: Any? = inserted.projectId,
-      submissionId: Any? = inserted.submissionId,
+      projectId: ProjectId? = inserted.projectId,
+      submissionId: SubmissionId? = inserted.submissionId,
   ): SubmissionDocumentId {
     nextSubmissionNumber++
 
@@ -1122,12 +1094,11 @@ abstract class DatabaseBackedTest {
             createdTime = createdTime,
             description = description,
             documentStoreId = documentStore,
-            id = id?.toIdWrapper { SubmissionDocumentId(it) },
             location = location,
             name = name,
             originalName = originalName,
-            projectId = projectId?.toIdWrapper { ProjectId(it) },
-            submissionId = submissionId?.toIdWrapper { SubmissionId(it) },
+            projectId = projectId,
+            submissionId = submissionId,
         )
 
     submissionDocumentsDao.insert(row)
@@ -1136,15 +1107,13 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertSubmissionSnapshot(
-      id: Any? = null,
-      fileId: Any? = inserted.fileId,
-      submissionId: Any? = inserted.submissionId,
+      fileId: FileId? = inserted.fileId,
+      submissionId: SubmissionId? = inserted.submissionId,
   ): SubmissionSnapshotId {
     val row =
         SubmissionSnapshotsRow(
-            id = id?.toIdWrapper { SubmissionSnapshotId(it) },
-            fileId = fileId?.toIdWrapper { FileId(it) },
-            submissionId = submissionId?.toIdWrapper { SubmissionId(it) },
+            fileId = fileId,
+            submissionId = submissionId,
         )
 
     submissionSnapshotsDao.insert(row)
@@ -1190,30 +1159,29 @@ abstract class DatabaseBackedTest {
 
   fun insertUserDeliverableCategory(
       deliverableCategory: DeliverableCategory,
-      userId: Any = inserted.userId,
-      createdBy: Any = currentUser().userId,
+      userId: UserId = inserted.userId,
+      createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
   ) {
     userDeliverableCategoriesDao.insert(
         UserDeliverableCategoriesRow(
-            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdBy = createdBy,
             createdTime = createdTime,
             deliverableCategoryId = deliverableCategory,
-            userId = userId.toIdWrapper { UserId(it) },
+            userId = userId,
         ))
   }
 
   fun insertUserGlobalRole(
-      userId: Any = currentUser().userId,
+      userId: UserId = currentUser().userId,
       role: GlobalRole,
   ) {
-    userGlobalRolesDao.insert(
-        UserGlobalRolesRow(globalRoleId = role, userId = userId.toIdWrapper { UserId(it) }))
+    userGlobalRolesDao.insert(UserGlobalRolesRow(globalRoleId = role, userId = userId))
   }
 
   /** Adds a user to an organization. */
   fun insertOrganizationUser(
-      userId: Any = currentUser().userId,
+      userId: UserId = currentUser().userId,
       organizationId: OrganizationId = inserted.organizationId,
       role: Role = Role.Contributor,
       createdBy: UserId = currentUser().userId,
@@ -1228,7 +1196,7 @@ abstract class DatabaseBackedTest {
           .set(MODIFIED_TIME, createdTime)
           .set(ORGANIZATION_ID, organizationId)
           .set(ROLE_ID, role)
-          .set(USER_ID, userId.toIdWrapper { UserId(it) })
+          .set(USER_ID, userId)
           .execute()
     }
   }
@@ -2215,27 +2183,26 @@ abstract class DatabaseBackedTest {
   protected fun insertOrganizationInternalTag(
       organizationId: OrganizationId = inserted.organizationId,
       tagId: InternalTagId = InternalTagIds.Reporter,
-      createdBy: Any = currentUser().userId,
+      createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
   ) {
     organizationInternalTagsDao.insert(
         OrganizationInternalTagsRow(
             internalTagId = tagId,
             organizationId = organizationId,
-            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdBy = createdBy,
             createdTime = createdTime))
   }
 
   fun insertApplication(
       boundary: Geometry? = null,
-      createdBy: Any = currentUser().userId,
+      createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       feedback: String? = null,
-      id: Any? = null,
       internalComment: String? = null,
       internalName: String = "XXX",
-      projectId: Any = inserted.projectId,
-      modifiedBy: Any = createdBy,
+      projectId: ProjectId = inserted.projectId,
+      modifiedBy: UserId = createdBy,
       modifiedTime: Instant = createdTime,
       status: ApplicationStatus = ApplicationStatus.NotSubmitted,
   ): ApplicationId {
@@ -2243,14 +2210,13 @@ abstract class DatabaseBackedTest {
         ApplicationsRow(
             applicationStatusId = status,
             boundary = boundary,
-            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdBy = createdBy,
             createdTime = createdTime,
             feedback = feedback,
-            id = id?.toIdWrapper { ApplicationId(it) },
             internalComment = internalComment,
             internalName = internalName,
-            projectId = projectId.toIdWrapper { ProjectId(it) },
-            modifiedBy = modifiedBy.toIdWrapper { UserId(it) },
+            projectId = projectId,
+            modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
         )
 
@@ -2260,22 +2226,22 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertApplicationHistory(
-      applicationId: Any = inserted.applicationId,
+      applicationId: ApplicationId = inserted.applicationId,
       boundary: Geometry? = null,
       feedback: String? = null,
       internalComment: String? = null,
-      modifiedBy: Any = currentUser().userId,
+      modifiedBy: UserId = currentUser().userId,
       modifiedTime: Instant = Instant.EPOCH,
       status: ApplicationStatus = ApplicationStatus.NotSubmitted,
   ): ApplicationHistoryId {
     val row =
         ApplicationHistoriesRow(
-            applicationId = applicationId.toIdWrapper { ApplicationId(it) },
+            applicationId = applicationId,
             applicationStatusId = status,
             boundary = boundary,
             feedback = feedback,
             internalComment = internalComment,
-            modifiedBy = modifiedBy.toIdWrapper { UserId(it) },
+            modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
         )
 
@@ -2285,15 +2251,15 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertApplicationModule(
-      applicationId: Any = inserted.applicationId,
-      moduleId: Any = inserted.moduleId,
+      applicationId: ApplicationId = inserted.applicationId,
+      moduleId: ModuleId = inserted.moduleId,
       status: ApplicationModuleStatus = ApplicationModuleStatus.Incomplete,
   ) {
     val row =
         ApplicationModulesRow(
-            applicationId = applicationId.toIdWrapper { ApplicationId(it) },
+            applicationId = applicationId,
             applicationModuleStatusId = status,
-            moduleId = moduleId.toIdWrapper { ModuleId(it) },
+            moduleId = moduleId,
         )
 
     applicationModulesDao.insert(row)
@@ -2321,31 +2287,29 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertParticipantProjectSpecies(
-      createdBy: Any = currentUser().userId,
+      createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       feedback: String? = null,
-      id: Any? = null,
       internalComment: String? = null,
-      modifiedBy: Any = createdBy,
+      modifiedBy: UserId = createdBy,
       modifiedTime: Instant = Instant.EPOCH,
-      projectId: Any = inserted.projectId,
+      projectId: ProjectId = inserted.projectId,
       rationale: String? = null,
-      speciesId: Any = inserted.speciesId,
+      speciesId: SpeciesId = inserted.speciesId,
       speciesNativeCategory: SpeciesNativeCategory? = null,
       submissionStatus: SubmissionStatus = SubmissionStatus.NotSubmitted,
   ): ParticipantProjectSpeciesId {
     val row =
         ParticipantProjectSpeciesRow(
-            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdBy = createdBy,
             createdTime = createdTime,
             feedback = feedback,
-            id = id?.toIdWrapper { ParticipantProjectSpeciesId(it) },
             internalComment = internalComment,
-            modifiedBy = modifiedBy.toIdWrapper { UserId(it) },
+            modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
-            projectId = projectId.toIdWrapper { ProjectId(it) },
+            projectId = projectId,
             rationale = rationale,
-            speciesId = speciesId.toIdWrapper { SpeciesId(it) },
+            speciesId = speciesId,
             speciesNativeCategoryId = speciesNativeCategory,
             submissionStatusId = submissionStatus)
 
@@ -2378,16 +2342,16 @@ abstract class DatabaseBackedTest {
   private var nextCohortModuleStartDate = LocalDate.EPOCH
 
   fun insertCohortModule(
-      cohortId: Any = inserted.cohortId,
-      moduleId: Any = inserted.moduleId,
+      cohortId: CohortId = inserted.cohortId,
+      moduleId: ModuleId = inserted.moduleId,
       title: String = "Module 1",
       startDate: LocalDate = nextCohortModuleStartDate,
       endDate: LocalDate = startDate.plusDays(6),
   ) {
     val row =
         CohortModulesRow(
-            cohortId = cohortId.toIdWrapper { CohortId(it) },
-            moduleId = moduleId.toIdWrapper { ModuleId(it) },
+            cohortId = cohortId,
+            moduleId = moduleId,
             title = title,
             startDate = startDate,
             endDate = endDate,
@@ -2398,8 +2362,7 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertEvent(
-      id: Any? = null,
-      moduleId: Any = inserted.moduleId,
+      moduleId: ModuleId = inserted.moduleId,
       eventStatus: EventStatus = EventStatus.NotStarted,
       eventType: EventType = EventType.Workshop,
       meetingUrl: Any? = null,
@@ -2408,13 +2371,12 @@ abstract class DatabaseBackedTest {
       revision: Int = 1,
       startTime: Instant = Instant.EPOCH.plusSeconds(3600),
       endTime: Instant = startTime.plusSeconds(3600),
-      createdBy: Any = currentUser().userId,
+      createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
   ): EventId {
     val row =
         EventsRow(
-            id = id?.toIdWrapper { EventId(it) },
-            moduleId = moduleId.toIdWrapper { ModuleId(it) },
+            moduleId = moduleId,
             eventStatusId = eventStatus,
             eventTypeId = eventType,
             meetingUrl = meetingUrl?.let { URI("$it") },
@@ -2423,9 +2385,9 @@ abstract class DatabaseBackedTest {
             revision = revision,
             startTime = startTime,
             endTime = endTime,
-            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdBy = createdBy,
             createdTime = createdTime,
-            modifiedBy = createdBy.toIdWrapper { UserId(it) },
+            modifiedBy = createdBy,
             modifiedTime = createdTime,
         )
     eventsDao.insert(row)
@@ -2433,16 +2395,20 @@ abstract class DatabaseBackedTest {
     return row.id!!.also { inserted.eventIds.add(it) }
   }
 
-  fun insertEventProject(eventId: Any = inserted.eventId, projectId: Any = inserted.projectId) {
+  fun insertEventProject(
+      eventId: EventId = inserted.eventId,
+      projectId: ProjectId = inserted.projectId,
+  ) {
     val row =
         EventProjectsRow(
-            eventId = eventId.toIdWrapper { EventId(it) },
-            projectId = projectId.toIdWrapper { ProjectId(it) })
+            eventId = eventId,
+            projectId = projectId,
+        )
     eventProjectsDao.insert(row)
   }
 
   fun insertVote(
-      projectId: Any = inserted.projectId,
+      projectId: ProjectId = inserted.projectId,
       phase: CohortPhase = CohortPhase.Phase0DueDiligence,
       user: UserId = currentUser().userId,
       voteOption: VoteOption? = null,
@@ -2456,7 +2422,7 @@ abstract class DatabaseBackedTest {
             createdTime = createdTime,
             modifiedBy = createdBy,
             modifiedTime = createdTime,
-            projectId = projectId.toIdWrapper { ProjectId(it) },
+            projectId = projectId,
             phaseId = phase,
             userId = user,
             voteOptionId = voteOption,
@@ -2469,14 +2435,14 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertVoteDecision(
-      projectId: Any = inserted.projectId,
+      projectId: ProjectId = inserted.projectId,
       phase: CohortPhase = CohortPhase.Phase0DueDiligence,
       voteOption: VoteOption? = null,
       modifiedTime: Instant = Instant.EPOCH,
   ): ProjectVoteDecisionsRow {
     val row =
         ProjectVoteDecisionsRow(
-            projectId = projectId.toIdWrapper { ProjectId(it) },
+            projectId = projectId,
             phaseId = phase,
             modifiedTime = modifiedTime,
             voteOptionId = voteOption,
@@ -2495,10 +2461,9 @@ abstract class DatabaseBackedTest {
       documentTemplateId: DocumentTemplateId = inserted.documentTemplateId,
       modifiedBy: UserId = createdBy,
       modifiedTime: Instant = createdTime,
-      id: Any? = null,
       name: String = "Document ${nextDocumentSuffix++}",
       ownedBy: UserId = createdBy,
-      projectId: Any = inserted.projectId,
+      projectId: ProjectId = inserted.projectId,
       status: DocumentStatus = DocumentStatus.Draft,
       variableManifestId: VariableManifestId = inserted.variableManifestId,
   ): DocumentId {
@@ -2507,12 +2472,11 @@ abstract class DatabaseBackedTest {
             createdBy = createdBy,
             createdTime = createdTime,
             documentTemplateId = documentTemplateId,
-            id = id?.toIdWrapper { DocumentId(it) },
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
             ownedBy = ownedBy,
-            projectId = projectId.toIdWrapper { ProjectId(it) },
+            projectId = projectId,
             statusId = status,
             variableManifestId = variableManifestId,
         )
