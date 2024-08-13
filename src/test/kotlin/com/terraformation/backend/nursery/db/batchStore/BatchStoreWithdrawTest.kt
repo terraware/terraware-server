@@ -29,40 +29,40 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class BatchStoreWithdrawTest : BatchStoreTest() {
   private lateinit var speciesId2: SpeciesId
-  private val species1Batch1Id = BatchId(11)
-  private val species1Batch2Id = BatchId(12)
-  private val species2Batch1Id = BatchId(21)
+  private lateinit var species1Batch1Id: BatchId
+  private lateinit var species1Batch2Id: BatchId
+  private lateinit var species2Batch1Id: BatchId
 
   @BeforeEach
   fun insertInitialBatches() {
     speciesId2 = insertSpecies()
-    insertBatch(
-        id = species1Batch1Id,
-        speciesId = speciesId,
-        batchNumber = "21-2-1-011",
-        germinatingQuantity = 10,
-        notReadyQuantity = 20,
-        readyQuantity = 30,
-        totalLost = 0,
-        totalLossCandidates = 20 + 30)
-    insertBatch(
-        id = species1Batch2Id,
-        speciesId = speciesId,
-        batchNumber = "21-2-1-012",
-        germinatingQuantity = 40,
-        notReadyQuantity = 50,
-        readyQuantity = 60,
-        totalLost = 0,
-        totalLossCandidates = 50 + 60)
-    insertBatch(
-        id = species2Batch1Id,
-        speciesId = speciesId2,
-        batchNumber = "21-2-1-021",
-        germinatingQuantity = 70,
-        notReadyQuantity = 80,
-        readyQuantity = 90,
-        totalLost = 0,
-        totalLossCandidates = 80 + 90)
+    species1Batch1Id =
+        insertBatch(
+            speciesId = speciesId,
+            batchNumber = "21-2-1-011",
+            germinatingQuantity = 10,
+            notReadyQuantity = 20,
+            readyQuantity = 30,
+            totalLost = 0,
+            totalLossCandidates = 20 + 30)
+    species1Batch2Id =
+        insertBatch(
+            speciesId = speciesId,
+            batchNumber = "21-2-1-012",
+            germinatingQuantity = 40,
+            notReadyQuantity = 50,
+            readyQuantity = 60,
+            totalLost = 0,
+            totalLossCandidates = 50 + 60)
+    species2Batch1Id =
+        insertBatch(
+            speciesId = speciesId2,
+            batchNumber = "21-2-1-021",
+            germinatingQuantity = 70,
+            notReadyQuantity = 80,
+            readyQuantity = 90,
+            totalLost = 0,
+            totalLossCandidates = 80 + 90)
   }
 
   @Test
@@ -466,7 +466,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
   fun `throws exception if any batches are not from requested facility ID`() {
     insertFacility(type = FacilityType.Nursery)
 
-    val otherFacilityBatchId = insertBatch(id = 100, speciesId = speciesId, germinatingQuantity = 1)
+    val otherFacilityBatchId = insertBatch(speciesId = speciesId, germinatingQuantity = 1)
 
     assertThrows<IllegalArgumentException> {
       store.withdraw(

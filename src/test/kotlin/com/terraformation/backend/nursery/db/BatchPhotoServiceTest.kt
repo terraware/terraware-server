@@ -10,9 +10,7 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.nursery.BatchId
-import com.terraformation.backend.db.nursery.BatchPhotoId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchPhotosRow
-import com.terraformation.backend.db.nursery.tables.references.BATCH_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
@@ -41,7 +39,6 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-  override val tablesToResetSequences = listOf(BATCH_PHOTOS)
 
   private val clock = TestClock()
   private val fileStore = InMemoryFileStore()
@@ -90,9 +87,8 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
                   createdTime = clock.instant,
                   deletedBy = null,
                   deletedTime = null,
-                  fileId = fileId,
-                  id = BatchPhotoId(1))),
-          batchPhotosDao.findAll())
+                  fileId = fileId)),
+          batchPhotosDao.findAll().map { it.copy(id = null) })
     }
 
     @Test
@@ -195,9 +191,8 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
                   createdTime = createdTime,
                   deletedBy = user.userId,
                   deletedTime = deletedTime,
-                  fileId = null,
-                  id = BatchPhotoId(1))),
-          batchPhotosDao.findAll())
+                  fileId = null)),
+          batchPhotosDao.findAll().map { it.copy(id = null) })
 
       fileStore.assertFileWasDeleted(storageUrl)
     }
@@ -233,6 +228,7 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
     storePhoto()
     storePhoto(facility2BatchId)
     val otherOrgFileId = storePhoto(otherOrgBatchId)
+    val otherBatchPhotoId = batchPhotosDao.fetchByFileId(otherOrgFileId).first().id!!
 
     service.on(OrganizationDeletionStartedEvent(organizationId))
 
@@ -244,7 +240,7 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
                 createdBy = user.userId,
                 createdTime = clock.instant(),
                 fileId = otherOrgFileId,
-                id = BatchPhotoId(4))),
+                id = otherBatchPhotoId)),
         batchPhotosDao.findAll(),
         "Remaining photos")
 
@@ -258,6 +254,7 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
     storePhoto()
     storePhoto()
     val otherBatchFileId = storePhoto(otherBatchId)
+    val otherBatchPhotoId = batchPhotosDao.fetchByFileId(otherBatchFileId).first().id!!
 
     service.on(BatchDeletionStartedEvent(batchId))
 
@@ -269,7 +266,7 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
                 createdBy = user.userId,
                 createdTime = clock.instant(),
                 fileId = otherBatchFileId,
-                id = BatchPhotoId(3))),
+                id = otherBatchPhotoId)),
         batchPhotosDao.findAll(),
         "Remaining photos")
 

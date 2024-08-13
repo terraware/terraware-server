@@ -1415,17 +1415,16 @@ abstract class DatabaseBackedTest {
       addedDate: LocalDate = row.addedDate ?: LocalDate.EPOCH,
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
-      facilityId: Any = row.facilityId ?: inserted.facilityId,
+      facilityId: FacilityId = row.facilityId ?: inserted.facilityId,
       germinatingQuantity: Int = row.germinatingQuantity ?: 0,
-      id: Any? = row.id,
       notReadyQuantity: Int = row.notReadyQuantity ?: 0,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
-      projectId: Any? = row.projectId,
+      projectId: ProjectId? = row.projectId,
       readyQuantity: Int = row.readyQuantity ?: 0,
       readyByDate: LocalDate? = row.readyByDate,
-      speciesId: Any = row.speciesId ?: inserted.speciesId,
+      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
       version: Int = row.version ?: 1,
-      batchNumber: String = row.batchNumber ?: id?.toString() ?: "${nextBatchNumber++}",
+      batchNumber: String = row.batchNumber ?: "${nextBatchNumber++}",
       germinationRate: Int? = row.germinationRate,
       totalGerminated: Int? = row.totalGerminated,
       totalGerminationCandidates: Int? = row.totalGerminationCandidates,
@@ -1457,12 +1456,11 @@ abstract class DatabaseBackedTest {
             batchNumber = batchNumber,
             createdBy = createdBy,
             createdTime = createdTime,
-            facilityId = facilityId.toIdWrapper { FacilityId(it) },
+            facilityId = facilityId,
             germinatingQuantity = germinatingQuantity,
             germinationRate = effectiveGerminationRate,
             totalGerminated = totalGerminated,
             totalGerminationCandidates = totalGerminationCandidates,
-            id = id?.toIdWrapper { BatchId(it) },
             latestObservedGerminatingQuantity = germinatingQuantity,
             latestObservedNotReadyQuantity = notReadyQuantity,
             latestObservedReadyQuantity = readyQuantity,
@@ -1474,10 +1472,10 @@ abstract class DatabaseBackedTest {
             modifiedTime = createdTime,
             notReadyQuantity = notReadyQuantity,
             organizationId = organizationId,
-            projectId = projectId?.toIdWrapper { ProjectId(it) },
+            projectId = projectId,
             readyQuantity = readyQuantity,
             readyByDate = readyByDate,
-            speciesId = speciesId.toIdWrapper { SpeciesId(it) },
+            speciesId = speciesId,
             version = version,
         )
 
@@ -1487,20 +1485,18 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertBatchSubLocation(
-      batchId: Any = inserted.batchId,
-      subLocationId: Any = inserted.subLocationId,
-      facilityId: Any? = null,
+      batchId: BatchId = inserted.batchId,
+      subLocationId: SubLocationId = inserted.subLocationId,
+      facilityId: FacilityId? = null,
   ) {
-    val subLocationIdWrapper = subLocationId.toIdWrapper { SubLocationId(it) }
     val effectiveFacilityId =
-        facilityId?.toIdWrapper { FacilityId(it) }
-            ?: subLocationsDao.fetchOneById(subLocationIdWrapper)!!.facilityId!!
+        facilityId ?: subLocationsDao.fetchOneById(subLocationId)!!.facilityId!!
 
     val row =
         BatchSubLocationsRow(
-            batchId = batchId.toIdWrapper { BatchId(it) },
+            batchId = batchId,
             facilityId = effectiveFacilityId,
-            subLocationId = subLocationIdWrapper,
+            subLocationId = subLocationId,
         )
 
     batchSubLocationsDao.insert(row)
@@ -1510,26 +1506,24 @@ abstract class DatabaseBackedTest {
       row: WithdrawalsRow = WithdrawalsRow(),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
-      destinationFacilityId: Any? = row.destinationFacilityId,
-      facilityId: Any = row.facilityId ?: inserted.facilityId,
-      id: Any? = row.id,
+      destinationFacilityId: FacilityId? = row.destinationFacilityId,
+      facilityId: FacilityId = row.facilityId ?: inserted.facilityId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       purpose: WithdrawalPurpose = WithdrawalPurpose.Other,
-      undoesWithdrawalId: Any? = row.undoesWithdrawalId,
+      undoesWithdrawalId: WithdrawalId? = row.undoesWithdrawalId,
       withdrawnDate: LocalDate = row.withdrawnDate ?: LocalDate.EPOCH,
   ): WithdrawalId {
     val rowWithDefaults =
         row.copy(
             createdBy = createdBy,
             createdTime = createdTime,
-            destinationFacilityId = destinationFacilityId?.toIdWrapper { FacilityId(it) },
-            facilityId = facilityId.toIdWrapper { FacilityId(it) },
-            id = id?.toIdWrapper { WithdrawalId(it) },
+            destinationFacilityId = destinationFacilityId,
+            facilityId = facilityId,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             purposeId = purpose,
-            undoesWithdrawalId = undoesWithdrawalId?.toIdWrapper { WithdrawalId(it) },
+            undoesWithdrawalId = undoesWithdrawalId,
             withdrawnDate = withdrawnDate,
         )
 
@@ -1540,21 +1534,21 @@ abstract class DatabaseBackedTest {
 
   fun insertBatchWithdrawal(
       row: BatchWithdrawalsRow = BatchWithdrawalsRow(),
-      batchId: Any = row.batchId ?: inserted.batchId,
-      destinationBatchId: Any? = row.destinationBatchId,
+      batchId: BatchId = row.batchId ?: inserted.batchId,
+      destinationBatchId: BatchId? = row.destinationBatchId,
       germinatingQuantityWithdrawn: Int = row.germinatingQuantityWithdrawn ?: 0,
       notReadyQuantityWithdrawn: Int = row.notReadyQuantityWithdrawn ?: 0,
       readyQuantityWithdrawn: Int = row.readyQuantityWithdrawn ?: 0,
-      withdrawalId: Any = row.withdrawalId ?: inserted.withdrawalId
+      withdrawalId: WithdrawalId = row.withdrawalId ?: inserted.withdrawalId
   ) {
     val rowWithDefaults =
         row.copy(
-            batchId = batchId.toIdWrapper { BatchId(it) },
-            destinationBatchId = destinationBatchId?.toIdWrapper { BatchId(it) },
+            batchId = batchId,
+            destinationBatchId = destinationBatchId,
             germinatingQuantityWithdrawn = germinatingQuantityWithdrawn,
             notReadyQuantityWithdrawn = notReadyQuantityWithdrawn,
             readyQuantityWithdrawn = readyQuantityWithdrawn,
-            withdrawalId = withdrawalId.toIdWrapper { WithdrawalId(it) },
+            withdrawalId = withdrawalId,
         )
 
     batchWithdrawalsDao.insert(rowWithDefaults)
