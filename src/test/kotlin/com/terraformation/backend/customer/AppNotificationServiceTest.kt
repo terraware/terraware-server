@@ -48,10 +48,8 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
-import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.NotificationsRow
-import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.device.db.DeviceStore
@@ -325,18 +323,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser()
 
     val nurseryName = "my nursery"
-    val speciesId = SpeciesId(100)
-    val batchId = BatchId(100)
     val batchNumber = "22-2-001"
 
     val facilityId = insertFacility(type = FacilityType.Nursery, name = nurseryName)
-    insertSpecies(speciesId)
-    insertBatch(
-        BatchesRow(
-            id = batchId,
-            batchNumber = batchNumber,
-            speciesId = speciesId,
-            facilityId = facilityId))
+    val speciesId = insertSpecies()
+    val batchId =
+        insertBatch(
+            BatchesRow(batchNumber = batchNumber, speciesId = speciesId, facilityId = facilityId))
 
     service.on(NurserySeedlingBatchReadyEvent(batchId, batchNumber, speciesId, nurseryName))
 

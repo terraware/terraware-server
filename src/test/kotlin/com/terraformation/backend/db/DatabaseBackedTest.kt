@@ -1337,7 +1337,6 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertNotification(
-      id: NotificationId,
       userId: UserId = currentUser().userId,
       type: NotificationType = NotificationType.FacilityIdle,
       organizationId: OrganizationId? = null,
@@ -1346,11 +1345,10 @@ abstract class DatabaseBackedTest {
       localUrl: URI = URI.create(""),
       createdTime: Instant = Instant.EPOCH,
       isRead: Boolean = false,
-  ) {
-    with(NOTIFICATIONS) {
+  ): NotificationId {
+    return with(NOTIFICATIONS) {
       dslContext
           .insertInto(NOTIFICATIONS)
-          .set(ID, id)
           .set(USER_ID, userId)
           .set(NOTIFICATION_TYPE_ID, type)
           .set(ORGANIZATION_ID, organizationId)
@@ -1359,9 +1357,9 @@ abstract class DatabaseBackedTest {
           .set(LOCAL_URL, localUrl)
           .set(CREATED_TIME, createdTime)
           .set(IS_READ, isRead)
-          .execute()
-
-      inserted.notificationIds.add(id)
+          .returning(ID)
+          .fetchOne(ID)!!
+          .also { inserted.notificationIds.add(it) }
     }
   }
 
@@ -1634,18 +1632,16 @@ abstract class DatabaseBackedTest {
 
   fun insertPlantingSiteNotification(
       row: PlantingSiteNotificationsRow = PlantingSiteNotificationsRow(),
-      id: Any? = row.id,
       number: Int = row.notificationNumber ?: 1,
-      plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
+      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       sentTime: Instant = row.sentTime ?: Instant.EPOCH,
       type: NotificationType,
   ): PlantingSiteNotificationId {
     val rowWithDefaults =
         row.copy(
-            id = id?.toIdWrapper { PlantingSiteNotificationId(it) },
             notificationNumber = number,
             notificationTypeId = type,
-            plantingSiteId = plantingSiteId.toIdWrapper { PlantingSiteId(it) },
+            plantingSiteId = plantingSiteId,
             sentTime = sentTime,
         )
 
