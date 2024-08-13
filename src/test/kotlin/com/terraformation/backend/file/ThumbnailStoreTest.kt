@@ -4,10 +4,8 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FileId
-import com.terraformation.backend.db.default_schema.ThumbnailId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
-import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.util.ImageUtils
 import io.mockk.CapturingSlot
@@ -34,8 +32,6 @@ import java.time.ZoneOffset
 import javax.imageio.ImageIO
 import javax.imageio.stream.MemoryCacheImageInputStream
 import kotlin.random.Random
-import org.jooq.Record
-import org.jooq.Table
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -51,19 +47,16 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var store: ThumbnailStore
 
-  private val fileId = FileId(1000)
   private val photoStorageUrl = URI("file:///a/b/c/original.jpg")
 
-  override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(THUMBNAILS)
+  private lateinit var fileId: FileId
 
   @BeforeEach
   fun setUp() {
     store = ThumbnailStore(clock, dslContext, fileStore, filesDao, thumbnailsDao, imageUtils)
 
-    filesDao.insert(
+    val filesRow =
         FilesRow(
-            id = fileId,
             contentType = MediaType.IMAGE_JPEG_VALUE,
             createdBy = user.userId,
             createdTime = clock.instant(),
@@ -71,7 +64,9 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
             modifiedTime = clock.instant(),
             size = 1,
             fileName = "test.jpg",
-            storageUrl = photoStorageUrl))
+            storageUrl = photoStorageUrl)
+    filesDao.insert(filesRow)
+    fileId = filesRow.id!!
 
     every { fileStore.delete(any()) } throws NoSuchFileException("Not found")
     every { fileStore.getUrl(any()) } answers { URI("file://${firstArg<Path>()}") }
@@ -282,7 +277,6 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     assertEquals(
         listOf(
             ThumbnailsRow(
-                id = ThumbnailId(1),
                 fileId = fileId,
                 width = width,
                 height = height,
@@ -290,7 +284,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
                 createdTime = Instant.EPOCH,
                 size = actual.size.toInt(),
                 storageUrl = URI("file:///a/b/c/thumb/original-${width}x$height.jpg"))),
-        thumbnailsDao.findAll())
+        thumbnailsDao.findAll().map { it.copy(id = null) })
   }
 
   @Test
