@@ -2581,11 +2581,11 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertImageValue(
-      variableId: Any,
-      fileId: Any,
+      variableId: VariableId,
+      fileId: FileId,
       listPosition: Int = 0,
       caption: String? = null,
-      id: Any =
+      id: VariableValueId =
           insertValue(
               listPosition = listPosition,
               variableId = variableId,
@@ -2595,10 +2595,10 @@ abstract class DatabaseBackedTest {
     val row =
         VariableImageValuesRow(
             caption = caption,
-            fileId = fileId.toIdWrapper { FileId(it) },
-            variableId = variableId.toIdWrapper { VariableId(it) },
+            fileId = fileId,
+            variableId = variableId,
             variableTypeId = VariableType.Image,
-            variableValueId = id.toIdWrapper { VariableValueId(it) },
+            variableValueId = id,
         )
 
     variableImageValuesDao.insert(row)
@@ -2607,9 +2607,9 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertLinkValue(
-      variableId: Any,
+      variableId: VariableId,
       listPosition: Int = 0,
-      id: Any =
+      id: VariableValueId =
           insertValue(
               listPosition = listPosition,
               variableId = variableId,
@@ -2618,13 +2618,7 @@ abstract class DatabaseBackedTest {
       url: String,
       title: String? = null,
   ): VariableValueId {
-    val row =
-        VariableLinkValuesRow(
-            id.toIdWrapper { VariableValueId(it) },
-            variableId.toIdWrapper { VariableId(it) },
-            VariableType.Link,
-            url,
-            title)
+    val row = VariableLinkValuesRow(id, variableId, VariableType.Link, url, title)
 
     variableLinkValuesDao.insert(row)
 
@@ -2634,14 +2628,9 @@ abstract class DatabaseBackedTest {
   private var nextDocumentTemplate = 0
 
   protected fun insertDocumentTemplate(
-      id: Any? = null,
       name: String = "Document Template ${nextDocumentTemplate++}",
   ): DocumentTemplateId {
-    val row =
-        DocumentTemplatesRow(
-            id = id?.toIdWrapper { DocumentTemplateId(it) },
-            name = name,
-        )
+    val row = DocumentTemplatesRow(name = name)
 
     documentTemplatesDao.insert(row)
 
@@ -2649,15 +2638,14 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertNumberVariable(
-      id: Any = insertVariable(type = VariableType.Number),
+      id: VariableId = insertVariable(type = VariableType.Number),
       decimalPlaces: Int = 0,
       minValue: BigDecimal? = null,
       maxValue: BigDecimal? = null,
   ): VariableId {
-    val variableId = id.toIdWrapper { VariableId(it) }
     val row =
         VariableNumbersRow(
-            variableId = variableId,
+            variableId = id,
             variableTypeId = VariableType.Number,
             decimalPlaces = decimalPlaces,
             maxValue = maxValue,
@@ -2666,29 +2654,27 @@ abstract class DatabaseBackedTest {
 
     variableNumbersDao.insert(row)
 
-    return variableId
+    return id
   }
 
   protected fun insertSavedVersion(
-      maxValueId: Any,
-      documentId: Any = inserted.documentId,
+      maxValueId: VariableValueId,
+      documentId: DocumentId = inserted.documentId,
       name: String = "Saved",
-      createdBy: Any = inserted.userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
-      id: Any? = null,
       isSubmitted: Boolean = false,
-      variableManifestId: Any = inserted.variableManifestId,
+      variableManifestId: VariableManifestId = inserted.variableManifestId,
   ): DocumentSavedVersionId {
     val row =
         DocumentSavedVersionsRow(
-            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdBy = createdBy,
             createdTime = createdTime,
-            documentId = documentId.toIdWrapper { DocumentId(it) },
-            id = id?.toIdWrapper { DocumentSavedVersionId(it) },
+            documentId = documentId,
             isSubmitted = isSubmitted,
-            maxVariableValueId = maxValueId.toIdWrapper { VariableValueId(it) },
+            maxVariableValueId = maxValueId,
             name = name,
-            variableManifestId = variableManifestId.toIdWrapper { VariableManifestId(it) },
+            variableManifestId = variableManifestId,
         )
 
     documentSavedVersionsDao.insert(row)
@@ -2697,36 +2683,34 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertSectionValue(
-      variableId: Any,
+      variableId: VariableId,
       listPosition: Int = 0,
       projectId: ProjectId = inserted.projectId,
-      id: Any =
+      id: VariableValueId =
           insertValue(
               variableId = variableId,
               listPosition = listPosition,
               type = VariableType.Section,
               projectId = projectId),
       textValue: String? = null,
-      usedVariableId: Any? = null,
+      usedVariableId: VariableId? = null,
       usageType: VariableUsageType? =
           if (usedVariableId != null) VariableUsageType.Injection else null,
       displayStyle: VariableInjectionDisplayStyle? =
           if (usedVariableId != null) VariableInjectionDisplayStyle.Block else null,
   ): VariableValueId {
-    val usedVariableIdWrapper = usedVariableId?.toIdWrapper { VariableId(it) }
-    val usedVariableType =
-        usedVariableIdWrapper?.let { variablesDao.fetchOneById(it)!!.variableTypeId!! }
+    val usedVariableType = usedVariableId?.let { variablesDao.fetchOneById(it)!!.variableTypeId!! }
 
     val row =
         VariableSectionValuesRow(
             displayStyleId = displayStyle,
             textValue = textValue,
             usageTypeId = usageType,
-            usedVariableId = usedVariableIdWrapper,
+            usedVariableId = usedVariableId,
             usedVariableTypeId = usedVariableType,
-            variableId = variableId.toIdWrapper { VariableId(it) },
+            variableId = variableId,
             variableTypeId = VariableType.Section,
-            variableValueId = id.toIdWrapper { VariableValueId(it) },
+            variableValueId = id,
         )
 
     variableSectionValuesDao.insert(row)
@@ -2735,32 +2719,28 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertDefaultSectionValue(
-      variableId: Any,
-      variableManifestId: Any = inserted.variableManifestId,
+      variableId: VariableId,
+      variableManifestId: VariableManifestId = inserted.variableManifestId,
       listPosition: Int = 0,
-      id: Any? = null,
       textValue: String? = null,
-      usedVariableId: Any? = null,
+      usedVariableId: VariableId? = null,
       usageType: VariableUsageType? =
           if (usedVariableId != null) VariableUsageType.Injection else null,
       displayStyle: VariableInjectionDisplayStyle? =
           if (usedVariableId != null) VariableInjectionDisplayStyle.Inline else null,
   ): VariableSectionDefaultValueId {
-    val usedVariableIdWrapper = usedVariableId?.toIdWrapper { VariableId(it) }
-    val usedVariableType =
-        usedVariableIdWrapper?.let { variablesDao.fetchOneById(it)!!.variableTypeId!! }
+    val usedVariableType = usedVariableId?.let { variablesDao.fetchOneById(it)!!.variableTypeId!! }
 
     val row =
         VariableSectionDefaultValuesRow(
             displayStyleId = displayStyle,
-            id = id?.toIdWrapper { VariableSectionDefaultValueId(it) },
             listPosition = listPosition,
             textValue = textValue,
             usageTypeId = usageType,
-            usedVariableId = usedVariableIdWrapper,
+            usedVariableId = usedVariableId,
             usedVariableTypeId = usedVariableType,
-            variableId = variableId.toIdWrapper { VariableId(it) },
-            variableManifestId = variableManifestId.toIdWrapper { VariableManifestId(it) },
+            variableId = variableId,
+            variableManifestId = variableManifestId,
             variableTypeId = VariableType.Section,
         )
 
@@ -2770,55 +2750,52 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertSectionRecommendation(
-      sectionId: Any,
-      recommendedId: Any,
-      manifestId: Any = inserted.variableManifestId,
+      sectionId: VariableId,
+      recommendedId: VariableId,
+      manifestId: VariableManifestId = inserted.variableManifestId,
   ) {
     val row =
         VariableSectionRecommendationsRow(
-            recommendedVariableId = recommendedId.toIdWrapper { VariableId(it) },
-            sectionVariableId = sectionId.toIdWrapper { VariableId(it) },
+            recommendedVariableId = recommendedId,
+            sectionVariableId = sectionId,
             sectionVariableTypeId = VariableType.Section,
-            variableManifestId = manifestId.toIdWrapper { VariableManifestId(it) },
+            variableManifestId = manifestId,
         )
 
     variableSectionRecommendationsDao.insert(row)
   }
 
   protected fun insertSectionVariable(
-      id: Any = insertVariable(type = VariableType.Section),
-      parentId: Any? = null,
+      id: VariableId = insertVariable(type = VariableType.Section),
+      parentId: VariableId? = null,
       renderHeading: Boolean = true,
   ): VariableId {
-    val variableId = id.toIdWrapper { VariableId(it) }
     val row =
         VariableSectionsRow(
-            variableId = variableId,
+            variableId = id,
             variableTypeId = VariableType.Section,
-            parentVariableId = parentId?.toIdWrapper { VariableId(it) },
+            parentVariableId = parentId,
             parentVariableTypeId = if (parentId != null) VariableType.Section else null,
             renderHeading = renderHeading,
         )
 
     variableSectionsDao.insert(row)
 
-    return variableId
+    return id
   }
 
   private var nextSelectOptionPosition = 0
 
   protected fun insertSelectOption(
-      variableId: Any,
+      variableId: VariableId,
       name: String,
-      id: Any? = null,
       position: Int = nextSelectOptionPosition++,
       description: String? = null,
       renderedText: String? = null,
   ): VariableSelectOptionId {
     val row =
         VariableSelectOptionsRow(
-            id = id?.toIdWrapper { VariableSelectOptionId(it) },
-            variableId = variableId.toIdWrapper { VariableId(it) },
+            variableId = variableId,
             variableTypeId = VariableType.Select,
             position = position,
             name = name,
@@ -2832,77 +2809,72 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertSelectValue(
-      variableId: Any,
+      variableId: VariableId,
       listPosition: Int = 0,
-      id: Any =
+      id: VariableValueId =
           insertValue(
               variableId = variableId,
               type = VariableType.Select,
           ),
       optionIds: Set<VariableSelectOptionId>,
   ): VariableValueId {
-    val variableIdWrapper = variableId.toIdWrapper { VariableId(it) }
-    val valueIdWraper = id.toIdWrapper { VariableValueId(it) }
-
     optionIds.forEach { optionId ->
       val row =
           VariableSelectOptionValuesRow(
-              variableId = variableIdWrapper,
+              variableId = variableId,
               variableTypeId = VariableType.Select,
               optionId = optionId,
-              variableValueId = valueIdWraper,
+              variableValueId = id,
           )
 
       variableSelectOptionValuesDao.insert(row)
     }
 
-    return valueIdWraper
+    return id
   }
 
   protected fun insertSelectVariable(
-      id: Any = insertVariable(type = VariableType.Select),
+      id: VariableId = insertVariable(type = VariableType.Select),
       isMultiple: Boolean = false,
   ): VariableId {
-    val variableId = id.toIdWrapper { VariableId(it) }
     val row =
         VariableSelectsRow(
-            variableId = variableId,
+            variableId = id,
             variableTypeId = VariableType.Select,
             isMultiple = isMultiple,
         )
 
     variableSelectsDao.insert(row)
 
-    return variableId
+    return id
   }
 
   private var lastTableColumnTableId: VariableId? = null
   private var lastTableColumnPosition = 0
 
   protected fun insertTableColumn(
-      tableId: Any,
-      columnId: Any,
+      tableId: VariableId,
+      columnId: VariableId,
       isHeader: Boolean = false,
       position: Int? = null,
   ): VariableId {
-    val tableIdWrapper = tableId.toIdWrapper { VariableId(it) }
     val effectivePosition =
         when {
           position != null -> position
-          lastTableColumnTableId == tableIdWrapper -> lastTableColumnPosition + 1
+          lastTableColumnTableId == tableId -> lastTableColumnPosition + 1
           else -> 1
         }
 
-    lastTableColumnTableId = tableIdWrapper
+    lastTableColumnTableId = tableId
     lastTableColumnPosition = effectivePosition
 
     val row =
         VariableTableColumnsRow(
             isHeader = isHeader,
             position = effectivePosition,
-            tableVariableId = tableIdWrapper,
+            tableVariableId = tableId,
             tableVariableTypeId = VariableType.Table,
-            variableId = columnId.toIdWrapper { VariableId(it) },
+            variableId = columnId,
         )
 
     variableTableColumnsDao.insert(row)
@@ -2911,37 +2883,35 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertTableVariable(
-      id: Any = insertVariable(type = VariableType.Table),
+      id: VariableId = insertVariable(type = VariableType.Table),
       style: VariableTableStyle = VariableTableStyle.Horizontal,
   ): VariableId {
-    val variableId = id.toIdWrapper { VariableId(it) }
     val row =
         VariableTablesRow(
-            variableId = variableId,
+            variableId = id,
             variableTypeId = VariableType.Table,
             tableStyleId = style,
         )
 
     variableTablesDao.insert(row)
 
-    return variableId
+    return id
   }
 
   protected fun insertTextVariable(
-      id: Any = insertVariable(type = VariableType.Text),
+      id: VariableId = insertVariable(type = VariableType.Text),
       textType: VariableTextType = VariableTextType.SingleLine,
   ): VariableId {
-    val variableId = id.toIdWrapper { VariableId(it) }
     val row =
         VariableTextsRow(
-            variableId = variableId,
+            variableId = id,
             variableTypeId = VariableType.Text,
             variableTextTypeId = textType,
         )
 
     variableTextsDao.insert(row)
 
-    return variableId
+    return id
   }
 
   protected fun insertThumbnail(
@@ -2972,31 +2942,28 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertValue(
-      id: Any? = null,
-      variableId: Any,
+      variableId: VariableId,
       listPosition: Int = 0,
-      projectId: Any = inserted.projectId,
+      projectId: ProjectId = inserted.projectId,
       isDeleted: Boolean = false,
       textValue: String? = null,
       numberValue: BigDecimal? = null,
       dateValue: LocalDate? = null,
       type: VariableType? = null,
       citation: String? = null,
-      createdBy: Any = inserted.userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
   ): VariableValueId {
-    val variableIdWrapper = variableId.toIdWrapper { VariableId(it) }
-    val actualType = type ?: variablesDao.fetchOneById(variableIdWrapper)!!.variableTypeId!!
+    val actualType = type ?: variablesDao.fetchOneById(variableId)!!.variableTypeId!!
 
     val row =
         VariableValuesRow(
             citation = citation,
-            id = id?.toIdWrapper { VariableValueId(it) },
-            projectId = projectId.toIdWrapper { ProjectId(it) },
-            variableId = variableIdWrapper,
+            projectId = projectId,
+            variableId = variableId,
             variableTypeId = actualType,
             listPosition = listPosition,
-            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdBy = createdBy,
             createdTime = createdTime,
             numberValue = numberValue,
             textValue = textValue,
@@ -3010,13 +2977,13 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertValueTableRow(
-      valueId: Any,
-      rowValueId: Any,
+      valueId: VariableValueId,
+      rowValueId: VariableValueId,
   ) {
     val row =
         VariableValueTableRowsRow(
-            variableValueId = valueId.toIdWrapper { VariableValueId(it) },
-            tableRowValueId = rowValueId.toIdWrapper { VariableValueId(it) },
+            variableValueId = valueId,
+            tableRowValueId = rowValueId,
         )
 
     variableValueTableRowsDao.insert(row)
@@ -3025,17 +2992,16 @@ abstract class DatabaseBackedTest {
   private var nextVariableNumber = 1
 
   protected fun insertVariable(
-      deliverableId: Any? = null,
+      deliverableId: DeliverableId? = null,
       deliverablePosition: Int? = null,
       dependencyCondition: DependencyCondition? = null,
       dependencyValue: String? = null,
       dependencyVariableStableId: String? = null,
       description: String? = null,
-      id: Any? = null,
       isList: Boolean = false,
       isRequired: Boolean = false,
       name: String = "Variable $nextVariableNumber",
-      replacesVariableId: Any? = null,
+      replacesVariableId: VariableId? = null,
       stableId: String = "$nextVariableNumber",
       type: VariableType = VariableType.Text
   ): VariableId {
@@ -3043,17 +3009,16 @@ abstract class DatabaseBackedTest {
 
     val row =
         VariablesRow(
-            deliverableId = deliverableId?.toIdWrapper { DeliverableId(it) },
+            deliverableId = deliverableId,
             deliverablePosition = deliverablePosition,
             dependencyConditionId = dependencyCondition,
             dependencyValue = dependencyValue,
             dependencyVariableStableId = dependencyVariableStableId,
             description = description,
-            id = id?.toIdWrapper { VariableId(it) },
             isList = isList,
             isRequired = isRequired,
             name = name,
-            replacesVariableId = replacesVariableId?.toIdWrapper { VariableId(it) },
+            replacesVariableId = replacesVariableId,
             stableId = stableId,
             variableTypeId = type,
         )
@@ -3067,14 +3032,12 @@ abstract class DatabaseBackedTest {
       createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
       documentTemplateId: DocumentTemplateId = inserted.documentTemplateId,
-      id: Any? = null,
   ): VariableManifestId {
     val row =
         VariableManifestsRow(
             createdBy = createdBy,
             createdTime = createdTime,
             documentTemplateId = documentTemplateId,
-            id = id?.toIdWrapper { VariableManifestId(it) },
         )
 
     variableManifestsDao.insert(row)
@@ -3085,57 +3048,56 @@ abstract class DatabaseBackedTest {
   private var nextManifestPosition = 0
 
   protected fun insertVariableManifestEntry(
-      variableId: Any,
-      manifestId: Any = inserted.variableManifestId,
+      variableId: VariableId,
+      manifestId: VariableManifestId = inserted.variableManifestId,
       position: Int = nextManifestPosition++,
   ): VariableId {
-    val variableIdWrapper = variableId.toIdWrapper { VariableId(it) }
     val row =
         VariableManifestEntriesRow(
             position = position,
-            variableId = variableIdWrapper,
-            variableManifestId = manifestId.toIdWrapper { VariableManifestId(it) },
+            variableId = variableId,
+            variableManifestId = manifestId,
         )
 
     variableManifestEntriesDao.insert(row)
 
-    return variableIdWrapper
+    return variableId
   }
 
   protected fun insertVariableOwner(
-      variableId: Any = inserted.variableId,
-      ownedBy: Any,
-      projectId: Any = inserted.projectId,
+      variableId: VariableId = inserted.variableId,
+      ownedBy: UserId,
+      projectId: ProjectId = inserted.projectId,
   ) {
     val row =
         VariableOwnersRow(
-            ownedBy = ownedBy.toIdWrapper { UserId(it) },
-            projectId = projectId.toIdWrapper { ProjectId(it) },
-            variableId = variableId.toIdWrapper { VariableId(it) },
+            ownedBy = ownedBy,
+            projectId = projectId,
+            variableId = variableId,
         )
 
     variableOwnersDao.insert(row)
   }
 
   protected fun insertVariableWorkflowHistory(
-      projectId: Any = inserted.projectId,
-      variableId: Any = inserted.variableId,
+      projectId: ProjectId = inserted.projectId,
+      variableId: VariableId = inserted.variableId,
       feedback: String? = null,
       internalComment: String? = null,
       status: VariableWorkflowStatus = VariableWorkflowStatus.NotSubmitted,
-      maxVariableValueId: Any = inserted.variableValueId,
-      createdBy: Any = currentUser().userId,
+      maxVariableValueId: VariableValueId = inserted.variableValueId,
+      createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
   ): VariableWorkflowHistoryId {
     val row =
         VariableWorkflowHistoryRow(
-            createdBy = createdBy.toIdWrapper { UserId(it) },
+            createdBy = createdBy,
             createdTime = createdTime,
             feedback = feedback,
             internalComment = internalComment,
-            maxVariableValueId = maxVariableValueId.toIdWrapper { VariableValueId(it) },
-            projectId = projectId.toIdWrapper { ProjectId(it) },
-            variableId = variableId.toIdWrapper { VariableId(it) },
+            maxVariableValueId = maxVariableValueId,
+            projectId = projectId,
+            variableId = variableId,
             variableWorkflowStatusId = status,
         )
 

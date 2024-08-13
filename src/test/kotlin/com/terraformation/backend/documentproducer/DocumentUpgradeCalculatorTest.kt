@@ -322,10 +322,10 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
           .calculateOperations()
 
   private fun newValueProps(
-      variableId: Any,
+      variableId: VariableId,
       projectId: ProjectId = inserted.projectId,
       listPosition: Int = 0,
-      rowValueId: Any? = null,
+      rowValueId: VariableValueId? = null,
       citation: String? = null,
   ): BaseVariableValueProperties<Nothing?> {
     return BaseVariableValueProperties(
@@ -333,7 +333,8 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
         id = null,
         listPosition = listPosition,
         projectId = projectId,
-        variableId = variableId.toIdWrapper { VariableId(it) },
-        rowValueId = rowValueId?.toIdWrapper { VariableValueId(it) })
+        variableId = variableId,
+        rowValueId = rowValueId,
+    )
   }
 }

@@ -6,7 +6,6 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
-import com.terraformation.backend.db.docprod.tables.references.VARIABLE_WORKFLOW_HISTORY
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableReviewedEvent
 import com.terraformation.backend.documentproducer.model.ExistingVariableWorkflowHistoryModel
 import com.terraformation.backend.mockUser
@@ -17,8 +16,6 @@ import org.junit.jupiter.api.Test
 
 class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-
-  override val tablesToResetSequences = listOf(VARIABLE_WORKFLOW_HISTORY)
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()

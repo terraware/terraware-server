@@ -7,7 +7,6 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.USER_GLOBAL_ROLES
 import com.terraformation.backend.db.docprod.VariableType
-import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.db.docprod.tables.pojos.VariableImageValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableValuesRow
@@ -450,8 +449,8 @@ class ValuesControllerTest : ControllerIntegrationTest() {
 
       mockMvc.post(path()) { content = payload }.andExpect { status { isOk() } }
 
-      // Operation will have inserted a new value with the next available ID
-      val newValueId = VariableValueId(rowValueId.value + 1)
+      // Operation will have inserted a new value; it will be the one with the highest ID
+      val newValueId = variableValuesDao.findAll().map { it.id!! }.maxBy { it.value }
 
       val valueTableRow = variableValueTableRowsDao.fetchByTableRowValueId(rowValueId).single()
 
@@ -615,7 +614,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
 
       mockMvc.post(path()) { content = payload }.andExpect { status { isOk() } }
 
-      val newValueId = VariableValueId(existingValueId.value + 1)
+      val newValueId = variableValuesDao.findAll().map { it.id!! }.maxBy { it.value }
 
       val imageValuesRows = variableImageValuesDao.findAll().toSet()
 
@@ -738,12 +737,14 @@ class ValuesControllerTest : ControllerIntegrationTest() {
       mockMvc.post(path()) { content = payload }.andExpect { status { isOk() } }
 
       // Each of the remaining two rows gets a new value ID to hold its updated list position.
-      val newIdForRow1 = valueId2.value + 1
-      val newIdForRow2 = newIdForRow1 + 1
+      val valueIds = variableValuesDao.findAll().map { it.id!!.value }.sorted()
+      val valueId2Index = valueIds.indexOf(valueId2.value)
+      val newIdForRow1 = valueIds[valueId2Index + 1]
+      val newIdForRow2 = valueIds[valueId2Index + 2]
 
       // There'll be one new value for the deleted row, and one new value for the deleted cell
       // value, so the next value will be one more than that.
-      val nextValueId = newIdForRow2 + 3
+      val nextValueId = valueIds[valueId2Index + 4] + 1
 
       mockMvc
           .get(path())
