@@ -1568,13 +1568,12 @@ abstract class DatabaseBackedTest {
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       exclusion: Geometry? = row.exclusion,
       gridOrigin: Geometry? = row.gridOrigin,
-      id: Any? = row.id,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      name: String = row.name ?: id?.let { "Site $id" } ?: "Site ${nextPlantingSiteNumber++}",
+      name: String = row.name ?: "Site ${nextPlantingSiteNumber++}",
       timeZone: ZoneId? = row.timeZone,
-      projectId: Any? = row.projectId,
+      projectId: ProjectId? = row.projectId,
   ): PlantingSiteId {
     val effectiveBoundary =
         when {
@@ -1596,12 +1595,11 @@ abstract class DatabaseBackedTest {
             createdTime = createdTime,
             exclusion = exclusion,
             gridOrigin = gridOrigin,
-            id = id?.toIdWrapper { PlantingSiteId(it) },
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
             organizationId = organizationId,
-            projectId = projectId?.toIdWrapper { ProjectId(it) },
+            projectId = projectId,
             timeZone = timeZone,
         )
 
@@ -1614,9 +1612,8 @@ abstract class DatabaseBackedTest {
       timeZone: ZoneId = ZoneOffset.UTC,
       endDate: LocalDate = LocalDate.EPOCH.plusDays(1),
       endTime: Instant = endDate.plusDays(1).toInstant(timeZone),
-      id: Any? = null,
       isActive: Boolean = false,
-      plantingSiteId: Any = inserted.plantingSiteId,
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
       startDate: LocalDate = LocalDate.EPOCH,
       startTime: Instant = startDate.toInstant(timeZone),
   ): PlantingSeasonId {
@@ -1624,9 +1621,8 @@ abstract class DatabaseBackedTest {
         PlantingSeasonsRow(
             endDate = endDate,
             endTime = endTime,
-            id = id?.toIdWrapper { PlantingSeasonId(it) },
             isActive = isActive,
-            plantingSiteId = plantingSiteId.toIdWrapper { PlantingSiteId(it) },
+            plantingSiteId = plantingSiteId,
             startDate = startDate,
             startTime = startTime,
         )
@@ -1678,11 +1674,10 @@ abstract class DatabaseBackedTest {
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       errorMargin: BigDecimal = row.errorMargin ?: PlantingZoneModel.DEFAULT_ERROR_MARGIN,
       extraPermanentClusters: Int = row.extraPermanentClusters ?: 0,
-      id: Any? = row.id,
-      plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
+      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      name: String = row.name ?: id?.let { "Z$id" } ?: "Z${nextPlantingZoneNumber++}",
+      name: String = row.name ?: "Z${nextPlantingZoneNumber++}",
       numPermanentClusters: Int =
           row.numPermanentClusters ?: PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS,
       numTemporaryPlots: Int =
@@ -1699,13 +1694,12 @@ abstract class DatabaseBackedTest {
             createdTime = createdTime,
             errorMargin = errorMargin,
             extraPermanentClusters = extraPermanentClusters,
-            id = id?.toIdWrapper { PlantingZoneId(it) },
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
             numPermanentClusters = numPermanentClusters,
             numTemporaryPlots = numTemporaryPlots,
-            plantingSiteId = plantingSiteId.toIdWrapper { PlantingSiteId(it) },
+            plantingSiteId = plantingSiteId,
             studentsT = studentsT,
             targetPlantingDensity = targetPlantingDensity,
             variance = variance,
@@ -1735,18 +1729,14 @@ abstract class DatabaseBackedTest {
                   y.toDouble() * MONITORING_PLOT_SIZE),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
-      id: Any? = row.id,
       plantingCompletedTime: Instant? = row.plantingCompletedTime,
-      plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
-      plantingZoneId: Any = row.plantingZoneId ?: inserted.plantingZoneId,
+      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
+      plantingZoneId: PlantingZoneId = row.plantingZoneId ?: inserted.plantingZoneId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      name: String = row.name ?: id?.let { "$id" } ?: "${nextPlantingSubzoneNumber++}",
+      name: String = row.name ?: "${nextPlantingSubzoneNumber++}",
       fullName: String = "Z1-$name",
   ): PlantingSubzoneId {
-    val plantingZoneIdWrapper = plantingZoneId.toIdWrapper { PlantingZoneId(it) }
-    val plantingSiteIdWrapper = plantingSiteId.toIdWrapper { PlantingSiteId(it) }
-
     val rowWithDefaults =
         row.copy(
             areaHa = areaHa,
@@ -1754,13 +1744,12 @@ abstract class DatabaseBackedTest {
             createdBy = createdBy,
             createdTime = createdTime,
             fullName = fullName,
-            id = id?.toIdWrapper { PlantingSubzoneId(it) },
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
             plantingCompletedTime = plantingCompletedTime,
-            plantingSiteId = plantingSiteIdWrapper,
-            plantingZoneId = plantingZoneIdWrapper,
+            plantingSiteId = plantingSiteId,
+            plantingZoneId = plantingZoneId,
         )
 
     plantingSubzonesDao.insert(rowWithDefaults)
@@ -1820,33 +1809,29 @@ abstract class DatabaseBackedTest {
                   y.toDouble() * MONITORING_PLOT_SIZE),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
-      id: Any? = row.id,
       isAvailable: Boolean = row.isAvailable ?: true,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      name: String = row.name ?: id?.let { "$id" } ?: "${nextMonitoringPlotNumber++}",
+      name: String = row.name ?: "${nextMonitoringPlotNumber++}",
       fullName: String = "Z1-1-$name",
       permanentCluster: Int? = row.permanentCluster,
       permanentClusterSubplot: Int? =
           row.permanentClusterSubplot ?: if (permanentCluster != null) 1 else null,
-      plantingSubzoneId: Any = row.plantingSubzoneId ?: inserted.plantingSubzoneId,
+      plantingSubzoneId: PlantingSubzoneId = row.plantingSubzoneId ?: inserted.plantingSubzoneId,
   ): MonitoringPlotId {
-    val plantingSubzoneIdWrapper = plantingSubzoneId.toIdWrapper { PlantingSubzoneId(it) }
-
     val rowWithDefaults =
         row.copy(
             boundary = boundary,
             createdBy = createdBy,
             createdTime = createdTime,
             fullName = fullName,
-            id = id?.toIdWrapper { MonitoringPlotId(it) },
             isAvailable = isAvailable,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
             permanentCluster = permanentCluster,
             permanentClusterSubplot = permanentClusterSubplot,
-            plantingSubzoneId = plantingSubzoneIdWrapper,
+            plantingSubzoneId = plantingSubzoneId,
         )
 
     monitoringPlotsDao.insert(rowWithDefaults)
@@ -1862,14 +1847,13 @@ abstract class DatabaseBackedTest {
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       data: ArbitraryJsonObject = row.data ?: JSONB.valueOf("{}"),
       description: String? = row.description,
-      id: Any? = row.id,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: "Draft site ${nextDraftPlantingSiteNumber++}",
       numPlantingSubzones: Int? = row.numPlantingSubzones,
       numPlantingZones: Int? = row.numPlantingZones,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
-      projectId: Any? = row.projectId,
+      projectId: ProjectId? = row.projectId,
       timeZone: ZoneId? = row.timeZone,
   ): DraftPlantingSiteId {
     val rowWithDefaults =
@@ -1878,14 +1862,13 @@ abstract class DatabaseBackedTest {
             createdTime = createdTime,
             data = data,
             description = description,
-            id = id?.toIdWrapper { DraftPlantingSiteId(it) },
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
             numPlantingSubzones = numPlantingSubzones,
             numPlantingZones = numPlantingZones,
             organizationId = organizationId,
-            projectId = projectId?.toIdWrapper { ProjectId(it) },
+            projectId = projectId,
             timeZone = timeZone,
         )
 
@@ -1898,21 +1881,19 @@ abstract class DatabaseBackedTest {
       row: DeliveriesRow = DeliveriesRow(),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
-      id: Any? = row.id,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
-      withdrawalId: Any = row.withdrawalId ?: inserted.withdrawalId,
+      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
+      withdrawalId: WithdrawalId = row.withdrawalId ?: inserted.withdrawalId,
   ): DeliveryId {
     val rowWithDetails =
         row.copy(
             createdBy = createdBy,
             createdTime = createdTime,
-            id = id?.toIdWrapper { DeliveryId(it) },
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
-            plantingSiteId = plantingSiteId.toIdWrapper { PlantingSiteId(it) },
-            withdrawalId = withdrawalId.toIdWrapper { WithdrawalId(it) },
+            plantingSiteId = plantingSiteId,
+            withdrawalId = withdrawalId,
         )
 
     deliveriesDao.insert(rowWithDetails)
@@ -1924,29 +1905,24 @@ abstract class DatabaseBackedTest {
       row: PlantingsRow = PlantingsRow(),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
-      deliveryId: Any = row.deliveryId ?: inserted.deliveryId,
-      id: Any? = row.id,
+      deliveryId: DeliveryId = row.deliveryId ?: inserted.deliveryId,
       numPlants: Int = row.numPlants ?: 1,
-      plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
+      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       plantingTypeId: PlantingType = row.plantingTypeId ?: PlantingType.Delivery,
-      plantingSubzoneId: Any? = row.plantingSubzoneId ?: inserted.plantingSubzoneIds.lastOrNull(),
-      speciesId: Any = row.speciesId ?: inserted.speciesId
+      plantingSubzoneId: PlantingSubzoneId? =
+          row.plantingSubzoneId ?: inserted.plantingSubzoneIds.lastOrNull(),
+      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId
   ): PlantingId {
-    val deliveryIdWrapper = deliveryId.toIdWrapper { DeliveryId(it) }
-    val plantingSiteIdWrapper = plantingSiteId.toIdWrapper { PlantingSiteId(it) }
-    val plantingSubzoneIdWrapper = plantingSubzoneId?.toIdWrapper { PlantingSubzoneId(it) }
-
     val rowWithDefaults =
         row.copy(
             createdBy = createdBy,
             createdTime = createdTime,
-            deliveryId = deliveryIdWrapper,
-            id = id?.toIdWrapper { PlantingId(it) },
+            deliveryId = deliveryId,
             numPlants = numPlants,
-            plantingSiteId = plantingSiteIdWrapper,
+            plantingSiteId = plantingSiteId,
             plantingTypeId = plantingTypeId,
-            plantingSubzoneId = plantingSubzoneIdWrapper,
-            speciesId = speciesId.toIdWrapper { SpeciesId(it) },
+            plantingSubzoneId = plantingSubzoneId,
+            speciesId = speciesId,
         )
 
     plantingsDao.insert(rowWithDefaults)
@@ -1955,64 +1931,61 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertPlantingSitePopulation(
-      plantingSiteId: Any = inserted.plantingSiteId,
-      speciesId: Any = inserted.speciesId,
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
+      speciesId: SpeciesId = inserted.speciesId,
       totalPlants: Int = 1,
       plantsSinceLastObservation: Int = totalPlants,
   ) {
     plantingSitePopulationsDao.insert(
         PlantingSitePopulationsRow(
-            plantingSiteId = plantingSiteId.toIdWrapper<Any, PlantingSiteId> { PlantingSiteId(it) },
-            speciesId = speciesId.toIdWrapper<Any, SpeciesId> { SpeciesId(it) },
+            plantingSiteId = plantingSiteId,
+            speciesId = speciesId,
             totalPlants = totalPlants,
             plantsSinceLastObservation = plantsSinceLastObservation,
         ))
   }
 
   fun insertPlantingSubzonePopulation(
-      plantingSubzoneId: Any = inserted.plantingSubzoneId,
-      speciesId: Any = inserted.speciesId,
+      plantingSubzoneId: PlantingSubzoneId = inserted.plantingSubzoneId,
+      speciesId: SpeciesId = inserted.speciesId,
       totalPlants: Int = 1,
       plantsSinceLastObservation: Int = totalPlants,
   ) {
     plantingSubzonePopulationsDao.insert(
         PlantingSubzonePopulationsRow(
-            plantingSubzoneId = plantingSubzoneId.toIdWrapper { PlantingSubzoneId(it) },
-            speciesId = speciesId.toIdWrapper { SpeciesId(it) },
+            plantingSubzoneId = plantingSubzoneId,
+            speciesId = speciesId,
             totalPlants = totalPlants,
             plantsSinceLastObservation = plantsSinceLastObservation,
         ))
   }
 
   fun insertPlantingZonePopulation(
-      plantingZoneId: Any = inserted.plantingZoneId,
-      speciesId: Any = inserted.speciesId,
+      plantingZoneId: PlantingZoneId = inserted.plantingZoneId,
+      speciesId: SpeciesId = inserted.speciesId,
       totalPlants: Int = 1,
       plantsSinceLastObservation: Int = totalPlants,
   ) {
     plantingZonePopulationsDao.insert(
         PlantingZonePopulationsRow(
-            plantingZoneId = plantingZoneId.toIdWrapper { PlantingZoneId(it) },
-            speciesId = speciesId.toIdWrapper { SpeciesId(it) },
+            plantingZoneId = plantingZoneId,
+            speciesId = speciesId,
             totalPlants = totalPlants,
             plantsSinceLastObservation = plantsSinceLastObservation,
         ))
   }
 
   fun addPlantingSubzonePopulation(
-      plantingSubzoneId: Any = inserted.plantingSubzoneId,
-      speciesId: Any = inserted.speciesId,
+      plantingSubzoneId: PlantingSubzoneId = inserted.plantingSubzoneId,
+      speciesId: SpeciesId = inserted.speciesId,
       totalPlants: Int = 1,
       plantsSinceLastObservation: Int = totalPlants,
   ) {
-    val plantingSubzoneIdWrapper = plantingSubzoneId.toIdWrapper { PlantingSubzoneId(it) }
-    val speciesIdWrapper = speciesId.toIdWrapper { SpeciesId(it) }
-
     with(PLANTING_SUBZONE_POPULATIONS) {
       dslContext
           .insertInto(PLANTING_SUBZONE_POPULATIONS)
-          .set(PLANTING_SUBZONE_ID, plantingSubzoneIdWrapper)
-          .set(SPECIES_ID, speciesIdWrapper)
+          .set(PLANTING_SUBZONE_ID, plantingSubzoneId)
+          .set(SPECIES_ID, speciesId)
           .set(TOTAL_PLANTS, totalPlants)
           .set(PLANTS_SINCE_LAST_OBSERVATION, plantsSinceLastObservation)
           .onDuplicateKeyUpdate()
@@ -2025,19 +1998,16 @@ abstract class DatabaseBackedTest {
   }
 
   fun addPlantingZonePopulation(
-      plantingZoneId: Any = inserted.plantingZoneId,
-      speciesId: Any = inserted.speciesId,
+      plantingZoneId: PlantingZoneId = inserted.plantingZoneId,
+      speciesId: SpeciesId = inserted.speciesId,
       totalPlants: Int = 1,
       plantsSinceLastObservation: Int = totalPlants,
   ) {
-    val plantingZoneIdWrapper = plantingZoneId.toIdWrapper { PlantingZoneId(it) }
-    val speciesIdWrapper = speciesId.toIdWrapper { SpeciesId(it) }
-
     with(PLANTING_ZONE_POPULATIONS) {
       dslContext
           .insertInto(PLANTING_ZONE_POPULATIONS)
-          .set(PLANTING_ZONE_ID, plantingZoneIdWrapper)
-          .set(SPECIES_ID, speciesIdWrapper)
+          .set(PLANTING_ZONE_ID, plantingZoneId)
+          .set(SPECIES_ID, speciesId)
           .set(TOTAL_PLANTS, totalPlants)
           .set(PLANTS_SINCE_LAST_OBSERVATION, plantsSinceLastObservation)
           .onDuplicateKeyUpdate()
@@ -2125,8 +2095,7 @@ abstract class DatabaseBackedTest {
       row: ObservationsRow = ObservationsRow(),
       createdTime: Instant = Instant.EPOCH,
       endDate: LocalDate = row.endDate ?: LocalDate.of(2023, 1, 31),
-      id: Any? = row.id,
-      plantingSiteId: Any = row.plantingSiteId ?: inserted.plantingSiteId,
+      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       startDate: LocalDate = row.startDate ?: LocalDate.of(2023, 1, 1),
       completedTime: Instant? = row.completedTime,
       state: ObservationState =
@@ -2143,8 +2112,7 @@ abstract class DatabaseBackedTest {
             completedTime = completedTime,
             createdTime = createdTime,
             endDate = endDate,
-            id = id?.toIdWrapper { ObservationId(it) },
-            plantingSiteId = plantingSiteId.toIdWrapper { PlantingSiteId(it) },
+            plantingSiteId = plantingSiteId,
             startDate = startDate,
             stateId = state,
             upcomingNotificationSentTime = upcomingNotificationSentTime,
@@ -2157,18 +2125,18 @@ abstract class DatabaseBackedTest {
 
   fun insertObservationPhoto(
       row: ObservationPhotosRow = ObservationPhotosRow(),
-      fileId: Any = row.fileId ?: inserted.fileId,
-      observationId: Any = row.observationId ?: inserted.observationId,
-      monitoringPlotId: Any = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      fileId: FileId = row.fileId ?: inserted.fileId,
+      observationId: ObservationId = row.observationId ?: inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1),
       position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.SouthwestCorner,
   ) {
     val rowWithDefaults =
         row.copy(
-            fileId = fileId.toIdWrapper { FileId(it) },
+            fileId = fileId,
             gpsCoordinates = gpsCoordinates,
-            monitoringPlotId = monitoringPlotId.toIdWrapper { MonitoringPlotId(it) },
-            observationId = observationId.toIdWrapper { ObservationId(it) },
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
             positionId = position,
         )
 
@@ -2185,8 +2153,8 @@ abstract class DatabaseBackedTest {
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       isPermanent: Boolean = row.isPermanent ?: false,
-      monitoringPlotId: Any = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      observationId: Any = row.observationId ?: inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      observationId: ObservationId = row.observationId ?: inserted.observationId,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -2197,10 +2165,10 @@ abstract class DatabaseBackedTest {
             createdBy = createdBy,
             createdTime = createdTime,
             isPermanent = isPermanent,
-            observationId = observationId.toIdWrapper { ObservationId(it) },
+            observationId = observationId,
             modifiedBy = createdBy,
             modifiedTime = createdTime,
-            monitoringPlotId = monitoringPlotId.toIdWrapper { MonitoringPlotId(it) },
+            monitoringPlotId = monitoringPlotId,
         )
 
     observationPlotsDao.insert(rowWithDefaults)
@@ -2216,18 +2184,16 @@ abstract class DatabaseBackedTest {
 
   fun insertObservedCoordinates(
       row: ObservedPlotCoordinatesRow = ObservedPlotCoordinatesRow(),
-      id: Any? = row.id,
-      observationId: Any = row.observationId ?: inserted.observationId,
-      monitoringPlotId: Any = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      observationId: ObservationId = row.observationId ?: inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1),
       position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.NortheastCorner,
   ): ObservedPlotCoordinatesId {
     val rowWithDefaults =
         row.copy(
             gpsCoordinates = gpsCoordinates,
-            id = id?.toIdWrapper { ObservedPlotCoordinatesId(it) },
-            monitoringPlotId = monitoringPlotId.toIdWrapper { MonitoringPlotId(it) },
-            observationId = observationId.toIdWrapper { ObservationId(it) },
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
             positionId = position,
         )
 
@@ -2239,10 +2205,9 @@ abstract class DatabaseBackedTest {
   fun insertRecordedPlant(
       row: RecordedPlantsRow = RecordedPlantsRow(),
       gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1),
-      id: Any? = row.id,
-      monitoringPlotId: Any = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      observationId: Any = row.observationId ?: inserted.observationId,
-      speciesId: Any? = row.speciesId,
+      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      observationId: ObservationId = row.observationId ?: inserted.observationId,
+      speciesId: SpeciesId? = row.speciesId,
       speciesName: String? = row.speciesName,
       certainty: RecordedSpeciesCertainty =
           row.certaintyId
@@ -2257,10 +2222,9 @@ abstract class DatabaseBackedTest {
         row.copy(
             certaintyId = certainty,
             gpsCoordinates = gpsCoordinates,
-            id = id?.toIdWrapper { RecordedPlantId(it) },
-            monitoringPlotId = monitoringPlotId.toIdWrapper { MonitoringPlotId(it) },
-            observationId = observationId.toIdWrapper { ObservationId(it) },
-            speciesId = speciesId?.toIdWrapper { SpeciesId(it) },
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
+            speciesId = speciesId,
             speciesName = speciesName,
             statusId = status,
         )

@@ -2,7 +2,6 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
-import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
@@ -480,16 +479,14 @@ internal class PlantingSiteStoreReadTest : PlantingSiteStoreTest() {
 
   @Nested
   inner class HasPlantings {
-    private val plantingSiteId = PlantingSiteId(1)
-
     @BeforeEach
     fun setUp() {
-      every { user.canReadPlantingSite(plantingSiteId) } returns true
+      every { user.canReadPlantingSite(any()) } returns true
     }
 
     @Test
     fun `throws exception when no permission to read the planting site`() {
-      insertPlantingSite(id = plantingSiteId)
+      val plantingSiteId = insertPlantingSite()
 
       every { user.canReadPlantingSite(plantingSiteId) } returns false
 
@@ -498,7 +495,7 @@ internal class PlantingSiteStoreReadTest : PlantingSiteStoreTest() {
 
     @Test
     fun `returns false when there are no plantings in the site`() {
-      insertPlantingSite(id = plantingSiteId)
+      val plantingSiteId = insertPlantingSite()
 
       assertFalse(store.hasPlantings(plantingSiteId))
     }
@@ -507,7 +504,7 @@ internal class PlantingSiteStoreReadTest : PlantingSiteStoreTest() {
     fun `returns true when there are plantings in the site`() {
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
-      insertPlantingSite(id = plantingSiteId)
+      val plantingSiteId = insertPlantingSite()
       insertWithdrawal()
       insertDelivery()
       insertPlanting()
@@ -518,16 +515,14 @@ internal class PlantingSiteStoreReadTest : PlantingSiteStoreTest() {
 
   @Nested
   inner class HasSubzonePlantings {
-    private val plantingSiteId = PlantingSiteId(1)
-
     @BeforeEach
     fun setUp() {
-      every { user.canReadPlantingSite(plantingSiteId) } returns true
+      every { user.canReadPlantingSite(any()) } returns true
     }
 
     @Test
     fun `throws exception when no permission to read the planting site`() {
-      insertPlantingSite(id = plantingSiteId)
+      val plantingSiteId = insertPlantingSite()
 
       every { user.canReadPlantingSite(plantingSiteId) } returns false
 
@@ -536,14 +531,14 @@ internal class PlantingSiteStoreReadTest : PlantingSiteStoreTest() {
 
     @Test
     fun `returns false when there are no plantings in subzones for a site without subzones`() {
-      insertPlantingSite(id = plantingSiteId)
+      val plantingSiteId = insertPlantingSite()
 
       assertFalse(store.hasSubzonePlantings(plantingSiteId))
     }
 
     @Test
     fun `returns false when there are no plantings in subzones for a site with subzones`() {
-      insertPlantingSite(id = plantingSiteId)
+      val plantingSiteId = insertPlantingSite()
       insertPlantingZone()
       insertPlantingSubzone()
 
@@ -554,7 +549,7 @@ internal class PlantingSiteStoreReadTest : PlantingSiteStoreTest() {
     fun `returns true when there are plantings in subzones`() {
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
-      insertPlantingSite(id = plantingSiteId)
+      val plantingSiteId = insertPlantingSite()
       insertPlantingZone()
       insertPlantingSubzone()
       insertWithdrawal()

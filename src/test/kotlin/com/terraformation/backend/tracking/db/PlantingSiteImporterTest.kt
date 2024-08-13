@@ -6,17 +6,12 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.ShapefileGenerator
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.tracking.model.Shapefile
 import io.mockk.every
 import kotlin.io.path.Path
-import org.jooq.Record
-import org.jooq.Table
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -26,8 +21,6 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-  override val tablesToResetSequences: List<Table<out Record>>
-    get() = listOf(PLANTING_SITES, PLANTING_ZONES, PLANTING_SUBZONES)
 
   private val clock = TestClock()
   private val importer: PlantingSiteImporter by lazy {

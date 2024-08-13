@@ -15,8 +15,6 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulatio
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
-import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.UndoOfUndoNotAllowedException
 import com.terraformation.backend.tracking.model.DeliveryModel
@@ -33,7 +31,6 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-  override val tablesToResetSequences = listOf(DELIVERIES, PLANTINGS)
 
   private val clock = TestClock()
   private val store: DeliveryStore by lazy {
@@ -43,8 +40,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
   private val plantingSiteId by lazy { insertPlantingSite() }
   private val plantingZoneId by lazy { insertPlantingZone(plantingSiteId = plantingSiteId) }
   private val plantingSubzoneId by lazy { insertPlantingSubzone(plantingZoneId = plantingZoneId) }
-  private val speciesId1 by lazy { insertSpecies(1) }
-  private val speciesId2 by lazy { insertSpecies(2) }
+  private val speciesId1 by lazy { insertSpecies() }
+  private val speciesId2 by lazy { insertSpecies() }
   private val withdrawalId by lazy { insertWithdrawal() }
 
   @BeforeEach

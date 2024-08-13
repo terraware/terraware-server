@@ -183,7 +183,6 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   inner class Create {
     @Test
     fun `populates all server-generated fields`() {
-      val plantingSiteId = PlantingSiteId(1)
       val speciesId =
           insertSpecies(growthForms = setOf(GrowthForm.Shrub), scientificName = "My species")
 
@@ -210,7 +209,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
           ),
       )
 
-      insertPlantingSite(id = plantingSiteId)
+      val plantingSiteId = insertPlantingSite()
 
       insertSampleWithdrawals(speciesId, nurseryId, plantingSiteId)
 
@@ -241,7 +240,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                       listOf(
                           ReportBodyModelV1.PlantingSite(
                               id = plantingSiteId,
-                              name = "Site $plantingSiteId",
+                              name = "Site 1",
                               species =
                                   listOf(
                                       ReportBodyModelV1.PlantingSite.Species(
@@ -284,10 +283,6 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `only includes project-related values in project-level report bodies`() {
-      val projectPlantingSiteId = PlantingSiteId(1)
-      val nonProjectPlantingSiteId = PlantingSiteId(2)
-      val otherProjectPlantingSiteId = PlantingSiteId(3)
-
       val projectId = insertProject(name = "Test Project")
       val otherProjectId = insertProject(name = "Other Project")
       val speciesId =
@@ -309,8 +304,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       val nonProjectNurseryId = insertFacility(type = FacilityType.Nursery)
       val nonProjectSeedBankId = insertFacility(type = FacilityType.SeedBank)
-      insertPlantingSite(id = nonProjectPlantingSiteId)
-      insertPlantingSite(id = otherProjectPlantingSiteId, projectId = otherProjectId)
+      val nonProjectPlantingSiteId = insertPlantingSite()
+      val otherProjectPlantingSiteId = insertPlantingSite(projectId = otherProjectId)
 
       insertAccession(
           AccessionsRow(
@@ -352,7 +347,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
           ),
       )
 
-      insertPlantingSite(id = projectPlantingSiteId, projectId = projectId)
+      val projectPlantingSiteId = insertPlantingSite(projectId = projectId)
 
       // This sample will be counted toward the project: the batches are tagged with the project ID.
       insertSampleWithdrawals(speciesId, projectNurseryId, projectPlantingSiteId, projectId)
@@ -398,7 +393,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                       listOf(
                           ReportBodyModelV1.PlantingSite(
                               id = projectPlantingSiteId,
-                              name = "Site $projectPlantingSiteId",
+                              name = "Site 3",
                               species =
                                   listOf(
                                       ReportBodyModelV1.PlantingSite.Species(

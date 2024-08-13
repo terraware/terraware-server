@@ -10,7 +10,6 @@ import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEven
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.PlantingSiteInUseException
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -52,8 +51,6 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class DeletePlantingSite {
-    private val plantingSiteId = PlantingSiteId(1)
-
     @BeforeEach
     fun setUp() {
       every { user.canDeletePlantingSite(any()) } returns true
@@ -62,7 +59,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `throws exception when no permission to delete a planting site`() {
       insertOrganization()
-      insertPlantingSite(id = plantingSiteId)
+      val plantingSiteId = insertPlantingSite()
       every { user.canDeletePlantingSite(any()) } returns false
 
       assertThrows<AccessDeniedException> { service.deletePlantingSite(plantingSiteId) }
@@ -73,7 +70,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       insertOrganization()
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
-      insertPlantingSite(id = plantingSiteId)
+      val plantingSiteId = insertPlantingSite()
       insertWithdrawal()
       insertDelivery()
       insertPlanting()
@@ -84,7 +81,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `deletes planting site when site has no plantings and user has permission`() {
       insertOrganization()
-      insertPlantingSite(id = plantingSiteId)
+      val plantingSiteId = insertPlantingSite()
 
       service.deletePlantingSite(plantingSiteId)
 
