@@ -30,6 +30,7 @@ import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionSnapshotId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.VoteOption
+import com.terraformation.backend.db.accelerator.keys.COHORTS_PKEY
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationHistoriesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationsDao
@@ -111,6 +112,7 @@ import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.default_schema.keys.USERS_PKEY
 import com.terraformation.backend.db.default_schema.tables.daos.AutomationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.CountrySubdivisionsDao
@@ -188,6 +190,7 @@ import com.terraformation.backend.db.docprod.VariableUsageType
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.VariableWorkflowHistoryId
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
+import com.terraformation.backend.db.docprod.keys.VARIABLES_PKEY
 import com.terraformation.backend.db.docprod.tables.daos.DocumentSavedVersionsDao
 import com.terraformation.backend.db.docprod.tables.daos.DocumentTemplatesDao
 import com.terraformation.backend.db.docprod.tables.daos.DocumentsDao
@@ -237,6 +240,7 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import com.terraformation.backend.db.nursery.keys.BATCHES_PKEY
 import com.terraformation.backend.db.nursery.tables.daos.BatchDetailsHistoryDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchDetailsHistorySubLocationsDao
 import com.terraformation.backend.db.nursery.tables.daos.BatchPhotosDao
@@ -252,6 +256,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
+import com.terraformation.backend.db.seedbank.keys.ACCESSION_PKEY
 import com.terraformation.backend.db.seedbank.tables.daos.AccessionCollectorsDao
 import com.terraformation.backend.db.seedbank.tables.daos.AccessionPhotosDao
 import com.terraformation.backend.db.seedbank.tables.daos.AccessionQuantityHistoryDao
@@ -279,6 +284,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.keys.PLANTING_SITES_PKEY
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
 import com.terraformation.backend.db.tracking.tables.daos.DraftPlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
@@ -357,7 +363,9 @@ import org.springframework.context.annotation.ComponentScan
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
+import org.springframework.test.context.TestExecutionListeners
 import org.springframework.test.context.support.TestPropertySourceUtils
+import org.springframework.test.context.transaction.InheritedTransactionRemover
 import org.springframework.transaction.annotation.Transactional
 import org.testcontainers.containers.Network
 import org.testcontainers.containers.PostgreSQLContainer
@@ -394,6 +402,9 @@ import org.testcontainers.utility.DockerImageName
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 @Suppress("MemberVisibilityCanBePrivate") // Some DAOs are not used in tests yet
 @Testcontainers
+@TestExecutionListeners(
+    InheritedTransactionRemover::class,
+    mergeMode = TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS)
 @Transactional
 abstract class DatabaseBackedTest {
   @Autowired
@@ -3152,6 +3163,17 @@ abstract class DatabaseBackedTest {
   }
 
   companion object {
+    init {
+      // Work around non-thread-safe initialization of jOOQ constants by evaluating one symbol
+      // from the generated Keys.kt file for each schema.
+      ACCESSION_PKEY
+      BATCHES_PKEY
+      COHORTS_PKEY
+      PLANTING_SITES_PKEY
+      USERS_PKEY
+      VARIABLES_PKEY
+    }
+
     /**
      * Balena IDs are required to be unique but aren't generated by our database (we get them from
      * Balena's API). We need to generate test IDs that are unique across all threads in case the

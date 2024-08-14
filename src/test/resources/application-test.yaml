@@ -1,6 +1,10 @@
 spring:
   datasource:
     url: jdbc:tc:postgresql:15:///terraware
+    hikari:
+      # Set this higher than the expected number of concurrent tests so tests don't block
+      # waiting for connections from the pool.
+      maximum-pool-size: 30
   flyway:
     locations:
       - "classpath:db/migration/dev"
