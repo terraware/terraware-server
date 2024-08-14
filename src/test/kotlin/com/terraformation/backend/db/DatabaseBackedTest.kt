@@ -2018,14 +2018,13 @@ abstract class DatabaseBackedTest {
   fun insertReport(
       row: ReportsRow = ReportsRow(),
       body: String = row.body?.data() ?: """{"version":"1","organizationName":"org"}""",
-      id: Any? = row.id,
-      lockedBy: Any? = row.lockedBy,
+      lockedBy: UserId? = row.lockedBy,
       lockedTime: Instant? = row.lockedTime ?: lockedBy?.let { Instant.EPOCH },
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
-      projectId: Any? = row.projectId,
+      projectId: ProjectId? = row.projectId,
       projectName: String? = row.projectName,
       quarter: Int = row.quarter ?: 1,
-      submittedBy: Any? = row.submittedBy,
+      submittedBy: UserId? = row.submittedBy,
       submittedTime: Instant? = row.submittedTime ?: submittedBy?.let { Instant.EPOCH },
       status: ReportStatus =
           row.statusId
@@ -2036,22 +2035,20 @@ abstract class DatabaseBackedTest {
               },
       year: Int = row.year ?: 1970,
   ): ReportId {
-    val projectIdWrapper = projectId?.toIdWrapper { ProjectId(it) }
     val projectNameWithDefault =
-        projectName ?: projectIdWrapper?.let { projectsDao.fetchOneById(it)?.name }
+        projectName ?: projectId?.let { projectsDao.fetchOneById(it)?.name }
 
     val rowWithDefaults =
         row.copy(
             body = JSONB.jsonb(body),
-            id = id?.toIdWrapper { ReportId(it) },
-            lockedBy = lockedBy?.toIdWrapper { UserId(it) },
+            lockedBy = lockedBy,
             lockedTime = lockedTime,
             organizationId = organizationId,
-            projectId = projectIdWrapper,
+            projectId = projectId,
             projectName = projectNameWithDefault,
             quarter = quarter,
             statusId = status,
-            submittedBy = submittedBy?.toIdWrapper { UserId(it) },
+            submittedBy = submittedBy,
             submittedTime = submittedTime,
             year = year,
         )
@@ -2075,13 +2072,13 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertProjectReportSettings(
-      projectId: Any = inserted.projectId,
+      projectId: ProjectId = inserted.projectId,
       isEnabled: Boolean = true,
   ) {
     val row =
         ProjectReportSettingsRow(
             isEnabled = isEnabled,
-            projectId = projectId.toIdWrapper { ProjectId(it) },
+            projectId = projectId,
         )
 
     projectReportSettingsDao.insert(row)

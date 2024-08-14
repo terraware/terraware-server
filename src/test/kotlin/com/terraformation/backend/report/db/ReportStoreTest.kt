@@ -16,12 +16,9 @@ import com.terraformation.backend.db.ReportLockedException
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.ReportNotLockedException
 import com.terraformation.backend.db.ReportSubmittedException
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.ReportStatus
-import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.report.ReportNotCompleteException
 import com.terraformation.backend.report.event.ReportCreatedEvent
@@ -47,7 +44,6 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
 class ReportStoreTest : DatabaseTest(), RunsAsUser {
-  override val tablesToResetSequences = listOf(REPORTS)
   override val user = mockUser()
 
   private val defaultTime = ZonedDateTime.of(2023, 7, 3, 2, 1, 0, 0, ZoneOffset.UTC)
@@ -89,16 +85,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
   inner class Create {
     @Test
     fun `sets defaults for metadata fields`() {
+      val actual = store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
+
       val expected =
           ReportMetadata(
-              id = ReportId(1),
+              id = actual.id,
               organizationId = organizationId,
               quarter = 2,
               status = ReportStatus.New,
               year = 2023,
           )
-
-      val actual = store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
 
       assertEquals(expected, actual)
     }
@@ -115,16 +111,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     fun `uses previous year if current date is in Q1`() {
       clock.instant = ZonedDateTime.of(2022, 3, 15, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
 
+      val actual = store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
+
       val expected =
           ReportMetadata(
-              id = ReportId(1),
+              id = actual.id,
               organizationId = organizationId,
               quarter = 4,
               status = ReportStatus.New,
               year = 2021,
           )
-
-      val actual = store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
 
       assertEquals(expected, actual)
     }
@@ -133,16 +129,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     fun `creates Q4 report on December 1`() {
       clock.instant = ZonedDateTime.of(2023, 12, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
 
+      val actual = store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
+
       val expected =
           ReportMetadata(
-              id = ReportId(1),
+              id = actual.id,
               organizationId = organizationId,
               quarter = 4,
               status = ReportStatus.New,
               year = 2023,
           )
-
-      val actual = store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
 
       assertEquals(expected, actual)
     }
@@ -151,9 +147,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     fun `creates project-level reports`() {
       val projectId = insertProject(name = "Test Project")
 
+      val actual =
+          store.create(organizationId, projectId, ReportBodyModelV1(organizationName = "org"))
+
       val expected =
           ReportMetadata(
-              id = ReportId(1),
+              id = actual.id,
               organizationId = organizationId,
               projectId = projectId,
               projectName = "Test Project",
@@ -161,9 +160,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
               status = ReportStatus.New,
               year = 2023,
           )
-
-      val actual =
-          store.create(organizationId, projectId, ReportBodyModelV1(organizationName = "org"))
 
       assertEquals(expected, actual)
     }
@@ -554,11 +550,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if report is incomplete`() {
-      insertFacility()
+      val facilityId = insertFacility()
       val body =
           ReportBodyModelV1(
               organizationName = "org",
-              seedBanks = listOf(ReportBodyModelV1.SeedBank(id = FacilityId(1), name = "bank")))
+              seedBanks = listOf(ReportBodyModelV1.SeedBank(id = facilityId, name = "bank")))
       val reportId =
           insertReport(lockedBy = user.userId, body = objectMapper.writeValueAsString(body))
 
