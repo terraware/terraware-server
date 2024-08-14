@@ -6,8 +6,6 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
-import com.terraformation.backend.db.default_schema.DeviceManagerId
-import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.device.db.DeviceManagerStore
 import com.terraformation.backend.mockUser
@@ -52,15 +50,12 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `scans since most recent modified timestamp from Balena servers`() {
     insertDeviceManager(
-        1,
         balenaModifiedTime = Instant.ofEpochSecond(1000),
         refreshedTime = Instant.ofEpochSecond(5000))
     insertDeviceManager(
-        2,
         balenaModifiedTime = Instant.ofEpochSecond(3000),
         refreshedTime = Instant.ofEpochSecond(6000))
     insertDeviceManager(
-        3,
         balenaModifiedTime = Instant.ofEpochSecond(2000),
         refreshedTime = Instant.ofEpochSecond(7000))
 
@@ -71,14 +66,26 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `inserts new device managers for unrecognized balena IDs`() {
-    val device = balenaDevice(1)
+    val device = balenaDevice()
+    val balenaId = device.id
 
     every { balenaClient.listModifiedDevices(any()) } returns listOf(device)
-    every { balenaClient.getSensorKitIdForBalenaId(device.id) } returns "${device.id}"
+    every { balenaClient.getSensorKitIdForBalenaId(balenaId) } returns "$balenaId"
 
     poller.updateBalenaDevices()
 
-    val expected = listOf(deviceManagersRow(balenaId = device.id))
+    val expected =
+        listOf(
+            DeviceManagersRow(
+                balenaModifiedTime = Instant.EPOCH,
+                balenaId = balenaId,
+                balenaUuid = "uuid-$balenaId",
+                createdTime = clock.instant(),
+                deviceName = "Device $balenaId",
+                isOnline = false,
+                refreshedTime = Instant.EPOCH,
+                sensorKitId = "$balenaId",
+            ))
     val actual = deviceManagersDao.findAll().onEach { it.id = null }
 
     assertEquals(expected, actual)
@@ -86,7 +93,7 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `skips new devices that do not have short codes`() {
-    val device = balenaDevice(1)
+    val device = balenaDevice()
 
     every { balenaClient.listModifiedDevices(any()) } returns listOf(device)
     every { balenaClient.getSensorKitIdForBalenaId(device.id) } returns null
@@ -101,17 +108,15 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `updates existing devices based on Balena device ID`() {
+    val existingRow = insertDeviceManager(facilityId = inserted.facilityId)
     val device =
         balenaDevice(
-            123,
+            id = existingRow.balenaId!!,
             isOnline = true,
             lastConnectivityEvent = Instant.ofEpochSecond(50),
             modifiedAt = Instant.ofEpochSecond(100),
             overallProgress = 30,
         )
-
-    val existingRow =
-        insertDeviceManager(456, balenaId = device.id, facilityId = inserted.facilityId)
 
     clock.instant = Instant.ofEpochSecond(200)
     every { balenaClient.listModifiedDevices(any()) } returns listOf(device)
@@ -132,7 +137,7 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
   }
 
   private fun balenaDevice(
-      id: Any,
+      id: BalenaDeviceId = BalenaDeviceId(nextBalenaId.getAndIncrement()),
       deviceName: String = "Device $id",
       isActive: Boolean = false,
       isOnline: Boolean = false,
@@ -144,65 +149,15 @@ internal class BalenaPollerTest : DatabaseTest(), RunsAsUser {
       uuid: String = "uuid-$id",
   ): BalenaDevice {
     return BalenaDevice(
-        deviceName,
-        id.toIdWrapper { BalenaDeviceId(it) },
-        isActive,
-        isOnline,
-        lastConnectivityEvent,
-        modifiedAt,
-        overallProgress,
-        provisioningState,
-        status,
-        uuid)
-  }
-
-  private fun deviceManagersRow(
-      id: Any? = null,
-      balenaId: Any = "$id".toLong(),
-      balenaUuid: String = "uuid-$balenaId",
-      balenaModifiedTime: Instant = Instant.EPOCH,
-      facilityId: Any? = null,
-      isOnline: Boolean = false,
-      sensorKitId: String = "$balenaId",
-      refreshedTime: Instant = Instant.EPOCH,
-  ): DeviceManagersRow {
-    return DeviceManagersRow(
-        balenaModifiedTime = balenaModifiedTime,
-        balenaId = balenaId.toIdWrapper { BalenaDeviceId(it) },
-        balenaUuid = balenaUuid,
-        createdTime = clock.instant(),
-        deviceName = "Device $balenaId",
-        facilityId = facilityId?.toIdWrapper { FacilityId(it) },
-        id = id?.toIdWrapper { DeviceManagerId(it) },
+        deviceName = deviceName,
+        id = id,
+        isActive = isActive,
         isOnline = isOnline,
-        refreshedTime = refreshedTime,
-        sensorKitId = sensorKitId,
-        userId = if (facilityId != null) user.userId else null,
-    )
-  }
-
-  private fun insertDeviceManager(
-      id: Any,
-      balenaId: Any = "$id".toLong(),
-      balenaUuid: String = "uuid-$balenaId",
-      balenaModifiedTime: Instant = Instant.EPOCH,
-      facilityId: Any? = null,
-      isOnline: Boolean = false,
-      sensorKitId: String = "$balenaId",
-      refreshedTime: Instant = Instant.EPOCH,
-  ): DeviceManagersRow {
-    val row =
-        deviceManagersRow(
-            id,
-            balenaId,
-            balenaUuid,
-            balenaModifiedTime,
-            facilityId,
-            isOnline,
-            sensorKitId,
-            refreshedTime)
-
-    deviceManagersDao.insert(row)
-    return row
+        lastConnectivityEvent = lastConnectivityEvent,
+        modifiedAt = modifiedAt,
+        overallProgress = overallProgress,
+        provisioningState = provisioningState,
+        status = status,
+        uuid = uuid)
   }
 }

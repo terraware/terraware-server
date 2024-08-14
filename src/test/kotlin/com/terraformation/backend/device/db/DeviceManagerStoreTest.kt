@@ -29,8 +29,6 @@ internal class DeviceManagerStoreTest : DatabaseTest(), RunsAsUser {
     DeviceManagerStore(clock, deviceManagersDao, dslContext)
   }
 
-  private val deviceManagerId = DeviceManagerId(1)
-
   @BeforeEach
   fun setUp() {
     every { user.canCreateDeviceManager() } returns true
@@ -44,55 +42,55 @@ internal class DeviceManagerStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchOneById returns row for device manager`() {
-    insertDeviceManager()
+    val row = insertDeviceManager()
 
-    val expected = deviceManagersDao.fetchOneById(deviceManagerId)!!
-    val actual = store.fetchOneById(deviceManagerId)
+    val expected = deviceManagersDao.fetchOneById(row.id!!)
+    val actual = store.fetchOneById(row.id!!)
 
     assertEquals(expected, actual)
   }
 
   @Test
   fun `fetchOneById throws exception if user has no read permission`() {
-    insertDeviceManager()
+    val row = insertDeviceManager()
 
-    every { user.canReadDeviceManager(deviceManagerId) } returns false
+    every { user.canReadDeviceManager(row.id!!) } returns false
 
-    assertThrows<DeviceManagerNotFoundException> { store.fetchOneById(deviceManagerId) }
+    assertThrows<DeviceManagerNotFoundException> { store.fetchOneById(row.id!!) }
   }
 
   @Test
   fun `fetchOneById throws exception if the device manager does not exist`() {
-    assertThrows<DeviceManagerNotFoundException> { store.fetchOneById(deviceManagerId) }
+    assertThrows<DeviceManagerNotFoundException> { store.fetchOneById(DeviceManagerId(123)) }
   }
 
   @Test
   fun `getLockedById returns row for device manager`() {
-    insertDeviceManager()
+    val row = insertDeviceManager()
 
-    val expected = deviceManagersDao.fetchOneById(deviceManagerId)!!
-    val actual = store.getLockedById(deviceManagerId)
+    val expected = deviceManagersDao.fetchOneById(row.id!!)
+    val actual = store.getLockedById(row.id!!)
 
     assertEquals(expected, actual)
   }
 
   @Test
   fun `getLockedById throws exception if user has no update permission`() {
-    insertDeviceManager()
+    val row = insertDeviceManager()
 
-    every { user.canUpdateDeviceManager(deviceManagerId) } returns false
+    every { user.canUpdateDeviceManager(row.id!!) } returns false
 
-    assertThrows<AccessDeniedException> { store.getLockedById(deviceManagerId) }
+    assertThrows<AccessDeniedException> { store.getLockedById(row.id!!) }
   }
 
   @Test
   fun `getLockedById throws exception if device manager does not exist`() {
-    assertThrows<DeviceManagerNotFoundException> { store.getLockedById(deviceManagerId) }
+    assertThrows<DeviceManagerNotFoundException> { store.getLockedById(DeviceManagerId(123)) }
   }
 
   @Test
   fun `insert inserts new row`() {
-    val row = newRow(id = null)
+    val row = newRow()
 
     store.insert(row)
     assertNotNull(row.id)
@@ -105,7 +103,7 @@ internal class DeviceManagerStoreTest : DatabaseTest(), RunsAsUser {
   fun `insert throws exception if user has no create permission`() {
     every { user.canCreateDeviceManager() } returns false
 
-    assertThrows<AccessDeniedException> { store.insert(newRow(id = null)) }
+    assertThrows<AccessDeniedException> { store.insert(newRow()) }
   }
 
   @Test
@@ -114,45 +112,37 @@ internal class DeviceManagerStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.canUpdateFacility(inserted.facilityId) } returns false
 
-    assertThrows<AccessDeniedException> {
-      store.insert(newRow(id = null, facilityId = inserted.facilityId))
-    }
+    assertThrows<AccessDeniedException> { store.insert(newRow(facilityId = inserted.facilityId)) }
   }
 
   @Test
   fun `update throws exception if user has no update permission`() {
-    insertDeviceManager()
-    val initial = deviceManagersDao.fetchOneById(deviceManagerId)!!
+    val row = insertDeviceManager()
+    val initial = deviceManagersDao.fetchOneById(row.id!!)!!
 
-    every { user.canUpdateDeviceManager(deviceManagerId) } returns false
+    every { user.canUpdateDeviceManager(row.id!!) } returns false
 
     assertThrows<AccessDeniedException> { store.update(initial) }
   }
 
-  private fun insertDeviceManager(row: DeviceManagersRow = newRow()) {
-    deviceManagersDao.insert(row)
-  }
-
   private fun newRow(
-      id: Any? = this.deviceManagerId,
-      balenaId: Long = id?.toString()?.toLong() ?: 1L,
+      balenaId: Long = nextBalenaId.getAndIncrement(),
       balenaUuid: String = UUID.randomUUID().toString(),
-      sensorKitId: String = "$id",
-      userId: Any? = null,
-      facilityId: Any? = null,
+      sensorKitId: String = "$balenaId",
+      userId: UserId? = null,
+      facilityId: FacilityId? = null,
   ): DeviceManagersRow {
     return DeviceManagersRow(
         balenaModifiedTime = Instant.EPOCH,
         balenaId = BalenaDeviceId(balenaId),
         balenaUuid = balenaUuid,
         createdTime = Instant.EPOCH,
-        deviceName = "Device $id",
-        facilityId = facilityId?.toIdWrapper { FacilityId(it) },
-        id = id?.toIdWrapper { DeviceManagerId(it) },
+        deviceName = "Device $balenaId",
+        facilityId = facilityId,
         isOnline = true,
         refreshedTime = Instant.EPOCH,
         sensorKitId = sensorKitId,
-        userId = userId?.toIdWrapper { UserId(it) },
+        userId = userId,
     )
   }
 }
