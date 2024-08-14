@@ -5,7 +5,6 @@ import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.IDENTIFIER_SEQUENCES
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -114,12 +113,10 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create with isManualState uses caller-supplied species ID`() {
-    val oldSpeciesId = SpeciesId(1)
-    val newSpeciesId = SpeciesId(2)
     val oldSpeciesName = "Old species"
     val newSpeciesName = "New species"
-    insertSpecies(oldSpeciesId, oldSpeciesName)
-    insertSpecies(newSpeciesId, newSpeciesName)
+    insertSpecies(scientificName = oldSpeciesName)
+    val newSpeciesId = insertSpecies(scientificName = newSpeciesName)
 
     val initial = store.create(accessionModel(species = oldSpeciesName, speciesId = newSpeciesId))
 
@@ -161,9 +158,9 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create writes all API payload fields to database`() {
+    val speciesId = insertSpecies()
     insertProject()
-    insertSpecies(1)
-    insertSubLocation(1, facilityId, "Location 1")
+    insertSubLocation(facilityId = facilityId, name = "Location 1")
 
     val today = LocalDate.now(clock)
     val accession =
@@ -191,7 +188,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
             projectId = inserted.projectId,
             receivedDate = today,
             source = DataSource.FileImport,
-            speciesId = SpeciesId(1),
+            speciesId = speciesId,
             state = AccessionStateV2.AwaitingProcessing,
             subLocation = "Location 1",
         )
