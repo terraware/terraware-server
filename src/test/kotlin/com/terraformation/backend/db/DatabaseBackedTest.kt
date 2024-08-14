@@ -640,7 +640,6 @@ abstract class DatabaseBackedTest {
   private var nextFacilityNumber = 1
 
   fun insertFacility(
-      id: Any? = null,
       organizationId: OrganizationId = inserted.organizationId,
       name: String = "Facility $nextFacilityNumber",
       description: String? = "Description $nextFacilityNumber",
@@ -672,7 +671,6 @@ abstract class DatabaseBackedTest {
           .set(CREATED_TIME, Instant.EPOCH)
           .set(DESCRIPTION, description)
           .set(FACILITY_NUMBER, facilityNumber)
-          .apply { id?.toIdWrapper { FacilityId(it) }?.let { set(ID, it) } }
           .set(IDLE_AFTER_TIME, idleAfterTime)
           .set(IDLE_SINCE_TIME, idleSinceTime)
           .set(LAST_NOTIFICATION_DATE, lastNotificationDate)
@@ -968,7 +966,7 @@ abstract class DatabaseBackedTest {
       facilityId: FacilityId = inserted.facilityId,
       name: String = "automation ${nextAutomationNumber++}",
       type: String = AutomationModel.SENSOR_BOUNDS_TYPE,
-      deviceId: Any? = inserted.deviceId,
+      deviceId: DeviceId? = inserted.deviceId,
       timeseriesName: String? = "timeseries",
       lowerThreshold: Double? = 10.0,
       upperThreshold: Double? = 20.0,
@@ -979,8 +977,8 @@ abstract class DatabaseBackedTest {
           .insertInto(AUTOMATIONS)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, Instant.EPOCH)
-          .set(DEVICE_ID, deviceId?.toIdWrapper { DeviceId(it) })
-          .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
+          .set(DEVICE_ID, deviceId)
+          .set(FACILITY_ID, facilityId)
           .set(LOWER_THRESHOLD, lowerThreshold)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)
@@ -1241,21 +1239,17 @@ abstract class DatabaseBackedTest {
 
   /** Adds a sub-location to a facility. */
   fun insertSubLocation(
-      id: Any? = null,
-      facilityId: Any = inserted.facilityId,
-      name: String = id?.let { "Location $it" } ?: "Location ${nextSubLocationNumber++}",
+      facilityId: FacilityId = inserted.facilityId,
+      name: String = "Location ${nextSubLocationNumber++}",
       createdBy: UserId = currentUser().userId,
   ): SubLocationId {
-    val idWrapper = id?.toIdWrapper { SubLocationId(it) }
-
     val insertedId =
         with(SUB_LOCATIONS) {
           dslContext
               .insertInto(SUB_LOCATIONS)
               .set(CREATED_BY, createdBy)
               .set(CREATED_TIME, Instant.EPOCH)
-              .set(FACILITY_ID, facilityId.toIdWrapper { FacilityId(it) })
-              .apply { idWrapper?.let { set(ID, it) } }
+              .set(FACILITY_ID, facilityId)
               .set(MODIFIED_BY, createdBy)
               .set(MODIFIED_TIME, Instant.EPOCH)
               .set(NAME, name)
