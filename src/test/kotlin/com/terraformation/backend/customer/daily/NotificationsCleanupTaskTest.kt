@@ -4,7 +4,6 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.UserId
 import io.mockk.every
 import io.mockk.mockk
@@ -33,11 +32,10 @@ internal class NotificationsCleanupTaskTest : DatabaseTest() {
   fun `does not delete notifications if there are none expired`() {
     every { config.notifications.retentionDays } returns 5
 
-    insertNotification(NotificationId(1), UserId(1), createdTime = now)
+    val notificationId = insertNotification(UserId(1), createdTime = now)
 
     val expected = notificationsDao.findAll()
-    assertTrue(
-        expected.any { it.id == NotificationId(1) }, "Expected to find notification with id 1.")
+    assertTrue(expected.any { it.id == notificationId }, "Expected to find notification with id 1.")
 
     notificationsCleanupTask.cleanup(DailyTaskTimeArrivedEvent())
 
@@ -49,15 +47,15 @@ internal class NotificationsCleanupTaskTest : DatabaseTest() {
   fun `deletes expired notifications`() {
     every { config.notifications.retentionDays } returns 5
 
-    insertNotification(NotificationId(1), UserId(1), createdTime = now)
+    val notificationId1 = insertNotification(UserId(1), createdTime = now)
     val expected = notificationsDao.findAll()
 
-    insertNotification(NotificationId(2), UserId(1), createdTime = now.minus(Duration.ofDays(6)))
+    val notificationId2 = insertNotification(UserId(1), createdTime = now.minus(Duration.ofDays(6)))
 
     val beforeCleanup = notificationsDao.findAll()
     assertEquals(
-        setOf(1L, 2L),
-        beforeCleanup.map { it.id?.value }.toSet(),
+        setOf(notificationId1, notificationId2),
+        beforeCleanup.map { it.id }.toSet(),
         "Expected notification IDs 1 and 2")
 
     notificationsCleanupTask.cleanup(DailyTaskTimeArrivedEvent())

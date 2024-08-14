@@ -76,9 +76,10 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `advancing test clock causes newly-due jobs to be run`() {
+    lateinit var notificationId: NotificationId
     val increment = Duration.ofDays(7)
 
-    notifiers.add(FacilityNotifier { _, _ -> insertNotification(NotificationId(1)) })
+    notifiers.add(FacilityNotifier { _, _ -> notificationId = insertNotification() })
 
     facilitiesDao.update(
         facilitiesDao
@@ -95,7 +96,7 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
 
     scanner.on(ClockAdvancedEvent(Duration.ofDays(1)))
 
-    assertEquals(listOf(NotificationId(1)), notificationsDao.findAll().map { it.id })
+    assertEquals(listOf(notificationId), notificationsDao.findAll().map { it.id })
     assertIsEventListener<ClockAdvancedEvent>(scanner)
   }
 
@@ -129,7 +130,7 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `rolls back changes from all notifiers if one notifier throws an exception`() {
-    notifiers.add(FacilityNotifier { _, _ -> insertNotification(NotificationId(1)) })
+    notifiers.add(FacilityNotifier { _, _ -> insertNotification() })
     notifiers.add(FacilityNotifier { _, _ -> throw Exception("boom") })
 
     scanner.sendNotifications()

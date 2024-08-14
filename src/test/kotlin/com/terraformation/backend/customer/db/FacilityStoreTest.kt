@@ -652,17 +652,18 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `withNotificationsDue rolls back and continues to next facility on exception`() {
+    lateinit var notificationId: NotificationId
     val rolledBackFacilityId = inserted.facilityId
-    val otherFacilityId = insertFacility()
+    insertFacility()
 
     store.withNotificationsDue { facility ->
-      insertNotification(NotificationId(facility.id.value))
+      notificationId = insertNotification()
       if (facility.id == rolledBackFacilityId) {
         throw Exception("I have failed")
       }
     }
 
-    val expectedNotifications = listOf(NotificationId(otherFacilityId.value))
+    val expectedNotifications = listOf(notificationId)
     val actualNotifications = notificationsDao.findAll().map { it.id }
 
     assertEquals(expectedNotifications, actualNotifications)
