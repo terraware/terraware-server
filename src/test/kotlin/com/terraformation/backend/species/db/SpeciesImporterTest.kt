@@ -227,7 +227,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
             organizationId = organizationId,
             status = UploadStatus.AwaitingProcessing,
             storageUrl = storageUrl)
-    insertSpecies(2, "Corrected name", initialScientificName = "Initial name")
+    insertSpecies("Corrected name", initialScientificName = "Initial name")
 
     importer.validateCsv(uploadId)
 

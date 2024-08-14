@@ -484,11 +484,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchAllUncheckedSpeciesIds only returns unchecked species`() {
-    val checkedSpeciesId = SpeciesId(1)
-    val uncheckedSpeciesId = SpeciesId(2)
-
-    insertSpecies(checkedSpeciesId, checkedTime = Instant.EPOCH)
-    insertSpecies(uncheckedSpeciesId)
+    val uncheckedSpeciesId = insertSpecies()
+    insertSpecies(checkedTime = Instant.EPOCH)
 
     assertEquals(listOf(uncheckedSpeciesId), store.fetchUncheckedSpeciesIds(organizationId))
   }

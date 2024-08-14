@@ -8,7 +8,6 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.SpeciesInUseException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
@@ -71,9 +70,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `updateSpecies checks for problems with species data`() {
-    val speciesId = SpeciesId(1)
-
-    insertSpecies(speciesId, "Old name")
+    val speciesId = insertSpecies("Old name")
     val originalModel = speciesStore.fetchSpeciesById(speciesId)
 
     val updatedModel = service.updateSpecies(originalModel.copy(scientificName = "New name"))
@@ -108,9 +105,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteSpecies throws exception if species is in use`() {
-    val speciesId = SpeciesId(1)
-
-    insertSpecies(speciesId, "species name")
+    val speciesId = insertSpecies("species name")
     insertFacility()
     insertBatch(speciesId = speciesId)
 
@@ -119,9 +114,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleteSpecies deletes species when not in use`() {
-    val speciesId = SpeciesId(1)
-
-    insertSpecies(speciesId, "species name")
+    val speciesId = insertSpecies("species name")
     assertNotNull(speciesStore.fetchSpeciesById(speciesId))
 
     service.deleteSpecies(speciesId)
