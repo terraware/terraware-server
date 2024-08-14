@@ -9,7 +9,6 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
-import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
 import com.terraformation.backend.documentproducer.model.AppendValueOperation
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
@@ -29,8 +28,6 @@ import org.junit.jupiter.api.Test
 
 class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-
-  override val tablesToResetSequences = listOf(VARIABLE_VALUES)
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
@@ -175,11 +172,12 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       fun `sets initial value of non-list variable`() {
         val variableId = insertVariableManifestEntry(insertTextVariable())
 
-        val expected = listOf(ExistingTextValue(existingValueProps(1, variableId), "new"))
-
         val actual =
             store.updateValues(
                 listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))))
+
+        val expected =
+            listOf(ExistingTextValue(existingValueProps(actual[0].id, variableId), "new"))
 
         assertEquals(expected, actual)
       }
@@ -190,18 +188,20 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
             insertVariableManifestEntry(
                 insertTextVariable(id = insertVariable(isList = true, type = VariableType.Text)))
 
-        val expected =
-            listOf(
-                ExistingTextValue(existingValueProps(1, variableId, position = 0), "first"),
-                ExistingTextValue(existingValueProps(2, variableId, position = 1), "second"),
-            )
-
         val actual =
             store.updateValues(
                 listOf(
                     AppendValueOperation(NewTextValue(newValueProps(variableId), "first")),
                     AppendValueOperation(NewTextValue(newValueProps(variableId), "second")),
                 ))
+
+        val expected =
+            listOf(
+                ExistingTextValue(
+                    existingValueProps(actual[0].id, variableId, position = 0), "first"),
+                ExistingTextValue(
+                    existingValueProps(actual[1].id, variableId, position = 1), "second"),
+            )
 
         assertEquals(expected, actual)
       }
@@ -214,17 +214,6 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         val columnVariableId = insertVariableManifestEntry(insertTextVariable())
         insertTableColumn(tableVariableId, columnVariableId)
 
-        val expected =
-            listOf(
-                // Value list is sorted by variable ID then by value ID, so table values come first
-                ExistingTableValue(existingValueProps(1, tableVariableId)),
-                ExistingTableValue(existingValueProps(3, tableVariableId, position = 1)),
-                ExistingTextValue(
-                    existingValueProps(2, columnVariableId, rowValueId = 1), "row 0 column"),
-                ExistingTextValue(
-                    existingValueProps(4, columnVariableId, rowValueId = 3), "row 1 column"),
-            )
-
         val actual =
             store.updateValues(
                 listOf(
@@ -235,6 +224,19 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
                     AppendValueOperation(
                         NewTextValue(newValueProps(columnVariableId), "row 1 column")),
                 ))
+
+        val expected =
+            listOf(
+                // Value list is sorted by variable ID then by value ID, so table values come first
+                ExistingTableValue(existingValueProps(actual[0].id, tableVariableId)),
+                ExistingTableValue(existingValueProps(actual[1].id, tableVariableId, position = 1)),
+                ExistingTextValue(
+                    existingValueProps(actual[2].id, columnVariableId, rowValueId = actual[0].id),
+                    "row 0 column"),
+                ExistingTextValue(
+                    existingValueProps(actual[3].id, columnVariableId, rowValueId = actual[1].id),
+                    "row 1 column"),
+            )
 
         assertEquals(expected, actual)
       }
@@ -565,27 +567,28 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   private fun existingValueProps(
-      valueId: Any,
-      variableId: Any,
+      valueId: VariableValueId,
+      variableId: VariableId,
       projectId: ProjectId = inserted.projectId,
       position: Int = 0,
-      rowValueId: Any? = null,
+      rowValueId: VariableValueId? = null,
       citation: String? = null,
   ): BaseVariableValueProperties<VariableValueId> {
     return BaseVariableValueProperties(
         citation = citation,
-        id = valueId.toIdWrapper { VariableValueId(it) },
+        id = valueId,
         listPosition = position,
         projectId = projectId,
-        variableId = variableId.toIdWrapper { VariableId(it) },
-        rowValueId = rowValueId?.toIdWrapper { VariableValueId(it) })
+        variableId = variableId,
+        rowValueId = rowValueId,
+    )
   }
 
   private fun newValueProps(
-      variableId: Any,
+      variableId: VariableId,
       projectId: ProjectId = inserted.projectId,
       position: Int = 0,
-      rowValueId: Any? = null,
+      rowValueId: VariableValueId? = null,
       citation: String? = null,
   ): BaseVariableValueProperties<Nothing?> {
     return BaseVariableValueProperties(
@@ -593,7 +596,8 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         id = null,
         listPosition = position,
         projectId = projectId,
-        variableId = variableId.toIdWrapper { VariableId(it) },
-        rowValueId = rowValueId?.toIdWrapper { VariableValueId(it) })
+        variableId = variableId,
+        rowValueId = rowValueId,
+    )
   }
 }

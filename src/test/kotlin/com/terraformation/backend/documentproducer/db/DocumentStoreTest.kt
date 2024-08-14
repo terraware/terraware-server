@@ -11,6 +11,7 @@ import com.terraformation.backend.db.docprod.DocumentSavedVersionId
 import com.terraformation.backend.db.docprod.DocumentStatus
 import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableManifestId
+import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.documentproducer.model.ExistingDocumentModel
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -85,8 +86,9 @@ class DocumentStoreTest : DatabaseTest(), RunsAsUser {
               projectId = projectId2,
               variableManifestId = variableManifestId1)
 
-      insertSavedVersion(documentId = documentId2, maxValueId = 1)
-      savedVersionId2 = insertSavedVersion(documentId = documentId2, maxValueId = 2)
+      insertSavedVersion(documentId = documentId2, maxValueId = VariableValueId(1))
+      savedVersionId2 =
+          insertSavedVersion(documentId = documentId2, maxValueId = VariableValueId(2))
 
       userId = currentUser().userId
       now = clock.instant
