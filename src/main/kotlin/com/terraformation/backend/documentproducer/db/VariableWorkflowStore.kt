@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
@@ -68,6 +69,7 @@ class VariableWorkflowStore(
       status: VariableWorkflowStatus,
       feedback: String?,
       internalComment: String?,
+      createdBy: UserId = currentUser().userId,
   ): ExistingVariableWorkflowHistoryModel {
     requirePermissions { updateInternalVariableWorkflowDetails(projectId) }
 
@@ -91,7 +93,7 @@ class VariableWorkflowStore(
       val newModel =
           dslContext
               .insertInto(VARIABLE_WORKFLOW_HISTORY)
-              .set(CREATED_BY, currentUser().userId)
+              .set(CREATED_BY, createdBy)
               .set(CREATED_TIME, clock.instant())
               .set(FEEDBACK, feedback)
               .set(INTERNAL_COMMENT, internalComment)
