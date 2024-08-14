@@ -85,6 +85,7 @@ import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.util.mockDeliverable
 import io.mockk.every
 import io.mockk.mockk
 import java.net.URI
@@ -101,6 +102,7 @@ import org.springframework.beans.factory.annotation.Autowired
 
 internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
+  val deliverable = mockDeliverable()
 
   @Autowired private lateinit var config: TerrawareServerConfig
 
@@ -610,12 +612,15 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
     insertModule()
+    insertCohortModule()
     val deliverableId = insertDeliverable()
+    val deliverable =
+        deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
+    service.on(DeliverableReadyForReviewEvent(deliverable, projectId))
 
     assertNotification(
         type = NotificationType.DeliverableReadyForReview,
@@ -630,16 +635,19 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertModule()
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
     val cohortId = insertCohort()
+    insertCohortModule()
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
 
     insertUserDeliverableCategory(DeliverableCategory.GIS, user.userId)
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
+    val deliverable =
+        deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
+    service.on(DeliverableReadyForReviewEvent(deliverable, projectId))
 
     assertNotification(
         type = NotificationType.DeliverableReadyForReview,
@@ -655,16 +663,19 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
 
     val cohortId = insertCohort()
+    insertCohortModule()
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
 
     insertUserDeliverableCategory(DeliverableCategory.Compliance, user.userId)
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
+    val deliverable =
+        deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
+    service.on(DeliverableReadyForReviewEvent(deliverable, projectId))
 
     assertNotifications(emptyList())
   }
@@ -677,6 +688,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser(tfContact, role = Role.TerraformationContact)
 
     val cohortId = insertCohort()
+    insertCohortModule()
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
 
@@ -684,11 +696,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     // being the contact overrides the category filtering.
     insertUserDeliverableCategory(DeliverableCategory.Compliance, tfContact)
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
+    val deliverable =
+        deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
+    service.on(DeliverableReadyForReviewEvent(deliverable, projectId))
 
     assertNotifications(
         listOf(
@@ -719,12 +733,15 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
     insertModule()
+    insertCohortModule()
     val deliverableId = insertDeliverable()
+    val deliverable =
+        deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
+    service.on(DeliverableReadyForReviewEvent(deliverable, projectId))
 
     assertNotifications(
         listOf(

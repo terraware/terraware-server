@@ -1,5 +1,6 @@
 package com.terraformation.backend.email.model
 
+import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.FacilityModel
@@ -444,6 +445,7 @@ class ParticipantProjectRemoved(
 class DeliverableReadyForReview(
     config: TerrawareServerConfig,
     val deliverableUrl: String,
+    val deliverable: DeliverableSubmissionModel,
     val participantName: String,
 ) : EmailTemplateModel(config) {
   override val templateDir: String

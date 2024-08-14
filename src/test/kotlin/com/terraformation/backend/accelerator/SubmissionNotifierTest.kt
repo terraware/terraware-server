@@ -21,6 +21,7 @@ import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSta
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
 import com.terraformation.backend.documentproducer.model.ExistingVariableWorkflowHistoryModel
 import com.terraformation.backend.mockUser
+import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -32,10 +33,12 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
 
+  private val deliverableStore: DeliverableStore by lazy { DeliverableStore(dslContext) }
+
   private val notifier: SubmissionNotifier by lazy {
     SubmissionNotifier(
         clock,
-        DeliverableStore(dslContext),
+        deliverableStore,
         eventPublisher,
         mockk(),
         SystemUser(usersDao),
@@ -81,6 +84,7 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
     insertCohort()
     insertCohortModule()
     insertParticipant(cohortId = inserted.cohortId)
+    every { user.canReadAllDeliverables() } returns true
 
     projectId = insertProject(participantId = inserted.participantId)
     deliverableId = insertDeliverable()
@@ -108,10 +112,13 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
       insertSubmissionDocument()
       val documentId = insertSubmissionDocument()
 
+      val deliverable =
+          deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
+
       notifier.notifyIfNoNewerUploads(
           DeliverableDocumentUploadedEvent(deliverableId, documentId, projectId))
 
-      eventPublisher.assertEventPublished(DeliverableReadyForReviewEvent(deliverableId, projectId))
+      eventPublisher.assertEventPublished(DeliverableReadyForReviewEvent(deliverable, projectId))
     }
   }
 
@@ -148,11 +155,14 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
     fun `publishes event if these are the latest variable values`() {
       val valueId = insertValue(variableId = inserted.variableId, textValue = "Only")
 
+      val deliverable =
+          deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
+
       notifier.notifyIfNoNewerSubmissions(
           QuestionsDeliverableSubmittedEvent(
               deliverableId, projectId, mapOf(inserted.variableId to valueId)))
 
-      eventPublisher.assertEventPublished(DeliverableReadyForReviewEvent(deliverableId, projectId))
+      eventPublisher.assertEventPublished(DeliverableReadyForReviewEvent(deliverable, projectId))
     }
   }
 
