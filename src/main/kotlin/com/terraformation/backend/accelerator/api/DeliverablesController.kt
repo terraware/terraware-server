@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.api
 import com.terraformation.backend.accelerator.SubmissionService
 import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.DeliverableStore
+import com.terraformation.backend.accelerator.db.ProjectDocumentStorageFailedException
 import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
@@ -30,6 +31,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Encoding
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.ws.rs.ServerErrorException
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
@@ -129,6 +131,13 @@ class DeliverablesController(
     return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT).location(url).build()
   }
 
+  @ApiResponse200
+  @ApiResponse(
+      responseCode = "507",
+      description =
+          "The server is unable to store the uploaded file. This response indicates a condition " +
+              "that triggers the system to create a customer support ticket; clients can inform " +
+              "users of that fact.")
   @Operation(summary = "Uploads a new document to satisfy a deliverable.")
   @PostMapping("/{deliverableId}/documents", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -139,16 +148,21 @@ class DeliverablesController(
       @RequestPart(required = true) description: String,
       @RequestPart(required = true) file: MultipartFile
   ): UploadDeliverableDocumentResponsePayload {
-    val documentId =
-        submissionService.receiveDocument(
-            file.inputStream,
-            file.getFilename(),
-            ProjectId(projectId),
-            deliverableId,
-            description,
-            file.contentType ?: MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    try {
+      val documentId =
+          submissionService.receiveDocument(
+              file.inputStream,
+              file.getFilename(),
+              ProjectId(projectId),
+              deliverableId,
+              description,
+              file.contentType ?: MediaType.APPLICATION_OCTET_STREAM_VALUE)
 
-    return UploadDeliverableDocumentResponsePayload(documentId)
+      return UploadDeliverableDocumentResponsePayload(documentId)
+    } catch (e: ProjectDocumentStorageFailedException) {
+      throw ServerErrorException(
+          "Unable to store uploaded file", HttpStatus.INSUFFICIENT_STORAGE.value(), e)
+    }
   }
 
   @ApiResponseSimpleSuccess

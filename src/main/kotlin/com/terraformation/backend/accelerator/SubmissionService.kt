@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.ProjectDocumentSettingsNotConfiguredException
+import com.terraformation.backend.accelerator.db.ProjectDocumentStorageFailedException
 import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundException
 import com.terraformation.backend.accelerator.document.DropboxReceiver
 import com.terraformation.backend.accelerator.document.GoogleDriveReceiver
@@ -322,6 +323,10 @@ class SubmissionService(
             documentStoreFolder,
             exception))
 
-    throw exception ?: ProjectDocumentSettingsNotConfiguredException(projectId)
+    if (exception != null) {
+      throw ProjectDocumentStorageFailedException(projectId, cause = exception)
+    } else {
+      throw ProjectDocumentSettingsNotConfiguredException(projectId)
+    }
   }
 }

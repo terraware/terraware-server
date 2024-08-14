@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ProjectDocumentSettingsNotConfiguredException
+import com.terraformation.backend.accelerator.db.ProjectDocumentStorageFailedException
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadFailedEvent
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadFailedEvent.FailureReason
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -102,7 +103,10 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
       } throws exception
 
       assertEventAndException(
-          FailureReason.CouldNotUpload, DocumentStore.Google, googleDriveFolder, exception)
+          FailureReason.CouldNotUpload,
+          DocumentStore.Google,
+          googleDriveFolder,
+          ProjectDocumentStorageFailedException(projectId, cause = exception))
     }
 
     @Test
@@ -121,9 +125,11 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
     ) {
       assertThrows<E> { receiveDocument() }
 
+      val cause = (exception as? ProjectDocumentStorageFailedException)?.cause ?: exception
+
       eventPublisher.assertEventPublished(
           DeliverableDocumentUploadFailedEvent(
-              deliverableId, projectId, reason, documentStore, originalName, folder, exception))
+              deliverableId, projectId, reason, documentStore, originalName, folder, cause))
     }
 
     private fun receiveDocument(): SubmissionDocumentId =

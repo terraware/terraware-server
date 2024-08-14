@@ -19,7 +19,7 @@ data class DeliverableDocumentUploadFailedEvent(
     /** Which folder on the document store would have been used, or null if none is configured. */
     val documentStoreFolder: String? = null,
     /** Exception that caused the failure, if any. */
-    val exception: Exception? = null,
+    val exception: Throwable? = null,
 ) {
   /**
    * Why the upload failed. The descriptions here are included in the support ticket that gets filed
