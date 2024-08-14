@@ -4,7 +4,6 @@ import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SubLocationId
-import com.terraformation.backend.db.nursery.BatchDetailsHistoryId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistoryRow
@@ -19,25 +18,25 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
-  private val batchId = BatchId(1)
+  private lateinit var batchId: BatchId
   private val projectId: ProjectId by lazy { insertProject() }
   private val subLocationId: SubLocationId by lazy { insertSubLocation(facilityId = facilityId) }
   private val updateTime = Instant.ofEpochSecond(1000)
 
   @BeforeEach
   fun setUpTestBatch() {
-    insertBatch(
-        BatchesRow(
-            notes = "initial notes",
-            projectId = projectId,
-            readyByDate = LocalDate.EPOCH,
-            substrateId = BatchSubstrate.Other,
-            substrateNotes = "My substrate",
-            treatmentId = SeedTreatment.Light,
-        ),
-        id = batchId,
-        readyQuantity = 1,
-        speciesId = speciesId)
+    batchId =
+        insertBatch(
+            BatchesRow(
+                notes = "initial notes",
+                projectId = projectId,
+                readyByDate = LocalDate.EPOCH,
+                substrateId = BatchSubstrate.Other,
+                substrateNotes = "My substrate",
+                treatmentId = SeedTreatment.Light,
+            ),
+            readyQuantity = 1,
+            speciesId = speciesId)
     insertBatchSubLocation(subLocationId = subLocationId)
 
     clock.instant = updateTime
@@ -89,7 +88,6 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
     assertEquals(
         listOf(
             BatchDetailsHistoryRow(
-                id = BatchDetailsHistoryId(1),
                 batchId = batchId,
                 createdBy = user.userId,
                 createdTime = updateTime,
@@ -104,19 +102,18 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
                 version = 2,
             ),
         ),
-        batchDetailsHistoryDao.findAll())
+        batchDetailsHistoryDao.findAll().map { it.copy(id = null) })
 
     assertEquals(
         setOf(
             BatchDetailsHistorySubLocationsRow(
-                batchDetailsHistoryId = BatchDetailsHistoryId(1),
-                subLocationId = newSubLocationId1,
-                subLocationName = "New Location 1"),
+                subLocationId = newSubLocationId1, subLocationName = "New Location 1"),
             BatchDetailsHistorySubLocationsRow(
-                batchDetailsHistoryId = BatchDetailsHistoryId(1),
-                subLocationId = newSubLocationId2,
-                subLocationName = "New Location 2")),
-        batchDetailsHistorySubLocationsDao.findAll().toSet())
+                subLocationId = newSubLocationId2, subLocationName = "New Location 2")),
+        batchDetailsHistorySubLocationsDao
+            .findAll()
+            .map { it.copy(batchDetailsHistoryId = null) }
+            .toSet())
   }
 
   @Test

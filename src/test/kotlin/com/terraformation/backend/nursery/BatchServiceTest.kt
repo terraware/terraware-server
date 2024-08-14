@@ -57,8 +57,8 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var facilityId: FacilityId
   private val plantingSiteId by lazy { insertPlantingSite() }
-  private val speciesId1 by lazy { insertSpecies(1) }
-  private val speciesId2 by lazy { insertSpecies(2) }
+  private val speciesId1 by lazy { insertSpecies() }
+  private val speciesId2 by lazy { insertSpecies() }
 
   @BeforeEach
   fun setUp() {

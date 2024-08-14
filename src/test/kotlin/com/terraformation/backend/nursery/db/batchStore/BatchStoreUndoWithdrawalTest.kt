@@ -24,29 +24,29 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
 internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
-  private val batch1Id = BatchId(11)
-  private val batch2Id = BatchId(12)
+  private lateinit var batch1Id: BatchId
+  private lateinit var batch2Id: BatchId
 
   @BeforeEach
   fun insertInitialBatches() {
-    insertBatch(
-        id = batch1Id,
-        speciesId = speciesId,
-        batchNumber = "21-2-1-011",
-        germinatingQuantity = 10,
-        notReadyQuantity = 20,
-        readyQuantity = 30,
-        totalLost = 0,
-        totalLossCandidates = 20 + 30)
-    insertBatch(
-        id = batch2Id,
-        speciesId = speciesId,
-        batchNumber = "21-2-1-012",
-        germinatingQuantity = 40,
-        notReadyQuantity = 50,
-        readyQuantity = 60,
-        totalLost = 0,
-        totalLossCandidates = 50 + 60)
+    batch1Id =
+        insertBatch(
+            speciesId = speciesId,
+            batchNumber = "21-2-1-011",
+            germinatingQuantity = 10,
+            notReadyQuantity = 20,
+            readyQuantity = 30,
+            totalLost = 0,
+            totalLossCandidates = 20 + 30)
+    batch2Id =
+        insertBatch(
+            speciesId = speciesId,
+            batchNumber = "21-2-1-012",
+            germinatingQuantity = 40,
+            notReadyQuantity = 50,
+            readyQuantity = 60,
+            totalLost = 0,
+            totalLossCandidates = 50 + 60)
 
     every { user.canReadWithdrawal(any()) } returns true
   }
@@ -175,7 +175,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
                   germinatingQuantityWithdrawn = 1,
                   notReadyQuantityWithdrawn = 2,
                   readyQuantityWithdrawn = 3)),
-      destinationFacilityId: Any? = null,
+      destinationFacilityId: FacilityId? = null,
       purpose: WithdrawalPurpose = WithdrawalPurpose.Other,
       withdrawnDate: LocalDate = LocalDate.EPOCH,
   ): WithdrawalId {
@@ -183,7 +183,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
         .withdraw(
             NewWithdrawalModel(
                 batchWithdrawals = batchWithdrawals,
-                destinationFacilityId = destinationFacilityId?.toIdWrapper { FacilityId(it) },
+                destinationFacilityId = destinationFacilityId,
                 facilityId = facilityId,
                 id = null,
                 purpose = purpose,

@@ -1,7 +1,6 @@
 package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.db.nursery.BatchId
-import com.terraformation.backend.db.nursery.BatchQuantityHistoryId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.nursery.db.BatchStaleException
@@ -12,12 +11,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
-  private val batchId = BatchId(1)
   private val updateTime = Instant.ofEpochSecond(1000)
+
+  private lateinit var batchId: BatchId
 
   @BeforeEach
   fun setUpTestBatch() {
-    insertBatch(id = batchId, readyQuantity = 1, speciesId = speciesId)
+    batchId = insertBatch(readyQuantity = 1, speciesId = speciesId)
 
     clock.instant = updateTime
   }
@@ -91,7 +91,6 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
     assertEquals(
         listOf(
             BatchQuantityHistoryRow(
-                id = BatchQuantityHistoryId(1),
                 batchId = batchId,
                 historyTypeId = BatchQuantityHistoryType.Computed,
                 createdBy = user.userId,
@@ -102,7 +101,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
                 version = 2,
             ),
         ),
-        batchQuantityHistoryDao.findAll())
+        batchQuantityHistoryDao.findAll().map { it.copy(id = null) })
   }
 
   @Test

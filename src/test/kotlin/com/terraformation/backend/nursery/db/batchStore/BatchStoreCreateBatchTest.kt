@@ -7,9 +7,6 @@ import com.terraformation.backend.db.SubLocationNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SubLocationId
-import com.terraformation.backend.db.nursery.BatchDetailsHistoryId
-import com.terraformation.backend.db.nursery.BatchId
-import com.terraformation.backend.db.nursery.BatchQuantityHistoryId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistoryRow
@@ -47,6 +44,8 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             )
             .toModel()
 
+    val returnedModel = store.create(inputModel)
+
     val expectedRow =
         BatchesRow(
             addedDate = LocalDate.of(2022, 1, 2),
@@ -55,7 +54,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             createdTime = clock.instant(),
             facilityId = facilityId,
             germinatingQuantity = 0,
-            id = BatchId(1),
+            id = returnedModel.id,
             latestObservedGerminatingQuantity = 0,
             latestObservedNotReadyQuantity = 1,
             latestObservedReadyQuantity = 2,
@@ -78,11 +77,10 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     val expectedQuantityHistory =
         listOf(
             BatchQuantityHistoryRow(
-                batchId = BatchId(1),
+                batchId = returnedModel.id,
                 createdBy = user.userId,
                 createdTime = clock.instant(),
                 historyTypeId = BatchQuantityHistoryType.Observed,
-                id = BatchQuantityHistoryId(1),
                 germinatingQuantity = 0,
                 notReadyQuantity = 1,
                 readyQuantity = 2,
@@ -93,18 +91,21 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     val expectedSubLocations =
         setOf(
             BatchSubLocationsRow(
-                batchId = BatchId(1), subLocationId = subLocationId1, facilityId = facilityId),
+                batchId = returnedModel.id,
+                subLocationId = subLocationId1,
+                facilityId = facilityId),
             BatchSubLocationsRow(
-                batchId = BatchId(1), subLocationId = subLocationId2, facilityId = facilityId),
+                batchId = returnedModel.id,
+                subLocationId = subLocationId2,
+                facilityId = facilityId),
         )
 
     val expectedDetailsHistory =
         listOf(
             BatchDetailsHistoryRow(
-                batchId = BatchId(1),
+                batchId = returnedModel.id,
                 createdBy = user.userId,
                 createdTime = clock.instant(),
-                id = BatchDetailsHistoryId(1),
                 notes = "notes",
                 readyByDate = LocalDate.of(2022, 3, 4),
                 substrateId = BatchSubstrate.Other,
@@ -115,20 +116,20 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     val expectedDetailsHistorySubLocations =
         setOf(
             BatchDetailsHistorySubLocationsRow(
-                batchDetailsHistoryId = BatchDetailsHistoryId(1),
                 subLocationId = subLocationId1,
                 subLocationName = "Location 1",
             ),
             BatchDetailsHistorySubLocationsRow(
-                batchDetailsHistoryId = BatchDetailsHistoryId(1),
-                subLocationId = subLocationId2,
-                subLocationName = "Location 2"))
+                subLocationId = subLocationId2, subLocationName = "Location 2"))
 
-    val returnedModel = store.create(inputModel)
-    val writtenBatch = batchesDao.fetchOneById(BatchId(1))
-    val writtenDetailsHistory = batchDetailsHistoryDao.findAll()
-    val writtenDetailsHistorySubLocations = batchDetailsHistorySubLocationsDao.findAll().toSet()
-    val writtenQuantityHistory = batchQuantityHistoryDao.findAll()
+    val writtenBatch = batchesDao.fetchOneById(returnedModel.id)
+    val writtenDetailsHistory = batchDetailsHistoryDao.findAll().map { it.copy(id = null) }
+    val writtenDetailsHistorySubLocations =
+        batchDetailsHistorySubLocationsDao
+            .findAll()
+            .map { it.copy(batchDetailsHistoryId = null) }
+            .toSet()
+    val writtenQuantityHistory = batchQuantityHistoryDao.findAll().map { it.copy(id = null) }
     val writtenSubLocations = batchSubLocationsDao.findAll().toSet()
 
     assertEquals(expectedModel, returnedModel, "Batch as returned by function")

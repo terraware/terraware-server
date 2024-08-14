@@ -1,7 +1,6 @@
 package com.terraformation.backend.nursery.db.batchStore
 
 import com.terraformation.backend.db.nursery.BatchId
-import com.terraformation.backend.db.nursery.BatchQuantityHistoryId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.nursery.db.BatchInventoryInsufficientException
@@ -14,17 +13,18 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
 internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
-  private val batchId = BatchId(1)
   private val updateTime = Instant.ofEpochSecond(1000)
+
+  private lateinit var batchId: BatchId
 
   @BeforeEach
   fun setUpTestBatch() {
-    insertBatch(
-        id = batchId,
-        germinatingQuantity = 10,
-        notReadyQuantity = 20,
-        readyQuantity = 30,
-        speciesId = speciesId)
+    batchId =
+        insertBatch(
+            germinatingQuantity = 10,
+            notReadyQuantity = 20,
+            readyQuantity = 30,
+            speciesId = speciesId)
 
     clock.instant = updateTime
   }
@@ -52,7 +52,6 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
     assertEquals(
         listOf(
             BatchQuantityHistoryRow(
-                id = BatchQuantityHistoryId(1),
                 batchId = batchId,
                 historyTypeId = BatchQuantityHistoryType.StatusChanged,
                 createdBy = user.userId,
@@ -62,7 +61,7 @@ internal class BatchStoreChangeStatusesTest : BatchStoreTest() {
                 readyQuantity = 37,
                 version = 2,
             )),
-        batchQuantityHistoryDao.findAll())
+        batchQuantityHistoryDao.findAll().map { it.copy(id = null) })
   }
 
   @Test

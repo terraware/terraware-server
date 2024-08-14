@@ -10,9 +10,6 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.nursery.tables.references.BATCHES
-import com.terraformation.backend.db.nursery.tables.references.BATCH_DETAILS_HISTORY
-import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.model.NewBatchModel
@@ -22,9 +19,6 @@ import org.junit.jupiter.api.BeforeEach
 
 internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
-
-  override val tablesToResetSequences =
-      listOf(BATCHES, BATCH_DETAILS_HISTORY, BATCH_QUANTITY_HISTORY)
 
   protected val clock = TestClock()
   protected val eventPublisher = TestEventPublisher()
