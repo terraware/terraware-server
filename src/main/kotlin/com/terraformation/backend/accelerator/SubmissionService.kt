@@ -6,6 +6,8 @@ import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundExcep
 import com.terraformation.backend.accelerator.document.DropboxReceiver
 import com.terraformation.backend.accelerator.document.GoogleDriveReceiver
 import com.terraformation.backend.accelerator.document.SubmissionDocumentReceiver
+import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadFailedEvent
+import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadFailedEvent.FailureReason
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadedEvent
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
@@ -67,17 +69,27 @@ class SubmissionService(
     val deliverableRecord =
         dslContext.selectFrom(DELIVERABLES).where(DELIVERABLES.ID.eq(deliverableId)).fetchOne()
             ?: throw DeliverableNotFoundException(deliverableId)
+
+    val documentStore =
+        if (deliverableRecord.isSensitive == true) {
+          DocumentStore.Dropbox
+        } else {
+          DocumentStore.Google
+        }
+
     val projectAcceleratorDetails =
         with(PROJECT_ACCELERATOR_DETAILS) {
           dslContext
               .select(DROPBOX_FOLDER_PATH, FILE_NAMING, GOOGLE_FOLDER_URL)
               .from(PROJECT_ACCELERATOR_DETAILS)
               .where(PROJECT_ID.eq(projectId))
-              .and(DROPBOX_FOLDER_PATH.isNotNull)
-              .and(FILE_NAMING.isNotNull)
-              .and(GOOGLE_FOLDER_URL.isNotNull)
               .fetchOneInto(ProjectAcceleratorDetailsRecord::class.java)
-              ?: throw ProjectDocumentSettingsNotConfiguredException(projectId)
+              ?: uploadFailed(
+                  deliverableId,
+                  projectId,
+                  FailureReason.ProjectNotConfigured,
+                  documentStore,
+                  originalName)
         }
 
     val now = clock.instant()
@@ -87,11 +99,20 @@ class SubmissionService(
     val extension = sanitizeForFilename(originalName?.substringAfterLast('.')?.let { ".$it" } ?: "")
 
     // Filenames follow a fixed format.
+    val fileNaming =
+        projectAcceleratorDetails.fileNaming
+            ?: uploadFailed(
+                deliverableId,
+                projectId,
+                FailureReason.FileNamingNotConfigured,
+                documentStore,
+                originalName)
+
     val rawFileName =
         listOf(
                 deliverableRecord.name!!,
                 currentDateUtc.toString(),
-                projectAcceleratorDetails.fileNaming!!,
+                fileNaming,
                 description,
             )
             .joinToString("_")
@@ -100,14 +121,38 @@ class SubmissionService(
     val baseName = sanitizeForFilename(rawFileName)
     val fileName = baseName + extension
 
+    // This is a String for Dropbox and a URI for Google
+    val folder: Any =
+        when (documentStore) {
+          DocumentStore.Dropbox -> projectAcceleratorDetails.dropboxFolderPath
+          DocumentStore.Google -> projectAcceleratorDetails.googleFolderUrl
+        }
+            ?: uploadFailed(
+                deliverableId,
+                projectId,
+                FailureReason.FolderNotConfigured,
+                documentStore,
+                originalName)
+
     val receiver: SubmissionDocumentReceiver =
-        if (deliverableRecord.isSensitive == true) {
-          DropboxReceiver(dropboxWriter, projectAcceleratorDetails.dropboxFolderPath!!)
-        } else {
-          GoogleDriveReceiver(googleDriveWriter, projectAcceleratorDetails.googleFolderUrl!!)
+        when (documentStore) {
+          DocumentStore.Dropbox -> DropboxReceiver(dropboxWriter, folder as String)
+          DocumentStore.Google -> GoogleDriveReceiver(googleDriveWriter, folder as URI)
         }
 
-    val storedFile = receiver.upload(inputStream, fileName, contentType)
+    val storedFile =
+        try {
+          receiver.upload(inputStream, fileName, contentType)
+        } catch (e: Exception) {
+          uploadFailed(
+              deliverableId,
+              projectId,
+              FailureReason.CouldNotUpload,
+              documentStore,
+              originalName,
+              folder.toString(),
+              e)
+        }
 
     val submissionId =
         with(SUBMISSIONS) {
@@ -195,7 +240,18 @@ class SubmissionService(
       }
 
       if (submissionDocument.name != storedFile.storedName) {
-        receiver.rename(storedFile, submissionDocument.name!!)
+        try {
+          receiver.rename(storedFile, submissionDocument.name!!)
+        } catch (e: Exception) {
+          uploadFailed(
+              deliverableId,
+              projectId,
+              FailureReason.CouldNotRename,
+              documentStore,
+              originalName,
+              folder.toString(),
+              e)
+        }
       }
 
       val documentId = submissionDocument.id!!
@@ -244,5 +300,28 @@ class SubmissionService(
    */
   private fun sanitizeForFilename(fileName: String): String {
     return fileName.replace(illegalFilenameCharacters, "-")
+  }
+
+  /** Publishes an event and throws an exception when an upload fails. */
+  private fun uploadFailed(
+      deliverableId: DeliverableId,
+      projectId: ProjectId,
+      reason: FailureReason,
+      documentStore: DocumentStore,
+      originalName: String?,
+      documentStoreFolder: String? = null,
+      exception: Exception? = null,
+  ): Nothing {
+    eventPublisher.publishEvent(
+        DeliverableDocumentUploadFailedEvent(
+            deliverableId,
+            projectId,
+            reason,
+            documentStore,
+            originalName,
+            documentStoreFolder,
+            exception))
+
+    throw exception ?: ProjectDocumentSettingsNotConfiguredException(projectId)
   }
 }
