@@ -1262,7 +1262,6 @@ abstract class DatabaseBackedTest {
 
   fun insertFile(
       row: FilesRow = FilesRow(),
-      id: Any? = row.id,
       fileName: String = row.fileName ?: "fileName",
       contentType: String = row.contentType ?: "image/jpeg",
       size: Long = row.size ?: 1,
@@ -1278,7 +1277,6 @@ abstract class DatabaseBackedTest {
             createdBy = createdBy,
             createdTime = createdTime,
             fileName = fileName,
-            id = id?.toIdWrapper { FileId(it) },
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             size = size,
@@ -2864,7 +2862,6 @@ abstract class DatabaseBackedTest {
       contentType: String = MediaType.IMAGE_JPEG_VALUE,
       createdTime: Instant = Instant.EPOCH,
       fileId: FileId,
-      id: Any? = null,
       width: Int = 320,
       height: Int = 240,
       size: Number = 1,
@@ -2876,7 +2873,6 @@ abstract class DatabaseBackedTest {
             createdTime = createdTime,
             fileId = fileId,
             height = height,
-            id = id?.toIdWrapper { ThumbnailId(it) },
             size = size.toInt(),
             storageUrl = URI("$storageUrl"),
             width = width,
