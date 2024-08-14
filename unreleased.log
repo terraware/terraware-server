@@ -1,3 +1,5 @@
+96364557d1c SW-5780 Remove sequence resetting in tests (#2289)
+674154da41f SW-5841 Run variable workflow update as system user (#2287)
 40493ed9fce SW-5795 Stop supporting numeric IDs in insert functions (#2288)
 c06ceeaadd3 SW-5795 Use dynamic IDs in ApplicationServiceTest (#2286)
 08257b0d140 SW-5795 Use dynamic IDs in ThumbnailStoreTest (#2285)
