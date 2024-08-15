@@ -49,8 +49,15 @@ class ProjectApplicationNotFoundException(projectId: ProjectId) :
 class ProjectDeliverableNotFoundException(deliverableId: DeliverableId, projectId: ProjectId) :
     EntityNotFoundException("Deliverable $deliverableId not found for project $projectId")
 
+open class ProjectDocumentStorageFailedException(
+    projectId: ProjectId,
+    message: String = "Project $projectId document storage failed",
+    cause: Throwable? = null
+) : Exception(message, cause)
+
 class ProjectDocumentSettingsNotConfiguredException(id: ProjectId) :
-    MismatchedStateException("Project $id document upload settings have not been configured")
+    ProjectDocumentStorageFailedException(
+        id, "Project $id document upload settings have not been configured")
 
 class ProjectModuleNotFoundException(projectId: ProjectId, moduleId: ModuleId) :
     MismatchedStateException("Project $projectId is not associated with module $moduleId")
