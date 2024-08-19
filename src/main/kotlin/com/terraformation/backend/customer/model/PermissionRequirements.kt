@@ -245,6 +245,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createEntityWithOwner(userId: UserId) {
+    if (!user.canCreateEntityWithOwner(userId)) {
+      readUser(userId)
+      throw AccessDeniedException("No permission to create entity with owner $userId")
+    }
+  }
+
   fun createFacility(organizationId: OrganizationId) {
     if (!user.canCreateFacility(organizationId)) {
       readOrganization(organizationId)

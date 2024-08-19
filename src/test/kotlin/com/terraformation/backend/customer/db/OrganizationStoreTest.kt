@@ -96,6 +96,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
     facilityId = insertFacility()
 
+    every { user.canCreateEntityWithOwner(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canUpdateOrganization(any()) } returns true
     every { user.canAddOrganizationUser(any()) } returns true

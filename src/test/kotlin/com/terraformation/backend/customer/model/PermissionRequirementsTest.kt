@@ -364,6 +364,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
           }
 
   @Test
+  fun createEntityWithOwner() =
+      allow { createEntityWithOwner(otherUserId) } ifUser { canCreateEntityWithOwner(otherUserId) }
+
+  @Test
   fun createFacility() =
       allow { createFacility(organizationId) } ifUser { canCreateFacility(organizationId) }
 

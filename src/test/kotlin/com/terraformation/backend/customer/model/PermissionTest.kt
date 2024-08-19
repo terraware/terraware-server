@@ -1509,6 +1509,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *otherUserIds.values.toTypedArray(),
+        createEntityWithOwner = true,
         readUser = true,
         readUserDeliverableCategories = true,
         updateUserDeliverableCategories = true,
@@ -1684,6 +1685,7 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         *otherUserIds.values.toTypedArray(),
+        createEntityWithOwner = true,
         readUser = true,
         readUserDeliverableCategories = true,
         updateUserDeliverableCategories = true,
@@ -2249,6 +2251,11 @@ internal class PermissionTest : DatabaseTest() {
     assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.ReadOnly)))
     assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.SuperAdmin)))
     assertFalse(user.canUpdateSpecificGlobalRoles(setOf(GlobalRole.TFExpert)))
+  }
+
+  @Test
+  fun `user can create organization as themselves`() {
+    assertTrue(user.canCreateEntityWithOwner(userId), "Can create organization as self")
   }
 
   @Test
@@ -3279,11 +3286,16 @@ internal class PermissionTest : DatabaseTest() {
 
     fun expect(
         vararg userIds: UserId,
+        createEntityWithOwner: Boolean = false,
         readUser: Boolean = false,
         readUserDeliverableCategories: Boolean = false,
         updateUserDeliverableCategories: Boolean = false,
     ) {
       userIds.forEach { userId ->
+        assertEquals(
+            createEntityWithOwner,
+            user.canCreateEntityWithOwner(userId),
+            "Can create entity with owner $userId")
         assertEquals(readUser, user.canReadUser(userId), "Can read user $userId")
         assertEquals(
             readUserDeliverableCategories,
