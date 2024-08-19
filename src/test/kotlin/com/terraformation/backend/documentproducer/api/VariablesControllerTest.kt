@@ -29,14 +29,16 @@ class VariablesControllerTest : ControllerIntegrationTest() {
     fun `only lists variables for requested manifest`() {
       val manifestId1 = insertVariableManifest()
       val manifestId2 = insertVariableManifest()
-      val variableId1 = insertVariable(
-          deliverableQuestion = "Date Question",
-          name = "Date Variable", 
-          type = VariableType.Date)
-      val variableId2 = insertVariable(
-          deliverableQuestion = "Link Question",
-          name = "Link Variable",
-          type = VariableType.Link)
+      val variableId1 =
+          insertVariable(
+              deliverableQuestion = "Date Question",
+              name = "Date Variable",
+              type = VariableType.Date)
+      val variableId2 =
+          insertVariable(
+              deliverableQuestion = "Link Question",
+              name = "Link Variable",
+              type = VariableType.Link)
 
       insertVariableManifestEntry(manifestId = manifestId1, variableId = variableId1, position = 0)
       insertVariableManifestEntry(manifestId = manifestId2, variableId = variableId2, position = 0)
