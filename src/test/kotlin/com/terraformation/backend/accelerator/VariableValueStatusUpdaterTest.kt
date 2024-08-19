@@ -4,12 +4,10 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
@@ -17,8 +15,6 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariableWorkflowHistor
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_WORKFLOW_HISTORY
 import com.terraformation.backend.documentproducer.db.VariableWorkflowStore
 import com.terraformation.backend.mockUser
-import io.mockk.every
-import io.mockk.mockk
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -30,7 +26,7 @@ class VariableValueStatusUpdaterTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
-  private val systemUser = SystemUser(mockk())
+  private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
 
   private val variableWorkflowStore: VariableWorkflowStore by lazy {
     VariableWorkflowStore(clock, dslContext, eventPublisher, variablesDao)
@@ -43,8 +39,6 @@ class VariableValueStatusUpdaterTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-
-    every { systemUser.userId } answers { UserId(1) }
   }
 
   @Nested
@@ -73,8 +67,6 @@ class VariableValueStatusUpdaterTest : DatabaseTest(), RunsAsUser {
           variableId = variableId,
       )
 
-      val userId = currentUser().userId
-
       updater.on(VariableValueUpdatedEvent(projectId = projectId, variableId = variableId))
 
       val now = clock.instant
@@ -82,7 +74,7 @@ class VariableValueStatusUpdaterTest : DatabaseTest(), RunsAsUser {
       val actual = fetchLatestWorkflowEntry(projectId, variableId)
       val expected =
           VariableWorkflowHistoryRow(
-              createdBy = userId,
+              createdBy = systemUser.userId,
               createdTime = now,
               feedback = null,
               id = null,
