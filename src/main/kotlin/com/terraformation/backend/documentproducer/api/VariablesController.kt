@@ -92,6 +92,9 @@ interface VariablePayload {
   val deliverableId: DeliverableId?
     get() = model.deliverableId
 
+  val deliverableQuestion: String?
+    get() = model.deliverableQuestion
+
   val dependencyCondition: DependencyCondition?
     get() = model.dependencyCondition
 
