@@ -201,6 +201,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                   type = VariableType.Number,
                   deliverableId = deliverableId1,
                   deliverablePosition = 1,
+                  deliverableQuestion = "Question 1",
                   name = "Variable 1",
                   stableId = "1"))
 
@@ -212,6 +213,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                   deliverableId = deliverableId1,
                   // This version should appear first since the position is lower than variable 1's
                   deliverablePosition = 0,
+                  deliverableQuestion = "Question 2",
                   isRequired = false,
                   name = "Variable 2",
                   stableId = "2"))
@@ -221,6 +223,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                   type = VariableType.Number,
                   deliverableId = deliverableId1,
                   deliverablePosition = 0,
+                  deliverableQuestion = "Question 3",
                   isRequired = true,
                   name = "Variable 2",
                   replacesVariableId = variableId2,
@@ -241,6 +244,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       BaseVariableProperties(
                           deliverableId = deliverableId1,
                           deliverablePosition = 0,
+                          deliverableQuestion = "Question 3",
                           id = variableId3,
                           isRequired = true,
                           manifestId = null,
@@ -256,6 +260,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       BaseVariableProperties(
                           deliverableId = deliverableId1,
                           deliverablePosition = 1,
+                          deliverableQuestion = "Question 1",
                           id = variableId1,
                           isRequired = false,
                           manifestId = null,

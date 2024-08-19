@@ -2867,6 +2867,7 @@ abstract class DatabaseBackedTest {
   protected fun insertVariable(
       deliverableId: DeliverableId? = null,
       deliverablePosition: Int? = null,
+      deliverableQuestion: String? = null,
       dependencyCondition: DependencyCondition? = null,
       dependencyValue: String? = null,
       dependencyVariableStableId: String? = null,
@@ -2884,6 +2885,7 @@ abstract class DatabaseBackedTest {
         VariablesRow(
             deliverableId = deliverableId,
             deliverablePosition = deliverablePosition,
+            deliverableQuestion = deliverableQuestion,
             dependencyConditionId = dependencyCondition,
             dependencyValue = dependencyValue,
             dependencyVariableStableId = dependencyVariableStableId,

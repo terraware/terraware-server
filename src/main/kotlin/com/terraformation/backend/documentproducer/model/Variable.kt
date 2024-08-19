@@ -34,6 +34,9 @@ interface BaseVariable {
   /** The position of this variable within its associated deliverable, if applicable * */
   val deliverablePosition: Int?
 
+  /** The display question of this variable, if applicable * */
+  val deliverableQuestion: String?
+
   /** The condition for the variable dependency, if applicable * */
   val dependencyCondition: DependencyCondition?
 
@@ -89,6 +92,7 @@ interface BaseVariable {
 data class BaseVariableProperties(
     override val deliverableId: DeliverableId? = null,
     override val deliverablePosition: Int? = null,
+    override val deliverableQuestion: String? = null,
     override val dependencyCondition: DependencyCondition? = null,
     override val dependencyValue: String? = null,
     override val dependencyVariableStableId: String? = null,
