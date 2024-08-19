@@ -1,12 +1,8 @@
 package com.terraformation.backend.accelerator.migration
 
 import com.terraformation.backend.accelerator.db.ApplicationStore
-import com.terraformation.backend.accelerator.db.CohortStore
-import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
-import com.terraformation.backend.accelerator.model.ExistingCohortModel
-import com.terraformation.backend.accelerator.model.NewParticipantModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
@@ -16,7 +12,6 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.CohortPhase
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ScoreCategory
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_SCORES
@@ -25,7 +20,6 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
-import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.importer.processCsvFile
 import jakarta.inject.Named
 import java.io.InputStream
@@ -38,11 +32,9 @@ import org.jooq.DSLContext
 class ProjectSetUpImporter(
     private val applicationStore: ApplicationStore,
     private val clock: InstantSource,
-    private val cohortStore: CohortStore,
     private val countriesDao: CountriesDao,
     private val dslContext: DSLContext,
     private val organizationStore: OrganizationStore,
-    private val participantStore: ParticipantStore,
     private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore,
     private val projectStore: ProjectStore,
     private val systemUser: SystemUser,
@@ -132,7 +124,6 @@ class ProjectSetUpImporter(
             }
 
             updateApplicationStatus(valuesByName, application)
-            updateParticipantId(valuesByName, project)
             updateProjectAcceleratorDetails(valuesByName, project, countryCode)
             updateScores(valuesByName, project)
           } catch (e: Exception) {
@@ -228,31 +219,6 @@ class ProjectSetUpImporter(
           totalExpansionPotential = getBigDecimal(valuesByName, "Total Expansion Potential (ha)"),
           whatNeedsToBeTrue = valuesByName["What Needs To Be True"],
       )
-    }
-  }
-
-  private fun updateParticipantId(
-      valuesByName: Map<String, String>,
-      project: ExistingProjectModel,
-  ) {
-    val cohortName = valuesByName["Cohort"]
-    if (cohortName != null && project.participantId == null) {
-      val cohort: ExistingCohortModel =
-          cohortStore.fetchOneByName(cohortName)
-              ?: throw ImportError("Cohort $cohortName does not exist")
-
-      val participantIdFromCsv = valuesByName["Participant ID"]?.let { ParticipantId(it) }
-      val participant =
-          participantIdFromCsv?.let { participantStore.fetchOneById(it) }
-              ?: participantStore.create(NewParticipantModel.create(project.name, cohort.id))
-
-      with(PROJECTS) {
-        dslContext
-            .update(PROJECTS)
-            .set(PARTICIPANT_ID, participant.id)
-            .where(ID.eq(project.id))
-            .execute()
-      }
     }
   }
 
