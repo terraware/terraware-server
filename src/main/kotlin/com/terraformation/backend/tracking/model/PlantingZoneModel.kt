@@ -35,14 +35,19 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
    * by [numPermanentClusters] (where each cluster has 4 plots).
    *
    * Only clusters whose plots are all in planted subzones are returned, meaning there may be fewer
-   * plots than configured, or none at all.
+   * plots than configured, or none at all. If particular subzones have been requested for the
+   * observation, only clusters whose plots are all in those subzones are returned.
    */
-  fun choosePermanentPlots(plantedSubzoneIds: Set<PlantingSubzoneId>): Set<MonitoringPlotId> {
+  fun choosePermanentPlots(
+      plantedSubzoneIds: Set<PlantingSubzoneId>,
+      requestedSubzoneIds: Set<PlantingSubzoneId>
+  ): Set<MonitoringPlotId> {
     if (plantingSubzones.isEmpty()) {
       throw IllegalArgumentException("No subzones found for planting zone $id (wrong fetch depth?)")
     }
 
-    val plantedSubzones = plantingSubzones.filter { it.id != null && it.id in plantedSubzoneIds }
+    val eligibleSubzoneIds = getEligibleSubzoneIds(plantedSubzoneIds, requestedSubzoneIds)
+    val plantedSubzones = plantingSubzones.filter { it.id != null && it.id in eligibleSubzoneIds }
     val plotsInPlantedSubzones =
         plantedSubzones.flatMap { subzone ->
           subzone.monitoringPlots.filter { plot ->
@@ -99,16 +104,8 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
       exclusion: MultiPolygon? = null,
       requestedSubzoneIds: Set<PlantingSubzoneId> = emptySet(),
   ): Collection<Polygon> {
-    val permanentPlotIds = choosePermanentPlots(plantedSubzoneIds)
-
-    // For a subzone to be eligible, it must be planted. If there are requested subzones, it must
-    // also appear on the requested list.
-    val eligibleSubzoneIds =
-        if (requestedSubzoneIds.isEmpty()) {
-          plantedSubzoneIds
-        } else {
-          plantedSubzoneIds.intersect(requestedSubzoneIds)
-        }
+    val permanentPlotIds = choosePermanentPlots(plantedSubzoneIds, requestedSubzoneIds)
+    val eligibleSubzoneIds = getEligibleSubzoneIds(plantedSubzoneIds, requestedSubzoneIds)
 
     // We will assign as many plots as possible evenly across all subzones, eligible or not.
     val numEvenlySpreadPlotsPerSubzone = numTemporaryPlots / plantingSubzones.size
@@ -388,6 +385,21 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
         .map { middleTriangle(it) }
         .reduce { acc: Geometry, polygon: Geometry -> acc.union(polygon) }
         .toMultiPolygon()
+  }
+
+  /**
+   * Returns the set of subzone IDs that are planted and, if the observation has a list of requested
+   * subzones, that are on the requested list.
+   */
+  private fun getEligibleSubzoneIds(
+      plantedSubzoneIds: Set<PlantingSubzoneId>,
+      requestedSubzoneIds: Set<PlantingSubzoneId>
+  ): Set<PlantingSubzoneId> {
+    return if (requestedSubzoneIds.isEmpty()) {
+      plantedSubzoneIds
+    } else {
+      plantedSubzoneIds.intersect(requestedSubzoneIds)
+    }
   }
 
   fun equals(other: Any?, tolerance: Double): Boolean {

@@ -431,9 +431,10 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       // |  (planted)  |  (planted)  | (unplanted) | (unplanted) |  (planted)  |
       // +-------------+-------------+-------------+-------------+-------------+
       //
-      // Zone 1: 1 permanent cluster, 6 temporary plots
-      //   Subzone 2: 2 permanent plots (half of cluster)
-      //   Subzone 3: 2 permanent plots (other half of cluster)
+      // Zone 1: 2 permanent clusters, 6 temporary plots
+      //   Subzone 2: 2 permanent plots (half of cluster 1)
+      //   Subzone 3: 2 permanent plots (other half of cluster 1)
+      //   Subzone 5: 4 permanent plots (cluster 4)
       //
       // When the observation is requested for subzones 1, 2 and 3, the obseervation should include
       // two temporary plots in subzone 1 and one temporary plot in subzone 2:
@@ -455,7 +456,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       insertSpecies()
 
       insertPlantingZone(
-          x = 0, width = 15, height = 2, numPermanentClusters = 1, numTemporaryPlots = 6)
+          x = 0, width = 15, height = 2, numPermanentClusters = 2, numTemporaryPlots = 6)
       val subzoneIds =
           listOf(PlantingSubzoneId(0)) +
               (0..4).map { index -> insertPlantingSubzone(x = 3 * index, width = 3) }
@@ -486,6 +487,16 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
           permanentCluster = 1,
           permanentClusterSubplot = 4)
 
+      // Pre-existing permanent cluster in subzone 5
+      listOf(13 to 0, 13 to 1, 14 to 0, 14 to 1).forEachIndexed { index, (x, y) ->
+        insertMonitoringPlot(
+            x = x,
+            y = y,
+            plantingSubzoneId = subzoneIds[5],
+            permanentCluster = 2,
+            permanentClusterSubplot = index + 1)
+      }
+
       insertWithdrawal()
       insertDelivery()
       insertPlanting(plantingSubzoneId = subzoneIds[1])
@@ -505,17 +516,27 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       val subzoneIdsByMonitoringPlot =
           monitoringPlotsDao.findAll().associate { it.id to it.plantingSubzoneId }
+      val observationPlots = observationPlotsDao.findAll()
+
       val numTemporaryPlotsBySubzone =
-          observationPlotsDao
-              .findAll()
+          observationPlots
               .filter { !it.isPermanent!! }
               .groupBy { subzoneIdsByMonitoringPlot[it.monitoringPlotId] }
               .mapValues { it.value.size }
-
       assertEquals(
           mapOf(subzoneIds[1] to 2, subzoneIds[2] to 1),
           numTemporaryPlotsBySubzone,
           "Number of temporary plots by subzone")
+
+      val numPermanentPlotsBySubzone =
+          observationPlots
+              .filter { it.isPermanent!! }
+              .groupBy { subzoneIdsByMonitoringPlot[it.monitoringPlotId] }
+              .mapValues { it.value.size }
+      assertEquals(
+          emptyMap<PlantingSubzoneId, Int>(),
+          numPermanentPlotsBySubzone,
+          "Number of permanent plots by subzone")
     }
 
     @Test
