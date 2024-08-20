@@ -196,7 +196,6 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "facility_connection_states" to setOf(ALL, CUSTOMER, DEVICE),
                   "facility_types" to setOf(ALL, CUSTOMER),
                   "files" to setOf(ALL, CUSTOMER, NURSERY, SEEDBANK),
-                  "flyway_schema_history" to emptySet(),
                   "gbif_distributions" to setOf(SPECIES),
                   "gbif_names" to setOf(SPECIES),
                   "gbif_name_words" to setOf(SPECIES),
@@ -230,7 +229,6 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "roles" to setOf(ALL, CUSTOMER),
                   "seed_storage_behaviors" to setOf(ALL, SEEDBANK),
                   "seed_treatments" to setOf(ALL, NURSERY, SEEDBANK),
-                  "spatial_ref_sys" to emptySet(),
                   "species" to setOf(ALL, SEEDBANK, SPECIES),
                   "species_ecosystem_types" to setOf(ALL, SPECIES),
                   "species_growth_forms" to setOf(ALL, SPECIES),
@@ -239,8 +237,6 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "species_problem_types" to setOf(ALL, SPECIES),
                   "species_problems" to setOf(ALL, SPECIES),
                   "species_successional_groups" to setOf(ALL, SPECIES),
-                  "spring_session" to emptySet(),
-                  "spring_session_attributes" to emptySet(),
                   "sub_locations" to setOf(ALL, SEEDBANK),
                   "successional_groups" to setOf(ALL, SPECIES),
                   "test_clock" to setOf(ALL),
@@ -316,6 +312,18 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "recorded_plants" to setOf(ALL, TRACKING),
                   "recorded_species_certainties" to setOf(ALL, TRACKING),
               ),
+      )
+
+  /**
+   * Regex patterns of table names to exclude. This is broken out into separate expressions rather
+   * than a single combined expression for ease of maintenance.
+   */
+  private val excludeTables: List<Regex> =
+      listOf(
+          Regex("public\\.flyway_schema_history"),
+          Regex("public\\.jobrunr_.*"),
+          Regex("public\\.spatial_ref_sys"),
+          Regex("public\\.spring_.*"),
       )
 
   @EnumSource(Slice::class)
@@ -441,15 +449,19 @@ class SchemaDocsGenerator : DatabaseTest() {
   }
 
   /**
-   * Queries the list of tables in the "public" schema from the database and passes the metadata for
-   * each one to a callback function. The metadata is in the form of a JDBC [ResultSet]; see
-   * [DatabaseMetaData.getTables] for a list of the available columns.
+   * Queries the list of tables in a schema from the database and passes the metadata for each one
+   * to a callback function, minus any tables whose names match an entry in [excludeTables]. The
+   * metadata is in the form of a JDBC [ResultSet]; see [DatabaseMetaData.getTables] for a list of
+   * the available columns.
    */
   private fun forEachTable(schemaName: String, func: (resultSet: ResultSet) -> Unit) {
     dslContext.connection { conn ->
       conn.metaData.getTables(null, schemaName, null, arrayOf("TABLE")).use { metadata ->
         while (metadata.next()) {
-          func(metadata)
+          val qualifiedTableName = "$schemaName.${metadata.getString(TABLE_NAME)}"
+          if (excludeTables.none { it.matches(qualifiedTableName) }) {
+            func(metadata)
+          }
         }
       }
     }
