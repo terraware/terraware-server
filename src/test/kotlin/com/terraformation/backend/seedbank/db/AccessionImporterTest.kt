@@ -1070,7 +1070,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.importCsv(uploadId, false)
 
-      val accessions = accessionsDao.findAll()
+      val accessions = accessionsDao.findAll().sortedBy { it.id!!.value }
       assertEquals(2, accessions.size, "Should have inserted 2 accessions")
       assertEquals(
           "UG", accessions[0].collectionSiteCountryCode, "Country code looked up from name")
