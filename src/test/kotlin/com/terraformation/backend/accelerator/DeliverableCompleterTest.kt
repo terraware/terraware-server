@@ -117,7 +117,9 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
     fun setUp() {
       deliverableId =
           insertDeliverable(
-              deliverableTypeId = DeliverableType.Document, moduleId = applicationModuleId)
+              deliverableTypeId = DeliverableType.Document,
+              moduleId = applicationModuleId,
+              isRequired = true)
       insertApplicationModule(applicationId, applicationModuleId)
     }
 
@@ -139,9 +141,15 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `updates module status if all deliverables completed`() {
+    fun `updates module status if all required deliverables completed`() {
       insertDeliverable(
-          deliverableTypeId = DeliverableType.Document, moduleId = applicationModuleId)
+          deliverableTypeId = DeliverableType.Document,
+          moduleId = applicationModuleId,
+          isRequired = false)
+      insertDeliverable(
+          deliverableTypeId = DeliverableType.Document,
+          moduleId = applicationModuleId,
+          isRequired = true)
       insertSubmission(submissionStatus = SubmissionStatus.Completed, projectId = projectId)
 
       completer.on(
@@ -156,9 +164,11 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `does not update module status if some deliverables not completed`() {
+    fun `does not update module status if some required deliverables not completed`() {
       insertDeliverable(
-          deliverableTypeId = DeliverableType.Document, moduleId = applicationModuleId)
+          deliverableTypeId = DeliverableType.Document,
+          moduleId = applicationModuleId,
+          isRequired = true)
 
       completer.on(
           DeliverableDocumentUploadedEvent(deliverableId, SubmissionDocumentId(1), projectId))
