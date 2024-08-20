@@ -602,6 +602,7 @@ class ApplicationStore(
     return dslContext
         .select(
             APPLICATIONS.asterisk(),
+            APPLICATIONS.projects.COUNTRY_CODE,
             APPLICATIONS.projects.ORGANIZATION_ID,
             APPLICATIONS.projects.NAME,
             APPLICATIONS.projects.organizations.NAME,

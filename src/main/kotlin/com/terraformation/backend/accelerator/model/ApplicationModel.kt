@@ -12,6 +12,7 @@ import org.locationtech.jts.geom.Geometry
 
 data class ExistingApplicationModel(
     val boundary: Geometry? = null,
+    val countryCode: String?,
     val createdTime: Instant,
     val feedback: String? = null,
     val id: ApplicationId,
@@ -29,6 +30,7 @@ data class ExistingApplicationModel(
       return with(APPLICATIONS) {
         ExistingApplicationModel(
             boundary = record[BOUNDARY],
+            countryCode = record[projects.COUNTRY_CODE],
             createdTime = record[CREATED_TIME]!!,
             feedback = record[FEEDBACK],
             id = record[ID]!!,

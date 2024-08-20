@@ -185,7 +185,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           )
 
       organizationId2 = insertOrganization(name = "Organization 2")
-      org2ProjectId1 = insertProject(organizationId = organizationId2, name = "Project C")
+      org2ProjectId1 =
+          insertProject(countryCode = "US", organizationId = organizationId2, name = "Project C")
       org2Project1ApplicationId =
           insertApplication(projectId = org2ProjectId1, internalName = "internalName3")
 
@@ -204,6 +205,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
         assertEquals(
             ExistingApplicationModel(
                 boundary = rectangle(1),
+                countryCode = null,
                 createdTime = Instant.EPOCH,
                 feedback = "feedback",
                 id = org1Project1ApplicationId,
@@ -239,6 +241,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             listOf(
                 ExistingApplicationModel(
                     boundary = rectangle(1),
+                    countryCode = null,
                     createdTime = Instant.EPOCH,
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
@@ -283,6 +286,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             listOf(
                 ExistingApplicationModel(
                     boundary = rectangle(1),
+                    countryCode = null,
                     createdTime = Instant.EPOCH,
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
@@ -296,6 +300,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     status = ApplicationStatus.PreCheck),
                 ExistingApplicationModel(
                     boundary = rectangle(2),
+                    countryCode = null,
                     createdTime = Instant.EPOCH,
                     feedback = "feedback 2",
                     id = org1Project2ApplicationId,
@@ -329,6 +334,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             listOf(
                 ExistingApplicationModel(
                     boundary = rectangle(1),
+                    countryCode = null,
                     createdTime = Instant.EPOCH,
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
@@ -342,6 +348,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     status = ApplicationStatus.PreCheck),
                 ExistingApplicationModel(
                     boundary = rectangle(2),
+                    countryCode = null,
                     createdTime = Instant.EPOCH,
                     feedback = "feedback 2",
                     id = org1Project2ApplicationId,
@@ -354,6 +361,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     projectName = "Project B",
                     status = ApplicationStatus.PLReview),
                 ExistingApplicationModel(
+                    countryCode = "US",
                     createdTime = Instant.EPOCH,
                     id = org2Project1ApplicationId,
                     internalName = "internalName3",

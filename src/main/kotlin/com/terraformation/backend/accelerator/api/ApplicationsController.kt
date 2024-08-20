@@ -307,6 +307,7 @@ data class ApplicationHistoryPayload(
 
 data class ApplicationPayload(
     val boundary: MultiPolygon?,
+    val countryCode: String?,
     val createdTime: Instant,
     val feedback: String?,
     val id: ApplicationId,
@@ -331,6 +332,7 @@ data class ApplicationPayload(
       val exposeInternalFields = currentUser().canReadAllAcceleratorDetails()
       return ApplicationPayload(
           boundary = model.boundary?.toMultiPolygon(),
+          countryCode = model.countryCode,
           createdTime = model.createdTime,
           feedback = model.feedback,
           id = model.id,

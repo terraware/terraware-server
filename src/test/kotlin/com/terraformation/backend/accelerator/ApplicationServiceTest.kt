@@ -81,6 +81,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               totalExpansionPotential = BigDecimal(1000))
       val applicationModel =
           ExistingApplicationModel(
+              countryCode = null,
               createdTime = Instant.EPOCH,
               id = applicationId,
               internalName = "XXX",
@@ -106,6 +107,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
     fun `does not fetch variable values for full application submissions`() {
       val applicationModel =
           ExistingApplicationModel(
+              countryCode = null,
               createdTime = Instant.EPOCH,
               id = applicationId,
               internalName = "XXX",
@@ -149,6 +151,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       val applicationModel =
           ExistingApplicationModel(
               boundary = Turtle(point(20, 0)).makePolygon { rectangle(1000, 1000) },
+              countryCode = null,
               createdTime = Instant.EPOCH,
               id = applicationId,
               internalName = internalName,
