@@ -610,7 +610,7 @@ class ApplicationStore(
         .from(APPLICATIONS)
         .where(conditionWithPermission)
         .orderBy(APPLICATIONS.ID)
-        .fetch { ExistingApplicationModel.of(it, modifiedTimeField) }
+        .fetch { ExistingApplicationModel.of(it, modifiedTimeField, countryDetector) }
   }
 
   private fun checkPreScreenCriteria(

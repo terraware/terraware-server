@@ -5,6 +5,7 @@ import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.gis.CountryDetector
 import java.time.Instant
 import org.jooq.Field
 import org.jooq.Record
@@ -12,6 +13,7 @@ import org.locationtech.jts.geom.Geometry
 
 data class ExistingApplicationModel(
     val boundary: Geometry? = null,
+    val countryCode: String? = null,
     val createdTime: Instant,
     val feedback: String? = null,
     val id: ApplicationId,
@@ -25,10 +27,16 @@ data class ExistingApplicationModel(
     val status: ApplicationStatus,
 ) {
   companion object {
-    fun of(record: Record, modifiedTimeField: Field<Instant?>? = null): ExistingApplicationModel {
+    fun of(
+        record: Record,
+        modifiedTimeField: Field<Instant?>? = null,
+        countryDetector: CountryDetector
+    ): ExistingApplicationModel {
       return with(APPLICATIONS) {
         ExistingApplicationModel(
             boundary = record[BOUNDARY],
+            countryCode =
+                record[BOUNDARY]?.let { countryDetector.getCountries(it) }?.singleOrNull(),
             createdTime = record[CREATED_TIME]!!,
             feedback = record[FEEDBACK],
             id = record[ID]!!,

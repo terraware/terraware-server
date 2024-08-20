@@ -160,6 +160,9 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     private lateinit var org1Project2ApplicationId: ApplicationId
     private lateinit var org2Project1ApplicationId: ApplicationId
 
+    private val org2Project1Boundary = Turtle(point(0, 51)).makePolygon { rectangle(100, 100) }
+    private val org2Project1CountryCode = "GB"
+
     @BeforeEach
     fun setUp() {
       org1ProjectId1 = inserted.projectId
@@ -187,7 +190,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       organizationId2 = insertOrganization(name = "Organization 2")
       org2ProjectId1 = insertProject(organizationId = organizationId2, name = "Project C")
       org2Project1ApplicationId =
-          insertApplication(projectId = org2ProjectId1, internalName = "internalName3")
+          insertApplication(
+              projectId = org2ProjectId1,
+              boundary = org2Project1Boundary,
+              internalName = "internalName3")
 
       every { user.adminOrganizations() } returns setOf(organizationId, organizationId2)
     }
@@ -325,10 +331,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       fun `fetches applications for all organizations`() {
         every { user.canReadAllAcceleratorDetails() } returns true
 
+        val actual = store.fetchAll().map { it.copy(boundary = null) }
+
         assertEquals(
             listOf(
                 ExistingApplicationModel(
-                    boundary = rectangle(1),
                     createdTime = Instant.EPOCH,
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
@@ -341,7 +348,6 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     projectName = "Project A",
                     status = ApplicationStatus.PreCheck),
                 ExistingApplicationModel(
-                    boundary = rectangle(2),
                     createdTime = Instant.EPOCH,
                     feedback = "feedback 2",
                     id = org1Project2ApplicationId,
@@ -354,6 +360,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     projectName = "Project B",
                     status = ApplicationStatus.PLReview),
                 ExistingApplicationModel(
+                    countryCode = org2Project1CountryCode,
                     createdTime = Instant.EPOCH,
                     id = org2Project1ApplicationId,
                     internalName = "internalName3",
@@ -364,7 +371,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     projectName = "Project C",
                     status = ApplicationStatus.NotSubmitted),
             ),
-            store.fetchAll())
+            actual)
       }
 
       @Test
