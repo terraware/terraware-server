@@ -104,8 +104,8 @@ class SubmissionStore(
   }
 
   /**
-   * Returns true if all the deliverables in the same module as the specified one are marked as
-   * completed for a project.
+   * Returns true if all the required deliverables in the same module as the specified one are
+   * marked as completed for a project.
    */
   fun moduleDeliverablesAllCompleted(deliverableId: DeliverableId, projectId: ProjectId): Boolean {
     requirePermissions { readProjectDeliverables(projectId) }
@@ -119,6 +119,7 @@ class SubmissionStore(
                         DSL.select(DELIVERABLES.MODULE_ID)
                             .from(DELIVERABLES)
                             .where(DELIVERABLES.ID.eq(deliverableId))))
+                .and(DELIVERABLES.IS_REQUIRED)
                 .andNotExists(
                     DSL.selectOne()
                         .from(SUBMISSIONS)
