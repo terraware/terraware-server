@@ -9,25 +9,32 @@
 
 <h2>PDH Migration</h2>
 
-<form method="POST"
-      action="/admin/uploadProjectSetUp"
-      enctype="multipart/form-data"
-      style="padding-bottom: 2em">
-    <label>
-        Project Set Up CSV
-        <input type="file" name="file" required/>
-    </label>
+<h3>Project Set Up</h3>
+
+<form method="POST" action="/admin/uploadProjectSetUp" enctype="multipart/form-data">
+    <input type="file" name="file" required/>
+    <br/>
     <input type="submit"/>
 </form>
 
-<form method="POST"
-      action="/admin/uploadProjectDocuments"
-      enctype="multipart/form-data"
-      style="padding-bottom: 2em">
+<h3>Variable Data</h3>
+
+<form method="POST" action="/admin/uploadProjectVariables" enctype="multipart/form-data">
+    <input type="file" name="file" required/>
+    <br/>
     <label>
-        Project Documents CSV
-        <input type="file" name="file" required/>
+        <input type="checkbox" name="ignoreUnknownVariables"/>
+        Ignore unknown variables
     </label>
+    <br/>
+    <input type="submit"/>
+</form>
+
+<h3>Project Documents</h3>
+
+<form method="POST" action="/admin/uploadProjectDocuments" enctype="multipart/form-data">
+    <input type="file" name="file" required/>
+    <br/>
     <input type="submit"/>
 </form>
 
