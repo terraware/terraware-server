@@ -26,6 +26,109 @@ class VariablesControllerTest : ControllerIntegrationTest() {
         "/api/v1/document-producer/variables?manifestId=$manifestId"
 
     @Test
+    fun `includes variables that are injected into sections`() {
+      val manifestId1 = insertVariableManifest()
+
+      val variableIdOutdated =
+          insertNumberVariable(
+              id =
+                  insertVariable(
+                      name = "Number Variable", stableId = "1", type = VariableType.Number),
+              maxValue = BigDecimal(10))
+
+      val parentSectionVariableId =
+          insertVariableManifestEntry(
+              manifestId = manifestId1,
+              variableId =
+                  insertSectionVariable(
+                      id =
+                          insertVariable(
+                              name = "Parent section",
+                              stableId = "100",
+                              type = VariableType.Section)),
+              position = 1)
+      val childSectionVariableId =
+          insertVariableManifestEntry(
+              manifestId = manifestId1,
+              variableId =
+                  insertSectionVariable(
+                      id =
+                          insertVariable(
+                              name = "Child section",
+                              stableId = "101",
+                              type = VariableType.Section),
+                      parentId = parentSectionVariableId,
+                      renderHeading = false),
+              position = 2)
+
+      // The variable is injected into the section along with some text
+      insertSectionValue(
+          variableId = childSectionVariableId, listPosition = 0, textValue = "Section text")
+      insertSectionValue(
+          variableId = childSectionVariableId,
+          listPosition = 1,
+          usedVariableId = variableIdOutdated)
+
+      // Variable is updated at some point
+      insertNumberVariable(
+          id =
+              insertVariable(
+                  name = "Number Variable",
+                  replacesVariableId = variableIdOutdated,
+                  stableId = "1",
+                  type = VariableType.Number),
+          maxValue = BigDecimal(5))
+
+      mockMvc
+          .get(path(manifestId1))
+          .andExpectJson(
+              """
+                {
+                  "variables": [
+                    {
+                      "type": "Section",
+                      "children": [
+                        {
+                            "type": "Section",
+                            "children": [],
+                            "name": "Child section",
+                            "id": $childSectionVariableId,
+                            "stableId": "101",
+                            "position": 2,
+                            "isRequired": false,
+                            "isList": true,
+                            "renderHeading": false,
+                            "recommends": []
+                        }
+                      ],
+                      "name": "Parent section",
+                      "id": $parentSectionVariableId,
+                      "stableId": "100",
+                      "position": 1,
+                      "isRequired": false,
+                      "isList": true,
+                      "renderHeading": true,
+                      "recommends": []
+                    },
+                    {
+                        "type": "Number",
+                        "name": "Number Variable",
+                        "id": $variableIdOutdated,
+                        "maxValue": 10,
+                        "stableId": "1",
+                        "position": 0,
+                        "isRequired": false,
+                        "isList": false,
+                        "decimalPlaces": 0
+                    }
+                  ],
+                  "status": "ok"
+                }"""
+                  .trimIndent(),
+              strict = true)
+    }
+
+    @Test
     fun `only lists variables for requested manifest`() {
       val manifestId1 = insertVariableManifest()
       val manifestId2 = insertVariableManifest()

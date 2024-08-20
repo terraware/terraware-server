@@ -12,10 +12,12 @@ import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.documentproducer.db.VariableStore
+import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.model.DateVariable
 import com.terraformation.backend.documentproducer.model.ImageVariable
 import com.terraformation.backend.documentproducer.model.LinkVariable
 import com.terraformation.backend.documentproducer.model.NumberVariable
+import com.terraformation.backend.documentproducer.model.SectionValueVariable
 import com.terraformation.backend.documentproducer.model.SectionVariable
 import com.terraformation.backend.documentproducer.model.SelectOption
 import com.terraformation.backend.documentproducer.model.SelectVariable
@@ -38,9 +40,13 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class VariablesController(
     private val variableStore: VariableStore,
+    private val variableValueStore: VariableValueStore,
 ) {
   @Operation(
-      summary = "List the variables, optionally filtered by a given manifest or deliverable.")
+      summary =
+          "List the variables, optionally filtered by a given manifest or deliverable. " +
+              "Variables returned for a manifest include all section hierarchies and variables " +
+              "injected into section text.")
   @GetMapping
   fun listVariables(
       @RequestParam deliverableId: DeliverableId?,
@@ -54,7 +60,24 @@ class VariablesController(
         if (deliverableId != null) {
           variableStore.fetchDeliverableVariables(deliverableId)
         } else if (manifestId != null) {
-          variableStore.fetchManifestVariables(manifestId)
+          val manifestVariables = variableStore.fetchManifestVariables(manifestId)
+          val sectionVariableIds =
+              manifestVariables.flatMap { parent ->
+                when (parent) {
+                  is SectionVariable -> parent.children.map { child -> child.id }
+                  else -> emptyList()
+                }
+              }
+
+          val injectedSectionValues =
+              variableValueStore
+                  .listValues(sectionVariableIds)
+                  .map { it.value }
+                  .filterIsInstance<SectionValueVariable>()
+          val injectedSectionValueVariables =
+              injectedSectionValues.map { variableStore.fetchVariable(it.usedVariableId) }
+
+          manifestVariables + injectedSectionValueVariables
         } else {
           variableStore.fetchAllNonSectionVariables()
         }
