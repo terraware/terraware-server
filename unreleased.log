@@ -1,3 +1,4 @@
+48ff31dca8f SW-5867 Show species projects to external users (#2308)
 58e836e429d SW-5823 Don't require optional application deliverables (#2307)
 ec2dabcd170 Update dependency gradle to v8.10 (#2296)
 6e2f45fe0fe Fix intermittent AccessionImporterTest failure (#2306)
