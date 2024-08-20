@@ -72,6 +72,7 @@ data class ProjectAcceleratorDetailsPayload(
     val failureRisk: String?,
     val fileNaming: String?,
     val googleFolderUrl: URI?,
+    val hubSpotUrl: URI?,
     val investmentThesis: String?,
     val landUseModelTypes: Set<LandUseModelType>,
     val maxCarbonAccumulation: BigDecimal?,
@@ -101,6 +102,7 @@ data class ProjectAcceleratorDetailsPayload(
       failureRisk = model.failureRisk,
       fileNaming = model.fileNaming,
       googleFolderUrl = model.googleFolderUrl,
+      hubSpotUrl = model.hubSpotUrl,
       investmentThesis = model.investmentThesis,
       landUseModelTypes = model.landUseModelTypes,
       maxCarbonAccumulation = model.maxCarbonAccumulation,
@@ -142,6 +144,7 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
             "URL of Google Drive folder to use for non-sensitive document storage. Ignored if " +
                 "the user does not have permission to update project document settings.")
     val googleFolderUrl: URI?,
+    val hubSpotUrl: URI?,
     val investmentThesis: String?,
     val landUseModelTypes: Set<LandUseModelType>,
     val maxCarbonAccumulation: BigDecimal?,
@@ -168,6 +171,7 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
           failureRisk = failureRisk,
           fileNaming = fileNaming,
           googleFolderUrl = googleFolderUrl,
+          hubSpotUrl = hubSpotUrl,
           investmentThesis = investmentThesis,
           landUseModelTypes = landUseModelTypes,
           maxCarbonAccumulation = maxCarbonAccumulation,
