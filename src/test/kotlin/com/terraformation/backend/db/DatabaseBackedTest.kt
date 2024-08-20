@@ -151,6 +151,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.InternalTagsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInternalTagsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationReportSettingsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectLandUseModelTypesRow
@@ -2151,9 +2152,35 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!
   }
 
+  private var nextInternalTagNumber = 1
+
+  protected fun insertInternalTag(
+      name: String = "Tag ${nextInternalTagNumber++}",
+      description: String? = null,
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+  ): InternalTagId {
+    val row =
+        InternalTagsRow(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            description = description,
+            isSystem = false,
+            modifiedBy = createdBy,
+            modifiedTime = createdTime,
+            name = name,
+        )
+
+    internalTagsDao.insert(row)
+
+    return row.id!!.also { inserted.internalTagIds.add(it) }
+  }
+
   protected fun insertOrganizationInternalTag(
       organizationId: OrganizationId = inserted.organizationId,
-      tagId: InternalTagId = InternalTagIds.Reporter,
+      tagId: InternalTagId =
+          if (inserted.internalTagIds.isEmpty()) InternalTagIds.Reporter
+          else inserted.internalTagId,
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
   ) {
@@ -3000,6 +3027,7 @@ abstract class DatabaseBackedTest {
     val eventIds = mutableListOf<EventId>()
     val facilityIds = mutableListOf<FacilityId>()
     val fileIds = mutableListOf<FileId>()
+    val internalTagIds = mutableListOf<InternalTagId>()
     val moduleIds = mutableListOf<ModuleId>()
     val monitoringPlotIds = mutableListOf<MonitoringPlotId>()
     val notificationIds = mutableListOf<NotificationId>()
@@ -3072,6 +3100,9 @@ abstract class DatabaseBackedTest {
 
     val fileId
       get() = fileIds.last()
+
+    val internalTagId
+      get() = internalTagIds.last()
 
     val moduleId
       get() = moduleIds.last()

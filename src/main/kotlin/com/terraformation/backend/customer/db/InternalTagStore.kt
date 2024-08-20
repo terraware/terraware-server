@@ -96,6 +96,7 @@ class InternalTagStore(
         .join(ORGANIZATIONS)
         .on(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
         .where(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(tagId))
+        .orderBy(ORGANIZATIONS.ID)
         .fetchInto(OrganizationsRow::class.java)
   }
 
@@ -120,6 +121,7 @@ class InternalTagStore(
           .select(INTERNAL_TAG_ID)
           .from(ORGANIZATION_INTERNAL_TAGS)
           .where(ORGANIZATION_ID.eq(organizationId))
+          .orderBy(INTERNAL_TAG_ID)
           .fetchSet(INTERNAL_TAG_ID.asNonNullable())
     }
   }
