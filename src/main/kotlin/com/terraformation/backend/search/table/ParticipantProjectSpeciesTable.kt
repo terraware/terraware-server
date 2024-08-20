@@ -10,10 +10,11 @@ import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import org.jooq.Condition
 import org.jooq.Record
+import org.jooq.SelectJoinStep
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
-class ParticipantProjectSpeciesTable(tables: SearchTables) : SearchTable() {
+class ParticipantProjectSpeciesTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = PARTICIPANT_PROJECT_SPECIES.ID
 
@@ -39,11 +40,29 @@ class ParticipantProjectSpeciesTable(tables: SearchTables) : SearchTable() {
               nullable = false),
       )
 
-  override fun conditionForVisibility(): Condition {
+  override val inheritsVisibilityFrom: SearchTable?
+    get() {
+      return if (currentUser().canReadAllAcceleratorDetails()) {
+        null
+      } else {
+        tables.projects
+      }
+    }
+
+  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
+    return if (currentUser().canReadAllAcceleratorDetails()) {
+      query
+    } else {
+      query.join(PROJECTS).on(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(PROJECTS.ID))
+    }
+  }
+
+  override fun conditionForVisibility(): Condition? {
     return if (currentUser().canReadAllAcceleratorDetails()) {
       DSL.trueCondition()
     } else {
-      DSL.falseCondition()
+      // Inherits visibility from projects, so no explicit condition needed
+      null
     }
   }
 }
