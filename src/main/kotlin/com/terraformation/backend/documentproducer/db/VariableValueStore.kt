@@ -177,9 +177,10 @@ class VariableValueStore(
   }
 
   /** Get the values for a list of variable IDs, useful for getting injected variable values */
-  fun listValues(variableIds: List<VariableId>): List<ExistingValue> {
+  fun listValues(projectId: ProjectId, variableIds: List<VariableId>): List<ExistingValue> {
     val conditions =
         listOfNotNull(
+            VARIABLE_VALUES.PROJECT_ID.eq(projectId),
             VARIABLE_VALUES.VARIABLE_ID.`in`(variableIds),
         )
 

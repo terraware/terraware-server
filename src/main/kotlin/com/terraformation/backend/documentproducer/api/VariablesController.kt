@@ -9,15 +9,14 @@ import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.docprod.DependencyCondition
+import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
-import com.terraformation.backend.db.docprod.VariableManifestId
+import com.terraformation.backend.documentproducer.VariableService
 import com.terraformation.backend.documentproducer.db.VariableStore
-import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.model.DateVariable
 import com.terraformation.backend.documentproducer.model.ImageVariable
 import com.terraformation.backend.documentproducer.model.LinkVariable
 import com.terraformation.backend.documentproducer.model.NumberVariable
-import com.terraformation.backend.documentproducer.model.SectionValueVariable
 import com.terraformation.backend.documentproducer.model.SectionVariable
 import com.terraformation.backend.documentproducer.model.SelectOption
 import com.terraformation.backend.documentproducer.model.SelectVariable
@@ -39,8 +38,8 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/document-producer/variables")
 @RestController
 class VariablesController(
+    private val variableService: VariableService,
     private val variableStore: VariableStore,
-    private val variableValueStore: VariableValueStore,
 ) {
   @Operation(
       summary =
@@ -50,34 +49,17 @@ class VariablesController(
   @GetMapping
   fun listVariables(
       @RequestParam deliverableId: DeliverableId?,
-      @RequestParam manifestId: VariableManifestId?
+      @RequestParam documentId: DocumentId?
   ): ListVariablesResponsePayload {
-    if (deliverableId != null && manifestId != null) {
-      throw BadRequestException("Only Deliverable ID or Manifest ID can be provided, not both.")
+    if (deliverableId != null && documentId != null) {
+      throw BadRequestException("Only Deliverable ID or Document ID can be provided, not both.")
     }
 
     val variables =
         if (deliverableId != null) {
           variableStore.fetchDeliverableVariables(deliverableId)
-        } else if (manifestId != null) {
-          val manifestVariables = variableStore.fetchManifestVariables(manifestId)
-          val sectionVariableIds =
-              manifestVariables.flatMap { parent ->
-                when (parent) {
-                  is SectionVariable -> parent.children.map { child -> child.id }
-                  else -> emptyList()
-                }
-              }
-
-          val injectedSectionValues =
-              variableValueStore
-                  .listValues(sectionVariableIds)
-                  .map { it.value }
-                  .filterIsInstance<SectionValueVariable>()
-          val injectedSectionValueVariables =
-              injectedSectionValues.map { variableStore.fetchVariable(it.usedVariableId) }
-
-          manifestVariables + injectedSectionValueVariables
+        } else if (documentId != null) {
+          variableService.fetchDocumentVariables(documentId)
         } else {
           variableStore.fetchAllNonSectionVariables()
         }
