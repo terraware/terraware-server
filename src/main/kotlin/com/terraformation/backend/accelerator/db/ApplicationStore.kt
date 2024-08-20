@@ -301,7 +301,7 @@ class ApplicationStore(
       assignModules(applicationId, CohortPhase.PreScreen)
       assignModules(applicationId, CohortPhase.Application)
 
-      updateInternalName(applicationId, "${defaultInternalNamePrefix}_$organizationName")
+      updateInternalName(applicationId, "${defaultInternalNamePrefix}_$organizationName", null)
 
       fetchOneById(applicationId)
     }
@@ -464,14 +464,14 @@ class ApplicationStore(
         val countries = countryDetector.getCountries(boundary)
 
         if (countries.size == 1) {
-          val alpha3CountryCode =
-              countriesDao.fetchOneByCode(countries.single())?.codeAlpha3 ?: "XXX"
+          val countryCode = countries.single()
+          val alpha3CountryCode = countriesDao.fetchOneByCode(countryCode)?.codeAlpha3 ?: "XXX"
           val organizationName =
               organizationsDao.fetchOneById(existing.organizationId)?.name
                   ?: throw OrganizationNotFoundException(existing.organizationId)
           val internalName = "${alpha3CountryCode}_$organizationName"
 
-          updateInternalName(applicationId, internalName)
+          updateInternalName(applicationId, internalName, countryCode)
         } else {
           log.debug(
               "Not setting internal name for application $applicationId because boundary is not " +
@@ -503,7 +503,11 @@ class ApplicationStore(
    *
    * @return The name that was actually used, possibly including a suffix.
    */
-  private fun updateInternalName(applicationId: ApplicationId, internalName: String): String {
+  private fun updateInternalName(
+      applicationId: ApplicationId,
+      internalName: String,
+      countryCode: String?
+  ): String {
     return with(APPLICATIONS) {
       // If the internal name already exists, add the first unused numeric suffix to make it unique.
       val existingNames =
@@ -526,6 +530,7 @@ class ApplicationStore(
       dslContext
           .update(APPLICATIONS)
           .set(INTERNAL_NAME, suffixedName)
+          .set(COUNTRY_CODE, countryCode)
           .where(ID.eq(applicationId))
           .execute()
 
@@ -610,7 +615,7 @@ class ApplicationStore(
         .from(APPLICATIONS)
         .where(conditionWithPermission)
         .orderBy(APPLICATIONS.ID)
-        .fetch { ExistingApplicationModel.of(it, modifiedTimeField, countryDetector) }
+        .fetch { ExistingApplicationModel.of(it, modifiedTimeField) }
   }
 
   private fun checkPreScreenCriteria(

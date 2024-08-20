@@ -5,7 +5,6 @@ import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.gis.CountryDetector
 import java.time.Instant
 import org.jooq.Field
 import org.jooq.Record
@@ -30,13 +29,11 @@ data class ExistingApplicationModel(
     fun of(
         record: Record,
         modifiedTimeField: Field<Instant?>? = null,
-        countryDetector: CountryDetector
     ): ExistingApplicationModel {
       return with(APPLICATIONS) {
         ExistingApplicationModel(
             boundary = record[BOUNDARY],
-            countryCode =
-                record[BOUNDARY]?.let { countryDetector.getCountries(it) }?.singleOrNull(),
+            countryCode = record[COUNTRY_CODE],
             createdTime = record[CREATED_TIME]!!,
             feedback = record[FEEDBACK],
             id = record[ID]!!,
