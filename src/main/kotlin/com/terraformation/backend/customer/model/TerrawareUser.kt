@@ -160,6 +160,8 @@ interface TerrawareUser : Principal {
 
   fun canCreateDraftPlantingSite(organizationId: OrganizationId): Boolean = defaultPermission
 
+  fun canCreateEntityWithOwner(userId: UserId): Boolean = defaultPermission
+
   fun canCreateFacility(organizationId: OrganizationId): Boolean = defaultPermission
 
   fun canCreateNotification(targetUserId: UserId, organizationId: OrganizationId): Boolean =

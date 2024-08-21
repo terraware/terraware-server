@@ -46,6 +46,21 @@ class CohortStore(
         ?: throw CohortNotFoundException(cohortId)
   }
 
+  fun fetchOneByName(
+      name: String,
+      cohortDepth: CohortDepth = CohortDepth.Cohort,
+      cohortModuleDepth: CohortModuleDepth = CohortModuleDepth.Cohort,
+  ): ExistingCohortModel? {
+    val cohort =
+        fetch(COHORTS.NAME.eq(name), cohortDepth, cohortModuleDepth).firstOrNull() ?: return null
+
+    if (cohortDepth == CohortDepth.Participant) {
+      requirePermissions { readCohortParticipants(cohort.id) }
+    }
+
+    return cohort
+  }
+
   fun findAll(
       cohortDepth: CohortDepth = CohortDepth.Cohort,
       cohortModuleDepth: CohortModuleDepth = CohortModuleDepth.Cohort,

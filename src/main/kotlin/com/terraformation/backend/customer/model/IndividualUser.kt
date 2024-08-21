@@ -208,6 +208,10 @@ data class IndividualUser(
   override fun canCreateDraftPlantingSite(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
 
+  override fun canCreateEntityWithOwner(userId: UserId): Boolean {
+    return userId == this.userId || isSuperAdmin()
+  }
+
   override fun canCreateFacility(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
 
   override fun canCreateNotification(

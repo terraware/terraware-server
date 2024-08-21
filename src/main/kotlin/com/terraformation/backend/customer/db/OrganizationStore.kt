@@ -122,11 +122,14 @@ class OrganizationStore(
         }
   }
 
-  /** Creates a new organization and makes the current user an owner. */
+  /** Creates a new organization and adds a user as owner. */
   fun createWithAdmin(
       row: OrganizationsRow,
-      managedLocationTypes: Set<ManagedLocationType> = emptySet()
+      managedLocationTypes: Set<ManagedLocationType> = emptySet(),
+      ownerUserId: UserId = currentUser().userId,
   ): OrganizationModel {
+    requirePermissions { createEntityWithOwner(ownerUserId) }
+
     validateCountryCode(row.countryCode, row.countrySubdivisionCode)
     validateOrganizationType(row.organizationTypeId, row.organizationTypeDetails)
 
@@ -158,7 +161,7 @@ class OrganizationStore(
             .set(MODIFIED_TIME, clock.instant())
             .set(ORGANIZATION_ID, fullRow.id)
             .set(ROLE_ID, Role.Owner)
-            .set(USER_ID, currentUser().userId)
+            .set(USER_ID, ownerUserId)
             .execute()
       }
 
