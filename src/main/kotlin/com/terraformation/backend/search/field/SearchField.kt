@@ -54,10 +54,6 @@ interface SearchField {
   val possibleValues: List<String>?
     get() = null
 
-  /** If true, the field is allowed to not have a value. */
-  val nullable: Boolean
-    get() = true
-
   /** If true, values should be localized to the current locale. */
   val localize: Boolean
     get() = true

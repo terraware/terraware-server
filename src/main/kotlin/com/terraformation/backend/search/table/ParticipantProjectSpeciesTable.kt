@@ -34,10 +34,7 @@ class ParticipantProjectSpeciesTable(private val tables: SearchTables) : SearchT
           idWrapperField("id", PARTICIPANT_PROJECT_SPECIES.ID) { ParticipantProjectSpeciesId(it) },
           textField("feedback", PARTICIPANT_PROJECT_SPECIES.FEEDBACK),
           textField("rationale", PARTICIPANT_PROJECT_SPECIES.RATIONALE),
-          enumField(
-              "submissionStatus",
-              PARTICIPANT_PROJECT_SPECIES.SUBMISSION_STATUS_ID,
-              nullable = false),
+          enumField("submissionStatus", PARTICIPANT_PROJECT_SPECIES.SUBMISSION_STATUS_ID),
       )
 
   override val inheritsVisibilityFrom: SearchTable?

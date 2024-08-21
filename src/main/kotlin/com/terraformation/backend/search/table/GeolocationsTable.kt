@@ -48,7 +48,6 @@ class GeolocationsTable(private val tables: SearchTables) : SearchTable() {
       override val fieldName: String,
       private val latitudeField: TableField<*, BigDecimal?>,
       private val longitudeField: TableField<*, BigDecimal?>,
-      override val nullable: Boolean = true
   ) : SearchField {
     override val localize: Boolean
       get() = false

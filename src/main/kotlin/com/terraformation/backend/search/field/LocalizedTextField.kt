@@ -24,7 +24,6 @@ class LocalizedTextField(
     override val databaseField: Field<String?>,
     private val resourceBundleName: String,
     override val table: SearchTable,
-    override val nullable: Boolean = true,
     override val localize: Boolean = true,
     override val exportable: Boolean = true,
 ) : SingleColumnSearchField<String>() {

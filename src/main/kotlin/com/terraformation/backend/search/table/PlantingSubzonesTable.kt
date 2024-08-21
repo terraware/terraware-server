@@ -40,13 +40,12 @@ class PlantingSubzonesTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       listOf(
           geometryField("boundary", PLANTING_SUBZONES.BOUNDARY),
-          timestampField("createdTime", PLANTING_SUBZONES.CREATED_TIME, nullable = false),
-          textField("fullName", PLANTING_SUBZONES.FULL_NAME, nullable = false),
+          timestampField("createdTime", PLANTING_SUBZONES.CREATED_TIME),
+          textField("fullName", PLANTING_SUBZONES.FULL_NAME),
           idWrapperField("id", PLANTING_SUBZONES.ID) { PlantingSubzoneId(it) },
-          timestampField("modifiedTime", PLANTING_SUBZONES.MODIFIED_TIME, nullable = false),
-          textField("name", PLANTING_SUBZONES.NAME, nullable = false),
-          timestampField(
-              "plantingCompletedTime", PLANTING_SUBZONES.PLANTING_COMPLETED_TIME, nullable = false),
+          timestampField("modifiedTime", PLANTING_SUBZONES.MODIFIED_TIME),
+          textField("name", PLANTING_SUBZONES.NAME),
+          timestampField("plantingCompletedTime", PLANTING_SUBZONES.PLANTING_COMPLETED_TIME),
           bigDecimalField(
               "totalPlants",
               DSL.field(

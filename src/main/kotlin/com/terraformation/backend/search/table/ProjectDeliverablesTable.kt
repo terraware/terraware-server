@@ -30,17 +30,17 @@ class ProjectDeliverablesTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       listOf(
           idWrapperField("id", PROJECT_DELIVERABLES.DELIVERABLE_ID) { DeliverableId(it) },
-          enumField("category", PROJECT_DELIVERABLES.DELIVERABLE_CATEGORY_ID, nullable = false),
+          enumField("category", PROJECT_DELIVERABLES.DELIVERABLE_CATEGORY_ID),
           textField("description", PROJECT_DELIVERABLES.DESCRIPTION_HTML),
-          dateField("dueDate", PROJECT_DELIVERABLES.DUE_DATE, nullable = false),
+          dateField("dueDate", PROJECT_DELIVERABLES.DUE_DATE),
           textField("feedback", PROJECT_DELIVERABLES.SUBMISSION_FEEDBACK),
-          textField("name", PROJECT_DELIVERABLES.NAME, nullable = false),
-          integerField("position", PROJECT_DELIVERABLES.POSITION, nullable = false),
-          booleanField("required", PROJECT_DELIVERABLES.IS_REQUIRED, nullable = false),
-          booleanField("sensitive", PROJECT_DELIVERABLES.IS_SENSITIVE, nullable = false),
+          textField("name", PROJECT_DELIVERABLES.NAME),
+          integerField("position", PROJECT_DELIVERABLES.POSITION),
+          booleanField("required", PROJECT_DELIVERABLES.IS_REQUIRED),
+          booleanField("sensitive", PROJECT_DELIVERABLES.IS_SENSITIVE),
           enumField("status", PROJECT_DELIVERABLES.SUBMISSION_STATUS_ID),
           idWrapperField("submissionId", PROJECT_DELIVERABLES.SUBMISSION_ID) { SubmissionId(it) },
-          enumField("type", PROJECT_DELIVERABLES.DELIVERABLE_TYPE_ID, nullable = false),
+          enumField("type", PROJECT_DELIVERABLES.DELIVERABLE_TYPE_ID),
       )
 
   override val defaultOrderFields =

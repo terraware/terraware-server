@@ -42,25 +42,25 @@ class BatchesTable(private val tables: SearchTables) : SearchTable() {
   // This needs to be lazy-initialized because aliasField() references the list of sublists
   override val fields: List<SearchField> by lazy {
     listOf(
-        dateField("addedDate", BATCH_SUMMARIES.ADDED_DATE, nullable = false),
-        upperCaseTextField("batchNumber", BATCH_SUMMARIES.BATCH_NUMBER, nullable = false),
-        integerField("germinatingQuantity", BATCH_SUMMARIES.GERMINATING_QUANTITY, nullable = false),
+        dateField("addedDate", BATCH_SUMMARIES.ADDED_DATE),
+        upperCaseTextField("batchNumber", BATCH_SUMMARIES.BATCH_NUMBER),
+        integerField("germinatingQuantity", BATCH_SUMMARIES.GERMINATING_QUANTITY),
         integerField("germinationRate", BATCH_SUMMARIES.GERMINATION_RATE),
         idWrapperField("id", BATCH_SUMMARIES.ID, ::BatchId),
         idWrapperField("initialBatchId", BATCH_SUMMARIES.INITIAL_BATCH_ID, ::BatchId),
         integerField("lossRate", BATCH_SUMMARIES.LOSS_RATE),
         textField("notes", BATCH_SUMMARIES.NOTES),
-        integerField("notReadyQuantity", BATCH_SUMMARIES.NOT_READY_QUANTITY, nullable = false),
+        integerField("notReadyQuantity", BATCH_SUMMARIES.NOT_READY_QUANTITY),
         dateField("readyByDate", BATCH_SUMMARIES.READY_BY_DATE),
-        integerField("readyQuantity", BATCH_SUMMARIES.READY_QUANTITY, nullable = false),
+        integerField("readyQuantity", BATCH_SUMMARIES.READY_QUANTITY),
         enumField("substrate", BATCH_SUMMARIES.SUBSTRATE_ID),
         textField("substrateNotes", BATCH_SUMMARIES.SUBSTRATE_NOTES),
-        integerField("totalQuantity", BATCH_SUMMARIES.TOTAL_QUANTITY, nullable = false),
+        integerField("totalQuantity", BATCH_SUMMARIES.TOTAL_QUANTITY),
         enumField("treatment", BATCH_SUMMARIES.TREATMENT_ID),
         textField("treatmentNotes", BATCH_SUMMARIES.TREATMENT_NOTES),
         longField(
             "totalQuantityWithdrawn", BATCH_SUMMARIES.TOTAL_QUANTITY_WITHDRAWN, nullable = false),
-        integerField("version", BATCH_SUMMARIES.VERSION, nullable = false, localize = false),
+        integerField("version", BATCH_SUMMARIES.VERSION, localize = false),
     )
   }
 

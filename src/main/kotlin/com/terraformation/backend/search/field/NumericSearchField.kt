@@ -21,7 +21,6 @@ abstract class NumericSearchField<T : Number>(
     override val fieldName: String,
     override val databaseField: Field<T?>,
     override val table: SearchTable,
-    override val nullable: Boolean = true,
     override val localize: Boolean,
     override val exportable: Boolean,
 ) : SingleColumnSearchField<T>() {

@@ -25,9 +25,9 @@ class CohortModulesTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          textField("title", COHORT_MODULES.TITLE, nullable = false),
-          dateField("startDate", COHORT_MODULES.START_DATE, nullable = false),
-          dateField("endDate", COHORT_MODULES.END_DATE, nullable = false),
+          textField("title", COHORT_MODULES.TITLE),
+          dateField("startDate", COHORT_MODULES.START_DATE),
+          dateField("endDate", COHORT_MODULES.END_DATE),
       )
 
   override val inheritsVisibilityFrom: SearchTable = tables.cohorts

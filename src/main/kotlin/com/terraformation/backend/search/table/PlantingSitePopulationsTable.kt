@@ -32,7 +32,7 @@ class PlantingSitePopulationsTable(private val tables: SearchTables) : SearchTab
           integerField(
               "plantsSinceLastObservation",
               PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION),
-          integerField("totalPlants", PLANTING_SITE_POPULATIONS.TOTAL_PLANTS, nullable = false),
+          integerField("totalPlants", PLANTING_SITE_POPULATIONS.TOTAL_PLANTS),
       )
 
   override val inheritsVisibilityFrom: SearchTable

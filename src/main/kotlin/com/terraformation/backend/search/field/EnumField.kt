@@ -25,7 +25,6 @@ class EnumField<E : Enum<E>, T : LocalizableEnum<E>>(
     override val databaseField: TableField<*, T?>,
     override val table: SearchTable,
     private val enumClass: Class<T>,
-    override val nullable: Boolean = true,
     override val localize: Boolean = true,
     override val exportable: Boolean = true,
 ) : SingleColumnSearchField<T>() {
@@ -86,7 +85,7 @@ class EnumField<E : Enum<E>, T : LocalizableEnum<E>>(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      EnumField(rawFieldName(), databaseField, table, enumClass, nullable, false, false)
+      EnumField(rawFieldName(), databaseField, table, enumClass, false, false)
     } else {
       null
     }

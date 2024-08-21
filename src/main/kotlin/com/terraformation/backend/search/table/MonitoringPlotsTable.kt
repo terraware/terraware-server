@@ -26,11 +26,11 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       listOf(
           geometryField("boundary", MONITORING_PLOTS.BOUNDARY),
-          timestampField("createdTime", MONITORING_PLOTS.CREATED_TIME, nullable = false),
-          textField("fullName", MONITORING_PLOTS.FULL_NAME, nullable = false),
+          timestampField("createdTime", MONITORING_PLOTS.CREATED_TIME),
+          textField("fullName", MONITORING_PLOTS.FULL_NAME),
           idWrapperField("id", MONITORING_PLOTS.ID) { MonitoringPlotId(it) },
-          timestampField("modifiedTime", MONITORING_PLOTS.MODIFIED_TIME, nullable = false),
-          textField("name", MONITORING_PLOTS.NAME, nullable = false),
+          timestampField("modifiedTime", MONITORING_PLOTS.MODIFIED_TIME),
+          textField("name", MONITORING_PLOTS.NAME),
       )
 
   override val inheritsVisibilityFrom: SearchTable = tables.plantingSubzones

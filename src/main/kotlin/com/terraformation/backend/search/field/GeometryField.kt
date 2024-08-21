@@ -18,7 +18,6 @@ class GeometryField(
     override val fieldName: String,
     geometryField: TableField<*, Geometry?>,
     override val table: SearchTable,
-    override val nullable: Boolean,
 ) : SingleColumnSearchField<String>() {
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = emptySet()

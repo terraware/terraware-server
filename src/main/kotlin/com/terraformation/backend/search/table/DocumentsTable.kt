@@ -32,7 +32,7 @@ class DocumentsTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          timestampField("createdTime", DOCUMENTS.CREATED_TIME, nullable = false),
+          timestampField("createdTime", DOCUMENTS.CREATED_TIME),
           idWrapperField("id", DOCUMENTS.ID) { DocumentId(it) },
           idWrapperField(
               "lastSavedVersionId",
@@ -46,10 +46,10 @@ class DocumentsTable(tables: SearchTables) : SearchTable() {
               }) {
                 DocumentSavedVersionId(it)
               },
-          timestampField("modifiedTime", DOCUMENTS.MODIFIED_TIME, nullable = false),
-          textField("name", DOCUMENTS.NAME, nullable = false),
+          timestampField("modifiedTime", DOCUMENTS.MODIFIED_TIME),
+          textField("name", DOCUMENTS.NAME),
           idWrapperField("projectId", DOCUMENTS.PROJECT_ID) { ProjectId(it) },
-          enumField("status", DOCUMENTS.STATUS_ID, nullable = false))
+          enumField("status", DOCUMENTS.STATUS_ID))
 
   override fun conditionForVisibility(): Condition =
       if (currentUser().canManageDocumentProducer()) {

@@ -64,11 +64,11 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          timestampField("createdTime", PROJECTS.CREATED_TIME, nullable = false),
+          timestampField("createdTime", PROJECTS.CREATED_TIME),
           textField("description", PROJECTS.DESCRIPTION),
           idWrapperField("id", PROJECTS.ID) { ProjectId(it) },
-          timestampField("modifiedTime", PROJECTS.MODIFIED_TIME, nullable = false),
-          textField("name", PROJECTS.NAME, nullable = false),
+          timestampField("modifiedTime", PROJECTS.MODIFIED_TIME),
+          textField("name", PROJECTS.NAME),
       )
 
   override fun conditionForVisibility(): Condition {

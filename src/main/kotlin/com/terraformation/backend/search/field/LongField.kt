@@ -10,17 +10,16 @@ class LongField(
     fieldName: String,
     databaseField: Field<Long?>,
     table: SearchTable,
-    nullable: Boolean = true,
     localize: Boolean = true,
     exportable: Boolean = true,
-) : NumericSearchField<Long>(fieldName, databaseField, table, nullable, localize, exportable) {
+) : NumericSearchField<Long>(fieldName, databaseField, table, localize, exportable) {
   override fun fromString(value: String) = numberFormat.parse(value).toLong()
 
   override fun makeNumberFormat(): NumberFormat = NumberFormat.getIntegerInstance(currentLocale())
 
   override fun raw(): SearchField? {
     return if (localize) {
-      LongField(rawFieldName(), databaseField, table, nullable, false, false)
+      LongField(rawFieldName(), databaseField, table, false, false)
     } else {
       null
     }

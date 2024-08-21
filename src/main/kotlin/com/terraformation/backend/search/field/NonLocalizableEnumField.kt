@@ -24,7 +24,6 @@ class NonLocalizableEnumField<E : Enum<E>, T : EnumFromReferenceTable<*, E>>(
     override val databaseField: TableField<*, T?>,
     override val table: SearchTable,
     private val enumClass: Class<T>,
-    override val nullable: Boolean = true,
     override val exportable: Boolean = true,
 ) : SingleColumnSearchField<T>() {
   private val byName = enumClass.enumConstants!!.associateBy { it.jsonValue }

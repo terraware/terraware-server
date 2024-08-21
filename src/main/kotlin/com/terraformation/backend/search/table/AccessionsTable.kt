@@ -67,7 +67,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
   // This needs to be lazy-initialized because aliasField() references the list of sublists
   override val fields: List<SearchField> by lazy {
     listOf(
-        upperCaseTextField("accessionNumber", ACCESSIONS.NUMBER, nullable = false),
+        upperCaseTextField("accessionNumber", ACCESSIONS.NUMBER),
         ActiveField("active"),
         ageField("ageMonths", ACCESSIONS.COLLECTED_DATE, AgeField.MonthGranularity, clock),
         ageField("ageYears", ACCESSIONS.COLLECTED_DATE, AgeField.YearGranularity, clock),
@@ -100,7 +100,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
             ACCESSIONS.REMAINING_GRAMS),
         enumField("source", ACCESSIONS.DATA_SOURCE_ID),
         aliasField("speciesName", "species_scientificName"),
-        enumField("state", ACCESSIONS.STATE_ID, nullable = false),
+        enumField("state", ACCESSIONS.STATE_ID),
         integerField("totalViabilityPercent", ACCESSIONS.TOTAL_VIABILITY_PERCENT),
         integerField("totalWithdrawnCount", ACCESSIONS.TOTAL_WITHDRAWN_COUNT),
         *weightFields(
@@ -141,8 +141,6 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
       get() = listOf(ACCESSIONS.STATE_ID)
 
     override val possibleValues = AccessionActive::class.java.enumConstants!!.map { "$it" }
-    override val nullable
-      get() = false
 
     override fun getConditions(fieldNode: FieldNode): List<Condition> {
       val values =

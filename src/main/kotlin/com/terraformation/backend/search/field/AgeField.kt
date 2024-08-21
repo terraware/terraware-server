@@ -30,7 +30,6 @@ class AgeField(
     override val fieldName: String,
     override val databaseField: TableField<*, LocalDate?>,
     override val table: SearchTable,
-    override val nullable: Boolean,
     override val localize: Boolean = true,
     override val exportable: Boolean = true,
     private val granularity: AgeGranularity,
@@ -90,7 +89,7 @@ class AgeField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      AgeField(rawFieldName(), databaseField, table, nullable, false, false, granularity, clock)
+      AgeField(rawFieldName(), databaseField, table, false, false, granularity, clock)
     } else {
       null
     }
