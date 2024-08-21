@@ -5,5 +5,4 @@ ALTER TABLE accelerator.applications ADD country_code TEXT REFERENCES countries 
 UPDATE accelerator.applications
 SET country_code = countries.code
 FROM countries
-WHERE SUBSTR(accelerator.applications.internal_name, 1, 3) = countries.code_alpha3
-  AND SUBSTR(accelerator.applications.internal_name, 1, 3) != 'XXX';
+WHERE SUBSTR(accelerator.applications.internal_name, 1, 3) = countries.code_alpha3;

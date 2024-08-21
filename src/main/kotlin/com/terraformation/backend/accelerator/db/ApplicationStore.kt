@@ -301,7 +301,7 @@ class ApplicationStore(
       assignModules(applicationId, CohortPhase.PreScreen)
       assignModules(applicationId, CohortPhase.Application)
 
-      updateInternalName(applicationId, "${defaultInternalNamePrefix}_$organizationName", null)
+      updateInternalName(applicationId, "${defaultInternalNamePrefix}_$organizationName")
 
       fetchOneById(applicationId)
     }
@@ -471,7 +471,8 @@ class ApplicationStore(
                   ?: throw OrganizationNotFoundException(existing.organizationId)
           val internalName = "${alpha3CountryCode}_$organizationName"
 
-          updateInternalName(applicationId, internalName, countryCode)
+          updateInternalName(applicationId, internalName)
+          updateCountryCode(applicationId, countryCode)
         } else {
           log.debug(
               "Not setting internal name for application $applicationId because boundary is not " +
@@ -503,11 +504,7 @@ class ApplicationStore(
    *
    * @return The name that was actually used, possibly including a suffix.
    */
-  private fun updateInternalName(
-      applicationId: ApplicationId,
-      internalName: String,
-      countryCode: String?
-  ): String {
+  private fun updateInternalName(applicationId: ApplicationId, internalName: String): String {
     return with(APPLICATIONS) {
       // If the internal name already exists, add the first unused numeric suffix to make it unique.
       val existingNames =
@@ -530,11 +527,21 @@ class ApplicationStore(
       dslContext
           .update(APPLICATIONS)
           .set(INTERNAL_NAME, suffixedName)
-          .set(COUNTRY_CODE, countryCode)
           .where(ID.eq(applicationId))
           .execute()
 
       suffixedName
+    }
+  }
+
+  /** Updates the country code of an application. */
+  private fun updateCountryCode(applicationId: ApplicationId, countryCode: String) {
+    with(APPLICATIONS) {
+      dslContext
+          .update(APPLICATIONS)
+          .set(COUNTRY_CODE, countryCode)
+          .where(ID.eq(applicationId))
+          .execute()
     }
   }
 
