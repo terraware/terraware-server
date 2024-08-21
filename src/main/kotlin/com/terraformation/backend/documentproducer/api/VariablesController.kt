@@ -11,7 +11,6 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
-import com.terraformation.backend.documentproducer.VariableService
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.model.DateVariable
 import com.terraformation.backend.documentproducer.model.ImageVariable
@@ -38,7 +37,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/document-producer/variables")
 @RestController
 class VariablesController(
-    private val variableService: VariableService,
     private val variableStore: VariableStore,
 ) {
   @Operation(
@@ -59,7 +57,8 @@ class VariablesController(
         if (deliverableId != null) {
           variableStore.fetchDeliverableVariables(deliverableId)
         } else if (documentId != null) {
-          variableService.fetchDocumentVariables(documentId)
+          variableStore.fetchManifestVariables(documentId) +
+              variableStore.fetchUsedVariables(documentId)
         } else {
           variableStore.fetchAllNonSectionVariables()
         }

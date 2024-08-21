@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.api
 
 import com.terraformation.backend.api.ControllerIntegrationTest
+import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
@@ -22,12 +23,13 @@ class VariablesControllerTest : ControllerIntegrationTest() {
 
   @Nested
   inner class ListVariables {
-    private fun path(manifestId: VariableManifestId = inserted.variableManifestId) =
-        "/api/v1/document-producer/variables?manifestId=$manifestId"
+    private fun path(documentId: DocumentId = inserted.documentId) =
+        "/api/v1/document-producer/variables?documentId=$documentId"
 
     @Test
     fun `includes variables that are injected into sections`() {
       val manifestId1 = insertVariableManifest()
+      val documentId = insertDocument()
 
       val variableIdOutdated =
           insertNumberVariable(
@@ -80,7 +82,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
           maxValue = BigDecimal(5))
 
       mockMvc
-          .get(path(manifestId1))
+          .get(path(documentId))
           .andExpectJson(
               """
                 {
@@ -129,9 +131,12 @@ class VariablesControllerTest : ControllerIntegrationTest() {
     }
 
     @Test
-    fun `only lists variables for requested manifest`() {
+    fun `only lists variables for requested document`() {
       val manifestId1 = insertVariableManifest()
+      val documentId = insertDocument()
       val manifestId2 = insertVariableManifest()
+      insertDocument()
+
       val variableId1 =
           insertVariable(
               deliverableQuestion = "Date Question",
@@ -147,7 +152,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
       insertVariableManifestEntry(manifestId = manifestId2, variableId = variableId2, position = 0)
 
       mockMvc
-          .get(path(manifestId1))
+          .get(path(documentId))
           .andExpectJson(
               """
                 {
@@ -171,6 +176,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
 
     @Test
     fun `represents section recommendations reciprocally`() {
+
       val sectionVariableId =
           insertVariableManifestEntry(
               insertSectionVariable(
