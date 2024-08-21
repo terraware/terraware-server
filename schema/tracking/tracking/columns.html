@@ -144,14 +144,14 @@
         "comments": "<p>Number of clusters to add to observation in addition to the number that is derived from the statistical formula. Typically this is due to additional area being added to a zone after initial creation. This is included in the value of <code>num_permanent_clusters<\/code>, that is, it is an input to the calculation of that column&rsquo;s value.<\/p>"
     },
     {
-        "tableName": "planting_subzone_histories",
+        "tableName": "monitoring_plots",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_subzone_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "√",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -159,15 +159,15 @@
     {
         "tableName": "monitoring_plots",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "modified_by",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Which user most recently modified the monitoring plot.<\/p>"
     },
     {
         "tableName": "planting_zones",
@@ -183,17 +183,17 @@
         "comments": "<p>Number of permanent clusters to assign to the next observation. This is typically derived from a statistical formula and from <code>extra_permanent_clusters<\/code>.<\/p>"
     },
     {
-        "tableName": "plantings",
+        "tableName": "planting_subzone_histories",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "created_by",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_subzone_id",
         "type": "int8",
         "length": 19,
-        "nullable": "",
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which user created the planting.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observation_plot_conditions",
@@ -222,17 +222,17 @@
         "comments": "<p>When the planting season will be finished. This is midnight on the day after <code>end_date<\/code> in the planting site&rsquo;s time zone.<\/p>"
     },
     {
-        "tableName": "monitoring_plots",
+        "tableName": "plantings",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "modified_time",
-        "type": "timestamptz",
-        "length": 35,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>delivery_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When the monitoring plot was most recently modified.<\/p>"
+        "comments": "<p>Which delivery this planting is part of.<\/p>"
     },
     {
         "tableName": "observation_plot_conditions",
@@ -263,15 +263,15 @@
     {
         "tableName": "plantings",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_site_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "notes",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which planting site has the planting. Must be the same as the planting site ID of the delivery. This identifies the site as a whole; in addition, there may be a plot ID.<\/p>"
+        "comments": "<p>Notes about this specific planting. In the initial version of the web app, the user can only enter per-planting notes for reassignments, not for initial deliveries.<\/p>"
     },
     {
         "tableName": "planting_sites",
@@ -326,7 +326,7 @@
         "comments": "<p>Which organization owns this planting site.<\/p>"
     },
     {
-        "tableName": "observations",
+        "tableName": "observed_plot_coordinates",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
@@ -404,17 +404,17 @@
         "comments": "<p>Boundary of the subzone. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).<\/p>"
     },
     {
-        "tableName": "observed_plot_coordinates",
+        "tableName": "observations",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "start_date",
+        "type": "date",
+        "length": 13,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>First day of the observation. This is either the first day of the month following the end of the planting season, or 6 months after that day.<\/p>"
     },
     {
         "tableName": "planting_zones",
@@ -534,17 +534,17 @@
         "comments": ""
     },
     {
-        "tableName": "plantings",
+        "tableName": "planting_subzone_histories",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "num_plants",
-        "type": "int4",
-        "length": 10,
+        "name": "full_name",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Number of plants that were planted (if the number is positive) or reassigned (if the number is negative).<\/p>"
+        "comments": ""
     },
     {
         "tableName": "planting_zone_populations",
@@ -599,17 +599,17 @@
         "comments": "<p>Which user most recently modified the delivery.<\/p>"
     },
     {
-        "tableName": "monitoring_plots",
+        "tableName": "plantings",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "permanent_cluster_subplot",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_subzone_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>If this plot is a candidate to be a permanent monitoring plot, its ordinal position from 1 to 4 in the 4-plot cluster. 1=southwest, 2=southeast, 3=northeast, 4=northwest.<\/p>"
+        "comments": "<p>Which plot this planting affected, if any. Must be a plot at the planting site referenced by <code>planting_site_id<\/code>. Null if the planting site does not have plot information. For reassignments, this is the original plot if <code>num_plants<\/code> is negative, or the new plot if <code>num_plants<\/code> is positive.<\/p>"
     },
     {
         "tableName": "observed_plot_species_totals",
@@ -733,6 +733,19 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
+        "name": "created_time",
+        "type": "timestamptz",
+        "length": 35,
+        "nullable": "",
+        "autoUpdated": "",
+        "defaultValue": "null",
+        "comments": ""
+    },
+    {
+        "tableName": "observations",
+        "tableType": "Table",
+        "keyClass": "",
+        "keyTitle": "",
         "name": "upcoming_notification_sent_time",
         "type": "timestamptz",
         "length": 35,
@@ -742,30 +755,17 @@
         "comments": "<p>When the notification that the observation is starting in 1 month was sent. Null if the notification has not been sent yet.<\/p>"
     },
     {
-        "tableName": "observed_plot_coordinates",
+        "tableName": "planting_subzone_histories",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "gps_coordinates",
-        "type": "geometry",
-        "length": 2147483647,
-        "nullable": "",
-        "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": ""
-    },
-    {
-        "tableName": "plantings",
-        "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>species_id",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_zone_history_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which species was planted.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observed_zone_species_totals",
@@ -963,11 +963,11 @@
         "comments": ""
     },
     {
-        "tableName": "observed_plot_coordinates",
+        "tableName": "observations",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>position_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>state_id",
         "type": "int4",
         "length": 10,
         "nullable": "",
@@ -1084,9 +1084,9 @@
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>state_id",
-        "type": "int4",
-        "length": 10,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_site_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -1145,11 +1145,11 @@
         "comments": "<p>Which user most recently modified the planting site.<\/p>"
     },
     {
-        "tableName": "observations",
+        "tableName": "observed_plot_coordinates",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_site_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
@@ -1158,17 +1158,17 @@
         "comments": ""
     },
     {
-        "tableName": "planting_subzone_histories",
+        "tableName": "monitoring_plots",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "boundary",
-        "type": "geometry",
-        "length": 2147483647,
+        "name": "created_time",
+        "type": "timestamptz",
+        "length": 35,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>When the monitoring plot was originally created.<\/p>"
     },
     {
         "tableName": "planting_subzones",
@@ -1201,13 +1201,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "full_name",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "",
+        "name": "permanent_cluster",
+        "type": "int4",
+        "length": 10,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>If this plot is a candidate to be a permanent monitoring plot, its position in the randomized list of plots for the planting zone. Starts at 1 for each planting zone. There are always 4 plots with a given sequence number in a given zone. If null, this plot is not part of a 4-plot cluster but may still be chosen as a temporary monitoring plot.<\/p>"
     },
     {
         "tableName": "planting_zones",
@@ -1249,17 +1249,17 @@
         "comments": ""
     },
     {
-        "tableName": "monitoring_plots",
+        "tableName": "plantings",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "boundary",
-        "type": "geometry",
-        "length": 2147483647,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_type_id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Boundary of the monitoring plot. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).<\/p>"
+        "comments": "<p>Whether this is the plant assignment from the initial delivery or an adjustment from a reassignment.<\/p>"
     },
     {
         "tableName": "planting_subzone_populations",
@@ -1392,17 +1392,17 @@
         "comments": ""
     },
     {
-        "tableName": "plantings",
+        "tableName": "planting_subzone_histories",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "created_time",
-        "type": "timestamptz",
-        "length": 35,
+        "name": "name",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When the planting was created. Note that plantings are never updated, so there is no modified time.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "planting_subzones",
@@ -1431,17 +1431,17 @@
         "comments": ""
     },
     {
-        "tableName": "planting_subzone_histories",
+        "tableName": "monitoring_plots",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_zone_history_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_subzone_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Which planting subzone this monitoring plot is part of.<\/p>"
     },
     {
         "tableName": "observation_photos",
@@ -1472,28 +1472,28 @@
     {
         "tableName": "monitoring_plots",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_subzone_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "modified_time",
+        "type": "timestamptz",
+        "length": 35,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which planting subzone this monitoring plot is part of.<\/p>"
+        "comments": "<p>When the monitoring plot was most recently modified.<\/p>"
     },
     {
         "tableName": "monitoring_plots",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
-        "type": "text",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "boundary",
+        "type": "geometry",
         "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Boundary of the monitoring plot. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).<\/p>"
     },
     {
         "tableName": "planting_subzone_populations",
@@ -1509,17 +1509,17 @@
         "comments": ""
     },
     {
-        "tableName": "plantings",
+        "tableName": "planting_subzone_histories",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_subzone_id",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
         "type": "int8",
         "length": 19,
-        "nullable": "√",
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which plot this planting affected, if any. Must be a plot at the planting site referenced by <code>planting_site_id<\/code>. Null if the planting site does not have plot information. For reassignments, this is the original plot if <code>num_plants<\/code> is negative, or the new plot if <code>num_plants<\/code> is positive.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "planting_subzones",
@@ -1626,7 +1626,7 @@
         "comments": ""
     },
     {
-        "tableName": "planting_subzone_histories",
+        "tableName": "monitoring_plots",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
@@ -1708,20 +1708,20 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "created_by",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
+        "name": "permanent_cluster_subplot",
+        "type": "int4",
+        "length": 10,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which user created the monitoring plot.<\/p>"
+        "comments": "<p>If this plot is a candidate to be a permanent monitoring plot, its ordinal position from 1 to 4 in the 4-plot cluster. 1=southwest, 2=southeast, 3=northeast, 4=northwest.<\/p>"
     },
     {
-        "tableName": "planting_subzone_histories",
+        "tableName": "monitoring_plots",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "name",
+        "name": "full_name",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
@@ -1730,17 +1730,17 @@
         "comments": ""
     },
     {
-        "tableName": "observed_plot_coordinates",
+        "tableName": "observations",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "completed_time",
+        "type": "timestamptz",
+        "length": 35,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Server-generated date and time the final piece of data for the observation was received.<\/p>"
     },
     {
         "tableName": "planting_zones",
@@ -1808,17 +1808,17 @@
         "comments": ""
     },
     {
-        "tableName": "plantings",
+        "tableName": "planting_subzone_histories",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "notes",
-        "type": "text",
+        "name": "boundary",
+        "type": "geometry",
         "length": 2147483647,
-        "nullable": "√",
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Notes about this specific planting. In the initial version of the web app, the user can only enter per-planting notes for reassignments, not for initial deliveries.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observed_zone_species_totals",
@@ -1834,13 +1834,13 @@
         "comments": ""
     },
     {
-        "tableName": "observations",
+        "tableName": "observed_plot_coordinates",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "created_time",
-        "type": "timestamptz",
-        "length": 35,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -1990,17 +1990,17 @@
         "comments": ""
     },
     {
-        "tableName": "monitoring_plots",
+        "tableName": "plantings",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "is_available",
-        "type": "bool",
-        "length": 1,
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>species_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "true",
-        "comments": ""
+        "defaultValue": "null",
+        "comments": "<p>Which species was planted.<\/p>"
     },
     {
         "tableName": "recorded_plants",
@@ -2042,17 +2042,17 @@
         "comments": "<p>When the planting zone was originally created.<\/p>"
     },
     {
-        "tableName": "observations",
+        "tableName": "observed_plot_coordinates",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "end_date",
-        "type": "date",
-        "length": 13,
+        "name": "gps_coordinates",
+        "type": "geometry",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Last day of the observation. This is typically the last day of the same month as <code>start_date<\/code>.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observed_plot_species_totals",
@@ -2070,15 +2070,15 @@
     {
         "tableName": "plantings",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "created_by",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Which user created the planting.<\/p>"
     },
     {
         "tableName": "deliveries",
@@ -2174,15 +2174,15 @@
     {
         "tableName": "plantings",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>delivery_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "created_time",
+        "type": "timestamptz",
+        "length": 35,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which delivery this planting is part of.<\/p>"
+        "comments": "<p>When the planting was created. Note that plantings are never updated, so there is no modified time.<\/p>"
     },
     {
         "tableName": "planting_zone_histories",
@@ -2211,17 +2211,17 @@
         "comments": ""
     },
     {
-        "tableName": "observed_plot_coordinates",
+        "tableName": "observations",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "end_date",
+        "type": "date",
+        "length": 13,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Last day of the observation. This is typically the last day of the same month as <code>start_date<\/code>.<\/p>"
     },
     {
         "tableName": "observation_photos",
@@ -2252,28 +2252,28 @@
     {
         "tableName": "observations",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "completed_time",
-        "type": "timestamptz",
-        "length": 35,
-        "nullable": "√",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Server-generated date and time the final piece of data for the observation was received.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "plantings",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_type_id",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "num_plants",
         "type": "int4",
         "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Whether this is the plant assignment from the initial delivery or an adjustment from a reassignment.<\/p>"
+        "comments": "<p>Number of plants that were planted (if the number is positive) or reassigned (if the number is negative).<\/p>"
     },
     {
         "tableName": "draft_planting_sites",
@@ -2406,17 +2406,17 @@
         "comments": ""
     },
     {
-        "tableName": "observations",
+        "tableName": "observed_plot_coordinates",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "start_date",
-        "type": "date",
-        "length": 13,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>position_id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>First day of the observation. This is either the first day of the month following the end of the planting season, or 6 months after that day.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "planting_zones",
@@ -2497,17 +2497,17 @@
         "comments": ""
     },
     {
-        "tableName": "monitoring_plots",
+        "tableName": "plantings",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "modified_by",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which user most recently modified the monitoring plot.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observed_plot_species_totals",
@@ -2653,17 +2653,17 @@
         "comments": "<p>Percentage of plants of the species observed in permanent monitoring plots in the planting zone, in either the current observation or in previous ones, that were dead.<\/p>"
     },
     {
-        "tableName": "monitoring_plots",
+        "tableName": "plantings",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "permanent_cluster",
-        "type": "int4",
-        "length": 10,
-        "nullable": "√",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_site_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>If this plot is a candidate to be a permanent monitoring plot, its position in the randomized list of plots for the planting zone. Starts at 1 for each planting zone. There are always 4 plots with a given sequence number in a given zone. If null, this plot is not part of a 4-plot cluster but may still be chosen as a temporary monitoring plot.<\/p>"
+        "comments": "<p>Which planting site has the planting. Must be the same as the planting site ID of the delivery. This identifies the site as a whole; in addition, there may be a plot ID.<\/p>"
     },
     {
         "tableName": "observation_states",
@@ -2787,13 +2787,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "created_time",
-        "type": "timestamptz",
-        "length": 35,
+        "name": "is_available",
+        "type": "bool",
+        "length": 1,
         "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": "<p>When the monitoring plot was originally created.<\/p>"
+        "defaultValue": "true",
+        "comments": ""
     },
     {
         "tableName": "planting_zones",
@@ -2835,17 +2835,17 @@
         "comments": ""
     },
     {
-        "tableName": "planting_subzone_histories",
+        "tableName": "monitoring_plots",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "full_name",
-        "type": "text",
-        "length": 2147483647,
+        "name": "created_by",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Which user created the monitoring plot.<\/p>"
     },
     {
         "tableName": "observed_site_species_totals",
