@@ -18,7 +18,6 @@ class BooleanField(
     override val fieldName: String,
     override val databaseField: Field<Boolean?>,
     override val table: SearchTable,
-    override val nullable: Boolean = true,
     override val localize: Boolean = true,
     override val exportable: Boolean = true,
 ) : SingleColumnSearchField<Boolean>() {
@@ -64,7 +63,7 @@ class BooleanField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      BooleanField(rawFieldName(), databaseField, table, nullable, false, false)
+      BooleanField(rawFieldName(), databaseField, table, false, false)
     } else {
       null
     }

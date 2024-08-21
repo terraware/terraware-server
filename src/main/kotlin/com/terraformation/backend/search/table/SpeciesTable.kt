@@ -57,10 +57,10 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
           timestampField("checkedTime", SPECIES.CHECKED_TIME),
           textField("commonName", SPECIES.COMMON_NAME),
           enumField("conservationCategory", SPECIES.CONSERVATION_CATEGORY_ID, localize = false),
-          textField("familyName", SPECIES.FAMILY_NAME, nullable = false),
+          textField("familyName", SPECIES.FAMILY_NAME),
           idWrapperField("id", SPECIES.ID) { SpeciesId(it) },
           booleanField("rare", SPECIES.RARE),
-          textField("scientificName", SPECIES.SCIENTIFIC_NAME, nullable = false),
+          textField("scientificName", SPECIES.SCIENTIFIC_NAME),
           enumField("seedStorageBehavior", SPECIES.SEED_STORAGE_BEHAVIOR_ID),
       )
 

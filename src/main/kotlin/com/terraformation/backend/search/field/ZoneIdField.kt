@@ -15,7 +15,6 @@ class ZoneIdField(
     override val fieldName: String,
     override val databaseField: TableField<*, ZoneId?>,
     override val table: SearchTable,
-    override val nullable: Boolean = true
 ) : SingleColumnSearchField<ZoneId>() {
   private val validZoneNames = ZoneId.getAvailableZoneIds()
 

@@ -34,11 +34,11 @@ class DraftPlantingSitesTable(tables: SearchTables) : SearchTable() {
 
   override val fields: List<SearchField> =
       listOf(
-          timestampField("createdTime", DRAFT_PLANTING_SITES.CREATED_TIME, nullable = false),
+          timestampField("createdTime", DRAFT_PLANTING_SITES.CREATED_TIME),
           textField("description", DRAFT_PLANTING_SITES.DESCRIPTION),
           idWrapperField("id", DRAFT_PLANTING_SITES.ID) { DraftPlantingSiteId(it) },
-          timestampField("modifiedTime", DRAFT_PLANTING_SITES.MODIFIED_TIME, nullable = false),
-          textField("name", DRAFT_PLANTING_SITES.NAME, nullable = false),
+          timestampField("modifiedTime", DRAFT_PLANTING_SITES.MODIFIED_TIME),
+          textField("name", DRAFT_PLANTING_SITES.NAME),
           integerField("numPlantingZones", DRAFT_PLANTING_SITES.NUM_PLANTING_ZONES),
           integerField("numPlantingSubzones", DRAFT_PLANTING_SITES.NUM_PLANTING_SUBZONES),
           zoneIdField("timeZone", DRAFT_PLANTING_SITES.TIME_ZONE),

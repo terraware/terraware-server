@@ -14,9 +14,6 @@ class IdWrapperField<T : Any>(
     override val table: SearchTable,
     private val fromLong: (Long) -> T,
 ) : SingleColumnSearchField<T>() {
-  override val nullable: Boolean
-    get() = false
-
   override fun getCondition(fieldNode: FieldNode): Condition {
     val allValues = fieldNode.values.filterNotNull().map { fromLong(it.toLong()) }
     return when (fieldNode.type) {

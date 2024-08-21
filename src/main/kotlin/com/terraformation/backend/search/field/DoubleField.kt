@@ -10,10 +10,9 @@ class DoubleField(
     fieldName: String,
     databaseField: Field<Double?>,
     table: SearchTable,
-    nullable: Boolean = true,
     localize: Boolean = true,
     exportable: Boolean = true,
-) : NumericSearchField<Double>(fieldName, databaseField, table, nullable, localize, exportable) {
+) : NumericSearchField<Double>(fieldName, databaseField, table, localize, exportable) {
   override fun fromString(value: String) = numberFormat.parse(value).toDouble()
 
   override fun makeNumberFormat(): NumberFormat {
@@ -24,7 +23,7 @@ class DoubleField(
 
   override fun raw(): SearchField? {
     return if (localize) {
-      DoubleField(rawFieldName(), databaseField, table, nullable, false, false)
+      DoubleField(rawFieldName(), databaseField, table, false, false)
     } else {
       null
     }

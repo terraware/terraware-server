@@ -30,7 +30,7 @@ class ParticipantsTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       listOf(
           idWrapperField("id", PARTICIPANTS.ID) { ParticipantId(it) },
-          textField("name", PARTICIPANTS.NAME, nullable = false),
+          textField("name", PARTICIPANTS.NAME),
       )
 
   override fun conditionForVisibility(): Condition {

@@ -224,82 +224,60 @@ abstract class SearchTable {
       databaseField: TableField<*, LocalDate?>,
       granularity: AgeField.AgeGranularity,
       clock: Clock,
-      nullable: Boolean = true,
-  ) = AgeField(fieldName, databaseField, this, nullable, true, true, granularity, clock)
+  ) = AgeField(fieldName, databaseField, this, true, true, granularity, clock)
 
-  fun bigDecimalField(
-      fieldName: String,
-      databaseField: Field<BigDecimal?>,
-  ) = BigDecimalField(fieldName, databaseField, this)
+  fun bigDecimalField(fieldName: String, databaseField: Field<BigDecimal?>) =
+      BigDecimalField(fieldName, databaseField, this)
 
-  fun booleanField(fieldName: String, databaseField: Field<Boolean?>, nullable: Boolean = true) =
-      BooleanField(fieldName, databaseField, this, nullable)
+  fun booleanField(fieldName: String, databaseField: Field<Boolean?>) =
+      BooleanField(fieldName, databaseField, this)
 
-  fun dateField(
-      fieldName: String,
-      databaseField: TableField<*, LocalDate?>,
-      nullable: Boolean = false
-  ) = DateField(fieldName, databaseField, this, nullable)
+  fun dateField(fieldName: String, databaseField: TableField<*, LocalDate?>) =
+      DateField(fieldName, databaseField, this)
 
-  fun doubleField(fieldName: String, databaseField: Field<Double?>, nullable: Boolean = false) =
-      DoubleField(fieldName, databaseField, this, nullable)
+  fun doubleField(fieldName: String, databaseField: Field<Double?>) =
+      DoubleField(fieldName, databaseField, this)
 
   inline fun <E : Enum<E>, reified T : LocalizableEnum<E>> enumField(
       fieldName: String,
       databaseField: TableField<*, T?>,
-      nullable: Boolean = true,
       localize: Boolean = true,
-  ) = EnumField(fieldName, databaseField, this, T::class.java, nullable, localize)
+  ) = EnumField(fieldName, databaseField, this, T::class.java, localize)
 
-  fun geometryField(
-      fieldName: String,
-      databaseField: TableField<*, Geometry?>,
-      nullable: Boolean = true
-  ) = GeometryField(fieldName, databaseField, this, nullable)
+  fun geometryField(fieldName: String, databaseField: TableField<*, Geometry?>) =
+      GeometryField(fieldName, databaseField, this)
 
   fun <T : Any> idWrapperField(fieldName: String, databaseField: Field<T?>, fromLong: (Long) -> T) =
       IdWrapperField(fieldName, databaseField, this, fromLong)
 
-  fun integerField(
-      fieldName: String,
-      databaseField: Field<Int?>,
-      nullable: Boolean = true,
-      localize: Boolean = true,
-  ) = IntegerField(fieldName, databaseField, this, nullable, localize)
+  fun integerField(fieldName: String, databaseField: Field<Int?>, localize: Boolean = true) =
+      IntegerField(fieldName, databaseField, this, localize)
 
   fun localizedTextField(
       fieldName: String,
       databaseField: TableField<*, String?>,
-      resourceBundleName: String,
-      nullable: Boolean = true
-  ) = LocalizedTextField(fieldName, databaseField, resourceBundleName, this, nullable)
+      resourceBundleName: String
+  ) = LocalizedTextField(fieldName, databaseField, resourceBundleName, this)
 
   fun longField(fieldName: String, databaseField: Field<Long?>, nullable: Boolean = true) =
-      LongField(fieldName, databaseField, this, nullable)
+      LongField(fieldName, databaseField, this)
 
   inline fun <E : Enum<E>, reified T : EnumFromReferenceTable<*, E>> nonLocalizableEnumField(
       fieldName: String,
-      databaseField: TableField<*, T?>,
-      nullable: Boolean = true
-  ) = NonLocalizableEnumField(fieldName, databaseField, this, T::class.java, nullable)
+      databaseField: TableField<*, T?>
+  ) = NonLocalizableEnumField(fieldName, databaseField, this, T::class.java)
 
-  fun textField(fieldName: String, databaseField: Field<String?>, nullable: Boolean = true) =
-      TextField(fieldName, databaseField, this, nullable)
+  fun textField(fieldName: String, databaseField: Field<String?>) =
+      TextField(fieldName, databaseField, this)
 
-  fun timestampField(
-      fieldName: String,
-      databaseField: TableField<*, Instant?>,
-      nullable: Boolean = true
-  ) = TimestampField(fieldName, databaseField, this, nullable)
+  fun timestampField(fieldName: String, databaseField: TableField<*, Instant?>) =
+      TimestampField(fieldName, databaseField, this)
 
-  fun upperCaseTextField(
-      fieldName: String,
-      databaseField: Field<String?>,
-      nullable: Boolean = true
-  ) = UpperCaseTextField(fieldName, databaseField, this, nullable)
+  fun upperCaseTextField(fieldName: String, databaseField: Field<String?>) =
+      UpperCaseTextField(fieldName, databaseField, this)
 
-  fun uriField(fieldName: String, databaseField: Field<URI?>, nullable: Boolean = true) =
-      UriField(fieldName, databaseField, this, nullable)
+  fun uriField(fieldName: String, databaseField: Field<URI?>) =
+      UriField(fieldName, databaseField, this)
 
   /**
    * Returns an array of [SearchField]s for a seed quantity: one for each supported weight unit, one
@@ -359,9 +337,6 @@ abstract class SearchTable {
         enumField("${fieldNamePrefix}Units".uncapitalize(), unitsField))
   }
 
-  fun zoneIdField(
-      fieldName: String,
-      databaseField: TableField<*, ZoneId?>,
-      nullable: Boolean = true
-  ) = ZoneIdField(fieldName, databaseField, this, nullable)
+  fun zoneIdField(fieldName: String, databaseField: TableField<*, ZoneId?>) =
+      ZoneIdField(fieldName, databaseField, this)
 }

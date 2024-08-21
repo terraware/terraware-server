@@ -21,7 +21,6 @@ class TextField(
     override val fieldName: String,
     override val databaseField: Field<String?>,
     override val table: SearchTable,
-    override val nullable: Boolean = true,
 ) : SingleColumnSearchField<String>() {
   override val localize: Boolean
     get() = false

@@ -42,15 +42,15 @@ class FacilitiesTable(tables: SearchTables) : SearchTable() {
           dateField("buildCompletedDate", FACILITIES.BUILD_COMPLETED_DATE),
           dateField("buildStartedDate", FACILITIES.BUILD_STARTED_DATE),
           integerField("capacity", FACILITIES.CAPACITY),
-          enumField("connectionState", FACILITIES.CONNECTION_STATE_ID, nullable = false),
-          timestampField("createdTime", FACILITIES.CREATED_TIME, nullable = false),
+          enumField("connectionState", FACILITIES.CONNECTION_STATE_ID),
+          timestampField("createdTime", FACILITIES.CREATED_TIME),
           textField("description", FACILITIES.DESCRIPTION),
-          integerField("facilityNumber", FACILITIES.FACILITY_NUMBER, nullable = false),
+          integerField("facilityNumber", FACILITIES.FACILITY_NUMBER),
           idWrapperField("id", FACILITIES.ID) { FacilityId(it) },
-          textField("name", FACILITIES.NAME, nullable = false),
+          textField("name", FACILITIES.NAME),
           dateField("operationStartedDate", FACILITIES.OPERATION_STARTED_DATE),
           zoneIdField("timeZone", FACILITIES.TIME_ZONE),
-          enumField("type", FACILITIES.TYPE_ID, nullable = false),
+          enumField("type", FACILITIES.TYPE_ID),
       )
 
   override fun conditionForVisibility(): Condition {

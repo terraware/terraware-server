@@ -31,14 +31,13 @@ class CohortsTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       listOf(
           idWrapperField("id", COHORTS.ID) { CohortId(it) },
-          textField("name", COHORTS.NAME, nullable = false),
+          textField("name", COHORTS.NAME),
           integerField(
               "numParticipants",
               DSL.field(
                   DSL.selectCount()
                       .from(PARTICIPANTS)
-                      .where(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))),
-              nullable = false),
+                      .where(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID)))),
           enumField("phase", COHORTS.PHASE_ID),
       )
 

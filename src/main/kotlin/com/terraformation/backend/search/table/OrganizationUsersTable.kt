@@ -27,7 +27,7 @@ class OrganizationUsersTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       listOf(
           timestampField("createdTime", ORGANIZATION_USERS.CREATED_TIME),
-          enumField("roleName", ORGANIZATION_USERS.ROLE_ID, nullable = false))
+          enumField("roleName", ORGANIZATION_USERS.ROLE_ID))
 
   override val primaryKey: TableField<out Record, out Any?>
     get() = ORGANIZATION_USERS.ORGANIZATION_USER_ID

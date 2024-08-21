@@ -31,10 +31,10 @@ class EventsTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       listOf(
           idWrapperField("id", EVENTS.ID) { EventId(it) },
-          enumField("status", EVENTS.EVENT_STATUS_ID, nullable = false),
-          enumField("type", EVENTS.EVENT_TYPE_ID, nullable = false),
-          timestampField("startTime", EVENTS.START_TIME, nullable = false),
-          timestampField("endTime", EVENTS.END_TIME, nullable = false),
+          enumField("status", EVENTS.EVENT_STATUS_ID),
+          enumField("type", EVENTS.EVENT_TYPE_ID),
+          timestampField("startTime", EVENTS.START_TIME),
+          timestampField("endTime", EVENTS.END_TIME),
           uriField("meetingUrl", EVENTS.MEETING_URL),
           uriField("recordingUrl", EVENTS.RECORDING_URL),
           uriField("slidesUrl", EVENTS.SLIDES_URL),

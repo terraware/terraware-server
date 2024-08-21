@@ -15,7 +15,6 @@ class TimestampField(
     override val fieldName: String,
     override val databaseField: TableField<*, Instant?>,
     override val table: SearchTable,
-    override val nullable: Boolean = true
 ) : SingleColumnSearchField<Instant>() {
   override val localize: Boolean
     get() = false

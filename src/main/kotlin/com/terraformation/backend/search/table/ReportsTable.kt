@@ -33,9 +33,9 @@ class ReportsTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       listOf(
           idWrapperField("id", REPORTS.ID) { ReportId(it) },
-          integerField("quarter", REPORTS.QUARTER, nullable = false),
-          enumField("status", REPORTS.STATUS_ID, nullable = false),
-          integerField("year", REPORTS.YEAR, nullable = false),
+          integerField("quarter", REPORTS.QUARTER),
+          enumField("status", REPORTS.STATUS_ID),
+          integerField("year", REPORTS.YEAR),
       )
 
   override fun conditionForVisibility(): Condition {

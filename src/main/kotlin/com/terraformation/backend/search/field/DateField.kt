@@ -15,7 +15,6 @@ class DateField(
     override val fieldName: String,
     override val databaseField: TableField<*, LocalDate?>,
     override val table: SearchTable,
-    override val nullable: Boolean
 ) : SingleColumnSearchField<LocalDate>() {
   override val supportedFilterTypes: Set<SearchFilterType>
     get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Range)

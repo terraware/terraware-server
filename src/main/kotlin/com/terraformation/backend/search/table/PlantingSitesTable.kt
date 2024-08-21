@@ -45,12 +45,12 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
   override val fields: List<SearchField> =
       listOf(
           geometryField("boundary", PLANTING_SITE_SUMMARIES.BOUNDARY),
-          timestampField("createdTime", PLANTING_SITE_SUMMARIES.CREATED_TIME, nullable = false),
+          timestampField("createdTime", PLANTING_SITE_SUMMARIES.CREATED_TIME),
           textField("description", PLANTING_SITE_SUMMARIES.DESCRIPTION),
           geometryField("exclusion", PLANTING_SITE_SUMMARIES.EXCLUSION),
           idWrapperField("id", PLANTING_SITE_SUMMARIES.ID) { PlantingSiteId(it) },
-          timestampField("modifiedTime", PLANTING_SITE_SUMMARIES.MODIFIED_TIME, nullable = false),
-          textField("name", PLANTING_SITE_SUMMARIES.NAME, nullable = false),
+          timestampField("modifiedTime", PLANTING_SITE_SUMMARIES.MODIFIED_TIME),
+          textField("name", PLANTING_SITE_SUMMARIES.NAME),
           longField("numPlantingZones", PLANTING_SITE_SUMMARIES.NUM_PLANTING_ZONES),
           longField("numPlantingSubzones", PLANTING_SITE_SUMMARIES.NUM_PLANTING_SUBZONES),
           zoneIdField("timeZone", PLANTING_SITE_SUMMARIES.TIME_ZONE),

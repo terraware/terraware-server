@@ -14,7 +14,6 @@ class UriField(
     override val fieldName: String,
     override val databaseField: Field<URI?>,
     override val table: SearchTable,
-    override val nullable: Boolean = true,
 ) : SingleColumnSearchField<URI>() {
   override val localize: Boolean
     get() = false

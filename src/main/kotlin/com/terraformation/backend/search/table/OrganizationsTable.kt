@@ -65,9 +65,9 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
       listOf(
           textField("countryCode", ORGANIZATIONS.COUNTRY_CODE),
           textField("countrySubdivisionCode", ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE),
-          timestampField("createdTime", ORGANIZATIONS.CREATED_TIME, nullable = false),
+          timestampField("createdTime", ORGANIZATIONS.CREATED_TIME),
           idWrapperField("id", ORGANIZATIONS.ID) { OrganizationId(it) },
-          textField("name", ORGANIZATIONS.NAME, nullable = false),
+          textField("name", ORGANIZATIONS.NAME),
           zoneIdField("timeZone", ORGANIZATIONS.TIME_ZONE),
       )
 

@@ -35,10 +35,10 @@ class ModulesTable(tables: SearchTables) : SearchTable() {
           textField("additionalResources", MODULES.ADDITIONAL_RESOURCES),
           idWrapperField("id", MODULES.ID) { ModuleId(it) },
           textField("liveSessionDescription", MODULES.LIVE_SESSION_DESCRIPTION),
-          textField("name", MODULES.NAME, nullable = false),
+          textField("name", MODULES.NAME),
           textField("oneOnOneSessionDescription", MODULES.ONE_ON_ONE_SESSION_DESCRIPTION),
           textField("overview", MODULES.OVERVIEW),
-          enumField("phase", MODULES.PHASE_ID, nullable = false),
+          enumField("phase", MODULES.PHASE_ID),
           textField("preparationMaterials", MODULES.PREPARATION_MATERIALS),
           textField("workshopDescription", MODULES.WORKSHOP_DESCRIPTION),
       )
