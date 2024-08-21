@@ -270,6 +270,7 @@ data class DeliverablePayload(
     @Schema(
         description =
             "If the deliverable has been reviewed, the user-visible feedback from the review.")
+    val dueDate: LocalDate?,
     val feedback: String?,
     val id: DeliverableId,
     @Schema(
@@ -293,6 +294,7 @@ data class DeliverablePayload(
       model.category,
       model.descriptionHtml,
       model.documents.map { SubmissionDocumentPayload(it) },
+      model.dueDate,
       model.feedback,
       model.deliverableId,
       model.internalComment,
