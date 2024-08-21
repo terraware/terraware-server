@@ -1,3 +1,4 @@
+2c9d699177f Limit to visible projects in participant store (#2312)
 b12a3ed40cd SW-5203 Remove "nullable" from search fields (#2311)
 3147d716142 SW-5790 Added due date to deliverable payload (#2310)
 8bae69c8e40 Added country code column to applications (#2304)
