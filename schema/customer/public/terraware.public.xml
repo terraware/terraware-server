@@ -15,6 +15,7 @@
       </table>
       <table name="countries" numRows="249" remarks="Country information per ISO-3166." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="code" nullable="false" remarks="ISO-3166 alpha-2 country code. We use this code to refer to countries elsewhere in the data model." size="2147483647" type="text" typeCode="12">
+            <child column="country_code" foreignKey="applications_country_code_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="applications"/>
             <child column="country_code" foreignKey="country_subdivisions_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="country_subdivisions"/>
             <child column="country_code" foreignKey="organizations_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
             <child column="country_code" foreignKey="projects_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
