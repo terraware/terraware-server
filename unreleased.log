@@ -1,3 +1,4 @@
+ff5b3b005b6 SW-5801 Import project setup data from PDH (#2301)
 48ff31dca8f SW-5867 Show species projects to external users (#2308)
 58e836e429d SW-5823 Don't require optional application deliverables (#2307)
 ec2dabcd170 Update dependency gradle to v8.10 (#2296)
