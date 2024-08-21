@@ -2,7 +2,6 @@ package com.terraformation.backend.documentproducer.api
 
 import com.terraformation.backend.api.ControllerIntegrationTest
 import com.terraformation.backend.db.docprod.DocumentId
-import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
 import java.math.BigDecimal
