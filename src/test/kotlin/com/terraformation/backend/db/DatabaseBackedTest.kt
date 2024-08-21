@@ -2194,6 +2194,7 @@ abstract class DatabaseBackedTest {
 
   fun insertApplication(
       boundary: Geometry? = null,
+      countryCode: String? = null,
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       feedback: String? = null,
@@ -2208,6 +2209,7 @@ abstract class DatabaseBackedTest {
         ApplicationsRow(
             applicationStatusId = status,
             boundary = boundary,
+            countryCode = countryCode,
             createdBy = createdBy,
             createdTime = createdTime,
             feedback = feedback,

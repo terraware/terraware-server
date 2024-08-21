@@ -187,7 +187,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       organizationId2 = insertOrganization(name = "Organization 2")
       org2ProjectId1 = insertProject(organizationId = organizationId2, name = "Project C")
       org2Project1ApplicationId =
-          insertApplication(projectId = org2ProjectId1, internalName = "internalName3")
+          insertApplication(
+              projectId = org2ProjectId1, countryCode = "US", internalName = "internalName3")
 
       every { user.adminOrganizations() } returns setOf(organizationId, organizationId2)
     }
@@ -354,6 +355,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     projectName = "Project B",
                     status = ApplicationStatus.PLReview),
                 ExistingApplicationModel(
+                    countryCode = "US",
                     createdTime = Instant.EPOCH,
                     id = org2Project1ApplicationId,
                     internalName = "internalName3",
@@ -1483,7 +1485,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class UpdateBoundary {
     @Test
-    fun `updates boundary and sets internal name if country part not already set`() {
+    fun `updates boundary and sets internal name and country code if country part not already set`() {
       val otherUserId = insertUser()
       val applicationId =
           insertApplication(createdBy = otherUserId, internalName = "XXX_Organization 1")
@@ -1497,6 +1499,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           ApplicationsRow(
               applicationStatusId = ApplicationStatus.NotSubmitted,
+              countryCode = "GB",
               createdBy = otherUserId,
               createdTime = Instant.EPOCH,
               id = applicationId,

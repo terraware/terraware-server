@@ -474,14 +474,15 @@ class ApplicationStore(
         val countries = countryDetector.getCountries(boundary)
 
         if (countries.size == 1) {
-          val alpha3CountryCode =
-              countriesDao.fetchOneByCode(countries.single())?.codeAlpha3 ?: "XXX"
+          val countryCode = countries.single()
+          val alpha3CountryCode = countriesDao.fetchOneByCode(countryCode)?.codeAlpha3 ?: "XXX"
           val organizationName =
               organizationsDao.fetchOneById(existing.organizationId)?.name
                   ?: throw OrganizationNotFoundException(existing.organizationId)
           val internalName = "${alpha3CountryCode}_$organizationName"
 
           updateInternalName(applicationId, internalName)
+          updateCountryCode(applicationId, countryCode)
         } else {
           log.debug(
               "Not setting internal name for application $applicationId because boundary is not " +
@@ -540,6 +541,17 @@ class ApplicationStore(
           .execute()
 
       suffixedName
+    }
+  }
+
+  /** Updates the country code of an application. */
+  private fun updateCountryCode(applicationId: ApplicationId, countryCode: String) {
+    with(APPLICATIONS) {
+      dslContext
+          .update(APPLICATIONS)
+          .set(COUNTRY_CODE, countryCode)
+          .where(ID.eq(applicationId))
+          .execute()
     }
   }
 

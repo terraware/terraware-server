@@ -12,6 +12,7 @@ import org.locationtech.jts.geom.Geometry
 
 data class ExistingApplicationModel(
     val boundary: Geometry? = null,
+    val countryCode: String? = null,
     val createdTime: Instant,
     val feedback: String? = null,
     val id: ApplicationId,
@@ -25,10 +26,14 @@ data class ExistingApplicationModel(
     val status: ApplicationStatus,
 ) {
   companion object {
-    fun of(record: Record, modifiedTimeField: Field<Instant?>? = null): ExistingApplicationModel {
+    fun of(
+        record: Record,
+        modifiedTimeField: Field<Instant?>? = null,
+    ): ExistingApplicationModel {
       return with(APPLICATIONS) {
         ExistingApplicationModel(
             boundary = record[BOUNDARY],
+            countryCode = record[COUNTRY_CODE],
             createdTime = record[CREATED_TIME]!!,
             feedback = record[FEEDBACK],
             id = record[ID]!!,
