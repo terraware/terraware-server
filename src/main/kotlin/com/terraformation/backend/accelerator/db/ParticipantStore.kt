@@ -132,7 +132,12 @@ class ParticipantStore(
                     .from(PROJECTS)
                     .where(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
                     .orderBy(PROJECTS.ID))
-            .convertFrom { result -> result.map { it[PROJECTS.ID.asNonNullable()] }.toSet() }
+            .convertFrom { result ->
+              result
+                  .map { it[PROJECTS.ID.asNonNullable()] }
+                  .filter { user.canReadProject(it) }
+                  .toSet()
+            }
 
     return with(PARTICIPANTS) {
       dslContext

@@ -31,6 +31,7 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     every { user.canReadParticipant(any()) } returns true
+    every { user.canReadProject(any()) } returns true
   }
 
   @Nested
@@ -134,14 +135,17 @@ class ParticipantStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class FetchOneById {
     @Test
-    fun `populates all fields including project list`() {
+    fun `populates all fields including visible project list`() {
       val cohortId = insertCohort()
       val participantId = insertParticipant(cohortId = cohortId, name = "Test Name")
 
       insertOrganization()
       val projectId1 = insertProject(participantId = participantId)
       val projectId2 = insertProject(participantId = participantId)
+      val invisibleProjectId = insertProject(participantId = participantId)
       insertProject()
+
+      every { user.canReadProject(invisibleProjectId) } returns false
 
       assertEquals(
           ExistingParticipantModel(

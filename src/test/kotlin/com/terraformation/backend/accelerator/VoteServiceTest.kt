@@ -11,6 +11,7 @@ import com.terraformation.backend.accelerator.event.CohortParticipantAddedEvent
 import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.VoteOption
@@ -30,11 +31,15 @@ class VoteServiceTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
+
+  private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
+
   private val service: VoteService by lazy {
     VoteService(
         CohortStore(clock, cohortsDao, dslContext, eventPublisher),
         dslContext,
         ParticipantStore(clock, dslContext, eventPublisher, participantsDao),
+        systemUser,
         VoteStore(clock, dslContext, PhaseChecker(dslContext)))
   }
 
@@ -87,7 +92,8 @@ class VoteServiceTest : DatabaseTest(), RunsAsUser {
                   userId = voter1,
                   createdTime = Instant.EPOCH,
                   voteOption = VoteOption.No,
-                  conditionalInfo = "cond"),
+                  conditionalInfo = "cond",
+                  createdBySystemUser = false),
               votesRow(voter2)),
           projectVotesDao.findAll().toSet())
     }
@@ -155,7 +161,10 @@ class VoteServiceTest : DatabaseTest(), RunsAsUser {
           setOf(
               // First row is inserted by test, not by service
               votesRow(
-                  userId = voter1, projectId = projectId1, phase = CohortPhase.Phase0DueDiligence),
+                  userId = voter1,
+                  projectId = projectId1,
+                  phase = CohortPhase.Phase0DueDiligence,
+                  createdBySystemUser = false),
               votesRow(userId = voter1, projectId = projectId1, phase = phase),
               votesRow(userId = voter2, projectId = projectId1, phase = phase),
               votesRow(userId = voter1, projectId = projectId2, phase = phase),
@@ -177,12 +186,13 @@ class VoteServiceTest : DatabaseTest(), RunsAsUser {
       createdTime: Instant = clock.instant,
       voteOption: VoteOption? = null,
       conditionalInfo: String? = null,
+      createdBySystemUser: Boolean = true,
   ): ProjectVotesRow {
     return ProjectVotesRow(
         conditionalInfo = conditionalInfo,
-        createdBy = user.userId,
+        createdBy = if (createdBySystemUser) systemUser.userId else user.userId,
         createdTime = createdTime,
-        modifiedBy = user.userId,
+        modifiedBy = if (createdBySystemUser) systemUser.userId else user.userId,
         modifiedTime = createdTime,
         phaseId = phase,
         projectId = projectId,
