@@ -1191,14 +1191,18 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               messages.applicationPreScreenFailureBadSize("United States", 15000, 100000),
               messages.applicationPreScreenFailureTooFewSpecies(10)),
-          result.problems)
+          result.problems,
+          "Pre-Screen problems from submitting")
 
+      val feedbackHtml =
+          "<ul>\n" +
+              "<li>${result.problems[0]}</li>\n" +
+              "<li>${result.problems[1]}</li>\n" +
+              "</ul>"
+
+      assertEquals(feedbackHtml, result.application.feedback, "Pre-Screen feedback HTML")
       assertEquals(
-          "${messages.applicationPreScreenFailureBadSize("United States", 15000, 100000)}\n" +
-              messages.applicationPreScreenFailureTooFewSpecies(10),
-          result.application.feedback)
-
-      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
+          ApplicationStatus.FailedPreScreen, result.application.status, "Pre-Screen status")
     }
 
     @Test
