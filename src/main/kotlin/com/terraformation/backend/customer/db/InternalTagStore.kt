@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.InternalTagIsSystemDefinedException
 import com.terraformation.backend.db.InternalTagNotFoundException
@@ -17,6 +18,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import jakarta.inject.Named
 import java.time.Clock
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 
 @Named
 class InternalTagStore(
@@ -110,6 +112,29 @@ class InternalTagStore(
           .orderBy(ORGANIZATION_ID, INTERNAL_TAG_ID)
           .fetchGroups(ORGANIZATION_ID.asNonNullable(), INTERNAL_TAG_ID.asNonNullable())
           .mapValues { it.value.toSet() }
+    }
+  }
+
+  fun fetchAllOrganizationsWithTagIds(): Map<OrganizationModel, Set<InternalTagId>> {
+    requirePermissions { readInternalTags() }
+
+    return with(ORGANIZATION_INTERNAL_TAGS) {
+      val internalTagsMultiset =
+          DSL.multiset(
+                  DSL.select(INTERNAL_TAG_ID.asNonNullable())
+                      .from(ORGANIZATION_INTERNAL_TAGS)
+                      .where(ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+                      .orderBy(INTERNAL_TAG_ID))
+              .convertFrom { result -> result.map { it.value1() }.toSet() }
+
+      dslContext
+          .select(ORGANIZATIONS.asterisk(), internalTagsMultiset)
+          .from(ORGANIZATIONS)
+          .orderBy(ORGANIZATIONS.ID)
+          .fetch { record ->
+            OrganizationModel(record) to (record[internalTagsMultiset] ?: emptySet())
+          }
+          .toMap()
     }
   }
 

@@ -5,6 +5,7 @@ import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.db.InternalTagStore
+import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -33,7 +34,19 @@ class InternalTagsController(
     return ListAllInternalTagsResponsePayload(rows.map { InternalTagPayload(it) })
   }
 
-  @GetMapping("/organizations/{organizationId}/internalTags")
+  @GetMapping("/internalTags/organizations")
+  @Operation(
+      summary = "List the internal tags assigned to all organizations",
+      description =
+          "This includes organizations with no internal tags, whose list of tags will be empty.")
+  fun listAllOrganizationInternalTags(): ListAllOrganizationInternalTagsResponsePayload {
+    val organizations = internalTagStore.fetchAllOrganizationsWithTagIds()
+
+    return ListAllOrganizationInternalTagsResponsePayload(
+        organizations.map { OrganizationInternalTagsPayload(it.key, it.value) })
+  }
+
+  @GetMapping("/internalTags/organizations/{organizationId}")
   @Operation(summary = "List the internal tags assigned to an organization")
   fun listOrganizationInternalTags(
       @PathVariable organizationId: OrganizationId
@@ -43,7 +56,7 @@ class InternalTagsController(
     return ListOrganizationInternalTagsResponsePayload(tagIds)
   }
 
-  @PutMapping("/organizations/{organizationId}/internalTags")
+  @PutMapping("/internalTags/organizations/{organizationId}")
   @Operation(summary = "Replace the list of internal tags assigned to an organization")
   fun updateOrganizationInternalTags(
       @PathVariable organizationId: OrganizationId,
@@ -69,8 +82,23 @@ data class InternalTagPayload(
   ) : this(id = row.id!!, name = row.name!!, isSystem = row.isSystem!!)
 }
 
+data class OrganizationInternalTagsPayload(
+    val organizationId: OrganizationId,
+    val organizationName: String,
+    val internalTagIds: Set<InternalTagId>,
+) {
+  constructor(
+      model: OrganizationModel,
+      tagIds: Set<InternalTagId>
+  ) : this(model.id, model.name, tagIds)
+}
+
 data class ListAllInternalTagsResponsePayload(val tags: List<InternalTagPayload>) :
     SuccessResponsePayload
+
+data class ListAllOrganizationInternalTagsResponsePayload(
+    val organizations: List<OrganizationInternalTagsPayload>
+) : SuccessResponsePayload
 
 data class ListOrganizationInternalTagsResponsePayload(val tagIds: Set<InternalTagId>) :
     SuccessResponsePayload
