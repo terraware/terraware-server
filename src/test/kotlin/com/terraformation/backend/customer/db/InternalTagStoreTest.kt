@@ -3,6 +3,7 @@ package com.terraformation.backend.customer.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.InternalTagIsSystemDefinedException
 import com.terraformation.backend.db.default_schema.InternalTagId
@@ -13,6 +14,7 @@ import io.mockk.every
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.function.Executable
@@ -134,6 +136,43 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
             otherOrganizationId to setOf(InternalTagIds.Testing),
         ),
         store.fetchAllOrganizationTagIds())
+  }
+
+  @Nested
+  inner class FetchAllOrganizationsWithTagIds {
+    @Test
+    fun `handles organizations with 0, 1, and multiple tags`() {
+      val organizationIdWithNoTags = insertOrganization(name = "No Tags")
+      val organizationIdWithOneTag = insertOrganization(name = "One Tag")
+      insertOrganizationInternalTag(tagId = InternalTagIds.Testing)
+      val organizationIdWithTwoTags = insertOrganization(name = "Two Tags")
+      insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
+      insertOrganizationInternalTag(tagId = InternalTagIds.Reporter)
+
+      val noTagsModel =
+          OrganizationModel(
+              id = organizationIdWithNoTags,
+              name = "No Tags",
+              createdTime = Instant.EPOCH,
+              totalUsers = 0)
+      val oneTagModel = noTagsModel.copy(id = organizationIdWithOneTag, name = "One Tag")
+      val twoTagsModel = noTagsModel.copy(id = organizationIdWithTwoTags, name = "Two Tags")
+
+      assertEquals(
+          mapOf(
+              noTagsModel to emptySet(),
+              oneTagModel to setOf(InternalTagIds.Testing),
+              twoTagsModel to setOf(InternalTagIds.Accelerator, InternalTagIds.Reporter),
+          ),
+          store.fetchAllOrganizationsWithTagIds())
+    }
+
+    @Test
+    fun `throws exception if no permission to read internal tags`() {
+      every { user.canReadInternalTags() } returns false
+
+      assertThrows<AccessDeniedException> { store.fetchAllOrganizationsWithTagIds() }
+    }
   }
 
   @Test
