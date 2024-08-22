@@ -420,7 +420,8 @@ class ApplicationStore(
   private fun updatePrescreenFeedback(applicationId: ApplicationId, feedback: List<String>) {
     val feedbackField =
         if (feedback.isNotEmpty()) {
-          feedback.joinToString(separator = "\n")
+          feedback.joinToString(
+              prefix = "<ul>\n<li>", separator = "</li>\n<li>", postfix = "</li>\n</ul>")
         } else {
           null
         }
