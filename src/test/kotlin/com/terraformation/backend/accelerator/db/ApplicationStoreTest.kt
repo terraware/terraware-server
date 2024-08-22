@@ -2,12 +2,9 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
-import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.accelerator.event.ApplicationReviewedEvent
 import com.terraformation.backend.accelerator.model.ApplicationModuleModel
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
-import com.terraformation.backend.accelerator.model.ExternalApplicationStatus
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.accelerator.model.PreScreenVariableValues
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -54,17 +51,9 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock = TestClock()
-  private val eventPublisher = TestEventPublisher()
   private val messages = Messages()
   private val store: ApplicationStore by lazy {
-    ApplicationStore(
-        clock,
-        countriesDao,
-        CountryDetector(),
-        dslContext,
-        eventPublisher,
-        messages,
-        organizationsDao)
+    ApplicationStore(clock, countriesDao, CountryDetector(), dslContext, messages, organizationsDao)
   }
 
   private lateinit var organizationId: OrganizationId
@@ -1026,84 +1015,6 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   internalComment = "internal comment",
                   feedback = "feedback")),
           applicationHistoriesDao.findAll().map { it.copy(id = null) })
-    }
-
-    @Test
-    fun `publishes event for externally visible status change into Accepted, Not Accepted or Waitlist`() {
-      val project1 = insertProject()
-      val project2 = insertProject()
-      val project3 = insertProject()
-      val notAcceptedApplication =
-          insertApplication(
-              status = ApplicationStatus.Submitted,
-              projectId = project1,
-              internalName = "XXX Project1")
-      val waitlistApplication =
-          insertApplication(
-              status = ApplicationStatus.Submitted,
-              projectId = project2,
-              internalName = "XXX Project2")
-      val acceptedApplication =
-          insertApplication(
-              status = ApplicationStatus.Submitted,
-              projectId = project3,
-              internalName = "XXX Project3")
-
-      store.review(notAcceptedApplication) { it.copy(status = ApplicationStatus.NotAccepted) }
-
-      store.review(waitlistApplication) { it.copy(status = ApplicationStatus.IssueActive) }
-
-      store.review(acceptedApplication) { it.copy(status = ApplicationStatus.Accepted) }
-
-      eventPublisher.assertEventPublished(
-          ApplicationReviewedEvent(notAcceptedApplication, ExternalApplicationStatus.NotAccepted))
-      eventPublisher.assertEventPublished(
-          ApplicationReviewedEvent(waitlistApplication, ExternalApplicationStatus.Waitlist))
-      eventPublisher.assertEventPublished(
-          ApplicationReviewedEvent(acceptedApplication, ExternalApplicationStatus.Accepted))
-    }
-
-    @Test
-    fun `does not publish event for non-externally visible status change`() {
-      val waitlistApplication = insertApplication(status = ApplicationStatus.IssueActive)
-      store.review(waitlistApplication) { it.copy(status = ApplicationStatus.IssuePending) }
-      store.review(waitlistApplication) { it.copy(status = ApplicationStatus.IssueResolved) }
-
-      eventPublisher.assertEventNotPublished<ApplicationReviewedEvent>()
-    }
-
-    @Test
-    fun `does not publish event for non-result status change`() {
-      val applicationId = insertApplication(status = ApplicationStatus.NotSubmitted)
-
-      val nonResultStatuses =
-          setOf(
-              ApplicationStatus.FailedPreScreen,
-              ApplicationStatus.PassedPreScreen,
-              ApplicationStatus.Submitted,
-              ApplicationStatus.CarbonEligible,
-              ApplicationStatus.PLReview,
-              ApplicationStatus.PreCheck,
-              ApplicationStatus.NeedsFollowUp,
-              ApplicationStatus.ReadyForReview,
-          )
-
-      nonResultStatuses.forEach { newStatus ->
-        store.review(applicationId) { it.copy(status = newStatus) }
-      }
-
-      eventPublisher.assertEventNotPublished<ApplicationReviewedEvent>()
-    }
-
-    @Test
-    fun `does not publish event for no status change`() {
-      val applicationId = insertApplication(status = ApplicationStatus.IssuePending)
-
-      store.review(applicationId) {
-        it.copy(feedback = "New feedback", internalComment = "New internal comment")
-      }
-
-      eventPublisher.assertEventNotPublished<ApplicationReviewedEvent>()
     }
 
     @Test

@@ -9,13 +9,11 @@ import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
-import com.terraformation.backend.accelerator.event.ApplicationStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
-import com.terraformation.backend.accelerator.model.ExternalApplicationStatus
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.auth.currentUser
@@ -869,25 +867,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
         userId = user.userId,
         organizationId = null)
-  }
-
-  @Test
-  fun `should store application status update notification`() {
-    insertOrganizationUser(role = Role.Manager)
-    insertProject()
-    insertApplication()
-
-    every { messages.applicationStatusUpdatedNotifcation(any()) } returns
-        NotificationMessage("application status title", "application status body")
-
-    service.on(
-        ApplicationStatusUpdatedEvent(inserted.applicationId, ExternalApplicationStatus.Accepted))
-
-    assertNotification(
-        type = NotificationType.ApplicationStatusUpdate,
-        title = "application status title",
-        body = "application status body",
-        localUrl = webAppUrls.applicationReview(inserted.applicationId))
   }
 
   @Test
