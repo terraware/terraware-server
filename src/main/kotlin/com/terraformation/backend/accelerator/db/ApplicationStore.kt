@@ -46,6 +46,7 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.Geometry
+import org.springframework.web.util.HtmlUtils
 
 @Named
 class ApplicationStore(
@@ -421,7 +422,9 @@ class ApplicationStore(
     val feedbackField =
         if (feedback.isNotEmpty()) {
           feedback.joinToString(
-              prefix = "<ul>\n<li>", separator = "</li>\n<li>", postfix = "</li>\n</ul>")
+              prefix = "<ul>\n<li>", separator = "</li>\n<li>", postfix = "</li>\n</ul>") {
+                HtmlUtils.htmlEscape(it)
+              }
         } else {
           null
         }
