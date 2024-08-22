@@ -3,7 +3,6 @@ package com.terraformation.backend.email
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
-import com.terraformation.backend.accelerator.event.ApplicationStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
@@ -12,7 +11,6 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAdd
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
-import com.terraformation.backend.accelerator.model.ExternalApplicationStatus
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
@@ -1056,15 +1054,6 @@ internal class EmailNotificationServiceTest {
     service.on(event)
 
     assertRecipientsEqual(emptySet())
-  }
-
-  @Test
-  fun `applicationStatusUpdated should notify organization`() {
-    val event = ApplicationStatusUpdatedEvent(applicationId, ExternalApplicationStatus.Accepted)
-
-    service.on(event)
-
-    assertRecipientsEqual(organizationRecipients)
   }
 
   @Test
