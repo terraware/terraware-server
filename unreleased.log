@@ -1,3 +1,4 @@
+dad3f39c689 SW-5885 Delete all notifications for application results (#2314)
 8f5a05b872c SW-5754 List all organizations and internal tags (#2315)
 35bb844bee2 Fix intermittent test failures (#2313)
 08078512613 SW-5856 Remove "get variables by manifest" API and implement "get variables by document" API (#2309)
