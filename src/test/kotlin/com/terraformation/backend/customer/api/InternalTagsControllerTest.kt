@@ -75,7 +75,7 @@ class InternalTagsControllerTest : ControllerIntegrationTest() {
       insertOrganizationInternalTag(tagId = InternalTagIds.Reporter)
 
       mockMvc
-          .get("/api/v1/organizations/$organizationId/internalTags")
+          .get("/api/v1/internalTags/organizations/$organizationId")
           .andExpectJson(
               """
                 {
@@ -92,7 +92,7 @@ class InternalTagsControllerTest : ControllerIntegrationTest() {
     @Test
     fun `returns error if user is not a super-admin`() {
       val organizationId = insertOrganization()
-      mockMvc.get("/api/v1/organizations/$organizationId/internalTags").andExpect {
+      mockMvc.get("/api/v1/internalTags/organizations/$organizationId").andExpect {
         status { isForbidden() }
       }
     }
@@ -121,7 +121,7 @@ class InternalTagsControllerTest : ControllerIntegrationTest() {
               .trimIndent()
 
       mockMvc
-          .put("/api/v1/organizations/$organizationId/internalTags") { content = payload }
+          .put("/api/v1/internalTags/organizations/$organizationId") { content = payload }
           .andExpect { status { isOk() } }
 
       assertEquals(
@@ -141,7 +141,7 @@ class InternalTagsControllerTest : ControllerIntegrationTest() {
     fun `returns error if user is not a super-admin`() {
       val organizationId = insertOrganization()
       mockMvc
-          .put("/api/v1/organizations/$organizationId/internalTags") {
+          .put("/api/v1/internalTags/organizations/$organizationId") {
             content = """{ "tagIds": [] }"""
           }
           .andExpect { status { isForbidden() } }
