@@ -1,10 +1,12 @@
 package com.terraformation.backend.admin
 
+import com.terraformation.backend.accelerator.migration.ProjectDocumentsImporter
 import com.terraformation.backend.accelerator.migration.ProjectSetUpImporter
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.importer.CsvImportFailedException
 import com.terraformation.backend.log.perClassLogger
+import java.io.InputStream
 import org.springframework.stereotype.Controller
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
@@ -19,6 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequireGlobalRole([GlobalRole.SuperAdmin])
 @Validated
 class AdminPdhController(
+    private val projectDocumentsImporter: ProjectDocumentsImporter,
     private val projectSetUpImporter: ProjectSetUpImporter,
 ) {
   private val log = perClassLogger()
@@ -28,15 +31,31 @@ class AdminPdhController(
     return "/admin/pdh"
   }
 
+  @PostMapping("/uploadProjectDocuments")
+  fun uploadProjectDocuments(
+      @RequestPart file: MultipartFile,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    return importCsv(file, redirectAttributes, projectDocumentsImporter::importCsv)
+  }
+
   @PostMapping("/uploadProjectSetUp")
   fun uploadProjectSetUp(
       @RequestPart file: MultipartFile,
       redirectAttributes: RedirectAttributes,
   ): String {
-    try {
-      file.inputStream.use { inputStream -> projectSetUpImporter.importCsv(inputStream) }
+    return importCsv(file, redirectAttributes, projectSetUpImporter::importCsv)
+  }
 
-      redirectAttributes.successMessage = "Projects imported successfully."
+  private fun importCsv(
+      file: MultipartFile,
+      redirectAttributes: RedirectAttributes,
+      import: (InputStream) -> Unit
+  ): String {
+    try {
+      file.inputStream.use(import)
+
+      redirectAttributes.successMessage = "Imported successfully."
     } catch (e: CsvImportFailedException) {
       redirectAttributes.failureMessage = e.message
       redirectAttributes.failureDetails = e.errors.map { "Row ${it.rowNumber}: ${it.message}" }

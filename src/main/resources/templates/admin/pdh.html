@@ -9,9 +9,23 @@
 
 <h2>PDH Migration</h2>
 
-<form method="POST" action="/admin/uploadProjectSetUp" enctype="multipart/form-data">
+<form method="POST"
+      action="/admin/uploadProjectSetUp"
+      enctype="multipart/form-data"
+      style="padding-bottom: 2em">
     <label>
         Project Set Up CSV
+        <input type="file" name="file" required/>
+    </label>
+    <input type="submit"/>
+</form>
+
+<form method="POST"
+      action="/admin/uploadProjectDocuments"
+      enctype="multipart/form-data"
+      style="padding-bottom: 2em">
+    <label>
+        Project Documents CSV
         <input type="file" name="file" required/>
     </label>
     <input type="submit"/>

@@ -71,8 +71,9 @@ class SubmissionService(
         dslContext.selectFrom(DELIVERABLES).where(DELIVERABLES.ID.eq(deliverableId)).fetchOne()
             ?: throw DeliverableNotFoundException(deliverableId)
 
+    val isSensitive = deliverableRecord.isSensitive == true
     val documentStore =
-        if (deliverableRecord.isSensitive == true) {
+        if (isSensitive) {
           DocumentStore.Dropbox
         } else {
           DocumentStore.Google
@@ -124,9 +125,10 @@ class SubmissionService(
 
     // This is a String for Dropbox and a URI for Google
     val folder: Any =
-        when (documentStore) {
-          DocumentStore.Dropbox -> projectAcceleratorDetails.dropboxFolderPath
-          DocumentStore.Google -> projectAcceleratorDetails.googleFolderUrl
+        if (isSensitive) {
+          projectAcceleratorDetails.dropboxFolderPath
+        } else {
+          projectAcceleratorDetails.googleFolderUrl
         }
             ?: uploadFailed(
                 deliverableId,
@@ -136,9 +138,10 @@ class SubmissionService(
                 originalName)
 
     val receiver: SubmissionDocumentReceiver =
-        when (documentStore) {
-          DocumentStore.Dropbox -> DropboxReceiver(dropboxWriter, folder as String)
-          DocumentStore.Google -> GoogleDriveReceiver(googleDriveWriter, folder as URI)
+        if (isSensitive) {
+          DropboxReceiver(dropboxWriter, folder as String)
+        } else {
+          GoogleDriveReceiver(googleDriveWriter, folder as URI)
         }
 
     val storedFile =
@@ -289,6 +292,7 @@ class SubmissionService(
 
     return when (documentStore!!) {
       DocumentStore.Dropbox -> dropboxWriter.shareFile(location)
+      DocumentStore.External -> URI.create(location)
       DocumentStore.Google -> googleDriveWriter.shareFile(location)
     }
   }
