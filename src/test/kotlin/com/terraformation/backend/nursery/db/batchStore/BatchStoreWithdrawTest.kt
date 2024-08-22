@@ -949,7 +949,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
         },
         {
           assertEquals(
-              listOf(
+              setOf(
                   WithdrawalsRow(
                       id = firstWithdrawal.id,
                       facilityId = facilityId,
@@ -971,7 +971,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       modifiedTime = secondWithdrawalTime,
                       destinationFacilityId = destinationFacilityId),
               ),
-              nurseryWithdrawalsDao.findAll(),
+              nurseryWithdrawalsDao.findAll().toSet(),
               "Should have inserted withdrawals rows")
         })
   }
