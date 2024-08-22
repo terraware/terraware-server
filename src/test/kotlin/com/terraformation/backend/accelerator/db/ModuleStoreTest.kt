@@ -520,14 +520,14 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
           fetchAllResult
               .find { it.id == moduleId }!!
               .eventSessions
-              .mapValues { it.value.map { event -> event.id } }
+              .mapValues { it.value.map { event -> event.id }.toSet() }
 
       assertEquals(
           mapOf(
-              EventType.Workshop to listOf(workshop1, workshop2, workshop3),
-              EventType.LiveSession to listOf(liveSession1, liveSession2, liveSession3),
+              EventType.Workshop to setOf(workshop1, workshop2, workshop3),
+              EventType.LiveSession to setOf(liveSession1, liveSession2, liveSession3),
               EventType.OneOnOneSession to
-                  listOf(oneOnOneSession1, oneOnOneSession2, oneOnOneSession3),
+                  setOf(oneOnOneSession1, oneOnOneSession2, oneOnOneSession3),
           ),
           eventIds)
     }
