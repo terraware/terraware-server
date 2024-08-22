@@ -176,6 +176,17 @@ class VariableValueStore(
     return fetchByConditions(conditions, includeDeletedValues)
   }
 
+  /** Get the values for a list of variable IDs, useful for getting injected variable values */
+  fun listValues(projectId: ProjectId, variableIds: List<VariableId>): List<ExistingValue> {
+    val conditions =
+        listOfNotNull(
+            VARIABLE_VALUES.PROJECT_ID.eq(projectId),
+            VARIABLE_VALUES.VARIABLE_ID.`in`(variableIds),
+        )
+
+    return fetchByConditions(conditions, true)
+  }
+
   /**
    * Returns the list position to use when appending a new value to a variable. If the variable is
    * not a list, always returns 0; otherwise returns the current maximum list position plus 1, or 0

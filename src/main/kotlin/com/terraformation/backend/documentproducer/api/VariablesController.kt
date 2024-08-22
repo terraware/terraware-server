@@ -9,8 +9,8 @@ import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.docprod.DependencyCondition
+import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
-import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.model.DateVariable
 import com.terraformation.backend.documentproducer.model.ImageVariable
@@ -40,21 +40,25 @@ class VariablesController(
     private val variableStore: VariableStore,
 ) {
   @Operation(
-      summary = "List the variables, optionally filtered by a given manifest or deliverable.")
+      summary =
+          "List the variables, optionally filtered by a given manifest or deliverable. " +
+              "Variables returned for a manifest include all section hierarchies and variables " +
+              "injected into section text.")
   @GetMapping
   fun listVariables(
       @RequestParam deliverableId: DeliverableId?,
-      @RequestParam manifestId: VariableManifestId?
+      @RequestParam documentId: DocumentId?
   ): ListVariablesResponsePayload {
-    if (deliverableId != null && manifestId != null) {
-      throw BadRequestException("Only Deliverable ID or Manifest ID can be provided, not both.")
+    if (deliverableId != null && documentId != null) {
+      throw BadRequestException("Only Deliverable ID or Document ID can be provided, not both.")
     }
 
     val variables =
         if (deliverableId != null) {
           variableStore.fetchDeliverableVariables(deliverableId)
-        } else if (manifestId != null) {
-          variableStore.fetchManifestVariables(manifestId)
+        } else if (documentId != null) {
+          variableStore.fetchManifestVariables(documentId) +
+              variableStore.fetchUsedVariables(documentId)
         } else {
           variableStore.fetchAllNonSectionVariables()
         }

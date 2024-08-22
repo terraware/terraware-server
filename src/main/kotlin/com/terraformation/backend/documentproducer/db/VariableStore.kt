@@ -2,6 +2,7 @@ package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableType
@@ -26,12 +27,16 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariableTablesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableTextsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
 import com.terraformation.backend.db.docprod.tables.records.VariableManifestEntriesRecord
+import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLES
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_MANIFESTS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_MANIFEST_ENTRIES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SECTIONS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SECTION_RECOMMENDATIONS
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SECTION_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SELECT_OPTIONS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_TABLE_COLUMNS
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
 import com.terraformation.backend.documentproducer.model.BaseVariableProperties
 import com.terraformation.backend.documentproducer.model.DateVariable
 import com.terraformation.backend.documentproducer.model.ImageVariable
@@ -119,6 +124,29 @@ class VariableStore(
             .sortedBy { it.deliverablePosition }
       }
 
+  fun fetchManifestVariables(documentId: DocumentId): List<Variable> {
+    return with(VARIABLE_MANIFEST_ENTRIES) {
+      dslContext
+          .select(VARIABLE_ID, VARIABLE_MANIFEST_ID)
+          .from(VARIABLE_MANIFEST_ENTRIES)
+          .join(DOCUMENTS)
+          .on(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(DOCUMENTS.VARIABLE_MANIFEST_ID))
+          .where(DOCUMENTS.ID.eq(documentId))
+          .andNotExists(
+              DSL.selectOne()
+                  .from(VARIABLE_TABLE_COLUMNS)
+                  .where(VARIABLE_ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
+          .andNotExists(
+              DSL.selectOne()
+                  .from(VARIABLE_SECTIONS)
+                  .where(VARIABLE_ID.eq(VARIABLE_SECTIONS.VARIABLE_ID))
+                  .and(VARIABLE_SECTIONS.PARENT_VARIABLE_ID.isNotNull))
+          .orderBy(POSITION)
+          .fetch()
+          .map { fetchVariable(it[VARIABLE_ID]!!, it[VARIABLE_MANIFEST_ID]!!) }
+    }
+  }
+
   /**
    * Returns a list of the top-level variables in a manifest in position order. Child sections and
    * table columns are not included in the top-level list, but rather in the containing variables'
@@ -187,6 +215,31 @@ class VariableStore(
           .fetch()
           .map { record -> fetchVariable(record[DSL.max(ID)]!!) }
     }
+  }
+
+  fun fetchUsedVariables(documentId: DocumentId): List<Variable> {
+    return dslContext
+        .select(
+            VARIABLE_VALUES.VARIABLE_ID,
+            VARIABLE_VALUES.LIST_POSITION,
+            VARIABLE_SECTION_VALUES.USED_VARIABLE_ID)
+        .distinctOn(VARIABLE_VALUES.VARIABLE_ID, VARIABLE_VALUES.LIST_POSITION)
+        .from(VARIABLE_VALUES)
+        .join(VARIABLE_SECTION_VALUES)
+        .on(VARIABLE_VALUES.ID.eq(VARIABLE_SECTION_VALUES.VARIABLE_VALUE_ID))
+        .join(DOCUMENTS)
+        .on(VARIABLE_VALUES.PROJECT_ID.eq(DOCUMENTS.PROJECT_ID))
+        .join(VARIABLE_MANIFESTS)
+        .on(DOCUMENTS.VARIABLE_MANIFEST_ID.eq(VARIABLE_MANIFESTS.ID))
+        .join(VARIABLE_MANIFEST_ENTRIES)
+        .on(VARIABLE_MANIFESTS.ID.eq(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID))
+        .and(VARIABLE_SECTION_VALUES.VARIABLE_ID.eq(VARIABLE_MANIFEST_ENTRIES.VARIABLE_ID))
+        .where(VARIABLE_SECTION_VALUES.USED_VARIABLE_ID.isNotNull)
+        .and(DOCUMENTS.ID.eq(documentId))
+        .orderBy(
+            VARIABLE_VALUES.VARIABLE_ID, VARIABLE_VALUES.LIST_POSITION, VARIABLE_VALUES.ID.desc())
+        .fetchSet(VARIABLE_SECTION_VALUES.USED_VARIABLE_ID.asNonNullable())
+        .map { fetchVariable(it) }
   }
 
   fun importVariable(variable: VariablesRow): VariableId {

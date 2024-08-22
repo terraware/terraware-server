@@ -6,7 +6,9 @@ import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.documentproducer.model.BaseVariableProperties
 import com.terraformation.backend.documentproducer.model.NumberVariable
 import com.terraformation.backend.documentproducer.model.SectionVariable
+import com.terraformation.backend.documentproducer.model.Variable
 import com.terraformation.backend.mockUser
+import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -275,6 +277,143 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
       val actual = store.fetchDeliverableVariables(deliverableId1)
 
       assertEquals(expected, actual)
+    }
+  }
+
+  @Nested
+  inner class FetchUsedVariables {
+    @Test
+    fun `fetches the variables used within sections for a particular document`() {
+      val manifestId = insertVariableManifest()
+      val manifestIdOther = insertVariableManifest()
+
+      val projectId = insertProject()
+      val projectIdOther = insertProject()
+
+      insertDocument(variableManifestId = manifestIdOther, projectId = projectIdOther)
+      val documentId = insertDocument(variableManifestId = manifestId, projectId = projectId)
+      insertDocument(variableManifestId = manifestIdOther, projectId = projectId)
+      insertDocument(variableManifestId = manifestId, projectId = projectIdOther)
+
+      val variableIdOutdated =
+          insertNumberVariable(
+              id =
+                  insertVariable(
+                      name = "Number Variable", stableId = "1", type = VariableType.Number),
+              maxValue = BigDecimal(10))
+
+      val parentSectionVariableId =
+          insertVariableManifestEntry(
+              manifestId = manifestId,
+              variableId =
+                  insertSectionVariable(
+                      id =
+                          insertVariable(
+                              name = "Parent section",
+                              stableId = "100",
+                              type = VariableType.Section)),
+              position = 1)
+      val childSectionVariableId =
+          insertVariableManifestEntry(
+              manifestId = manifestId,
+              variableId =
+                  insertSectionVariable(
+                      id =
+                          insertVariable(
+                              name = "Child section",
+                              stableId = "101",
+                              type = VariableType.Section),
+                      parentId = parentSectionVariableId,
+                      renderHeading = true),
+              position = 2)
+      val grandchildSectionVariableId =
+          insertVariableManifestEntry(
+              manifestId = manifestId,
+              variableId =
+                  insertSectionVariable(
+                      id =
+                          insertVariable(
+                              name = "Grandchild section",
+                              stableId = "1001",
+                              type = VariableType.Section),
+                      parentId = childSectionVariableId,
+                      renderHeading = false),
+              position = 3)
+
+      val otherSectionVariableId =
+          insertVariableManifestEntry(
+              manifestId = manifestIdOther,
+              variableId =
+                  insertSectionVariable(
+                      id =
+                          insertVariable(
+                              name = "Parent section - other manifest",
+                              stableId = "200",
+                              type = VariableType.Section)),
+              position = 1)
+
+      // The variable is injected into the section along with some text
+      insertSectionValue(
+          listPosition = 0,
+          projectId = projectId,
+          variableId = grandchildSectionVariableId,
+          textValue = "Section text")
+      insertSectionValue(
+          listPosition = 1,
+          projectId = projectId,
+          variableId = grandchildSectionVariableId,
+          usedVariableId = variableIdOutdated)
+
+      // Variable is updated at some point
+      val variableIdCurrent =
+          insertNumberVariable(
+              id =
+                  insertVariable(
+                      name = "Number Variable",
+                      replacesVariableId = variableIdOutdated,
+                      stableId = "1",
+                      type = VariableType.Number),
+              maxValue = BigDecimal(5))
+
+      // Other injections for other projects and/or documents
+      insertSectionValue(
+          listPosition = 0,
+          projectId = projectIdOther,
+          variableId = grandchildSectionVariableId,
+          textValue = "Section text")
+      insertSectionValue(
+          listPosition = 1,
+          projectId = projectIdOther,
+          variableId = grandchildSectionVariableId,
+          usedVariableId = variableIdCurrent)
+      insertSectionValue(
+          listPosition = 1,
+          projectId = projectId,
+          variableId = otherSectionVariableId,
+          usedVariableId = variableIdCurrent)
+      insertSectionValue(
+          listPosition = 1,
+          projectId = projectIdOther,
+          variableId = otherSectionVariableId,
+          usedVariableId = variableIdOutdated)
+
+      val actual = store.fetchUsedVariables(documentId)
+      val expected =
+          listOf<Variable>(
+              NumberVariable(
+                  base =
+                      BaseVariableProperties(
+                          id = variableIdOutdated,
+                          isRequired = false,
+                          manifestId = null,
+                          name = "Number Variable",
+                          position = 0,
+                          stableId = "1"),
+                  decimalPlaces = 0,
+                  minValue = null,
+                  maxValue = BigDecimal(10)))
+
+      assertEquals(expected, actual, "Fetch used variables for document")
     }
   }
 }
