@@ -52,7 +52,6 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
             countriesDao,
             CountryDetector(),
             dslContext,
-            eventPublisher,
             Messages(),
             organizationsDao),
         DeliverableStore(dslContext),
