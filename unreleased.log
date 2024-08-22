@@ -1,3 +1,4 @@
+1fc814499f9 SW-5821 Write feedback as HTML (#2316)
 dad3f39c689 SW-5885 Delete all notifications for application results (#2314)
 8f5a05b872c SW-5754 List all organizations and internal tags (#2315)
 35bb844bee2 Fix intermittent test failures (#2313)
