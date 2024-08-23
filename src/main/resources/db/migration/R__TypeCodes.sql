@@ -108,7 +108,8 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.document_stores (id, name)
 VALUES (1, 'Dropbox'),
-       (2, 'Google')
+       (2, 'Google'),
+       (3, 'External')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO device_template_categories (id, name)
