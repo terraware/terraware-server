@@ -7,6 +7,7 @@ import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.DocumentStore
@@ -396,6 +397,62 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           emptyList<DeliverableSubmissionModel>(),
           store.fetchDeliverableSubmissions(moduleId = moduleId1, deliverableId = deliverableId3),
           "Empty result for single deliverable not in module")
+    }
+
+    @Test
+    fun `returns non-application submission information for projects not in participants`() {
+      val organizationId = insertOrganization()
+      val projectId = insertProject()
+      val moduleId = insertModule()
+      val deliverableId = insertDeliverable()
+      val submissionId = insertSubmission(submissionStatus = SubmissionStatus.Approved)
+      val documentId = insertSubmissionDocument()
+
+      // Pre-screen and application submissions should not be included
+      insertModule(phase = CohortPhase.PreScreen)
+      insertDeliverable()
+      insertSubmission()
+      insertModule(phase = CohortPhase.Application)
+      insertDeliverable()
+      insertSubmission()
+
+      assertEquals(
+          listOf(
+              DeliverableSubmissionModel(
+                  category = DeliverableCategory.FinancialViability,
+                  deliverableId = deliverableId,
+                  descriptionHtml = "Description 1",
+                  documents =
+                      listOf(
+                          SubmissionDocumentModel(
+                              Instant.EPOCH,
+                              null,
+                              DocumentStore.Google,
+                              documentId,
+                              "Submission Document 1",
+                              "Original Name 1",
+                          ),
+                      ),
+                  dueDate = null,
+                  feedback = null,
+                  internalComment = null,
+                  modifiedTime = Instant.EPOCH,
+                  moduleId = moduleId,
+                  moduleName = "Module 1",
+                  moduleTitle = null,
+                  name = "Deliverable 1",
+                  organizationId = organizationId,
+                  organizationName = "Organization 1",
+                  participantId = null,
+                  participantName = null,
+                  projectId = projectId,
+                  projectName = "Project 1",
+                  status = SubmissionStatus.Approved,
+                  submissionId = submissionId,
+                  templateUrl = null,
+                  type = DeliverableType.Document,
+              )),
+          store.fetchDeliverableSubmissions())
     }
 
     @Test
