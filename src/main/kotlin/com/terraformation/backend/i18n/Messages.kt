@@ -54,13 +54,6 @@ class Messages {
   fun applicationPreScreenFailureIneligibleCountry(country: String) =
       getMessage("applicationPreScreen.failure.ineligibleCountry", country)
 
-  fun applicationPreScreenFailureLandUseTotalTooLow(
-      projectHectares: Int,
-      totalLandUseHectares: Int
-  ) =
-      getMessage(
-          "applicationPreScreen.failure.landUseTotalTooLow", projectHectares, totalLandUseHectares)
-
   fun applicationPreScreenFailureMonocultureTooHigh(maximum: Int) =
       getMessage("applicationPreScreen.failure.monocultureTooHigh", maximum)
 

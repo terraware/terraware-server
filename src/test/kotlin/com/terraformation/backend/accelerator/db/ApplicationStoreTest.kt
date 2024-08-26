@@ -44,7 +44,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.Point
 import org.springframework.security.access.AccessDeniedException
 
 class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
@@ -1061,32 +1065,50 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
 
-    @Test
-    fun `detects boundary size below minimum`() {
-      val boundaries =
-          mapOf(
-              "Colombia" to point(-75, 3) to 3000,
-              "Ghana" to point(-1.5, 7.25) to 3000,
-              "Kenya" to point(37, 1) to 3000,
-              "Tanzania" to point(34, -8) to 3000,
-              "United States" to point(-100, 41) to 15000,
-          )
+    @MethodSource(
+        "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes")
+    @ParameterizedTest
+    fun `detects boundary size below minimum`(country: String, origin: Point, minHectares: Int) {
+      insertProject()
+      val boundary = Turtle(origin).makePolygon { rectangle(10000, minHectares - 10) }
+      val applicationId = insertApplication(boundary = boundary, internalName = country)
 
-      boundaries.forEach { (countryAndOrigin, minHectares) ->
-        val (country, origin) = countryAndOrigin
+      val result = store.submit(applicationId, validVariables(boundary))
 
-        insertProject()
-        val boundary = Turtle(origin).makePolygon { rectangle(10000, minHectares - 10) }
-        val applicationId = insertApplication(boundary = boundary, internalName = country)
+      assertEquals(
+          listOf(messages.applicationPreScreenFailureBadSize(country, minHectares, 100000)),
+          result.problems,
+          country)
+      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status, country)
+    }
 
-        val result = store.submit(applicationId, validVariables(boundary))
+    @MethodSource(
+        "com.terraformation.backend.accelerator.db.ApplicationStoreTest#siteLocationsAndSizes")
+    @ParameterizedTest
+    fun `detects land use hectares below minimum`(
+        country: String,
+        origin: Point,
+        minHectares: Int
+    ) {
+      insertProject()
+      val boundary = Turtle(origin).makePolygon { rectangle(10000, minHectares + 10) }
+      val applicationId = insertApplication(boundary = boundary, internalName = country)
 
-        assertEquals(
-            listOf(messages.applicationPreScreenFailureBadSize(country, minHectares, 100000)),
-            result.problems,
-            country)
-        assertEquals(ApplicationStatus.FailedPreScreen, result.application.status, country)
-      }
+      val result =
+          store.submit(
+              applicationId,
+              PreScreenVariableValues(
+                  landUseModelHectares =
+                      mapOf(LandUseModelType.NativeForest to BigDecimal(minHectares - 10)),
+                  numSpeciesToBePlanted = 500,
+                  projectType = PreScreenProjectType.Mixed,
+                  totalExpansionPotential = BigDecimal(5000)))
+
+      assertEquals(
+          listOf(messages.applicationPreScreenFailureBadSize(country, minHectares, 100000)),
+          result.problems,
+          country)
+      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status, country)
     }
 
     @Test
@@ -1103,22 +1125,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `detects boundary in country that is ineligible for accelerator`() {
-      val boundary = Turtle(point(-100, 51)).makePolygon { rectangle(10000, 16000) }
-      val applicationId = insertApplication(boundary = boundary)
-
-      val result = store.submit(applicationId, validVariables(boundary))
-
-      assertEquals(
-          listOf(messages.applicationPreScreenFailureIneligibleCountry("Canada")), result.problems)
-      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
-    }
-
-    @Test
-    fun `detects mismatch between boundary size and total hectares across land use types`() {
-      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 50000) }
-      val boundaryArea = boundary.calculateAreaHectares()
-      val landUseTotal = boundaryArea / BigDecimal.TWO
+    fun `detects land use hectares above maximum`() {
+      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 16000) }
       val applicationId = insertApplication(boundary = boundary)
 
       val result =
@@ -1127,18 +1135,27 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               PreScreenVariableValues(
                   landUseModelHectares =
                       mapOf(
-                          LandUseModelType.Monoculture to BigDecimal.ZERO,
-                          LandUseModelType.NativeForest to landUseTotal,
-                      ),
+                          LandUseModelType.NativeForest to BigDecimal(60000),
+                          LandUseModelType.Mangroves to BigDecimal(60000)),
                   numSpeciesToBePlanted = 500,
                   projectType = PreScreenProjectType.Mixed,
                   totalExpansionPotential = BigDecimal(5000)))
 
       assertEquals(
-          listOf(
-              messages.applicationPreScreenFailureLandUseTotalTooLow(
-                  boundaryArea.toInt(), landUseTotal.toInt())),
+          listOf(messages.applicationPreScreenFailureBadSize("United States", 15000, 100000)),
           result.problems)
+      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
+    }
+
+    @Test
+    fun `detects boundary in country that is ineligible for accelerator`() {
+      val boundary = Turtle(point(-100, 51)).makePolygon { rectangle(10000, 16000) }
+      val applicationId = insertApplication(boundary = boundary)
+
+      val result = store.submit(applicationId, validVariables(boundary))
+
+      assertEquals(
+          listOf(messages.applicationPreScreenFailureIneligibleCountry("Canada")), result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
 
@@ -1527,5 +1544,17 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<AccessDeniedException> { store.updateBoundary(applicationId, rectangle(1)) }
     }
+  }
+
+  companion object {
+    @JvmStatic
+    fun siteLocationsAndSizes() =
+        listOf(
+            Arguments.of("Colombia", point(-75, 3), 3000),
+            Arguments.of("Ghana", point(-1.5, 7.25), 3000),
+            Arguments.of("Kenya", point(37, 1), 3000),
+            Arguments.of("Tanzania", point(34, -8), 3000),
+            Arguments.of("United States", point(-100, 41), 15000),
+        )
   }
 }
