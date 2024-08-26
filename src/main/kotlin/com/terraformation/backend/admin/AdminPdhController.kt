@@ -2,6 +2,7 @@ package com.terraformation.backend.admin
 
 import com.terraformation.backend.accelerator.migration.ProjectDocumentsImporter
 import com.terraformation.backend.accelerator.migration.ProjectSetUpImporter
+import com.terraformation.backend.accelerator.migration.ProjectVariablesImporter
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.importer.CsvImportFailedException
@@ -23,6 +24,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 class AdminPdhController(
     private val projectDocumentsImporter: ProjectDocumentsImporter,
     private val projectSetUpImporter: ProjectSetUpImporter,
+    private val projectVariablesImporter: ProjectVariablesImporter,
 ) {
   private val log = perClassLogger()
 
@@ -45,6 +47,17 @@ class AdminPdhController(
       redirectAttributes: RedirectAttributes,
   ): String {
     return importCsv(file, redirectAttributes, projectSetUpImporter::importCsv)
+  }
+
+  @PostMapping("/uploadProjectVariables")
+  fun uploadProjectVariables(
+      @RequestPart file: MultipartFile,
+      @RequestPart(required = false) ignoreUnknownVariables: String?,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    return importCsv(file, redirectAttributes) {
+      projectVariablesImporter.importCsv(it, ignoreUnknownVariables != null)
+    }
   }
 
   private fun importCsv(
