@@ -1,3 +1,6 @@
+12d0d43cd90 SW-5802 Import variable values from PDH (#2319)
+ccf57d9a92e Update database dependencies (#2320)
+20a9ff8875a Update plugin org.springframework.boot to v3.3.3 (#2321)
 a8a379bd2f2 SW-5800 Include imported documents in submissions fetch (#2318)
 eefda3f21a3 SW-5800 Import project documents from PDH (#2317)
 1fc814499f9 SW-5821 Write feedback as HTML (#2316)
