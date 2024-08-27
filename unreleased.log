@@ -1,3 +1,4 @@
+cecd3eccfd2 Fix typo in ApplicationModel property name (#2327)
 7e3c81a9de4 SW-5852 Don't list table columns as top-level variables (#2326)
 71715405a5d SW-5900 Stop requiring map area to match land use totals (#2322)
 bf4d2de2ae0 Add example pre-push hook to check formatting (#2325)
