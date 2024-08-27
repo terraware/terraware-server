@@ -11,10 +11,10 @@ import org.jooq.Field
 import org.jooq.Record
 
 data class NewCohortModel(
-  val name: String,
-  val phase: CohortPhase,
-  val modules: List<CohortModuleModel> = emptyList(),
-  val participantIds: Set<ParticipantId> = emptySet(),
+    val name: String,
+    val phase: CohortPhase,
+    val modules: List<CohortModuleModel> = emptyList(),
+    val participantIds: Set<ParticipantId> = emptySet(),
 )
 
 data class ExistingCohortModel(
