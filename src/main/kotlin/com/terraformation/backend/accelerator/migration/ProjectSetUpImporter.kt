@@ -14,6 +14,7 @@ import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ScoreCategory
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
+import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_HISTORIES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_SCORES
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -26,7 +27,10 @@ import java.io.InputStream
 import java.math.BigDecimal
 import java.net.URI
 import java.time.InstantSource
+import java.time.LocalDate
+import java.time.ZoneOffset
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 
 @Named
 class ProjectSetUpImporter(
@@ -228,14 +232,34 @@ class ProjectSetUpImporter(
   ) {
     val applicationStatus =
         ApplicationStatus.forJsonValue(getMandatory(valuesByName, "Application Status"))
+    val submissionTime =
+        valuesByName["Application Submission Date"]?.let {
+          LocalDate.parse(it).atTime(0, 0).atZone(ZoneOffset.UTC).toInstant()
+        } ?: clock.instant()
 
-    if (application.status != applicationStatus) {
+    if (application.status != applicationStatus || application.modifiedTime != submissionTime) {
       // Update directly rather than using ApplicationStore; we don't want to send notifications
       // about status changes.
       dslContext
           .update(APPLICATIONS)
           .set(APPLICATIONS.APPLICATION_STATUS_ID, applicationStatus)
+          .set(APPLICATIONS.MODIFIED_TIME, submissionTime)
           .where(APPLICATIONS.ID.eq(application.id))
+          .execute()
+    }
+
+    with(APPLICATION_HISTORIES) {
+      // Update the initial default "not submitted" history entry such that the application never
+      // went through that status according to its history.
+      dslContext
+          .update(APPLICATION_HISTORIES)
+          .set(APPLICATION_STATUS_ID, applicationStatus)
+          .set(MODIFIED_TIME, submissionTime)
+          .where(
+              ID.eq(
+                  DSL.select(DSL.min(ID))
+                      .from(APPLICATION_HISTORIES)
+                      .where(APPLICATION_ID.eq(application.id))))
           .execute()
     }
   }
