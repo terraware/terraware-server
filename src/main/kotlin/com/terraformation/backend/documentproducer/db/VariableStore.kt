@@ -2,6 +2,7 @@ package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
@@ -219,6 +220,34 @@ class VariableStore(
           .fetch()
           .map { record -> fetchVariable(record[DSL.max(ID)]!!) }
     }
+  }
+
+  /**
+   * Fetch potentially outdated versions of variables that are referenced with values for
+   * deliverables
+   */
+  fun fetchUsedVariables(
+      deliverableId: DeliverableId,
+      ignoreIds: List<VariableId>,
+      projectId: ProjectId
+  ): List<Variable> {
+    return dslContext
+        .select(VARIABLE_VALUES.VARIABLE_ID, VARIABLE_VALUES.LIST_POSITION)
+        .distinctOn(VARIABLE_VALUES.VARIABLE_ID, VARIABLE_VALUES.LIST_POSITION)
+        .from(VARIABLE_VALUES)
+        .join(VARIABLES)
+        .on(VARIABLE_VALUES.VARIABLE_ID.eq(VARIABLES.ID))
+        .where(VARIABLES.DELIVERABLE_ID.eq(deliverableId))
+        .and(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
+        .and(VARIABLES.ID.notIn(ignoreIds))
+        .andNotExists(
+            DSL.selectOne()
+                .from(VARIABLE_TABLE_COLUMNS)
+                .where(VARIABLES.ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
+        .orderBy(
+            VARIABLE_VALUES.VARIABLE_ID, VARIABLE_VALUES.LIST_POSITION, VARIABLE_VALUES.ID.desc())
+        .fetchSet(VARIABLE_VALUES.VARIABLE_ID.asNonNullable())
+        .map { fetchVariable(it) }
   }
 
   fun fetchUsedVariables(documentId: DocumentId): List<Variable> {

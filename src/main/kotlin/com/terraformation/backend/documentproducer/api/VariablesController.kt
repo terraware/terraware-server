@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
@@ -47,15 +48,22 @@ class VariablesController(
   @GetMapping
   fun listVariables(
       @RequestParam deliverableId: DeliverableId?,
-      @RequestParam documentId: DocumentId?
+      @RequestParam documentId: DocumentId?,
+      @RequestParam projectId: ProjectId?
   ): ListVariablesResponsePayload {
     if (deliverableId != null && documentId != null) {
       throw BadRequestException("Only Deliverable ID or Document ID can be provided, not both.")
     }
 
     val variables =
-        if (deliverableId != null) {
-          variableStore.fetchDeliverableVariables(deliverableId)
+        if (deliverableId != null && projectId != null) {
+          val deliverableVariables = variableStore.fetchDeliverableVariables(deliverableId)
+
+          deliverableVariables +
+              variableStore.fetchUsedVariables(
+                  deliverableId = deliverableId,
+                  ignoreIds = deliverableVariables.map { it.id },
+                  projectId = projectId)
         } else if (documentId != null) {
           variableStore.fetchManifestVariables(documentId) +
               variableStore.fetchUsedVariables(documentId)
@@ -131,6 +139,9 @@ interface VariablePayload {
     @ArraySchema(
         arraySchema = Schema(description = "IDs of sections that recommend this variable."))
     get() = model.recommendedBy.toSet()
+
+  val replacesVariableId
+    get() = model.replacesVariableId
 
   val stableId
     get() = model.stableId
