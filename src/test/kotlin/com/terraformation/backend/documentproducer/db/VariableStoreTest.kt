@@ -2,10 +2,15 @@ package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.docprod.VariableTableStyle
+import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.documentproducer.model.BaseVariableProperties
 import com.terraformation.backend.documentproducer.model.NumberVariable
 import com.terraformation.backend.documentproducer.model.SectionVariable
+import com.terraformation.backend.documentproducer.model.TableColumn
+import com.terraformation.backend.documentproducer.model.TableVariable
+import com.terraformation.backend.documentproducer.model.TextVariable
 import com.terraformation.backend.documentproducer.model.Variable
 import com.terraformation.backend.mockUser
 import java.math.BigDecimal
@@ -275,6 +280,63 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                   maxValue = null))
 
       val actual = store.fetchDeliverableVariables(deliverableId1)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `fetches tables`() {
+      insertModule()
+      val deliverableId = insertDeliverable()
+      val tableId =
+          insertTableVariable(
+              insertVariable(
+                  deliverableId = deliverableId,
+                  deliverablePosition = 1,
+                  isList = true,
+                  name = "Table",
+                  type = VariableType.Table))
+      val columnId =
+          insertTextVariable(
+              insertVariable(
+                  deliverableId = deliverableId, deliverablePosition = 2, type = VariableType.Text))
+      insertTableColumn(tableId, columnId)
+
+      val expected =
+          listOf(
+              TableVariable(
+                  base =
+                      BaseVariableProperties(
+                          deliverableId = deliverableId,
+                          deliverablePosition = 1,
+                          id = tableId,
+                          isList = true,
+                          manifestId = null,
+                          name = "Table",
+                          position = 0,
+                          stableId = "1",
+                      ),
+                  tableStyle = VariableTableStyle.Horizontal,
+                  columns =
+                      listOf(
+                          TableColumn(
+                              isHeader = false,
+                              variable =
+                                  TextVariable(
+                                      base =
+                                          BaseVariableProperties(
+                                              deliverableId = deliverableId,
+                                              deliverablePosition = 2,
+                                              id = columnId,
+                                              isList = false,
+                                              manifestId = null,
+                                              name = "Variable 2",
+                                              position = 0,
+                                              stableId = "2",
+                                          ),
+                                      textType = VariableTextType.SingleLine)))))
+
+      val actual = store.fetchDeliverableVariables(deliverableId)
 
       assertEquals(expected, actual)
     }

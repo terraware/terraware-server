@@ -118,6 +118,10 @@ class VariableStore(
             .select(DSL.max(ID))
             .from(VARIABLES)
             .where(DELIVERABLE_ID.eq(deliverableId))
+            .andNotExists(
+                DSL.selectOne()
+                    .from(VARIABLE_TABLE_COLUMNS)
+                    .where(ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
             .groupBy(STABLE_ID)
             .fetch()
             .map { fetchVariable(it[DSL.max(ID)]!!) }
