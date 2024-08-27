@@ -501,10 +501,6 @@ data class IndividualUser(
 
   override fun canReadUser(userId: UserId) = isAcceleratorAdmin()
 
-
-
-
-  
   override fun canReadUserDeliverableCategories(userId: UserId) = isAcceleratorAdmin()
 
   override fun canReadViabilityTest(viabilityTestId: ViabilityTestId) =
