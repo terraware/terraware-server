@@ -2323,13 +2323,15 @@ abstract class DatabaseBackedTest {
       phase: CohortPhase = CohortPhase.Phase0DueDiligence,
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
   ): CohortId {
     val row =
         CohortsRow(
             createdBy = createdBy,
             createdTime = createdTime,
-            modifiedBy = createdBy,
-            modifiedTime = createdTime,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
             name = name,
             phaseId = phase,
         )
