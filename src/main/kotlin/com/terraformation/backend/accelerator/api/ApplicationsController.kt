@@ -338,7 +338,7 @@ data class ApplicationPayload(
           id = model.id,
           internalComment = if (exposeInternalFields) model.internalComment else null,
           internalName = if (exposeInternalFields) model.internalName else null,
-          modifiedTime = model.modifiedTme,
+          modifiedTime = model.modifiedTime,
           organizationId = model.organizationId,
           organizationName = model.organizationName,
           projectId = model.projectId,
