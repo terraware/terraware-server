@@ -2,7 +2,6 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.model.CohortDepth
-import com.terraformation.backend.accelerator.model.CohortModel
 import com.terraformation.backend.accelerator.model.CohortModuleDepth
 import com.terraformation.backend.accelerator.model.CohortModuleModel
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
@@ -210,7 +209,7 @@ class CohortStore(
           .from(COHORTS)
           .apply { condition?.let { where(it) } }
           .orderBy(ID)
-          .fetch { CohortModel.of(it, participantIdsField, cohortModulesField) }
+          .fetch { ExistingCohortModel.of(it, participantIdsField, cohortModulesField) }
           .filter {
             user.canReadCohort(it.id) &&
                 (participantIdsField == null || user.canReadCohortParticipants(it.id))

@@ -15,11 +15,13 @@ import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.i18n.TimeZones
 import com.terraformation.backend.util.orNull
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -122,7 +124,11 @@ data class CohortModule(
 }
 
 data class CohortPayload(
+    val createdBy: UserId,
+    val createdTime: Instant,
     val id: CohortId,
+    val modifiedBy: UserId,
+    val modifiedTime: Instant,
     val modules: List<CohortModule>,
     val name: String,
     val participantIds: Set<ParticipantId>?,
@@ -132,7 +138,11 @@ data class CohortPayload(
       cohort: ExistingCohortModel,
       today: LocalDate,
   ) : this(
+      createdBy = cohort.createdBy,
+      createdTime = cohort.createdTime,
       id = cohort.id,
+      modifiedBy = cohort.modifiedBy,
+      modifiedTime = cohort.modifiedTime,
       modules = cohort.modules.map { CohortModule(it, today) },
       name = cohort.name,
       participantIds = cohort.participantIds.orNull(),
@@ -145,7 +155,7 @@ data class CreateCohortRequestPayload(
     val phase: CohortPhase,
 ) {
   fun toModel() =
-      NewCohortModel.create(
+      NewCohortModel(
           name = name,
           phase = phase,
       )

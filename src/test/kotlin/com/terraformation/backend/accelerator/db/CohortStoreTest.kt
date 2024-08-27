@@ -5,10 +5,10 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.model.CohortDepth
-import com.terraformation.backend.accelerator.model.CohortModel
 import com.terraformation.backend.accelerator.model.CohortModuleDepth
 import com.terraformation.backend.accelerator.model.CohortModuleModel
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
+import com.terraformation.backend.accelerator.model.NewCohortModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
@@ -48,7 +48,7 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
 
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
-      val model = store.create(CohortModel.create("Cohort Test", CohortPhase.Phase0DueDiligence))
+      val model = store.create(NewCohortModel("Cohort Test", CohortPhase.Phase0DueDiligence))
 
       assertEquals(
           listOf(
@@ -67,7 +67,7 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `throws exception if no permission to create cohorts`() {
       assertThrows<AccessDeniedException> {
-        store.create(CohortModel.create("Cohort Test", CohortPhase.Phase0DueDiligence))
+        store.create(NewCohortModel("Cohort Test", CohortPhase.Phase0DueDiligence))
       }
     }
   }
@@ -117,7 +117,14 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchOneById {
     @Test
     fun `includes or excludes list of participant IDs according to the requested depth`() {
-      val cohortId = insertCohort(name = "Cohort Test", phase = CohortPhase.Phase0DueDiligence)
+      val modifiedBy = insertUser()
+      val modifiedTime = Instant.ofEpochSecond(30)
+      val cohortId =
+          insertCohort(
+              name = "Cohort Test",
+              phase = CohortPhase.Phase0DueDiligence,
+              modifiedBy = modifiedBy,
+              modifiedTime = modifiedTime)
 
       insertOrganization()
       val participantId1 = insertParticipant(cohortId = cohortId)
@@ -125,25 +132,25 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
       insertParticipant()
 
       // No depth, defaults to "cohort"
-      assertEquals(
+      val noDepthModel =
           ExistingCohortModel(
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
               id = cohortId,
+              modifiedBy = modifiedBy,
+              modifiedTime = modifiedTime,
               name = "Cohort Test",
               phase = CohortPhase.Phase0DueDiligence,
               participantIds = emptySet(),
               modules = emptyList(),
-          ),
-          store.fetchOneById(cohortId))
+          )
+
+      assertEquals(noDepthModel, store.fetchOneById(cohortId), "Default depth")
 
       assertEquals(
-          ExistingCohortModel(
-              id = cohortId,
-              name = "Cohort Test",
-              phase = CohortPhase.Phase0DueDiligence,
-              participantIds = setOf(participantId1, participantId2),
-              modules = emptyList(),
-          ),
-          store.fetchOneById(cohortId, CohortDepth.Participant))
+          noDepthModel.copy(participantIds = setOf(participantId1, participantId2)),
+          store.fetchOneById(cohortId, CohortDepth.Participant),
+          "Participant depth")
     }
 
     @Test
@@ -174,22 +181,23 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
           endDate = LocalDate.of(2024, 2, 3))
 
       // No depth, defaults to "cohort"
-      assertEquals(
+      val noDepthModel =
           ExistingCohortModel(
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
               id = cohortId,
+              modifiedBy = user.userId,
+              modifiedTime = Instant.EPOCH,
               name = "Cohort Test",
               phase = CohortPhase.Phase0DueDiligence,
               participantIds = setOf(),
               modules = emptyList(),
-          ),
-          store.fetchOneById(cohortId))
+          )
+
+      assertEquals(noDepthModel, store.fetchOneById(cohortId), "Default depth")
 
       assertEquals(
-          ExistingCohortModel(
-              id = cohortId,
-              name = "Cohort Test",
-              phase = CohortPhase.Phase0DueDiligence,
-              participantIds = setOf(),
+          noDepthModel.copy(
               modules =
                   listOf(
                       CohortModuleModel(
@@ -215,7 +223,8 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
                       ),
                   ),
           ),
-          store.fetchOneById(cohortId, cohortModuleDepth = CohortModuleDepth.Module))
+          store.fetchOneById(cohortId, cohortModuleDepth = CohortModuleDepth.Module),
+          "Module depth")
     }
 
     @Test
