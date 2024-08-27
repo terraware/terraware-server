@@ -41,7 +41,6 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
 import java.time.InstantSource
-import kotlin.math.abs
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -640,6 +639,9 @@ class ApplicationStore(
     var countryCode: String? = null
     var siteAreaHa: Double? = null
 
+    val totalLandUseArea =
+        preScreenVariableValues.landUseModelHectares.values.sumOf { it.toDouble() }
+
     if (application.boundary != null) {
       siteAreaHa = application.boundary.calculateAreaHectares().toDouble()
 
@@ -662,7 +664,10 @@ class ApplicationStore(
       } else {
         val minimumHectares = perCountryMinimumHectares[countryCode] ?: defaultMinimumHectares
 
-        if (siteAreaHa < minimumHectares || siteAreaHa > defaultMaximumHectares) {
+        if (siteAreaHa < minimumHectares ||
+            siteAreaHa > defaultMaximumHectares ||
+            totalLandUseArea < minimumHectares ||
+            totalLandUseArea > defaultMaximumHectares) {
           problems.add(
               messages.applicationPreScreenFailureBadSize(
                   countriesRow.name!!, minimumHectares, defaultMaximumHectares))
@@ -671,16 +676,6 @@ class ApplicationStore(
     }
 
     if (siteAreaHa != null) {
-      val totalLandUseArea =
-          preScreenVariableValues.landUseModelHectares.values.sumOf { it.toDouble() }
-      val differenceFromSiteArea = abs(siteAreaHa - totalLandUseArea)
-
-      if (differenceFromSiteArea > siteAreaHa * landUseTotalFuzzPercent / 100.0) {
-        problems.add(
-            messages.applicationPreScreenFailureLandUseTotalTooLow(
-                siteAreaHa.toInt(), totalLandUseArea.toInt()))
-      }
-
       val monocultureArea =
           preScreenVariableValues.landUseModelHectares[LandUseModelType.Monoculture]
       if (monocultureArea != null &&
