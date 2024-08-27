@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# Hook script to verify that the code is correctly formatted. Copy this to
+# .git/hooks/pre-push and you'll be prevented from pushing code (including
+# PRs) that fail the format check. Make sure it has execute permission:
+#
+#    cp docs/pre-push .git/hooks
+#    chmod 755 .git/hooks/pre-push
+#
+# See .git/hooks/pre-push.example for more on how pre-push scripts are called.
+#
+# If you need to skip this check for some reason, you can either move the
+# script out of the way or use "git push --no-verify".
+
+if ./gradlew spotlessCheck; then
+    # If you want to do other pre-push checks, add them here.
+    exit 0
+else
+    exit 1
+fi

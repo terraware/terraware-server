@@ -15,6 +15,8 @@ All Kotlin code must be formatted with [ktfmt](https://github.com/facebookincuba
 
 There isn't currently a way to make IntelliJ's real-time formatting adhere strictly to ktfmt's formatting rules, but the supplied `.editorconfig` file is an approximation. IntelliJ should detect it and use it automatically.
 
+To prevent yourself from accidentally pushing a PR that fails the formatting check, you can add a git pre-push hook. There's an example in this directory: [pre-push](pre-push).
+
 ### Wildcard imports
 
 By default, IntelliJ uses wildcard imports for the `java.util` and `javax` packages, and overriding that default in `.editorconfig` doesn't work reliably. You'll want to remove those packages manually from the Kotlin code style preferences ("Auto-Import" tab) in IntelliJ's settings.
