@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
-@RequestMapping("/api/v1/events/")
+@RequestMapping("/api/v1/events")
 @RestController
 class EventsController(
     private val eventStore: ModuleEventStore,
@@ -29,7 +29,7 @@ class EventsController(
   @ApiResponse200
   @ApiResponse404
   @GetMapping
-  @Operation(summary = "list events")
+  @Operation(summary = "List events")
   fun listEvents(
       @RequestParam projectId: ProjectId?,
       @RequestParam moduleId: ModuleId?,
@@ -41,7 +41,7 @@ class EventsController(
   @ApiResponse200
   @ApiResponse404
   @GetMapping("/{eventId}")
-  @Operation(summary = "Gets one module for a project.")
+  @Operation(summary = "Gets one event for a project.")
   fun getEvent(
       @PathVariable eventId: EventId,
   ): GetEventResponsePayload {
