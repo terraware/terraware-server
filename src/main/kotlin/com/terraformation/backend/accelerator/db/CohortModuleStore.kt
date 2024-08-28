@@ -118,12 +118,13 @@ class CohortModuleStore(
                 COHORT_MODULES.COHORT_ID,
                 COHORT_MODULES.TITLE,
                 COHORT_MODULES.START_DATE,
-                COHORT_MODULES.END_DATE)
-            .from(this)
+                COHORT_MODULES.END_DATE,
+            )
+            .from(MODULES)
             .join(COHORT_MODULES)
-            .on(COHORT_MODULES.MODULE_ID.eq(ID))
+            .on(COHORT_MODULES.MODULE_ID.eq(MODULES.ID))
 
-    joinForVisibility(query)
+    return joinForVisibility(query)
         .apply { condition?.let { where(condition) } }
         .orderBy(
             COHORT_MODULES.COHORT_ID,
