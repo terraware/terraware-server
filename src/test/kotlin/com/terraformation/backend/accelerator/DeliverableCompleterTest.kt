@@ -10,6 +10,7 @@ import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.ApplicationId
@@ -52,6 +53,7 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
         DeliverableStore(dslContext),
         ModuleStore(dslContext),
         SubmissionStore(clock, dslContext, eventPublisher),
+        SystemUser(usersDao),
         VariableStore(
             dslContext,
             variableNumbersDao,

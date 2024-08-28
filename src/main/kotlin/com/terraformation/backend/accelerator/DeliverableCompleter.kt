@@ -6,6 +6,7 @@ import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -24,6 +25,7 @@ class DeliverableCompleter(
     private val deliverableStore: DeliverableStore,
     private val moduleStore: ModuleStore,
     private val submissionStore: SubmissionStore,
+    private val systemUser: SystemUser,
     private val variableStore: VariableStore,
     private val variableValueStore: VariableValueStore,
 ) {
@@ -66,15 +68,18 @@ class DeliverableCompleter(
       projectId: ProjectId,
       predicate: (() -> Boolean)? = null
   ) {
-    val moduleId = deliverableStore.fetchDeliverableModuleId(deliverableId)
-    val phase = moduleStore.fetchCohortPhase(moduleId)
+    systemUser.run {
+      val moduleId = deliverableStore.fetchDeliverableModuleId(deliverableId)
+      val phase = moduleStore.fetchCohortPhase(moduleId)
 
-    if (phase == CohortPhase.PreScreen || phase == CohortPhase.Application) {
-      if (predicate == null || predicate()) {
-        submissionStore.createSubmission(deliverableId, projectId, SubmissionStatus.Completed)
+      if (phase == CohortPhase.PreScreen || phase == CohortPhase.Application) {
+        if (predicate == null || predicate()) {
+          submissionStore.createSubmission(deliverableId, projectId, SubmissionStatus.Completed)
 
-        if (submissionStore.moduleDeliverablesAllCompleted(deliverableId, projectId)) {
-          applicationStore.updateModuleStatus(projectId, moduleId, ApplicationModuleStatus.Complete)
+          if (submissionStore.moduleDeliverablesAllCompleted(deliverableId, projectId)) {
+            applicationStore.updateModuleStatus(
+                projectId, moduleId, ApplicationModuleStatus.Complete)
+          }
         }
       }
     }
