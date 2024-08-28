@@ -13,7 +13,6 @@ import org.jooq.Record
 data class NewCohortModel(
     val name: String,
     val phase: CohortPhase,
-    val modules: List<CohortModuleModel> = emptyList(),
     val participantIds: Set<ParticipantId> = emptySet(),
 )
 
@@ -23,7 +22,6 @@ data class ExistingCohortModel(
     val id: CohortId,
     val modifiedBy: UserId,
     val modifiedTime: Instant,
-    val modules: List<CohortModuleModel>,
     val name: String,
     val participantIds: Set<ParticipantId>,
     val phase: CohortPhase,
@@ -32,7 +30,6 @@ data class ExistingCohortModel(
     fun of(
         record: Record,
         participantIdsField: Field<Set<ParticipantId>>? = null,
-        cohortModulesField: Field<List<CohortModuleModel>>? = null,
     ): ExistingCohortModel {
       return ExistingCohortModel(
           createdBy = record[COHORTS.CREATED_BY]!!,
@@ -40,10 +37,17 @@ data class ExistingCohortModel(
           id = record[COHORTS.ID]!!,
           modifiedBy = record[COHORTS.MODIFIED_BY]!!,
           modifiedTime = record[COHORTS.MODIFIED_TIME]!!,
-          modules = cohortModulesField?.let { record[it] } ?: emptyList(),
           name = record[COHORTS.NAME]!!,
           participantIds = participantIdsField?.let { record[it] } ?: emptySet(),
           phase = record[COHORTS.PHASE_ID]!!,
+      )
+    }
+
+    fun create(name: String, phase: CohortPhase): NewCohortModel {
+      return NewCohortModel(
+          name = name,
+          participantIds = emptySet(),
+          phase = phase,
       )
     }
   }
@@ -51,7 +55,6 @@ data class ExistingCohortModel(
 
 fun CohortsRow.toModel(
     participantIds: Set<ParticipantId> = emptySet(),
-    cohortModules: List<CohortModuleModel> = emptyList(),
 ): ExistingCohortModel {
   return ExistingCohortModel(
       createdBy = createdBy!!,
@@ -59,7 +62,6 @@ fun CohortsRow.toModel(
       id = id!!,
       modifiedBy = modifiedBy!!,
       modifiedTime = modifiedTime!!,
-      modules = cohortModules,
       name = name!!,
       participantIds = participantIds,
       phase = phaseId!!,
