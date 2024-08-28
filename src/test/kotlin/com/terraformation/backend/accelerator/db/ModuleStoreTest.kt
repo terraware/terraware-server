@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.accelerator.model.CohortModuleModel
 import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.accelerator.model.ModuleDeliverableModel
 import com.terraformation.backend.accelerator.model.ModuleModel
@@ -108,24 +107,6 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
               phase = CohortPhase.Phase1FeasibilityStudy,
               position = 1,
               additionalResources = "<b> Additional Resources </b>",
-              cohorts =
-                  listOf(
-                      CohortModuleModel(
-                          cohortId = cohortId,
-                          moduleId = moduleId,
-                          title = "1",
-                          startDate = LocalDate.of(2024, 1, 1),
-                          endDate = LocalDate.of(2024, 1, 31),
-                          projects = setOf(projectId),
-                      ),
-                      CohortModuleModel(
-                          cohortId = otherCohortId,
-                          moduleId = moduleId,
-                          title = "2",
-                          startDate = LocalDate.of(2024, 2, 1),
-                          endDate = LocalDate.of(2024, 2, 28),
-                          projects = setOf(otherProjectId),
-                      )),
               eventDescriptions =
                   mapOf(
                       EventType.LiveSession to "Live session lectures",
@@ -182,16 +163,6 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
               phase = CohortPhase.Phase1FeasibilityStudy,
               position = 1,
               additionalResources = "<b> Additional Resources </b>",
-              cohorts =
-                  listOf(
-                      CohortModuleModel(
-                          cohortId = cohortId,
-                          moduleId = moduleId,
-                          title = "1",
-                          startDate = LocalDate.of(2024, 1, 1),
-                          endDate = LocalDate.of(2024, 1, 31),
-                          projects = null,
-                      )),
               eventDescriptions =
                   mapOf(
                       EventType.LiveSession to "Live session lectures",
@@ -270,16 +241,6 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                   phase = CohortPhase.Phase1FeasibilityStudy,
                   position = 1,
                   additionalResources = "<b> Additional Resources </b>",
-                  cohorts =
-                      listOf(
-                          CohortModuleModel(
-                              cohortId = cohortId,
-                              moduleId = moduleId,
-                              title = "1",
-                              startDate = LocalDate.of(2024, 1, 1),
-                              endDate = LocalDate.of(2024, 1, 31),
-                              projects = null, // other projects of cohorts not visible
-                          )),
                   eventDescriptions =
                       mapOf(
                           EventType.LiveSession to "Live session lectures",
@@ -358,7 +319,6 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
                   phase = CohortPhase.Phase1FeasibilityStudy,
                   position = 1,
                   additionalResources = "<b> Additional Resources </b>",
-                  cohorts = emptyList(),
                   eventDescriptions =
                       mapOf(
                           EventType.LiveSession to "Live session lectures",
@@ -378,35 +338,6 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
 
       val fetchAllResult = store.fetchAllModules()
       assertEquals(moduleIds, fetchAllResult.map { it.id })
-    }
-
-    @Test
-    fun `returns list of modules with with associated cohorts and projects`() {
-      val moduleId = insertModule()
-      val otherModuleId = insertModule()
-
-      val otherCohortId = insertCohort()
-      val otherParticipantId = insertParticipant(cohortId = otherCohortId)
-      val otherProjectIds = (1..4).map { insertProject(participantId = otherParticipantId) }
-
-      insertCohortModule(cohortId, moduleId)
-      insertCohortModule(otherCohortId, moduleId)
-      insertCohortModule(otherCohortId, otherModuleId)
-
-      val fetchAllResult = store.fetchAllModules()
-      assertEquals(listOf(moduleId, otherModuleId), fetchAllResult.map { it.id })
-
-      val moduleCohorts = fetchAllResult.find { it.id == moduleId }!!.cohorts
-      val otherModuleCohorts = fetchAllResult.find { it.id == otherModuleId }!!.cohorts
-
-      assertEquals(listOf(cohortId, otherCohortId), moduleCohorts.map { it.cohortId })
-      assertEquals(listOf(otherCohortId), otherModuleCohorts.map { it.cohortId })
-
-      val cohortProjects = moduleCohorts.find { it.cohortId == cohortId }!!.projects
-      val otherCohortProjects = moduleCohorts.find { it.cohortId == otherCohortId }!!.projects
-
-      assertEquals(setOf(projectId), cohortProjects)
-      assertEquals(otherProjectIds.toSet(), otherCohortProjects)
     }
   }
 
