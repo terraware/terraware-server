@@ -65,6 +65,15 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
         )
       }
     }
+
+    @Test
+    fun `throws exception if event end time is before start time`() {
+      insertModule()
+
+      assertThrows<DataIntegrityViolationException> {
+        insertEvent(startTime = Instant.ofEpochSecond(500), endTime = Instant.ofEpochSecond(400))
+      }
+    }
   }
 
   @Nested
