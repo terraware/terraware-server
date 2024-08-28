@@ -108,13 +108,10 @@ class CohortModuleStore(
       condition: Condition? = null,
       joinForVisibility: (SelectOnConditionStep<Record>) -> SelectOnConditionStep<Record>
   ): List<ModuleModel> {
-    val deliverablesField = deliverablesMultiset()
-
     val query =
         dslContext
             .select(
                 MODULES.asterisk(),
-                deliverablesField,
                 COHORT_MODULES.COHORT_ID,
                 COHORT_MODULES.TITLE,
                 COHORT_MODULES.START_DATE,
@@ -132,7 +129,7 @@ class CohortModuleStore(
             COHORT_MODULES.END_DATE,
             MODULES.POSITION)
         .fetch {
-          ModuleModel.of(it, deliverablesField)
+          ModuleModel.of(it)
               .copy(
                   cohortId = it[COHORT_MODULES.COHORT_ID],
                   title = it[COHORT_MODULES.TITLE],
