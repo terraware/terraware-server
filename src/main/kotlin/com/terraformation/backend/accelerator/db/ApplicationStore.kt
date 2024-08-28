@@ -4,7 +4,6 @@ import com.terraformation.backend.accelerator.model.ApplicationModuleModel
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
-import com.terraformation.backend.accelerator.model.ExternalApplicationStatus
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.accelerator.model.PreScreenVariableValues
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
@@ -332,8 +331,6 @@ class ApplicationStore(
           .where(ID.eq(applicationId))
           .execute()
     }
-
-    val externalModifiedStatus = ExternalApplicationStatus.of(modified.status)
 
     updateStatus(applicationId, modified.status)
   }
