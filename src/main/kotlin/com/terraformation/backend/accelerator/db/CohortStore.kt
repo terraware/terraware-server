@@ -2,14 +2,13 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.model.CohortDepth
-import com.terraformation.backend.accelerator.model.CohortModuleDepth
-import com.terraformation.backend.accelerator.model.CohortModuleModel
 import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.accelerator.model.NewCohortModel
 import com.terraformation.backend.accelerator.model.toModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
@@ -36,22 +35,19 @@ class CohortStore(
   fun fetchOneById(
       cohortId: CohortId,
       cohortDepth: CohortDepth = CohortDepth.Cohort,
-      cohortModuleDepth: CohortModuleDepth = CohortModuleDepth.Cohort,
   ): ExistingCohortModel {
     if (cohortDepth == CohortDepth.Participant) {
       requirePermissions { readCohortParticipants(cohortId) }
     }
-    return fetch(COHORTS.ID.eq(cohortId), cohortDepth, cohortModuleDepth).firstOrNull()
+    return fetch(COHORTS.ID.eq(cohortId), cohortDepth).firstOrNull()
         ?: throw CohortNotFoundException(cohortId)
   }
 
   fun fetchOneByName(
       name: String,
       cohortDepth: CohortDepth = CohortDepth.Cohort,
-      cohortModuleDepth: CohortModuleDepth = CohortModuleDepth.Cohort,
   ): ExistingCohortModel? {
-    val cohort =
-        fetch(COHORTS.NAME.eq(name), cohortDepth, cohortModuleDepth).firstOrNull() ?: return null
+    val cohort = fetch(COHORTS.NAME.eq(name), cohortDepth).firstOrNull() ?: return null
 
     if (cohortDepth == CohortDepth.Participant) {
       requirePermissions { readCohortParticipants(cohort.id) }
@@ -60,11 +56,26 @@ class CohortStore(
     return cohort
   }
 
+  fun findByModule(
+      moduleId: ModuleId,
+      cohortDepth: CohortDepth = CohortDepth.Cohort,
+  ): List<ExistingCohortModel> {
+    if (cohortDepth == CohortDepth.Participant) {
+      requirePermissions { manageModules() }
+    }
+    return fetch(
+        DSL.exists(
+            DSL.selectOne()
+                .from(COHORT_MODULES)
+                .where(COHORT_MODULES.COHORT_ID.eq(COHORTS.ID))
+                .and(COHORT_MODULES.MODULE_ID.eq(moduleId))),
+        cohortDepth)
+  }
+
   fun findAll(
       cohortDepth: CohortDepth = CohortDepth.Cohort,
-      cohortModuleDepth: CohortModuleDepth = CohortModuleDepth.Cohort,
   ): List<ExistingCohortModel> {
-    return fetch(null, cohortDepth, cohortModuleDepth)
+    return fetch(null, cohortDepth)
   }
 
   fun create(model: NewCohortModel): ExistingCohortModel {
@@ -113,7 +124,7 @@ class CohortStore(
   fun update(cohortId: CohortId, updateFunc: (ExistingCohortModel) -> ExistingCohortModel) {
     requirePermissions { updateCohort(cohortId) }
 
-    val existing = fetchOneById(cohortId, cohortModuleDepth = CohortModuleDepth.Module)
+    val existing = fetchOneById(cohortId)
     val updated = updateFunc(existing)
 
     dslContext.transaction { _ ->
@@ -133,31 +144,6 @@ class CohortStore(
         throw CohortNotFoundException(cohortId)
       }
 
-      if (existing.modules != updated.modules) {
-        val toRemove =
-            existing.modules.map { it.moduleId }.toSet() -
-                updated.modules.map { it.moduleId }.toSet()
-
-        with(COHORT_MODULES) {
-          toRemove.forEach { dslContext.deleteFrom(this).where(MODULE_ID.eq(it)).execute() }
-
-          updated.modules.forEach {
-            dslContext
-                .insertInto(this)
-                .set(COHORT_ID, cohortId)
-                .set(MODULE_ID, it.moduleId)
-                .set(TITLE, it.title)
-                .set(START_DATE, it.startDate)
-                .set(END_DATE, it.endDate)
-                .onDuplicateKeyUpdate()
-                .set(TITLE, it.title)
-                .set(START_DATE, it.startDate)
-                .set(END_DATE, it.endDate)
-                .execute()
-          }
-        }
-      }
-
       if (existing.phase != updated.phase) {
         eventPublisher.publishEvent(CohortPhaseUpdatedEvent(cohortId, updated.phase))
       }
@@ -172,20 +158,9 @@ class CohortStore(
                   .orderBy(PARTICIPANTS.ID))
           .convertFrom { result -> result.map { it[PARTICIPANTS.ID.asNonNullable()] }.toSet() }
 
-  private fun cohortModulesMultiset(): Field<List<CohortModuleModel>> =
-      with(COHORT_MODULES) {
-        DSL.multiset(
-                DSL.select(asterisk())
-                    .from(this)
-                    .where(COHORT_ID.eq(COHORTS.ID))
-                    .orderBy(START_DATE))
-            .convertFrom { result -> result.map { CohortModuleModel.of(it) } }
-      }
-
   private fun fetch(
       condition: Condition?,
       cohortDepth: CohortDepth,
-      cohortModuleDepth: CohortModuleDepth,
   ): List<ExistingCohortModel> {
     val user = currentUser()
 
@@ -196,20 +171,13 @@ class CohortStore(
           null
         }
 
-    val cohortModulesField =
-        if (cohortModuleDepth == CohortModuleDepth.Module) {
-          cohortModulesMultiset()
-        } else {
-          null
-        }
-
     return with(COHORTS) {
       dslContext
-          .select(COHORTS.asterisk(), participantIdsField, cohortModulesField)
+          .select(COHORTS.asterisk(), participantIdsField)
           .from(COHORTS)
           .apply { condition?.let { where(it) } }
           .orderBy(ID)
-          .fetch { ExistingCohortModel.of(it, participantIdsField, cohortModulesField) }
+          .fetch { ExistingCohortModel.of(it, participantIdsField) }
           .filter {
             user.canReadCohort(it.id) &&
                 (participantIdsField == null || user.canReadCohortParticipants(it.id))

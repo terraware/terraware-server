@@ -7,6 +7,7 @@ import com.terraformation.backend.accelerator.db.ModuleNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ModulesImporter
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.model.CohortDepth
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ProjectStore
@@ -71,22 +72,24 @@ class AdminModulesController(
   @GetMapping("/modules/{moduleId}")
   fun moduleView(
       model: Model,
-      @PathVariable moduleId: String,
+      @PathVariable moduleId: ModuleId,
       redirectAttributes: RedirectAttributes
   ): String {
     val module =
         try {
-          moduleStore.fetchOneById(ModuleId(moduleId))
+          moduleStore.fetchOneById(moduleId)
         } catch (e: ModuleNotFoundException) {
           log.warn("Module not found")
           redirectAttributes.failureMessage = "Module not found: ${e.message}"
           return redirectToModulesHome()
         }
 
-    val moduleProjects = module.cohorts.flatMap { it.projects!!.toList() }
+    val cohorts = cohortStore.findByModule(moduleId, CohortDepth.Participant)
+    val participants =
+        cohorts.flatMap { it.participantIds }.map { participantStore.fetchOneById(it) }
+    val moduleProjects = participants.flatMap { it.projectIds }
 
-    val cohortNames =
-        module.cohorts.associate { it.cohortId to cohortStore.fetchOneById(it.cohortId).name }
+    val cohortNames = cohorts.associate { it.id to it.name }
 
     val projects = moduleProjects.associateWith { projectStore.fetchOneById(it) }
     val projectNames = projects.mapValues { it.value.name }
@@ -99,10 +102,13 @@ class AdminModulesController(
               .name + " - " + it.value.name
         }
 
+    val eventSessions = eventStore.fetchById(moduleId = moduleId).associateBy { it.eventType }
+
     model.addAttribute("canManageModules", currentUser().canManageModules())
     model.addAttribute("cohortNames", cohortNames)
     model.addAttribute("cohortProjectNames", cohortProjectNames)
     model.addAttribute("dateFormat", dateFormat)
+    model.addAttribute("eventSessions", eventSessions)
     model.addAttribute("module", module)
     model.addAttribute("moduleProjects", moduleProjects)
     model.addAttribute("projectNames", projectNames)
@@ -162,8 +168,10 @@ class AdminModulesController(
     val event = eventStore.fetchOneById(id)
     val eventArgs = EventArgs(event.eventType, startTime, endTime)
 
-    val projects =
-        (event.projects ?: emptySet()).plus(toAdd ?: emptySet()).minus(toRemove ?: emptySet())
+    val setToAdd = toAdd?.toSet() ?: emptySet()
+    val setToRemove = toRemove?.toSet() ?: emptySet()
+
+    val projects = event.projects.plus(setToAdd).minus(setToRemove)
 
     try {
       eventStore.updateEvent(id) {
