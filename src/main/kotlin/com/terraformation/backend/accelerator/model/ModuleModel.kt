@@ -17,7 +17,6 @@ data class ModuleModel(
     val additionalResources: String? = null,
     val deliverables: List<ModuleDeliverableModel> = emptyList(),
     val eventDescriptions: Map<EventType, String> = emptyMap(),
-    val eventSessions: Map<EventType, List<EventModel>> = emptyMap(),
     val overview: String? = null,
     val preparationMaterials: String? = null,
     val cohortId: CohortId? = null,
@@ -29,7 +28,6 @@ data class ModuleModel(
     fun of(
         record: Record,
         deliverablesField: Field<List<ModuleDeliverableModel>>,
-        eventsField: Field<Map<EventType, List<EventModel>>>? = null,
     ): ModuleModel {
       return ModuleModel(
           id = record[MODULES.ID]!!,
@@ -50,7 +48,6 @@ data class ModuleModel(
                       record[MODULES.WORKSHOP_DESCRIPTION]?.let { EventType.Workshop to it },
                   )
                   .toMap(),
-          eventSessions = eventsField?.let { record[it] } ?: emptyMap(),
           overview = record[MODULES.OVERVIEW],
           preparationMaterials = record[MODULES.PREPARATION_MATERIALS],
       )
