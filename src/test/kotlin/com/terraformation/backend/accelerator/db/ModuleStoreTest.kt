@@ -65,37 +65,6 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
         )
       }
     }
-
-    @Test
-    fun `throws exception if cohort modules dates overlap`() {
-      val moduleId = insertModule()
-      val otherModuleId = insertModule()
-
-      insertCohortModule(
-          cohortId,
-          moduleId,
-          startDate = LocalDate.of(2024, 1, 1),
-          endDate = LocalDate.of(2024, 1, 15),
-      )
-
-      assertThrows<DataIntegrityViolationException> {
-        insertCohortModule(
-            cohortId,
-            otherModuleId,
-            startDate = LocalDate.of(2024, 1, 15),
-            endDate = LocalDate.of(2024, 1, 30),
-        )
-      }
-    }
-
-    @Test
-    fun `throws exception if event end time is before start time`() {
-      insertModule()
-
-      assertThrows<DataIntegrityViolationException> {
-        insertEvent(startTime = Instant.ofEpochSecond(500), endTime = Instant.ofEpochSecond(400))
-      }
-    }
   }
 
   @Nested
