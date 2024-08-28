@@ -17,16 +17,16 @@ data class EventModel(
     val endTime: Instant,
     val eventStatus: EventStatus,
     val eventType: EventType,
-    val meetingUrl: URI?,
+    val meetingUrl: URI? = null,
     val moduleId: ModuleId,
-    val projects: Set<ProjectId>? = null,
-    val recordingUrl: URI?,
+    val projects: Set<ProjectId>,
+    val recordingUrl: URI? = null,
     val revision: Int,
-    val slidesUrl: URI?,
+    val slidesUrl: URI? = null,
     val startTime: Instant,
 ) {
   companion object {
-    fun of(record: Record, projectsField: Field<Set<ProjectId>>? = null): EventModel =
+    fun of(record: Record, projectsField: Field<Set<ProjectId>>): EventModel =
         EventModel(
             id = record[EVENTS.ID]!!,
             endTime = record[EVENTS.END_TIME]!!,
@@ -34,7 +34,7 @@ data class EventModel(
             eventStatus = record[EVENTS.EVENT_STATUS_ID]!!,
             meetingUrl = record[EVENTS.MEETING_URL],
             moduleId = record[EVENTS.MODULE_ID]!!,
-            projects = projectsField?.let { record[it] },
+            projects = record[projectsField]!!,
             recordingUrl = record[EVENTS.RECORDING_URL],
             revision = record[EVENTS.REVISION]!!,
             slidesUrl = record[EVENTS.SLIDES_URL],
