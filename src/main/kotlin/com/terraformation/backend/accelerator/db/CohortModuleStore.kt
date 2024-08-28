@@ -110,37 +110,35 @@ class CohortModuleStore(
   ): List<ModuleModel> {
     val deliverablesField = deliverablesMultiset()
 
-    return with(MODULES) {
-      val query =
-          dslContext
-              .select(
-                  asterisk(),
-                  deliverablesField,
-                  COHORT_MODULES.COHORT_ID,
-                  COHORT_MODULES.TITLE,
-                  COHORT_MODULES.START_DATE,
-                  COHORT_MODULES.END_DATE)
-              .from(this)
-              .join(COHORT_MODULES)
-              .on(COHORT_MODULES.MODULE_ID.eq(ID))
+    val query =
+        dslContext
+            .select(
+                MODULES.asterisk(),
+                deliverablesField,
+                COHORT_MODULES.COHORT_ID,
+                COHORT_MODULES.TITLE,
+                COHORT_MODULES.START_DATE,
+                COHORT_MODULES.END_DATE)
+            .from(this)
+            .join(COHORT_MODULES)
+            .on(COHORT_MODULES.MODULE_ID.eq(ID))
 
-      joinForVisibility(query)
-          .apply { condition?.let { where(condition) } }
-          .orderBy(
-              COHORT_MODULES.COHORT_ID,
-              COHORT_MODULES.START_DATE,
-              COHORT_MODULES.END_DATE,
-              MODULES.POSITION)
-          .fetch {
-            ModuleModel.of(it, deliverablesField)
-                .copy(
-                    cohortId = it[COHORT_MODULES.COHORT_ID],
-                    title = it[COHORT_MODULES.TITLE],
-                    startDate = it[COHORT_MODULES.START_DATE],
-                    endDate = it[COHORT_MODULES.END_DATE],
-                )
-          }
-          .filter { currentUser().canReadCohort(it.cohortId!!) }
-    }
+    joinForVisibility(query)
+        .apply { condition?.let { where(condition) } }
+        .orderBy(
+            COHORT_MODULES.COHORT_ID,
+            COHORT_MODULES.START_DATE,
+            COHORT_MODULES.END_DATE,
+            MODULES.POSITION)
+        .fetch {
+          ModuleModel.of(it, deliverablesField)
+              .copy(
+                  cohortId = it[COHORT_MODULES.COHORT_ID],
+                  title = it[COHORT_MODULES.TITLE],
+                  startDate = it[COHORT_MODULES.START_DATE],
+                  endDate = it[COHORT_MODULES.END_DATE],
+              )
+        }
+        .filter { currentUser().canReadCohort(it.cohortId!!) }
   }
 }
