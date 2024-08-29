@@ -51,6 +51,7 @@ class EventsController(
 }
 
 data class ModuleEvent(
+    val description: String?,
     val endTime: Instant?,
     val id: EventId,
     val meetingUrl: URI?,
@@ -63,6 +64,7 @@ data class ModuleEvent(
   constructor(
       model: EventModel,
   ) : this(
+      description = model.description,
       endTime = model.endTime,
       id = model.id,
       meetingUrl = model.meetingUrl,

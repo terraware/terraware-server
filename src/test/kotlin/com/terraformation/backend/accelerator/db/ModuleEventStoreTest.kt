@@ -44,7 +44,11 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
     insertOrganization()
     cohortId = insertCohort()
     insertParticipant(cohortId = cohortId)
-    moduleId = insertModule()
+    moduleId =
+        insertModule(
+            liveSessionDescription = "Live session description",
+            workshopDescription = "Workshop description",
+        )
     insertCohortModule(cohortId, moduleId)
 
     every { user.canManageModules() } returns true
@@ -98,6 +102,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           EventModel(
               id = workshop,
+              description = "Workshop description",
               eventStatus = EventStatus.NotStarted,
               eventType = EventType.Workshop,
               moduleId = moduleId,
@@ -126,7 +131,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       val project2 = insertProject(participantId = inserted.participantId)
       val invisibleProject = insertProject(participantId = inserted.participantId)
 
-      val otherModule = insertModule()
+      val otherModule = insertModule(oneOnOneSessionDescription = "1:1 description")
       insertCohortModule(cohortId, otherModule)
 
       every { user.canReadProject(invisibleProject) } returns false
@@ -165,6 +170,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       val event1 =
           EventModel(
               id = eventId1,
+              description = "Workshop description",
               eventStatus = EventStatus.NotStarted,
               eventType = EventType.Workshop,
               moduleId = moduleId,
@@ -176,6 +182,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       val event2 =
           EventModel(
               id = eventId2,
+              description = "Live session description",
               eventStatus = EventStatus.NotStarted,
               eventType = EventType.LiveSession,
               moduleId = moduleId,
@@ -187,6 +194,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       val event3 =
           EventModel(
               id = eventId3,
+              description = "1:1 description",
               eventStatus = EventStatus.NotStarted,
               eventType = EventType.OneOnOneSession,
               moduleId = otherModule,

@@ -15,6 +15,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.EventsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
 import com.terraformation.backend.db.accelerator.tables.references.EVENTS
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
+import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.db.default_schema.ProjectId
 import jakarta.inject.Named
 import java.net.URI
@@ -228,8 +229,17 @@ class ModuleEventStore(
     val projectsField = eventProjectsMultiset()
     return with(EVENTS) {
           dslContext
-              .select(asterisk(), projectsField)
+              .select(
+                  asterisk(),
+                  MODULES.ONE_ON_ONE_SESSION_DESCRIPTION,
+                  MODULES.WORKSHOP_DESCRIPTION,
+                  MODULES.RECORDED_SESSION_DESCRIPTION,
+                  MODULES.LIVE_SESSION_DESCRIPTION,
+                  projectsField,
+              )
               .from(this)
+              .join(MODULES)
+              .on(EVENTS.MODULE_ID.eq(MODULES.ID))
               .apply { condition?.let { where(it) } }
               .orderBy(START_TIME, END_TIME, ID)
               .fetch { EventModel.of(it, projectsField) }
