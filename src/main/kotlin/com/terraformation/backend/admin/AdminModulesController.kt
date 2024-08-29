@@ -57,10 +57,11 @@ class AdminModulesController(
   @GetMapping("/modules")
   fun modulesHome(model: Model): String {
     val hasModules = dslContext.fetchExists(MODULES)
-    val cohortNames = cohortStore.findAll().associateBy { it.id }.mapValues { it.value.name }
     val modules = moduleStore.fetchAllModules()
 
-    model.addAttribute("cohortNames", cohortNames)
+    val cohorts = modules.associate { it.id to cohortStore.findByModule(it.id) }
+
+    model.addAttribute("cohorts", cohorts)
     model.addAttribute("canManageDeliverables", currentUser().canManageDeliverables())
     model.addAttribute("canManageModules", currentUser().canManageModules())
     model.addAttribute("hasModules", hasModules)
@@ -85,14 +86,20 @@ class AdminModulesController(
         }
 
     val cohorts = cohortStore.findByModule(moduleId, CohortDepth.Participant)
-    val participants =
-        cohorts.flatMap { it.participantIds }.map { participantStore.fetchOneById(it) }
-    val moduleProjects = participants.flatMap { it.projectIds }
 
-    val cohortNames = cohorts.associate { it.id to it.name }
+    val cohortProjects =
+        cohorts.associate {
+          it.id to
+              it.participantIds
+                  .flatMap { participantId ->
+                    participantStore.fetchOneById(participantId).projectIds
+                  }
+                  .map { projectId -> projectStore.fetchOneById(projectId) }
+        }
 
-    val projects = moduleProjects.associateWith { projectStore.fetchOneById(it) }
-    val projectNames = projects.mapValues { it.value.name }
+    val moduleProjects = cohortProjects.values.flatten()
+
+    val projects = moduleProjects.associateBy { it.id }
 
     // cohort name - project name
     val cohortProjectNames =
@@ -102,13 +109,13 @@ class AdminModulesController(
               .name + " - " + it.value.name
         }
 
+    model.addAttribute("cohorts", cohorts)
+    model.addAttribute("cohortProjects", cohortProjects)
     model.addAttribute("canManageModules", currentUser().canManageModules())
-    model.addAttribute("cohortNames", cohortNames)
     model.addAttribute("cohortProjectNames", cohortProjectNames)
     model.addAttribute("dateFormat", dateFormat)
     model.addAttribute("module", module)
     model.addAttribute("moduleProjects", moduleProjects)
-    model.addAttribute("projectNames", projectNames)
 
     return "/admin/moduleView"
   }

@@ -38,7 +38,7 @@
             <td th:text="${module.id}">Module ID</td>
             <td>
                 <ul>
-                    <li th:each="cohort:${module.cohorts}" th:text="${cohortNames.get(cohort.cohortId)}">Cohort Name</li>
+                    <li th:each="cohort:${cohorts.get(module.id)}" th:text="${cohort.name}">Cohort Name</li>
                 </ul>
             </td>
         </tr>
