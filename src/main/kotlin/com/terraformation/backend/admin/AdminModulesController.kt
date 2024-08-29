@@ -111,7 +111,6 @@ class AdminModulesController(
 
     val eventSessions = eventStore.fetchById(moduleId = moduleId).associateBy { it.eventType }
 
-
     model.addAttribute("cohorts", cohorts)
     model.addAttribute("cohortProjects", cohortProjects)
     model.addAttribute("canManageModules", currentUser().canManageModules())
