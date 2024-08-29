@@ -71,12 +71,17 @@ class AdminCohortsController(
         }
 
     val cohortModules = cohortModuleStore.fetch(cohortId)
-    val modules = moduleStore.fetchAllModules().associateBy { it.id }
 
+    val modules = moduleStore.fetchAllModules()
+    val moduleNames = modules.associate { it.id to "(${it.id}) ${it.name}" }
+
+    val unassignedModules = modules.filter { module -> cohortModules.all { module.id != it.id } }
+
+    model.addAttribute("canUpdateCohort", currentUser().canUpdateCohort(cohortId))
     model.addAttribute("cohort", cohort)
     model.addAttribute("cohortModules", cohortModules)
-    model.addAttribute("modules", modules)
-    model.addAttribute("canUpdateCohort", currentUser().canUpdateCohort(cohortId))
+    model.addAttribute("moduleNames", moduleNames)
+    model.addAttribute("unassignedModules", unassignedModules)
 
     return "/admin/cohortView"
   }

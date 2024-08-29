@@ -30,22 +30,22 @@
     </thead>
 
     <tbody>
-    <tr th:each="module : ${cohort.modules}" class="striped">
+    <tr th:each="module : ${cohortModules}" class="striped">
         <td>
             <input type="text"
                    name="title"
                    required
                    th:disabled="${!canUpdateCohort}"
-                   th:form="|update-${module.moduleId}|"
+                   th:form="|update-${module.id}|"
                    th:value="${module.title}" />
         </td>
-        <td th:text="${modules.get(module.moduleId).name}">Module ID and Name</td>
+        <td th:text="${moduleNames.get(module.id)}">Module ID and Name</td>
         <td>
             <input type="date"
                    name="startDate"
                    required
                    th:disabled="${!canUpdateCohort}"
-                   th:form="|update-${module.moduleId}|"
+                   th:form="|update-${module.id}|"
                    th:value="${module.startDate}" />
         </td>
         <td>
@@ -53,14 +53,14 @@
                    name="endDate"
                    required
                    th:disabled="${!canUpdateCohort}"
-                   th:form="|update-${module.moduleId}|"
+                   th:form="|update-${module.id}|"
                    th:value="${module.endDate}" />
         </td>
         <td>
             <form method="POST"
-                  th:id="|update-${module.moduleId}|"
+                  th:id="|update-${module.id}|"
                   th:action="|/admin/cohorts/${cohort.id}/updateModule|">
-                <input type="hidden" name="moduleId" th:value="${module.moduleId}"/>
+                <input type="hidden" name="moduleId" th:value="${module.id}"/>
                 <input type="submit"
                        th:disabled="${!canUpdateCohort}"
                        value="Update" />
@@ -68,17 +68,17 @@
         </td>
         <td>
             <form method="POST"
-                  th:id="|delete-${module.moduleId}|"
+                  th:id="|delete-${module.id}|"
                   th:action="|/admin/cohorts/${cohort.id}/removeModule|">
-                <input type="hidden" name="moduleId" th:value="${module.moduleId}"/>
+                <input type="hidden" name="moduleId" th:value="${module.id}"/>
                 <input type="submit"
                        th:disabled="${!canUpdateCohort}"
                        value="Delete" />
             </form>
         </td>
         <td>
-            <select name="deliverableId" th:form="|deliverables-${module.moduleId}|">
-                <option th:each="deliverable : ${modules.get(module.moduleId).deliverables}"
+            <select name="deliverableId" th:form="|deliverables-${module.id}|">
+                <option th:each="deliverable : ${module.deliverables}"
                         th:text="|(${deliverable.id}) ${deliverable.name}|"
                         th:value="${deliverable.id}">
                     (Deliverable ID) Deliverable Name
@@ -87,7 +87,7 @@
         </td>
         <td>
             <form method="POST"
-                  th:id="|deliverables-${module.moduleId}|"
+                  th:id="|deliverables-${module.id}|"
                   th:action="|/admin/cohorts/${cohort.id}/deliverables|">
                 <input type="submit"
                        value="View" />
@@ -105,11 +105,10 @@
         <td>
             <select name="moduleId"
                     form="add-module">
-                <option th:each="moduleId : ${modules.keySet()}"
-                        th:if="${!cohortModules.contains(moduleId)}"
-                        th:text="${modules.get(moduleId).name}"
+                <option th:each="module : ${unassignedModules}"
+                        th:text="${moduleNames.get(module.id)}"
                         th:disabled="${!canUpdateCohort}"
-                        th:value="${moduleId}">
+                        th:value="${module.id}">
                     Module Name
                 </option>
             </select>
