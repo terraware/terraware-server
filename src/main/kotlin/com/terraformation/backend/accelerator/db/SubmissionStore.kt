@@ -38,7 +38,9 @@ class SubmissionStore(
   ): SubmissionId {
     requirePermissions { createSubmission(projectId) }
 
-    if (status != SubmissionStatus.NotSubmitted && status != SubmissionStatus.Completed) {
+    if (status != SubmissionStatus.NotSubmitted &&
+        status != SubmissionStatus.Completed &&
+        status != SubmissionStatus.InReview) {
       throw IllegalArgumentException("Cannot create submissions in $status")
     }
 

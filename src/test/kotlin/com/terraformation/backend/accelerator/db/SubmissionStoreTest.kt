@@ -282,7 +282,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception if creating submission for status other than Not Submitted or Completed`() {
+    fun `throws exception if creating submission for internal only statuses`() {
       insertModule()
       val projectId = insertProject()
       val deliverableId = insertDeliverable()
@@ -291,7 +291,6 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
           setOf(
               SubmissionStatus.Approved,
               SubmissionStatus.Rejected,
-              SubmissionStatus.InReview,
               SubmissionStatus.NeedsTranslation,
               SubmissionStatus.NotNeeded,
           )
