@@ -2,6 +2,8 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.model.ApplicationModuleModel
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
@@ -55,9 +57,18 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
+
   private val messages = Messages()
   private val store: ApplicationStore by lazy {
-    ApplicationStore(clock, countriesDao, CountryDetector(), dslContext, messages, organizationsDao)
+    ApplicationStore(
+        clock,
+        countriesDao,
+        CountryDetector(),
+        dslContext,
+        eventPublisher,
+        messages,
+        organizationsDao)
   }
 
   private lateinit var organizationId: OrganizationId
@@ -1323,6 +1334,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedTime = clock.instant,
                   applicationStatusId = ApplicationStatus.Submitted)),
           applicationHistoriesDao.findAll().map { it.copy(id = null) })
+
+      eventPublisher.assertEventPublished(ApplicationSubmittedEvent(applicationId))
     }
 
     @Test
