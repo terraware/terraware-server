@@ -1,13 +1,10 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.accelerator.model.ModuleDeliverableModel
 import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
-import com.terraformation.backend.db.accelerator.DeliverableCategory
-import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -168,89 +165,6 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
 
       val fetchAllResult = store.fetchAllModules()
       assertEquals(moduleIds, fetchAllResult.map { it.id })
-    }
-
-    @Test
-    fun `returns associated deliverables with details ordered by position`() {
-      val moduleId1 = insertModule()
-      val moduleId2 = insertModule()
-
-      val deliverable1 =
-          insertDeliverable(
-              deliverableCategoryId = DeliverableCategory.Compliance,
-              deliverableTypeId = DeliverableType.Document,
-              descriptionHtml = "Description",
-              isSensitive = true,
-              isRequired = true,
-              moduleId = moduleId1,
-              name = "Deliverable name",
-              position = 2)
-
-      val deliverable2 =
-          insertDeliverable(
-              deliverableCategoryId = DeliverableCategory.CarbonEligibility,
-              deliverableTypeId = DeliverableType.Species,
-              descriptionHtml = "Species description",
-              isSensitive = false,
-              isRequired = false,
-              moduleId = moduleId1,
-              name = "Species name",
-              position = 1)
-
-      val deliverable3 =
-          insertDeliverable(
-              deliverableCategoryId = DeliverableCategory.GIS,
-              deliverableTypeId = DeliverableType.Document,
-              descriptionHtml = "GIS description",
-              isSensitive = false,
-              isRequired = false,
-              moduleId = moduleId2,
-              name = "GIS name",
-              position = 3)
-
-      val model1 =
-          ModuleDeliverableModel(
-              id = deliverable1,
-              category = DeliverableCategory.Compliance,
-              descriptionHtml = "Description",
-              moduleId = moduleId1,
-              name = "Deliverable name",
-              position = 2,
-              required = true,
-              sensitive = true,
-              type = DeliverableType.Document,
-          )
-
-      val model2 =
-          ModuleDeliverableModel(
-              id = deliverable2,
-              category = DeliverableCategory.CarbonEligibility,
-              descriptionHtml = "Species description",
-              moduleId = moduleId1,
-              name = "Species name",
-              position = 1,
-              required = false,
-              sensitive = false,
-              type = DeliverableType.Species,
-          )
-
-      val model3 =
-          ModuleDeliverableModel(
-              id = deliverable3,
-              category = DeliverableCategory.GIS,
-              descriptionHtml = "GIS description",
-              moduleId = moduleId2,
-              name = "GIS name",
-              position = 3,
-              required = false,
-              sensitive = false,
-              type = DeliverableType.Document,
-          )
-
-      assertEquals(
-          listOf(model2, model1, model3),
-          store.fetchAllModules().flatMap { it.deliverables },
-          "Fetch all with deliverables")
     }
   }
 

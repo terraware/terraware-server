@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
+import com.terraformation.backend.accelerator.model.ModuleDeliverableModel
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortPhase
@@ -53,6 +54,27 @@ class DeliverableStore(
         .from(DELIVERABLES)
         .where(DELIVERABLES.ID.eq(deliverableId))
         .fetchOne(DELIVERABLES.MODULE_ID) ?: throw DeliverableNotFoundException(deliverableId)
+  }
+
+  fun fetchDeliverables(
+      deliverableId: DeliverableId? = null,
+      moduleId: ModuleId? = null,
+  ): List<ModuleDeliverableModel> {
+    requirePermissions {
+      when {
+        moduleId != null -> readModule(moduleId)
+        else -> readAllDeliverables()
+      }
+    }
+
+    val conditions =
+        listOfNotNull(
+            deliverableId?.let { DELIVERABLES.ID.eq(it) },
+            moduleId?.let { DELIVERABLES.MODULE_ID.eq(it) })
+
+    return dslContext.selectFrom(DELIVERABLES).where(conditions).fetch {
+      ModuleDeliverableModel.of(it)
+    }
   }
 
   fun fetchDeliverableSubmissions(

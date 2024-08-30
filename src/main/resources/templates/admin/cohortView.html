@@ -78,7 +78,7 @@
         </td>
         <td>
             <select name="deliverableId" th:form="|deliverables-${module.id}|">
-                <option th:each="deliverable : ${module.deliverables}"
+                <option th:each="deliverable : ${moduleDeliverables.get(module.moduleId)}"
                         th:text="|(${deliverable.id}) ${deliverable.name}|"
                         th:value="${deliverable.id}">
                     (Deliverable ID) Deliverable Name

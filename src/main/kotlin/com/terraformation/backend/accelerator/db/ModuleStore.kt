@@ -35,14 +35,13 @@ class ModuleStore(
   }
 
   private fun fetch(condition: Condition? = null): List<ModuleModel> {
-    val deliverablesField = deliverablesMultiset()
     return with(MODULES) {
       dslContext
-          .select(asterisk(), deliverablesField)
+          .select(asterisk())
           .from(this)
           .apply { condition?.let { where(it) } }
           .orderBy(ID)
-          .fetch { ModuleModel.of(it, deliverablesField) }
+          .fetch { ModuleModel.of(it) }
     }
   }
 }

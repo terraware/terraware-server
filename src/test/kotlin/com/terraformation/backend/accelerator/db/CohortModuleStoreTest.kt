@@ -1,13 +1,10 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.accelerator.model.ModuleDeliverableModel
 import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.CohortPhase
-import com.terraformation.backend.db.accelerator.DeliverableCategory
-import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -86,39 +83,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsUser {
           insertModule(name = "Module 3", position = 2, phase = CohortPhase.Phase1FeasibilityStudy)
       val module4 =
           insertModule(name = "Module 4", position = 10, phase = CohortPhase.Phase1FeasibilityStudy)
-      val hiddenModule = insertModule(name = "Hidden Module")
-
-      val deliverable1 =
-          insertDeliverable(
-              deliverableCategoryId = DeliverableCategory.Compliance,
-              deliverableTypeId = DeliverableType.Document,
-              descriptionHtml = "Description",
-              isSensitive = true,
-              isRequired = true,
-              moduleId = module1,
-              name = "Deliverable name",
-              position = 2)
-
-      val deliverable2 =
-          insertDeliverable(
-              deliverableCategoryId = DeliverableCategory.CarbonEligibility,
-              deliverableTypeId = DeliverableType.Species,
-              descriptionHtml = "Species description",
-              isSensitive = false,
-              isRequired = false,
-              moduleId = module1,
-              name = "Species name",
-              position = 1)
-
-      insertDeliverable(
-          deliverableCategoryId = DeliverableCategory.CarbonEligibility,
-          deliverableTypeId = DeliverableType.Species,
-          descriptionHtml = "Species description",
-          isSensitive = false,
-          isRequired = false,
-          moduleId = hiddenModule,
-          name = "Species name",
-          position = 1)
+      insertModule(name = "Hidden Module")
 
       val date1 = LocalDate.of(2024, 1, 5)
       val date2 = date1.plusDays(1)
@@ -132,39 +97,12 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsUser {
 
       insertCohortModule(cohortB, module1, "Different cohort module", date1, date4)
 
-      val deliverableModel1 =
-          ModuleDeliverableModel(
-              id = deliverable1,
-              category = DeliverableCategory.Compliance,
-              descriptionHtml = "Description",
-              moduleId = module1,
-              name = "Deliverable name",
-              position = 2,
-              required = true,
-              sensitive = true,
-              type = DeliverableType.Document,
-          )
-
-      val deliverableModel2 =
-          ModuleDeliverableModel(
-              id = deliverable2,
-              category = DeliverableCategory.CarbonEligibility,
-              descriptionHtml = "Species description",
-              moduleId = module1,
-              name = "Species name",
-              position = 1,
-              required = false,
-              sensitive = false,
-              type = DeliverableType.Species,
-          )
-
       val cohortAModule1 =
           ModuleModel(
               id = module1,
               name = "Module 1",
               phase = CohortPhase.Phase1FeasibilityStudy,
               position = 3,
-              deliverables = listOf(deliverableModel2, deliverableModel1),
               cohortId = cohortA,
               title = "Equal dates, later position",
               startDate = date2,

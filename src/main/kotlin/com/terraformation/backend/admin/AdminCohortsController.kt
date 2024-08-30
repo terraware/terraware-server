@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.db.CohortModuleStore
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.CohortStore
 import com.terraformation.backend.accelerator.db.DeliverableDueDateStore
+import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
@@ -73,6 +74,7 @@ class AdminCohortsController(
     val cohortModules = cohortModuleStore.fetch(cohortId)
 
     val modules = moduleStore.fetchAllModules()
+    val moduleDeliverables = deliverableStore.fetchDeliverables().associateBy { it.moduleId }
     val moduleNames = modules.associate { it.id to "(${it.id}) ${it.name}" }
 
     val unassignedModules = modules.filter { module -> cohortModules.all { module.id != it.id } }
@@ -80,8 +82,10 @@ class AdminCohortsController(
     model.addAttribute("canUpdateCohort", currentUser().canUpdateCohort(cohortId))
     model.addAttribute("cohort", cohort)
     model.addAttribute("cohortModules", cohortModules)
+    model.addAttribute("moduleDeliverables", moduleDeliverables)
     model.addAttribute("moduleNames", moduleNames)
     model.addAttribute("unassignedModules", unassignedModules)
+    model.addAttribute("canUpdateCohort", currentUser().canUpdateCohort(cohortId))
 
     return "/admin/cohortView"
   }
@@ -203,7 +207,16 @@ class AdminCohortsController(
         cohort.participantIds.flatMap { participantStore.fetchOneById(it).projectIds }
 
     val cohortModule = cohortModuleStore.fetch(cohortId, moduleId = dueDateModel.moduleId).first()
-    val deliverable = cohortModule.deliverables.first { it.id == deliverableId }
+
+    val deliverable =
+        try {
+          deliverableStore.fetchDeliverables(deliverableId).firstOrNull()
+              ?: throw DeliverableNotFoundException(deliverableId)
+        } catch (e: Exception) {
+          log.warn("Fetch deliverable data failed", e)
+          redirectAttributes.failureMessage = "Error looking up deliverable data: ${e.message}"
+          return redirectToCohort(cohortId)
+        }
 
     val submissions =
         deliverableStore
