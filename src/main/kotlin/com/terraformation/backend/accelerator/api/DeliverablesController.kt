@@ -183,7 +183,7 @@ class DeliverablesController(
 
   @ApiResponseSimpleSuccess
   @Operation(summary = "Submits a submission from a project.")
-  @PutMapping("/{deliverableId}/submissions/{projectId}/submit")
+  @PostMapping("/{deliverableId}/submissions/{projectId}/submit")
   fun submitSubmission(
       @PathVariable deliverableId: DeliverableId,
       @PathVariable projectId: ProjectId,
