@@ -11,6 +11,7 @@ import java.math.BigDecimal
 
 class CsvVariableNormalizer {
   private val deliverablePositions: MutableMap<DeliverableId, Int> = mutableMapOf()
+  private val deliverableIdsByPath: MutableMap<String, DeliverableId> = mutableMapOf()
   private val variablePaths: MutableList<String> = mutableListOf()
 
   fun normalizeFromCsv(inputBytes: ByteArray): List<AllVariableCsvVariable> {
@@ -20,16 +21,23 @@ class CsvVariableNormalizer {
 
     return csvReader.mapIndexed { index, rawValues ->
       val values = rawValues.map { it.ifEmpty { null } }
+
       val dataType =
           AllVariableCsvVariableType.create(rawValues[VARIABLE_CSV_COLUMN_INDEX_DATA_TYPE])
-
-      // Sections are always lists.
       val isList = normalizeBoolean(values[VARIABLE_CSV_COLUMN_INDEX_IS_LIST])
-
-      val deliverableId =
-          values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID]?.let { DeliverableId(it) }
       val name = rawValues[VARIABLE_CSV_COLUMN_INDEX_NAME].trim()
+
       val parent = values[VARIABLE_CSV_COLUMN_INDEX_PARENT]?.trim()
+      val parentPath = getParentPath(parent)
+      val variablePath = getVariablePath(name, parent)
+
+      // Children always inherit their parents' deliverable IDs.
+      val deliverableId =
+          parentPath?.let { deliverableIdsByPath[it] }
+              ?: values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID]?.let { DeliverableId(it) }
+      if (deliverableId != null) {
+        deliverableIdsByPath[variablePath] = deliverableId
+      }
 
       AllVariableCsvVariable(
           name = name,
@@ -86,8 +94,8 @@ class CsvVariableNormalizer {
           internalOnly = normalizeBoolean(values[VARIABLE_CSV_COLUMN_INDEX_INTERNAL_ONLY]),
           isRequired = normalizeBoolean(values[VARIABLE_CSV_COLUMN_INDEX_IS_REQUIRED]),
           position = index + 2,
-          variablePath = getVariablePath(name, parent),
-          parentPath = getParentPath(parent))
+          variablePath = variablePath,
+          parentPath = parentPath)
     }
   }
 

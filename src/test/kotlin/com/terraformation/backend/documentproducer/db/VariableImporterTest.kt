@@ -666,7 +666,9 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               "\nNumber of non-native species,1115,,Number,,,,,,,,,,$deliverableId,What number of non-native species will you plant in this project?,,,,true,true" +
               "\nReason to use non-native species,1116,,Select (multiple),,,\"- agroforestry timber" +
               "\n- sustainable timber" +
-              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,1115,>=,5,true,false"
+              "\n- marketable product\",,,,,,,$deliverableId,What is the reason these non-native species are being planted?,1115,>=,5,true,false" +
+              "\nTable,1117,,Table,Yes,,,,,,,,,$deliverableId,This is a table,,,,true,true" +
+              "\nColumn,1118,,Number,,Table,,,,,,,,,This is a column,,,,true,true"
 
       importer.import(sizedInputStream(csv))
 
@@ -701,8 +703,32 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   stableId = "1116",
                   variableTypeId = VariableType.Select,
               ),
+              VariablesRow(
+                  deliverableId = deliverableId,
+                  deliverableQuestion = "This is a table",
+                  deliverablePosition = 2,
+                  id = null,
+                  internalOnly = true,
+                  isList = true,
+                  isRequired = true,
+                  name = "Table",
+                  stableId = "1117",
+                  variableTypeId = VariableType.Table,
+              ),
+              VariablesRow(
+                  deliverableId = deliverableId,
+                  deliverableQuestion = "This is a column",
+                  deliverablePosition = 3,
+                  id = null,
+                  internalOnly = true,
+                  isList = false,
+                  isRequired = true,
+                  name = "Column",
+                  stableId = "1118",
+                  variableTypeId = VariableType.Number,
+              ),
           ),
-          variablesDao.findAll().map { it.copy(id = null) },
+          variablesDao.findAll().map { it.copy(id = null) }.sortedBy { it.stableId!! },
           "New variables are created with deliverable related fields")
     }
 

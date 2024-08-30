@@ -402,6 +402,7 @@ class VariableImporter(
         variable: Variable
     ): Boolean {
       return csvVariable.description == variable.description &&
+          csvVariable.deliverableId == variable.deliverableId &&
           csvVariable.deliverablePosition == variable.deliverablePosition &&
           csvVariable.isList == variable.isList &&
           csvVariable.isRequired == variable.isRequired &&
