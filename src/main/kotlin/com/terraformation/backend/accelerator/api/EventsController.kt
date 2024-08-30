@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
-@RequestMapping("/api/v1/events")
+@RequestMapping("/api/v1/accelerator/events")
 @RestController
 class EventsController(
     private val eventStore: ModuleEventStore,

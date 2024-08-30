@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
-@RequestMapping("/api/v1/modules")
+@RequestMapping("/api/v1/accelerator/modules")
 @RestController
 class ModulesController(
     private val clock: InstantSource,
