@@ -74,7 +74,9 @@ class AdminCohortsController(
     val cohortModules = cohortModuleStore.fetch(cohortId)
 
     val modules = moduleStore.fetchAllModules()
-    val moduleDeliverables = deliverableStore.fetchDeliverables().associateBy { it.moduleId }
+    val allDeliverables = deliverableStore.fetchDeliverables().groupBy { it.moduleId }
+    val moduleDeliverables = modules.associate { it.id to (allDeliverables[it.id] ?: emptyList()) }
+
     val moduleNames = modules.associate { it.id to "(${it.id}) ${it.name}" }
 
     val unassignedModules = modules.filter { module -> cohortModules.all { module.id != it.id } }
