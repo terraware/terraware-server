@@ -1,14 +1,13 @@
 package com.terraformation.backend.admin
 
+import com.terraformation.backend.accelerator.db.CohortModuleStore
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.CohortStore
 import com.terraformation.backend.accelerator.db.DeliverableDueDateStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
-import com.terraformation.backend.accelerator.db.ModuleNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleStore
+import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.model.CohortDepth
-import com.terraformation.backend.accelerator.model.CohortModuleDepth
-import com.terraformation.backend.accelerator.model.CohortModuleModel
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
@@ -39,6 +38,8 @@ class AdminCohortsController(
     private val deliverableDueDateStore: DeliverableDueDateStore,
     private val deliverableStore: DeliverableStore,
     private val cohortStore: CohortStore,
+    private val cohortModuleStore: CohortModuleStore,
+    private val participantStore: ParticipantStore,
     private val moduleStore: ModuleStore,
 ) {
   private val log = perClassLogger()
@@ -62,21 +63,25 @@ class AdminCohortsController(
     requirePermissions { readCohort(cohortId) }
     val cohort =
         try {
-          cohortStore.fetchOneById(cohortId, CohortDepth.Cohort, CohortModuleDepth.Module)
+          cohortStore.fetchOneById(cohortId, CohortDepth.Cohort)
         } catch (e: CohortNotFoundException) {
           log.warn("Cohort not found", e)
           redirectAttributes.failureMessage = "Cohort not found: ${e.message}"
           return redirectToCohortHome()
         }
 
-    val cohortModules = cohort.modules.map { it.moduleId }
+    val cohortModules = cohortModuleStore.fetch(cohortId)
 
-    val modules = moduleStore.fetchAllModules().associateBy { it.id }
+    val modules = moduleStore.fetchAllModules()
+    val moduleNames = modules.associate { it.id to "(${it.id}) ${it.name}" }
 
+    val unassignedModules = modules.filter { module -> cohortModules.all { module.id != it.id } }
+
+    model.addAttribute("canUpdateCohort", currentUser().canUpdateCohort(cohortId))
     model.addAttribute("cohort", cohort)
     model.addAttribute("cohortModules", cohortModules)
-    model.addAttribute("modules", modules)
-    model.addAttribute("canUpdateCohort", currentUser().canUpdateCohort(cohortId))
+    model.addAttribute("moduleNames", moduleNames)
+    model.addAttribute("unassignedModules", unassignedModules)
 
     return "/admin/cohortView"
   }
@@ -93,11 +98,7 @@ class AdminCohortsController(
   ): String {
     requirePermissions { updateCohort(cohortId) }
     try {
-      cohortStore.update(cohortId) {
-        val updatedModules =
-            it.modules.plus(CohortModuleModel(cohortId, moduleId, title, startDate, endDate))
-        it.copy(modules = updatedModules)
-      }
+      cohortModuleStore.assign(cohortId, moduleId, title, startDate, endDate)
       redirectAttributes.successMessage = "Cohort module added."
     } catch (e: Exception) {
       log.warn("Add cohort module failed")
@@ -123,18 +124,7 @@ class AdminCohortsController(
   ): String {
     requirePermissions { updateCohort(cohortId) }
     try {
-      cohortStore.update(cohortId) {
-        val newModule = CohortModuleModel(cohortId, moduleId, title, startDate, endDate)
-        val updatedModules =
-            it.modules.map { existingModule ->
-              if (existingModule.moduleId == moduleId) {
-                newModule
-              } else {
-                existingModule
-              }
-            }
-        it.copy(modules = updatedModules)
-      }
+      cohortModuleStore.assign(cohortId, moduleId, title, startDate, endDate)
       redirectAttributes.successMessage = "Cohort module updated."
     } catch (e: Exception) {
       log.warn("Update cohort module failed")
@@ -157,10 +147,7 @@ class AdminCohortsController(
   ): String {
     requirePermissions { updateCohort(cohortId) }
     try {
-      cohortStore.update(cohortId) {
-        val updatedModules = it.modules.filter { cohortModule -> cohortModule.moduleId != moduleId }
-        it.copy(modules = updatedModules)
-      }
+      cohortModuleStore.remove(cohortId, moduleId)
       redirectAttributes.successMessage = "Module removed from cohort."
     } catch (e: Exception) {
       log.warn("Delete module failed")
@@ -188,7 +175,7 @@ class AdminCohortsController(
 
     val cohort =
         try {
-          cohortStore.fetchOneById(cohortId, CohortDepth.Cohort, CohortModuleDepth.Module)
+          cohortStore.fetchOneById(cohortId, CohortDepth.Participant)
         } catch (e: CohortNotFoundException) {
           log.warn("Cohort not found", e)
           redirectAttributes.failureMessage = "Cohort not found: ${e.message}"
@@ -208,22 +195,15 @@ class AdminCohortsController(
 
     if (dueDateModel == null) {
       redirectAttributes.failureMessage =
-          "Deliverable $deliverableId not assocaited with cohort $cohortId"
+          "Deliverable $deliverableId not associated with cohort $cohortId"
       return redirectToCohort(cohortId)
     }
 
-    val module =
-        try {
-          moduleStore.fetchOneById(dueDateModel.moduleId)
-        } catch (e: ModuleNotFoundException) {
-          redirectAttributes.failureMessage = "Module for deliverable not found: ${e.message}"
-          return redirectToCohort(cohortId)
-        }
+    val cohortProjects =
+        cohort.participantIds.flatMap { participantStore.fetchOneById(it).projectIds }
 
-    val cohortProjects = module.cohorts.first { it.cohortId == cohortId }.projects!!
-
-    val cohortModule = cohort.modules.first { it.moduleId == module.id }
-    val deliverable = module.deliverables.first { it.id == deliverableId }
+    val cohortModule = cohortModuleStore.fetch(cohortId, moduleId = dueDateModel.moduleId).first()
+    val deliverable = cohortModule.deliverables.first { it.id == deliverableId }
 
     val submissions =
         deliverableStore
@@ -236,7 +216,6 @@ class AdminCohortsController(
     model.addAttribute("cohortModule", cohortModule)
     model.addAttribute("deliverable", deliverable)
     model.addAttribute("dueDates", dueDateModel)
-    model.addAttribute("module", module)
     model.addAttribute("submissions", submissions)
 
     return "/admin/cohortDeliverable"

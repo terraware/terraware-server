@@ -7,6 +7,7 @@ import com.terraformation.backend.accelerator.db.ModuleNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ModulesImporter
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.model.CohortDepth
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ProjectStore
@@ -56,10 +57,11 @@ class AdminModulesController(
   @GetMapping("/modules")
   fun modulesHome(model: Model): String {
     val hasModules = dslContext.fetchExists(MODULES)
-    val cohortNames = cohortStore.findAll().associateBy { it.id }.mapValues { it.value.name }
     val modules = moduleStore.fetchAllModules()
 
-    model.addAttribute("cohortNames", cohortNames)
+    val cohorts = modules.associate { it.id to cohortStore.findByModule(it.id) }
+
+    model.addAttribute("cohorts", cohorts)
     model.addAttribute("canManageDeliverables", currentUser().canManageDeliverables())
     model.addAttribute("canManageModules", currentUser().canManageModules())
     model.addAttribute("hasModules", hasModules)
@@ -71,25 +73,33 @@ class AdminModulesController(
   @GetMapping("/modules/{moduleId}")
   fun moduleView(
       model: Model,
-      @PathVariable moduleId: String,
+      @PathVariable moduleId: ModuleId,
       redirectAttributes: RedirectAttributes
   ): String {
     val module =
         try {
-          moduleStore.fetchOneById(ModuleId(moduleId))
+          moduleStore.fetchOneById(moduleId)
         } catch (e: ModuleNotFoundException) {
           log.warn("Module not found")
           redirectAttributes.failureMessage = "Module not found: ${e.message}"
           return redirectToModulesHome()
         }
 
-    val moduleProjects = module.cohorts.flatMap { it.projects!!.toList() }
+    val cohorts = cohortStore.findByModule(moduleId, CohortDepth.Participant)
 
-    val cohortNames =
-        module.cohorts.associate { it.cohortId to cohortStore.fetchOneById(it.cohortId).name }
+    val cohortProjects =
+        cohorts.associate {
+          it.id to
+              it.participantIds
+                  .flatMap { participantId ->
+                    participantStore.fetchOneById(participantId).projectIds
+                  }
+                  .map { projectId -> projectStore.fetchOneById(projectId) }
+        }
 
-    val projects = moduleProjects.associateWith { projectStore.fetchOneById(it) }
-    val projectNames = projects.mapValues { it.value.name }
+    val moduleProjects = cohortProjects.values.flatten()
+
+    val projects = moduleProjects.associateBy { it.id }
 
     // cohort name - project name
     val cohortProjectNames =
@@ -99,13 +109,13 @@ class AdminModulesController(
               .name + " - " + it.value.name
         }
 
+    model.addAttribute("cohorts", cohorts)
+    model.addAttribute("cohortProjects", cohortProjects)
     model.addAttribute("canManageModules", currentUser().canManageModules())
-    model.addAttribute("cohortNames", cohortNames)
     model.addAttribute("cohortProjectNames", cohortProjectNames)
     model.addAttribute("dateFormat", dateFormat)
     model.addAttribute("module", module)
     model.addAttribute("moduleProjects", moduleProjects)
-    model.addAttribute("projectNames", projectNames)
 
     return "/admin/moduleView"
   }

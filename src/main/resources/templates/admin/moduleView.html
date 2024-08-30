@@ -19,14 +19,12 @@
     </p>
 
     <h3> Cohorts and Projects </h3>
-    <div th:each="cohort : ${module.cohorts}">
-        <h4 th:text="${cohortNames.get(cohort.cohortId)} + ' '
-            + ${#temporals.format(cohort.startDate, 'yyyy/MM/dd')} + ' - '
-            + ${#temporals.format(cohort.endDate, 'yyyy/MM/dd')}">
-            Cohort Name (Start Date - End Date)
+    <div th:each="cohort : ${cohorts}">
+        <h4 th:text="${cohort.name}">
+            Cohort Name
         </h4>
-        <ul th:each="projectId : ${cohort.projects}">
-            <li th:text="${projectNames.get(projectId)}"> Project Name </li>
+        <ul th:each="project : ${cohortProjects.get(cohort.id)}">
+            <li th:text="${project.name}"> Project Name </li>
         </ul>
     </div>
 
@@ -157,10 +155,10 @@
                     <select name="toAdd"
                             th:form="|update-${eventSession.id}|"
                             multiple>
-                        <option th:each="projectId : ${moduleProjects}"
-                                th:if="${eventSession.projects.isEmpty() || !eventSession.projects.contains(projectId)}"
-                                th:text="${cohortProjectNames.get(projectId)}"
-                                th:value="${projectId}">
+                        <option th:each="project : ${moduleProjects}"
+                                th:if="${eventSession.projects.isEmpty() || !eventSession.projects.contains(project.id)}"
+                                th:text="${cohortProjectNames.get(project.id)}"
+                                th:value="${project.id}">
                             Project Name
                         </option>
                     </select>

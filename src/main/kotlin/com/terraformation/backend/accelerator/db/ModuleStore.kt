@@ -1,6 +1,5 @@
 package com.terraformation.backend.accelerator.db
 
-import com.terraformation.backend.accelerator.model.CohortModuleModel
 import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.accelerator.model.ModuleDeliverableModel
 import com.terraformation.backend.accelerator.model.ModuleModel
@@ -8,7 +7,6 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.EVENTS
@@ -62,27 +60,6 @@ class ModuleStore(
         .fetchOne(MODULES.PHASE_ID) ?: throw ModuleNotFoundException(moduleId)
   }
 
-  private fun cohortsMultiset(): Field<List<CohortModuleModel>> {
-    val projectsField =
-        DSL.multiset(
-                DSL.select(PROJECTS.ID)
-                    .from(COHORTS)
-                    .join(PARTICIPANTS)
-                    .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
-                    .join(PROJECTS)
-                    .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
-                    .where(COHORTS.ID.eq(COHORT_MODULES.COHORT_ID)))
-            .convertFrom { result -> result.map { it.value1() }.toSet() }
-    return with(COHORT_MODULES) {
-      DSL.multiset(
-              DSL.select(asterisk(), projectsField)
-                  .from(this)
-                  .where(MODULE_ID.eq(MODULES.ID))
-                  .orderBy(START_DATE))
-          .convertFrom { result -> result.map { CohortModuleModel.of(it, projectsField) } }
-    }
-  }
-
   private fun deliverablesMultiset(): Field<List<ModuleDeliverableModel>> {
     return with(DELIVERABLES) {
       DSL.multiset(DSL.selectFrom(this).where(MODULE_ID.eq(MODULES.ID)).orderBy(POSITION))
@@ -122,15 +99,14 @@ class ModuleStore(
   }
 
   private fun fetch(condition: Condition? = null): List<ModuleModel> {
-    val cohortsField = cohortsMultiset()
     val deliverablesField = deliverablesMultiset()
     val eventsField = eventsMultiset()
     return with(MODULES) {
       dslContext
-          .select(asterisk(), cohortsField, deliverablesField, eventsField)
+          .select(asterisk(), deliverablesField, eventsField)
           .from(this)
           .apply { condition?.let { where(it) } }
-          .fetch { ModuleModel.of(it, deliverablesField, eventsField, cohortsField) }
+          .fetch { ModuleModel.of(it, deliverablesField, eventsField) }
     }
   }
 
