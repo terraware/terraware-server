@@ -8,7 +8,6 @@ import com.terraformation.backend.accelerator.event.ModuleEventScheduledEvent
 import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EventNotFoundException
-import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventStatus
@@ -45,7 +44,11 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
     insertOrganization()
     cohortId = insertCohort()
     insertParticipant(cohortId = cohortId)
-    moduleId = insertModule()
+    moduleId =
+        insertModule(
+            liveSessionDescription = "Live session description",
+            workshopDescription = "Workshop description",
+        )
     insertCohortModule(cohortId, moduleId)
 
     every { user.canManageModules() } returns true
@@ -64,20 +67,21 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception no permission to view event or participants`() {
-      every { user.canReadModuleEventParticipants() } returns false
+    fun `throws exception no permission to view event`() {
+      every { user.canReadModuleEvent(any()) } returns false
       insertProject(participantId = inserted.participantId)
       val eventId = insertEvent()
-      assertThrows<AccessDeniedException> { store.fetchOneById(eventId) }
+      assertThrows<EventNotFoundException> { store.fetchOneById(eventId) }
     }
 
     @Test
-    fun `returns event with participants`() {
+    fun `returns event with visible participants`() {
       clock.instant = Instant.EPOCH.plusSeconds(500)
       val startTime = clock.instant.plusSeconds(3600)
       val endTime = startTime.plusSeconds(3600)
       val project1 = insertProject(participantId = inserted.participantId)
       val project2 = insertProject(participantId = inserted.participantId)
+      val invisibleProject = insertProject(participantId = inserted.participantId)
 
       val workshop =
           insertEvent(
@@ -89,27 +93,16 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
               startTime = startTime,
               endTime = endTime)
 
-      assertEquals(
-          EventModel(
-              id = workshop,
-              eventStatus = EventStatus.NotStarted,
-              eventType = EventType.Workshop,
-              moduleId = moduleId,
-              meetingUrl = URI("https://meeting.com"),
-              slidesUrl = URI("https://slides.com"),
-              recordingUrl = URI("https://recording.com"),
-              revision = 1,
-              startTime = startTime,
-              endTime = endTime,
-              projects = emptySet()),
-          store.fetchOneById(workshop))
-
       insertEventProject(workshop, project1)
       insertEventProject(workshop, project2)
+      insertEventProject(workshop, invisibleProject)
+
+      every { user.canReadProject(invisibleProject) } returns false
 
       assertEquals(
           EventModel(
               id = workshop,
+              description = "Workshop description",
               eventStatus = EventStatus.NotStarted,
               eventType = EventType.Workshop,
               moduleId = moduleId,
@@ -125,66 +118,110 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class FetchOneForProjectById {
+  inner class FetchById {
     @Test
-    fun `throws exception if event exists but project is not a participant`() {
-      val projectId = insertProject(participantId = inserted.participantId)
-      val eventId = insertEvent()
-      assertThrows<EventNotFoundException> { store.fetchOneForProjectById(eventId, projectId) }
-    }
-
-    @Test
-    fun `returns event without participants`() {
+    fun `queries by IDs`() {
       clock.instant = Instant.EPOCH.plusSeconds(500)
-      val startTime = clock.instant.plusSeconds(3600)
-      val endTime = startTime.plusSeconds(3600)
+      val time1 = clock.instant.plusSeconds(3600)
+      val time2 = time1.plusSeconds(3600)
+      val time3 = time2.plusSeconds(3600)
+      val time4 = time3.plusSeconds(3600)
+
       val project1 = insertProject(participantId = inserted.participantId)
       val project2 = insertProject(participantId = inserted.participantId)
+      val invisibleProject = insertProject(participantId = inserted.participantId)
 
-      val workshop =
+      val otherModule = insertModule(oneOnOneSessionDescription = "1:1 description")
+      insertCohortModule(cohortId, otherModule)
+
+      every { user.canReadProject(invisibleProject) } returns false
+
+      val eventId1 =
           insertEvent(
               moduleId = moduleId,
               eventType = EventType.Workshop,
-              meetingUrl = "https://meeting.com",
-              slidesUrl = "https://slides.com",
-              recordingUrl = "https://recording.com",
-              startTime = startTime,
-              endTime = endTime)
+              startTime = time1,
+              endTime = time2)
 
-      insertEventProject(workshop, project1)
-      insertEventProject(workshop, project2)
+      val eventId2 =
+          insertEvent(
+              moduleId = moduleId,
+              eventType = EventType.LiveSession,
+              startTime = time2,
+              endTime = time3)
 
-      assertEquals(
+      val eventId3 =
+          insertEvent(
+              moduleId = otherModule,
+              eventType = EventType.OneOnOneSession,
+              startTime = time3,
+              endTime = time4)
+
+      insertEventProject(eventId1, project1)
+      insertEventProject(eventId1, project2)
+      insertEventProject(eventId1, invisibleProject)
+
+      insertEventProject(eventId2, project1)
+      insertEventProject(eventId2, invisibleProject)
+
+      insertEventProject(eventId3, project2)
+      insertEventProject(eventId3, invisibleProject)
+
+      val event1 =
           EventModel(
-              id = workshop,
+              id = eventId1,
+              description = "Workshop description",
               eventStatus = EventStatus.NotStarted,
               eventType = EventType.Workshop,
               moduleId = moduleId,
-              meetingUrl = URI("https://meeting.com"),
-              slidesUrl = URI("https://slides.com"),
-              recordingUrl = URI("https://recording.com"),
               revision = 1,
-              startTime = startTime,
-              endTime = endTime,
-          ),
-          store.fetchOneForProjectById(workshop, project1))
-    }
+              startTime = time1,
+              endTime = time2,
+              projects = setOf(project1, project2))
 
-    @Test
-    fun `throws exception no permission to view event or participants`() {
-      every { user.canReadModuleEvent(any()) } returns false
-      val projectId = insertProject(participantId = inserted.participantId)
-      val eventId = insertEvent()
-      insertEventProject(eventId, projectId)
-      assertThrows<EventNotFoundException> { store.fetchOneForProjectById(eventId, projectId) }
+      val event2 =
+          EventModel(
+              id = eventId2,
+              description = "Live session description",
+              eventStatus = EventStatus.NotStarted,
+              eventType = EventType.LiveSession,
+              moduleId = moduleId,
+              revision = 1,
+              startTime = time2,
+              endTime = time3,
+              projects = setOf(project1))
 
-      every { user.canReadModuleEvent(any()) } returns true
-      every { user.canReadProject(any()) } returns false
-      assertThrows<ProjectNotFoundException> { store.fetchOneForProjectById(eventId, projectId) }
+      val event3 =
+          EventModel(
+              id = eventId3,
+              description = "1:1 description",
+              eventStatus = EventStatus.NotStarted,
+              eventType = EventType.OneOnOneSession,
+              moduleId = otherModule,
+              revision = 1,
+              startTime = time3,
+              endTime = time4,
+              projects = setOf(project2))
 
-      every { user.canReadProject(any()) } returns true
-      every { user.canReadModuleEvent(any()) } returns true
-      assertDoesNotThrow { store.fetchOneForProjectById(eventId, projectId) }
+      assertEquals(listOf(event1, event2, event3), store.fetchById(), "Fetch all")
+      assertEquals(
+          listOf(event1, event2), store.fetchById(projectId = project1), "Fetch by project ID")
+      assertEquals(listOf(event3), store.fetchById(moduleId = otherModule), "Fetch by module ID")
+      assertEquals(listOf(event2), store.fetchById(eventId = eventId2), "Fetch by Event ID")
+
+      assertEquals(
+          listOf(event1),
+          store.fetchById(projectId = project2, moduleId = moduleId),
+          "Fetch by projectId and module ID")
+      assertEquals(
+          listOf(event3),
+          store.fetchById(projectId = project2, eventId = eventId3),
+          "Fetch by projectId and event ID")
+
+      assertEquals(
+          listOf(event3),
+          store.fetchById(eventType = EventType.OneOnOneSession),
+          "Fetch by eventTypeId")
     }
   }
 

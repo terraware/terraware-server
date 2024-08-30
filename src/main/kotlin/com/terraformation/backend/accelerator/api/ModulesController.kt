@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
-@RequestMapping("/api/v1/modules/")
+@RequestMapping("/api/v1/accelerator/modules")
 @RestController
 class ModulesController(
     private val clock: InstantSource,
@@ -42,7 +42,7 @@ class ModulesController(
         cohortModuleStore.fetch(
             projectId = projectId, participantId = participantId, cohortId = cohortId)
     val today = LocalDate.ofInstant(clock.instant(), TimeZones.UTC)
-    return ListModulesResponsePayload(models.map { model -> Module(model, today) })
+    return ListModulesResponsePayload(models.map { model -> ModulePayload(model, today) })
   }
 
   @ApiResponse200
@@ -64,11 +64,11 @@ class ModulesController(
                 moduleId = moduleId)
             .firstOrNull() ?: throw ModuleNotFoundException(moduleId)
     val today = LocalDate.ofInstant(clock.instant(), TimeZones.UTC)
-    return GetModuleResponsePayload(Module(model, today))
+    return GetModuleResponsePayload(ModulePayload(model, today))
   }
 }
 
-data class Module(
+data class ModulePayload(
     val id: ModuleId,
     val title: String,
     val name: String,
@@ -98,9 +98,9 @@ data class Module(
 }
 
 data class GetModuleResponsePayload(
-    val module: Module,
+    val module: ModulePayload,
 ) : SuccessResponsePayload
 
 data class ListModulesResponsePayload(
-    val modules: List<Module>,
+    val modules: List<ModulePayload>,
 ) : SuccessResponsePayload

@@ -15,13 +15,16 @@ import com.terraformation.backend.db.accelerator.tables.daos.EventsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
 import com.terraformation.backend.db.accelerator.tables.references.EVENTS
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
+import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.db.default_schema.ProjectId
 import jakarta.inject.Named
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
 import java.time.InstantSource
+import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.Field
 import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
 
@@ -33,32 +36,30 @@ class ModuleEventStore(
     private val eventsDao: EventsDao,
 ) {
   fun fetchOneById(eventId: EventId): EventModel {
-    requirePermissions { readModuleEventParticipants() }
-    val projectsField = eventProjectsMultiset()
-    return with(EVENTS) {
-      dslContext.select(asterisk(), projectsField).from(this).where(ID.eq(eventId)).fetchOne {
-        EventModel.of(it, projectsField)
-      } ?: throw EventNotFoundException(eventId)
-    }
+    requirePermissions { readModuleEvent(eventId) }
+    return fetchById(eventId = eventId).firstOrNull() ?: throw EventNotFoundException(eventId)
   }
 
-  fun fetchOneForProjectById(eventId: EventId, projectId: ProjectId): EventModel {
-    requirePermissions {
-      readModuleEvent(eventId)
-      readProject(projectId)
-    }
-
-    return with(EVENTS) {
-      dslContext
-          .selectFrom(this)
-          .where(ID.eq(eventId))
-          .and(
-              EVENTS.ID.`in`(
-                  DSL.select(EVENT_PROJECTS.EVENT_ID)
+  fun fetchById(
+      projectId: ProjectId? = null,
+      moduleId: ModuleId? = null,
+      eventId: EventId? = null,
+      eventType: EventType? = null,
+  ): List<EventModel> {
+    val condition =
+        DSL.and(
+            projectId?.let {
+              DSL.exists(
+                  DSL.selectOne()
                       .from(EVENT_PROJECTS)
-                      .where(EVENT_PROJECTS.PROJECT_ID.eq(projectId))))
-          .fetchOne { EventModel.of(it) } ?: throw EventNotFoundException(eventId)
-    }
+                      .where(EVENT_PROJECTS.PROJECT_ID.eq(it))
+                      .and(EVENT_PROJECTS.EVENT_ID.eq(EVENTS.ID)))
+            },
+            moduleId?.let { EVENTS.MODULE_ID.eq(it) },
+            eventId?.let { EVENTS.ID.eq(it) },
+            eventType?.let { EVENTS.EVENT_TYPE_ID.eq(it) })
+
+    return fetch(condition)
   }
 
   fun create(
@@ -213,5 +214,36 @@ class ModuleEventStore(
       now.isBefore(endTime) -> EventStatus.InProgress
       else -> EventStatus.Ended
     }
+  }
+
+  private fun eventProjectsMultiset(): Field<Set<ProjectId>> {
+    return with(EVENT_PROJECTS) {
+      DSL.multiset(DSL.select(PROJECT_ID).from(this).where(EVENT_ID.eq(EVENTS.ID))).convertFrom {
+          result ->
+        result.map { it.value1() }.filter { currentUser().canReadProject(it) }.toSet()
+      }
+    }
+  }
+
+  private fun fetch(condition: Condition?): List<EventModel> {
+    val projectsField = eventProjectsMultiset()
+    return with(EVENTS) {
+          dslContext
+              .select(
+                  asterisk(),
+                  MODULES.ONE_ON_ONE_SESSION_DESCRIPTION,
+                  MODULES.WORKSHOP_DESCRIPTION,
+                  MODULES.RECORDED_SESSION_DESCRIPTION,
+                  MODULES.LIVE_SESSION_DESCRIPTION,
+                  projectsField,
+              )
+              .from(this)
+              .join(MODULES)
+              .on(EVENTS.MODULE_ID.eq(MODULES.ID))
+              .apply { condition?.let { where(it) } }
+              .orderBy(START_TIME, END_TIME, ID)
+              .fetch { EventModel.of(it, projectsField) }
+        }
+        .filter { currentUser().canReadModuleEvent(it.id) }
   }
 }

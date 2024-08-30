@@ -109,11 +109,14 @@ class AdminModulesController(
               .name + " - " + it.value.name
         }
 
+    val eventSessions = eventStore.fetchById(moduleId = moduleId).associateBy { it.eventType }
+
     model.addAttribute("cohorts", cohorts)
     model.addAttribute("cohortProjects", cohortProjects)
     model.addAttribute("canManageModules", currentUser().canManageModules())
     model.addAttribute("cohortProjectNames", cohortProjectNames)
     model.addAttribute("dateFormat", dateFormat)
+    model.addAttribute("eventSessions", eventSessions)
     model.addAttribute("module", module)
     model.addAttribute("moduleProjects", moduleProjects)
 
@@ -172,8 +175,10 @@ class AdminModulesController(
     val event = eventStore.fetchOneById(id)
     val eventArgs = EventArgs(event.eventType, startTime, endTime)
 
-    val projects =
-        (event.projects ?: emptySet()).plus(toAdd ?: emptySet()).minus(toRemove ?: emptySet())
+    val setToAdd = toAdd?.toSet() ?: emptySet()
+    val setToRemove = toRemove?.toSet() ?: emptySet()
+
+    val projects = event.projects.plus(setToAdd).minus(setToRemove)
 
     try {
       eventStore.updateEvent(id) {
