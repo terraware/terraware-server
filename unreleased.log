@@ -1,3 +1,6 @@
+232ada9d002 Moved event functionality to EventStore, and added EventController endpoints (#2338)
+eebaff32b7b Remove Spring Boot R2DBC workaround (#2342)
+00e0ce6a7e7 Moved cohort module assignments to separate store. Updated module/ endpoints to support cohort and participant usage (#2334)
 d431b16c93d SW-5560 Removed cohort module data constraints (#2332)
 2a99ac6c70d SW-5923 Allowed creating submissions in InReview status and added /submit endpoint (#2341)
 59ed2a62d24 SW-5851 Use parent deliverable IDs for child variables (#2340)
