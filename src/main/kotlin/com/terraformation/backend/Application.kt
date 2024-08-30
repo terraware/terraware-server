@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import io.swagger.v3.oas.annotations.security.SecurityScheme
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator
 import org.springframework.scheduling.annotation.EnableScheduling
@@ -40,10 +39,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
     description = "Session cookie")
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 @EnableScheduling
-@SpringBootApplication(
-    // https://github.com/spring-projects/spring-boot/issues/26439
-    exclude = [R2dbcAutoConfiguration::class],
-    nameGenerator = FullyQualifiedAnnotationBeanNameGenerator::class)
+@SpringBootApplication(nameGenerator = FullyQualifiedAnnotationBeanNameGenerator::class)
 class Application
 
 fun main(args: Array<String>) {
