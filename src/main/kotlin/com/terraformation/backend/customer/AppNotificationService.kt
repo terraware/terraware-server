@@ -4,7 +4,7 @@ import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
-import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
+import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
@@ -23,7 +23,7 @@ import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.accelerator.DeliverableCategory
+import com.terraformation.backend.customer.model.UserNotificationCategory
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -58,6 +58,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import jakarta.inject.Named
 import java.net.URI
 import java.util.Locale
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
 
@@ -78,7 +79,7 @@ class AppNotificationService(
     private val projectStore: ProjectStore,
     private val speciesStore: SpeciesStore,
     private val systemUser: SystemUser,
-    private val userDeliverableCategoriesStore: UserDeliverableCategoriesStore,
+    private val userNotificationCategoriesService: UserNotificationCategoriesService,
     private val userStore: UserStore,
     private val messages: Messages,
     private val webAppUrls: WebAppUrls,
@@ -301,7 +302,7 @@ class AppNotificationService(
         NotificationType.ParticipantProjectSpeciesApprovedSpeciesEdited,
         project.organizationId,
         renderMessage,
-        deliverableCategory)
+        UserNotificationCategory.of(deliverableCategory))
   }
 
   @EventListener
@@ -334,7 +335,7 @@ class AppNotificationService(
         NotificationType.ParticipantProjectSpeciesAddedToProject,
         project.organizationId,
         renderMessage,
-        deliverableCategory)
+        UserNotificationCategory.of(deliverableCategory))
   }
 
   @EventListener
@@ -372,6 +373,29 @@ class AppNotificationService(
         setOf(Role.Owner, Role.Admin, Role.Manager))
   }
 
+  fun on(event: ApplicationSubmittedEvent) {
+    systemUser.run {
+      val organizationId = parentStore.getOrganizationId(event.applicationId)
+      if (organizationId == null) {
+        log.error("Organization for application ${event.applicationId} not found")
+        return@run
+      }
+      val organization = organizationStore.fetchOneById(organizationId)
+
+      val renderMessage = {
+        messages.applicationSubmittedNotification(organization.name, event.submittedTime)
+      }
+      val applicationUrl = webAppUrls.acceleratorConsoleApplication(event.applicationId)
+
+      insertAcceleratorNotification(
+          applicationUrl,
+          NotificationType.ApplicationSubmitted,
+          organizationId,
+          renderMessage,
+          UserNotificationCategory.Sourcing)
+    }
+  }
+
   @EventListener
   fun on(event: DeliverableReadyForReviewEvent) {
     // This is run as a system user because the org membership permission checks don't apply
@@ -401,7 +425,7 @@ class AppNotificationService(
           NotificationType.DeliverableReadyForReview,
           project.organizationId,
           renderMessage,
-          deliverableCategory)
+          UserNotificationCategory.of(deliverableCategory))
     }
   }
 
@@ -546,14 +570,13 @@ class AppNotificationService(
       notificationType: NotificationType,
       organizationId: OrganizationId,
       renderMessage: () -> NotificationMessage,
-      deliverableCategory: DeliverableCategory? = null,
+      notificationCategory: UserNotificationCategory? = null,
   ) {
-    val deliverableCategoryCondition =
-        deliverableCategory?.let { userDeliverableCategoriesStore.conditionForUsers(it) }
+    val categoryCondition: Condition? =
+        notificationCategory?.let { userNotificationCategoriesService.conditionForUsers(it) }
+
     val recipients =
-        userStore
-            .fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), deliverableCategoryCondition)
-            .toMutableSet()
+        userStore.fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), categoryCondition).toMutableSet()
 
     val tfContact = userStore.getTerraformationContactUser(organizationId)
 

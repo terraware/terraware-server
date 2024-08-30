@@ -1335,7 +1335,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   applicationStatusId = ApplicationStatus.Submitted)),
           applicationHistoriesDao.findAll().map { it.copy(id = null) })
 
-      eventPublisher.assertEventPublished(ApplicationSubmittedEvent(applicationId))
+      eventPublisher.assertEventPublished(ApplicationSubmittedEvent(applicationId, clock.instant))
     }
 
     @Test

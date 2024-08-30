@@ -53,8 +53,8 @@ internal class UserNotificationCategoriesServiceTest : DatabaseTest(), RunsAsUse
     user1DeliverableCategories.forEach { insertUserDeliverableCategory(it, user1) }
     user2DeliverableCategories.forEach { insertUserDeliverableCategory(it, user2) }
 
-    insertApplicationRecipients(user2)
-    insertApplicationRecipients(user3)
+    insertApplicationRecipient(user2)
+    insertApplicationRecipient(user3)
 
     assertEquals(
         setOf(UserNotificationCategory.CarbonEligibility, UserNotificationCategory.Compliance),
@@ -92,7 +92,7 @@ internal class UserNotificationCategoriesServiceTest : DatabaseTest(), RunsAsUse
     allUsers.forEach {
       insertUserDeliverableCategory(DeliverableCategory.CarbonEligibility, it)
       insertUserDeliverableCategory(DeliverableCategory.Compliance, it)
-      insertApplicationRecipients(it)
+      insertApplicationRecipient(it)
     }
 
     val originalNotificationCategories =

@@ -2,7 +2,7 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
-import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
+import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
@@ -10,6 +10,7 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEve
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.UserNotificationCategoriesService
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
@@ -23,13 +24,13 @@ import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.SystemUser
+import com.terraformation.backend.customer.model.UserNotificationCategory
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.daily.NotificationJobFinishedEvent
 import com.terraformation.backend.daily.NotificationJobStartedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
-import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -40,6 +41,7 @@ import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.email.model.AccessionDryingEnd
+import com.terraformation.backend.email.model.ApplicationSubmitted
 import com.terraformation.backend.email.model.DeliverableReadyForReview
 import com.terraformation.backend.email.model.DeliverableStatusUpdated
 import com.terraformation.backend.email.model.DeviceUnresponsive
@@ -93,6 +95,7 @@ import com.terraformation.backend.tracking.event.ScheduleObservationNotification
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import jakarta.inject.Named
+import org.jooq.Condition
 import org.springframework.context.event.EventListener
 
 @Named
@@ -110,7 +113,7 @@ class EmailNotificationService(
     private val projectStore: ProjectStore,
     private val speciesStore: SpeciesStore,
     private val systemUser: SystemUser,
-    private val userDeliverableCategoriesStore: UserDeliverableCategoriesStore,
+    private val userNotificationCategoriesService: UserNotificationCategoriesService,
     private val userStore: UserStore,
     private val webAppUrls: WebAppUrls,
 ) {
@@ -548,7 +551,7 @@ class EmailNotificationService(
             participant.name,
             project.name,
             species.scientificName),
-        deliverableCategory)
+        UserNotificationCategory.of(deliverableCategory))
   }
 
   @EventListener
@@ -567,7 +570,7 @@ class EmailNotificationService(
                 .toString(),
             participant.name,
             species.scientificName),
-        deliverableCategory)
+        UserNotificationCategory.of(deliverableCategory))
   }
 
   @EventListener
@@ -591,7 +594,7 @@ class EmailNotificationService(
                 .toString(),
             event.deliverable,
             participant.name),
-        deliverableCategory)
+        UserNotificationCategory.of(deliverableCategory))
   }
 
   @EventListener
@@ -607,6 +610,24 @@ class EmailNotificationService(
                   .toString()),
           roles = setOf(Role.Admin, Role.Manager, Role.Owner))
     }
+  }
+
+  @EventListener
+  fun on(event: ApplicationSubmittedEvent) {
+    val organizationId = parentStore.getOrganizationId(event.applicationId)
+    if (organizationId == null) {
+      log.error("Organization for application ${event.applicationId} not found")
+      return
+    }
+    val organization = organizationStore.fetchOneById(organizationId)
+
+    sendToAccelerator(
+        organizationId,
+        ApplicationSubmitted(
+            config,
+            webAppUrls.acceleratorConsoleApplication(event.applicationId).toString(),
+            organization.name),
+        UserNotificationCategory.Sourcing)
   }
 
   @EventListener
@@ -698,14 +719,13 @@ class EmailNotificationService(
   private fun sendToAccelerator(
       organizationId: OrganizationId,
       model: EmailTemplateModel,
-      deliverableCategory: DeliverableCategory? = null,
+      notificationCategory: UserNotificationCategory? = null,
   ) {
-    val deliverableCategoryCondition =
-        deliverableCategory?.let { userDeliverableCategoriesStore.conditionForUsers(it) }
+    val categoryCondition: Condition? =
+        notificationCategory?.let { userNotificationCategoriesService.conditionForUsers(it) }
+
     val recipients =
-        userStore
-            .fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), deliverableCategoryCondition)
-            .toMutableSet()
+        userStore.fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), categoryCondition).toMutableSet()
 
     val tfContact = userStore.getTerraformationContactUser(organizationId)
 

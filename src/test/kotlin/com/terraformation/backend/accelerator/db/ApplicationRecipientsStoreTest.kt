@@ -30,8 +30,8 @@ class ApplicationRecipientsStoreTest : DatabaseTest(), RunsAsUser {
       val user2 = insertUser()
       insertUser()
 
-      insertApplicationRecipients(user1)
-      insertApplicationRecipients(user2)
+      insertApplicationRecipient(user1)
+      insertApplicationRecipient(user2)
 
       assertEquals(setOf(user1, user2), store.fetch())
     }
@@ -50,7 +50,7 @@ class ApplicationRecipientsStoreTest : DatabaseTest(), RunsAsUser {
       val user1 = insertUser()
       val user2 = insertUser()
 
-      insertApplicationRecipients(user1)
+      insertApplicationRecipient(user1)
 
       assertTrue(store.contains(user1))
       assertFalse(store.contains(user2))
@@ -59,7 +59,7 @@ class ApplicationRecipientsStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `throws exception if no permission`() {
       val user1 = insertUser()
-      insertApplicationRecipients(user1)
+      insertApplicationRecipient(user1)
 
       assertThrows<AccessDeniedException> { store.fetch() }
     }
@@ -75,8 +75,8 @@ class ApplicationRecipientsStoreTest : DatabaseTest(), RunsAsUser {
       val existingRecipientUserId = insertUser()
       val newRecipientUserId = insertUser()
 
-      insertApplicationRecipients(controlUser)
-      insertApplicationRecipients(existingRecipientUserId)
+      insertApplicationRecipient(controlUser)
+      insertApplicationRecipient(existingRecipientUserId)
 
       assertEquals(
           setOf(controlUser, existingRecipientUserId),
@@ -111,8 +111,8 @@ class ApplicationRecipientsStoreTest : DatabaseTest(), RunsAsUser {
       val nonRecipientUserId = insertUser()
       insertUser()
 
-      insertApplicationRecipients(controlUser)
-      insertApplicationRecipients(existingRecipientUserId)
+      insertApplicationRecipient(controlUser)
+      insertApplicationRecipient(existingRecipientUserId)
 
       assertEquals(
           setOf(controlUser, existingRecipientUserId),

@@ -2,7 +2,7 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
-import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
+import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
@@ -13,6 +13,7 @@ import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.UserNotificationCategoriesService
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
@@ -135,7 +136,7 @@ internal class EmailNotificationServiceTest {
   private val speciesStore: SpeciesStore = mockk()
   private val systemUser: SystemUser = SystemUser(mockk())
   private val user: IndividualUser = mockk()
-  private val userDeliverableCategoriesStore: UserDeliverableCategoriesStore = mockk()
+  private val userNotificationCategoriesService: UserNotificationCategoriesService = mockk()
   private val userStore: UserStore = mockk()
 
   private val webAppUrls = WebAppUrls(config, dummyKeycloakInfo())
@@ -165,7 +166,7 @@ internal class EmailNotificationServiceTest {
           projectStore,
           speciesStore,
           systemUser,
-          userDeliverableCategoriesStore,
+          userNotificationCategoriesService,
           userStore,
           webAppUrls)
 
@@ -321,7 +322,7 @@ internal class EmailNotificationServiceTest {
     every { user.firstName } returns "Normal"
     every { user.locale } returns Locale.ENGLISH
     every { user.userId } returns UserId(2)
-    every { userDeliverableCategoriesStore.conditionForUsers(any()) } returns DSL.trueCondition()
+    every { userNotificationCategoriesService.conditionForUsers(any()) } returns DSL.trueCondition()
     every { userStore.getTerraformationContactUser(any()) } returns null
     every { userStore.fetchByOrganizationId(any(), any(), any()) } returns
         organizationRecipients.map { userForEmail(it) }
@@ -1054,6 +1055,23 @@ internal class EmailNotificationServiceTest {
     service.on(event)
 
     assertRecipientsEqual(emptySet())
+  }
+
+  @Test
+  fun `applicationSubmittedEvent should notify global role users and TFContact`() {
+    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
+
+    val event = ApplicationSubmittedEvent(applicationId, Instant.ofEpochSecond(3600))
+
+    service.on(event)
+
+    val title = sentMessageWithSubject("Application submitted for")
+    val body = sentMessageWithSubject("An Accelerator Application has been submitted for")
+    assertSubjectContains(organization.name, message = title)
+    assertBodyContains(organization.name, message = body)
+
+    assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
   }
 
   @Test

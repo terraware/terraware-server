@@ -225,6 +225,10 @@ class WebAppUrls(
         .build()
   }
 
+  fun acceleratorConsoleApplication(applicationId: ApplicationId): URI {
+    return UriBuilder.fromPath("/accelerator/applications/${applicationId.value}").build()
+  }
+
   /** URL of the mobile app's page in the App Store. */
   val appStore = URI("https://apps.apple.com/us/app/terraware/id1568369900")
 

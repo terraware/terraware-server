@@ -2268,7 +2268,7 @@ abstract class DatabaseBackedTest {
     applicationModulesDao.insert(row)
   }
 
-  fun insertApplicationRecipients(
+  fun insertApplicationRecipient(
       userId: UserId = inserted.userId,
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,

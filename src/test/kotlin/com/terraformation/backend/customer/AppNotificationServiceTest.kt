@@ -4,11 +4,13 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.db.ApplicationRecipientsStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
+import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
@@ -123,7 +125,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var plantingSiteStore: PlantingSiteStore
   private lateinit var projectStore: ProjectStore
   private lateinit var speciesStore: SpeciesStore
-  private lateinit var userDeliverableCategoriesStore: UserDeliverableCategoriesStore
+  private lateinit var userNotificationCategoriesService: UserNotificationCategoriesService
   private lateinit var userStore: UserStore
   private lateinit var service: AppNotificationService
   private lateinit var webAppUrls: WebAppUrls
@@ -190,7 +192,10 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             speciesEcosystemTypesDao,
             speciesGrowthFormsDao,
             speciesProblemsDao)
-    userDeliverableCategoriesStore = UserDeliverableCategoriesStore(clock, dslContext)
+    userNotificationCategoriesService =
+        UserNotificationCategoriesService(
+            ApplicationRecipientsStore(applicationRecipientsDao, clock, dslContext),
+            UserDeliverableCategoriesStore(clock, dslContext))
     userStore =
         UserStore(
             clock,
@@ -223,7 +228,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             projectStore,
             speciesStore,
             SystemUser(usersDao),
-            userDeliverableCategoriesStore,
+            userNotificationCategoriesService,
             userStore,
             messages,
             webAppUrls)
@@ -594,6 +599,27 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "season title",
         body = "season body",
         localUrl = webAppUrls.plantingSite(inserted.plantingSiteId))
+  }
+
+  @Test
+  fun `should store application submitted notification for admin who is an application recipient`() {
+    insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
+    insertApplicationRecipient(user.userId)
+
+    val projectId = insertProject()
+    val applicationId = insertApplication(projectId = projectId)
+
+    every { messages.applicationSubmittedNotification(any(), any()) } returns
+        NotificationMessage("ready for review title", "ready for review body")
+
+    service.on(ApplicationSubmittedEvent(applicationId, clock.instant))
+
+    assertNotification(
+        type = NotificationType.ApplicationSubmitted,
+        title = "ready for review title",
+        body = "ready for review body",
+        localUrl = webAppUrls.acceleratorConsoleApplication(applicationId),
+        organizationId = null)
   }
 
   @Test
