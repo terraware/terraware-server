@@ -45,7 +45,7 @@
         </thead>
 
         <tbody>
-        <tr th:each="deliverable : ${module.deliverables}" class="striped">
+        <tr th:each="deliverable : ${deliverables}" class="striped">
             <td th:text="${deliverable.position}">Deliverable Position</td>
             <td th:text="${deliverable.id}">Deliverable ID</td>
             <td th:text="${deliverable.category.getDisplayName(#locale.default)}">Deliverable Category</td>

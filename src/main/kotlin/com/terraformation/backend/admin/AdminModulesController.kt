@@ -1,6 +1,7 @@
 package com.terraformation.backend.admin
 
 import com.terraformation.backend.accelerator.db.CohortStore
+import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.DeliverablesImporter
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleNotFoundException
@@ -44,6 +45,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 class AdminModulesController(
     private val cohortStore: CohortStore,
     private val deliverablesImporter: DeliverablesImporter,
+    private val deliverableStore: DeliverableStore,
     private val dslContext: DSLContext,
     private val eventStore: ModuleEventStore,
     private val participantStore: ParticipantStore,
@@ -86,7 +88,6 @@ class AdminModulesController(
         }
 
     val cohorts = cohortStore.findByModule(moduleId, CohortDepth.Participant)
-
     val cohortProjects =
         cohorts.associate {
           it.id to
@@ -97,8 +98,8 @@ class AdminModulesController(
                   .map { projectId -> projectStore.fetchOneById(projectId) }
         }
 
+    val deliverables = deliverableStore.fetchDeliverables(moduleId = module.id)
     val moduleProjects = cohortProjects.values.flatten()
-
     val projects = moduleProjects.associateBy { it.id }
 
     // cohort name - project name
@@ -116,6 +117,7 @@ class AdminModulesController(
     model.addAttribute("canManageModules", currentUser().canManageModules())
     model.addAttribute("cohortProjectNames", cohortProjectNames)
     model.addAttribute("dateFormat", dateFormat)
+    model.addAttribute("deliverables", deliverables)
     model.addAttribute("eventSessions", eventSessions)
     model.addAttribute("module", module)
     model.addAttribute("moduleProjects", moduleProjects)
