@@ -526,6 +526,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun manageApplicationRecipients() {
+    if (!user.canManageApplicationRecipients()) {
+      throw AccessDeniedException("No permission to manage application recipients")
+    }
+  }
+
   fun manageDefaultProjectLeads() {
     if (!user.canManageDefaultProjectLeads()) {
       throw AccessDeniedException("No permission to manage default project leads")
@@ -603,6 +609,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readApplication(applicationId: ApplicationId) {
     if (!user.canReadApplication(applicationId)) {
       throw ApplicationNotFoundException(applicationId)
+    }
+  }
+
+  fun readApplicationRecipients() {
+    if (!user.canReadApplicationRecipients()) {
+      throw AccessDeniedException("No permission to read application recipients")
     }
   }
 

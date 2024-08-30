@@ -331,6 +331,8 @@ data class IndividualUser(
 
   override fun canListReports(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
 
+  override fun canManageApplicationRecipients(): Boolean = isAcceleratorAdmin()
+
   override fun canManageDefaultProjectLeads() = isAcceleratorAdmin()
 
   override fun canManageDeliverables() = isAcceleratorAdmin()
@@ -361,6 +363,8 @@ data class IndividualUser(
 
   override fun canReadApplication(applicationId: ApplicationId) =
       isReadOnlyOrHigher() || isAdminOrHigher(parentStore.getOrganizationId(applicationId))
+
+  override fun canReadApplicationRecipients(): Boolean = isAcceleratorAdmin()
 
   override fun canReadAutomation(automationId: AutomationId) =
       isMember(parentStore.getFacilityId(automationId))

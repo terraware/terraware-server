@@ -527,6 +527,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { listReports(organizationId) } ifUser { canListReports(organizationId) }
 
   @Test
+  fun manageApplicationRecipients() =
+      allow { manageApplicationRecipients() } ifUser { canManageApplicationRecipients() }
+
+  @Test
   fun manageDefaultProjectLeads() =
       allow { manageDefaultProjectLeads() } ifUser { canManageDefaultProjectLeads() }
 
@@ -570,6 +574,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun readAllDeliverables() = allow { readAllDeliverables() } ifUser { canReadAllDeliverables() }
 
   @Test fun readApplication() = testRead { readApplication(applicationId) }
+
+  @Test
+  fun readApplicationRecipients() =
+      allow { readApplicationRecipients() } ifUser { canReadApplicationRecipients() }
 
   @Test fun readAutomation() = testRead { readAutomation(automationId) }
 

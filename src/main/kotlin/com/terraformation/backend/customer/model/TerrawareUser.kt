@@ -248,6 +248,8 @@ interface TerrawareUser : Principal {
 
   fun canListReports(organizationId: OrganizationId): Boolean = defaultPermission
 
+  fun canManageApplicationRecipients(): Boolean = defaultPermission
+
   fun canManageDefaultProjectLeads(): Boolean = defaultPermission
 
   fun canManageDeliverables(): Boolean = defaultPermission
@@ -275,6 +277,8 @@ interface TerrawareUser : Principal {
   fun canReadAllDeliverables(): Boolean = defaultPermission
 
   fun canReadApplication(applicationId: ApplicationId): Boolean = defaultPermission
+
+  fun canReadApplicationRecipients(): Boolean = defaultPermission
 
   fun canReadAutomation(automationId: AutomationId): Boolean = defaultPermission
 

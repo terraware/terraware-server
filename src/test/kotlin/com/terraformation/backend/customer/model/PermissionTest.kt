@@ -1367,9 +1367,11 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipant = true,
         deleteParticipantProject = true,
         deleteSupportIssue = true,
+        manageApplicationRecipients = true,
         manageDefaultProjectLeads = true,
         manageModuleEventStatuses = true,
         manageNotifications = true,
+        readApplicationRecipients = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
@@ -1706,11 +1708,13 @@ internal class PermissionTest : DatabaseTest() {
         deleteSelf = true,
         deleteUsers = true,
         importGlobalSpeciesData = true,
+        manageApplicationRecipients = true,
         manageDefaultProjectLeads = true,
         manageDeliverables = true,
         manageInternalTags = true,
         manageModuleEvents = true,
         manageModules = true,
+        readApplicationRecipients = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
@@ -1904,11 +1908,13 @@ internal class PermissionTest : DatabaseTest() {
         deleteParticipantProject = true,
         deleteSelf = true,
         importGlobalSpeciesData = false,
+        manageApplicationRecipients = true,
         manageDefaultProjectLeads = true,
         manageDeliverables = true,
         manageInternalTags = false,
         manageModuleEvents = true,
         manageModules = true,
+        readApplicationRecipients = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
@@ -2710,6 +2716,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteSupportIssue: Boolean = false,
         deleteUsers: Boolean = false,
         importGlobalSpeciesData: Boolean = false,
+        manageApplicationRecipients: Boolean = false,
         manageDeliverables: Boolean = false,
         manageInternalTags: Boolean = false,
         manageModuleEvents: Boolean = false,
@@ -2717,6 +2724,7 @@ internal class PermissionTest : DatabaseTest() {
         manageModules: Boolean = false,
         manageNotifications: Boolean = false,
         manageDefaultProjectLeads: Boolean = false,
+        readApplicationRecipients: Boolean = false,
         readAllAcceleratorDetails: Boolean = false,
         readAllDeliverables: Boolean = false,
         readCohort: Boolean = false,
@@ -2772,6 +2780,11 @@ internal class PermissionTest : DatabaseTest() {
           user.canImportGlobalSpeciesData(),
           "Can import global species data")
       assertEquals(
+          manageApplicationRecipients,
+          user.canManageApplicationRecipients(),
+          "Can manage application recipients")
+
+      assertEquals(
           manageDefaultProjectLeads,
           user.canManageDefaultProjectLeads(),
           "Can manage default project leads")
@@ -2788,6 +2801,10 @@ internal class PermissionTest : DatabaseTest() {
           readAllAcceleratorDetails,
           user.canReadAllAcceleratorDetails(),
           "Can read all accelerator details")
+      assertEquals(
+          readApplicationRecipients,
+          user.canReadApplicationRecipients(),
+          "Can read application recipients")
       assertEquals(readAllDeliverables, user.canReadAllDeliverables(), "Can read all deliverables")
       assertEquals(readCohort, user.canReadCohort(cohortId), "Can read cohort")
       assertEquals(

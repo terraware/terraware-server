@@ -33,6 +33,7 @@ import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.keys.COHORTS_PKEY
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationHistoriesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationModulesDao
+import com.terraformation.backend.db.accelerator.tables.daos.ApplicationRecipientsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationsDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
@@ -57,6 +58,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
 import com.terraformation.backend.db.accelerator.tables.daos.UserDeliverableCategoriesDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationHistoriesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationModulesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationRecipientsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
@@ -437,6 +439,7 @@ abstract class DatabaseBackedTest {
   protected val accessionsDao: AccessionsDao by lazyDao()
   protected val applicationHistoriesDao: ApplicationHistoriesDao by lazyDao()
   protected val applicationModulesDao: ApplicationModulesDao by lazyDao()
+  protected val applicationRecipientsDao: ApplicationRecipientsDao by lazyDao()
   protected val applicationsDao: ApplicationsDao by lazyDao()
   protected val automationsDao: AutomationsDao by lazyDao()
   protected val bagsDao: BagsDao by lazyDao()
@@ -2263,6 +2266,19 @@ abstract class DatabaseBackedTest {
         )
 
     applicationModulesDao.insert(row)
+  }
+
+  fun insertApplicationRecipients(
+      userId: UserId = inserted.userId,
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+  ) {
+    applicationRecipientsDao.insert(
+        ApplicationRecipientsRow(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            userId = userId,
+        ))
   }
 
   fun insertParticipant(
