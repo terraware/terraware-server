@@ -135,9 +135,6 @@
          <index name="cohort_modules_module_id_idx" unique="false">
             <column ascending="true" name="module_id"/>
          </index>
-         <index name="dates_no_overlap" unique="false">
-            <column ascending="true" name="cohort_id"/>
-         </index>
          <checkConstraint constraint="((start_date &lt; end_date))" name="dates_start_before_end"/>
       </table>
       <table name="cohort_phases" numRows="6" remarks="(Enum) Available cohort phases" schema="accelerator" type="TABLE">
