@@ -1,3 +1,4 @@
+dfad65ca057 Fixed admin UI by using new deliverableStore method (#2344)
 8ec8a227fe3 Removed deliverables multiset from module model (#2336)
 232ada9d002 Moved event functionality to EventStore, and added EventController endpoints (#2338)
 eebaff32b7b Remove Spring Boot R2DBC workaround (#2342)
