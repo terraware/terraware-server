@@ -471,6 +471,8 @@ COMMENT ON TABLE tracking.recorded_species_certainties IS '(Enum) Levels of cert
 
 COMMENT ON CONSTRAINT num_plants_sign_consistent_with_type ON tracking.plantings IS 'If the planting represents the "from" side of a reassignment or an undo of a withdrawal, the number of plants must be negative. Otherwise it must be positive.';
 
+COMMENT ON TABLE COMMENT ON TABLE accelerator.application_recipients IS 'Which users should be notified for application submissions.';
+
 COMMENT ON TABLE accelerator.cohorts IS 'Accelerator cohort details.';
 
 COMMENT ON TABLE accelerator.cohort_modules IS 'Which modules are assigned to which cohorts.';
