@@ -1066,10 +1066,9 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
-    val title = sentMessageWithSubject("Application submitted for")
-    val body = sentMessageWithSubject("An Accelerator Application has been submitted for")
-    assertSubjectContains(organization.name, message = title)
-    assertBodyContains(organization.name, message = body)
+    val message = sentMessageWithSubject("Application submitted for")
+    assertSubjectContains(organization.name, message = message)
+    assertBodyContains(organization.name, message = message)
 
     assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
   }
