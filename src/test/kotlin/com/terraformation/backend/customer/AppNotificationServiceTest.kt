@@ -8,6 +8,7 @@ import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
@@ -595,6 +596,22 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "season title",
         body = "season body",
         localUrl = webAppUrls.plantingSite(inserted.plantingSiteId))
+  }
+
+  @Test
+  fun `should store application submitted notification for admin`() {
+    insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
+    val projectId = insertProject()
+    val applicationId = insertApplication(projectId = projectId)
+    every { messages.applicationSubmittedNotification(any(), any()) } returns
+        NotificationMessage("ready for review title", "ready for review body")
+    service.on(ApplicationSubmittedEvent(applicationId, clock.instant))
+    assertNotification(
+        type = NotificationType.ApplicationSubmitted,
+        title = "ready for review title",
+        body = "ready for review body",
+        localUrl = webAppUrls.acceleratorConsoleApplication(applicationId),
+        organizationId = null)
   }
 
   @Test

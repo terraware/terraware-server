@@ -418,6 +418,15 @@ class ParticipantProjectRemoved(
     get() = "participant/projectRemoved"
 }
 
+class ApplicationSubmitted(
+    config: TerrawareServerConfig,
+    val applicationUrl: String,
+    val organizationName: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "application/submitted"
+}
+
 class DeliverableReadyForReview(
     config: TerrawareServerConfig,
     val deliverableUrl: String,

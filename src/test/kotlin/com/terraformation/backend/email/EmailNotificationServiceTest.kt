@@ -2,6 +2,7 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
@@ -973,6 +974,18 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("has been edited", message = message)
 
+    assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
+  }
+
+  @Test
+  fun `applicationSubmittedEvent should notify global role users and TFContact`() {
+    every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
+    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
+    val event = ApplicationSubmittedEvent(applicationId, Instant.ofEpochSecond(3600))
+    service.on(event)
+    val message = sentMessageWithSubject("Application submitted for")
+    assertSubjectContains(organization.name, message = message)
+    assertBodyContains(organization.name, message = message)
     assertRecipientsEqual(setOf(tfContactEmail, acceleratorUser.email))
   }
 

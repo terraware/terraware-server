@@ -2,6 +2,7 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
@@ -40,6 +41,7 @@ import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
 import com.terraformation.backend.email.model.AccessionDryingEnd
+import com.terraformation.backend.email.model.ApplicationSubmitted
 import com.terraformation.backend.email.model.DeliverableReadyForReview
 import com.terraformation.backend.email.model.DeliverableStatusUpdated
 import com.terraformation.backend.email.model.DeviceUnresponsive
@@ -568,6 +570,23 @@ class EmailNotificationService(
             participant.name,
             species.scientificName),
         deliverableCategory.internalInterestId)
+  }
+
+  @EventListener
+  fun on(event: ApplicationSubmittedEvent) {
+    val organizationId = parentStore.getOrganizationId(event.applicationId)
+    if (organizationId == null) {
+      log.error("Organization for application ${event.applicationId} not found")
+      return
+    }
+    val organization = organizationStore.fetchOneById(organizationId)
+    sendToAccelerator(
+        organizationId,
+        ApplicationSubmitted(
+            config,
+            webAppUrls.acceleratorConsoleApplication(event.applicationId).toString(),
+            organization.name),
+        InternalInterest.Sourcing)
   }
 
   @EventListener
