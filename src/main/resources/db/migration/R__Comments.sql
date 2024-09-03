@@ -218,6 +218,8 @@ COMMENT ON COLUMN upload_types.expire_files IS 'Old rows are automatically delet
 
 COMMENT ON TABLE uploads IS 'Information about the status of files uploaded by users. This is used to track the progress of file processing such as importing datafiles; contents of this table may expire and be deleted after a certain amount of time.';
 
+COMMENT ON TABLE user_internal_interests IS 'Which internal interest categories are assigned to which internal users. This affects things like which accelerator admins are notified.';
+
 COMMENT ON TABLE user_global_roles IS 'Which users have which global roles.';
 
 COMMENT ON TABLE user_preferences IS 'Client-defined preferences that should persist across browser sessions.';
@@ -495,6 +497,7 @@ COMMENT ON TABLE accelerator.default_project_leads IS 'Default project leads to 
 COMMENT ON TABLE accelerator.default_voters IS 'Users to automatically be assigned as voters on accelerator projects.';
 
 COMMENT ON TABLE accelerator.deliverable_categories IS '(Enum) High-level groups for organizing deliverables.';
+COMMENT ON COLUMN accelerator.deliverable_categories.internal_interest_id IS 'Internal interest enum that the deliverable category corresponds to.';
 
 COMMENT ON TABLE accelerator.deliverable_cohort_due_dates IS 'Deliverable due dates overrides for cohorts. Can be overridden at the project level.';
 
@@ -554,8 +557,6 @@ COMMENT ON TABLE accelerator.submission_snapshots IS 'Snapshot files associated 
 COMMENT ON TABLE accelerator.submission_statuses IS '(Enum) Statuses of submissions of deliverables by specific projects.';
 
 COMMENT ON TABLE accelerator.submissions IS 'Information about the current states of the information supplied by specific projects in response to deliverables.';
-
-COMMENT ON TABLE accelerator.user_deliverable_categories IS 'Which deliverable categories are assigned to which internal users. This affects things like which accelerator admins are notified about deliverable updates.';
 
 COMMENT ON TABLE accelerator.vote_options IS '(Enum) Available vote options.';
 

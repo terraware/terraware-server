@@ -16,6 +16,7 @@ import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
+import com.terraformation.backend.customer.db.UserInternalInterestsStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
@@ -27,6 +28,7 @@ import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
+import com.terraformation.backend.db.default_schema.InternalInterest
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -78,7 +80,7 @@ class AppNotificationService(
     private val projectStore: ProjectStore,
     private val speciesStore: SpeciesStore,
     private val systemUser: SystemUser,
-    private val userDeliverableCategoriesStore: UserDeliverableCategoriesStore,
+    private val userInternalInterestsStore: UserInternalInterestsStore,
     private val userStore: UserStore,
     private val messages: Messages,
     private val webAppUrls: WebAppUrls,
@@ -301,7 +303,7 @@ class AppNotificationService(
         NotificationType.ParticipantProjectSpeciesApprovedSpeciesEdited,
         project.organizationId,
         renderMessage,
-        deliverableCategory)
+        deliverableCategory.internalInterestId)
   }
 
   @EventListener
@@ -334,7 +336,7 @@ class AppNotificationService(
         NotificationType.ParticipantProjectSpeciesAddedToProject,
         project.organizationId,
         renderMessage,
-        deliverableCategory)
+        deliverableCategory.internalInterestId)
   }
 
   @EventListener
@@ -401,7 +403,7 @@ class AppNotificationService(
           NotificationType.DeliverableReadyForReview,
           project.organizationId,
           renderMessage,
-          deliverableCategory)
+          deliverableCategory.internalInterestId)
     }
   }
 
@@ -546,13 +548,13 @@ class AppNotificationService(
       notificationType: NotificationType,
       organizationId: OrganizationId,
       renderMessage: () -> NotificationMessage,
-      deliverableCategory: DeliverableCategory? = null,
+      internalInterest: InternalInterest? = null,
   ) {
-    val deliverableCategoryCondition =
-        deliverableCategory?.let { userDeliverableCategoriesStore.conditionForUsers(it) }
+    val internalInterestCondition =
+        internalInterest?.let { userInternalInterestsStore.conditionForUsers(it) }
     val recipients =
         userStore
-            .fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), deliverableCategoryCondition)
+            .fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), internalInterestCondition)
             .toMutableSet()
 
     val tfContact = userStore.getTerraformationContactUser(organizationId)
