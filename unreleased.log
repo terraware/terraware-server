@@ -1,3 +1,4 @@
+38148175013 Update dependency software.amazon.awssdk:bom to v2.27.17 (#2354)
 12a8814d07f Update dependency mypy to v1.11.2 (#2353)
 476d59cbc03 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.23 (#2352)
 c69a852870d Update dependency com.squarespace.cldr-engine:cldr-engine to v1.8.1 (#2351)
