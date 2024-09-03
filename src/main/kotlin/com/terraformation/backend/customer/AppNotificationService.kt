@@ -381,9 +381,7 @@ class AppNotificationService(
         return@run
       }
       val organization = organizationStore.fetchOneById(organizationId)
-      val renderMessage = {
-        messages.applicationSubmittedNotification(organization.name, event.time)
-      }
+      val renderMessage = { messages.applicationSubmittedNotification(organization.name) }
       val applicationUrl = webAppUrls.acceleratorConsoleApplication(event.applicationId)
       insertAcceleratorNotification(
           applicationUrl,

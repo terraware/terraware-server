@@ -603,9 +603,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
     val projectId = insertProject()
     val applicationId = insertApplication(projectId = projectId)
-    every { messages.applicationSubmittedNotification(any(), any()) } returns
+    every { messages.applicationSubmittedNotification(any()) } returns
         NotificationMessage("ready for review title", "ready for review body")
-    service.on(ApplicationSubmittedEvent(applicationId, clock.instant))
+    service.on(ApplicationSubmittedEvent(applicationId))
     assertNotification(
         type = NotificationType.ApplicationSubmitted,
         title = "ready for review title",

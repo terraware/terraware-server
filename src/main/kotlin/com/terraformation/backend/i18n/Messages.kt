@@ -19,7 +19,6 @@ import com.terraformation.backend.util.equalsIgnoreScale
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.text.NumberFormat
-import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -70,14 +69,10 @@ class Messages {
 
   fun applicationModulesIncomplete() = getMessage("application.failure.modulesIncomplete")
 
-  fun applicationSubmittedNotification(
-      organizationName: String,
-      timeSubmitted: Instant
-  ): NotificationMessage =
+  fun applicationSubmittedNotification(organizationName: String): NotificationMessage =
       NotificationMessage(
           getMessage("notification.application.submitted.app.title"),
-          getMessage(
-              "notification.application.submitted.app.body", organizationName, timeSubmitted),
+          getMessage("notification.application.submitted.app.body", organizationName),
       )
 
   fun csvBadHeader() = getMessage("csvBadHeader")

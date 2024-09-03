@@ -111,6 +111,7 @@ import java.math.BigDecimal
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
+import java.time.InstantSource
 import java.time.LocalDate
 import java.util.Locale
 import org.jooq.impl.DSL
@@ -123,6 +124,7 @@ internal class EmailNotificationServiceTest {
   private val acceleratorUser: IndividualUser = mockk()
   private val adminUser: IndividualUser = mockk()
   private val automationStore: AutomationStore = mockk()
+  private val clock: InstantSource = mockk()
   private val config: TerrawareServerConfig = mockk()
   private val deliverableStore: DeliverableStore = mockk()
   private val deviceStore: DeviceStore = mockk()
@@ -154,6 +156,7 @@ internal class EmailNotificationServiceTest {
   private val service =
       EmailNotificationService(
           automationStore,
+          clock,
           config,
           deliverableStore,
           deviceStore,
@@ -284,6 +287,8 @@ internal class EmailNotificationServiceTest {
   @BeforeEach
   fun setUp() {
     val emailConfig: TerrawareServerConfig.EmailConfig = mockk(relaxed = true)
+
+    every { clock.instant() } returns Instant.EPOCH
     every { config.email } returns emailConfig
     every { config.webAppUrl } returns URI("https://test.terraware.io")
     every { emailConfig.enabled } returns true
@@ -981,7 +986,7 @@ internal class EmailNotificationServiceTest {
   fun `applicationSubmittedEvent should notify global role users and TFContact`() {
     every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
-    val event = ApplicationSubmittedEvent(applicationId, Instant.ofEpochSecond(3600))
+    val event = ApplicationSubmittedEvent(applicationId)
     service.on(event)
     val message = sentMessageWithSubject("Application submitted for")
     assertSubjectContains(organization.name, message = message)

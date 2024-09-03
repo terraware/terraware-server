@@ -6,7 +6,7 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                    ${strings("notification.application.submitted.email.body", organizationName)}
+                    ${strings("notification.application.submitted.email.body", organizationName, submissionDate)}
                 </mj-text>
                 <mj-button mj-class="btn-productive-primary-md" href="${applicationUrl}">
                     ${strings("notification.application.submitted.email.buttonLabel")}
