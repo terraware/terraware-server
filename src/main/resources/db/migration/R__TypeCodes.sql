@@ -89,6 +89,18 @@ VALUES (1, 'Web'),
        (3, 'File Import')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO accelerator.internal_interests (id, name)
+VALUES (1, 'Compliance'),
+       (2, 'Financial Viability'),
+       (3, 'GIS'),
+       (4, 'Carbon Eligibility'),
+       (5, 'Stakeholders and Community Impact'),
+       (6, 'Proposed Restoration Activities'),
+       (7, 'Verra Non-Permanence Risk Tool (NPRT)'),
+       (8, 'Supplemental Files'),
+       (101, 'Sourcing')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO accelerator.deliverable_categories (id, name)
 VALUES (1, 'Compliance'),
        (2, 'Financial Viability'),
@@ -474,18 +486,6 @@ VALUES (1, 'Not Submitted'),
        (5, 'Rejected'),
        (6, 'Not Needed'),
        (7, 'Completed')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO internal_interests (id, name)
-VALUES (1, 'Compliance'),
-       (2, 'Financial Viability'),
-       (3, 'GIS'),
-       (4, 'Carbon Eligibility'),
-       (5, 'Stakeholders and Community Impact'),
-       (6, 'Proposed Restoration Activities'),
-       (7, 'Verra Non-Permanence Risk Tool (NPRT)'),
-       (8, 'Supplemental Files'),
-       (101, 'Sourcing')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO internal_tags (id, name, description, is_system, created_by, created_time, modified_by, modified_time)

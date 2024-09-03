@@ -103,8 +103,6 @@ COMMENT ON TABLE growth_forms IS '(Enum) What physical form a particular species
 
 COMMENT ON TABLE identifier_sequences IS 'Current state for generating user-facing identifiers (accession number, etc.) for each organization.';
 
-COMMENT ON TABLE internal_interests IS '(Enum) Types of notification categories for internal users.';
-
 COMMENT ON TABLE internal_tags IS 'Internal (non-user-facing) tags. Low-numbered tags are defined by the system; the rest may be edited by super admins.';
 
 COMMENT ON TABLE land_use_model_types IS '(Enum) Types of ways a project''s land can be used.';
@@ -473,12 +471,6 @@ COMMENT ON TABLE tracking.recorded_species_certainties IS '(Enum) Levels of cert
 
 COMMENT ON CONSTRAINT num_plants_sign_consistent_with_type ON tracking.plantings IS 'If the planting represents the "from" side of a reassignment or an undo of a withdrawal, the number of plants must be negative. Otherwise it must be positive.';
 
-COMMENT ON TABLE accelerator.cohorts IS 'Accelerator cohort details.';
-
-COMMENT ON TABLE accelerator.cohort_modules IS 'Which modules are assigned to which cohorts.';
-COMMENT ON COLUMN accelerator.cohort_modules.title IS 'The title for the module for the cohort. For example "Module 3A" for Module 3A: Title';
-
-
 COMMENT ON TABLE accelerator.application_histories IS 'Change histories for accelerator applications. Only includes changes to top-level metadata, not things like changes to variable values.';
 
 COMMENT ON TABLE accelerator.application_module_statuses IS '(Enum) Possible statuses of individual modules in an application.';
@@ -488,6 +480,11 @@ COMMENT ON TABLE accelerator.application_modules IS 'Current states of the modul
 COMMENT ON TABLE accelerator.application_statuses IS '(Enum) Possible statuses for an application to the accelerator program.';
 
 COMMENT ON TABLE accelerator.applications IS 'Information about projects that are applying for the accelerator program.';
+
+COMMENT ON TABLE accelerator.cohorts IS 'Accelerator cohort details.';
+
+COMMENT ON TABLE accelerator.cohort_modules IS 'Which modules are assigned to which cohorts.';
+COMMENT ON COLUMN accelerator.cohort_modules.title IS 'The title for the module for the cohort. For example "Module 3A" for Module 3A: Title';
 
 COMMENT ON TABLE accelerator.cohort_phases IS '(Enum) Available cohort phases';
 
@@ -520,6 +517,8 @@ COMMENT ON TABLE accelerator.event_statuses IS '(Enum) Statuses of events for an
 COMMENT ON TABLE accelerator.event_types IS '(Enum) Types of events for an accelerator module';
 
 COMMENT ON TABLE accelerator.events IS 'Events with meeting links and time within an acclerator module.';
+
+COMMENT ON TABLE accelerator.internal_interests IS '(Enum) Types of notification categories for internal users.';
 
 COMMENT ON TABLE accelerator.modules IS 'Possible steps in the workflow of a cohort phase.';
 COMMENT ON COLUMN accelerator.modules.position IS 'This model''s ordinal position in the modules spreadsheet. This can be used to present modules in the same order they appear in the spreadsheet.';
