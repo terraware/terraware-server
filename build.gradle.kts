@@ -311,7 +311,7 @@ openApi {
     // Use application-apidoc.yaml for application configuration.
     jvmArgs.add("-Dspring.profiles.active=apidoc")
 
-    jvmArgs.add("-Djava.locale.providers=SPI,CLDR,COMPAT")
+    jvmArgs.add("-Djava.locale.providers=SPI,CLDR")
     jvmArgs.add("-Dserver.port=$listenPort")
 
     // Spring Boot Devtools aren't useful for a one-shot server run, and they add log output.
