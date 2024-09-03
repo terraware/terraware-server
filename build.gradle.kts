@@ -30,7 +30,7 @@ plugins {
   id("com.github.johnrengelman.processes") version "0.5.0"
   id("org.springdoc.openapi-gradle-plugin") version "1.8.0"
 
-  id("com.github.jk1.dependency-license-report") version "2.1"
+  id("com.github.jk1.dependency-license-report") version "2.9"
 
   id("terraware-jooq")
 }
@@ -340,8 +340,6 @@ licenseReport {
       arrayOf(
           // Spring Boot has licenses in the individual dependencies, not the umbrella artifact.
           "org.springframework.boot:spring-boot-dependencies",
-          // https://github.com/jk1/Gradle-License-Report/pull/243
-          "software.amazon.awssdk:bom",
       )
   filters =
       arrayOf(LicenseBundleNormalizer("$projectDir/src/docs/license-normalizer-bundle.json", true))
