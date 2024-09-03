@@ -87,6 +87,9 @@ class TerrawareServerConfig(
     /** Configures how the server works with GBIF species data. */
     @NotNull val gbif: GbifConfig = GbifConfig(),
 
+    /** Configures options related to accelerator features. */
+    val accelerator: AcceleratorConfig = AcceleratorConfig(),
+
     /** Configures how the server interacts with Atlassian. */
     val atlassian: AtlassianConfig = AtlassianConfig(),
 
@@ -109,6 +112,11 @@ class TerrawareServerConfig(
     /** Terraware support email config */
     val support: SupportConfig = SupportConfig(),
 ) {
+  class AcceleratorConfig(
+      /** File ID of parent folder to use when creating new folders for application documents. */
+      val applicationGoogleFolderId: String? = null,
+  )
+
   class AtlassianConfig(
       /** Atlassian account name */
       val account: String? = null,

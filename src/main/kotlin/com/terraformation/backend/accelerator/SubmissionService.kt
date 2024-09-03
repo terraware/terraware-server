@@ -11,6 +11,7 @@ import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadFai
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadFailedEvent.FailureReason
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadedEvent
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DocumentStore
@@ -42,12 +43,16 @@ import org.springframework.dao.DuplicateKeyException
 @Named
 class SubmissionService(
     private val clock: InstantSource,
+    private val config: TerrawareServerConfig,
     private val dropboxWriter: DropboxWriter,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val googleDriveWriter: GoogleDriveWriter,
 ) {
   private val log = perClassLogger()
+
+  /** Suffix added to the project's file naming when creating new folders for their files. */
+  private val newFolderSuffix = " [Internal]"
 
   /**
    * Matches characters that aren't allowed in filenames.
@@ -129,6 +134,7 @@ class SubmissionService(
           projectAcceleratorDetails.dropboxFolderPath
         } else {
           projectAcceleratorDetails.googleFolderUrl
+              ?: createGoogleDriveFolder(projectId, fileNaming)
         }
             ?: uploadFailed(
                 deliverableId,
@@ -295,6 +301,32 @@ class SubmissionService(
       DocumentStore.External -> URI.create(location)
       DocumentStore.Google -> googleDriveWriter.shareFile(location)
     }
+  }
+
+  /**
+   * Creates a new folder on Google Drive for a project that doesn't have one yet. This will be the
+   * case for new applicants. Records the folder's URL in the project accelerator details.
+   *
+   * @return The URL of the new folder, or null if it couldn't be created.
+   */
+  private fun createGoogleDriveFolder(projectId: ProjectId, fileNaming: String): URI? {
+    val folderName = fileNaming + newFolderSuffix
+    val parentFolderId = config.accelerator.applicationGoogleFolderId ?: return null
+    val driveId = googleDriveWriter.getDriveIdForFile(parentFolderId)
+
+    val newFolderId =
+        googleDriveWriter.findOrCreateFolders(driveId, parentFolderId, listOf(folderName))
+    val newFolderUrl = googleDriveWriter.shareFile(newFolderId)
+
+    with(PROJECT_ACCELERATOR_DETAILS) {
+      dslContext
+          .update(PROJECT_ACCELERATOR_DETAILS)
+          .set(GOOGLE_FOLDER_URL, newFolderUrl)
+          .where(PROJECT_ID.eq(projectId))
+          .execute()
+    }
+
+    return newFolderUrl
   }
 
   /**
