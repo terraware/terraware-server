@@ -1,3 +1,6 @@
+12a8814d07f Update dependency mypy to v1.11.2 (#2353)
+476d59cbc03 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.23 (#2352)
+c69a852870d Update dependency com.squarespace.cldr-engine:cldr-engine to v1.8.1 (#2351)
 4e1dd6cf632 Update dependency com.google.api-client:google-api-client to v2.7.0 (#2345)
 5a1a822dd89 Update jtsVersion to v1.20.0 (#2355)
 dfad65ca057 Fixed admin UI by using new deliverableStore method (#2344)
