@@ -103,6 +103,8 @@ COMMENT ON TABLE growth_forms IS '(Enum) What physical form a particular species
 
 COMMENT ON TABLE identifier_sequences IS 'Current state for generating user-facing identifiers (accession number, etc.) for each organization.';
 
+COMMENT ON TABLE internal_interests IS '(Enum) Types of notification categories for internal users.';
+
 COMMENT ON TABLE internal_tags IS 'Internal (non-user-facing) tags. Low-numbered tags are defined by the system; the rest may be edited by super admins.';
 
 COMMENT ON TABLE land_use_model_types IS '(Enum) Types of ways a project''s land can be used.';

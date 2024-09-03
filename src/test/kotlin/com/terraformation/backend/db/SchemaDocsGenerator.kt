@@ -204,6 +204,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "global_roles" to setOf(ALL, CUSTOMER),
                   "growth_forms" to setOf(ALL, SEEDBANK),
                   "identifier_sequences" to setOf(ALL, SEEDBANK, NURSERY),
+                  "internal_interests" to setOf(ALL),
                   "internal_tags" to setOf(ALL, CUSTOMER),
                   "land_use_model_types" to setOf(ALL, ACCELERATOR, CUSTOMER),
                   "managed_location_types" to setOf(ALL, CUSTOMER),
