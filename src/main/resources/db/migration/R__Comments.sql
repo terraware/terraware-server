@@ -218,8 +218,6 @@ COMMENT ON COLUMN upload_types.expire_files IS 'Old rows are automatically delet
 
 COMMENT ON TABLE uploads IS 'Information about the status of files uploaded by users. This is used to track the progress of file processing such as importing datafiles; contents of this table may expire and be deleted after a certain amount of time.';
 
-COMMENT ON TABLE user_internal_interests IS 'Which internal interest categories are assigned to which internal users. This affects things like which accelerator admins are notified.';
-
 COMMENT ON TABLE user_global_roles IS 'Which users have which global roles.';
 
 COMMENT ON TABLE user_preferences IS 'Client-defined preferences that should persist across browser sessions.';
@@ -558,8 +556,9 @@ COMMENT ON TABLE accelerator.submission_statuses IS '(Enum) Statuses of submissi
 
 COMMENT ON TABLE accelerator.submissions IS 'Information about the current states of the information supplied by specific projects in response to deliverables.';
 
-COMMENT ON TABLE accelerator.vote_options IS '(Enum) Available vote options.';
+COMMENT ON TABLE accelerator.user_internal_interests IS 'Which internal interest categories are assigned to which internal users. This affects things like which accelerator admins are notified.';
 
+COMMENT ON TABLE accelerator.vote_options IS '(Enum) Available vote options.';
 
 COMMENT ON TABLE docprod.document_saved_versions IS 'Saved versions of document variable values. A saved version is conceptually just a reference to a particular point in the edit history of the document; to restore that version, we ignore any later edits.';
 

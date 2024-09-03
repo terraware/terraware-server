@@ -2,11 +2,11 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.accelerator.InternalInterest
+import com.terraformation.backend.db.accelerator.tables.references.USER_INTERNAL_INTERESTS
 import com.terraformation.backend.db.asNonNullable
-import com.terraformation.backend.db.default_schema.InternalInterest
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.USERS
-import com.terraformation.backend.db.default_schema.tables.references.USER_INTERNAL_INTERESTS
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
@@ -19,7 +19,7 @@ class UserInternalInterestsStore(
     private val dslContext: DSLContext,
 ) {
   fun fetchForUser(userId: UserId): Set<InternalInterest> {
-    requirePermissions { readUserDeliverableCategories(userId) }
+    requirePermissions { readUserDeliverableInternalInterests(userId) }
 
     return with(USER_INTERNAL_INTERESTS) {
       dslContext
@@ -42,13 +42,12 @@ class UserInternalInterestsStore(
                   .from(this)
                   .where(INTERNAL_INTEREST_ID.eq(internalInterest))
                   .and(USER_ID.eq(USERS.ID))),
-          DSL.notExists(
-              DSL.selectOne().from(this).where(USER_ID.eq(USERS.ID))))
+          DSL.notExists(DSL.selectOne().from(this).where(USER_ID.eq(USERS.ID))))
     }
   }
 
   fun updateForUser(userId: UserId, internalInterests: Set<InternalInterest>) {
-    requirePermissions { updateUserDeliverableCategories(userId) }
+    requirePermissions { updateUserInternalInterests(userId) }
 
     val existingInterests = fetchForUser(userId)
     val interestsToDelete = existingInterests - internalInterests

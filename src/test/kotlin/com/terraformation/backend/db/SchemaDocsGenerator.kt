@@ -163,7 +163,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "submission_snapshots" to setOf(ALL, ACCELERATOR),
                   "submission_statuses" to setOf(ALL, ACCELERATOR),
                   "submissions" to setOf(ALL, ACCELERATOR),
-                  "user_deliverable_categories" to setOf(ALL, ACCELERATOR),
+                  "user_internal_interests" to setOf(ALL, ACCELERATOR),
                   "vote_options" to setOf(ALL, ACCELERATOR),
               ),
           "nursery" to

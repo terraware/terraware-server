@@ -2,7 +2,6 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
-import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
@@ -18,6 +17,7 @@ import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
+import com.terraformation.backend.customer.db.UserInternalInterestsStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
@@ -135,7 +135,7 @@ internal class EmailNotificationServiceTest {
   private val speciesStore: SpeciesStore = mockk()
   private val systemUser: SystemUser = SystemUser(mockk())
   private val user: IndividualUser = mockk()
-  private val userDeliverableCategoriesStore: UserDeliverableCategoriesStore = mockk()
+  private val userInternalInterestsStore: UserInternalInterestsStore = mockk()
   private val userStore: UserStore = mockk()
 
   private val webAppUrls = WebAppUrls(config, dummyKeycloakInfo())
@@ -165,7 +165,7 @@ internal class EmailNotificationServiceTest {
           projectStore,
           speciesStore,
           systemUser,
-          userDeliverableCategoriesStore,
+          userInternalInterestsStore,
           userStore,
           webAppUrls)
 
@@ -321,7 +321,7 @@ internal class EmailNotificationServiceTest {
     every { user.firstName } returns "Normal"
     every { user.locale } returns Locale.ENGLISH
     every { user.userId } returns UserId(2)
-    every { userDeliverableCategoriesStore.conditionForUsers(any()) } returns DSL.trueCondition()
+    every { userInternalInterestsStore.conditionForUsers(any()) } returns DSL.trueCondition()
     every { userStore.getTerraformationContactUser(any()) } returns null
     every { userStore.fetchByOrganizationId(any(), any(), any()) } returns
         organizationRecipients.map { userForEmail(it) }

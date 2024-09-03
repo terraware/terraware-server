@@ -370,7 +370,7 @@ interface TerrawareUser : Principal {
 
   fun canReadUser(userId: UserId): Boolean = defaultPermission
 
-  fun canReadUserDeliverableCategories(userId: UserId): Boolean = defaultPermission
+  fun canReadUserInternalInterests(userId: UserId): Boolean = defaultPermission
 
   fun canReadViabilityTest(viabilityTestId: ViabilityTestId): Boolean = defaultPermission
 
@@ -487,7 +487,7 @@ interface TerrawareUser : Principal {
 
   fun canUpdateUpload(uploadId: UploadId): Boolean = defaultPermission
 
-  fun canUpdateUserDeliverableCategories(userId: UserId): Boolean = defaultPermission
+  fun canUpdateUserInternalInterests(userId: UserId): Boolean = defaultPermission
 
   fun canUploadPhoto(accessionId: AccessionId): Boolean = defaultPermission
 
