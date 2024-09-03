@@ -1303,7 +1303,6 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `updates status and creates history entry for submitting full application if all modules are completed`() {
-      clock.instant = clock.instant.plusSeconds(3600)
       val otherUserId = insertUser()
       val applicationId =
           insertApplication(createdBy = otherUserId, status = ApplicationStatus.PassedPreScreen)
@@ -1336,7 +1335,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   applicationStatusId = ApplicationStatus.Submitted)),
           applicationHistoriesDao.findAll().map { it.copy(id = null) })
 
-      eventPublisher.assertEventPublished(ApplicationSubmittedEvent(applicationId, clock.instant))
+      eventPublisher.assertEventPublished(ApplicationSubmittedEvent(applicationId))
     }
 
     @Test

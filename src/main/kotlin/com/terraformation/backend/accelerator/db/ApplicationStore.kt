@@ -381,7 +381,7 @@ class ApplicationStore(
       val modules = fetchModulesByApplicationId(existing.id, CohortPhase.Application)
       if (modules.all { it.applicationModuleStatus == ApplicationModuleStatus.Complete }) {
         updateStatus(applicationId, ApplicationStatus.Submitted)
-        eventPublisher.publishEvent(ApplicationSubmittedEvent(applicationId, clock.instant()))
+        eventPublisher.publishEvent(ApplicationSubmittedEvent(applicationId))
         ApplicationSubmissionResult(fetchOneById(applicationId), emptyList())
       } else {
         log.info("Application $applicationId has incomplete modules.")
