@@ -32,7 +32,7 @@ class UserInternalInterestsStore(
 
   /**
    * Returns a condition that can be added to a query on the users table to restrict the results to
-   * users with a particular deliverable category or with no deliverable categories at all.
+   * users with a particular internal interest or with no internal interests at all.
    */
   fun conditionForUsers(internalInterest: InternalInterest): Condition {
     return with(USER_INTERNAL_INTERESTS) {
