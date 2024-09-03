@@ -70,6 +70,7 @@ class DocumentStoreTest : DatabaseTest(), RunsAsUser {
       documentId1 =
           insertDocument(
               documentTemplateId = documentTemplateId1,
+              internalComment = "A comment",
               name = "Project $projectId1 Feasibility Study",
               projectId = projectId1,
               variableManifestId = variableManifestId1)
@@ -99,6 +100,7 @@ class DocumentStoreTest : DatabaseTest(), RunsAsUser {
               createdTime = now,
               documentTemplateId = documentTemplateId1,
               id = documentId1,
+              internalComment = "A comment",
               lastSavedVersionId = null,
               modifiedBy = userId,
               modifiedTime = now,
