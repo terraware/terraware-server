@@ -1,3 +1,5 @@
+4e1dd6cf632 Update dependency com.google.api-client:google-api-client to v2.7.0 (#2345)
+5a1a822dd89 Update jtsVersion to v1.20.0 (#2355)
 dfad65ca057 Fixed admin UI by using new deliverableStore method (#2344)
 8ec8a227fe3 Removed deliverables multiset from module model (#2336)
 232ada9d002 Moved event functionality to EventStore, and added EventController endpoints (#2338)
