@@ -167,6 +167,7 @@ data class DocumentPayload(
     val createdTime: Instant,
     val documentTemplateId: DocumentTemplateId,
     val id: DocumentId,
+    val internalComment: String?,
     val lastSavedVersionId: DocumentSavedVersionId?,
     val modifiedBy: UserId,
     val modifiedTime: Instant,
@@ -184,6 +185,7 @@ data class DocumentPayload(
       createdTime = model.createdTime,
       documentTemplateId = model.documentTemplateId,
       id = model.id,
+      internalComment = model.internalComment,
       lastSavedVersionId = model.lastSavedVersionId,
       modifiedBy = model.modifiedBy,
       modifiedTime = model.modifiedTime,
@@ -244,11 +246,13 @@ data class CreateSavedDocumentVersionRequestPayload(
 }
 
 data class UpdateDocumentRequestPayload(
+    val internalComment: String?,
     val name: String,
     val ownedBy: UserId,
 ) {
   fun applyChanges(row: DocumentsRow) =
       row.copy(
+          internalComment = internalComment,
           name = name,
           ownedBy = ownedBy,
       )
