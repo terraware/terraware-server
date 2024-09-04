@@ -1,3 +1,4 @@
+3ffa164865e Simplify inserting deliverable variables in tests (#2366)
 76cb3f84d1c SW-5949 Return cohort data in project/list endpoint (#2365)
 ae82b0da68d Fix missing foreign keys in migration (#2363)
 979e89b0c10 Updated translations from Phrase (#2362)
