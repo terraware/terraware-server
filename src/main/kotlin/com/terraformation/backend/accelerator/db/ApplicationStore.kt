@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.model.ApplicationModuleModel
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
@@ -44,6 +45,7 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.locationtech.jts.geom.Geometry
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.web.util.HtmlUtils
 
 @Named
@@ -52,6 +54,7 @@ class ApplicationStore(
     private val countriesDao: CountriesDao,
     private val countryDetector: CountryDetector,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val messages: Messages,
     private val organizationsDao: OrganizationsDao,
 ) {
@@ -378,6 +381,7 @@ class ApplicationStore(
       val modules = fetchModulesByApplicationId(existing.id, CohortPhase.Application)
       if (modules.all { it.applicationModuleStatus == ApplicationModuleStatus.Complete }) {
         updateStatus(applicationId, ApplicationStatus.Submitted)
+        eventPublisher.publishEvent(ApplicationSubmittedEvent(applicationId))
         ApplicationSubmissionResult(fetchOneById(applicationId), emptyList())
       } else {
         log.info("Application $applicationId has incomplete modules.")
