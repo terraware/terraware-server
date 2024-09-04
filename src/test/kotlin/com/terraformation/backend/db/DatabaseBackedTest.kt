@@ -2549,14 +2549,17 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertNumberVariable(
-      id: VariableId = insertVariable(type = VariableType.Number),
+      id: VariableId? = null,
       decimalPlaces: Int = 0,
+      deliverableId: DeliverableId? = null,
       minValue: BigDecimal? = null,
       maxValue: BigDecimal? = null,
   ): VariableId {
+    val actualId = id ?: insertVariable(type = VariableType.Number, deliverableId = deliverableId)
+
     val row =
         VariableNumbersRow(
-            variableId = id,
+            variableId = actualId,
             variableTypeId = VariableType.Number,
             decimalPlaces = decimalPlaces,
             maxValue = maxValue,
@@ -2565,7 +2568,7 @@ abstract class DatabaseBackedTest {
 
     variableNumbersDao.insert(row)
 
-    return id
+    return actualId
   }
 
   protected fun insertSavedVersion(
@@ -2745,19 +2748,22 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertSelectVariable(
-      id: VariableId = insertVariable(type = VariableType.Select),
+      id: VariableId? = null,
+      deliverableId: DeliverableId? = null,
       isMultiple: Boolean = false,
   ): VariableId {
+    val actualId = id ?: insertVariable(type = VariableType.Select, deliverableId = deliverableId)
+
     val row =
         VariableSelectsRow(
-            variableId = id,
+            variableId = actualId,
             variableTypeId = VariableType.Select,
             isMultiple = isMultiple,
         )
 
     variableSelectsDao.insert(row)
 
-    return id
+    return actualId
   }
 
   private var lastTableColumnTableId: VariableId? = null
@@ -2794,35 +2800,41 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertTableVariable(
-      id: VariableId = insertVariable(type = VariableType.Table),
+      id: VariableId? = null,
+      deliverableId: DeliverableId? = null,
       style: VariableTableStyle = VariableTableStyle.Horizontal,
   ): VariableId {
+    val actualId = id ?: insertVariable(type = VariableType.Table, deliverableId = deliverableId)
+
     val row =
         VariableTablesRow(
-            variableId = id,
+            variableId = actualId,
             variableTypeId = VariableType.Table,
             tableStyleId = style,
         )
 
     variableTablesDao.insert(row)
 
-    return id
+    return actualId
   }
 
   protected fun insertTextVariable(
-      id: VariableId = insertVariable(type = VariableType.Text),
+      id: VariableId? = null,
+      deliverableId: DeliverableId? = null,
       textType: VariableTextType = VariableTextType.SingleLine,
   ): VariableId {
+    val actualId = id ?: insertVariable(type = VariableType.Text, deliverableId = deliverableId)
+
     val row =
         VariableTextsRow(
-            variableId = id,
+            variableId = actualId,
             variableTypeId = VariableType.Text,
             variableTextTypeId = textType,
         )
 
     variableTextsDao.insert(row)
 
-    return id
+    return actualId
   }
 
   protected fun insertThumbnail(
@@ -2898,11 +2910,12 @@ abstract class DatabaseBackedTest {
     variableValueTableRowsDao.insert(row)
   }
 
+  private var nextDeliverablePosition = 1
   private var nextVariableNumber = 1
 
   protected fun insertVariable(
       deliverableId: DeliverableId? = null,
-      deliverablePosition: Int? = null,
+      deliverablePosition: Int? = if (deliverableId != null) nextDeliverablePosition++ else null,
       deliverableQuestion: String? = null,
       dependencyCondition: DependencyCondition? = null,
       dependencyValue: String? = null,

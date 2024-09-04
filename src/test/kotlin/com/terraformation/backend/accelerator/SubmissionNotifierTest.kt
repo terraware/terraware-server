@@ -11,7 +11,6 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
@@ -130,13 +129,7 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
       insertVariableManifest()
       insertDocument()
 
-      insertVariableManifestEntry(
-          insertTextVariable(
-              id =
-                  insertVariable(
-                      deliverableId = inserted.deliverableId,
-                      deliverablePosition = 0,
-                      type = VariableType.Text)))
+      insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
     }
 
     @Test
@@ -174,13 +167,7 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
       insertVariableManifest()
       insertDocument()
 
-      insertVariableManifestEntry(
-          insertTextVariable(
-              id =
-                  insertVariable(
-                      deliverableId = inserted.deliverableId,
-                      deliverablePosition = 0,
-                      type = VariableType.Text)))
+      insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
 
       insertValue(variableId = inserted.variableId)
     }

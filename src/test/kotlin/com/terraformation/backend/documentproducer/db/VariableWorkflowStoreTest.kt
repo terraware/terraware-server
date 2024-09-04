@@ -37,13 +37,8 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
     insertDocument()
     insertModule()
     insertDeliverable()
-    insertVariableManifestEntry(
-        insertTextVariable(
-            id =
-                insertVariable(
-                    deliverableId = inserted.deliverableId,
-                    deliverablePosition = 0,
-                    type = VariableType.Text)))
+    insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
+
     insertValue(variableId = inserted.variableId)
 
     every { user.canReadProject(any()) } returns true
@@ -81,13 +76,8 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
       )
 
       val otherVariableId =
-          insertVariableManifestEntry(
-              insertTextVariable(
-                  id =
-                      insertVariable(
-                          deliverableId = inserted.deliverableId,
-                          deliverablePosition = 0,
-                          type = VariableType.Text)))
+          insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
+
       insertValue(variableId = otherVariableId)
       val otherWorkflowId =
           insertVariableWorkflowHistory(

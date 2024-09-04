@@ -241,10 +241,8 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `updates deliverable status if all variables without dependencies have values`() {
-      val variableId1 =
-          insertTextVariable(insertVariable(deliverableId = deliverableId, deliverablePosition = 1))
-      val variableId2 =
-          insertTextVariable(insertVariable(deliverableId = deliverableId, deliverablePosition = 2))
+      val variableId1 = insertTextVariable(deliverableId = deliverableId)
+      val variableId2 = insertTextVariable(deliverableId = deliverableId)
 
       insertTextVariable(
           insertVariable(
@@ -266,9 +264,8 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not update deliverable status if variables without dependencies lack values`() {
-      val variableId1 =
-          insertTextVariable(insertVariable(deliverableId = deliverableId, deliverablePosition = 1))
-      insertTextVariable(insertVariable(deliverableId = deliverableId, deliverablePosition = 2))
+      val variableId1 = insertTextVariable(deliverableId = deliverableId)
+      insertTextVariable(deliverableId = deliverableId)
 
       insertValue(variableId = variableId1, textValue = "A")
 
