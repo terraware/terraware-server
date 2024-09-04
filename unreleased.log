@@ -1,3 +1,4 @@
+979e89b0c10 Updated translations from Phrase (#2362)
 5fb80a6bca4 SW-5907 Implemented notifications for application submission (#2361)
 83e77e26e56 Implemented user internal interests store and replaced user deliverable categories store (#2360)
 9eaf99cdb24 Added internal_interest_id column to deliverable categories for mapping between internal interests and deliverable categories (#2359)
