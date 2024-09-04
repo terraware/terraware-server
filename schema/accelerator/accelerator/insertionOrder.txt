@@ -1,6 +1,7 @@
 cohort_phases
 application_statuses
 deliverable_types
+internal_interests
 pipelines
 submission_statuses
 vote_options
@@ -8,7 +9,6 @@ application_module_statuses
 document_stores
 event_statuses
 event_types
-internal_interests
 score_categories
 modules
 cohorts
@@ -20,7 +20,7 @@ submissions
 deal_stages
 events
 submission_snapshots
-user_deliverable_categories
+user_internal_interests
 application_histories
 cohort_modules
 deliverable_cohort_due_dates

@@ -13,7 +13,7 @@ deliverable_project_due_dates
 deliverable_cohort_due_dates
 cohort_modules
 application_histories
-user_deliverable_categories
+user_internal_interests
 submission_snapshots
 events
 deal_stages
@@ -25,7 +25,6 @@ deliverable_categories
 cohorts
 modules
 score_categories
-internal_interests
 event_types
 event_statuses
 document_stores
@@ -33,6 +32,7 @@ application_module_statuses
 vote_options
 submission_statuses
 pipelines
+internal_interests
 deliverable_types
 application_statuses
 cohort_phases

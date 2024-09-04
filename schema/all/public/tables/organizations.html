@@ -490,28 +490,28 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>other_type_details_null_or_not_empty</td>
-                                    <td>(((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text)))</td>
-                                </tr>
-                                <tr>
-                                    <td>organizations_country_subdivision_code_check</td>
-                                    <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    <td>country_code_matches_subdivision</td>
+                                    <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
                                 </tr>
                                 <tr>
                                     <td>organizations_country_code_check</td>
                                     <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
+                                    <td>other_type_details_only_for_other</td>
+                                    <td>((((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6))))</td>
+                                </tr>
+                                <tr>
                                     <td>organizations_description_check</td>
                                     <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
-                                    <td>country_code_matches_subdivision</td>
-                                    <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
+                                    <td>organizations_country_subdivision_code_check</td>
+                                    <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
-                                    <td>other_type_details_only_for_other</td>
-                                    <td>((((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6))))</td>
+                                    <td>other_type_details_null_or_not_empty</td>
+                                    <td>(((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -590,7 +590,7 @@
 <area shape="rect" id="node19" href="../../../accelerator/tables/project_votes.html" target="_top" title="accelerator.project_votes" alt="" coords="1642,569,1921,657">
 <area shape="rect" id="node20" href="../../../accelerator/tables/submission_documents.html" target="_top" title="accelerator.submission_documents" alt="" coords="1605,674,1958,762">
 <area shape="rect" id="node21" href="../../../accelerator/tables/submissions.html" target="_top" title="accelerator.submissions" alt="" coords="1647,779,1916,867">
-<area shape="rect" id="node22" href="../../../accelerator/tables/user_deliverable_categories.html" target="_top" title="accelerator.user_deliverable_categories" alt="" coords="725,3333,1112,3421">
+<area shape="rect" id="node22" href="../../../accelerator/tables/user_internal_interests.html" target="_top" title="accelerator.user_internal_interests" alt="" coords="743,3333,1095,3421">
 <area shape="rect" id="node23" href="../../../docprod/tables/document_saved_versions.html" target="_top" title="docprod.document_saved_versions" alt="" coords="743,3615,1094,3703">
 <area shape="rect" id="node24" href="../../../docprod/tables/documents.html" target="_top" title="docprod.documents" alt="" coords="1662,2425,1901,2513">
 <area shape="rect" id="node25" href="../../../docprod/tables/variable_manifests.html" target="_top" title="docprod.variable_manifests" alt="" coords="770,3862,1067,3950">

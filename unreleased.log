@@ -1,3 +1,4 @@
+83e77e26e56 Implemented user internal interests store and replaced user deliverable categories store (#2360)
 9eaf99cdb24 Added internal_interest_id column to deliverable categories for mapping between internal interests and deliverable categories (#2359)
 03e8a64416d SW-5808 Added internal interests table (#2358)
 c044294e4a7 Added ApplicationSubmittedEvent (#2347)

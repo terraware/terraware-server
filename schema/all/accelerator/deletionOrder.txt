@@ -3,7 +3,7 @@ participant_project_species
 project_scores
 submission_documents
 deliverable_documents
-user_deliverable_categories
+user_internal_interests
 project_vote_decisions
 project_accelerator_details
 application_modules
@@ -25,7 +25,6 @@ participants
 cohorts
 deliverable_categories
 score_categories
-internal_interests
 event_types
 event_statuses
 document_stores
@@ -33,6 +32,7 @@ application_module_statuses
 vote_options
 submission_statuses
 pipelines
+internal_interests
 deliverable_types
 application_statuses
 cohort_phases

@@ -826,8 +826,8 @@
             <child column="created_by" foreignKey="submission_documents_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_documents"/>
             <child column="created_by" foreignKey="submissions_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
             <child column="modified_by" foreignKey="submissions_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
-            <child column="created_by" foreignKey="user_deliverable_categories_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="user_deliverable_categories"/>
-            <child column="user_id" foreignKey="user_deliverable_categories_user_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="user_deliverable_categories"/>
+            <child column="created_by" foreignKey="user_internal_interests_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="user_internal_interests"/>
+            <child column="user_id" foreignKey="user_internal_interests_user_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="user_internal_interests"/>
             <child column="created_by" foreignKey="document_saved_versions_created_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="document_saved_versions"/>
             <child column="created_by" foreignKey="documents_created_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>
             <child column="modified_by" foreignKey="documents_modified_by_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>

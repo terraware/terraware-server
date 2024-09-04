@@ -128,10 +128,6 @@
                                                 <td title="deliverables.deliverable_category_id references deliverable_categories.id via deliverables_deliverable_category_id_fkey"><a href='deliverables.html'>deliverables</a><span class='relatedKey'>.deliverable_category_id</span></td>
                                                 <td class="constraint detail">deliverables_deliverable_category_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
-                                            <tr>
-                                                <td title="user_deliverable_categories.deliverable_category_id references deliverable_categories.id via user_deliverable_categories_deliverable_category_id_fkey"><a href='user_deliverable_categories.html'>user_deliverable_categories</a><span class='relatedKey'>.deliverable_category_id</span></td>
-                                                <td class="constraint detail">user_deliverable_categories_deliverable_category_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -176,7 +172,7 @@
                                             </tr>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>Internal interest enum that the deliverable category corresponds to.</p></td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -237,26 +233,25 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="272,159,639,316">
-<area shape="rect" id="node2" href="../../tables/internal_interests.html" target="_top" title="internal_interests" alt="" coords="5,220,228,343">
-<area shape="rect" id="node3" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="713,5,949,240">
-<area shape="rect" id="node4" href="../../tables/user_deliverable_categories.html" target="_top" title="user_deliverable_categories" alt="" coords="683,257,979,433">
+<area shape="rect" id="node1" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="272,32,639,189">
+<area shape="rect" id="node2" href="../../tables/internal_interests.html" target="_top" title="internal_interests" alt="" coords="5,93,228,216">
+<area shape="rect" id="node3" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="683,5,919,240">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/deliverable_categories.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="272,88,639,245">
-<area shape="rect" id="node2" href="../../tables/internal_interests.html" target="_top" title="internal_interests" alt="" coords="5,149,228,272">
-<area shape="rect" id="node3" href="../../tables/deliverable_cohort_due_dates.html" target="_top" title="deliverable_cohort_due_dates" alt="" coords="1025,5,1337,93">
-<area shape="rect" id="node4" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="713,213,949,448">
+<area shape="rect" id="node1" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="272,29,639,187">
+<area shape="rect" id="node2" href="../../tables/internal_interests.html" target="_top" title="internal_interests" alt="" coords="5,147,228,269">
+<area shape="rect" id="node3" href="../../tables/deliverable_cohort_due_dates.html" target="_top" title="deliverable_cohort_due_dates" alt="" coords="965,5,1277,93">
+<area shape="rect" id="node4" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="683,213,919,448">
 <area shape="rect" id="node6" href="../../tables/deliverable_types.html" target="_top" title="deliverable_types" alt="" coords="345,419,566,507">
-<area shape="rect" id="node8" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="380,304,531,392">
-<area shape="rect" id="node5" href="../../tables/deliverable_documents.html" target="_top" title="deliverable_documents" alt="" coords="1049,427,1313,515">
-<area shape="rect" id="node7" href="../../tables/deliverable_project_due_dates.html" target="_top" title="deliverable_project_due_dates" alt="" coords="1023,111,1340,199">
-<area shape="rect" id="node9" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="1092,216,1271,304">
-<area shape="rect" id="node10" href="../../tables/user_deliverable_categories.html" target="_top" title="user_deliverable_categories" alt="" coords="683,20,979,196">
-<area shape="rect" id="node11" href="../../../docprod/tables/variables.html" target="_top" title="docprod.variables" alt="" coords="1070,321,1293,409">
+<area shape="rect" id="node8" href="../../tables/modules.html" target="_top" title="modules" alt="" coords="380,309,531,397">
+<area shape="rect" id="node5" href="../../tables/deliverable_documents.html" target="_top" title="deliverable_documents" alt="" coords="989,427,1253,515">
+<area shape="rect" id="node7" href="../../tables/deliverable_project_due_dates.html" target="_top" title="deliverable_project_due_dates" alt="" coords="963,111,1280,199">
+<area shape="rect" id="node9" href="../../tables/submissions.html" target="_top" title="submissions" alt="" coords="1032,216,1211,304">
+<area shape="rect" id="node10" href="../../tables/user_internal_interests.html" target="_top" title="user_internal_interests" alt="" coords="325,204,586,292">
+<area shape="rect" id="node11" href="../../../docprod/tables/variables.html" target="_top" title="docprod.variables" alt="" coords="1010,321,1233,409">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/deliverable_categories.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
