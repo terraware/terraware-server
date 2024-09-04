@@ -126,31 +126,15 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       val deliverableId1 = insertDeliverable()
       val deliverableId2 = insertDeliverable()
 
-      val variableId1 =
-          insertTextVariable(
-              id =
-                  insertVariable(
-                      type = VariableType.Text,
-                      deliverableId = deliverableId1,
-                      deliverablePosition = 0))
+      val variableId1 = insertTextVariable(deliverableId = deliverableId1)
       val valueId1 =
           insertValue(projectId = projectId, textValue = "value1", variableId = variableId1)
-      val variableId2 =
-          insertTextVariable(
-              id =
-                  insertVariable(
-                      type = VariableType.Text,
-                      deliverableId = deliverableId1,
-                      deliverablePosition = 1))
+      val variableId2 = insertTextVariable(deliverableId = deliverableId1)
+
       val valueId2 =
           insertValue(projectId = projectId, textValue = "value2", variableId = variableId2)
-      val variableId3 =
-          insertTextVariable(
-              id =
-                  insertVariable(
-                      type = VariableType.Text,
-                      deliverableId = deliverableId2,
-                      deliverablePosition = 0))
+      val variableId3 = insertTextVariable(deliverableId = deliverableId2)
+
       insertValue(textValue = "value3", variableId = variableId3)
 
       val expected =
@@ -370,13 +354,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       @Test
       fun `publishes event for a non-list variable if a deliverable is associated`() {
         val variableId =
-            insertVariableManifestEntry(
-                insertTextVariable(
-                    id =
-                        insertVariable(
-                            deliverableId = inserted.deliverableId,
-                            deliverablePosition = 0,
-                            type = VariableType.Text)))
+            insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
 
         val updatedValues =
             store.updateValues(
@@ -397,7 +375,6 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
                     id =
                         insertVariable(
                             deliverableId = inserted.deliverableId,
-                            deliverablePosition = 0,
                             isList = true,
                             type = VariableType.Text)))
 
@@ -426,7 +403,6 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
                     id =
                         insertVariable(
                             deliverableId = inserted.deliverableId,
-                            deliverablePosition = 0,
                             isList = true,
                             type = VariableType.Text)))
 
@@ -463,7 +439,6 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
                     id =
                         insertVariable(
                             deliverableId = inserted.deliverableId,
-                            deliverablePosition = 0,
                             isList = true,
                             type = VariableType.Text)))
 
@@ -492,10 +467,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
 
       @Test
       fun `does not publish event if a deliverable is not associated`() {
-        val variableId =
-            insertVariableManifestEntry(
-                insertTextVariable(
-                    id = insertVariable(deliverableId = null, type = VariableType.Text)))
+        val variableId = insertVariableManifestEntry(insertTextVariable(deliverableId = null))
         store.updateValues(
             listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))))
 
@@ -505,13 +477,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       @Test
       fun `publishes event if a variable value is updated`() {
         val variableId =
-            insertVariableManifestEntry(
-                insertTextVariable(
-                    id =
-                        insertVariable(
-                            deliverableId = inserted.deliverableId,
-                            deliverablePosition = 0,
-                            type = VariableType.Text)))
+            insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
 
         val updatedValues =
             store.updateValues(

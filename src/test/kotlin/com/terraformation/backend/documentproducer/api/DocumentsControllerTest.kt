@@ -91,7 +91,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
       // Other values may exist for a project before a new document is created
       insertModule()
       val deliverableId = insertDeliverable()
-      val variableId = insertVariable(deliverableId = deliverableId, deliverablePosition = 0)
+      val variableId = insertVariable(deliverableId = deliverableId)
       insertTextVariable(variableId)
       insertValue(variableId = variableId, projectId = inserted.projectId, textValue = "Text")
 
