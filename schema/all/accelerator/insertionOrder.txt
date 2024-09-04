@@ -35,3 +35,4 @@ submission_documents
 project_scores
 participant_project_species
 project_votes
+internal_interests

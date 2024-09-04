@@ -1,3 +1,4 @@
+03e8a64416d SW-5808 Added internal interests table (#2358)
 c044294e4a7 Added ApplicationSubmittedEvent (#2347)
 0a21f8d53e0 Remove deprecated locale service provider (#2357)
 f8f60cf7ca2 SW-5926 Create Google Drive folders on demand (#2346)
