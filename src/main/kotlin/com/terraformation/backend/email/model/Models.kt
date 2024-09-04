@@ -56,7 +56,9 @@ abstract class EmailTemplateModel(config: TerrawareServerConfig) {
     get() {
       return stringsByLocale.computeIfAbsent(currentLocale()) { _ ->
         FormattingResourceBundleModel(
-            bundle, DefaultObjectWrapperBuilder(Configuration.VERSION_2_3_31).build())
+            bundle,
+            DefaultObjectWrapperBuilder(Configuration.VERSION_2_3_31).build(),
+        )
       }
     }
 
@@ -416,6 +418,16 @@ class ParticipantProjectRemoved(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "participant/projectRemoved"
+}
+
+class ApplicationSubmitted(
+    config: TerrawareServerConfig,
+    val applicationUrl: String,
+    val organizationName: String,
+    val submissionDate: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "application/submitted"
 }
 
 class DeliverableReadyForReview(

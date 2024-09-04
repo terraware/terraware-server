@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
+import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
@@ -370,6 +371,25 @@ class AppNotificationService(
         renderMessage,
         siteUrl,
         setOf(Role.Owner, Role.Admin, Role.Manager))
+  }
+
+  fun on(event: ApplicationSubmittedEvent) {
+    systemUser.run {
+      val organizationId = parentStore.getOrganizationId(event.applicationId)
+      if (organizationId == null) {
+        log.error("Organization for application ${event.applicationId} not found")
+        return@run
+      }
+      val organization = organizationStore.fetchOneById(organizationId)
+      val renderMessage = { messages.applicationSubmittedNotification(organization.name) }
+      val applicationUrl = webAppUrls.acceleratorConsoleApplication(event.applicationId)
+      insertAcceleratorNotification(
+          applicationUrl,
+          NotificationType.ApplicationSubmitted,
+          organizationId,
+          renderMessage,
+          InternalInterest.Sourcing)
+    }
   }
 
   @EventListener

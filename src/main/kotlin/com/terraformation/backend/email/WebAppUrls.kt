@@ -102,8 +102,8 @@ class WebAppUrls(
         .build()
   }
 
-  fun applicationReview(applicationId: ApplicationId): URI {
-    return UriBuilder.fromPath("/applications/$applicationId/review").build()
+  fun acceleratorConsoleApplication(applicationId: ApplicationId): URI {
+    return UriBuilder.fromPath("/applications/$applicationId").build()
   }
 
   fun fullNurseryInventory(organizationId: OrganizationId): URI {
