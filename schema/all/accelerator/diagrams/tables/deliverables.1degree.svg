@@ -195,34 +195,37 @@
 <!-- deliverable_categories -->
 <g id="node7" class="node"><title>deliverable_categories</title>
 <g id="a_node7"><a xlink:href="../../tables/deliverable_categories.html" xlink:title="deliverable_categories" target="_top">
-<polygon fill="#ffffff" stroke="none" points="192.5,-459 192.5,-543 369.5,-543 369.5,-459 192.5,-459"/>
-<polygon fill="#f5f5f5" stroke="none" points="193,-521 193,-543 370,-543 370,-521 193,-521"/>
+<polygon fill="#ffffff" stroke="none" points="192.5,-459 192.5,-565 369.5,-565 369.5,-459 192.5,-459"/>
+<polygon fill="#f5f5f5" stroke="none" points="193,-543 193,-565 370,-565 370,-543 193,-543"/>
+<polygon fill="none" stroke="black" points="193,-543 193,-565 370,-565 370,-543 193,-543"/>
+<text text-anchor="start" x="198" y="-552.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">deliverable_categories</text>
+<text text-anchor="start" x="331" y="-551.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="193,-521 193,-543 370,-543 370,-521 193,-521"/>
-<text text-anchor="start" x="198" y="-530.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">deliverable_categories</text>
-<text text-anchor="start" x="331" y="-529.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="198" y="-538"/>
+<text text-anchor="start" x="225" y="-529.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="none" points="193,-499 193,-521 370,-521 370,-499 193,-499"/>
 <polygon fill="none" stroke="black" points="193,-499 193,-521 370,-521 370,-499 193,-499"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="198" y="-516"/>
-<text text-anchor="start" x="225" y="-507.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="none" points="193,-477 193,-499 370,-499 370,-477 193,-477"/>
+<text text-anchor="start" x="225" y="-507.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
 <polygon fill="none" stroke="black" points="193,-477 193,-499 370,-499 370,-477 193,-477"/>
-<text text-anchor="start" x="225" y="-485.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="none" points="193,-459 193,-477 255,-477 255,-459 193,-459"/>
-<polygon fill="none" stroke="black" points="193,-459 193,-477 255,-477 255,-459 193,-459"/>
-<text text-anchor="start" x="196" y="-465.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="255,-459 255,-477 322,-477 322,-459 255,-459"/>
-<polygon fill="none" stroke="black" points="255,-459 255,-477 322,-477 322,-459 255,-459"/>
-<text text-anchor="start" x="283" y="-465.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 rows</text>
-<polygon fill="#ffffff" stroke="none" points="322,-459 322,-477 370,-477 370,-459 322,-459"/>
-<polygon fill="none" stroke="black" points="322,-459 322,-477 370,-477 370,-459 322,-459"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="198" y="-494"/>
+<text text-anchor="start" x="225" y="-485.2" font-family="Helvetica,sans-Serif" font-size="11.00">internal_interest_id</text>
+<polygon fill="#ffffff" stroke="none" points="193,-459 193,-477 260,-477 260,-459 193,-459"/>
+<polygon fill="none" stroke="black" points="193,-459 193,-477 260,-477 260,-459 193,-459"/>
+<text text-anchor="start" x="196" y="-465.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="none" points="260,-459 260,-477 324,-477 324,-459 260,-459"/>
+<polygon fill="none" stroke="black" points="260,-459 260,-477 324,-477 324,-459 260,-459"/>
+<text text-anchor="start" x="285" y="-465.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 rows</text>
+<polygon fill="#ffffff" stroke="none" points="324,-459 324,-477 370,-477 370,-459 324,-459"/>
+<polygon fill="none" stroke="black" points="324,-459 324,-477 370,-477 370,-459 324,-459"/>
 <text text-anchor="start" x="350" y="-465.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
 </a>
 </g>
 </g>
 <!-- deliverables&#45;&gt;deliverable_categories -->
 <g id="edge7" class="edge"><title>deliverables:deliverable_category_id:w&#45;&gt;deliverable_categories:id:e</title>
-<path fill="none" stroke="black" d="M423.264,-433.438C396.629,-448.75 411.456,-510 371,-510"/>
-<polygon fill="black" stroke="black" points="429.724,-431.878 438.345,-433.499 433.612,-430.939 437.5,-430 437.5,-430 437.5,-430 433.612,-430.939 436.655,-426.501 429.724,-431.878 429.724,-431.878"/>
-<ellipse fill="none" stroke="black" cx="426.613" cy="-432.629" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M423.351,-433.165C391.12,-450.381 419.409,-532 371,-532"/>
+<polygon fill="black" stroke="black" points="429.693,-431.746 438.286,-433.513 433.596,-430.873 437.5,-430 437.5,-430 437.5,-430 433.596,-430.873 436.714,-426.487 429.693,-431.746 429.693,-431.746"/>
+<ellipse fill="none" stroke="black" cx="426.57" cy="-432.445" rx="3.2" ry="3.2"/>
 </g>
 <!-- modules -->
 <g id="node8" class="node"><title>modules</title>

@@ -119,14 +119,14 @@
 <text text-anchor="start" x="146.5" y="-276.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="8.5,-250 8.5,-268 185.5,-268 185.5,-250 8.5,-250"/>
 <text text-anchor="start" x="11.5" y="-256.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="8.5,-232 8.5,-250 70.5,-250 70.5,-232 8.5,-232"/>
-<polygon fill="none" stroke="black" points="8.5,-232 8.5,-250 70.5,-250 70.5,-232 8.5,-232"/>
-<text text-anchor="start" x="11.5" y="-238.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="70.5,-232 70.5,-250 137.5,-250 137.5,-232 70.5,-232"/>
-<polygon fill="none" stroke="black" points="70.5,-232 70.5,-250 137.5,-250 137.5,-232 70.5,-232"/>
-<text text-anchor="start" x="98.5" y="-238.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 rows</text>
-<polygon fill="#ffffff" stroke="none" points="137.5,-232 137.5,-250 185.5,-250 185.5,-232 137.5,-232"/>
-<polygon fill="none" stroke="black" points="137.5,-232 137.5,-250 185.5,-250 185.5,-232 137.5,-232"/>
+<polygon fill="#ffffff" stroke="none" points="8.5,-232 8.5,-250 75.5,-250 75.5,-232 8.5,-232"/>
+<polygon fill="none" stroke="black" points="8.5,-232 8.5,-250 75.5,-250 75.5,-232 8.5,-232"/>
+<text text-anchor="start" x="11.5" y="-238.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="none" points="75.5,-232 75.5,-250 139.5,-250 139.5,-232 75.5,-232"/>
+<polygon fill="none" stroke="black" points="75.5,-232 75.5,-250 139.5,-250 139.5,-232 75.5,-232"/>
+<text text-anchor="start" x="100.5" y="-238.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 rows</text>
+<polygon fill="#ffffff" stroke="none" points="139.5,-232 139.5,-250 185.5,-250 185.5,-232 139.5,-232"/>
+<polygon fill="none" stroke="black" points="139.5,-232 139.5,-250 185.5,-250 185.5,-232 139.5,-232"/>
 <text text-anchor="start" x="165.5" y="-238.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
 </a>
 </g>

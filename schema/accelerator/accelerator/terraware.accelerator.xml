@@ -219,6 +219,9 @@
             <child column="deliverable_category_id" foreignKey="user_deliverable_categories_deliverable_category_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="user_deliverable_categories"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="internal_interest_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="deliverable_categories_internal_interest_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="internal_interests"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="deliverable_categories_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -247,8 +250,8 @@
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
             <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
+            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="deliverable_id" sequenceNumberInPK="1"/>
@@ -409,7 +412,9 @@
          <checkConstraint constraint="((start_time &lt;= end_time))" name="times_start_before_end"/>
       </table>
       <table name="internal_interests" numRows="9" remarks="(Enum) Types of notification categories for internal users." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="internal_interest_id" foreignKey="deliverable_categories_internal_interest_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_categories"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="internal_interests_pkey" unique="true">

@@ -1,4 +1,3 @@
-internal_interests
 project_votes
 participant_project_species
 project_scores
@@ -24,7 +23,9 @@ deliverables
 modules
 participants
 cohorts
+deliverable_categories
 score_categories
+internal_interests
 event_types
 event_statuses
 document_stores
@@ -33,6 +34,5 @@ vote_options
 submission_statuses
 pipelines
 deliverable_types
-deliverable_categories
 application_statuses
 cohort_phases

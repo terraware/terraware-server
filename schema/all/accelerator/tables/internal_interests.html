@@ -124,6 +124,10 @@
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="deliverable_categories.internal_interest_id references internal_interests.id via deliverable_categories_internal_interest_id_fkey"><a href='deliverable_categories.html'>deliverable_categories</a><span class='relatedKey'>.internal_interest_id</span></td>
+                                                <td class="constraint detail">deliverable_categories_internal_interest_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -189,10 +193,42 @@
                             </table>
                         </div><!-- /.box-body -->
                     </div>
-                    <div class="alert alert-warning alert-dismissible">
-                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                        <h4><i class="icon fa fa-warning"></i>Diagram producer might be missing</h4>
-                        <p>No diagrams were produced please see application output for any errors</p>
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-code-fork"></i>
+                            <h3 id="Relationships" class="box-title">Relationships</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <div class="nav-tabs-custom"><!-- Tabs within a box -->
+                                <h5>Close relationships within degrees of separation</h5>
+                                <ul class="nav nav-tabs pull-left ui-sortable-handle">
+                                    <li class="active"><a href="#oneDegreeImg-chart" data-toggle="tab" aria-expanded="true">One</a></li>
+                                    <li class=""><a href="#twodegreesDegreeImg-chart" data-toggle="tab" aria-expanded="true">Two degrees</a></li>
+                                </ul>
+                                <div class="tab-content no-padding">
+                                    <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
+<area shape="rect" id="node1" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="380,5,637,157">
+<area shape="rect" id="node2" href="../../tables/internal_interests.html" target="_top" title="internal_interests" alt="" coords="5,61,336,189">
+</map>
+                                        <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/internal_interests.1degree.svg" class="diagram" border="0" align="left"></object></a>
+                                    </div>
+                                    <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
+<area shape="rect" id="node1" href="../../tables/deliverable_categories.html" target="_top" title="deliverable_categories" alt="" coords="380,56,637,208">
+<area shape="rect" id="node2" href="../../tables/internal_interests.html" target="_top" title="internal_interests" alt="" coords="5,112,336,240">
+<area shape="rect" id="node3" href="../../tables/deliverables.html" target="_top" title="deliverables" alt="" coords="739,5,919,93">
+<area shape="rect" id="node4" href="../../tables/user_deliverable_categories.html" target="_top" title="user_deliverable_categories" alt="" coords="681,111,977,199">
+</map>
+                                        <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/internal_interests.2degrees.svg" class="diagram" border="0" align="left"></object></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- /.box-body -->
                     </div>
                 </section>
                 <script>
