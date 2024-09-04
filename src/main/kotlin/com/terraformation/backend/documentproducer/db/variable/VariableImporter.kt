@@ -413,7 +413,7 @@ class VariableImporter(
                 variable is NumberVariable &&
                     csvVariable.minValue == variable.minValue &&
                     csvVariable.maxValue == variable.maxValue &&
-                    (csvVariable.decimalPlaces ?: 0) == variable.decimalPlaces
+                    csvVariable.decimalPlaces == variable.decimalPlaces
             AllVariableCsvVariableType.SingleLine ->
                 variable is TextVariable && variable.textType == VariableTextType.SingleLine
             AllVariableCsvVariableType.MultiLine ->
