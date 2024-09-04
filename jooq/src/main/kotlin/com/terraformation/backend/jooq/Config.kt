@@ -24,7 +24,16 @@ val ENUM_TABLES =
                 EnumTable("application_statuses"),
                 EnumTable("cohort_phases", listOf(".*\\.phase_id")),
                 EnumTable("deal_stages", isLocalizable = false),
-                EnumTable("deliverable_categories"),
+                EnumTable(
+                    "deliverable_categories",
+                    additionalColumns =
+                        listOf(
+                            EnumTableColumnInfo(
+                                "internal_interest_id",
+                                "InternalInterest",
+                                true,
+                            )),
+                ),
                 EnumTable("deliverable_types"),
                 EnumTable("document_stores", isLocalizable = false),
                 EnumTable("event_statuses"),

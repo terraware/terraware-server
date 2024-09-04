@@ -101,16 +101,17 @@ VALUES (1, 'Compliance'),
        (101, 'Sourcing')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO accelerator.deliverable_categories (id, name)
-VALUES (1, 'Compliance'),
-       (2, 'Financial Viability'),
-       (3, 'GIS'),
-       (4, 'Carbon Eligibility'),
-       (5, 'Stakeholders and Community Impact'),
-       (6, 'Proposed Restoration Activities'),
-       (7, 'Verra Non-Permanence Risk Tool (NPRT)'),
-       (8, 'Supplemental Files')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+INSERT INTO accelerator.deliverable_categories (id, name, internal_interest_id)
+VALUES (1, 'Compliance', 1),
+       (2, 'Financial Viability', 2),
+       (3, 'GIS', 3),
+       (4, 'Carbon Eligibility', 4),
+       (5, 'Stakeholders and Community Impact', 5),
+       (6, 'Proposed Restoration Activities', 6),
+       (7, 'Verra Non-Permanence Risk Tool (NPRT)', 7),
+       (8, 'Supplemental Files', 8)
+ON CONFLICT (id) DO UPDATE SET name                 = excluded.name,
+                               internal_interest_id = excluded.internal_interest_id;
 
 INSERT INTO accelerator.deliverable_types (id, name)
 VALUES (1, 'Document'),
