@@ -1,3 +1,4 @@
+76cb3f84d1c SW-5949 Return cohort data in project/list endpoint (#2365)
 ae82b0da68d Fix missing foreign keys in migration (#2363)
 979e89b0c10 Updated translations from Phrase (#2362)
 5fb80a6bca4 SW-5907 Implemented notifications for application submission (#2361)
