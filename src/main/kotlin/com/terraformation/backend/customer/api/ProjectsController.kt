@@ -52,7 +52,8 @@ class ProjectsController(
         organizationId?.let { projectStore.fetchByOrganizationId(organizationId) }
             ?: projectStore.findAll()
 
-    return ListProjectsResponsePayload(projects.map { ProjectPayload(it) })
+    return ListProjectsResponsePayload(
+        projects.map { ProjectPayload(it, projectStore.fetchCohortData(it.id)) })
   }
 
   @GetMapping("/{id}")
