@@ -29,6 +29,7 @@ val ENUM_TABLES =
                 EnumTable("document_stores", isLocalizable = false),
                 EnumTable("event_statuses"),
                 EnumTable("event_types"),
+                EnumTable("internal_interests"),
                 EnumTable("pipelines", isLocalizable = false),
                 EnumTable("score_categories", isLocalizable = false),
                 EnumTable("submission_statuses"),
