@@ -20,6 +20,7 @@ import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
+import com.terraformation.backend.db.accelerator.InternalInterest
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
@@ -54,7 +55,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshotsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
-import com.terraformation.backend.db.accelerator.tables.daos.UserDeliverableCategoriesDao
+import com.terraformation.backend.db.accelerator.tables.daos.UserInternalInterestsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationHistoriesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
@@ -78,7 +79,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionDocumentsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
-import com.terraformation.backend.db.accelerator.tables.pojos.UserDeliverableCategoriesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.UserInternalInterestsRow
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
 import com.terraformation.backend.db.default_schema.ConservationCategory
@@ -530,7 +531,7 @@ abstract class DatabaseBackedTest {
   protected val timeZonesDao: TimeZonesDao by lazyDao()
   protected val uploadProblemsDao: UploadProblemsDao by lazyDao()
   protected val uploadsDao: UploadsDao by lazyDao()
-  protected val userDeliverableCategoriesDao: UserDeliverableCategoriesDao by lazyDao()
+  protected val userInternalInterestsDao: UserInternalInterestsDao by lazyDao()
   protected val userGlobalRolesDao: UserGlobalRolesDao by lazyDao()
   protected val usersDao: UsersDao by lazyDao()
   protected val variableImageValuesDao: VariableImageValuesDao by lazyDao()
@@ -1129,17 +1130,17 @@ abstract class DatabaseBackedTest {
     return insertedId.also { inserted.userIds.add(it) }
   }
 
-  fun insertUserDeliverableCategory(
-      deliverableCategory: DeliverableCategory,
+  fun insertUserInternalInterest(
+      internalInterest: InternalInterest,
       userId: UserId = inserted.userId,
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
   ) {
-    userDeliverableCategoriesDao.insert(
-        UserDeliverableCategoriesRow(
+    userInternalInterestsDao.insert(
+        UserInternalInterestsRow(
             createdBy = createdBy,
             createdTime = createdTime,
-            deliverableCategoryId = deliverableCategory,
+            internalInterestId = internalInterest,
             userId = userId,
         ))
   }

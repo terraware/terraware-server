@@ -750,13 +750,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun readUserDeliverableCategories() {
-    assertThrows<UserNotFoundException> { requirements.readUserDeliverableCategories(otherUserId) }
+    assertThrows<UserNotFoundException> {
+      requirements.readUserDeliverableInternalInterests(otherUserId)
+    }
 
     grant { user.canReadUser(otherUserId) }
-    assertThrows<AccessDeniedException> { requirements.readUserDeliverableCategories(otherUserId) }
+    assertThrows<AccessDeniedException> {
+      requirements.readUserDeliverableInternalInterests(otherUserId)
+    }
 
-    grant { user.canReadUserDeliverableCategories(otherUserId) }
-    requirements.readUserDeliverableCategories(otherUserId)
+    grant { user.canReadUserInternalInterests(otherUserId) }
+    requirements.readUserDeliverableInternalInterests(otherUserId)
   }
 
   @Test fun readUpload() = testRead { readUpload(uploadId) }
@@ -1006,9 +1010,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun updateUserDeliverableCategories() =
-      allow { updateUserDeliverableCategories(otherUserId) } ifUser
+      allow { updateUserInternalInterests(otherUserId) } ifUser
           {
-            canUpdateUserDeliverableCategories(otherUserId)
+            canUpdateUserInternalInterests(otherUserId)
           }
 
   @Test

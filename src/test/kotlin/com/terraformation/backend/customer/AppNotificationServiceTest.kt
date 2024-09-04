@@ -8,7 +8,6 @@ import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
-import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ModuleEventStartingEvent
@@ -25,6 +24,7 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.ProjectStore
+import com.terraformation.backend.customer.db.UserInternalInterestsStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
@@ -36,6 +36,7 @@ import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventType
+import com.terraformation.backend.db.accelerator.InternalInterest
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -123,7 +124,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var plantingSiteStore: PlantingSiteStore
   private lateinit var projectStore: ProjectStore
   private lateinit var speciesStore: SpeciesStore
-  private lateinit var userDeliverableCategoriesStore: UserDeliverableCategoriesStore
+  private lateinit var userInternalInterestsStore: UserInternalInterestsStore
   private lateinit var userStore: UserStore
   private lateinit var service: AppNotificationService
   private lateinit var webAppUrls: WebAppUrls
@@ -190,7 +191,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             speciesEcosystemTypesDao,
             speciesGrowthFormsDao,
             speciesProblemsDao)
-    userDeliverableCategoriesStore = UserDeliverableCategoriesStore(clock, dslContext)
+    userInternalInterestsStore = UserInternalInterestsStore(clock, dslContext)
     userStore =
         UserStore(
             clock,
@@ -223,7 +224,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             projectStore,
             speciesStore,
             SystemUser(usersDao),
-            userDeliverableCategoriesStore,
+            userInternalInterestsStore,
             userStore,
             messages,
             webAppUrls)
@@ -630,7 +631,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
 
-    insertUserDeliverableCategory(DeliverableCategory.GIS, user.userId)
+    insertUserInternalInterest(InternalInterest.GIS, user.userId)
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
     val deliverable =
         deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
@@ -658,7 +659,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
     val projectId = insertProject(participantId = participantId)
 
-    insertUserDeliverableCategory(DeliverableCategory.Compliance, user.userId)
+    insertUserInternalInterest(InternalInterest.Compliance, user.userId)
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
     val deliverable =
         deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
@@ -685,7 +686,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     // TF contact has the wrong deliverable category but we should notify them anyway because
     // being the contact overrides the category filtering.
-    insertUserDeliverableCategory(DeliverableCategory.Compliance, tfContact)
+    insertUserInternalInterest(InternalInterest.Compliance, tfContact)
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
     val deliverable =
         deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()

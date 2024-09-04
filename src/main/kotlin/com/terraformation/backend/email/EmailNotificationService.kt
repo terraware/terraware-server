@@ -2,7 +2,6 @@ package com.terraformation.backend.email
 
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
-import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
@@ -15,6 +14,7 @@ import com.terraformation.backend.customer.db.FacilityStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
+import com.terraformation.backend.customer.db.UserInternalInterestsStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
@@ -29,7 +29,7 @@ import com.terraformation.backend.daily.NotificationJobStartedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
-import com.terraformation.backend.db.accelerator.DeliverableCategory
+import com.terraformation.backend.db.accelerator.InternalInterest
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -110,7 +110,7 @@ class EmailNotificationService(
     private val projectStore: ProjectStore,
     private val speciesStore: SpeciesStore,
     private val systemUser: SystemUser,
-    private val userDeliverableCategoriesStore: UserDeliverableCategoriesStore,
+    private val userInternalInterestsStore: UserInternalInterestsStore,
     private val userStore: UserStore,
     private val webAppUrls: WebAppUrls,
 ) {
@@ -548,7 +548,7 @@ class EmailNotificationService(
             participant.name,
             project.name,
             species.scientificName),
-        deliverableCategory)
+        deliverableCategory.internalInterestId)
   }
 
   @EventListener
@@ -567,7 +567,7 @@ class EmailNotificationService(
                 .toString(),
             participant.name,
             species.scientificName),
-        deliverableCategory)
+        deliverableCategory.internalInterestId)
   }
 
   @EventListener
@@ -591,7 +591,7 @@ class EmailNotificationService(
                 .toString(),
             event.deliverable,
             participant.name),
-        deliverableCategory)
+        deliverableCategory.internalInterestId)
   }
 
   @EventListener
@@ -698,13 +698,13 @@ class EmailNotificationService(
   private fun sendToAccelerator(
       organizationId: OrganizationId,
       model: EmailTemplateModel,
-      deliverableCategory: DeliverableCategory? = null,
+      internalInterest: InternalInterest? = null,
   ) {
-    val deliverableCategoryCondition =
-        deliverableCategory?.let { userDeliverableCategoriesStore.conditionForUsers(it) }
+    val internalInterestCondition =
+        internalInterest?.let { userInternalInterestsStore.conditionForUsers(it) }
     val recipients =
         userStore
-            .fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), deliverableCategoryCondition)
+            .fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), internalInterestCondition)
             .toMutableSet()
 
     val tfContact = userStore.getTerraformationContactUser(organizationId)

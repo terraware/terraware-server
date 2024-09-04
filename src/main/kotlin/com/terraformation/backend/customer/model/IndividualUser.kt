@@ -501,7 +501,7 @@ data class IndividualUser(
 
   override fun canReadUser(userId: UserId) = isAcceleratorAdmin()
 
-  override fun canReadUserDeliverableCategories(userId: UserId) = isAcceleratorAdmin()
+  override fun canReadUserInternalInterests(userId: UserId) = isAcceleratorAdmin()
 
   override fun canReadViabilityTest(viabilityTestId: ViabilityTestId) =
       isMember(parentStore.getFacilityId(viabilityTestId))
@@ -663,7 +663,7 @@ data class IndividualUser(
 
   override fun canUpdateUpload(uploadId: UploadId) = canReadUpload(uploadId)
 
-  override fun canUpdateUserDeliverableCategories(userId: UserId) = isAcceleratorAdmin()
+  override fun canUpdateUserInternalInterests(userId: UserId) = isAcceleratorAdmin()
 
   override fun canUploadPhoto(accessionId: AccessionId) = canReadAccession(accessionId)
 

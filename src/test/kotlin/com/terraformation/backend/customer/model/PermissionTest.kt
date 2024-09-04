@@ -1511,8 +1511,8 @@ internal class PermissionTest : DatabaseTest() {
         *otherUserIds.values.toTypedArray(),
         createEntityWithOwner = true,
         readUser = true,
-        readUserDeliverableCategories = true,
-        updateUserDeliverableCategories = true,
+        readUserInternalInterests = true,
+        updateUserInternalInterests = true,
     )
 
     permissions.andNothingElse()
@@ -1687,8 +1687,8 @@ internal class PermissionTest : DatabaseTest() {
         *otherUserIds.values.toTypedArray(),
         createEntityWithOwner = true,
         readUser = true,
-        readUserDeliverableCategories = true,
-        updateUserDeliverableCategories = true,
+        readUserInternalInterests = true,
+        updateUserInternalInterests = true,
     )
 
     permissions.expect(
@@ -1886,8 +1886,8 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *otherUserIds.values.toTypedArray(),
         readUser = true,
-        readUserDeliverableCategories = true,
-        updateUserDeliverableCategories = true,
+        readUserInternalInterests = true,
+        updateUserInternalInterests = true,
     )
 
     permissions.expect(
@@ -3288,8 +3288,8 @@ internal class PermissionTest : DatabaseTest() {
         vararg userIds: UserId,
         createEntityWithOwner: Boolean = false,
         readUser: Boolean = false,
-        readUserDeliverableCategories: Boolean = false,
-        updateUserDeliverableCategories: Boolean = false,
+        readUserInternalInterests: Boolean = false,
+        updateUserInternalInterests: Boolean = false,
     ) {
       userIds.forEach { userId ->
         assertEquals(
@@ -3298,12 +3298,12 @@ internal class PermissionTest : DatabaseTest() {
             "Can create entity with owner $userId")
         assertEquals(readUser, user.canReadUser(userId), "Can read user $userId")
         assertEquals(
-            readUserDeliverableCategories,
-            user.canReadUserDeliverableCategories(userId),
+            readUserInternalInterests,
+            user.canReadUserInternalInterests(userId),
             "Can read deliverable categories for user $userId")
         assertEquals(
-            updateUserDeliverableCategories,
-            user.canUpdateUserDeliverableCategories(userId),
+            updateUserInternalInterests,
+            user.canUpdateUserInternalInterests(userId),
             "Can update deliverable categories for user $userId")
 
         uncheckedUsers.remove(userId)

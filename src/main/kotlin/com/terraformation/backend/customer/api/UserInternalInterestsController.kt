@@ -1,11 +1,11 @@
 package com.terraformation.backend.customer.api
 
-import com.terraformation.backend.accelerator.db.UserDeliverableCategoriesStore
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.accelerator.DeliverableCategory
+import com.terraformation.backend.customer.db.UserInternalInterestsStore
+import com.terraformation.backend.db.accelerator.InternalInterest
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -18,45 +18,45 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
-@RequestMapping("/api/v1/users/{userId}/deliverableCategories")
+@RequestMapping("/api/v1/users/{userId}/internalInterests")
 @RestController
-class UserDeliverableCategoriesController(
-    private val userDeliverableCategoriesStore: UserDeliverableCategoriesStore,
+class UserInternalInterestsController(
+    private val userInternalInterestsStore: UserInternalInterestsStore,
 ) {
   @ApiResponse200
   @GetMapping
-  @Operation(summary = "Get the list of deliverable categories assigned to a user.")
+  @Operation(summary = "Get the list of internal interests assigned to a user.")
   fun getUserDeliverableCategories(
       @PathVariable userId: UserId
-  ): GetUserDeliverableCategoriesResponsePayload {
-    val categories = userDeliverableCategoriesStore.fetchForUser(userId)
+  ): GetUserInternalInterestsResponsePayload {
+    val internalInterests = userInternalInterestsStore.fetchForUser(userId)
 
-    return GetUserDeliverableCategoriesResponsePayload(categories)
+    return GetUserInternalInterestsResponsePayload(internalInterests)
   }
 
   @ApiResponse200
-  @Operation(summary = "Update which deliverable categories are assigned to a user.")
+  @Operation(summary = "Update which internal interests are assigned to a user.")
   @PutMapping
   fun updateUserDeliverableCategories(
       @PathVariable userId: UserId,
-      @RequestBody payload: UpdateUserDeliverableCategoriesRequestPayload,
+      @RequestBody payload: UpdateUserInternalInterestsRequestPayload,
   ): SimpleSuccessResponsePayload {
-    userDeliverableCategoriesStore.updateForUser(userId, payload.deliverableCategories)
+    userInternalInterestsStore.updateForUser(userId, payload.internalInterests)
 
     return SimpleSuccessResponsePayload()
   }
 }
 
-data class GetUserDeliverableCategoriesResponsePayload(
-    val deliverableCategories: Set<DeliverableCategory>,
+data class GetUserInternalInterestsResponsePayload(
+    val internalInterests: Set<InternalInterest>,
 ) : SuccessResponsePayload
 
-data class UpdateUserDeliverableCategoriesRequestPayload(
+data class UpdateUserInternalInterestsRequestPayload(
     @ArraySchema(
         arraySchema =
             Schema(
                 description =
                     "New set of category assignments. Existing assignments that aren't included " +
                         "here will be removed from the user."))
-    val deliverableCategories: Set<DeliverableCategory>,
+    val internalInterests: Set<InternalInterest>,
 )

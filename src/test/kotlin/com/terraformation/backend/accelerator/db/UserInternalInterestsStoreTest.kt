@@ -2,10 +2,11 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.customer.db.UserInternalInterestsStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.UserNotFoundException
-import com.terraformation.backend.db.accelerator.DeliverableCategory
+import com.terraformation.backend.db.accelerator.InternalInterest
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.*
@@ -13,28 +14,28 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class UserDeliverableCategoriesStoreTest : DatabaseTest(), RunsAsUser {
+class UserInternalInterestsStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock = TestClock()
 
-  private val store: UserDeliverableCategoriesStore by lazy {
-    UserDeliverableCategoriesStore(clock, dslContext)
+  private val store: UserInternalInterestsStore by lazy {
+    UserInternalInterestsStore(clock, dslContext)
   }
 
   @Nested
   inner class FetchForUser {
     @Test
     fun `returns deliverable categories for user`() {
-      every { user.canReadUserDeliverableCategories(any()) } returns true
+      every { user.canReadUserInternalInterests(any()) } returns true
 
       // Should not return categories of other users.
-      insertUserDeliverableCategory(DeliverableCategory.FinancialViability, user.userId)
+      insertUserInternalInterest(InternalInterest.FinancialViability, user.userId)
 
-      val expected = setOf(DeliverableCategory.Compliance, DeliverableCategory.GIS)
+      val expected = setOf(InternalInterest.Compliance, InternalInterest.GIS)
 
       val targetUserId = insertUser()
-      expected.forEach { insertUserDeliverableCategory(it) }
+      expected.forEach { insertUserInternalInterest(it) }
 
       assertEquals(
           expected, store.fetchForUser(targetUserId), "Should be accessible via fetch method")
@@ -52,26 +53,26 @@ class UserDeliverableCategoriesStoreTest : DatabaseTest(), RunsAsUser {
   inner class UpdateForUser {
     @Test
     fun `replaces existing categories with specified set`() {
-      every { user.canReadUserDeliverableCategories(any()) } returns true
-      every { user.canUpdateUserDeliverableCategories(any()) } returns true
+      every { user.canReadUserInternalInterests(any()) } returns true
+      every { user.canUpdateUserInternalInterests(any()) } returns true
 
       val targetUserId = insertUser()
-      insertUserDeliverableCategory(DeliverableCategory.Compliance)
-      insertUserDeliverableCategory(DeliverableCategory.FinancialViability)
+      insertUserInternalInterest(InternalInterest.Compliance)
+      insertUserInternalInterest(InternalInterest.FinancialViability)
 
       val otherUserId = insertUser()
-      insertUserDeliverableCategory(DeliverableCategory.CarbonEligibility)
+      insertUserInternalInterest(InternalInterest.CarbonEligibility)
 
       store.updateForUser(
           targetUserId,
-          setOf(DeliverableCategory.FinancialViability, DeliverableCategory.SupplementalFiles))
+          setOf(InternalInterest.FinancialViability, InternalInterest.SupplementalFiles))
 
       assertEquals(
-          setOf(DeliverableCategory.FinancialViability, DeliverableCategory.SupplementalFiles),
+          setOf(InternalInterest.FinancialViability, InternalInterest.SupplementalFiles),
           store.fetchForUser(targetUserId),
           "Should have updated categories of target user")
       assertEquals(
-          setOf(DeliverableCategory.CarbonEligibility),
+          setOf(InternalInterest.CarbonEligibility),
           store.fetchForUser(otherUserId),
           "Should not have updated categories of other user")
     }

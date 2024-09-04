@@ -889,10 +889,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun readUserDeliverableCategories(userId: UserId) {
-    if (!user.canReadUserDeliverableCategories(userId)) {
+  fun readUserDeliverableInternalInterests(userId: UserId) {
+    if (!user.canReadUserInternalInterests(userId)) {
       readUser(userId)
-      throw AccessDeniedException("No permission to read deliverable categories for user $userId")
+      throw AccessDeniedException("No permission to read internal interests for user $userId")
     }
   }
 
@@ -1276,10 +1276,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun updateUserDeliverableCategories(userId: UserId) {
-    if (!user.canUpdateUserDeliverableCategories(userId)) {
+  fun updateUserInternalInterests(userId: UserId) {
+    if (!user.canUpdateUserInternalInterests(userId)) {
       readUser(userId)
-      throw AccessDeniedException("No permission to update deliverable categories for user $userId")
+      throw AccessDeniedException("No permission to update internal interests for user $userId")
     }
   }
 
