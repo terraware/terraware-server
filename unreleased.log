@@ -1,3 +1,4 @@
+c044294e4a7 Added ApplicationSubmittedEvent (#2347)
 0a21f8d53e0 Remove deprecated locale service provider (#2357)
 f8f60cf7ca2 SW-5926 Create Google Drive folders on demand (#2346)
 4b1919493ef SW-5768 Add internal comments to documents (#2356)
