@@ -39,7 +39,10 @@ import org.geotools.util.ContentFormatException
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -86,6 +89,17 @@ class ApplicationsController(
 
     return GetApplicationDeliverablesResponsePayload(
         deliverables.map { ApplicationDeliverablePayload(it) })
+  }
+
+  @GetMapping("/{applicationId}/geoJson", produces = ["application/geo+json"])
+  @Operation(summary = "Get GeoJSON for an application")
+  fun getApplicationGeoJson(
+      @PathVariable applicationId: ApplicationId
+  ): ResponseEntity<Map<String, Any>> {
+    val geoJson = applicationStore.fetchOneById(applicationId).toGeoJson()
+    val headers = HttpHeaders()
+    headers["Content-type"] = "application/geo+json"
+    return ResponseEntity(geoJson, headers, HttpStatus.OK)
   }
 
   @GetMapping("/{applicationId}/history")

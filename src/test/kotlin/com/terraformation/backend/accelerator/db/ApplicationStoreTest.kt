@@ -171,6 +171,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           insertApplication(
               projectId = org1ProjectId1,
               boundary = rectangle(1),
+              countryCode = "FR",
               feedback = "feedback",
               internalComment = "internal comment",
               internalName = "internalName",
@@ -209,6 +210,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
         assertEquals(
             ExistingApplicationModel(
                 boundary = rectangle(1),
+                countryCode = "FR",
                 createdTime = Instant.EPOCH,
                 feedback = "feedback",
                 id = org1Project1ApplicationId,
@@ -221,6 +223,31 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 projectName = "Project A",
                 status = ApplicationStatus.PreCheck),
             store.fetchOneById(org1Project1ApplicationId))
+      }
+
+      @Test
+      fun `fetches application data to geojson`() {
+        assertEquals(
+            mapOf(
+                "type" to "FeatureCollection",
+                "features" to
+                    listOf(
+                        mapOf(
+                            "type" to "Feature",
+                            "properties" to
+                                mapOf(
+                                    "applicationId" to org1Project1ApplicationId,
+                                    "countryCode" to "FR",
+                                    "internalName" to "internalName",
+                                    "organizationId" to organizationId,
+                                    "organizationName" to "Organization 1",
+                                    "projectId" to org1ProjectId1,
+                                    "projectName" to "Project A",
+                                    "status" to ApplicationStatus.PreCheck,
+                                ),
+                            "geometry" to rectangle(1),
+                        ))),
+            store.fetchOneById(org1Project1ApplicationId).toGeoJson())
       }
 
       @Test
@@ -244,6 +271,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             listOf(
                 ExistingApplicationModel(
                     boundary = rectangle(1),
+                    countryCode = "FR",
                     createdTime = Instant.EPOCH,
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
@@ -288,6 +316,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             listOf(
                 ExistingApplicationModel(
                     boundary = rectangle(1),
+                    countryCode = "FR",
                     createdTime = Instant.EPOCH,
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
@@ -334,6 +363,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             listOf(
                 ExistingApplicationModel(
                     boundary = rectangle(1),
+                    countryCode = "FR",
                     createdTime = Instant.EPOCH,
                     feedback = "feedback",
                     id = org1Project1ApplicationId,

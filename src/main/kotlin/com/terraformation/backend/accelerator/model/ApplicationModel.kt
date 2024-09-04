@@ -25,6 +25,31 @@ data class ExistingApplicationModel(
     val projectName: String,
     val status: ApplicationStatus,
 ) {
+  fun toGeoJson(): Map<String, Any> {
+    if (boundary == null) {
+      throw IllegalStateException("Application has no boundary")
+    }
+    return mapOf(
+        "type" to "FeatureCollection",
+        "features" to
+            listOf(
+                mapOf(
+                    "type" to "Feature",
+                    "properties" to
+                        mapOf(
+                            "applicationId" to id,
+                            "countryCode" to countryCode,
+                            "internalName" to internalName,
+                            "organizationId" to organizationId,
+                            "organizationName" to organizationName,
+                            "projectId" to projectId,
+                            "projectName" to projectName,
+                            "status" to status,
+                        ),
+                    "geometry" to boundary,
+                )))
+  }
+
   companion object {
     fun of(
         record: Record,
