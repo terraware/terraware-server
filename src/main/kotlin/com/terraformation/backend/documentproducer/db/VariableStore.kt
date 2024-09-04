@@ -412,7 +412,7 @@ class VariableStore(
           base,
           numbersRow.minValue,
           numbersRow.maxValue,
-          numbersRow.decimalPlaces!!,
+          numbersRow.decimalPlaces,
       )
     }
 

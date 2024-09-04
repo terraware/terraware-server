@@ -210,7 +210,7 @@ data class NumberVariable(
     private val base: BaseVariableProperties,
     val minValue: BigDecimal?,
     val maxValue: BigDecimal?,
-    val decimalPlaces: Int,
+    val decimalPlaces: Int?,
 ) : Variable, BaseVariable by base {
   override val type: VariableType
     get() = VariableType.Number
@@ -230,7 +230,7 @@ data class NumberVariable(
       throw VariableValueInvalidException(
           id, "${value.value} is greater than maximum value $maxValue")
     }
-    if (value.value.scale() > decimalPlaces) {
+    if (decimalPlaces != null && value.value.scale() > decimalPlaces) {
       throw VariableValueInvalidException(
           id, "${value.value} has more decimal places than the maximum $decimalPlaces")
     }
