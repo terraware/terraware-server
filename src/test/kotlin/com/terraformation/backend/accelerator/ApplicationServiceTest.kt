@@ -99,6 +99,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       every { applicationStore.submit(applicationId, any()) } returns submissionResult
       every { preScreenVariableValuesFetcher.fetchValues(projectId) } returns
           preScreenVariableValues
+      every { preScreenBoundarySubmissionFetcher.fetchSubmission(projectId) } returns null
 
       assertEquals(submissionResult, service.submit(applicationId))
 
@@ -171,6 +172,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       every { countryDetector.getCountries(any()) } returns setOf("KE")
       every { preScreenVariableValuesFetcher.fetchValues(projectId) } returns
           preScreenVariableValues
+      every { preScreenBoundarySubmissionFetcher.fetchSubmission(projectId) } returns null
 
       assertEquals(submissionResult, service.submit(applicationId))
 
