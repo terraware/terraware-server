@@ -1,6 +1,6 @@
 package com.terraformation.backend.accelerator
 
-import com.terraformation.backend.accelerator.db.DeliverableStore
+import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Value
 
 @Named
 class PreScreenBoundarySubmissionFetcher(
-    private val deliverableStore: DeliverableStore,
+    private val applicationStore: ApplicationStore,
     @Value("68") // From deliverables spreadsheet
     val boundaryDeliverableId: DeliverableId,
 ) {
@@ -23,8 +23,8 @@ class PreScreenBoundarySubmissionFetcher(
     requirePermissions { readProjectDeliverables(projectId) }
 
     val submission =
-        deliverableStore
-            .fetchDeliverableSubmissions(
+        applicationStore
+            .fetchApplicationDeliverables(
                 projectId = projectId, deliverableId = boundaryDeliverableId)
             .firstOrNull()
 
