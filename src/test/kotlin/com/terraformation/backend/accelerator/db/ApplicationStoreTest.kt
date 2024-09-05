@@ -39,6 +39,7 @@ import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.equalsOrBothNull
 import io.mockk.every
+import io.mockk.mockk
 import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -1264,6 +1265,41 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = Instant.ofEpochSecond(30)
 
       store.submit(applicationId, validVariables(boundary))
+
+      assertEquals(
+          listOf(
+              initial.copy(
+                  applicationStatusId = ApplicationStatus.PassedPreScreen,
+                  feedback = null,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant)),
+          applicationsDao.findAll())
+    }
+
+    @Test
+    fun `passes prescreen with completed submission without boundary`() {
+      val otherUserId = insertUser()
+      val applicationId =
+          insertApplication(boundary = null, createdBy = otherUserId, feedback = "feedback")
+      val initial = applicationsDao.findAll().single()
+
+      clock.instant = Instant.ofEpochSecond(30)
+
+      val validVariables =
+          PreScreenVariableValues(
+              countryCode = "US",
+              landUseModelHectares =
+                  mapOf(
+                      LandUseModelType.NativeForest to BigDecimal(15000),
+                      LandUseModelType.Monoculture to BigDecimal.ZERO),
+              numSpeciesToBePlanted = 500,
+              projectType = PreScreenProjectType.Terrestrial,
+              totalExpansionPotential = BigDecimal(1500))
+
+      val validSubmission = mockk<DeliverableSubmissionModel>()
+      every { validSubmission.status } returns SubmissionStatus.Completed
+
+      store.submit(applicationId, validVariables, validSubmission)
 
       assertEquals(
           listOf(

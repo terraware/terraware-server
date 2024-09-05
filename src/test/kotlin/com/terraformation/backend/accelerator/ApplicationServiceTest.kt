@@ -38,6 +38,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
   private val applicationStore = mockk<ApplicationStore>()
   private val clock = TestClock()
   private val countryDetector = mockk<CountryDetector>()
+  private val preScreenBoundarySubmissionFetcher = mockk<PreScreenBoundarySubmissionFetcher>()
   private val preScreenVariableValuesFetcher = mockk<PreScreenVariableValuesFetcher>()
   private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore by lazy {
     ProjectAcceleratorDetailsStore(clock, dslContext)
@@ -48,6 +49,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
         countriesDao,
         countryDetector,
         defaultProjectLeadsDao,
+        preScreenBoundarySubmissionFetcher,
         preScreenVariableValuesFetcher,
         projectAcceleratorDetailsStore,
         SystemUser(usersDao),
