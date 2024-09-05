@@ -1,3 +1,4 @@
+e2b6e91bfd5 SW-5706 Implemented endpoint to return application boundary as a GeoJson (#2367)
 ed94457c52f SW-5926 Create Google folders for new applications (#2375)
 8a974224710 SW-5955 Implemented fetcher for prescreen boundary document submission, and bypass pre-screen boundary check if deliverable is submitted (#2370)
 4a12227ef32 SW-5961: Added country variable to pre-screen fetcher and submission checker (#2368)
