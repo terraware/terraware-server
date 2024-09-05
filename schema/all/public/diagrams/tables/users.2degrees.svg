@@ -135,7 +135,7 @@
 <!-- countries -->
 <g id="node4" class="node"><title>countries</title>
 <g id="a_node4"><a xlink:href="../../tables/countries.html" xlink:title="countries" target="_top">
-<polygon fill="#ffffff" stroke="none" points="151.5,-2223 151.5,-2347 254.5,-2347 254.5,-2223 151.5,-2223"/>
+<polygon fill="#ffffff" stroke="none" points="151.5,-2201 151.5,-2347 254.5,-2347 254.5,-2201 151.5,-2201"/>
 <polygon fill="#f5f5f5" stroke="none" points="152,-2325 152,-2347 255,-2347 255,-2325 152,-2325"/>
 <polygon fill="none" stroke="black" points="152,-2325 152,-2347 255,-2347 255,-2325 152,-2325"/>
 <text text-anchor="start" x="157" y="-2334.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">countries</text>
@@ -143,23 +143,26 @@
 <polygon fill="none" stroke="black" points="152,-2303 152,-2325 255,-2325 255,-2303 152,-2303"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="157" y="-2320"/>
 <text text-anchor="start" x="177" y="-2311.2" font-family="Helvetica,sans-Serif" font-size="11.00">code</text>
+<polygon fill="#ffffff" stroke="none" points="152,-2281 152,-2303 255,-2303 255,-2281 152,-2281"/>
 <polygon fill="none" stroke="black" points="152,-2281 152,-2303 255,-2303 255,-2281 152,-2281"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="157" y="-2298"/>
-<text text-anchor="start" x="177" y="-2289.2" font-family="Helvetica,sans-Serif" font-size="11.00">region_id</text>
-<polygon fill="#ffffff" stroke="none" points="152,-2259 152,-2281 255,-2281 255,-2259 152,-2259"/>
+<text text-anchor="start" x="177" y="-2289.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
 <polygon fill="none" stroke="black" points="152,-2259 152,-2281 255,-2281 255,-2259 152,-2259"/>
-<text text-anchor="start" x="177" y="-2267.2" font-family="Helvetica,sans-Serif" font-size="11.00">code_alpha3</text>
-<polygon fill="none" stroke="black" points="152,-2241 152,-2259 255,-2259 255,-2241 152,-2241"/>
-<text text-anchor="start" x="155" y="-2247.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="152,-2223 152,-2241 176,-2241 176,-2223 152,-2223"/>
-<polygon fill="none" stroke="black" points="152,-2223 152,-2241 176,-2241 176,-2223 152,-2223"/>
-<text text-anchor="start" x="155" y="-2229.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="176,-2223 176,-2241 231,-2241 231,-2223 176,-2223"/>
-<polygon fill="none" stroke="black" points="176,-2223 176,-2241 231,-2241 231,-2223 176,-2223"/>
-<text text-anchor="start" x="179" y="-2229.2" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
-<polygon fill="#ffffff" stroke="none" points="231,-2223 231,-2241 255,-2241 255,-2223 231,-2223"/>
-<polygon fill="none" stroke="black" points="231,-2223 231,-2241 255,-2241 255,-2223 231,-2223"/>
-<text text-anchor="start" x="235" y="-2229.2" font-family="Helvetica,sans-Serif" font-size="11.00">6 &gt;</text>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="157" y="-2276"/>
+<text text-anchor="start" x="177" y="-2267.2" font-family="Helvetica,sans-Serif" font-size="11.00">region_id</text>
+<polygon fill="#ffffff" stroke="none" points="152,-2237 152,-2259 255,-2259 255,-2237 152,-2237"/>
+<polygon fill="none" stroke="black" points="152,-2237 152,-2259 255,-2259 255,-2237 152,-2237"/>
+<text text-anchor="start" x="177" y="-2245.2" font-family="Helvetica,sans-Serif" font-size="11.00">code_alpha3</text>
+<polygon fill="none" stroke="black" points="152,-2219 152,-2237 255,-2237 255,-2219 152,-2219"/>
+<text text-anchor="start" x="155" y="-2225.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="152,-2201 152,-2219 176,-2219 176,-2201 152,-2201"/>
+<polygon fill="none" stroke="black" points="152,-2201 152,-2219 176,-2219 176,-2201 152,-2201"/>
+<text text-anchor="start" x="155" y="-2207.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="none" points="176,-2201 176,-2219 231,-2219 231,-2201 176,-2201"/>
+<polygon fill="none" stroke="black" points="176,-2201 176,-2219 231,-2219 231,-2201 176,-2201"/>
+<text text-anchor="start" x="179" y="-2207.2" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
+<polygon fill="#ffffff" stroke="none" points="231,-2201 231,-2219 255,-2219 255,-2201 231,-2201"/>
+<polygon fill="none" stroke="black" points="231,-2201 231,-2219 255,-2219 255,-2201 231,-2201"/>
+<text text-anchor="start" x="235" y="-2207.2" font-family="Helvetica,sans-Serif" font-size="11.00">6 &gt;</text>
 </a>
 </g>
 </g>
@@ -338,30 +341,30 @@
 <!-- regions -->
 <g id="node47" class="node"><title>regions</title>
 <g id="a_node47"><a xlink:href="../../tables/regions.html" xlink:title="regions" target="_top">
-<polygon fill="#ffffff" stroke="none" points="8,-2265 8,-2323 98,-2323 98,-2265 8,-2265"/>
-<polygon fill="#f5f5f5" stroke="none" points="8,-2301 8,-2323 98,-2323 98,-2301 8,-2301"/>
-<polygon fill="none" stroke="black" points="8,-2301 8,-2323 98,-2323 98,-2301 8,-2301"/>
-<text text-anchor="start" x="13" y="-2310.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">regions</text>
-<text text-anchor="start" x="59" y="-2309.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="8,-2283 8,-2301 98,-2301 98,-2283 8,-2283"/>
-<text text-anchor="start" x="11" y="-2289.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="8,-2265 8,-2283 27,-2283 27,-2265 8,-2265"/>
-<polygon fill="none" stroke="black" points="8,-2265 8,-2283 27,-2283 27,-2265 8,-2265"/>
-<text text-anchor="start" x="11" y="-2271.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="none" points="27,-2265 27,-2283 72,-2283 72,-2265 27,-2265"/>
-<polygon fill="none" stroke="black" points="27,-2265 27,-2283 72,-2283 72,-2265 27,-2265"/>
-<text text-anchor="start" x="33" y="-2271.2" font-family="Helvetica,sans-Serif" font-size="11.00">9 rows</text>
-<polygon fill="#ffffff" stroke="none" points="72,-2265 72,-2283 98,-2283 98,-2265 72,-2265"/>
-<polygon fill="none" stroke="black" points="72,-2265 72,-2283 98,-2283 98,-2265 72,-2265"/>
-<text text-anchor="start" x="78" y="-2271.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="8,-2243 8,-2301 98,-2301 98,-2243 8,-2243"/>
+<polygon fill="#f5f5f5" stroke="none" points="8,-2279 8,-2301 98,-2301 98,-2279 8,-2279"/>
+<polygon fill="none" stroke="black" points="8,-2279 8,-2301 98,-2301 98,-2279 8,-2279"/>
+<text text-anchor="start" x="13" y="-2288.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">regions</text>
+<text text-anchor="start" x="59" y="-2287.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="8,-2261 8,-2279 98,-2279 98,-2261 8,-2261"/>
+<text text-anchor="start" x="11" y="-2267.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="8,-2243 8,-2261 27,-2261 27,-2243 8,-2243"/>
+<polygon fill="none" stroke="black" points="8,-2243 8,-2261 27,-2261 27,-2243 8,-2243"/>
+<text text-anchor="start" x="11" y="-2249.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="27,-2243 27,-2261 72,-2261 72,-2243 27,-2243"/>
+<polygon fill="none" stroke="black" points="27,-2243 27,-2261 72,-2261 72,-2243 27,-2243"/>
+<text text-anchor="start" x="33" y="-2249.2" font-family="Helvetica,sans-Serif" font-size="11.00">9 rows</text>
+<polygon fill="#ffffff" stroke="none" points="72,-2243 72,-2261 98,-2261 98,-2243 72,-2243"/>
+<polygon fill="none" stroke="black" points="72,-2243 72,-2261 98,-2261 98,-2243 72,-2243"/>
+<text text-anchor="start" x="78" y="-2249.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
 </a>
 </g>
 </g>
 <!-- countries&#45;&gt;regions -->
 <g id="edge81" class="edge"><title>countries:region_id:w&#45;&gt;regions:elipses:e</title>
-<path fill="none" stroke="black" d="M136.375,-2292C123.917,-2292 116.333,-2292 99,-2292"/>
-<polygon fill="black" stroke="black" points="143,-2292 151,-2295.6 147,-2292 151,-2292 151,-2292 151,-2292 147,-2292 151,-2288.4 143,-2292 143,-2292"/>
-<ellipse fill="none" stroke="black" cx="139.8" cy="-2292" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M136.375,-2270C123.917,-2270 116.333,-2270 99,-2270"/>
+<polygon fill="black" stroke="black" points="143,-2270 151,-2273.6 147,-2270 151,-2270 151,-2270 151,-2270 147,-2270 151,-2266.4 143,-2270 143,-2270"/>
+<ellipse fill="none" stroke="black" cx="139.8" cy="-2270" rx="3.2" ry="3.2"/>
 </g>
 <!-- projects&#45;&gt;users -->
 <g id="edge121" class="edge"><title>projects:created_by:w&#45;&gt;users:id.type:e</title>

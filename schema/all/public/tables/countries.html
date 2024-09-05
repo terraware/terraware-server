@@ -157,7 +157,7 @@
                                     <td><p>ISO-3166 alpha-2 country code. We use this code to refer to countries elsewhere in the data model.</p></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="name">name</span></td>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="name">name</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
                                     <td title=''></td>
@@ -264,6 +264,12 @@
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>code_alpha3</td>
                                 </tr>
+                                <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> countries_name_key</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>name</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div><!-- /.box-body -->
@@ -287,12 +293,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>countries_code_caps</td>
-                                    <td>((code = upper(code)))</td>
-                                </tr>
-                                <tr>
                                     <td>countries_code_length</td>
                                     <td>((length(code) = 2))</td>
+                                </tr>
+                                <tr>
+                                    <td>countries_code_caps</td>
+                                    <td>((code = upper(code)))</td>
                                 </tr>
                                 </tbody>
                             </table>

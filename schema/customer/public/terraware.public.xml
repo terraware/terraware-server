@@ -35,6 +35,9 @@
          <index name="countries_code_alpha3_key" unique="true">
             <column ascending="true" name="code_alpha3"/>
          </index>
+         <index name="countries_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
          <checkConstraint constraint="((code = upper(code)))" name="countries_code_caps"/>
          <checkConstraint constraint="((length(code) = 2))" name="countries_code_length"/>
       </table>

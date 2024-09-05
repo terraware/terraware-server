@@ -478,28 +478,28 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>other_type_details_only_for_other</td>
-                                    <td>((((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6))))</td>
-                                </tr>
-                                <tr>
                                     <td>organizations_country_code_check</td>
                                     <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>other_type_details_null_or_not_empty</td>
+                                    <td>(((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text)))</td>
                                 </tr>
                                 <tr>
                                     <td>country_code_matches_subdivision</td>
                                     <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
                                 </tr>
                                 <tr>
-                                    <td>organizations_country_subdivision_code_check</td>
-                                    <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>organizations_description_check</td>
                                     <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
-                                    <td>other_type_details_null_or_not_empty</td>
-                                    <td>(((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text)))</td>
+                                    <td>other_type_details_only_for_other</td>
+                                    <td>((((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6))))</td>
+                                </tr>
+                                <tr>
+                                    <td>organizations_country_subdivision_code_check</td>
+                                    <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -529,7 +529,7 @@
 <area shape="rect" id="node3" href="../../tables/facilities.html" target="_top" title="facilities" alt="" coords="1032,130,1267,482">
 <area shape="rect" id="node4" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="524,965,919,1445">
 <area shape="rect" id="node5" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="1064,2002,1235,2295">
-<area shape="rect" id="node7" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="5,1434,164,1610">
+<area shape="rect" id="node7" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="5,1434,164,1639">
 <area shape="rect" id="node6" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="221,1190,467,1337">
 <area shape="rect" id="node13" href="../../tables/organization_types.html" target="_top" title="organization_types" alt="" coords="229,1354,459,1471">
 <area shape="rect" id="node8" href="../../tables/notifications.html" target="_top" title="notifications" alt="" coords="1047,990,1252,1195">
@@ -549,11 +549,11 @@
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../../accelerator/tables/application_histories.html" target="_top" title="accelerator.application_histories" alt="" coords="747,119,1083,207">
 <area shape="rect" id="node2" href="../../tables/users.html" target="_top" title="users" alt="" coords="401,3407,673,3642">
-<area shape="rect" id="node4" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="195,1491,353,1667">
+<area shape="rect" id="node4" href="../../tables/countries.html" target="_top" title="countries" alt="" coords="195,1491,353,1696">
 <area shape="rect" id="node64" href="../../tables/user_types.html" target="_top" title="user_types" alt="" coords="191,3498,357,3586">
 <area shape="rect" id="node3" href="../../../accelerator/tables/applications.html" target="_top" title="accelerator.applications" alt="" coords="1642,94,1913,182">
 <area shape="rect" id="node5" href="../../tables/projects.html" target="_top" title="projects" alt="" coords="1257,2494,1428,2787">
-<area shape="rect" id="node37" href="../../tables/regions.html" target="_top" title="regions" alt="" coords="5,1523,147,1611">
+<area shape="rect" id="node37" href="../../tables/regions.html" target="_top" title="regions" alt="" coords="5,1552,147,1640">
 <area shape="rect" id="node35" href="../../tables/organizations.html" target="_top" title="organizations" alt="" coords="717,1335,1112,1815">
 <area shape="rect" id="node6" href="../../../accelerator/tables/cohorts.html" target="_top" title="accelerator.cohorts" alt="" coords="797,3726,1032,3814">
 <area shape="rect" id="node7" href="../../../accelerator/tables/default_voters.html" target="_top" title="accelerator.default_voters" alt="" coords="771,3831,1058,3919">

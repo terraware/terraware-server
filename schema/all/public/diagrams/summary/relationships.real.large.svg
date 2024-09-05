@@ -170,6 +170,7 @@
 <polygon fill="none" stroke="black" points="215.5,-5734 215.5,-5756 318.5,-5756 318.5,-5734 215.5,-5734"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="220.5" y="-5751"/>
 <text text-anchor="start" x="240.5" y="-5742.2" font-family="Helvetica,sans-Serif" font-size="11.00">code</text>
+<polygon fill="#ffffff" stroke="none" points="215.5,-5712 215.5,-5734 318.5,-5734 318.5,-5712 215.5,-5712"/>
 <polygon fill="none" stroke="black" points="215.5,-5712 215.5,-5734 318.5,-5734 318.5,-5712 215.5,-5712"/>
 <text text-anchor="start" x="240.5" y="-5720.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
 <polygon fill="none" stroke="black" points="215.5,-5690 215.5,-5712 318.5,-5712 318.5,-5690 215.5,-5690"/>

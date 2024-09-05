@@ -91,6 +91,7 @@
 <text text-anchor="start" x="189.5" y="-1142.87" font-family="Helvetica,sans-Serif" font-size="11.00">code</text>
 <polygon fill="none" stroke="black" points="263.5,-1134.67 263.5,-1156.67 364.5,-1156.67 364.5,-1134.67 263.5,-1134.67"/>
 <text text-anchor="start" x="266.5" y="-1142.87" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
+<polygon fill="#ffffff" stroke="none" points="169.5,-1112.67 169.5,-1134.67 263.5,-1134.67 263.5,-1112.67 169.5,-1112.67"/>
 <polygon fill="none" stroke="black" points="169.5,-1112.67 169.5,-1134.67 263.5,-1134.67 263.5,-1112.67 169.5,-1112.67"/>
 <text text-anchor="start" x="189.5" y="-1120.87" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
 <polygon fill="none" stroke="black" points="263.5,-1112.67 263.5,-1134.67 364.5,-1134.67 364.5,-1112.67 263.5,-1112.67"/>
