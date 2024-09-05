@@ -174,15 +174,42 @@ class VariableValueStore(
     return fetchByConditions(conditions, includeDeletedValues)
   }
 
-  /** Get the values for a list of variable IDs, useful for getting injected variable values */
+  /**
+   * Returns a single project's values for a list of variable IDs, useful for getting injected
+   * variable values
+   */
   fun listValues(projectId: ProjectId, variableIds: List<VariableId>): List<ExistingValue> {
     val conditions =
-        listOfNotNull(
+        listOf(
             VARIABLE_VALUES.PROJECT_ID.eq(projectId),
             VARIABLE_VALUES.VARIABLE_ID.`in`(variableIds),
         )
 
     return fetchByConditions(conditions, true)
+  }
+
+  /**
+   * Returns the values for a list of variable IDs across all projects. Deleted values are not
+   * included.
+   */
+  fun listValues(
+      variableIds: Collection<VariableId>,
+  ): List<ExistingValue> {
+    return fetchByConditions(listOf(VARIABLE_VALUES.VARIABLE_ID.`in`(variableIds)), false)
+  }
+
+  /** For each variable, returns which projects have values for it. */
+  fun fetchProjectsWithValues(
+      variableIds: Collection<VariableId>
+  ): Map<VariableId, Set<ProjectId>> {
+    return with(VARIABLE_VALUES) {
+      dslContext
+          .select(VARIABLE_ID, PROJECT_ID)
+          .from(VARIABLE_VALUES)
+          .where(VARIABLE_VALUES.VARIABLE_ID.`in`(variableIds))
+          .fetchGroups(VARIABLE_ID.asNonNullable())
+          .mapValues { (_, result) -> result.map { it[PROJECT_ID]!! }.toSet() }
+    }
   }
 
   /**
@@ -251,6 +278,7 @@ class VariableValueStore(
                 tableRowVariableValues.VARIABLE_ID,
             )
             .distinctOn(
+                VARIABLE_VALUES.PROJECT_ID,
                 VARIABLE_VALUES.VARIABLE_ID,
                 VARIABLE_VALUES.LIST_POSITION,
                 tableRowVariableValues.VARIABLE_ID,
@@ -271,6 +299,7 @@ class VariableValueStore(
             .on(VARIABLE_VALUES.VARIABLE_ID.eq(VARIABLES.ID))
             .where(conditions)
             .orderBy(
+                VARIABLE_VALUES.PROJECT_ID,
                 VARIABLE_VALUES.VARIABLE_ID,
                 VARIABLE_VALUES.LIST_POSITION,
                 tableRowVariableValues.VARIABLE_ID,
