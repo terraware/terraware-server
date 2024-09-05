@@ -391,6 +391,7 @@ data class ApplicationDeliverablePayload(
     val category: DeliverableCategory,
     @Schema(description = "Optional description of the deliverable in HTML form.")
     val descriptionHtml: String?,
+    val documents: List<SubmissionDocumentPayload>,
     val id: DeliverableId,
     val internalComment: String?,
     val modifiedTime: Instant?,
@@ -409,6 +410,7 @@ data class ApplicationDeliverablePayload(
   ) : this(
       model.category,
       model.descriptionHtml,
+      model.documents.map { SubmissionDocumentPayload(it) },
       model.deliverableId,
       model.internalComment,
       model.modifiedTime,
