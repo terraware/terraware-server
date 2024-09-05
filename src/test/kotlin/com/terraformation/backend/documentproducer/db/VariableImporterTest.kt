@@ -8,6 +8,7 @@ import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.tables.pojos.*
+import com.terraformation.backend.documentproducer.db.variable.VariableImportResult
 import com.terraformation.backend.documentproducer.db.variable.VariableImporter
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.i18n.Messages
@@ -411,10 +412,12 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               "\nSelect Variable,A,,Select (single),,,\"- Option 1\n- Option 2\n- Option 3\",,,,,,,,,,,,,"
 
       importer.import(sizedInputStream(testCsv))
-      importer.import(sizedInputStream(testCsv))
+      val updateResult = importer.import(sizedInputStream(testCsv))
 
       val variablesRows = variablesDao.findAll()
       assertEquals(1, variablesRows.size, "Number of imported variables")
+
+      assertEquals(VariableImportResult(emptyList(), emptyMap()), updateResult)
     }
 
     @Test
@@ -425,10 +428,18 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
           "$header\nSelect,1,,Select (single),,,\"- Option 1\n- Option 2\",,,,,,,,,,,,,"
 
       importer.import(sizedInputStream(initialCsv))
-      importer.import(sizedInputStream(updatedCsv))
+      val originalVariableId = variablesDao.findAll().first().id!!
+
+      val updateResult = importer.import(sizedInputStream(updatedCsv))
 
       val variablesRows = variablesDao.findAll().sortedBy { it.id!!.value }
+      val updatedVariableId = variablesRows.filter { it.id != originalVariableId }.single().id!!
+
       assertEquals(2, variablesRows.size, "Number of imported variables")
+
+      assertEquals(
+          VariableImportResult(emptyList(), mapOf(originalVariableId to updatedVariableId)),
+          updateResult)
 
       assertEquals(
           setOf("Option 1", "Option 2", "Option 3"),
@@ -447,7 +458,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       val updatedCsv =
           "$header\nUpdated variable,1,Updated description,Text (single-line),,,,,,,,,,,,,,,,"
 
-      val initialResult = importer.import(sizedInputStream(initialCsv))
+      importer.import(sizedInputStream(initialCsv))
 
       val initialVariables = variablesDao.findAll()
       assertEquals(1, initialVariables.size, "Should have imported 1 variable")
@@ -457,7 +468,11 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val updatedVariables = variablesDao.findAll()
       assertEquals(2, updatedVariables.size, "Should have imported 1 new variable")
-      val updatedVariableId = updatedVariables.find { it.id != initialVariableId }!!.id
+      val updatedVariableId = updatedVariables.find { it.id != initialVariableId }!!.id!!
+
+      assertEquals(
+          VariableImportResult(emptyList(), mapOf(initialVariableId to updatedVariableId)),
+          updateResult)
 
       assertEquals(
           setOf(
@@ -498,11 +513,15 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       assertEquals(1, initialVariables.size, "Should have imported 1 variable")
       val initialVariableId = initialVariables.first().id!!
 
-      importer.import(sizedInputStream(updatedCsv))
+      val updateResult = importer.import(sizedInputStream(updatedCsv))
 
       val updatedVariables = variablesDao.findAll()
       assertEquals(2, updatedVariables.size, "Should have imported new copy of variable")
       val newVariableId = updatedVariables.map { it.id!! }.first { it != initialVariableId }
+
+      assertEquals(
+          VariableImportResult(emptyList(), mapOf(initialVariableId to newVariableId)),
+          updateResult)
 
       assertEquals(
           initialVariableId,
@@ -535,7 +554,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `Creates new table and column variables if the column names are updated`() {
+    fun `creates new table and column variables if the column names are updated`() {
       val initialCsv =
           header +
               "\nTable,1,,Table,Yes,,,,,,,,,,,,,,," +
@@ -552,10 +571,20 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       val initialVariables = variablesDao.findAll().sortedBy { it.id!!.value }
       assertEquals(3, initialVariables.size, "Should have imported 3 variables")
 
-      importer.import(sizedInputStream(updatedCsv))
+      val updateResult = importer.import(sizedInputStream(updatedCsv))
 
       val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
       assertEquals(6, updatedVariables.size, "Should have created 2 new variables")
+
+      assertEquals(
+          VariableImportResult(
+              emptyList(),
+              mapOf(
+                  initialVariables[0].id!! to updatedVariables[3].id!!,
+                  initialVariables[1].id!! to updatedVariables[4].id!!,
+                  initialVariables[2].id!! to updatedVariables[5].id!!,
+              )),
+          updateResult)
 
       assertEquals(
           setOf(
@@ -639,14 +668,65 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       val initialVariables = variablesDao.findAll().sortedBy { it.id!!.value }
       assertEquals(3, initialVariables.size, "Should have imported 3 variables")
 
-      importer.import(sizedInputStream(updatedCsv))
+      val updateResult = importer.import(sizedInputStream(updatedCsv))
 
       val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
       assertEquals(6, updatedVariables.size, "Should have imported new copies of all variables")
       val newTableVariableId = updatedVariables[3].id!!
 
       assertEquals(
+          VariableImportResult(
+              emptyList(),
+              mapOf(
+                  initialVariables[0].id!! to newTableVariableId,
+                  initialVariables[1].id!! to updatedVariables[4].id!!,
+                  initialVariables[2].id!! to updatedVariables[5].id!!,
+              )),
+          updateResult)
+
+      assertEquals(
           setOf(updatedVariables[4].id, updatedVariables[5].id),
+          variableTableColumnsDao
+              .fetchByTableVariableId(newTableVariableId)
+              .map { it.variableId }
+              .toSet(),
+          "New columns should be children of new table")
+    }
+
+    @Test
+    fun `creates new table variable and new variables for existing columns if new column is added`() {
+      val initialCsv =
+          header +
+              "\nTable,1,,Table,Yes,,,,,,,,,,,,,,," +
+              "\nColumn A,2,,Number,,Table,,,,,,,,,,,,,,"
+      val updatedCsv =
+          header +
+              "\nTable,1,,Table,Yes,,,,,,,,,,,,,,," +
+              "\nColumn A,2,,Number,,Table,,,,,,,,,,,,,," +
+              "\nColumn B,3,,Number,,Table,,1,,,,,,,,,,,,"
+
+      importer.import(sizedInputStream(initialCsv))
+
+      val initialVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+      assertEquals(2, initialVariables.size, "Should have imported 2 variables")
+
+      val updateResult = importer.import(sizedInputStream(updatedCsv))
+
+      val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+      assertEquals(5, updatedVariables.size, "Should have imported new copies of all variables")
+      val newTableVariableId = updatedVariables[2].id!!
+
+      assertEquals(
+          VariableImportResult(
+              emptyList(),
+              mapOf(
+                  initialVariables[0].id!! to newTableVariableId,
+                  initialVariables[1].id!! to updatedVariables[3].id!!,
+              )),
+          updateResult)
+
+      assertEquals(
+          setOf(updatedVariables[3].id, updatedVariables[4].id),
           variableTableColumnsDao
               .fetchByTableVariableId(newTableVariableId)
               .map { it.variableId }
