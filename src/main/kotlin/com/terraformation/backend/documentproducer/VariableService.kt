@@ -28,7 +28,9 @@ class VariableService(
               VariableUpgradeCalculator(result.replacements, variableStore, variableValueStore)
                   .calculateOperations()
                   .groupBy { it.projectId }
-          operationsByProject.values.forEach { variableValueStore.updateValues(it) }
+          operationsByProject.values.forEach { operations ->
+            variableValueStore.updateValues(operations, triggerWorkflows = false)
+          }
         }
       }
 
@@ -66,7 +68,9 @@ class VariableService(
                       .calculateOperations()
                       .groupBy { it.projectId }
 
-              operationsByProject.values.forEach { variableValueStore.updateValues(it) }
+              operationsByProject.values.forEach { operations ->
+                variableValueStore.updateValues(operations, triggerWorkflows = false)
+              }
             }
       }
     }

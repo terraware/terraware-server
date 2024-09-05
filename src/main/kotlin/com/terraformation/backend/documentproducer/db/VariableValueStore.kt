@@ -416,11 +416,16 @@ class VariableValueStore(
   /**
    * Updates the values in a document by applying a list of operations.
    *
+   * @param triggerWorkflows If true, publish events about the updates that trigger additional
+   *   actions such as sending notifications and updating submission statuses.
    * @return The values that changed after the operations were applied. In theory it's possible for
    *   this to also include changes from other updates that were running at the same time as this
    *   one.
    */
-  fun updateValues(operations: List<ValueOperation>): List<ExistingValue> {
+  fun updateValues(
+      operations: List<ValueOperation>,
+      triggerWorkflows: Boolean = true
+  ): List<ExistingValue> {
     val projectId = operations.firstOrNull()?.projectId ?: return emptyList()
 
     val latestRowIds = mutableMapOf<VariableId, VariableValueId>()
@@ -444,8 +449,11 @@ class VariableValueStore(
     val maxValueIdAfter = fetchMaxValueId(projectId) ?: VariableValueId(1)
 
     val values = listValues(projectId, VariableValueId(maxValueIdBefore.value + 1), maxValueIdAfter)
-    notifyForReview(projectId, values)
-    updateStatus(projectId, values)
+
+    if (triggerWorkflows) {
+      notifyForReview(projectId, values)
+      updateStatus(projectId, values)
+    }
 
     return values
   }
