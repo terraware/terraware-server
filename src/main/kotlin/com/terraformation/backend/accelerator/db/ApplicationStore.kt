@@ -637,7 +637,7 @@ class ApplicationStore(
   ): List<String> {
     val problems = mutableListOf<String>()
 
-    var countryCode: String? = null
+    var boundaryCountryCode: String? = null
     var siteAreaHa: Double? = null
 
     val totalLandUseArea =
@@ -648,22 +648,41 @@ class ApplicationStore(
 
       val countries = countryDetector.getCountries(application.boundary)
       when (countries.size) {
-        0 -> problems.add(messages.applicationPreScreenFailureNoCountry())
-        1 -> countryCode = countries.first()
+        0 -> problems.add(messages.applicationPreScreenBoundaryInNoCountry())
+        1 -> boundaryCountryCode = countries.first()
         else -> problems.add(messages.applicationPreScreenFailureMultipleCountries())
       }
     } else {
       problems.add(messages.applicationPreScreenFailureNoBoundary())
     }
 
-    val countriesRow = countryCode?.let { countriesDao.fetchOneByCode(it) }
+    if (problems.size > 0) {
+      return problems
+    }
 
-    if (countriesRow != null && siteAreaHa != null) {
-      if (countriesRow.eligible != true) {
-        // TODO: Look up localized country name
-        problems.add(messages.applicationPreScreenFailureIneligibleCountry(countriesRow.name!!))
-      } else {
-        val minimumHectares = perCountryMinimumHectares[countryCode] ?: defaultMinimumHectares
+    if (preScreenVariableValues.countryCode == null) {
+      problems.add(messages.applicationPreScreenFailureNoCountry())
+    }
+
+    // TODO: Look up localized country name
+    val boundaryCountriesRow = boundaryCountryCode?.let { countriesDao.fetchOneByCode(it) }
+    val projectCountriesRow =
+        preScreenVariableValues.countryCode?.let { countriesDao.fetchOneByCode(it) }
+
+    if (projectCountriesRow != null) {
+      if (projectCountriesRow.eligible != true) {
+        // First, check if the application country is eligible
+        problems.add(
+            messages.applicationPreScreenFailureIneligibleCountry(projectCountriesRow.name!!))
+      } else if (boundaryCountriesRow != null && boundaryCountriesRow != projectCountriesRow) {
+        // Second, check if the provided boundary matches the country
+        problems.add(
+            messages.applicationPreScreenFailureMismatchCountries(
+                boundaryCountriesRow.name!!, projectCountriesRow.name!!))
+      } else if (siteAreaHa != null) {
+        // Third, check minimum hectares requirements
+        val minimumHectares =
+            perCountryMinimumHectares[projectCountriesRow.code] ?: defaultMinimumHectares
 
         if (siteAreaHa < minimumHectares ||
             siteAreaHa > defaultMaximumHectares ||
@@ -671,7 +690,7 @@ class ApplicationStore(
             totalLandUseArea > defaultMaximumHectares) {
           problems.add(
               messages.applicationPreScreenFailureBadSize(
-                  countriesRow.name!!, minimumHectares, defaultMaximumHectares))
+                  projectCountriesRow.name!!, minimumHectares, defaultMaximumHectares))
         }
       }
     }

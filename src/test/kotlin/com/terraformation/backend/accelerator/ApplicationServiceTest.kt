@@ -75,6 +75,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
     fun `fetches variable values for pre-screen submissions`() {
       val preScreenVariableValues =
           PreScreenVariableValues(
+              countryCode = null,
               landUseModelHectares = mapOf(LandUseModelType.Mangroves to BigDecimal(10)),
               numSpeciesToBePlanted = 123,
               projectType = PreScreenProjectType.Terrestrial,
@@ -136,6 +137,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
 
       val preScreenVariableValues =
           PreScreenVariableValues(
+              countryCode = "KE",
               landUseModelHectares =
                   mapOf(
                       LandUseModelType.Agroforestry to BigDecimal.ZERO,
