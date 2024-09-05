@@ -50,8 +50,16 @@ class Messages {
   fun applicationPreScreenFailureBadSize(country: String, minimum: Int, maximum: Int) =
       getMessage("applicationPreScreen.failure.badSize", country, minimum, maximum)
 
+  fun applicationPreScreenBoundaryInNoCountry() =
+      getMessage("applicationPreScreen.failure.boundaryInNoCountry")
+
   fun applicationPreScreenFailureIneligibleCountry(country: String) =
       getMessage("applicationPreScreen.failure.ineligibleCountry", country)
+
+  fun applicationPreScreenFailureMismatchCountries(
+      boundaryCountry: String,
+      projectCountry: String
+  ) = getMessage("applicationPreScreen.failure.mismatchCountries", boundaryCountry, projectCountry)
 
   fun applicationPreScreenFailureMonocultureTooHigh(maximum: Int) =
       getMessage("applicationPreScreen.failure.monocultureTooHigh", maximum)

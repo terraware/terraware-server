@@ -29,6 +29,7 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
 
   private val fetcher: PreScreenVariableValuesFetcher by lazy {
     PreScreenVariableValuesFetcher(
+        countriesDao,
         VariableStore(
             dslContext,
             variableNumbersDao,
@@ -55,12 +56,14 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
         deliverableId)
   }
 
+  private lateinit var countryVariableId: VariableId
   private lateinit var deliverableId: DeliverableId
   private lateinit var numSpeciesVariableId: VariableId
   private lateinit var projectTypeVariableId: VariableId
   private lateinit var totalExpansionPotentialVariableId: VariableId
   private lateinit var landUseHectaresVariableIds: Map<LandUseModelType, VariableId>
 
+  private lateinit var brazilOptionId: VariableSelectOptionId
   private lateinit var terrestrialOptionId: VariableSelectOptionId
 
   @BeforeEach
@@ -70,19 +73,31 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
     insertModule(phase = CohortPhase.PreScreen)
     deliverableId = insertDeliverable()
 
+    countryVariableId =
+        insertSelectVariable(
+            insertVariable(
+                type = VariableType.Select,
+                deliverableId = inserted.deliverableId,
+                deliverablePosition = 1,
+                stableId = PreScreenVariableValuesFetcher.STABLE_ID_COUNTRY))
+
+    brazilOptionId = insertSelectOption(inserted.variableId, "Brazil")
+    insertSelectOption(inserted.variableId, "Chile")
+    insertSelectOption(inserted.variableId, "Ghana")
+
     numSpeciesVariableId =
         insertNumberVariable(
             insertVariable(
                 type = VariableType.Number,
                 deliverableId = inserted.deliverableId,
-                deliverablePosition = 1,
+                deliverablePosition = 2,
                 stableId = PreScreenVariableValuesFetcher.STABLE_ID_NUM_SPECIES))
     totalExpansionPotentialVariableId =
         insertNumberVariable(
             insertVariable(
                 type = VariableType.Number,
                 deliverableId = inserted.deliverableId,
-                deliverablePosition = 2,
+                deliverablePosition = 3,
                 stableId = PreScreenVariableValuesFetcher.STABLE_ID_TOTAL_EXPANSION_POTENTIAL))
 
     projectTypeVariableId =
@@ -90,8 +105,9 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
             insertVariable(
                 type = VariableType.Select,
                 deliverableId = inserted.deliverableId,
-                deliverablePosition = 3,
+                deliverablePosition = 4,
                 stableId = PreScreenVariableValuesFetcher.STABLE_ID_PROJECT_TYPE))
+
     terrestrialOptionId = insertSelectOption(inserted.variableId, "Terrestrial")
     insertSelectOption(inserted.variableId, "Mangrove")
     insertSelectOption(inserted.variableId, "Mixed")
@@ -115,12 +131,13 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `returns null or empty values if variables not set`() {
     assertEquals(
-        PreScreenVariableValues(emptyMap(), null, null, null),
+        PreScreenVariableValues(null, emptyMap(), null, null, null),
         fetcher.fetchValues(inserted.projectId))
   }
 
   @Test
   fun `fetches values for all variables`() {
+    insertSelectValue(variableId = countryVariableId, optionIds = setOf(brazilOptionId))
     insertValue(variableId = numSpeciesVariableId, numberValue = BigDecimal(123))
     insertValue(variableId = totalExpansionPotentialVariableId, numberValue = BigDecimal(5555))
     insertSelectValue(variableId = projectTypeVariableId, optionIds = setOf(terrestrialOptionId))
@@ -131,6 +148,7 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         PreScreenVariableValues(
+            countryCode = "BR",
             landUseModelHectares = LandUseModelType.entries.associateWith { BigDecimal(it.id) },
             numSpeciesToBePlanted = 123,
             projectType = PreScreenProjectType.Terrestrial,

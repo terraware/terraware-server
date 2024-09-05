@@ -1061,7 +1061,21 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       val result = store.submit(applicationId, validVariables(boundary))
 
-      assertEquals(listOf(messages.applicationPreScreenFailureNoCountry()), result.problems)
+      assertEquals(listOf(messages.applicationPreScreenBoundaryInNoCountry()), result.problems)
+      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
+    }
+
+    @Test
+    fun `detects boundary country and variable country mismatch`() {
+      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) }
+      val applicationId = insertApplication(boundary = boundary)
+
+      val result = store.submit(applicationId, validVariables(boundary).copy(countryCode = "TZ"))
+
+      assertEquals(
+          listOf(
+              messages.applicationPreScreenFailureMismatchCountries("United States", "Tanzania")),
+          result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
 
@@ -1082,9 +1096,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     fun `detects boundary size below minimum`(country: String, origin: Point, minHectares: Int) {
       insertProject()
       val boundary = Turtle(origin).makePolygon { rectangle(10000, minHectares - 10) }
+      val countryCode = countriesDao.fetchOneByName(country)?.code
       val applicationId = insertApplication(boundary = boundary, internalName = country)
 
-      val result = store.submit(applicationId, validVariables(boundary))
+      val result =
+          store.submit(applicationId, validVariables(boundary).copy(countryCode = countryCode))
 
       assertEquals(
           listOf(messages.applicationPreScreenFailureBadSize(country, minHectares, 100000)),
@@ -1103,12 +1119,14 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     ) {
       insertProject()
       val boundary = Turtle(origin).makePolygon { rectangle(10000, minHectares + 10) }
+      val countryCode = countriesDao.fetchOneByName(country)?.code
       val applicationId = insertApplication(boundary = boundary, internalName = country)
 
       val result =
           store.submit(
               applicationId,
               PreScreenVariableValues(
+                  countryCode = countryCode,
                   landUseModelHectares =
                       mapOf(LandUseModelType.NativeForest to BigDecimal(minHectares - 10)),
                   numSpeciesToBePlanted = 500,
@@ -1144,6 +1162,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           store.submit(
               applicationId,
               PreScreenVariableValues(
+                  countryCode = "US",
                   landUseModelHectares =
                       mapOf(
                           LandUseModelType.NativeForest to BigDecimal(60000),
@@ -1163,7 +1182,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       val boundary = Turtle(point(-100, 51)).makePolygon { rectangle(10000, 16000) }
       val applicationId = insertApplication(boundary = boundary)
 
-      val result = store.submit(applicationId, validVariables(boundary))
+      val result = store.submit(applicationId, validVariables(boundary).copy(countryCode = "CA"))
 
       assertEquals(
           listOf(messages.applicationPreScreenFailureIneligibleCountry("Canada")), result.problems)
@@ -1181,6 +1200,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           store.submit(
               applicationId,
               PreScreenVariableValues(
+                  countryCode = "US",
                   landUseModelHectares =
                       mapOf(
                           LandUseModelType.Monoculture to halfArea,
@@ -1416,6 +1436,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     private fun validVariables(boundary: Geometry): PreScreenVariableValues {
       val projectHectares = boundary.calculateAreaHectares()
       return PreScreenVariableValues(
+          countryCode = "US",
           landUseModelHectares =
               mapOf(
                   LandUseModelType.NativeForest to projectHectares,

@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
@@ -21,12 +22,14 @@ import org.springframework.beans.factory.annotation.Value
 
 @Named
 class PreScreenVariableValuesFetcher(
+    private val countriesDao: CountriesDao,
     private val variableStore: VariableStore,
     private val variableValueStore: VariableValueStore,
     @Value("102") // From deliverables spreadsheet
     val preScreenDeliverableId: DeliverableId,
 ) {
   companion object {
+    const val STABLE_ID_COUNTRY = "1"
     const val STABLE_ID_NUM_SPECIES = "22"
     const val STABLE_ID_PROJECT_TYPE = "3"
     const val STABLE_ID_TOTAL_EXPANSION_POTENTIAL = "24"
@@ -64,6 +67,17 @@ class PreScreenVariableValuesFetcher(
             }
             .toMap()
 
+    val countryCode =
+        getSingleSelectValue(variablesById, valuesByStableId, STABLE_ID_COUNTRY)?.let {
+          // This depends on the countries table name field matching up to the select values of the
+          // country variable
+          val countryRow = countriesDao.fetchOneByName(it)
+          if (countryRow == null) {
+            log.error("Found unknown country name $it for project $projectId")
+          }
+          countryRow?.code
+        }
+
     val landUseHectares =
         stableIdsByLandUseModelType
             .mapNotNull { (landUseType, stableId) ->
@@ -88,6 +102,7 @@ class PreScreenVariableValuesFetcher(
         getNumberValue(valuesByStableId, STABLE_ID_TOTAL_EXPANSION_POTENTIAL)
 
     return PreScreenVariableValues(
+        countryCode = countryCode,
         landUseModelHectares = landUseHectares,
         numSpeciesToBePlanted = numSpeciesToBePlanted,
         projectType = projectType,

@@ -58,7 +58,7 @@ class ApplicationService(
   ) {
     val landUseModelTypes =
         variableValues.landUseModelHectares.filterValues { it.signum() > 0 }.keys
-    val countryCode = application.boundary?.let { countryDetector.getCountries(it) }?.singleOrNull()
+    val countryCode = variableValues.countryCode
     val region = countryCode?.let { countriesDao.fetchOneByCode(it) }?.regionId
     val projectLead = region?.let { defaultProjectLeadsDao.fetchOneByRegionId(it) }?.projectLead
 
