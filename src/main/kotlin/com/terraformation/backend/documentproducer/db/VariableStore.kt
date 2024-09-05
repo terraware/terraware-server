@@ -112,21 +112,29 @@ class VariableStore(
             ?.let { fetchVariable(it) }
       }
 
-  fun fetchDeliverableVariables(deliverableId: DeliverableId): List<Variable> =
-      with(VARIABLES) {
-        dslContext
-            .select(DSL.max(ID))
-            .from(VARIABLES)
-            .where(DELIVERABLE_ID.eq(deliverableId))
-            .andNotExists(
-                DSL.selectOne()
-                    .from(VARIABLE_TABLE_COLUMNS)
-                    .where(ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
-            .groupBy(STABLE_ID)
-            .fetch()
-            .map { fetchVariable(it[DSL.max(ID)]!!) }
-            .sortedBy { it.deliverablePosition }
-      }
+  fun fetchDeliverableVariables(deliverableId: DeliverableId): List<Variable> {
+    val replacementVariables = VARIABLES.`as`("replacement_variables")
+
+    return with(VARIABLES) {
+      dslContext
+          .select(DSL.max(ID))
+          .from(VARIABLES)
+          .where(DELIVERABLE_ID.eq(deliverableId))
+          .andNotExists(
+              DSL.selectOne()
+                  .from(VARIABLE_TABLE_COLUMNS)
+                  .where(ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)),
+          )
+          .andNotExists(
+              DSL.selectOne()
+                  .from(replacementVariables)
+                  .where(replacementVariables.REPLACES_VARIABLE_ID.eq(ID)))
+          .groupBy(STABLE_ID)
+          .fetch()
+          .map { fetchVariable(it[DSL.max(ID)]!!) }
+          .sortedBy { it.deliverablePosition }
+    }
+  }
 
   fun fetchManifestVariables(documentId: DocumentId): List<Variable> {
     return with(VARIABLE_MANIFEST_ENTRIES) {
