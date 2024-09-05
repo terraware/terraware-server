@@ -59,6 +59,18 @@ class AdminDocumentProducerController(
     return documentProducerAdminHome()
   }
 
+  @PostMapping("/upgradeAllVariables")
+  fun upgradeAllVariables(redirectAttributes: RedirectAttributes): String {
+    try {
+      variableService.upgradeAllVariables()
+      redirectAttributes.successMessage = "Upgrades complete."
+    } catch (e: Exception) {
+      redirectAttributes.failureMessage = "Failed to upgrade: ${e.message}"
+    }
+
+    return documentProducerAdminHome()
+  }
+
   @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], path = ["/uploadAllVariables"])
   fun uploadAllVariables(
       @RequestPart("file") file: MultipartFile,
