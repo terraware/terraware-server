@@ -172,6 +172,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           insertApplication(
               projectId = org1ProjectId1,
               boundary = rectangle(1),
+              countryCode = "FR",
               feedback = "feedback",
               internalComment = "internal comment",
               internalName = "internalName",
@@ -210,6 +211,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
         assertEquals(
             ExistingApplicationModel(
                 boundary = rectangle(1),
+                countryCode = "FR",
                 createdTime = Instant.EPOCH,
                 feedback = "feedback",
                 id = org1Project1ApplicationId,
@@ -238,6 +240,51 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Nested
+    inner class FetchGeoFeatureByProjectId {
+      @Test
+      fun `fetches application data to a simple feature`() {
+        val simpleFeature = store.fetchGeoFeatureById(org1Project1ApplicationId)
+
+        assertEquals(rectangle(1), simpleFeature.defaultGeometry as Geometry, "geometry attribute")
+        assertEquals(
+            org1Project1ApplicationId.value,
+            simpleFeature.getAttribute("applicationId"),
+            "applicationId attribute")
+        assertEquals("FR", simpleFeature.getAttribute("countryCode"), "countryCode attribute")
+        assertEquals(
+            "internalName", simpleFeature.getAttribute("internalName"), "internalName attribute")
+        assertEquals(
+            organizationId.value,
+            simpleFeature.getAttribute("organizationId"),
+            "organizationId attribute")
+        assertEquals(
+            "Organization 1",
+            simpleFeature.getAttribute("organizationName"),
+            "organizationName attribute")
+        assertEquals(
+            org1ProjectId1.value, simpleFeature.getAttribute("projectId"), "projectId attribute")
+        assertEquals(
+            "Project A", simpleFeature.getAttribute("projectName"), "projectName attribute")
+        assertEquals(
+            ApplicationStatus.PreCheck.jsonValue,
+            simpleFeature.getAttribute("status"),
+            "status attribute")
+      }
+
+      @Test
+      fun `throws exception if application does not exist`() {
+        assertThrows<ApplicationNotFoundException> { store.fetchGeoFeatureById(ApplicationId(1)) }
+      }
+
+      @Test
+      fun `throws exception if no permission to review application`() {
+        every { user.canReviewApplication(org1Project1ApplicationId) } returns false
+
+        assertThrows<AccessDeniedException> { store.fetchGeoFeatureById(org1Project1ApplicationId) }
+      }
+    }
+
+    @Nested
     inner class FetchByProjectId {
       @Test
       fun `fetches application for project`() {
@@ -245,6 +292,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             listOf(
                 ExistingApplicationModel(
                     boundary = rectangle(1),
+                    countryCode = "FR",
                     createdTime = Instant.EPOCH,
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
@@ -289,6 +337,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             listOf(
                 ExistingApplicationModel(
                     boundary = rectangle(1),
+                    countryCode = "FR",
                     createdTime = Instant.EPOCH,
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
@@ -335,6 +384,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             listOf(
                 ExistingApplicationModel(
                     boundary = rectangle(1),
+                    countryCode = "FR",
                     createdTime = Instant.EPOCH,
                     feedback = "feedback",
                     id = org1Project1ApplicationId,

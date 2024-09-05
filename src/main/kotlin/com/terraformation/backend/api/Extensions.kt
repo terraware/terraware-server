@@ -2,7 +2,10 @@ package com.terraformation.backend.api
 
 import com.terraformation.backend.file.SizedInputStream
 import jakarta.ws.rs.NotSupportedException
+import java.io.ByteArrayOutputStream
 import org.apache.tika.mime.MimeTypes
+import org.geotools.api.feature.simple.SimpleFeature
+import org.geotools.geojson.feature.FeatureJSON
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -64,4 +67,14 @@ fun MultipartFile.getFilename(defaultBaseName: String = "upload"): String {
         val extension = MimeTypes.getDefaultMimeTypes().getRegisteredMimeType(contentType) ?: ""
         defaultBaseName + extension
       }
+}
+
+/** Returns the geo feature as a GeoJSON input stream. */
+fun SimpleFeature.toInputStream(): SizedInputStream {
+  val byteArrayOutputStream = ByteArrayOutputStream()
+  FeatureJSON().writeFeature(this, byteArrayOutputStream)
+  val byteArray = byteArrayOutputStream.toByteArray()
+  val inputStream = byteArray.inputStream()
+  return SizedInputStream(
+      inputStream, byteArray.size.toLong(), MediaType.parseMediaType("application/geo+json"))
 }
