@@ -43,7 +43,6 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
             variableTextsDao),
         VariableValueStore(
             TestClock(),
-            documentsDao,
             dslContext,
             TestEventPublisher(),
             variableImageValuesDao,

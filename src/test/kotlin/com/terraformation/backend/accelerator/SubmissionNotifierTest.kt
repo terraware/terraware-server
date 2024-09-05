@@ -55,7 +55,6 @@ class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
             variableTextsDao),
         VariableValueStore(
             clock,
-            documentsDao,
             dslContext,
             eventPublisher,
             variableImageValuesDao,

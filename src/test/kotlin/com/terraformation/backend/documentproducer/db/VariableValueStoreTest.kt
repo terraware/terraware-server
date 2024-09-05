@@ -34,7 +34,6 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
   private val store by lazy {
     VariableValueStore(
         clock,
-        documentsDao,
         dslContext,
         eventPublisher,
         variableImageValuesDao,

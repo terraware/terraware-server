@@ -74,7 +74,6 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
             variableTextsDao),
         VariableValueStore(
             clock,
-            documentsDao,
             dslContext,
             eventPublisher,
             variableImageValuesDao,
