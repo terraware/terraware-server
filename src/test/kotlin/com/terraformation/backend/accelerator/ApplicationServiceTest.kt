@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
+import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.accelerator.model.PreScreenVariableValues
@@ -62,6 +63,8 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var organizationId: OrganizationId
   private lateinit var projectId: ProjectId
 
+  private val boundarySubmission = mockk<DeliverableSubmissionModel>()
+
   @BeforeEach
   fun setUp() {
     organizationId = insertOrganization()
@@ -96,14 +99,17 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       val submissionResult = ApplicationSubmissionResult(applicationModel, listOf("error"))
 
       every { applicationStore.fetchOneById(applicationId) } returns applicationModel
-      every { applicationStore.submit(applicationId, any()) } returns submissionResult
+      every { applicationStore.submit(applicationId, any(), any()) } returns submissionResult
       every { preScreenVariableValuesFetcher.fetchValues(projectId) } returns
           preScreenVariableValues
-      every { preScreenBoundarySubmissionFetcher.fetchSubmission(projectId) } returns null
+      every { preScreenBoundarySubmissionFetcher.fetchSubmission(projectId) } returns
+          boundarySubmission
 
       assertEquals(submissionResult, service.submit(applicationId))
 
-      verify(exactly = 1) { applicationStore.submit(applicationId, preScreenVariableValues) }
+      verify(exactly = 1) {
+        applicationStore.submit(applicationId, preScreenVariableValues, boundarySubmission)
+      }
     }
 
     @Test
@@ -126,7 +132,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(submissionResult, service.submit(applicationId))
 
-      verify(exactly = 1) { applicationStore.submit(applicationId, null) }
+      verify(exactly = 1) { applicationStore.submit(applicationId, null, null) }
     }
 
     @Test
@@ -168,11 +174,12 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       val submissionResult = ApplicationSubmissionResult(applicationModel, emptyList())
 
       every { applicationStore.fetchOneById(applicationId) } returns applicationModel
-      every { applicationStore.submit(applicationId, any()) } returns submissionResult
+      every { applicationStore.submit(applicationId, any(), any()) } returns submissionResult
       every { countryDetector.getCountries(any()) } returns setOf("KE")
       every { preScreenVariableValuesFetcher.fetchValues(projectId) } returns
           preScreenVariableValues
-      every { preScreenBoundarySubmissionFetcher.fetchSubmission(projectId) } returns null
+      every { preScreenBoundarySubmissionFetcher.fetchSubmission(projectId) } returns
+          boundarySubmission
 
       assertEquals(submissionResult, service.submit(applicationId))
 
