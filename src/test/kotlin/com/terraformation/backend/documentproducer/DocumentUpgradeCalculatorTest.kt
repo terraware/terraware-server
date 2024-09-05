@@ -62,7 +62,6 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
   private val variableValueStore: VariableValueStore by lazy {
     VariableValueStore(
         clock,
-        documentsDao,
         dslContext,
         eventPublisher,
         variableImageValuesDao,

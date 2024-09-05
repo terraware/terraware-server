@@ -10,7 +10,6 @@ import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
-import com.terraformation.backend.db.docprod.tables.daos.DocumentsDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableImageValuesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableLinkValuesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableSectionValuesDao
@@ -80,7 +79,6 @@ import org.springframework.context.ApplicationEventPublisher
 @Named
 class VariableValueStore(
     private val clock: InstantSource,
-    private val documentsDao: DocumentsDao,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val variableImageValuesDao: VariableImageValuesDao,
