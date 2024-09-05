@@ -354,7 +354,8 @@ class ApplicationStore(
    */
   fun submit(
       applicationId: ApplicationId,
-      preScreenVariableValues: PreScreenVariableValues? = null
+      preScreenVariableValues: PreScreenVariableValues? = null,
+      boundarySubmission: DeliverableSubmissionModel? = null,
   ): ApplicationSubmissionResult {
     requirePermissions { updateApplicationSubmissionStatus(applicationId) }
 
@@ -366,7 +367,7 @@ class ApplicationStore(
             "No pre-screen variable values supplied for pre-screen submission")
       }
 
-      val problems = checkPreScreenCriteria(existing, preScreenVariableValues)
+      val problems = checkPreScreenCriteria(existing, preScreenVariableValues, boundarySubmission)
       updatePrescreenFeedback(applicationId, problems)
 
       if (problems.isNotEmpty()) {
@@ -633,7 +634,8 @@ class ApplicationStore(
 
   private fun checkPreScreenCriteria(
       application: ExistingApplicationModel,
-      preScreenVariableValues: PreScreenVariableValues
+      preScreenVariableValues: PreScreenVariableValues,
+      boundarySubmission: DeliverableSubmissionModel? = null,
   ): List<String> {
     val problems = mutableListOf<String>()
 
@@ -652,8 +654,12 @@ class ApplicationStore(
         1 -> boundaryCountryCode = countries.first()
         else -> problems.add(messages.applicationPreScreenFailureMultipleCountries())
       }
-    } else {
+    } else if (boundarySubmission == null ||
+        boundarySubmission.status != SubmissionStatus.Completed) {
       problems.add(messages.applicationPreScreenFailureNoBoundary())
+    } else {
+      // User uploaded files there were not parsed. Use total land use area as site area.
+      siteAreaHa = totalLandUseArea
     }
 
     if (problems.size > 0) {
