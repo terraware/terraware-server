@@ -226,8 +226,23 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       @Test
+      fun `throws exception if application does not exist`() {
+        assertThrows<ApplicationNotFoundException> { store.fetchOneById(ApplicationId(1)) }
+      }
+
+      @Test
+      fun `throws exception if no permission to read application`() {
+        every { user.canReadApplication(org1Project1ApplicationId) } returns false
+
+        assertThrows<ApplicationNotFoundException> { store.fetchOneById(org1Project1ApplicationId) }
+      }
+    }
+
+    @Nested
+    inner class FetchGeoFeatureByProjectId {
+      @Test
       fun `fetches application data to a simple feature`() {
-        val simpleFeature = store.fetchOneById(org1Project1ApplicationId).toGeoFeature()
+        val simpleFeature = store.fetchGeoFeatureById(org1Project1ApplicationId)
 
         assertEquals(rectangle(1), simpleFeature.defaultGeometry as Geometry, "geometry attribute")
         assertEquals(
@@ -257,14 +272,14 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       @Test
       fun `throws exception if application does not exist`() {
-        assertThrows<ApplicationNotFoundException> { store.fetchOneById(ApplicationId(1)) }
+        assertThrows<ApplicationNotFoundException> { store.fetchGeoFeatureById(ApplicationId(1)) }
       }
 
       @Test
-      fun `throws exception if no permission to read application`() {
-        every { user.canReadApplication(org1Project1ApplicationId) } returns false
+      fun `throws exception if no permission to review application`() {
+        every { user.canReviewApplication(org1Project1ApplicationId) } returns false
 
-        assertThrows<ApplicationNotFoundException> { store.fetchOneById(org1Project1ApplicationId) }
+        assertThrows<AccessDeniedException> { store.fetchGeoFeatureById(org1Project1ApplicationId) }
       }
     }
 

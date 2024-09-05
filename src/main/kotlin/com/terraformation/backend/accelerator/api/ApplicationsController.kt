@@ -93,12 +93,12 @@ class ApplicationsController(
         deliverables.map { ApplicationDeliverablePayload(it) })
   }
 
-  @GetMapping("/{applicationId}/geoJson", produces = ["application/geo+json"])
+  @GetMapping("/{applicationId}/export", produces = ["application/geo+json"])
   @Operation(summary = "Get GeoJSON for an application")
   fun getApplicationGeoJson(
       @PathVariable applicationId: ApplicationId
   ): ResponseEntity<InputStreamResource> {
-    val geoFeature = applicationStore.fetchOneById(applicationId).toGeoFeature()
+    val geoFeature = applicationStore.fetchGeoFeatureById(applicationId)
     val filename = "application-$applicationId.geojson"
 
     return geoFeature.toInputStream().toResponseEntity {

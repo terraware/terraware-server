@@ -41,6 +41,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
 import java.time.InstantSource
+import org.geotools.api.feature.simple.SimpleFeature
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -93,6 +94,13 @@ class ApplicationStore(
     requirePermissions { readApplication(applicationId) }
 
     return fetchByCondition(APPLICATIONS.ID.eq(applicationId)).firstOrNull()
+        ?: throw ApplicationNotFoundException(applicationId)
+  }
+
+  fun fetchGeoFeatureById(applicationId: ApplicationId): SimpleFeature {
+    requirePermissions { reviewApplication(applicationId) }
+
+    return fetchByCondition(APPLICATIONS.ID.eq(applicationId)).firstOrNull()?.toGeoFeature()
         ?: throw ApplicationNotFoundException(applicationId)
   }
 
