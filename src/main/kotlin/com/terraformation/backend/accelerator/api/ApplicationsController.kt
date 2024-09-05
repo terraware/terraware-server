@@ -13,6 +13,8 @@ import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.toInputStream
+import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
@@ -39,8 +41,8 @@ import org.geotools.util.ContentFormatException
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
+import org.springframework.core.io.InputStreamResource
+import org.springframework.http.ContentDisposition
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -60,7 +62,7 @@ import org.springframework.web.multipart.MultipartFile
 class ApplicationsController(
     private val applicationService: ApplicationService,
     private val applicationStore: ApplicationStore,
-    private val geometryFileParser: GeometryFileParser,
+    private val geometryFileParser: GeometryFileParser
 ) {
   @Operation(summary = "Create a new application")
   @PostMapping
@@ -95,11 +97,13 @@ class ApplicationsController(
   @Operation(summary = "Get GeoJSON for an application")
   fun getApplicationGeoJson(
       @PathVariable applicationId: ApplicationId
-  ): ResponseEntity<Map<String, Any>> {
-    val geoJson = applicationStore.fetchOneById(applicationId).toGeoJson()
-    val headers = HttpHeaders()
-    headers["Content-type"] = "application/geo+json"
-    return ResponseEntity(geoJson, headers, HttpStatus.OK)
+  ): ResponseEntity<InputStreamResource> {
+    val geoFeature = applicationStore.fetchOneById(applicationId).toGeoFeature()
+    val filename = "application-$applicationId.geojson"
+
+    return geoFeature.toInputStream().toResponseEntity {
+      contentDisposition = ContentDisposition.attachment().filename(filename).build()
+    }
   }
 
   @GetMapping("/{applicationId}/history")

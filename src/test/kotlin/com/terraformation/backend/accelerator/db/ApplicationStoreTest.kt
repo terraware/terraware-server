@@ -226,28 +226,33 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       @Test
-      fun `fetches application data to geojson`() {
+      fun `fetches application data to a simple feature`() {
+        val simpleFeature = store.fetchOneById(org1Project1ApplicationId).toGeoFeature()
+
+        assertEquals(rectangle(1), simpleFeature.defaultGeometry as Geometry, "geometry attribute")
         assertEquals(
-            mapOf(
-                "type" to "FeatureCollection",
-                "features" to
-                    listOf(
-                        mapOf(
-                            "type" to "Feature",
-                            "properties" to
-                                mapOf(
-                                    "applicationId" to org1Project1ApplicationId,
-                                    "countryCode" to "FR",
-                                    "internalName" to "internalName",
-                                    "organizationId" to organizationId,
-                                    "organizationName" to "Organization 1",
-                                    "projectId" to org1ProjectId1,
-                                    "projectName" to "Project A",
-                                    "status" to ApplicationStatus.PreCheck,
-                                ),
-                            "geometry" to rectangle(1),
-                        ))),
-            store.fetchOneById(org1Project1ApplicationId).toGeoJson())
+            org1Project1ApplicationId.value,
+            simpleFeature.getAttribute("applicationId"),
+            "applicationId attribute")
+        assertEquals("FR", simpleFeature.getAttribute("countryCode"), "countryCode attribute")
+        assertEquals(
+            "internalName", simpleFeature.getAttribute("internalName"), "internalName attribute")
+        assertEquals(
+            organizationId.value,
+            simpleFeature.getAttribute("organizationId"),
+            "organizationId attribute")
+        assertEquals(
+            "Organization 1",
+            simpleFeature.getAttribute("organizationName"),
+            "organizationName attribute")
+        assertEquals(
+            org1ProjectId1.value, simpleFeature.getAttribute("projectId"), "projectId attribute")
+        assertEquals(
+            "Project A", simpleFeature.getAttribute("projectName"), "projectName attribute")
+        assertEquals(
+            ApplicationStatus.PreCheck.jsonValue,
+            simpleFeature.getAttribute("status"),
+            "status attribute")
       }
 
       @Test
