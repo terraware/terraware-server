@@ -1,3 +1,4 @@
+ed94457c52f SW-5926 Create Google folders for new applications (#2375)
 8a974224710 SW-5955 Implemented fetcher for prescreen boundary document submission, and bypass pre-screen boundary check if deliverable is submitted (#2370)
 4a12227ef32 SW-5961: Added country variable to pre-screen fetcher and submission checker (#2368)
 90f8dd69bdb SW-5959 Support backfilling old variable upgrades (#2374)
