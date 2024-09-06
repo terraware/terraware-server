@@ -150,7 +150,7 @@ class ProjectSetUpImporter(
 
     columnNamePrefixes.forEach { (phasePrefix, phase) ->
       ScoreCategory.entries.forEach { category ->
-        val prefix = "$phasePrefix${category.name}"
+        val prefix = "$phasePrefix${category.jsonValue}"
         val score = getInt(valuesByName, "$prefix Score")
 
         // Qualitative column names sometimes include the word "Score" and sometimes not.
