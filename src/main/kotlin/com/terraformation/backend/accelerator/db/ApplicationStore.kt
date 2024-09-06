@@ -351,8 +351,12 @@ class ApplicationStore(
 
     val existing = fetchOneById(applicationId)
 
-    if (existing.status != ApplicationStatus.NotSubmitted) {
-      updateStatus(applicationId, ApplicationStatus.NotSubmitted)
+    when (existing.status) {
+      ApplicationStatus.NotSubmitted -> return // Do nothing here.
+      ApplicationStatus.PassedPreScreen,
+      ApplicationStatus.FailedPreScreen ->
+          updateStatus(applicationId, ApplicationStatus.NotSubmitted)
+      else -> throw IllegalStateException("Application in ${existing.status} cannot be restarted")
     }
   }
 
