@@ -249,12 +249,14 @@ data class UpdateDocumentRequestPayload(
     val internalComment: String?,
     val name: String,
     val ownedBy: UserId,
+    val status: DocumentStatus,
 ) {
   fun applyChanges(row: DocumentsRow) =
       row.copy(
           internalComment = internalComment,
           name = name,
           ownedBy = ownedBy,
+          statusId = status,
       )
 }
 
