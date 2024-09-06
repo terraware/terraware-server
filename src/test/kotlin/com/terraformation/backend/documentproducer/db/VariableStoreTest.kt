@@ -14,6 +14,7 @@ import com.terraformation.backend.documentproducer.model.TextVariable
 import com.terraformation.backend.documentproducer.model.Variable
 import com.terraformation.backend.mockUser
 import java.math.BigDecimal
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -339,6 +340,25 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
       val actual = store.fetchDeliverableVariables(deliverableId)
 
       assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `does not return variables that have been replaced by newer ones`() {
+      val stableId = "${UUID.randomUUID()}"
+
+      insertModule()
+      val oldDeliverableId = insertDeliverable()
+      val oldVariableId =
+          insertNumberVariable(deliverableId = oldDeliverableId, stableId = stableId)
+      val newDeliverableId = insertDeliverable()
+      insertNumberVariable(
+          insertVariable(
+              type = VariableType.Number,
+              deliverableId = newDeliverableId,
+              stableId = stableId,
+              replacesVariableId = oldVariableId))
+
+      assertEquals(emptyList<Variable>(), store.fetchDeliverableVariables(oldDeliverableId))
     }
   }
 
