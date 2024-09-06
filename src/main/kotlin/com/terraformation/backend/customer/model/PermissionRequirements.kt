@@ -685,6 +685,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readInternalOnlyVariables() {
+    if (!user.canReadInternalOnlyVariables()) {
+      throw AccessDeniedException("No permission to read internal variables")
+    }
+  }
+
   fun readInternalTags() {
     if (!user.canReadInternalTags()) {
       throw AccessDeniedException("No permission to read internal tags")
@@ -1203,6 +1209,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateProjectScores(projectId)) {
       readProject(projectId)
       throw AccessDeniedException("No permission to update scores for project $projectId")
+    }
+  }
+
+  fun updateInternalOnlyVariables() {
+    if (!user.canUpdateInternalOnlyVariables()) {
+      throw AccessDeniedException("No permission to update internal variables")
     }
   }
 

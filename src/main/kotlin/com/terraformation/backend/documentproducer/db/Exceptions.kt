@@ -9,6 +9,7 @@ import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
+import org.springframework.security.access.AccessDeniedException
 
 class CannotSaveEmptyDocumentException(val documentId: DocumentId) :
     MismatchedStateException(
@@ -43,6 +44,9 @@ class NoManifestForDocumentTemplateException(val documentTemplateId: DocumentTem
 class RowInWrongTableException(val columnVariableId: VariableId, val rowValueId: VariableValueId) :
     MismatchedStateException(
         "Row $rowValueId is in a different table than column $columnVariableId")
+
+class VariableAccessDeniedException(val variableId: VariableId) :
+    AccessDeniedException("Variable $variableId is internal only")
 
 class VariableIncompleteException(val variableId: VariableId) :
     IllegalStateException("Variable $variableId missing required configuration data")

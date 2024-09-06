@@ -303,6 +303,8 @@ interface TerrawareUser : Principal {
 
   fun canReadGlobalRoles(): Boolean = defaultPermission
 
+  fun canReadInternalOnlyVariables(): Boolean = defaultPermission
+
   fun canReadInternalTags(): Boolean = defaultPermission
 
   fun canReadInternalVariableWorkflowDetails(projectId: ProjectId): Boolean = defaultPermission
@@ -437,6 +439,8 @@ interface TerrawareUser : Principal {
   fun canUpdateFacility(facilityId: FacilityId): Boolean = defaultPermission
 
   fun canUpdateGlobalRoles(): Boolean = defaultPermission
+
+  fun canUpdateInternalOnlyVariables(): Boolean = defaultPermission
 
   fun canUpdateInternalVariableWorkflowDetails(projectId: ProjectId): Boolean = defaultPermission
 
