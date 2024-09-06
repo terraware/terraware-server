@@ -155,7 +155,8 @@ class DocumentStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `returns an empty list for a project ID with no documents`() {
-      assertEquals(emptyList<ProjectId>(), store.fetchByProjectId(ProjectId(3)))
+      val projectIdWithNoDocuments = insertProject(name = "Empty Project")
+      assertEquals(emptyList<ProjectId>(), store.fetchByProjectId(projectIdWithNoDocuments))
     }
 
     @Test
