@@ -735,6 +735,28 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `tables are lists by default`() {
+      val csv = "$header\nTable,1,,Table,,,,,,,,,,,,,,,,"
+
+      importer.import(sizedInputStream(csv))
+
+      val variables = variablesDao.findAll()
+
+      assertEquals(true, variables[0].isList, "Table is list")
+    }
+
+    @Test
+    fun `tables can be specified as non-lists`() {
+      val csv = "$header\nTable,1,,Table,No,,,,,,,,,,,,,,,"
+
+      importer.import(sizedInputStream(csv))
+
+      val variables = variablesDao.findAll()
+
+      assertEquals(false, variables[0].isList, "Table is list")
+    }
+
+    @Test
     fun `saves deliverable related fields as expected`() {
       every { user.canReadAllDeliverables() } returns true
 

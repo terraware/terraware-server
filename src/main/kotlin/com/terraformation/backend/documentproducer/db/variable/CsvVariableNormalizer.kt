@@ -24,7 +24,10 @@ class CsvVariableNormalizer {
 
       val dataType =
           AllVariableCsvVariableType.create(rawValues[VARIABLE_CSV_COLUMN_INDEX_DATA_TYPE])
-      val isList = normalizeBoolean(values[VARIABLE_CSV_COLUMN_INDEX_IS_LIST])
+      val isList =
+          normalizeBoolean(
+              values[VARIABLE_CSV_COLUMN_INDEX_IS_LIST],
+              defaultValue = dataType == AllVariableCsvVariableType.Table)
       val name = rawValues[VARIABLE_CSV_COLUMN_INDEX_NAME].trim()
 
       val parent = values[VARIABLE_CSV_COLUMN_INDEX_PARENT]?.trim()
@@ -103,7 +106,13 @@ class CsvVariableNormalizer {
 
   private fun normalizeFloat(input: String?): BigDecimal? = input?.toBigDecimalOrNull()
 
-  private fun normalizeBoolean(input: String?): Boolean = input?.lowercase() in setOf("yes", "true")
+  private fun normalizeBoolean(input: String?, defaultValue: Boolean = false): Boolean {
+    return when (input?.lowercase()) {
+      in setOf("yes", "true") -> true
+      in setOf("no", "false") -> false
+      else -> defaultValue
+    }
+  }
 
   private val renderedTextRegex = """\[\[(?<renderedText>.*)]]""".toRegex()
 
