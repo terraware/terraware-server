@@ -1,3 +1,4 @@
+9e526fe5f4d SW-5933 Make table variables lists by default (#2386)
 245f2bdc1e0 Increase Gradle memory limit to fix test failures (#2385)
 3d9ac12f9de Limit application restart states (#2384)
 8e82d6f07d4 SW-5768 Allow update of document statuses (#2383)
