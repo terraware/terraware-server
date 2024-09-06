@@ -14,6 +14,7 @@ enum class PreScreenProjectType {
  * are part of [ExistingApplicationModel].
  */
 data class PreScreenVariableValues(
+    val countryCode: String?,
     val landUseModelHectares: Map<LandUseModelType, BigDecimal>,
     val numSpeciesToBePlanted: Int?,
     val projectType: PreScreenProjectType?,

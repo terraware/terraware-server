@@ -36,7 +36,6 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
   private val store by lazy {
     VariableValueStore(
         clock,
-        documentsDao,
         dslContext,
         eventPublisher,
         variableImageValuesDao,
@@ -468,6 +467,18 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       @Test
+      fun `does not publishes event if a deliverable is associated and triggerWorkflows is false`() {
+        val variableId =
+            insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
+
+        store.updateValues(
+            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))),
+            triggerWorkflows = false)
+
+        eventPublisher.assertEventNotPublished<QuestionsDeliverableSubmittedEvent>()
+      }
+
+      @Test
       fun `does not publish event if a deliverable is not associated`() {
         val variableId = insertVariableManifestEntry(insertTextVariable(deliverableId = null))
         store.updateValues(
@@ -489,6 +500,17 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
           eventPublisher.assertEventPublished(
               VariableValueUpdatedEvent(inserted.projectId, value.variableId))
         }
+      }
+
+      fun `does not publish event if a variable value is updated and triggerWorkflows is false`() {
+        val variableId =
+            insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
+
+        store.updateValues(
+            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))),
+            triggerWorkflows = false)
+
+        eventPublisher.assertEventNotPublished<VariableValueUpdatedEvent>()
       }
 
       @Test

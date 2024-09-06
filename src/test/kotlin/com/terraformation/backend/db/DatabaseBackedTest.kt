@@ -2554,8 +2554,12 @@ abstract class DatabaseBackedTest {
       deliverableId: DeliverableId? = null,
       minValue: BigDecimal? = null,
       maxValue: BigDecimal? = null,
+      stableId: String = "$nextVariableNumber",
   ): VariableId {
-    val actualId = id ?: insertVariable(type = VariableType.Number, deliverableId = deliverableId)
+    val actualId =
+        id
+            ?: insertVariable(
+                type = VariableType.Number, deliverableId = deliverableId, stableId = stableId)
 
     val row =
         VariableNumbersRow(
@@ -2803,8 +2807,12 @@ abstract class DatabaseBackedTest {
       id: VariableId? = null,
       deliverableId: DeliverableId? = null,
       style: VariableTableStyle = VariableTableStyle.Horizontal,
+      stableId: String = "$nextVariableNumber",
   ): VariableId {
-    val actualId = id ?: insertVariable(type = VariableType.Table, deliverableId = deliverableId)
+    val actualId =
+        id
+            ?: insertVariable(
+                type = VariableType.Table, deliverableId = deliverableId, stableId = stableId)
 
     val row =
         VariableTablesRow(
@@ -2822,8 +2830,12 @@ abstract class DatabaseBackedTest {
       id: VariableId? = null,
       deliverableId: DeliverableId? = null,
       textType: VariableTextType = VariableTextType.SingleLine,
+      stableId: String = "$nextVariableNumber",
   ): VariableId {
-    val actualId = id ?: insertVariable(type = VariableType.Text, deliverableId = deliverableId)
+    val actualId =
+        id
+            ?: insertVariable(
+                type = VariableType.Text, deliverableId = deliverableId, stableId = stableId)
 
     val row =
         VariableTextsRow(

@@ -41,6 +41,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
 import java.time.InstantSource
+import org.geotools.api.feature.simple.SimpleFeature
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -93,6 +94,13 @@ class ApplicationStore(
     requirePermissions { readApplication(applicationId) }
 
     return fetchByCondition(APPLICATIONS.ID.eq(applicationId)).firstOrNull()
+        ?: throw ApplicationNotFoundException(applicationId)
+  }
+
+  fun fetchGeoFeatureById(applicationId: ApplicationId): SimpleFeature {
+    requirePermissions { reviewApplication(applicationId) }
+
+    return fetchByCondition(APPLICATIONS.ID.eq(applicationId)).firstOrNull()?.toGeoFeature()
         ?: throw ApplicationNotFoundException(applicationId)
   }
 
@@ -354,7 +362,8 @@ class ApplicationStore(
    */
   fun submit(
       applicationId: ApplicationId,
-      preScreenVariableValues: PreScreenVariableValues? = null
+      preScreenVariableValues: PreScreenVariableValues? = null,
+      boundarySubmission: DeliverableSubmissionModel? = null,
   ): ApplicationSubmissionResult {
     requirePermissions { updateApplicationSubmissionStatus(applicationId) }
 
@@ -366,7 +375,7 @@ class ApplicationStore(
             "No pre-screen variable values supplied for pre-screen submission")
       }
 
-      val problems = checkPreScreenCriteria(existing, preScreenVariableValues)
+      val problems = checkPreScreenCriteria(existing, preScreenVariableValues, boundarySubmission)
       updatePrescreenFeedback(applicationId, problems)
 
       if (problems.isNotEmpty()) {
@@ -633,11 +642,12 @@ class ApplicationStore(
 
   private fun checkPreScreenCriteria(
       application: ExistingApplicationModel,
-      preScreenVariableValues: PreScreenVariableValues
+      preScreenVariableValues: PreScreenVariableValues,
+      boundarySubmission: DeliverableSubmissionModel? = null,
   ): List<String> {
     val problems = mutableListOf<String>()
 
-    var countryCode: String? = null
+    var boundaryCountryCode: String? = null
     var siteAreaHa: Double? = null
 
     val totalLandUseArea =
@@ -648,22 +658,45 @@ class ApplicationStore(
 
       val countries = countryDetector.getCountries(application.boundary)
       when (countries.size) {
-        0 -> problems.add(messages.applicationPreScreenFailureNoCountry())
-        1 -> countryCode = countries.first()
+        0 -> problems.add(messages.applicationPreScreenBoundaryInNoCountry())
+        1 -> boundaryCountryCode = countries.first()
         else -> problems.add(messages.applicationPreScreenFailureMultipleCountries())
       }
-    } else {
+    } else if (boundarySubmission == null ||
+        boundarySubmission.status != SubmissionStatus.Completed) {
       problems.add(messages.applicationPreScreenFailureNoBoundary())
+    } else {
+      // User uploaded files there were not parsed. Use total land use area as site area.
+      siteAreaHa = totalLandUseArea
     }
 
-    val countriesRow = countryCode?.let { countriesDao.fetchOneByCode(it) }
+    if (problems.size > 0) {
+      return problems
+    }
 
-    if (countriesRow != null && siteAreaHa != null) {
-      if (countriesRow.eligible != true) {
-        // TODO: Look up localized country name
-        problems.add(messages.applicationPreScreenFailureIneligibleCountry(countriesRow.name!!))
-      } else {
-        val minimumHectares = perCountryMinimumHectares[countryCode] ?: defaultMinimumHectares
+    if (preScreenVariableValues.countryCode == null) {
+      problems.add(messages.applicationPreScreenFailureNoCountry())
+    }
+
+    // TODO: Look up localized country name
+    val boundaryCountriesRow = boundaryCountryCode?.let { countriesDao.fetchOneByCode(it) }
+    val projectCountriesRow =
+        preScreenVariableValues.countryCode?.let { countriesDao.fetchOneByCode(it) }
+
+    if (projectCountriesRow != null) {
+      if (projectCountriesRow.eligible != true) {
+        // First, check if the application country is eligible
+        problems.add(
+            messages.applicationPreScreenFailureIneligibleCountry(projectCountriesRow.name!!))
+      } else if (boundaryCountriesRow != null && boundaryCountriesRow != projectCountriesRow) {
+        // Second, check if the provided boundary matches the country
+        problems.add(
+            messages.applicationPreScreenFailureMismatchCountries(
+                boundaryCountriesRow.name!!, projectCountriesRow.name!!))
+      } else if (siteAreaHa != null) {
+        // Third, check minimum hectares requirements
+        val minimumHectares =
+            perCountryMinimumHectares[projectCountriesRow.code] ?: defaultMinimumHectares
 
         if (siteAreaHa < minimumHectares ||
             siteAreaHa > defaultMaximumHectares ||
@@ -671,7 +704,7 @@ class ApplicationStore(
             totalLandUseArea > defaultMaximumHectares) {
           problems.add(
               messages.applicationPreScreenFailureBadSize(
-                  countriesRow.name!!, minimumHectares, defaultMaximumHectares))
+                  projectCountriesRow.name!!, minimumHectares, defaultMaximumHectares))
         }
       }
     }

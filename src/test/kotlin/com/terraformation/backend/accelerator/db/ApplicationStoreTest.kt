@@ -39,6 +39,7 @@ import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.equalsOrBothNull
 import io.mockk.every
+import io.mockk.mockk
 import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -171,6 +172,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           insertApplication(
               projectId = org1ProjectId1,
               boundary = rectangle(1),
+              countryCode = "FR",
               feedback = "feedback",
               internalComment = "internal comment",
               internalName = "internalName",
@@ -209,6 +211,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
         assertEquals(
             ExistingApplicationModel(
                 boundary = rectangle(1),
+                countryCode = "FR",
                 createdTime = Instant.EPOCH,
                 feedback = "feedback",
                 id = org1Project1ApplicationId,
@@ -237,6 +240,51 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Nested
+    inner class FetchGeoFeatureByProjectId {
+      @Test
+      fun `fetches application data to a simple feature`() {
+        val simpleFeature = store.fetchGeoFeatureById(org1Project1ApplicationId)
+
+        assertEquals(rectangle(1), simpleFeature.defaultGeometry as Geometry, "geometry attribute")
+        assertEquals(
+            org1Project1ApplicationId.value,
+            simpleFeature.getAttribute("applicationId"),
+            "applicationId attribute")
+        assertEquals("FR", simpleFeature.getAttribute("countryCode"), "countryCode attribute")
+        assertEquals(
+            "internalName", simpleFeature.getAttribute("internalName"), "internalName attribute")
+        assertEquals(
+            organizationId.value,
+            simpleFeature.getAttribute("organizationId"),
+            "organizationId attribute")
+        assertEquals(
+            "Organization 1",
+            simpleFeature.getAttribute("organizationName"),
+            "organizationName attribute")
+        assertEquals(
+            org1ProjectId1.value, simpleFeature.getAttribute("projectId"), "projectId attribute")
+        assertEquals(
+            "Project A", simpleFeature.getAttribute("projectName"), "projectName attribute")
+        assertEquals(
+            ApplicationStatus.PreCheck.jsonValue,
+            simpleFeature.getAttribute("status"),
+            "status attribute")
+      }
+
+      @Test
+      fun `throws exception if application does not exist`() {
+        assertThrows<ApplicationNotFoundException> { store.fetchGeoFeatureById(ApplicationId(1)) }
+      }
+
+      @Test
+      fun `throws exception if no permission to review application`() {
+        every { user.canReviewApplication(org1Project1ApplicationId) } returns false
+
+        assertThrows<AccessDeniedException> { store.fetchGeoFeatureById(org1Project1ApplicationId) }
+      }
+    }
+
+    @Nested
     inner class FetchByProjectId {
       @Test
       fun `fetches application for project`() {
@@ -244,6 +292,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             listOf(
                 ExistingApplicationModel(
                     boundary = rectangle(1),
+                    countryCode = "FR",
                     createdTime = Instant.EPOCH,
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
@@ -288,6 +337,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             listOf(
                 ExistingApplicationModel(
                     boundary = rectangle(1),
+                    countryCode = "FR",
                     createdTime = Instant.EPOCH,
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
@@ -334,6 +384,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             listOf(
                 ExistingApplicationModel(
                     boundary = rectangle(1),
+                    countryCode = "FR",
                     createdTime = Instant.EPOCH,
                     feedback = "feedback",
                     id = org1Project1ApplicationId,
@@ -1061,7 +1112,21 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       val result = store.submit(applicationId, validVariables(boundary))
 
-      assertEquals(listOf(messages.applicationPreScreenFailureNoCountry()), result.problems)
+      assertEquals(listOf(messages.applicationPreScreenBoundaryInNoCountry()), result.problems)
+      assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
+    }
+
+    @Test
+    fun `detects boundary country and variable country mismatch`() {
+      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) }
+      val applicationId = insertApplication(boundary = boundary)
+
+      val result = store.submit(applicationId, validVariables(boundary).copy(countryCode = "TZ"))
+
+      assertEquals(
+          listOf(
+              messages.applicationPreScreenFailureMismatchCountries("United States", "Tanzania")),
+          result.problems)
       assertEquals(ApplicationStatus.FailedPreScreen, result.application.status)
     }
 
@@ -1082,9 +1147,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     fun `detects boundary size below minimum`(country: String, origin: Point, minHectares: Int) {
       insertProject()
       val boundary = Turtle(origin).makePolygon { rectangle(10000, minHectares - 10) }
+      val countryCode = countriesDao.fetchOneByName(country)?.code
       val applicationId = insertApplication(boundary = boundary, internalName = country)
 
-      val result = store.submit(applicationId, validVariables(boundary))
+      val result =
+          store.submit(applicationId, validVariables(boundary).copy(countryCode = countryCode))
 
       assertEquals(
           listOf(messages.applicationPreScreenFailureBadSize(country, minHectares, 100000)),
@@ -1103,12 +1170,14 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     ) {
       insertProject()
       val boundary = Turtle(origin).makePolygon { rectangle(10000, minHectares + 10) }
+      val countryCode = countriesDao.fetchOneByName(country)?.code
       val applicationId = insertApplication(boundary = boundary, internalName = country)
 
       val result =
           store.submit(
               applicationId,
               PreScreenVariableValues(
+                  countryCode = countryCode,
                   landUseModelHectares =
                       mapOf(LandUseModelType.NativeForest to BigDecimal(minHectares - 10)),
                   numSpeciesToBePlanted = 500,
@@ -1144,6 +1213,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           store.submit(
               applicationId,
               PreScreenVariableValues(
+                  countryCode = "US",
                   landUseModelHectares =
                       mapOf(
                           LandUseModelType.NativeForest to BigDecimal(60000),
@@ -1163,7 +1233,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       val boundary = Turtle(point(-100, 51)).makePolygon { rectangle(10000, 16000) }
       val applicationId = insertApplication(boundary = boundary)
 
-      val result = store.submit(applicationId, validVariables(boundary))
+      val result = store.submit(applicationId, validVariables(boundary).copy(countryCode = "CA"))
 
       assertEquals(
           listOf(messages.applicationPreScreenFailureIneligibleCountry("Canada")), result.problems)
@@ -1181,6 +1251,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           store.submit(
               applicationId,
               PreScreenVariableValues(
+                  countryCode = "US",
                   landUseModelHectares =
                       mapOf(
                           LandUseModelType.Monoculture to halfArea,
@@ -1244,6 +1315,41 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = Instant.ofEpochSecond(30)
 
       store.submit(applicationId, validVariables(boundary))
+
+      assertEquals(
+          listOf(
+              initial.copy(
+                  applicationStatusId = ApplicationStatus.PassedPreScreen,
+                  feedback = null,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant)),
+          applicationsDao.findAll())
+    }
+
+    @Test
+    fun `passes prescreen with completed submission without boundary`() {
+      val otherUserId = insertUser()
+      val applicationId =
+          insertApplication(boundary = null, createdBy = otherUserId, feedback = "feedback")
+      val initial = applicationsDao.findAll().single()
+
+      clock.instant = Instant.ofEpochSecond(30)
+
+      val validVariables =
+          PreScreenVariableValues(
+              countryCode = "US",
+              landUseModelHectares =
+                  mapOf(
+                      LandUseModelType.NativeForest to BigDecimal(15000),
+                      LandUseModelType.Monoculture to BigDecimal.ZERO),
+              numSpeciesToBePlanted = 500,
+              projectType = PreScreenProjectType.Terrestrial,
+              totalExpansionPotential = BigDecimal(1500))
+
+      val validSubmission = mockk<DeliverableSubmissionModel>()
+      every { validSubmission.status } returns SubmissionStatus.Completed
+
+      store.submit(applicationId, validVariables, validSubmission)
 
       assertEquals(
           listOf(
@@ -1416,6 +1522,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     private fun validVariables(boundary: Geometry): PreScreenVariableValues {
       val projectHectares = boundary.calculateAreaHectares()
       return PreScreenVariableValues(
+          countryCode = "US",
           landUseModelHectares =
               mapOf(
                   LandUseModelType.NativeForest to projectHectares,

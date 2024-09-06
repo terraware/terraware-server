@@ -10,7 +10,6 @@ import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
-import com.terraformation.backend.db.docprod.tables.daos.DocumentsDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableImageValuesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableLinkValuesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableSectionValuesDao
@@ -80,7 +79,6 @@ import org.springframework.context.ApplicationEventPublisher
 @Named
 class VariableValueStore(
     private val clock: InstantSource,
-    private val documentsDao: DocumentsDao,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val variableImageValuesDao: VariableImageValuesDao,
@@ -176,15 +174,42 @@ class VariableValueStore(
     return fetchByConditions(conditions, includeDeletedValues)
   }
 
-  /** Get the values for a list of variable IDs, useful for getting injected variable values */
+  /**
+   * Returns a single project's values for a list of variable IDs, useful for getting injected
+   * variable values
+   */
   fun listValues(projectId: ProjectId, variableIds: List<VariableId>): List<ExistingValue> {
     val conditions =
-        listOfNotNull(
+        listOf(
             VARIABLE_VALUES.PROJECT_ID.eq(projectId),
             VARIABLE_VALUES.VARIABLE_ID.`in`(variableIds),
         )
 
     return fetchByConditions(conditions, true)
+  }
+
+  /**
+   * Returns the values for a list of variable IDs across all projects. Deleted values are not
+   * included.
+   */
+  fun listValues(
+      variableIds: Collection<VariableId>,
+  ): List<ExistingValue> {
+    return fetchByConditions(listOf(VARIABLE_VALUES.VARIABLE_ID.`in`(variableIds)), false)
+  }
+
+  /** For each variable, returns which projects have values for it. */
+  fun fetchProjectsWithValues(
+      variableIds: Collection<VariableId>
+  ): Map<VariableId, Set<ProjectId>> {
+    return with(VARIABLE_VALUES) {
+      dslContext
+          .select(VARIABLE_ID, PROJECT_ID)
+          .from(VARIABLE_VALUES)
+          .where(VARIABLE_VALUES.VARIABLE_ID.`in`(variableIds))
+          .fetchGroups(VARIABLE_ID.asNonNullable())
+          .mapValues { (_, result) -> result.map { it[PROJECT_ID]!! }.toSet() }
+    }
   }
 
   /**
@@ -253,6 +278,7 @@ class VariableValueStore(
                 tableRowVariableValues.VARIABLE_ID,
             )
             .distinctOn(
+                VARIABLE_VALUES.PROJECT_ID,
                 VARIABLE_VALUES.VARIABLE_ID,
                 VARIABLE_VALUES.LIST_POSITION,
                 tableRowVariableValues.VARIABLE_ID,
@@ -273,6 +299,7 @@ class VariableValueStore(
             .on(VARIABLE_VALUES.VARIABLE_ID.eq(VARIABLES.ID))
             .where(conditions)
             .orderBy(
+                VARIABLE_VALUES.PROJECT_ID,
                 VARIABLE_VALUES.VARIABLE_ID,
                 VARIABLE_VALUES.LIST_POSITION,
                 tableRowVariableValues.VARIABLE_ID,
@@ -389,11 +416,16 @@ class VariableValueStore(
   /**
    * Updates the values in a document by applying a list of operations.
    *
+   * @param triggerWorkflows If true, publish events about the updates that trigger additional
+   *   actions such as sending notifications and updating submission statuses.
    * @return The values that changed after the operations were applied. In theory it's possible for
    *   this to also include changes from other updates that were running at the same time as this
    *   one.
    */
-  fun updateValues(operations: List<ValueOperation>): List<ExistingValue> {
+  fun updateValues(
+      operations: List<ValueOperation>,
+      triggerWorkflows: Boolean = true
+  ): List<ExistingValue> {
     val projectId = operations.firstOrNull()?.projectId ?: return emptyList()
 
     val latestRowIds = mutableMapOf<VariableId, VariableValueId>()
@@ -417,8 +449,11 @@ class VariableValueStore(
     val maxValueIdAfter = fetchMaxValueId(projectId) ?: VariableValueId(1)
 
     val values = listValues(projectId, VariableValueId(maxValueIdBefore.value + 1), maxValueIdAfter)
-    notifyForReview(projectId, values)
-    updateStatus(projectId, values)
+
+    if (triggerWorkflows) {
+      notifyForReview(projectId, values)
+      updateStatus(projectId, values)
+    }
 
     return values
   }

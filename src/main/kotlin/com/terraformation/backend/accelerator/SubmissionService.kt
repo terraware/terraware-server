@@ -19,6 +19,7 @@ import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.records.ProjectAcceleratorDetailsRecord
 import com.terraformation.backend.db.accelerator.tables.records.SubmissionDocumentsRecord
+import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
@@ -91,13 +92,21 @@ class SubmissionService(
               .from(PROJECT_ACCELERATOR_DETAILS)
               .where(PROJECT_ID.eq(projectId))
               .fetchOneInto(ProjectAcceleratorDetailsRecord::class.java)
-              ?: uploadFailed(
-                  deliverableId,
-                  projectId,
-                  FailureReason.ProjectNotConfigured,
-                  documentStore,
-                  originalName)
         }
+
+    val applicationInternalName =
+        with(APPLICATIONS) {
+          dslContext
+              .select(INTERNAL_NAME)
+              .from(APPLICATIONS)
+              .where(PROJECT_ID.eq(projectId))
+              .fetchOne(INTERNAL_NAME)
+        }
+
+    if (projectAcceleratorDetails == null && applicationInternalName == null) {
+      uploadFailed(
+          deliverableId, projectId, FailureReason.ProjectNotConfigured, documentStore, originalName)
+    }
 
     val now = clock.instant()
     val currentDateUtc = LocalDate.ofInstant(now, ZoneOffset.UTC)
@@ -107,7 +116,8 @@ class SubmissionService(
 
     // Filenames follow a fixed format.
     val fileNaming =
-        projectAcceleratorDetails.fileNaming
+        projectAcceleratorDetails?.fileNaming
+            ?: applicationInternalName
             ?: uploadFailed(
                 deliverableId,
                 projectId,
@@ -131,9 +141,9 @@ class SubmissionService(
     // This is a String for Dropbox and a URI for Google
     val folder: Any =
         if (isSensitive) {
-          projectAcceleratorDetails.dropboxFolderPath
+          projectAcceleratorDetails?.dropboxFolderPath
         } else {
-          projectAcceleratorDetails.googleFolderUrl
+          projectAcceleratorDetails?.googleFolderUrl
               ?: createGoogleDriveFolder(projectId, fileNaming)
         }
             ?: uploadFailed(
@@ -320,9 +330,12 @@ class SubmissionService(
 
     with(PROJECT_ACCELERATOR_DETAILS) {
       dslContext
-          .update(PROJECT_ACCELERATOR_DETAILS)
+          .insertInto(PROJECT_ACCELERATOR_DETAILS)
+          .set(PROJECT_ID, projectId)
           .set(GOOGLE_FOLDER_URL, newFolderUrl)
-          .where(PROJECT_ID.eq(projectId))
+          .onConflict(PROJECT_ID)
+          .doUpdate()
+          .set(GOOGLE_FOLDER_URL, newFolderUrl)
           .execute()
     }
 

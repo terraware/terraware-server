@@ -21,6 +21,7 @@ class ApplicationService(
     private val countriesDao: CountriesDao,
     private val countryDetector: CountryDetector,
     private val defaultProjectLeadsDao: DefaultProjectLeadsDao,
+    private val preScreenBoundarySubmissionFetcher: PreScreenBoundarySubmissionFetcher,
     private val preScreenVariableValuesFetcher: PreScreenVariableValuesFetcher,
     private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore,
     private val systemUser: SystemUser,
@@ -40,7 +41,9 @@ class ApplicationService(
 
     return if (existing.status == ApplicationStatus.NotSubmitted) {
       val variableValues = preScreenVariableValuesFetcher.fetchValues(existing.projectId)
-      val result = applicationStore.submit(applicationId, variableValues)
+      val boundarySubmission =
+          preScreenBoundarySubmissionFetcher.fetchSubmission(existing.projectId)
+      val result = applicationStore.submit(applicationId, variableValues, boundarySubmission)
       if (result.isSuccessful) {
         createProjectAcceleratorDetails(result.application, variableValues)
       }
@@ -58,7 +61,7 @@ class ApplicationService(
   ) {
     val landUseModelTypes =
         variableValues.landUseModelHectares.filterValues { it.signum() > 0 }.keys
-    val countryCode = application.boundary?.let { countryDetector.getCountries(it) }?.singleOrNull()
+    val countryCode = variableValues.countryCode
     val region = countryCode?.let { countriesDao.fetchOneByCode(it) }?.regionId
     val projectLead = region?.let { defaultProjectLeadsDao.fetchOneByRegionId(it) }?.projectLead
 

@@ -5,8 +5,8 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.tables.daos.DocumentTemplatesDao
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentTemplatesRow
+import com.terraformation.backend.documentproducer.VariableService
 import com.terraformation.backend.documentproducer.db.manifest.ManifestImporter
-import com.terraformation.backend.documentproducer.db.variable.VariableImporter
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
@@ -25,7 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 class AdminDocumentProducerController(
     private val documentTemplatesDao: DocumentTemplatesDao,
     private val manifestImporter: ManifestImporter,
-    private val variableImporter: VariableImporter,
+    private val variableService: VariableService,
 ) {
   /** Redirects /admin to /admin/ so relative URLs in the UI will work. */
   @GetMapping
@@ -59,6 +59,18 @@ class AdminDocumentProducerController(
     return documentProducerAdminHome()
   }
 
+  @PostMapping("/upgradeAllVariables")
+  fun upgradeAllVariables(redirectAttributes: RedirectAttributes): String {
+    try {
+      variableService.upgradeAllVariables()
+      redirectAttributes.successMessage = "Upgrades complete."
+    } catch (e: Exception) {
+      redirectAttributes.failureMessage = "Failed to upgrade: ${e.message}"
+    }
+
+    return documentProducerAdminHome()
+  }
+
   @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], path = ["/uploadAllVariables"])
   fun uploadAllVariables(
       @RequestPart("file") file: MultipartFile,
@@ -66,7 +78,7 @@ class AdminDocumentProducerController(
   ): String {
     try {
       file.inputStream.use { uploadStream ->
-        val result = variableImporter.import(uploadStream)
+        val result = variableService.importAllVariables(uploadStream)
         if (result.errors.isEmpty()) {
           redirectAttributes.successMessage = "Imported variables."
         } else {

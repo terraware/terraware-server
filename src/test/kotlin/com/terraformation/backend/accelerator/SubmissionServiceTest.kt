@@ -133,6 +133,41 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `creates new Google Drive folder for new application`() {
+      val parentFolderId = "parent"
+      val driveId = "drive"
+      val fileNaming = "xyz"
+      val newFolderId = "xyzzy"
+      val newFolderUrl = URI("https://drive.google.com/drive/$newFolderId")
+
+      insertApplication(internalName = fileNaming)
+
+      every { config.accelerator } returns
+          TerrawareServerConfig.AcceleratorConfig(applicationGoogleFolderId = parentFolderId)
+      every { googleDriveWriter.findOrCreateFolders(driveId, parentFolderId, any()) } returns
+          newFolderId
+      every { googleDriveWriter.getDriveIdForFile(any()) } returns driveId
+      every { googleDriveWriter.getFileIdForFolderUrl(newFolderUrl) } returns newFolderId
+      every { googleDriveWriter.shareFile(newFolderId) } returns newFolderUrl
+      every {
+        googleDriveWriter.uploadFile(
+            newFolderId, any(), any(), any(), driveId, any(), any(), any(), any())
+      } returns "file"
+
+      receiveDocument()
+
+      verify(exactly = 1) {
+        googleDriveWriter.findOrCreateFolders(
+            driveId, parentFolderId, listOf("$fileNaming [Internal]"))
+      }
+
+      assertEquals(
+          newFolderUrl,
+          projectAcceleratorDetailsDao.fetchOneByProjectId(projectId)?.googleFolderUrl,
+          "Google folder URL")
+    }
+
+    @Test
     fun `publishes event and throws exception if upload to document store fails`() {
       insertProjectAcceleratorDetails(fileNaming = "xyz", googleFolderUrl = googleDriveFolder)
 

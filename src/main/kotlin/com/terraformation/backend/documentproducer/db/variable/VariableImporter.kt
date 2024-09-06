@@ -28,9 +28,12 @@ import java.io.InputStream
 import org.jooq.DSLContext
 
 data class VariableImportResult(
-    val message: String,
-    val results: List<String>,
-    val errors: List<String>
+    val errors: List<String>,
+    /**
+     * For variables that were replaced with new versions, a map of the previous variable ID to the
+     * replacement ID.
+     */
+    val replacements: Map<VariableId, VariableId> = emptyMap(),
 )
 
 @Named
@@ -51,15 +54,13 @@ class VariableImporter(
     validator.validate(inputBytes)
 
     if (validator.errors.isNotEmpty()) {
-      return VariableImportResult("Failure", emptyList(), validator.errors)
+      return VariableImportResult(validator.errors)
     }
 
     return try {
       ImportContext().importCsv(inputBytes)
     } catch (e: Exception) {
       VariableImportResult(
-          "Failure",
-          listOf(),
           listOf("Error while attempting to import the all variables CSV - ${e.message}"),
       )
     }
@@ -86,8 +87,8 @@ class VariableImporter(
 
     var newVariablesImported = 0
 
-    val results = mutableListOf<String>()
     val errors = mutableListOf<String>()
+    val replacements = mutableMapOf<VariableId, VariableId>()
 
     fun importCsv(inputBytes: ByteArray): VariableImportResult {
       try {
@@ -116,17 +117,14 @@ class VariableImporter(
           }
         }
       } catch (e: ImportAbortedDueToErrorsException) {
-        return VariableImportResult("Failure", emptyList(), errors)
+        return VariableImportResult(errors)
       } catch (e: Exception) {
         log.error("Exception thrown while importing", e)
 
-        return VariableImportResult(
-            "Unexpected failure",
-            emptyList(),
-            listOf("Exception thrown while importing: $e") + errors)
+        return VariableImportResult(listOf("Exception thrown while importing: $e") + errors)
       }
 
-      return VariableImportResult("Success", results, errors)
+      return VariableImportResult(errors, replacements)
     }
 
     private fun useExistingVariables() {
@@ -348,6 +346,9 @@ class VariableImporter(
               }
 
       csvVariable.variableId = variableId
+
+      // If this variable is a new version of an existing one, track the replacement.
+      csvVariable.replacesVariableId?.let { replacements[it] = variableId }
 
       if (isNewVariable) {
         importTypeSpecificVariable(csvVariable)
