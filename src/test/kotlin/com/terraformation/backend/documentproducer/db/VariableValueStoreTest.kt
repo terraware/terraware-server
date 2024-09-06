@@ -502,6 +502,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         }
       }
 
+      @Test
       fun `does not publish event if a variable value is updated and triggerWorkflows is false`() {
         val variableId =
             insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
