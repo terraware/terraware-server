@@ -253,7 +253,8 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
           """
             {
               "name": "Test Test document",
-              "ownedBy": ${inserted.userId}
+              "ownedBy": ${inserted.userId},
+              "status": "Draft"
             }"""
               .trimIndent()
 
@@ -284,15 +285,17 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
           """
             {
               "name": "Test Test document",
-              "ownedBy": ${inserted.userId}
+              "ownedBy": ${inserted.userId},
+              "status": "Submitted"
             }"""
               .trimIndent()
 
       mockMvc.put("$path/$documentId") { content = payload }.andExpect { status { isOk() } }
 
       val documentsRow = documentsDao.fetchOneById(documentId)
-      assertEquals(documentsRow!!.name, "Test Test document")
-      assertEquals(documentsRow.ownedBy, inserted.userId)
+      assertEquals("Test Test document", documentsRow!!.name, "Name")
+      assertEquals(inserted.userId, documentsRow.ownedBy, "Owned by")
+      assertEquals(DocumentStatus.Submitted, documentsRow.statusId, "Status")
     }
   }
 
