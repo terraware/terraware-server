@@ -1,3 +1,5 @@
+245f2bdc1e0 Increase Gradle memory limit to fix test failures (#2385)
+3d9ac12f9de Limit application restart states (#2384)
 8e82d6f07d4 SW-5768 Allow update of document statuses (#2383)
 5de06a3da54 Remove hardwired ID in DocumentStoreTest (#2382)
 f0fce354448 SW-5928 Image variable as a part of questionnaire deliverable never marked as submitted (#2369)
