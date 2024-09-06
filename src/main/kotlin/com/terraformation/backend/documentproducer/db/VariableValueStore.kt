@@ -433,12 +433,15 @@ class VariableValueStore(
       throw VariableTypeMismatchException(newValue.variableId, newValue.type)
     }
 
+    val result =
+        dslContext.transactionResult { _ ->
+          insertValue(newValue.projectId, newValue.listPosition, newValue.rowValueId, newValue)
+        }
+
     // notify variable value was updated
     eventPublisher.publishEvent(VariableValueUpdatedEvent(newValue.projectId, newValue.variableId))
 
-    return dslContext.transactionResult { _ ->
-      insertValue(newValue.projectId, newValue.listPosition, newValue.rowValueId, newValue)
-    }
+    return result
   }
 
   private fun appendValue(

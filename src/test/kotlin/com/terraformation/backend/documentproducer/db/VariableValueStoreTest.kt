@@ -17,6 +17,8 @@ import com.terraformation.backend.documentproducer.model.ExistingDeletedValue
 import com.terraformation.backend.documentproducer.model.ExistingTableValue
 import com.terraformation.backend.documentproducer.model.ExistingTextValue
 import com.terraformation.backend.documentproducer.model.ExistingValue
+import com.terraformation.backend.documentproducer.model.ImageValueDetails
+import com.terraformation.backend.documentproducer.model.NewImageValue
 import com.terraformation.backend.documentproducer.model.NewTableValue
 import com.terraformation.backend.documentproducer.model.NewTextValue
 import com.terraformation.backend.documentproducer.model.ReplaceValuesOperation
@@ -487,6 +489,15 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
           eventPublisher.assertEventPublished(
               VariableValueUpdatedEvent(inserted.projectId, value.variableId))
         }
+      }
+
+      @Test
+      fun `publishes event if a variable value is written`() {
+        val variableId = insertVariable(type = VariableType.Image)
+        val fileId = insertFile()
+        store.writeValue(NewImageValue(newValueProps(variableId), ImageValueDetails("", fileId)))
+        eventPublisher.assertEventPublished(
+            VariableValueUpdatedEvent(inserted.projectId, variableId))
       }
     }
   }
