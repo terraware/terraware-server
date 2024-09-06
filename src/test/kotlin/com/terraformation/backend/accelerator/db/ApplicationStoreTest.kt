@@ -1029,6 +1029,21 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `throws exception if application is already submitted`() {
+      val submittedStauses =
+          ApplicationStatus.entries.filter {
+            it != ApplicationStatus.NotSubmitted &&
+                it != ApplicationStatus.FailedPreScreen &&
+                it != ApplicationStatus.PassedPreScreen
+          }
+      submittedStauses.forEach {
+        insertProject()
+        val applicationId = insertApplication(status = it, internalName = "Application $it")
+        assertThrows<IllegalStateException> { store.restart(applicationId) }
+      }
+    }
+
+    @Test
     fun `throws exception if no permission`() {
       val applicationId = insertApplication()
 
