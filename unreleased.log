@@ -1,3 +1,4 @@
+af178c89b33 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.25.0 (#2394)
 cf6f4098607 Update dependency dev.akkinoc.spring.boot:logback-access-spring-boot-starter to v4.3.0 (#2393)
 0d2ec3cf0ce Update dependency com.google.apis:google-api-services-drive to v3-rev20240903-2.0.0 (#2392)
 6fc74126608 Update dependency types-requests to v2.32.0.20240907 (#2391)
