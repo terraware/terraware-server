@@ -598,6 +598,13 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `fetchTerraformationContact throws exception if no permission to list organization users`() {
+    every { user.canListOrganizationUsers(organizationId) } returns false
+
+    assertThrows<AccessDeniedException> { store.fetchTerraformationContact(organizationId) }
+  }
+
+  @Test
   fun `removeUser throws exception if no permission to remove users`() {
     every { user.canRemoveOrganizationUser(organizationId, currentUser().userId) } returns false
 

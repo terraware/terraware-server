@@ -819,6 +819,8 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `returns terraformation contact user if one exists`() {
+      every { user.canListOrganizationUsers(any()) } returns true
+
       val tfContact =
           insertUser(email = "tfcontact@terraformation.com", emailNotificationsEnabled = true)
 
@@ -830,6 +832,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `returns no terraformation contact user if one does not exist`() {
+      every { user.canListOrganizationUsers(any()) } returns true
       assertNull(userStore.getTerraformationContactUser(organizationId))
     }
   }

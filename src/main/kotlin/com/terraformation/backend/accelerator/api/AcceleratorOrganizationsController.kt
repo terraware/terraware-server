@@ -4,11 +4,14 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.accelerator.db.AcceleratorOrganizationStore
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.ExistingProjectModel
+import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.web.bind.annotation.GetMapping
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class AcceleratorOrganizationsController(
     private val acceleratorOrganizationStore: AcceleratorOrganizationStore,
+    private val userStore: UserStore,
 ) {
   @GetMapping
   @Operation(
@@ -43,7 +47,8 @@ class AcceleratorOrganizationsController(
 
     return ListAcceleratorOrganizationsResponsePayload(
         organizations.map { (organization, projects) ->
-          AcceleratorOrganizationPayload(organization, projects)
+          AcceleratorOrganizationPayload(
+              organization, projects, userStore.getTerraformationContactUser(organization.id))
         })
   }
 }
@@ -57,15 +62,33 @@ data class AcceleratorProjectPayload(
   constructor(model: ExistingProjectModel) : this(model.id, model.name, model.participantId)
 }
 
+data class TerraformationContactUserPayload(
+    val userId: UserId,
+    val email: String,
+    val firstName: String?,
+    val lastName: String?,
+) {
+  constructor(
+      model: IndividualUser
+  ) : this(model.userId, model.email, model.firstName, model.lastName)
+}
+
 data class AcceleratorOrganizationPayload(
     val id: OrganizationId,
     val name: String,
     val projects: List<AcceleratorProjectPayload>,
+    val tfContactUser: TerraformationContactUserPayload?,
 ) {
   constructor(
       model: OrganizationModel,
-      projects: List<ExistingProjectModel>
-  ) : this(model.id, model.name, projects.map { AcceleratorProjectPayload(it) })
+      projects: List<ExistingProjectModel>,
+      tfContactUser: IndividualUser? = null,
+  ) : this(
+      model.id,
+      model.name,
+      projects.map { AcceleratorProjectPayload(it) },
+      tfContactUser?.let { TerraformationContactUserPayload(it) },
+  )
 }
 
 data class ListAcceleratorOrganizationsResponsePayload(

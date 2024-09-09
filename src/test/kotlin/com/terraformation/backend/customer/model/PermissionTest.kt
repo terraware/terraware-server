@@ -1619,8 +1619,10 @@ internal class PermissionTest : DatabaseTest() {
         *organizationIds.filterNot { it == org1Id }.toTypedArray(),
         addOrganizationUser = true,
         createReport = true,
+        listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
+        readOrganizationUser = true,
     )
 
     // Can access accelerator-related functions on all ogs.
@@ -1824,8 +1826,10 @@ internal class PermissionTest : DatabaseTest() {
     // Can read and perform certain operations on orgs with Accelerator internal tag.
     permissions.expect(
         OrganizationId(4),
+        listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
+        readOrganizationUser = true,
     )
 
     permissions.expect(
@@ -2014,8 +2018,10 @@ internal class PermissionTest : DatabaseTest() {
     // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
         OrganizationId(4),
+        listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
+        readOrganizationUser = true,
     )
 
     permissions.expect(
@@ -2152,8 +2158,10 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         OrganizationId(4),
+        listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
+        readOrganizationUser = true,
     )
 
     permissions.expect(
