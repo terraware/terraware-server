@@ -1,0 +1,145 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}">
+    <style th:fragment="additionalStyle">
+        form { padding-bottom: 1em; }
+    </style>
+</head>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+
+<h2>HubSpot Integration</h2>
+
+<th:block th:if="!${hasToken}">
+    <h3>No HubSpot credentials configured.</h3>
+
+    <p>
+        Click the button to authorize Terraware to make HubSpot API requests. You will be redirected
+        to HubSpot, which may ask you to authorize the Terraware app.
+    </p>
+
+    <form method="POST" action="/admin/hubSpotAuthorize">
+        <input type="submit" value="Authorize"/>
+    </form>
+</th:block>
+
+<th:block th:if="${hasToken}">
+    <h3>Configured!</h3>
+
+    <p>
+        The server is configured with HubSpot credentials already. No further action needed.
+    </p>
+
+    <hr/>
+
+    <h3>Test</h3>
+
+    <p>
+        These buttons test interactions with the HubSpot API.
+    </p>
+
+    <form method="POST" action="/admin/hubSpotTestGetAcceleratorPipelineId">
+        <input type="submit" value="Get Accelerator Pipeline ID"/>
+    </form>
+
+    <h4>Create full set of objects</h4>
+
+    <form method="POST" action="/admin/hubSpotTestCreateApplication">
+        <label>
+            Deal Name
+            <input type="text" name="dealName" required/>
+        </label>
+        <label>
+            Country Code (2-letter)
+            <input type="text" name="countryCode"/>
+        </label>
+        <label>
+            Hectares
+            <input type="number" name="reforestableLand"/>
+        </label>
+        <label>
+            Contact Name
+            <input type="text" name="contactName"/>
+        </label>
+        <label>
+            Email
+            <input type="email" name="contactEmail"/>
+        </label>
+        <label>
+            Org Name
+            <input type="text" name="orgName" required/>
+        </label>
+        <label>
+            Website
+            <input type="text" name="website"/>
+        </label>
+        <input type="submit" value="Create Deal"/>
+    </form>
+
+    <h4>Create individual objects with associations</h4>
+
+    <form method="POST" action="/admin/hubSpotTestCreateDeal">
+        <label>
+            Deal Name
+            <input type="text" name="dealName" required/>
+        </label>
+        <label>
+            Country
+            <input type="text" name="countryName" required/>
+        </label>
+        <label>
+            Hectares
+            <input type="number" name="reforestableLand" required/>
+        </label>
+        <input type="submit" value="Create Deal"/>
+    </form>
+
+    <form method="POST" action="/admin/hubSpotTestCreateContact">
+        <label>
+            Name
+            <input type="text" name="name" required/>
+        </label>
+        <label>
+            Email
+            <input type="email" name="email" required/>
+        </label>
+        <label>
+            Deal ID
+            <input type="text" name="dealId" required/>
+        </label>
+        <input type="submit" value="Create Contact"/>
+    </form>
+
+    <form method="POST" action="/admin/hubSpotTestCreateCompany">
+        <label>
+            Name
+            <input type="text" name="name" required/>
+        </label>
+        <label>
+            Website
+            <input type="text" name="website"/>
+        </label>
+        <label>
+            Deal ID
+            <input type="text" name="dealId" required/>
+        </label>
+        <input type="submit" value="Create Company"/>
+    </form>
+
+    <h3>Reset HubSpot Credentials</h3>
+
+    <p>
+        <b>This will break the HubSpot integration until new credentials are configured!</b>
+        Use with caution.
+    </p>
+
+    <form method="POST" action="/admin/hubSpotReset">
+        <input type="submit" value="Reset"/>
+    </form>
+</th:block>
+
+</body>
+</html>

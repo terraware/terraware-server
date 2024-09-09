@@ -5,6 +5,7 @@ import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
 import com.terraformation.backend.accelerator.model.ApplicationVariableValues
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.ApplicationId
@@ -12,20 +13,26 @@ import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.tables.daos.DefaultProjectLeadsDao
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.gis.CountryDetector
+import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
+import java.net.URI
 
 @Named
 class ApplicationService(
     private val applicationStore: ApplicationStore,
     private val applicationVariableValuesFetcher: ApplicationVariableValuesFetcher,
+    private val config: TerrawareServerConfig,
     private val countriesDao: CountriesDao,
     private val countryDetector: CountryDetector,
     private val defaultProjectLeadsDao: DefaultProjectLeadsDao,
+    private val hubSpotService: HubSpotService,
     private val preScreenBoundarySubmissionFetcher: PreScreenBoundarySubmissionFetcher,
     private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore,
     private val systemUser: SystemUser,
 ) {
+  private val log = perClassLogger()
+
   /**
    * Submits an application. If the submission is for pre-screening, looks up the values of the
    * variables that affect the eligibility checks.
@@ -38,11 +45,11 @@ class ApplicationService(
     requirePermissions { updateApplicationSubmissionStatus(applicationId) }
 
     val existing = applicationStore.fetchOneById(applicationId)
+    val projectId = existing.projectId
+    val variableValues = applicationVariableValuesFetcher.fetchValues(projectId)
 
     return if (existing.status == ApplicationStatus.NotSubmitted) {
-      val variableValues = applicationVariableValuesFetcher.fetchValues(existing.projectId)
-      val boundarySubmission =
-          preScreenBoundarySubmissionFetcher.fetchSubmission(existing.projectId)
+      val boundarySubmission = preScreenBoundarySubmissionFetcher.fetchSubmission(projectId)
       val result = applicationStore.submit(applicationId, variableValues, boundarySubmission)
       if (result.isSuccessful) {
         createProjectAcceleratorDetails(result.application, variableValues)
@@ -50,7 +57,40 @@ class ApplicationService(
 
       result
     } else {
-      applicationStore.submit(applicationId)
+      val result = applicationStore.submit(applicationId)
+      val details = projectAcceleratorDetailsStore.fetchOneById(projectId)
+
+      if (config.hubSpot.enabled &&
+          result.isSuccessful &&
+          result.application.status == ApplicationStatus.Submitted &&
+          details.hubSpotUrl == null) {
+        try {
+          val application = result.application
+
+          val dealPage =
+              hubSpotService.createApplicationObjects(
+                  applicationReforestableLand = details.applicationReforestableLand,
+                  companyName = application.organizationName,
+                  contactEmail = variableValues.contactEmail,
+                  contactName = variableValues.contactName,
+                  countryCode = application.countryCode,
+                  dealName = application.internalName,
+                  website = variableValues.website,
+              )
+
+          updateHubSpotUrl(application, dealPage)
+        } catch (e: Exception) {
+          log.error("Failed to add application data to HubSpot", e)
+        }
+      }
+
+      result
+    }
+  }
+
+  private fun updateHubSpotUrl(application: ExistingApplicationModel, url: URI) {
+    systemUser.run {
+      projectAcceleratorDetailsStore.update(application.projectId) { it.copy(hubSpotUrl = url) }
     }
   }
 
