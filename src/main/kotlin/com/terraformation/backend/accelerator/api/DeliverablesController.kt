@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.api
 
+import com.terraformation.backend.accelerator.DeliverableService
 import com.terraformation.backend.accelerator.SubmissionService
 import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.DeliverableStore
@@ -53,6 +54,7 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/accelerator/deliverables")
 @RestController
 class DeliverablesController(
+    private val deliverableService: DeliverableService,
     private val deliverableStore: DeliverableStore,
     private val submissionService: SubmissionService,
     private val submissionStore: SubmissionStore,
@@ -201,7 +203,7 @@ class DeliverablesController(
       @PathVariable projectId: ProjectId
   ): SimpleSuccessResponsePayload {
     // "Create" operation updates status of existing submission if there is one.
-    submissionStore.createSubmission(deliverableId, projectId, SubmissionStatus.Completed)
+    deliverableService.completeDeliverable(deliverableId, projectId)
 
     return SimpleSuccessResponsePayload()
   }
