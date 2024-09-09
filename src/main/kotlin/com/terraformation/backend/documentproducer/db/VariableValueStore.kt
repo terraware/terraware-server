@@ -252,6 +252,13 @@ class VariableValueStore(
               result.map { record -> record[VARIABLE_SELECT_OPTION_VALUES.OPTION_ID] }.toSet()
             }
 
+    val visibilityCondition =
+        if (!currentUser().canReadInternalOnlyVariables()) {
+          VARIABLES.INTERNAL_ONLY.eq(false)
+        } else {
+          null
+        }
+
     val tableRowVariableValues = VARIABLE_VALUES.`as`("table_row_values")
 
     val valueRecords =
@@ -302,6 +309,7 @@ class VariableValueStore(
             .join(VARIABLES)
             .on(VARIABLE_VALUES.VARIABLE_ID.eq(VARIABLES.ID))
             .where(conditions)
+            .and(visibilityCondition)
             .orderBy(
                 VARIABLE_VALUES.PROJECT_ID,
                 VARIABLE_VALUES.VARIABLE_ID,

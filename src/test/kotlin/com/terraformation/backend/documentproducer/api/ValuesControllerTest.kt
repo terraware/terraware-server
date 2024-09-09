@@ -307,6 +307,56 @@ class ValuesControllerTest : ControllerIntegrationTest() {
     }
 
     @Test
+    fun `returns internal variable values if user has permission to read it`() {
+      val variableId =
+          insertTextVariable(
+              insertVariable(internalOnly = true, isList = true, type = VariableType.Text))
+      val valueId = insertValue(variableId = variableId, textValue = "Value")
+
+      mockMvc
+          .get(path())
+          .andExpectJson(
+              """
+                {
+                  "nextValueId": ${valueId.value + 1},
+                  "values": [
+                    {
+                      "variableId": $variableId,
+                      "status": "Not Submitted",
+                      "values": [
+                        {
+                          "id": $valueId,
+                          "listPosition": 0,
+                          "type": "Text",
+                          "textValue": "Value"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "ok"
+                }
+              """
+                  .trimIndent(),
+              strict = true)
+
+      dslContext.deleteFrom(USER_GLOBAL_ROLES).execute()
+      insertOrganizationUser(user.userId, createdBy = user.userId)
+
+      mockMvc
+          .get(path())
+          .andExpectJson(
+              """
+                {
+                  "nextValueId": ${valueId.value + 1},
+                  "values": [],
+                  "status": "ok"
+                }
+              """
+                  .trimIndent(),
+              strict = true)
+    }
+
+    @Test
     fun `returns internal comment if user has permission to read it`() {
       val variableId = insertTextVariable(insertVariable(isList = true, type = VariableType.Text))
       val valueId = insertValue(variableId = variableId, textValue = "Value")
