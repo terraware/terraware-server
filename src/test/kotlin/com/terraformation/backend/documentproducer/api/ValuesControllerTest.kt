@@ -692,6 +692,66 @@ class ValuesControllerTest : ControllerIntegrationTest() {
 
       assertEquals("New citation", valuesRow.citation, "New value should have new citation")
     }
+
+    @Test
+    fun `Returns not found error if user has no permission to read internal only variable`() {
+      val variableId =
+          insertTextVariable(
+              insertVariable(internalOnly = true, isList = true, type = VariableType.Text))
+      insertValue(variableId = variableId, textValue = "Value")
+
+      dslContext.deleteFrom(USER_GLOBAL_ROLES).execute()
+      insertOrganizationUser(user.userId, createdBy = user.userId)
+
+      val payload =
+          """
+            {
+              "operations": [
+                {
+                  "operation": "Append",
+                  "variableId": $variableId,
+                  "value": {
+                    "type": "Text",
+                    "textValue": "New Value"
+                  }
+                }
+              ]
+            }
+          """
+              .trimIndent()
+
+      mockMvc.post(path()) { content = payload }.andExpect { status { isNotFound() } }
+    }
+
+    @Test
+    fun `Returns unauthorized error if user has no permission to update internal only variable`() {
+      val variableId =
+          insertTextVariable(
+              insertVariable(internalOnly = true, isList = true, type = VariableType.Text))
+      insertValue(variableId = variableId, textValue = "Value")
+
+      dslContext.deleteFrom(USER_GLOBAL_ROLES).execute()
+      insertUserGlobalRole(user.userId, GlobalRole.ReadOnly)
+
+      val payload =
+          """
+            {
+              "operations": [
+                {
+                  "operation": "Append",
+                  "variableId": $variableId,
+                  "value": {
+                    "type": "Text",
+                    "textValue": "New Value"
+                  }
+                }
+              ]
+            }
+          """
+              .trimIndent()
+
+      mockMvc.post(path()) { content = payload }.andExpect { status { isForbidden() } }
+    }
   }
 
   @Nested

@@ -1,5 +1,6 @@
 package com.terraformation.backend.documentproducer
 
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.model.AppendValueOperation
 import com.terraformation.backend.documentproducer.model.DeleteValueOperation
@@ -40,6 +41,10 @@ class VariableValueService(
    */
   fun validate(newValue: VariableValue<*, *>) {
     val variable = variableStore.fetchOneVariable(newValue.variableId)
+
+    if (variable.internalOnly) {
+      requirePermissions { updateInternalOnlyVariables() }
+    }
 
     variable.validate(newValue, variableStore::fetchOneVariable)
   }
