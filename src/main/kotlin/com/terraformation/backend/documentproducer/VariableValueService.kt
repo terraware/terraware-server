@@ -39,8 +39,8 @@ class VariableValueService(
    * see [Variable.validate] for details.
    */
   fun validate(newValue: VariableValue<*, *>) {
-    val variable = variableStore.fetchVariable(newValue.variableId)
+    val variable = variableStore.fetchOneVariable(newValue.variableId)
 
-    variable.validate(newValue, variableStore::fetchVariable)
+    variable.validate(newValue, variableStore::fetchOneVariable)
   }
 }
