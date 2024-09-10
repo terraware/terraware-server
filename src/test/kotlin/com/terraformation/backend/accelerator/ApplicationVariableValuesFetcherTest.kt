@@ -59,9 +59,12 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
   private lateinit var countryVariableId: VariableId
   private lateinit var deliverableId: DeliverableId
 
+  private lateinit var contactEmailVariableId: VariableId
+  private lateinit var contactNameVariableId: VariableId
   private lateinit var numSpeciesVariableId: VariableId
   private lateinit var projectTypeVariableId: VariableId
   private lateinit var totalExpansionPotentialVariableId: VariableId
+  private lateinit var websiteVariableId: VariableId
   private lateinit var landUseHectaresVariableIds: Map<LandUseModelType, VariableId>
 
   private lateinit var brazilOptionId: VariableSelectOptionId
@@ -74,6 +77,16 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
     insertModule(phase = CohortPhase.PreScreen)
     deliverableId = insertDeliverable()
 
+    contactEmailVariableId =
+        insertTextVariable(
+            insertVariable(
+                type = VariableType.Text,
+                stableId = ApplicationVariableValuesFetcher.STABLE_ID_CONTACT_EMAIL))
+    contactNameVariableId =
+        insertTextVariable(
+            insertVariable(
+                type = VariableType.Text,
+                stableId = ApplicationVariableValuesFetcher.STABLE_ID_CONTACT_NAME))
     countryVariableId =
         insertSelectVariable(
             insertVariable(
@@ -100,6 +113,11 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 3,
                 stableId = ApplicationVariableValuesFetcher.STABLE_ID_TOTAL_EXPANSION_POTENTIAL))
+    websiteVariableId =
+        insertTextVariable(
+            insertVariable(
+                type = VariableType.Text,
+                stableId = ApplicationVariableValuesFetcher.STABLE_ID_WEBSITE))
 
     projectTypeVariableId =
         insertSelectVariable(
@@ -131,15 +149,18 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `returns null or empty values if variables not set`() {
     assertEquals(
-        ApplicationVariableValues(null, emptyMap(), null, null, null),
+        ApplicationVariableValues(null, null, null, emptyMap(), null, null, null, null),
         fetcher.fetchValues(inserted.projectId))
   }
 
   @Test
   fun `fetches values for all variables`() {
+    insertValue(variableId = contactEmailVariableId, textValue = "a@b.com")
+    insertValue(variableId = contactNameVariableId, textValue = "John Smith")
     insertSelectValue(variableId = countryVariableId, optionIds = setOf(brazilOptionId))
     insertValue(variableId = numSpeciesVariableId, numberValue = BigDecimal(123))
     insertValue(variableId = totalExpansionPotentialVariableId, numberValue = BigDecimal(5555))
+    insertValue(variableId = websiteVariableId, textValue = "https://example.com/")
     insertSelectValue(variableId = projectTypeVariableId, optionIds = setOf(terrestrialOptionId))
     LandUseModelType.entries.forEach { type ->
       insertValue(
@@ -148,11 +169,14 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         ApplicationVariableValues(
+            contactEmail = "a@b.com",
+            contactName = "John Smith",
             countryCode = "BR",
             landUseModelHectares = LandUseModelType.entries.associateWith { BigDecimal(it.id) },
             numSpeciesToBePlanted = 123,
             projectType = PreScreenProjectType.Terrestrial,
             totalExpansionPotential = BigDecimal(5555),
+            website = "https://example.com/",
         ),
         fetcher.fetchValues(inserted.projectId))
   }

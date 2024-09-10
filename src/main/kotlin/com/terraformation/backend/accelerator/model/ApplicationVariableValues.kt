@@ -14,9 +14,12 @@ enum class PreScreenProjectType {
  * submitting for review. This does not include values that are part of [ExistingApplicationModel].
  */
 data class ApplicationVariableValues(
+    val contactEmail: String? = null,
+    val contactName: String? = null,
     val countryCode: String?,
     val landUseModelHectares: Map<LandUseModelType, BigDecimal>,
     val numSpeciesToBePlanted: Int?,
     val projectType: PreScreenProjectType?,
     val totalExpansionPotential: BigDecimal?,
+    val website: String? = null,
 )
