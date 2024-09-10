@@ -26,8 +26,6 @@ class DeliverableCompleter(
     private val moduleStore: ModuleStore,
     private val submissionStore: SubmissionStore,
     private val systemUser: SystemUser,
-    private val variableStore: VariableStore,
-    private val variableValueStore: VariableValueStore,
 ) {
   @EventListener
   fun on(event: DeliverableDocumentUploadedEvent) {
@@ -37,23 +35,6 @@ class DeliverableCompleter(
   @EventListener
   fun on(event: ParticipantProjectSpeciesAddedEvent) {
     completeApplicationDeliverable(event.deliverableId, event.participantProjectSpecies.projectId)
-  }
-
-  @EventListener
-  fun on(event: QuestionsDeliverableSubmittedEvent) {
-    completeApplicationDeliverable(event.deliverableId, event.projectId) {
-      val variables = variableStore.fetchDeliverableVariables(event.deliverableId)
-      val valuesByVariableId =
-          variableValueStore.listValues(event.projectId, event.deliverableId).associateBy {
-            it.variableId
-          }
-
-      // Mark deliverable as complete if all variables that don't depend on other variables have
-      // values.
-      variables
-          .filter { it.dependencyVariableStableId == null }
-          .none { it.id !in valuesByVariableId }
-    }
   }
 
   /**

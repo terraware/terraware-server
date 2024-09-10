@@ -28,8 +28,6 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.docprod.DependencyCondition
-import com.terraformation.backend.documentproducer.db.VariableStore
-import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.i18n.Messages
@@ -59,30 +57,7 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
         DeliverableStore(dslContext),
         ModuleStore(dslContext),
         SubmissionStore(clock, dslContext, eventPublisher),
-        SystemUser(usersDao),
-        VariableStore(
-            dslContext,
-            variableNumbersDao,
-            variablesDao,
-            variableSectionDefaultValuesDao,
-            variableSectionRecommendationsDao,
-            variableSectionsDao,
-            variableSelectsDao,
-            variableSelectOptionsDao,
-            variableTablesDao,
-            variableTableColumnsDao,
-            variableTextsDao),
-        VariableValueStore(
-            clock,
-            dslContext,
-            eventPublisher,
-            variableImageValuesDao,
-            variableLinkValuesDao,
-            variablesDao,
-            variableSectionValuesDao,
-            variableSelectOptionValuesDao,
-            variableValuesDao,
-            variableValueTableRowsDao))
+        SystemUser(usersDao))
   }
 
   private lateinit var applicationId: ApplicationId
@@ -223,54 +198,6 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           SubmissionStatus.Completed,
           submissionsDao.fetchByProjectId(projectId).single().submissionStatusId)
-    }
-  }
-
-  @Nested
-  inner class OnQuestionsDeliverableSubmittedEvent {
-    private lateinit var deliverableId: DeliverableId
-
-    @BeforeEach
-    fun setUp() {
-      deliverableId =
-          insertDeliverable(
-              deliverableTypeId = DeliverableType.Questions, moduleId = preScreenModuleId)
-      insertApplicationModule(applicationId, preScreenModuleId)
-    }
-
-    @Test
-    fun `updates deliverable status if all variables without dependencies have values`() {
-      val variableId1 = insertTextVariable(deliverableId = deliverableId)
-      val variableId2 = insertTextVariable(deliverableId = deliverableId)
-
-      insertTextVariable(
-          insertVariable(
-              deliverableId = deliverableId,
-              deliverablePosition = 3,
-              dependencyCondition = DependencyCondition.Eq,
-              dependencyValue = "X",
-              dependencyVariableStableId = "1"))
-
-      insertValue(variableId = variableId1, textValue = "A")
-      insertValue(variableId = variableId2, textValue = "B")
-
-      completer.on(QuestionsDeliverableSubmittedEvent(deliverableId, projectId, emptyMap()))
-
-      assertEquals(
-          SubmissionStatus.Completed,
-          submissionsDao.fetchByProjectId(projectId).single().submissionStatusId)
-    }
-
-    @Test
-    fun `does not update deliverable status if variables without dependencies lack values`() {
-      val variableId1 = insertTextVariable(deliverableId = deliverableId)
-      insertTextVariable(deliverableId = deliverableId)
-
-      insertValue(variableId = variableId1, textValue = "A")
-
-      completer.on(QuestionsDeliverableSubmittedEvent(deliverableId, projectId, emptyMap()))
-
-      assertEquals(emptyList<SubmissionsRow>(), submissionsDao.fetchByProjectId(projectId))
     }
   }
 }
