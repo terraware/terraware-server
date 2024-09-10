@@ -1,7 +1,7 @@
 package com.terraformation.backend.accelerator
 
+import com.terraformation.backend.accelerator.model.ApplicationVariableValues
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
-import com.terraformation.backend.accelerator.model.PreScreenVariableValues
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.LandUseModelType
@@ -12,6 +12,7 @@ import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.model.ExistingNumberValue
 import com.terraformation.backend.documentproducer.model.ExistingSelectValue
+import com.terraformation.backend.documentproducer.model.ExistingTextValue
 import com.terraformation.backend.documentproducer.model.ExistingValue
 import com.terraformation.backend.documentproducer.model.SelectVariable
 import com.terraformation.backend.documentproducer.model.Variable
@@ -21,7 +22,7 @@ import java.math.BigDecimal
 import org.springframework.beans.factory.annotation.Value
 
 @Named
-class PreScreenVariableValuesFetcher(
+class ApplicationVariableValuesFetcher(
     private val countriesDao: CountriesDao,
     private val variableStore: VariableStore,
     private val variableValueStore: VariableValueStore,
@@ -49,14 +50,26 @@ class PreScreenVariableValuesFetcher(
     private val log = perClassLogger()
   }
 
-  fun fetchValues(projectId: ProjectId): PreScreenVariableValues {
+  private val variablesById: Map<VariableId, Variable> by lazy {
+    (listOf(
+            STABLE_ID_COUNTRY,
+            STABLE_ID_NUM_SPECIES,
+            STABLE_ID_PROJECT_TYPE,
+            STABLE_ID_TOTAL_EXPANSION_POTENTIAL,
+        ) + stableIdsByLandUseModelType.values)
+        .map {
+          variableStore.fetchByStableId(it)
+              ?: throw IllegalStateException("No variable with stable ID $it")
+        }
+        .associateBy { it.id }
+  }
+
+  fun fetchValues(projectId: ProjectId): ApplicationVariableValues {
     requirePermissions { readProjectDeliverables(projectId) }
 
-    val variablesById =
-        variableStore.fetchDeliverableVariables(preScreenDeliverableId).associateBy { it.id }
     val valuesByStableId: Map<String, ExistingValue> =
         variableValueStore
-            .listValues(projectId, preScreenDeliverableId)
+            .listValues(projectId, variablesById.keys)
             .mapNotNull { value ->
               val stableId = variablesById[value.variableId]?.stableId
               if (stableId != null) {
@@ -101,7 +114,7 @@ class PreScreenVariableValuesFetcher(
     val totalExpansionPotential =
         getNumberValue(valuesByStableId, STABLE_ID_TOTAL_EXPANSION_POTENTIAL)
 
-    return PreScreenVariableValues(
+    return ApplicationVariableValues(
         countryCode = countryCode,
         landUseModelHectares = landUseHectares,
         numSpeciesToBePlanted = numSpeciesToBePlanted,
@@ -112,6 +125,10 @@ class PreScreenVariableValuesFetcher(
 
   private fun getNumberValue(values: Map<String, ExistingValue>, stableId: String): BigDecimal? {
     return (values[stableId] as? ExistingNumberValue)?.value
+  }
+
+  private fun getTextValue(values: Map<String, ExistingValue>, stableId: String): String? {
+    return (values[stableId] as? ExistingTextValue)?.value
   }
 
   private fun getSingleSelectValue(

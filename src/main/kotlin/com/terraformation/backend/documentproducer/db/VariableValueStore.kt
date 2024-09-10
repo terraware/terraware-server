@@ -178,7 +178,7 @@ class VariableValueStore(
    * Returns a single project's values for a list of variable IDs, useful for getting injected
    * variable values
    */
-  fun listValues(projectId: ProjectId, variableIds: List<VariableId>): List<ExistingValue> {
+  fun listValues(projectId: ProjectId, variableIds: Collection<VariableId>): List<ExistingValue> {
     val conditions =
         listOf(
             VARIABLE_VALUES.PROJECT_ID.eq(projectId),
