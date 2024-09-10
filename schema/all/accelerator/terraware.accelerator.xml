@@ -265,8 +265,8 @@
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
             <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
+            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="deliverable_id" sequenceNumberInPK="1"/>
@@ -433,6 +433,10 @@
             <column ascending="true" name="id"/>
          </index>
          <checkConstraint constraint="((start_time &lt;= end_time))" name="times_start_before_end"/>
+      </table>
+      <table name="hubspot_token" numRows="0" remarks="If the server has been authorized to make HubSpot API requests, the refresh token to use to generate new access tokens." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="refresh_token" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <index name="hubspot_token_expr_idx" unique="true"/>
       </table>
       <table name="internal_interests" numRows="9" remarks="(Enum) Types of notification categories for internal users." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">

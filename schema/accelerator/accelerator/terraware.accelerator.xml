@@ -410,6 +410,10 @@
          </index>
          <checkConstraint constraint="((start_time &lt;= end_time))" name="times_start_before_end"/>
       </table>
+      <table name="hubspot_token" numRows="0" remarks="If the server has been authorized to make HubSpot API requests, the refresh token to use to generate new access tokens." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="refresh_token" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <index name="hubspot_token_expr_idx" unique="true"/>
+      </table>
       <table name="internal_interests" numRows="9" remarks="(Enum) Types of notification categories for internal users." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="internal_interest_id" foreignKey="deliverable_categories_internal_interest_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_categories"/>

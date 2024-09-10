@@ -1,3 +1,4 @@
+hubspot_token
 project_votes
 participant_project_species
 project_scores

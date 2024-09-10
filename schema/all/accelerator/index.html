@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Tue Sep 10 16:02 GMT 2024</p>
+                                <p>Generated on Tue Sep 10 16:13 GMT 2024</p>
                             </div>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                                 <span class="info-box-icon bg-aqua"><i class="fa fa-table"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">TABLES</span>
-                                    <span class="info-box-number">38</span>
+                                    <span class="info-box-number">39</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -118,7 +118,7 @@
                                 <span class="info-box-icon bg-green"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">COLUMNS</span>
-                                    <span class="info-box-number">212</span>
+                                    <span class="info-box-number">213</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -142,7 +142,7 @@
                                 <span class="info-box-icon bg-red-active"><i class="fa fa-question" aria-hidden="true"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Anomalies</span>
-                                    <span class="info-box-number">1</span>
+                                    <span class="info-box-number">2</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -227,15 +227,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of notification categories for internal users.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/cohorts.html">cohorts</a></td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">7</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Accelerator cohort details.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/deliverable_cohort_due_dates.html">deliverable_cohort_due_dates</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
@@ -243,6 +234,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Deliverable due dates overrides for cohorts. Can be overridden at the project level.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/cohorts.html">cohorts</a></td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">7</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Accelerator cohort details.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/cohort_phases.html">cohort_phases</a></td>
@@ -270,6 +270,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Scores assigned to project by scorers.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/hubspot_token.html">hubspot_token</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>If the server has been authorized to make HubSpot API requests, the refresh token to use to generate new access tokens.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/applications.html">applications</a></td>
@@ -461,15 +470,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Default project leads to use at application submission time based on project region.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/project_votes.html">project_votes</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">6</td>
-                                        <td class="detail" align="right">9</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Vote selected by voters.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/submission_documents.html">submission_documents</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">4</td>
@@ -477,6 +477,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Information about documents uploaded by users to satisfy deliverables. A deliverable can have multiple documents.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/project_votes.html">project_votes</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">6</td>
+                                        <td class="detail" align="right">9</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Vote selected by voters.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/project_vote_decisions.html">project_vote_decisions</a></td>
