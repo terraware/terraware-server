@@ -3,8 +3,8 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
+import com.terraformation.backend.accelerator.model.ApplicationVariableValues
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
-import com.terraformation.backend.accelerator.model.PreScreenVariableValues
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.ApplicationId
@@ -18,11 +18,11 @@ import jakarta.inject.Named
 @Named
 class ApplicationService(
     private val applicationStore: ApplicationStore,
+    private val applicationVariableValuesFetcher: ApplicationVariableValuesFetcher,
     private val countriesDao: CountriesDao,
     private val countryDetector: CountryDetector,
     private val defaultProjectLeadsDao: DefaultProjectLeadsDao,
     private val preScreenBoundarySubmissionFetcher: PreScreenBoundarySubmissionFetcher,
-    private val preScreenVariableValuesFetcher: PreScreenVariableValuesFetcher,
     private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore,
     private val systemUser: SystemUser,
 ) {
@@ -31,7 +31,7 @@ class ApplicationService(
    * variables that affect the eligibility checks.
    *
    * The variable fetching happens here rather than directly in [ApplicationStore] to avoid adding a
-   * peer dependency between store classes, since [PreScreenVariableValuesFetcher] depends on the
+   * peer dependency between store classes, since [ApplicationVariableValuesFetcher] depends on the
    * variable stores.
    */
   fun submit(applicationId: ApplicationId): ApplicationSubmissionResult {
@@ -40,7 +40,7 @@ class ApplicationService(
     val existing = applicationStore.fetchOneById(applicationId)
 
     return if (existing.status == ApplicationStatus.NotSubmitted) {
-      val variableValues = preScreenVariableValuesFetcher.fetchValues(existing.projectId)
+      val variableValues = applicationVariableValuesFetcher.fetchValues(existing.projectId)
       val boundarySubmission =
           preScreenBoundarySubmissionFetcher.fetchSubmission(existing.projectId)
       val result = applicationStore.submit(applicationId, variableValues, boundarySubmission)
@@ -57,7 +57,7 @@ class ApplicationService(
   /** Populates the project accelerator details when an application passes pre-screening. */
   private fun createProjectAcceleratorDetails(
       application: ExistingApplicationModel,
-      variableValues: PreScreenVariableValues
+      variableValues: ApplicationVariableValues
   ) {
     val landUseModelTypes =
         variableValues.landUseModelHectares.filterValues { it.signum() > 0 }.keys

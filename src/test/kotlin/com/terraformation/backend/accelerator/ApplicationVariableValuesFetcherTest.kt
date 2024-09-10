@@ -3,8 +3,8 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.model.ApplicationVariableValues
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
-import com.terraformation.backend.accelerator.model.PreScreenVariableValues
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
@@ -24,11 +24,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
+class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val fetcher: PreScreenVariableValuesFetcher by lazy {
-    PreScreenVariableValuesFetcher(
+  private val fetcher: ApplicationVariableValuesFetcher by lazy {
+    ApplicationVariableValuesFetcher(
         countriesDao,
         VariableStore(
             dslContext,
@@ -58,6 +58,7 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var countryVariableId: VariableId
   private lateinit var deliverableId: DeliverableId
+
   private lateinit var numSpeciesVariableId: VariableId
   private lateinit var projectTypeVariableId: VariableId
   private lateinit var totalExpansionPotentialVariableId: VariableId
@@ -79,7 +80,7 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Select,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 1,
-                stableId = PreScreenVariableValuesFetcher.STABLE_ID_COUNTRY))
+                stableId = ApplicationVariableValuesFetcher.STABLE_ID_COUNTRY))
 
     brazilOptionId = insertSelectOption(inserted.variableId, "Brazil")
     insertSelectOption(inserted.variableId, "Chile")
@@ -91,14 +92,14 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Number,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 2,
-                stableId = PreScreenVariableValuesFetcher.STABLE_ID_NUM_SPECIES))
+                stableId = ApplicationVariableValuesFetcher.STABLE_ID_NUM_SPECIES))
     totalExpansionPotentialVariableId =
         insertNumberVariable(
             insertVariable(
                 type = VariableType.Number,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 3,
-                stableId = PreScreenVariableValuesFetcher.STABLE_ID_TOTAL_EXPANSION_POTENTIAL))
+                stableId = ApplicationVariableValuesFetcher.STABLE_ID_TOTAL_EXPANSION_POTENTIAL))
 
     projectTypeVariableId =
         insertSelectVariable(
@@ -106,14 +107,13 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Select,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 4,
-                stableId = PreScreenVariableValuesFetcher.STABLE_ID_PROJECT_TYPE))
-
+                stableId = ApplicationVariableValuesFetcher.STABLE_ID_PROJECT_TYPE))
     terrestrialOptionId = insertSelectOption(inserted.variableId, "Terrestrial")
     insertSelectOption(inserted.variableId, "Mangrove")
     insertSelectOption(inserted.variableId, "Mixed")
 
     landUseHectaresVariableIds =
-        PreScreenVariableValuesFetcher.stableIdsByLandUseModelType.entries
+        ApplicationVariableValuesFetcher.stableIdsByLandUseModelType.entries
             .mapIndexed { index, (landUseType, stableId) ->
               landUseType to
                   insertNumberVariable(
@@ -131,7 +131,7 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `returns null or empty values if variables not set`() {
     assertEquals(
-        PreScreenVariableValues(null, emptyMap(), null, null, null),
+        ApplicationVariableValues(null, emptyMap(), null, null, null),
         fetcher.fetchValues(inserted.projectId))
   }
 
@@ -147,12 +147,13 @@ class PreScreenVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
     }
 
     assertEquals(
-        PreScreenVariableValues(
+        ApplicationVariableValues(
             countryCode = "BR",
             landUseModelHectares = LandUseModelType.entries.associateWith { BigDecimal(it.id) },
             numSpeciesToBePlanted = 123,
             projectType = PreScreenProjectType.Terrestrial,
-            totalExpansionPotential = BigDecimal(5555)),
+            totalExpansionPotential = BigDecimal(5555),
+        ),
         fetcher.fetchValues(inserted.projectId))
   }
 

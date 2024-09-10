@@ -10,10 +10,10 @@ enum class PreScreenProjectType {
 }
 
 /**
- * Values of variables that are relevant to the pre-screen logic. This does not include values that
- * are part of [ExistingApplicationModel].
+ * Values of variables that are relevant to the application submission logic, both pre-screening and
+ * submitting for review. This does not include values that are part of [ExistingApplicationModel].
  */
-data class PreScreenVariableValues(
+data class ApplicationVariableValues(
     val countryCode: String?,
     val landUseModelHectares: Map<LandUseModelType, BigDecimal>,
     val numSpeciesToBePlanted: Int?,

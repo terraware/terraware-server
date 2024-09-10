@@ -3,10 +3,10 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.model.ApplicationModuleModel
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
+import com.terraformation.backend.accelerator.model.ApplicationVariableValues
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
-import com.terraformation.backend.accelerator.model.PreScreenVariableValues
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
@@ -366,7 +366,7 @@ class ApplicationStore(
    */
   fun submit(
       applicationId: ApplicationId,
-      preScreenVariableValues: PreScreenVariableValues? = null,
+      applicationVariableValues: ApplicationVariableValues? = null,
       boundarySubmission: DeliverableSubmissionModel? = null,
   ): ApplicationSubmissionResult {
     requirePermissions { updateApplicationSubmissionStatus(applicationId) }
@@ -374,12 +374,12 @@ class ApplicationStore(
     val existing = fetchOneById(applicationId)
 
     return if (existing.status == ApplicationStatus.NotSubmitted) {
-      if (preScreenVariableValues == null) {
+      if (applicationVariableValues == null) {
         throw IllegalArgumentException(
             "No pre-screen variable values supplied for pre-screen submission")
       }
 
-      val problems = checkPreScreenCriteria(existing, preScreenVariableValues, boundarySubmission)
+      val problems = checkPreScreenCriteria(existing, applicationVariableValues, boundarySubmission)
       updatePrescreenFeedback(applicationId, problems)
 
       if (problems.isNotEmpty()) {
@@ -646,7 +646,7 @@ class ApplicationStore(
 
   private fun checkPreScreenCriteria(
       application: ExistingApplicationModel,
-      preScreenVariableValues: PreScreenVariableValues,
+      applicationVariableValues: ApplicationVariableValues,
       boundarySubmission: DeliverableSubmissionModel? = null,
   ): List<String> {
     val problems = mutableListOf<String>()
@@ -655,7 +655,7 @@ class ApplicationStore(
     var siteAreaHa: Double? = null
 
     val totalLandUseArea =
-        preScreenVariableValues.landUseModelHectares.values.sumOf { it.toDouble() }
+        applicationVariableValues.landUseModelHectares.values.sumOf { it.toDouble() }
 
     if (application.boundary != null) {
       siteAreaHa = application.boundary.calculateAreaHectares().toDouble()
@@ -678,14 +678,14 @@ class ApplicationStore(
       return problems
     }
 
-    if (preScreenVariableValues.countryCode == null) {
+    if (applicationVariableValues.countryCode == null) {
       problems.add(messages.applicationPreScreenFailureNoCountry())
     }
 
     // TODO: Look up localized country name
     val boundaryCountriesRow = boundaryCountryCode?.let { countriesDao.fetchOneByCode(it) }
     val projectCountriesRow =
-        preScreenVariableValues.countryCode?.let { countriesDao.fetchOneByCode(it) }
+        applicationVariableValues.countryCode?.let { countriesDao.fetchOneByCode(it) }
 
     if (projectCountriesRow != null) {
       if (projectCountriesRow.eligible != true) {
@@ -715,16 +715,16 @@ class ApplicationStore(
 
     if (siteAreaHa != null) {
       val monocultureArea =
-          preScreenVariableValues.landUseModelHectares[LandUseModelType.Monoculture]
+          applicationVariableValues.landUseModelHectares[LandUseModelType.Monoculture]
       if (monocultureArea != null &&
           monocultureArea.toDouble() > totalLandUseArea * monocultureMaxPercent / 100.0) {
         problems.add(messages.applicationPreScreenFailureMonocultureTooHigh(monocultureMaxPercent))
       }
     }
 
-    val minimumSpecies = minimumSpeciesByProjectType[preScreenVariableValues.projectType]
+    val minimumSpecies = minimumSpeciesByProjectType[applicationVariableValues.projectType]
     if (minimumSpecies != null &&
-        (preScreenVariableValues.numSpeciesToBePlanted ?: 0) < minimumSpecies) {
+        (applicationVariableValues.numSpeciesToBePlanted ?: 0) < minimumSpecies) {
       problems.add(messages.applicationPreScreenFailureTooFewSpecies(minimumSpecies))
     }
 

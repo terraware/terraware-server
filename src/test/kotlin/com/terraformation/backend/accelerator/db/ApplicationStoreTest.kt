@@ -5,10 +5,10 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.model.ApplicationModuleModel
+import com.terraformation.backend.accelerator.model.ApplicationVariableValues
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
-import com.terraformation.backend.accelerator.model.PreScreenVariableValues
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -1191,7 +1191,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       val result =
           store.submit(
               applicationId,
-              PreScreenVariableValues(
+              ApplicationVariableValues(
                   countryCode = countryCode,
                   landUseModelHectares =
                       mapOf(LandUseModelType.NativeForest to BigDecimal(minHectares - 10)),
@@ -1227,7 +1227,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       val result =
           store.submit(
               applicationId,
-              PreScreenVariableValues(
+              ApplicationVariableValues(
                   countryCode = "US",
                   landUseModelHectares =
                       mapOf(
@@ -1265,7 +1265,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       val result =
           store.submit(
               applicationId,
-              PreScreenVariableValues(
+              ApplicationVariableValues(
                   countryCode = "US",
                   landUseModelHectares =
                       mapOf(
@@ -1351,7 +1351,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = Instant.ofEpochSecond(30)
 
       val validVariables =
-          PreScreenVariableValues(
+          ApplicationVariableValues(
               countryCode = "US",
               landUseModelHectares =
                   mapOf(
@@ -1534,9 +1534,9 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<AccessDeniedException> { store.submit(applicationId) }
     }
 
-    private fun validVariables(boundary: Geometry): PreScreenVariableValues {
+    private fun validVariables(boundary: Geometry): ApplicationVariableValues {
       val projectHectares = boundary.calculateAreaHectares()
-      return PreScreenVariableValues(
+      return ApplicationVariableValues(
           countryCode = "US",
           landUseModelHectares =
               mapOf(

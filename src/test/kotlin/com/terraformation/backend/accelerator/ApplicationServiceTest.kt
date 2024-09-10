@@ -5,10 +5,10 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
+import com.terraformation.backend.accelerator.model.ApplicationVariableValues
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
-import com.terraformation.backend.accelerator.model.PreScreenVariableValues
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -37,21 +37,21 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val applicationStore = mockk<ApplicationStore>()
+  private val applicationVariableValuesFetcher = mockk<ApplicationVariableValuesFetcher>()
   private val clock = TestClock()
   private val countryDetector = mockk<CountryDetector>()
   private val preScreenBoundarySubmissionFetcher = mockk<PreScreenBoundarySubmissionFetcher>()
-  private val preScreenVariableValuesFetcher = mockk<PreScreenVariableValuesFetcher>()
   private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore by lazy {
     ProjectAcceleratorDetailsStore(clock, dslContext)
   }
   private val service: ApplicationService by lazy {
     ApplicationService(
         applicationStore,
+        applicationVariableValuesFetcher,
         countriesDao,
         countryDetector,
         defaultProjectLeadsDao,
         preScreenBoundarySubmissionFetcher,
-        preScreenVariableValuesFetcher,
         projectAcceleratorDetailsStore,
         SystemUser(usersDao),
     )
@@ -78,13 +78,14 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
   inner class Submit {
     @Test
     fun `fetches variable values for pre-screen submissions`() {
-      val preScreenVariableValues =
-          PreScreenVariableValues(
+      val applicationVariableValues =
+          ApplicationVariableValues(
               countryCode = null,
               landUseModelHectares = mapOf(LandUseModelType.Mangroves to BigDecimal(10)),
               numSpeciesToBePlanted = 123,
               projectType = PreScreenProjectType.Terrestrial,
-              totalExpansionPotential = BigDecimal(1000))
+              totalExpansionPotential = BigDecimal(1000),
+          )
       val applicationModel =
           ExistingApplicationModel(
               createdTime = Instant.EPOCH,
@@ -100,15 +101,15 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
 
       every { applicationStore.fetchOneById(applicationId) } returns applicationModel
       every { applicationStore.submit(applicationId, any(), any()) } returns submissionResult
-      every { preScreenVariableValuesFetcher.fetchValues(projectId) } returns
-          preScreenVariableValues
+      every { applicationVariableValuesFetcher.fetchValues(projectId) } returns
+          applicationVariableValues
       every { preScreenBoundarySubmissionFetcher.fetchSubmission(projectId) } returns
           boundarySubmission
 
       assertEquals(submissionResult, service.submit(applicationId))
 
       verify(exactly = 1) {
-        applicationStore.submit(applicationId, preScreenVariableValues, boundarySubmission)
+        applicationStore.submit(applicationId, applicationVariableValues, boundarySubmission)
       }
     }
 
@@ -144,8 +145,8 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       val projectId = insertProject()
       insertDefaultProjectLead(Region.SubSaharanAfrica, projectLead)
 
-      val preScreenVariableValues =
-          PreScreenVariableValues(
+      val applicationVariableValues =
+          ApplicationVariableValues(
               countryCode = "KE",
               landUseModelHectares =
                   mapOf(
@@ -176,8 +177,8 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       every { applicationStore.fetchOneById(applicationId) } returns applicationModel
       every { applicationStore.submit(applicationId, any(), any()) } returns submissionResult
       every { countryDetector.getCountries(any()) } returns setOf("KE")
-      every { preScreenVariableValuesFetcher.fetchValues(projectId) } returns
-          preScreenVariableValues
+      every { applicationVariableValuesFetcher.fetchValues(projectId) } returns
+          applicationVariableValues
       every { preScreenBoundarySubmissionFetcher.fetchSubmission(projectId) } returns
           boundarySubmission
 
