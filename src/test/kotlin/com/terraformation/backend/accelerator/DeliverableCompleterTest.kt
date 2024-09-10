@@ -27,8 +27,6 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.docprod.DependencyCondition
-import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
