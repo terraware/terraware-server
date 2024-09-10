@@ -30,10 +30,13 @@ class ApplicationVariableValuesFetcher(
     val preScreenDeliverableId: DeliverableId,
 ) {
   companion object {
+    const val STABLE_ID_CONTACT_EMAIL = "26"
+    const val STABLE_ID_CONTACT_NAME = "25"
     const val STABLE_ID_COUNTRY = "1"
     const val STABLE_ID_NUM_SPECIES = "22"
     const val STABLE_ID_PROJECT_TYPE = "3"
     const val STABLE_ID_TOTAL_EXPANSION_POTENTIAL = "24"
+    const val STABLE_ID_WEBSITE = "27"
 
     val stableIdsByLandUseModelType =
         mapOf(
@@ -52,10 +55,13 @@ class ApplicationVariableValuesFetcher(
 
   private val variablesById: Map<VariableId, Variable> by lazy {
     (listOf(
+            STABLE_ID_CONTACT_EMAIL,
+            STABLE_ID_CONTACT_NAME,
             STABLE_ID_COUNTRY,
             STABLE_ID_NUM_SPECIES,
             STABLE_ID_PROJECT_TYPE,
             STABLE_ID_TOTAL_EXPANSION_POTENTIAL,
+            STABLE_ID_WEBSITE,
         ) + stableIdsByLandUseModelType.values)
         .map {
           variableStore.fetchByStableId(it)
@@ -111,15 +117,21 @@ class ApplicationVariableValuesFetcher(
           }
         }
 
+    val contactEmail = getTextValue(valuesByStableId, STABLE_ID_CONTACT_EMAIL)
+    val contactName = getTextValue(valuesByStableId, STABLE_ID_CONTACT_NAME)
     val totalExpansionPotential =
         getNumberValue(valuesByStableId, STABLE_ID_TOTAL_EXPANSION_POTENTIAL)
+    val website = getTextValue(valuesByStableId, STABLE_ID_WEBSITE)
 
     return ApplicationVariableValues(
+        contactEmail = contactEmail,
+        contactName = contactName,
         countryCode = countryCode,
         landUseModelHectares = landUseHectares,
         numSpeciesToBePlanted = numSpeciesToBePlanted,
         projectType = projectType,
         totalExpansionPotential = totalExpansionPotential,
+        website = website,
     )
   }
 
