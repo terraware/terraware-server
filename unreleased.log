@@ -1,3 +1,4 @@
+2de6cf6df67 SW-5995 Removed deliverable completer for question deliverable (#2401)
 a4e6052dd16 SW-5905 Create HubSpot deal on application submit (#2400)
 eeb47dab95f SW-5905 Fetch contact name, email, and website variables (#2399)
 699df6a1e75 SW-5905 Rename PreScreenVariableValues (#2398)
