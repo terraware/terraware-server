@@ -48,6 +48,9 @@ class AdminController(
     model.addAttribute("canManageDefaultProjectLeads", currentUser().canManageDefaultProjectLeads())
     model.addAttribute("canManageDocumentProducer", currentUser().canManageDocumentProducer())
     model.addAttribute(
+        "canManageHubSpot",
+        config.hubSpot.enabled && GlobalRole.SuperAdmin in currentUser().globalRoles)
+    model.addAttribute(
         "canManageModules",
         currentUser().canManageModules() || currentUser().canManageDeliverables())
     model.addAttribute("canManageInternalTags", currentUser().canManageInternalTags())

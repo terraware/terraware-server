@@ -99,6 +99,9 @@ class TerrawareServerConfig(
     /** Configures how the server interacts with Dropbox. */
     val dropbox: DropboxConfig = DropboxConfig(),
 
+    /** Configures how the server interacts with HubSpot. */
+    val hubSpot: HubSpotConfig = HubSpotConfig(),
+
     /** Configures how the server interacts with the Mapbox service. */
     val mapbox: MapboxConfig = MapboxConfig(),
 
@@ -290,6 +293,21 @@ class TerrawareServerConfig(
         if (appKey == null || appSecret == null || refreshToken == null) {
           throw IllegalArgumentException(
               "App key, app secret, and refresh token are required if Dropbox is enabled")
+        }
+      }
+    }
+  }
+
+  class HubSpotConfig(
+      val clientId: String? = null,
+      val clientSecret: String? = null,
+      @DefaultValue("false") val enabled: Boolean = false,
+  ) {
+    init {
+      if (enabled) {
+        if (clientId == null || clientSecret == null) {
+          throw IllegalArgumentException(
+              "Client ID and client secret are required if HubSpot is enabled")
         }
       }
     }

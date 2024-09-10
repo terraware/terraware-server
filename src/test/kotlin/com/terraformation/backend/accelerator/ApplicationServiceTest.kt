@@ -10,6 +10,7 @@ import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -27,6 +28,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.math.BigDecimal
+import java.net.URI
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -39,8 +41,10 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
   private val applicationStore = mockk<ApplicationStore>()
   private val applicationVariableValuesFetcher = mockk<ApplicationVariableValuesFetcher>()
   private val clock = TestClock()
+  private val config = mockk<TerrawareServerConfig>()
   private val countryDetector = mockk<CountryDetector>()
   private val preScreenBoundarySubmissionFetcher = mockk<PreScreenBoundarySubmissionFetcher>()
+  private val hubSpotService = mockk<HubSpotService>()
   private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore by lazy {
     ProjectAcceleratorDetailsStore(clock, dslContext)
   }
@@ -48,9 +52,11 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
     ApplicationService(
         applicationStore,
         applicationVariableValuesFetcher,
+        config,
         countriesDao,
         countryDetector,
         defaultProjectLeadsDao,
+        hubSpotService,
         preScreenBoundarySubmissionFetcher,
         projectAcceleratorDetailsStore,
         SystemUser(usersDao),
@@ -114,26 +120,84 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `does not fetch variable values for full application submissions`() {
+    fun `creates HubSpot objects for full application submissions`() {
+      val applicationReforestableLand = BigDecimal("100.0")
+      val contactEmail = "a@b.com"
+      val contactName = "John Smith"
+      val internalName = "XXX_Test"
+      val organizationName = "Organization 1"
+      val website = "https://b.com/"
+      val dealUrl = URI("https://example")
+
       val applicationModel =
           ExistingApplicationModel(
+              countryCode = "KE",
               createdTime = Instant.EPOCH,
               id = applicationId,
-              internalName = "XXX",
+              internalName = internalName,
               modifiedTime = null,
               projectId = projectId,
               projectName = "Project Name",
               organizationId = organizationId,
-              organizationName = "Organization 1",
+              organizationName = organizationName,
               status = ApplicationStatus.PassedPreScreen)
-      val submissionResult = ApplicationSubmissionResult(applicationModel, listOf("error"))
+      val applicationVariableValues =
+          ApplicationVariableValues(
+              contactEmail = contactEmail,
+              contactName = contactName,
+              countryCode = "KE",
+              landUseModelHectares = emptyMap(),
+              numSpeciesToBePlanted = 50,
+              projectType = PreScreenProjectType.Mixed,
+              totalExpansionPotential = BigDecimal.ONE,
+              website = website,
+          )
+      val hubSpotConfig =
+          TerrawareServerConfig.HubSpotConfig(clientId = "", clientSecret = "", enabled = true)
+      val submissionResult =
+          ApplicationSubmissionResult(
+              applicationModel.copy(status = ApplicationStatus.Submitted), emptyList())
 
+      every { config.hubSpot } returns hubSpotConfig
       every { applicationStore.fetchOneById(applicationId) } returns applicationModel
       every { applicationStore.submit(applicationId, any()) } returns submissionResult
+      every { applicationVariableValuesFetcher.fetchValues(projectId) } returns
+          applicationVariableValues
+      every {
+        hubSpotService.createApplicationObjects(any(), any(), any(), any(), any(), any(), any())
+      } returns dealUrl
+      every { user.canReadProject(projectId) } returns true
+      every { user.canReadProjectAcceleratorDetails(projectId) } returns true
+      every { user.canUpdateProjectAcceleratorDetails(projectId) } returns true
+
+      projectAcceleratorDetailsStore.update(projectId) {
+        it.copy(
+            applicationReforestableLand = applicationReforestableLand,
+            countryCode = "KE",
+            fileNaming = internalName,
+        )
+      }
 
       assertEquals(submissionResult, service.submit(applicationId))
 
+      assertEquals(
+          dealUrl,
+          projectAcceleratorDetailsStore.fetchOneById(projectId).hubSpotUrl,
+          "HubSpot URL in project accelerator details")
+
       verify(exactly = 1) { applicationStore.submit(applicationId, null, null) }
+
+      verify(exactly = 1) {
+        hubSpotService.createApplicationObjects(
+            applicationReforestableLand = applicationReforestableLand,
+            companyName = organizationName,
+            contactEmail = contactEmail,
+            contactName = contactName,
+            countryCode = "KE",
+            dealName = internalName,
+            website = website,
+        )
+      }
     }
 
     @Test

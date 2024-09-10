@@ -519,6 +519,8 @@ COMMENT ON TABLE accelerator.event_types IS '(Enum) Types of events for an accel
 
 COMMENT ON TABLE accelerator.events IS 'Events with meeting links and time within an acclerator module.';
 
+COMMENT ON TABLE accelerator.hubspot_token IS 'If the server has been authorized to make HubSpot API requests, the refresh token to use to generate new access tokens.';
+
 COMMENT ON TABLE accelerator.internal_interests IS '(Enum) Types of notification categories for internal users.';
 
 COMMENT ON TABLE accelerator.modules IS 'Possible steps in the workflow of a cohort phase.';
