@@ -1,3 +1,5 @@
+f59d712c431 SW-6002 Added permission checker for application modules for read module (#2403)
+e9c488ab64f SW-5969 Allow CRUD of internal variables and values by global role permissions (#2395)
 c0bb1ad9804 SW-5985 Added endpoint to mark a deliverable as Incomplete (#2404)
 7ed67772950 SW-5999 Fix failure when deleting empty table row (#2402)
 2de6cf6df67 SW-5995 Removed deliverable completer for question deliverable (#2401)
