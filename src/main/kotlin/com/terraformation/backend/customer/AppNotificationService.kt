@@ -568,24 +568,26 @@ class AppNotificationService(
       renderMessage: () -> NotificationMessage,
       internalInterest: InternalInterest? = null,
   ) {
-    val internalInterestCondition =
-        internalInterest?.let { userInternalInterestsStore.conditionForUsers(it) }
-    val recipients =
-        userStore
-            .fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), internalInterestCondition)
-            .toMutableSet()
+    systemUser.run {
+      val internalInterestCondition =
+          internalInterest?.let { userInternalInterestsStore.conditionForUsers(it) }
+      val recipients =
+          userStore
+              .fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), internalInterestCondition)
+              .toMutableSet()
 
-    val tfContact = userStore.getTerraformationContactUser(organizationId)
+      val tfContact = userStore.getTerraformationContactUser(organizationId)
 
-    if (tfContact != null) {
-      recipients.add(tfContact)
-    }
+      if (tfContact != null) {
+        recipients.add(tfContact)
+      }
 
-    dslContext.transaction { _ ->
-      recipients.forEach { user ->
-        // this is a global notification not scoped to any specific org permission, for accelerator
-        // purposes
-        insert(notificationType, user, null, renderMessage, localUrl, organizationId)
+      dslContext.transaction { _ ->
+        recipients.forEach { user ->
+          // this is a global notification not scoped to any specific org permission, for
+          // accelerator purposes
+          insert(notificationType, user, null, renderMessage, localUrl, organizationId)
+        }
       }
     }
   }

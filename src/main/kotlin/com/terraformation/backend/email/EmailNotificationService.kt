@@ -727,23 +727,25 @@ class EmailNotificationService(
       model: EmailTemplateModel,
       internalInterest: InternalInterest? = null,
   ) {
-    val internalInterestCondition =
-        internalInterest?.let { userInternalInterestsStore.conditionForUsers(it) }
-    val recipients =
-        userStore
-            .fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), internalInterestCondition)
-            .toMutableSet()
+    systemUser.run {
+      val internalInterestCondition =
+          internalInterest?.let { userInternalInterestsStore.conditionForUsers(it) }
+      val recipients =
+          userStore
+              .fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), internalInterestCondition)
+              .toMutableSet()
 
-    val tfContact = userStore.getTerraformationContactUser(organizationId)
+      val tfContact = userStore.getTerraformationContactUser(organizationId)
 
-    // The TF contact will not have access to the accelerator console, this email notification
-    // gives the contact an opportunity to acquire global roles. Ideally we won't be sending
-    // these emails.
-    if (tfContact != null) {
-      recipients.add(tfContact)
+      // The TF contact will not have access to the accelerator console, this email notification
+      // gives the contact an opportunity to acquire global roles. Ideally we won't be sending
+      // these emails.
+      if (tfContact != null) {
+        recipients.add(tfContact)
+      }
+
+      recipients.forEach { user -> emailService.sendUserNotification(user, model, false) }
     }
-
-    recipients.forEach { user -> emailService.sendUserNotification(user, model, false) }
   }
 
   data class EmailRequest(val user: IndividualUser, val emailTemplateModel: EmailTemplateModel)

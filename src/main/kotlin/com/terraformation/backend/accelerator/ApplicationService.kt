@@ -58,7 +58,7 @@ class ApplicationService(
       result
     } else {
       val result = applicationStore.submit(applicationId)
-      val details = projectAcceleratorDetailsStore.fetchOneById(projectId)
+      val details = systemUser.run { projectAcceleratorDetailsStore.fetchOneById(projectId) }
 
       if (config.hubSpot.enabled &&
           result.isSuccessful &&
