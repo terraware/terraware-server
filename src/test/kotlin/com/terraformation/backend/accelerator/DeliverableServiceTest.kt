@@ -69,7 +69,7 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `creates a submission with Complete status`() {
-    val id = service.completeDeliverable(deliverable1, inserted.projectId)
+    val id = service.setDeliverableCompletion(deliverable1, inserted.projectId, true)
 
     assertEquals(
         SubmissionsRow(
@@ -86,17 +86,45 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `creates a submission with Not Submitted status if isComplete is false`() {
+    val id = service.setDeliverableCompletion(deliverable1, inserted.projectId, false)
+
+    assertEquals(
+        SubmissionsRow(
+            id,
+            inserted.projectId,
+            deliverable1,
+            SubmissionStatus.NotSubmitted,
+            user.userId,
+            clock.instant,
+            user.userId,
+            clock.instant,
+        ),
+        submissionsDao.fetchOneById(id))
+  }
+
+  @Test
   fun `updates existing submission to Complete status`() {
     insertSubmission(deliverableId = deliverable1, submissionStatus = SubmissionStatus.NotNeeded)
     val existing = submissionsDao.fetchOneById(inserted.submissionId)!!
-    service.completeDeliverable(deliverable1, inserted.projectId)
+    service.setDeliverableCompletion(deliverable1, inserted.projectId, true)
     assertEquals(
         existing.copy(submissionStatusId = SubmissionStatus.Completed),
         submissionsDao.fetchOneById(inserted.submissionId))
   }
 
   @Test
-  fun `updates application module status to complete if all required deliverables completed`() {
+  fun `updates existing submission to NotSubmitted status if isComplete is false`() {
+    insertSubmission(deliverableId = deliverable1, submissionStatus = SubmissionStatus.NotNeeded)
+    val existing = submissionsDao.fetchOneById(inserted.submissionId)!!
+    service.setDeliverableCompletion(deliverable1, inserted.projectId, false)
+    assertEquals(
+        existing.copy(submissionStatusId = SubmissionStatus.NotSubmitted),
+        submissionsDao.fetchOneById(inserted.submissionId))
+  }
+
+  @Test
+  fun `updates application module status according to deliverable completion status`() {
     assertEquals(
         listOf(
             ApplicationModulesRow(
@@ -104,7 +132,7 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
         applicationModulesDao.findAll(),
         "0/2 completed deliverables")
 
-    service.completeDeliverable(deliverable1, inserted.projectId)
+    service.setDeliverableCompletion(deliverable1, inserted.projectId, true)
 
     assertEquals(
         listOf(
@@ -113,7 +141,7 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
         applicationModulesDao.findAll(),
         "1/2 completed deliverables")
 
-    service.completeDeliverable(deliverable2, inserted.projectId)
+    service.setDeliverableCompletion(deliverable2, inserted.projectId, true)
 
     assertEquals(
         listOf(
@@ -121,5 +149,14 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
                 inserted.applicationId, inserted.moduleId, ApplicationModuleStatus.Complete)),
         applicationModulesDao.findAll(),
         "2/2 completed deliverables")
+
+    service.setDeliverableCompletion(deliverable2, inserted.projectId, false)
+
+    assertEquals(
+        listOf(
+            ApplicationModulesRow(
+                inserted.applicationId, inserted.moduleId, ApplicationModuleStatus.Incomplete)),
+        applicationModulesDao.findAll(),
+        "1/2 completed deliverables after un-submitting a deliverable")
   }
 }
