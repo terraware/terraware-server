@@ -202,7 +202,7 @@ class DeliverablesController(
       @PathVariable deliverableId: DeliverableId,
       @PathVariable projectId: ProjectId,
   ): SimpleSuccessResponsePayload {
-    deliverableService.completeDeliverable(deliverableId, projectId, true)
+    deliverableService.setDeliverableCompletion(deliverableId, projectId, true)
 
     return SimpleSuccessResponsePayload()
   }
@@ -214,7 +214,7 @@ class DeliverablesController(
       @PathVariable deliverableId: DeliverableId,
       @PathVariable projectId: ProjectId,
   ): SimpleSuccessResponsePayload {
-    deliverableService.completeDeliverable(deliverableId, projectId, false)
+    deliverableService.setDeliverableCompletion(deliverableId, projectId, false)
 
     return SimpleSuccessResponsePayload()
   }

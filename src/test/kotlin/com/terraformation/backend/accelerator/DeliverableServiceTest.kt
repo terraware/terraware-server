@@ -69,7 +69,7 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `creates a submission with Complete status`() {
-    val id = service.completeDeliverable(deliverable1, inserted.projectId, true)
+    val id = service.setDeliverableCompletion(deliverable1, inserted.projectId, true)
 
     assertEquals(
         SubmissionsRow(
@@ -87,7 +87,7 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `creates a submission with Not Submitted status if isComplete is false`() {
-    val id = service.completeDeliverable(deliverable1, inserted.projectId, false)
+    val id = service.setDeliverableCompletion(deliverable1, inserted.projectId, false)
 
     assertEquals(
         SubmissionsRow(
@@ -107,17 +107,17 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
   fun `updates existing submission to Complete status`() {
     insertSubmission(deliverableId = deliverable1, submissionStatus = SubmissionStatus.NotNeeded)
     val existing = submissionsDao.fetchOneById(inserted.submissionId)!!
-    service.completeDeliverable(deliverable1, inserted.projectId, true)
+    service.setDeliverableCompletion(deliverable1, inserted.projectId, true)
     assertEquals(
         existing.copy(submissionStatusId = SubmissionStatus.Completed),
         submissionsDao.fetchOneById(inserted.submissionId))
   }
 
   @Test
-  fun `updates existing submission to NotSubmitted status if isCompelte is false`() {
+  fun `updates existing submission to NotSubmitted status if isComplete is false`() {
     insertSubmission(deliverableId = deliverable1, submissionStatus = SubmissionStatus.NotNeeded)
     val existing = submissionsDao.fetchOneById(inserted.submissionId)!!
-    service.completeDeliverable(deliverable1, inserted.projectId, false)
+    service.setDeliverableCompletion(deliverable1, inserted.projectId, false)
     assertEquals(
         existing.copy(submissionStatusId = SubmissionStatus.NotSubmitted),
         submissionsDao.fetchOneById(inserted.submissionId))
@@ -132,7 +132,7 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
         applicationModulesDao.findAll(),
         "0/2 completed deliverables")
 
-    service.completeDeliverable(deliverable1, inserted.projectId, true)
+    service.setDeliverableCompletion(deliverable1, inserted.projectId, true)
 
     assertEquals(
         listOf(
@@ -141,7 +141,7 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
         applicationModulesDao.findAll(),
         "1/2 completed deliverables")
 
-    service.completeDeliverable(deliverable2, inserted.projectId, true)
+    service.setDeliverableCompletion(deliverable2, inserted.projectId, true)
 
     assertEquals(
         listOf(
@@ -150,7 +150,7 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
         applicationModulesDao.findAll(),
         "2/2 completed deliverables")
 
-    service.completeDeliverable(deliverable2, inserted.projectId, false)
+    service.setDeliverableCompletion(deliverable2, inserted.projectId, false)
 
     assertEquals(
         listOf(

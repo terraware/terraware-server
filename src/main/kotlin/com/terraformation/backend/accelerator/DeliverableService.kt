@@ -21,7 +21,7 @@ class DeliverableService(
     private val submissionStore: SubmissionStore,
     private val systemUser: SystemUser,
 ) {
-  fun completeDeliverable(
+  fun setDeliverableCompletion(
       deliverableId: DeliverableId,
       projectId: ProjectId,
       isComplete: Boolean,
