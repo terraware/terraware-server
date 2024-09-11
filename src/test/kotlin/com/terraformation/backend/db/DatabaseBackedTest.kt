@@ -2812,7 +2812,10 @@ abstract class DatabaseBackedTest {
     val actualId =
         id
             ?: insertVariable(
-                type = VariableType.Table, deliverableId = deliverableId, stableId = stableId)
+                type = VariableType.Table,
+                deliverableId = deliverableId,
+                stableId = stableId,
+                isList = true)
 
     val row =
         VariableTablesRow(
