@@ -44,7 +44,7 @@ class VariableService(
         variableStore
             .fetchReplacedVariables(newVariable.id)
             .reversed() // Walk backward through the replacement chain
-            .map { variableStore.fetchVariable(it) }
+            .map { variableStore.fetchOneVariable(it) }
             .forEach { oldVariable ->
               val columnReplacements =
                   if (newVariable is TableVariable && oldVariable is TableVariable) {

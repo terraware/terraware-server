@@ -307,6 +307,56 @@ class ValuesControllerTest : ControllerIntegrationTest() {
     }
 
     @Test
+    fun `returns internal variable values if user has permission to read it`() {
+      val variableId =
+          insertTextVariable(
+              insertVariable(internalOnly = true, isList = true, type = VariableType.Text))
+      val valueId = insertValue(variableId = variableId, textValue = "Value")
+
+      mockMvc
+          .get(path())
+          .andExpectJson(
+              """
+                {
+                  "nextValueId": ${valueId.value + 1},
+                  "values": [
+                    {
+                      "variableId": $variableId,
+                      "status": "Not Submitted",
+                      "values": [
+                        {
+                          "id": $valueId,
+                          "listPosition": 0,
+                          "type": "Text",
+                          "textValue": "Value"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "ok"
+                }
+              """
+                  .trimIndent(),
+              strict = true)
+
+      dslContext.deleteFrom(USER_GLOBAL_ROLES).execute()
+      insertOrganizationUser(user.userId, createdBy = user.userId)
+
+      mockMvc
+          .get(path())
+          .andExpectJson(
+              """
+                {
+                  "nextValueId": ${valueId.value + 1},
+                  "values": [],
+                  "status": "ok"
+                }
+              """
+                  .trimIndent(),
+              strict = true)
+    }
+
+    @Test
     fun `returns internal comment if user has permission to read it`() {
       val variableId = insertTextVariable(insertVariable(isList = true, type = VariableType.Text))
       val valueId = insertValue(variableId = variableId, textValue = "Value")
@@ -642,6 +692,66 @@ class ValuesControllerTest : ControllerIntegrationTest() {
 
       assertEquals("New citation", valuesRow.citation, "New value should have new citation")
     }
+
+    @Test
+    fun `Returns not found error if user has no permission to read internal only variable`() {
+      val variableId =
+          insertTextVariable(
+              insertVariable(internalOnly = true, isList = true, type = VariableType.Text))
+      insertValue(variableId = variableId, textValue = "Value")
+
+      dslContext.deleteFrom(USER_GLOBAL_ROLES).execute()
+      insertOrganizationUser(user.userId, createdBy = user.userId)
+
+      val payload =
+          """
+            {
+              "operations": [
+                {
+                  "operation": "Append",
+                  "variableId": $variableId,
+                  "value": {
+                    "type": "Text",
+                    "textValue": "New Value"
+                  }
+                }
+              ]
+            }
+          """
+              .trimIndent()
+
+      mockMvc.post(path()) { content = payload }.andExpect { status { isNotFound() } }
+    }
+
+    @Test
+    fun `Returns unauthorized error if user has no permission to update internal only variable`() {
+      val variableId =
+          insertTextVariable(
+              insertVariable(internalOnly = true, isList = true, type = VariableType.Text))
+      insertValue(variableId = variableId, textValue = "Value")
+
+      dslContext.deleteFrom(USER_GLOBAL_ROLES).execute()
+      insertUserGlobalRole(user.userId, GlobalRole.ReadOnly)
+
+      val payload =
+          """
+            {
+              "operations": [
+                {
+                  "operation": "Append",
+                  "variableId": $variableId,
+                  "value": {
+                    "type": "Text",
+                    "textValue": "New Value"
+                  }
+                }
+              ]
+            }
+          """
+              .trimIndent()
+
+      mockMvc.post(path()) { content = payload }.andExpect { status { isForbidden() } }
+    }
   }
 
   @Nested
@@ -800,6 +910,58 @@ class ValuesControllerTest : ControllerIntegrationTest() {
               """
                   .trimIndent(),
               strict = true)
+    }
+
+    @Test
+    fun `Returns not found error if user has no permission to read internal only variable`() {
+      val variableId =
+          insertTextVariable(
+              insertVariable(internalOnly = true, isList = true, type = VariableType.Text))
+      val valueId = insertValue(variableId = variableId, textValue = "Value")
+
+      dslContext.deleteFrom(USER_GLOBAL_ROLES).execute()
+      insertOrganizationUser(user.userId, createdBy = user.userId)
+
+      val payload =
+          """
+            {
+              "operations": [
+                {
+                  "operation": "Delete",
+                  "valueId": $valueId
+                }
+              ]
+            }
+          """
+              .trimIndent()
+
+      mockMvc.post(path()) { content = payload }.andExpect { status { isNotFound() } }
+    }
+
+    @Test
+    fun `Returns unauthorized error if user has no permission to update internal only variable`() {
+      val variableId =
+          insertTextVariable(
+              insertVariable(internalOnly = true, isList = true, type = VariableType.Text))
+      val valueId = insertValue(variableId = variableId, textValue = "Value")
+
+      dslContext.deleteFrom(USER_GLOBAL_ROLES).execute()
+      insertUserGlobalRole(user.userId, GlobalRole.ReadOnly)
+
+      val payload =
+          """
+            {
+              "operations": [
+                {
+                  "operation": "Delete",
+                  "valueId": $valueId
+                }
+              ]
+            }
+          """
+              .trimIndent()
+
+      mockMvc.post(path()) { content = payload }.andExpect { status { isForbidden() } }
     }
   }
 }

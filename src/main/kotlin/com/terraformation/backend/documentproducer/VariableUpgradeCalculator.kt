@@ -40,7 +40,7 @@ class VariableUpgradeCalculator(
 
   fun calculateOperations(): List<ValueOperation> {
     val newVariableIds = replacements.values
-    val newVariables = newVariableIds.map { variableStore.fetchVariable(it) }
+    val newVariables = newVariableIds.map { variableStore.fetchOneVariable(it) }
     val tableColumnVariableIds =
         newVariables
             .filterIsInstance<TableVariable>()
@@ -79,7 +79,7 @@ class VariableUpgradeCalculator(
     val valuesOfOldVariable =
         oldVariableIds[newVariable.id]?.let { valuesOfOldVariables[it] } ?: return emptyList()
 
-    val oldVariable = variableStore.fetchVariable(valuesOfOldVariable.first().variableId)
+    val oldVariable = variableStore.fetchOneVariable(valuesOfOldVariable.first().variableId)
 
     return if (newVariable is TableVariable) {
       if (oldVariable is TableVariable) {
@@ -93,7 +93,7 @@ class VariableUpgradeCalculator(
     } else {
       valuesOfOldVariable
           .mapNotNull { oldValue ->
-            newVariable.convertValue(oldVariable, oldValue, null, variableStore::fetchVariable)
+            newVariable.convertValue(oldVariable, oldValue, null, variableStore::fetchOneVariable)
           }
           .map { AppendValueOperation(it) }
     }
@@ -139,7 +139,7 @@ class VariableUpgradeCalculator(
                     ?.let { valuesOfOldCells[oldColumn.id]?.get(oldRow.id) }
                     ?.mapNotNull { oldValue ->
                       newColumn.convertValue(
-                          oldColumn, oldValue, null, variableStore::fetchVariable)
+                          oldColumn, oldValue, null, variableStore::fetchOneVariable)
                     }
                     ?.map { AppendValueOperation(it) } ?: emptyList()
               }

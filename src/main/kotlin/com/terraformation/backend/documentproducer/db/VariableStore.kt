@@ -1,5 +1,6 @@
 package com.terraformation.backend.documentproducer.db
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.docprod.DocumentId
@@ -96,8 +97,8 @@ class VariableStore(
    * @throws CircularReferenceException There is a cycle in the graph of the variable and its
    *   children.
    */
-  fun fetchVariable(variableId: VariableId, manifestId: VariableManifestId? = null): Variable {
-    return variables[manifestId to variableId] ?: FetchContext(manifestId).fetchVariable(variableId)
+  fun fetchOneVariable(variableId: VariableId, manifestId: VariableManifestId? = null): Variable {
+    return fetchVariable(variableId, manifestId) ?: throw VariableNotFoundException(variableId)
   }
 
   fun fetchByStableId(stableId: String): Variable? =
@@ -155,7 +156,7 @@ class VariableStore(
                   .and(VARIABLE_SECTIONS.PARENT_VARIABLE_ID.isNotNull))
           .orderBy(POSITION)
           .fetch()
-          .map { fetchVariable(it[VARIABLE_ID]!!, it[VARIABLE_MANIFEST_ID]!!) }
+          .mapNotNull { fetchVariable(it[VARIABLE_ID]!!, it[VARIABLE_MANIFEST_ID]!!) }
     }
   }
 
@@ -181,7 +182,7 @@ class VariableStore(
                   .and(VARIABLE_SECTIONS.PARENT_VARIABLE_ID.isNotNull))
           .orderBy(POSITION)
           .fetch(VARIABLE_ID.asNonNullable())
-          .map { fetchVariable(it, manifestId) }
+          .mapNotNull { fetchVariable(it, manifestId) }
     }
   }
 
@@ -204,7 +205,7 @@ class VariableStore(
                   .where(VARIABLE_ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
           .orderBy(POSITION)
           .fetch(VARIABLE_ID.asNonNullable())
-          .map { fetchVariable(it, manifestId) }
+          .mapNotNull { fetchVariable(it, manifestId) }
     }
   }
 
@@ -224,8 +225,8 @@ class VariableStore(
                   .from(VARIABLE_TABLE_COLUMNS)
                   .where(ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
           .groupBy(STABLE_ID)
-          .fetch()
-          .map { record -> fetchVariable(record[DSL.max(ID)]!!) }
+          .fetch(DSL.max(ID))
+          .mapNotNull { variableId -> variableId?.let { fetchVariable(it) } }
     }
   }
 
@@ -251,7 +252,7 @@ class VariableStore(
         .orderBy(
             VARIABLE_VALUES.VARIABLE_ID, VARIABLE_VALUES.LIST_POSITION, VARIABLE_VALUES.ID.desc())
         .fetchSet(VARIABLE_SECTION_VALUES.USED_VARIABLE_ID.asNonNullable())
-        .map { fetchVariable(it) }
+        .mapNotNull { fetchVariable(it) }
   }
 
   fun importVariable(variable: VariablesRow): VariableId {
@@ -324,6 +325,21 @@ class VariableStore(
     variables.clear()
   }
 
+  /** Returns variable if found. */
+  private fun fetchVariable(
+      variableId: VariableId,
+      manifestId: VariableManifestId? = null
+  ): Variable? {
+    val variable =
+        try {
+          variables[manifestId to variableId] ?: FetchContext(manifestId).fetchVariable(variableId)
+        } catch (_: VariableNotFoundException) {
+          null
+        }
+
+    return variable
+  }
+
   /**
    * Logic for recursively fetching a variable and the variables it's related to. Variable fetching
    * is stateful because we want to detect cycles.
@@ -343,6 +359,11 @@ class VariableStore(
 
         val variablesRow =
             variablesDao.fetchOneById(variableId) ?: throw VariableNotFoundException(variableId)
+
+        if (!currentUser().canReadInternalOnlyVariables() && variablesRow.internalOnly!!) {
+          throw VariableNotFoundException(variableId)
+        }
+
         val manifestRecord = fetchManifestRecord(variableId)
         val recommendedBy = fetchRecommendedBy(variableId)
 
@@ -356,6 +377,7 @@ class VariableStore(
                 dependencyVariableStableId = variablesRow.dependencyVariableStableId,
                 description = variablesRow.description,
                 id = variableId,
+                internalOnly = variablesRow.internalOnly!!,
                 isList = variablesRow.isList!!,
                 isRequired = variablesRow.isRequired == true,
                 manifestId = manifestId,
@@ -392,7 +414,7 @@ class VariableStore(
               .selectFrom(VARIABLE_MANIFEST_ENTRIES)
               .where(VARIABLE_MANIFEST_ID.eq(manifestId))
               .and(VARIABLE_ID.eq(variableId))
-              .fetchOne() ?: throw VariableNotFoundException(variableId)
+              .fetchOne() ?: throw VariableManifestNotFoundException(manifestId)
         }
       } else {
         null

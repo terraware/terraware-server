@@ -114,6 +114,9 @@ interface VariablePayload {
   val id: VariableId
     get() = model.id
 
+  val internalOnly: Boolean
+    get() = model.internalOnly
+
   val isList: Boolean
     get() = model.isList
 

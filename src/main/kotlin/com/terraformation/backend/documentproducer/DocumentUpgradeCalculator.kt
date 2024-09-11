@@ -125,7 +125,7 @@ class DocumentUpgradeCalculator(
 
     return if (!valuesOfReplacedVariable.isNullOrEmpty()) {
       val oldVariable =
-          variableStore.fetchVariable(valuesOfReplacedVariable.first().variableId, oldManifestId)
+          variableStore.fetchOneVariable(valuesOfReplacedVariable.first().variableId, oldManifestId)
 
       if (variable is TableVariable) {
         if (oldVariable is TableVariable) {
@@ -139,7 +139,7 @@ class DocumentUpgradeCalculator(
       } else {
         valuesOfReplacedVariable
             .mapNotNull { oldValue ->
-              variable.convertValue(oldVariable, oldValue, null, variableStore::fetchVariable)
+              variable.convertValue(oldVariable, oldValue, null, variableStore::fetchOneVariable)
             }
             .map { AppendValueOperation(it) }
       }
@@ -276,7 +276,7 @@ class DocumentUpgradeCalculator(
                               ?.sortedBy { it.listPosition }
                               ?.mapNotNull { oldValue ->
                                 newColumn.convertValue(
-                                    oldColumn, oldValue, null, variableStore::fetchVariable)
+                                    oldColumn, oldValue, null, variableStore::fetchOneVariable)
                               }
                               ?.map { AppendValueOperation(it) } ?: emptyList()
                       val deleteOps =

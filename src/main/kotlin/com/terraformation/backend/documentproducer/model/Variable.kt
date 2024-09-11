@@ -52,6 +52,9 @@ interface BaseVariable {
   /** Variable ID. Cannot vary between manifests. */
   val id: VariableId
 
+  /** Whether this variable is internal only. */
+  val internalOnly: Boolean
+
   /** Whether this variable can have multiple values. Cannot vary between manifests. */
   val isList: Boolean
 
@@ -98,6 +101,7 @@ data class BaseVariableProperties(
     override val dependencyVariableStableId: String? = null,
     override val description: String? = null,
     override val id: VariableId,
+    override val internalOnly: Boolean = false,
     override val isList: Boolean = false,
     override val isRequired: Boolean = false,
     override val manifestId: VariableManifestId?,

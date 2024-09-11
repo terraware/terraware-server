@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.api
 
 import com.terraformation.backend.api.ControllerIntegrationTest
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
@@ -96,6 +97,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                             "id": $childSectionVariableId,
                             "stableId": "101",
                             "position": 2,
+                            "internalOnly": false,
                             "isRequired": false,
                             "isList": true,
                             "renderHeading": false,
@@ -106,6 +108,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "id": $parentSectionVariableId,
                       "stableId": "100",
                       "position": 1,
+                      "internalOnly": false,
                       "isRequired": false,
                       "isList": true,
                       "renderHeading": true,
@@ -118,6 +121,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                         "maxValue": 10,
                         "stableId": "1",
                         "position": 0,
+                        "internalOnly": false,
                         "isRequired": false,
                         "isList": false,
                         "decimalPlaces": 0
@@ -163,6 +167,91 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "position": 0,
                       "stableId": "1",
                       "type": "Date",
+                      "internalOnly": false,
+                      "isList": false,
+                      "isRequired": false
+                    }
+                  ],
+                  "status": "ok"
+                }"""
+                  .trimIndent(),
+              strict = true)
+    }
+
+    @Test
+    fun `includes internal variables only for global role users`() {
+      val manifestId = insertVariableManifest()
+      val documentId = insertDocument()
+
+      val internalVariableId =
+          insertVariable(
+              deliverableQuestion = "Date Question",
+              internalOnly = true,
+              name = "Date Variable",
+              type = VariableType.Date,
+          )
+      val externalVariableId =
+          insertVariable(
+              deliverableQuestion = "Link Question",
+              internalOnly = false,
+              name = "Link Variable",
+              type = VariableType.Link)
+
+      insertVariableManifestEntry(
+          manifestId = manifestId, variableId = internalVariableId, position = 0)
+      insertVariableManifestEntry(
+          manifestId = manifestId, variableId = externalVariableId, position = 1)
+
+      mockMvc
+          .get(path(documentId))
+          .andExpectJson(
+              """
+                {
+                  "variables": [
+                    {
+                      "id": $externalVariableId,
+                      "name": "Link Variable",
+                      "deliverableQuestion": "Link Question",
+                      "position": 1,
+                      "stableId": "2",
+                      "type": "Link",
+                      "internalOnly": false,
+                      "isList": false,
+                      "isRequired": false
+                    }
+                  ],
+                  "status": "ok"
+                }"""
+                  .trimIndent(),
+              strict = true)
+
+      insertUserGlobalRole(userId = user.userId, role = GlobalRole.ReadOnly)
+
+      mockMvc
+          .get(path(documentId))
+          .andExpectJson(
+              """
+                {
+                  "variables": [
+                    {
+                      "id": $internalVariableId,
+                      "name": "Date Variable",
+                      "deliverableQuestion": "Date Question",
+                      "position": 0,
+                      "stableId": "1",
+                      "type": "Date",
+                      "internalOnly": true,
+                      "isList": false,
+                      "isRequired": false
+                    },
+                    {
+                      "id": $externalVariableId,
+                      "name": "Link Variable",
+                      "deliverableQuestion": "Link Question",
+                      "position": 1,
+                      "stableId": "2",
+                      "type": "Link",
+                      "internalOnly": false,
                       "isList": false,
                       "isRequired": false
                     }
@@ -201,6 +290,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "renderHeading": true,
                       "stableId": "1",
                       "type": "Section",
+                      "internalOnly": false,
                       "isList": true,
                       "isRequired": false
                     },
@@ -211,6 +301,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "recommendedBy": [$sectionVariableId],
                       "stableId": "2",
                       "type": "Date",
+                      "internalOnly": false,
                       "isList": false,
                       "isRequired": false
                     }
@@ -296,6 +387,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "position": 0,
                       "stableId": "1",
                       "type": "Date",
+                      "internalOnly": false,
                       "isList": true,
                       "isRequired": true
                     },
@@ -305,6 +397,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "position": 1,
                       "stableId": "2",
                       "type": "Image",
+                      "internalOnly": false,
                       "isList": false,
                       "isRequired": false
                     },
@@ -314,6 +407,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "position": 2,
                       "stableId": "3",
                       "type": "Link",
+                      "internalOnly": false,
                       "isList": false,
                       "isRequired": false
                     },
@@ -323,6 +417,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "position": 3,
                       "stableId": "4",
                       "type": "Number",
+                      "internalOnly": false,
                       "isList": false,
                       "isRequired": false,
                       "decimalPlaces": 1,
@@ -334,6 +429,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "name": "Parent section",
                       "position": 4,
                       "type": "Section",
+                      "internalOnly": false,
                       "isList": true,
                       "isRequired": false,
                       "stableId": "5",
@@ -345,6 +441,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                           "name": "Child section",
                           "position": 5,
                           "type": "Section",
+                          "internalOnly": false,
                           "isList": true,
                           "isRequired": false,
                           "renderHeading": false,
@@ -360,6 +457,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "position": 6,
                       "stableId": "7",
                       "type": "Select",
+                      "internalOnly": false,
                       "isList": false,
                       "isRequired": false,
                       "isMultiple": true,
@@ -381,6 +479,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "name": "A table",
                       "position": 7,
                       "type": "Table",
+                      "internalOnly": false,
                       "isList": false,
                       "isRequired": false,
                       "stableId": "8",
@@ -394,6 +493,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                             "position": 8,
                             "stableId": "9",
                             "type": "Date",
+                            "internalOnly": false,
                             "isList": false,
                             "isRequired": false
                           }
@@ -406,6 +506,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                             "position": 9,
                             "stableId": "10",
                             "type": "Link",
+                            "internalOnly": false,
                             "isList": false,
                             "isRequired": false
                           }
@@ -417,6 +518,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                       "name": "A paragraph",
                       "position": 10,
                       "type": "Text",
+                      "internalOnly": false,
                       "isList": false,
                       "isRequired": false,
                       "stableId": "11",

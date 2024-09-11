@@ -399,6 +399,8 @@ data class IndividualUser(
 
   override fun canReadGlobalRoles() = isAcceleratorAdmin()
 
+  override fun canReadInternalOnlyVariables(): Boolean = isReadOnlyOrHigher()
+
   override fun canReadInternalVariableWorkflowDetails(projectId: ProjectId) = isReadOnlyOrHigher()
 
   override fun canReadModule(moduleId: ModuleId): Boolean {
@@ -600,6 +602,8 @@ data class IndividualUser(
           GlobalRole.TFExpert -> isAcceleratorAdmin()
         }
       }
+
+  override fun canUpdateInternalOnlyVariables(): Boolean = isTFExpertOrHigher()
 
   override fun canUpdateInternalVariableWorkflowDetails(projectId: ProjectId) = isTFExpertOrHigher()
 

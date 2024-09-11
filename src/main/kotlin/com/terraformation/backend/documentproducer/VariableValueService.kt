@@ -1,6 +1,9 @@
 package com.terraformation.backend.documentproducer
 
+import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.documentproducer.db.VariableStore
+import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.model.AppendValueOperation
 import com.terraformation.backend.documentproducer.model.DeleteValueOperation
 import com.terraformation.backend.documentproducer.model.ReplaceValuesOperation
@@ -13,6 +16,7 @@ import jakarta.inject.Named
 @Named
 class VariableValueService(
     private val variableStore: VariableStore,
+    private val variableValueStore: VariableValueStore,
 ) {
   /**
    * Checks the values that would be created by a list of operations to make sure they are all valid
@@ -27,7 +31,7 @@ class VariableValueService(
     operations.forEach { operation ->
       when (operation) {
         is AppendValueOperation -> validate(operation.value)
-        is DeleteValueOperation -> Unit
+        is DeleteValueOperation -> validateDelete(operation.valueId)
         is ReplaceValuesOperation -> operation.values.forEach { newValue -> validate(newValue) }
         is UpdateValueOperation -> validate(operation.value)
       }
@@ -39,8 +43,21 @@ class VariableValueService(
    * see [Variable.validate] for details.
    */
   fun validate(newValue: VariableValue<*, *>) {
-    val variable = variableStore.fetchVariable(newValue.variableId)
+    val variable = variableStore.fetchOneVariable(newValue.variableId)
 
-    variable.validate(newValue, variableStore::fetchVariable)
+    if (variable.internalOnly) {
+      requirePermissions { updateInternalOnlyVariables() }
+    }
+
+    variable.validate(newValue, variableStore::fetchOneVariable)
+  }
+
+  private fun validateDelete(valueId: VariableValueId) {
+    val variable =
+        variableStore.fetchOneVariable(variableValueStore.fetchOneById(valueId).variableId)
+
+    if (variable.internalOnly) {
+      requirePermissions { updateInternalOnlyVariables() }
+    }
   }
 }
