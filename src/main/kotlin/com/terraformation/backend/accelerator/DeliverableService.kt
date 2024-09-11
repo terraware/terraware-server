@@ -21,7 +21,11 @@ class DeliverableService(
     private val submissionStore: SubmissionStore,
     private val systemUser: SystemUser,
 ) {
-  fun completeDeliverable(deliverableId: DeliverableId, projectId: ProjectId): SubmissionId {
+  fun completeDeliverable(
+      deliverableId: DeliverableId,
+      projectId: ProjectId,
+      isComplete: Boolean,
+  ): SubmissionId {
     val deliverableModule =
         moduleStore.fetchOneById(deliverableStore.fetchDeliverableModuleId(deliverableId))
 
@@ -29,15 +33,24 @@ class DeliverableService(
         deliverableModule.phase == CohortPhase.PreScreen ||
             deliverableModule.phase == CohortPhase.Application
 
-    val submissionId =
-        submissionStore.createSubmission(deliverableId, projectId, SubmissionStatus.Completed)
+    val status =
+        if (isComplete) {
+          SubmissionStatus.Completed
+        } else {
+          SubmissionStatus.NotSubmitted
+        }
 
-    if (isApplicationModule &&
-        submissionStore.moduleDeliverablesAllCompleted(deliverableId, projectId)) {
+    val submissionId = submissionStore.createSubmission(deliverableId, projectId, status)
 
+    if (isApplicationModule) {
       systemUser.run {
-        applicationStore.updateModuleStatus(
-            projectId, deliverableModule.id, ApplicationModuleStatus.Complete)
+        if (submissionStore.moduleDeliverablesAllCompleted(deliverableId, projectId)) {
+          applicationStore.updateModuleStatus(
+              projectId, deliverableModule.id, ApplicationModuleStatus.Complete)
+        } else {
+          applicationStore.updateModuleStatus(
+              projectId, deliverableModule.id, ApplicationModuleStatus.Incomplete)
+        }
       }
     }
 
