@@ -196,19 +196,25 @@ class DeliverablesController(
   }
 
   @ApiResponseSimpleSuccess
-  @Operation(summary = "Marks a submission from a project as complete or incomplete.")
+  @Operation(summary = "Marks a submission from a project as complete.")
   @PostMapping("/{deliverableId}/submissions/{projectId}/complete")
   fun completeSubmission(
       @PathVariable deliverableId: DeliverableId,
       @PathVariable projectId: ProjectId,
-      @Parameter(
-          description =
-              "True if the submission should be marked as Completed, or Incomplete otherwise. Defaults to true. ")
-      @RequestParam
-      isComplete: Boolean?,
   ): SimpleSuccessResponsePayload {
-    // "Create" operation updates status of existing submission if there is one.
-    deliverableService.completeDeliverable(deliverableId, projectId, isComplete ?: true)
+    deliverableService.completeDeliverable(deliverableId, projectId, true)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponseSimpleSuccess
+  @Operation(summary = "Marks a submission from a project as incomplete.")
+  @PostMapping("/{deliverableId}/submissions/{projectId}/incomplete")
+  fun incompleteSubmission(
+      @PathVariable deliverableId: DeliverableId,
+      @PathVariable projectId: ProjectId,
+  ): SimpleSuccessResponsePayload {
+    deliverableService.completeDeliverable(deliverableId, projectId, false)
 
     return SimpleSuccessResponsePayload()
   }
