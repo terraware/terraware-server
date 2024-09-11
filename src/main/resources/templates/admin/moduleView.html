@@ -222,7 +222,7 @@
                             multiple>
                         <option th:each="project : ${moduleProjects}"
                                 th:text="${cohortProjectNames.get(project.id)}"
-                                th:value="${projectId}">
+                                th:value="${project.id}">
                             Project Name
                         </option>
                     </select>
