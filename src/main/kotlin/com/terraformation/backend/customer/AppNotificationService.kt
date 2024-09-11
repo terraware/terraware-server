@@ -585,8 +585,7 @@ class AppNotificationService(
       dslContext.transaction { _ ->
         recipients.forEach { user ->
           // this is a global notification not scoped to any specific org permission, for
-          // accelerator
-          // purposes
+          // accelerator purposes
           insert(notificationType, user, null, renderMessage, localUrl, organizationId)
         }
       }
