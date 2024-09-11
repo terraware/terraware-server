@@ -1,3 +1,4 @@
+c0bb1ad9804 SW-5985 Added endpoint to mark a deliverable as Incomplete (#2404)
 7ed67772950 SW-5999 Fix failure when deleting empty table row (#2402)
 2de6cf6df67 SW-5995 Removed deliverable completer for question deliverable (#2401)
 a4e6052dd16 SW-5905 Create HubSpot deal on application submit (#2400)
