@@ -74,7 +74,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     organizationId = insertOrganization()
-    projectId = insertProject()
+    projectId = insertProject(countryCode = "KE")
 
     every { user.canReadProject(any()) } returns true
     every { user.canUpdateApplicationSubmissionStatus(any()) } returns true
@@ -167,22 +167,18 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
         hubSpotService.createApplicationObjects(any(), any(), any(), any(), any(), any(), any())
       } returns dealUrl
       every { user.canReadProject(projectId) } returns true
-      every { user.canReadProjectAcceleratorDetails(projectId) } returns true
-      every { user.canUpdateProjectAcceleratorDetails(projectId) } returns true
 
-      projectAcceleratorDetailsStore.update(projectId) {
-        it.copy(
-            applicationReforestableLand = applicationReforestableLand,
-            countryCode = "KE",
-            fileNaming = internalName,
-        )
-      }
+      insertProjectAcceleratorDetails(
+          applicationReforestableLand = applicationReforestableLand,
+          fileNaming = internalName,
+          projectId = projectId,
+      )
 
       assertEquals(submissionResult, service.submit(applicationId))
 
       assertEquals(
           dealUrl,
-          projectAcceleratorDetailsStore.fetchOneById(projectId).hubSpotUrl,
+          projectAcceleratorDetailsDao.fetchOneByProjectId(projectId)?.hubspotUrl,
           "HubSpot URL in project accelerator details")
 
       verify(exactly = 1) { applicationStore.submit(applicationId, null, null) }
