@@ -1,3 +1,4 @@
+79cb0f14395 SW-6008 Fix submission failure for unprivileged users (#2406)
 f59d712c431 SW-6002 Added permission checker for application modules for read module (#2403)
 e9c488ab64f SW-5969 Allow CRUD of internal variables and values by global role permissions (#2395)
 c0bb1ad9804 SW-5985 Added endpoint to mark a deliverable as Incomplete (#2404)
