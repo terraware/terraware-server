@@ -12,6 +12,7 @@ import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
+import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
@@ -264,20 +265,38 @@ class ParentStore(private val dslContext: DSLContext) {
           .fetch()
           .isNotEmpty
 
-  fun exists(moduleId: ModuleId, userId: UserId): Boolean =
-      dslContext
-          .selectOne()
-          .from(COHORT_MODULES)
-          .join(PARTICIPANTS)
-          .on(PARTICIPANTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
-          .join(PROJECTS)
-          .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
-          .join(ORGANIZATION_USERS)
-          .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
-          .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-          .and(COHORT_MODULES.MODULE_ID.eq(moduleId))
-          .fetch()
-          .isNotEmpty
+  fun exists(moduleId: ModuleId, userId: UserId): Boolean {
+    val cohortModuleExists =
+        dslContext
+            .selectOne()
+            .from(COHORT_MODULES)
+            .join(PARTICIPANTS)
+            .on(PARTICIPANTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
+            .join(PROJECTS)
+            .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+            .join(ORGANIZATION_USERS)
+            .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
+            .where(ORGANIZATION_USERS.USER_ID.eq(userId))
+            .and(COHORT_MODULES.MODULE_ID.eq(moduleId))
+            .fetch()
+            .isNotEmpty
+    val applicationModuleExists =
+        dslContext
+            .selectOne()
+            .from(APPLICATION_MODULES)
+            .join(APPLICATIONS)
+            .on(APPLICATIONS.ID.eq(APPLICATION_MODULES.APPLICATION_ID))
+            .join(PROJECTS)
+            .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
+            .join(ORGANIZATION_USERS)
+            .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
+            .where(ORGANIZATION_USERS.USER_ID.eq(userId))
+            .and(APPLICATION_MODULES.MODULE_ID.eq(moduleId))
+            .fetch()
+            .isNotEmpty
+
+    return cohortModuleExists || applicationModuleExists
+  }
 
   fun exists(cohortId: CohortId, userId: UserId): Boolean =
       dslContext
