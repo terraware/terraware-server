@@ -220,8 +220,8 @@
                     <select name="toAdd"
                             th:form="|add-${event.getId()}|"
                             multiple>
-                        <option th:each="projectId : ${moduleProjects}"
-                                th:text="${cohortProjectNames.get(projectId)}"
+                        <option th:each="project : ${moduleProjects}"
+                                th:text="${cohortProjectNames.get(project.id)}"
                                 th:value="${projectId}">
                             Project Name
                         </option>
