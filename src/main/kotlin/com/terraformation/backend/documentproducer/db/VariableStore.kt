@@ -1,7 +1,6 @@
 package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.docprod.DocumentId
@@ -326,15 +325,14 @@ class VariableStore(
     variables.clear()
   }
 
-  /** Returns variable if found * */
+  /** Returns variable if found. */
   private fun fetchVariable(
       variableId: VariableId,
       manifestId: VariableManifestId? = null
   ): Variable? {
     val variable =
         try {
-          variables[manifestId to variableId]
-              ?: FetchContext(currentUser(), manifestId).fetchVariable(variableId)
+          variables[manifestId to variableId] ?: FetchContext(manifestId).fetchVariable(variableId)
         } catch (_: VariableNotFoundException) {
           null
         }
@@ -346,10 +344,7 @@ class VariableStore(
    * Logic for recursively fetching a variable and the variables it's related to. Variable fetching
    * is stateful because we want to detect cycles.
    */
-  private inner class FetchContext(
-      private val user: TerrawareUser,
-      private val manifestId: VariableManifestId?
-  ) {
+  private inner class FetchContext(private val manifestId: VariableManifestId?) {
     /** Stack of variables that are being fetched in this context. Used to detect cycles. */
     val fetchesInProgress = ArrayDeque<VariableId>()
 
@@ -365,7 +360,7 @@ class VariableStore(
         val variablesRow =
             variablesDao.fetchOneById(variableId) ?: throw VariableNotFoundException(variableId)
 
-        if (!user.canReadInternalOnlyVariables() && variablesRow.internalOnly!!) {
+        if (!currentUser().canReadInternalOnlyVariables() && variablesRow.internalOnly!!) {
           throw VariableNotFoundException(variableId)
         }
 
