@@ -110,7 +110,7 @@ class AdminModulesController(
               .name + " - " + it.value.name
         }
 
-    val eventSessions = eventStore.fetchById(moduleId = moduleId).associateBy { it.eventType }
+    val eventSessions = eventStore.fetchById(moduleId = moduleId).groupBy { it.eventType }
 
     model.addAttribute("cohorts", cohorts)
     model.addAttribute("cohortProjects", cohortProjects)
