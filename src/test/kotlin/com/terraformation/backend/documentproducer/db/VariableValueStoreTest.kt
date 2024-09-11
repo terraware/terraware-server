@@ -342,6 +342,25 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
             round2Values.map { it.listPosition to it.value },
             "Values after append, append, delete, append, delete, append")
       }
+
+      @Test
+      fun `can delete a table row whose values are all deleted`() {
+        val tableVariableId = insertTableVariable()
+        val columnVariableId = insertTextVariable()
+        insertTableColumn(tableVariableId, columnVariableId)
+
+        val row0Id = insertValue(variableId = tableVariableId, listPosition = 0)
+        val row0OriginalValueId = insertValue(variableId = columnVariableId, textValue = "A")
+        val row0DeletedValueId = insertValue(variableId = columnVariableId, isDeleted = true)
+        insertValueTableRow(row0OriginalValueId, row0Id)
+        insertValueTableRow(row0DeletedValueId, row0Id)
+
+        store.updateValues(listOf(DeleteValueOperation(inserted.projectId, row0Id)))
+
+        val updatedValues =
+            store.listValues(inserted.projectId, listOf(tableVariableId, columnVariableId), false)
+        assertEquals(emptyList<ExistingValue>(), updatedValues)
+      }
     }
 
     @Nested

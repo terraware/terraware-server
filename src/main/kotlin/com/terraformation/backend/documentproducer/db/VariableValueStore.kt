@@ -178,14 +178,18 @@ class VariableValueStore(
    * Returns a single project's values for a list of variable IDs, useful for getting injected
    * variable values
    */
-  fun listValues(projectId: ProjectId, variableIds: Collection<VariableId>): List<ExistingValue> {
+  fun listValues(
+      projectId: ProjectId,
+      variableIds: Collection<VariableId>,
+      includeDeletedValues: Boolean = true
+  ): List<ExistingValue> {
     val conditions =
         listOf(
             VARIABLE_VALUES.PROJECT_ID.eq(projectId),
             VARIABLE_VALUES.VARIABLE_ID.`in`(variableIds),
         )
 
-    return fetchByConditions(conditions, true)
+    return fetchByConditions(conditions, includeDeletedValues)
   }
 
   /**
@@ -604,6 +608,9 @@ class VariableValueStore(
 
     // If this was a table row, recursively delete all its column values.
     if (variablesRow.variableTypeId == VariableType.Table) {
+      val deletedRows = VARIABLE_VALUE_TABLE_ROWS.`as`("deleted_rows")
+      val deletedValues = VARIABLE_VALUES.`as`("deleted_values")
+
       // Delete in reverse list position order so we don't waste time renumbering.
       val cellValueIds =
           dslContext
@@ -613,6 +620,16 @@ class VariableValueStore(
               .on(VARIABLE_VALUE_TABLE_ROWS.VARIABLE_VALUE_ID.eq(VARIABLE_VALUES.ID))
               .where(VARIABLE_VALUE_TABLE_ROWS.TABLE_ROW_VALUE_ID.eq(valueId))
               .and(VARIABLE_VALUES.IS_DELETED.isFalse)
+              .andNotExists(
+                  DSL.selectOne()
+                      .from(deletedValues)
+                      .join(deletedRows)
+                      .on(deletedValues.ID.eq(deletedRows.VARIABLE_VALUE_ID))
+                      .where(deletedValues.VARIABLE_ID.eq(VARIABLE_VALUES.VARIABLE_ID))
+                      .and(deletedRows.TABLE_ROW_VALUE_ID.eq(valueId))
+                      .and(deletedValues.LIST_POSITION.eq(VARIABLE_VALUES.LIST_POSITION))
+                      .and(deletedValues.IS_DELETED.isTrue)
+                      .and(deletedValues.ID.gt(VARIABLE_VALUES.ID)))
               .orderBy(VARIABLE_VALUES.LIST_POSITION.desc())
               .fetch(VARIABLE_VALUE_TABLE_ROWS.VARIABLE_VALUE_ID.asNonNullable())
 
@@ -700,9 +717,7 @@ class VariableValueStore(
       rowValueId: VariableValueId?,
       value: VariableValue<*, *>,
   ): VariableValueId {
-    val variablesRow =
-        variablesDao.fetchOneById(value.variableId)
-            ?: throw VariableNotFoundException(value.variableId)
+    variablesDao.fetchOneById(value.variableId) ?: throw VariableNotFoundException(value.variableId)
 
     val valuesRow =
         VariableValuesRow(
