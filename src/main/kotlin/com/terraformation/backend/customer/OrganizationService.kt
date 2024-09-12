@@ -101,29 +101,42 @@ class OrganizationService(
    */
   fun assignTerraformationContact(email: String, organizationId: OrganizationId): UserId {
     requirePermissions { addTerraformationContact(organizationId) }
-    return dslContext.transactionResult { _ ->
+
+    val existingUser = userStore.fetchByEmail(email) ?: throw UserNotFoundForEmailException(email)
+
+    assignTerraformationContact(existingUser.userId, organizationId)
+
+    return existingUser.userId
+  }
+
+  /**
+   * Assigns an existing user to an organization as its Terraformation Contact. Removes existing
+   * Terraformation Contact from the organization, if one exists. If the user already exists as an
+   * organization user, the role is simply updated. Otherwise, the user is added as the
+   * Terraformation Contact.
+   */
+  fun assignTerraformationContact(userId: UserId, organizationId: OrganizationId) {
+    requirePermissions { addTerraformationContact(organizationId) }
+
+    dslContext.transaction { _ ->
       val currentTfContactUserId = organizationStore.fetchTerraformationContact(organizationId)
       if (currentTfContactUserId != null) {
         organizationStore.removeUser(organizationId, currentTfContactUserId)
       }
-      val existingUser = userStore.fetchByEmail(email) ?: throw UserNotFoundForEmailException(email)
+
       val orgUserExists =
           dslContext
               .selectOne()
               .from(ORGANIZATION_USERS)
               .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
-              .and(ORGANIZATION_USERS.USER_ID.eq(existingUser.userId))
+              .and(ORGANIZATION_USERS.USER_ID.eq(userId))
               .fetch()
               .isNotEmpty
-      val result =
-          if (orgUserExists) {
-            organizationStore.setUserRole(
-                organizationId, existingUser.userId, Role.TerraformationContact)
-            existingUser.userId
-          } else {
-            addUser(email, organizationId, Role.TerraformationContact)
-          }
-      result
+      if (orgUserExists) {
+        organizationStore.setUserRole(organizationId, userId, Role.TerraformationContact)
+      } else {
+        organizationStore.addUser(organizationId, userId, Role.TerraformationContact)
+      }
     }
   }
 

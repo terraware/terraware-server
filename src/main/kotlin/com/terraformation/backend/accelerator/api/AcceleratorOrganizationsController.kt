@@ -3,7 +3,9 @@ package com.terraformation.backend.accelerator.api
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.terraformation.backend.accelerator.db.AcceleratorOrganizationStore
 import com.terraformation.backend.api.AcceleratorEndpoint
+import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.customer.OrganizationService
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.IndividualUser
@@ -15,6 +17,9 @@ import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -24,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class AcceleratorOrganizationsController(
     private val acceleratorOrganizationStore: AcceleratorOrganizationStore,
+    private val organizationService: OrganizationService,
     private val userStore: UserStore,
 ) {
   @GetMapping
@@ -50,6 +56,19 @@ class AcceleratorOrganizationsController(
           AcceleratorOrganizationPayload(
               organization, projects, userStore.getTerraformationContactUser(organization.id))
         })
+  }
+
+  @Operation(
+      summary = "Assign a user as the Terraformation contact for an organization.",
+      description = "The user will be added to the organization if they are not already a member.")
+  @PutMapping("/{organizationId}/tfContact")
+  fun assignTerraformationContact(
+      @PathVariable organizationId: OrganizationId,
+      @RequestBody payload: AssignTerraformationContactRequestPayload
+  ): SimpleSuccessResponsePayload {
+    organizationService.assignTerraformationContact(payload.userId, organizationId)
+
+    return SimpleSuccessResponsePayload()
   }
 }
 
@@ -90,6 +109,8 @@ data class AcceleratorOrganizationPayload(
       tfContactUser?.let { TerraformationContactUserPayload(it) },
   )
 }
+
+data class AssignTerraformationContactRequestPayload(val userId: UserId)
 
 data class ListAcceleratorOrganizationsResponsePayload(
     val organizations: List<AcceleratorOrganizationPayload>,
