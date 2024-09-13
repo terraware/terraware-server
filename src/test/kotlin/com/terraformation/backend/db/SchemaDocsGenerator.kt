@@ -223,6 +223,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "project_land_use_model_types" to setOf(ALL, ACCELERATOR, CUSTOMER),
                   "project_report_settings" to setOf(ALL, CUSTOMER),
                   "projects" to setOf(ALL, ACCELERATOR, CUSTOMER),
+                  "rate_limited_events" to setOf(ALL),
                   "regions" to setOf(ALL, CUSTOMER),
                   "report_files" to setOf(ALL, CUSTOMER),
                   "report_photos" to setOf(ALL, CUSTOMER),

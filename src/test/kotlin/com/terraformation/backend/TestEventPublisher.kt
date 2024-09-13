@@ -1,12 +1,28 @@
 package com.terraformation.backend
 
+import com.terraformation.backend.ratelimit.RateLimitedEvent
+import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.springframework.context.ApplicationEventPublisher
 
-class TestEventPublisher : ApplicationEventPublisher {
+/**
+ * Test double for event publication. This doesn't call any event listeners, just collects the
+ * published events and allows tests to assert things about them.
+ *
+ * This class implements both [ApplicationEventPublisher] (the Spring interface) and
+ * [RateLimitedEventPublisher], and can be used as a double for either. If your calling class
+ * publishes both regular and rate-limited events, and depends on both [ApplicationEventPublisher]
+ * and [RateLimitedEventPublisher], you will probably want two instances of this class so you can
+ * assert that your events were published with (or without) rate limiting.
+ */
+class TestEventPublisher : ApplicationEventPublisher, RateLimitedEventPublisher {
   private val publishedEvents = mutableListOf<Any>()
 
   override fun publishEvent(event: Any) {
+    publishedEvents.add(event)
+  }
+
+  override fun <T : RateLimitedEvent<T>> publishOrDefer(event: T) {
     publishedEvents.add(event)
   }
 
