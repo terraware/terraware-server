@@ -727,7 +727,8 @@ data class IndividualUser(
   private fun isGlobalReader(organizationId: OrganizationId) =
       isSuperAdmin() ||
           (isReadOnlyOrHigher() &&
-              parentStore.hasInternalTag(organizationId, InternalTagIds.Accelerator))
+              (parentStore.hasInternalTag(organizationId, InternalTagIds.Accelerator) ||
+                  parentStore.hasApplications(organizationId)))
 
   // When adding new permissions, put them in alphabetical order.
 }

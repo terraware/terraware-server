@@ -95,7 +95,7 @@ import org.springframework.beans.factory.annotation.Autowired
  *   Project 1000
  *   Project 1001
  *
- * Organization 2 - No facilities or planting sites
+ * Organization 2 - No facilities or planting sites or application
  *
  * Organization 3 - One of everything, but current user isn't a member
  *
@@ -178,7 +178,7 @@ internal class PermissionTest : DatabaseTest() {
   private val cohortIds = listOf(1, 3, 4).map { CohortId(it.toLong()) }
   private val globalRoles = setOf(GlobalRole.SuperAdmin)
 
-  private val applicationIds = projectIds.map { ApplicationId(it.value) }
+  private val applicationIds = listOf(1000, 1001, 3000).map { ApplicationId(it.toLong()) }
   private val moduleIds = listOf(1000, 1001, 3000, 4000).map { ModuleId(it.toLong()) }
   private val deliverableIds = listOf(DeliverableId(1000))
   private val submissionIds = projectIds.map { SubmissionId(it.value) }
@@ -1817,9 +1817,12 @@ internal class PermissionTest : DatabaseTest() {
         updateSubmissionStatus = true,
     )
 
-    // Not an admin of this org but can still access accelerator-related functions.
+    // Not an admin of this org but can still access it because it has an application.
     permissions.expect(
         OrganizationId(3),
+        listOrganizationUsers = true,
+        readOrganization = true,
+        readOrganizationUser = true,
         readOrganizationDeliverables = true,
     )
 
@@ -1832,14 +1835,17 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationUser = true,
     )
 
+    // Can access this project because it has an application.
     permissions.expect(
         ProjectId(3000),
         createParticipantProjectSpecies = true,
         createSubmission = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
+        readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
+        readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateInternalVariableWorkflowDetails = true,
@@ -2130,9 +2136,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         org1Id,
         listFacilities = true,
+        listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationSelf = true,
+        readOrganizationUser = true,
         removeOrganizationSelf = true,
     )
 
