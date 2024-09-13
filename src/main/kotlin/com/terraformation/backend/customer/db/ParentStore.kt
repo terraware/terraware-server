@@ -326,6 +326,9 @@ class ParentStore(private val dslContext: DSLContext) {
           .fetch()
           .isNotEmpty
 
+  fun hasApplications(organizationId: OrganizationId): Boolean =
+      dslContext.fetchExists(APPLICATIONS, APPLICATIONS.projects.ORGANIZATION_ID.eq(organizationId))
+
   fun hasInternalTag(organizationId: OrganizationId, internalTag: InternalTagId): Boolean =
       dslContext.fetchExists(
           ORGANIZATION_INTERNAL_TAGS,
