@@ -342,6 +342,10 @@ internal class EmailNotificationServiceTest {
     every {
       deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverable.deliverableId)
     } returns listOf(deliverable)
+    every {
+      deliverableStore.fetchDeliverableSubmissions(
+          deliverableId = deliverable.deliverableId, projectId = deliverable.projectId)
+    } returns listOf(deliverable)
 
     every { sender.send(capture(mimeMessageSlot)) } answers
         { answer ->
@@ -998,7 +1002,7 @@ internal class EmailNotificationServiceTest {
   fun `deliverableReadyForReview with Terraformation contact`() {
     every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
 
-    val event = DeliverableReadyForReviewEvent(deliverable, project.id)
+    val event = DeliverableReadyForReviewEvent(deliverable.deliverableId, project.id)
 
     service.on(event)
 
@@ -1014,7 +1018,7 @@ internal class EmailNotificationServiceTest {
     every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
 
-    val event = DeliverableReadyForReviewEvent(deliverable, project.id)
+    val event = DeliverableReadyForReviewEvent(deliverable.deliverableId, project.id)
 
     service.on(event)
 
@@ -1030,7 +1034,7 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `deliverableReadyForReview without Terraformation contact`() {
-    val event = DeliverableReadyForReviewEvent(deliverable, project.id)
+    val event = DeliverableReadyForReviewEvent(deliverable.deliverableId, project.id)
 
     service.on(event)
 
@@ -1160,7 +1164,7 @@ internal class EmailNotificationServiceTest {
   @Test
   fun `org notification by default fetches recipients for all roles except Terraformation Contact`() {
     val rolesWithoutTerraformationContact =
-        Role.values().filter { it != Role.TerraformationContact }.toSet()
+        Role.entries.filter { it != Role.TerraformationContact }.toSet()
     every { userStore.fetchByOrganizationId(organization.id, any(), any()) } returns emptyList()
 
     emailService.sendOrganizationNotification(

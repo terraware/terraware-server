@@ -599,26 +599,40 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: DeliverableReadyForReviewEvent) {
-    val project = projectStore.fetchOneById(event.projectId)
-    if (project.participantId == null) {
-      log.error("Got deliverable ready notification for non-participant project ${event.projectId}")
-      return
+    systemUser.run {
+      val project = projectStore.fetchOneById(event.projectId)
+      if (project.participantId == null) {
+        log.error(
+            "Got deliverable ready notification for non-participant project ${event.projectId}")
+        return@run
+      }
+
+      val deliverableSubmission =
+          deliverableStore
+              .fetchDeliverableSubmissions(
+                  deliverableId = event.deliverableId, projectId = event.projectId)
+              .firstOrNull()
+      if (deliverableSubmission == null) {
+        log.error(
+            "Got deliverable ready notification for deliverable ${event.deliverableId} in " +
+                "project ${event.projectId} but it has no submission")
+        return@run
+      }
+
+      val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
+      val participant = participantStore.fetchOneById(project.participantId)
+
+      sendToAccelerator(
+          project.organizationId,
+          DeliverableReadyForReview(
+              config,
+              webAppUrls
+                  .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
+                  .toString(),
+              deliverableSubmission,
+              participant.name),
+          deliverableCategory.internalInterestId)
     }
-
-    val deliverableCategory =
-        deliverableStore.fetchDeliverableCategory(event.deliverable.deliverableId)
-    val participant = participantStore.fetchOneById(project.participantId)
-
-    sendToAccelerator(
-        project.organizationId,
-        DeliverableReadyForReview(
-            config,
-            webAppUrls
-                .fullAcceleratorConsoleDeliverable(event.deliverable.deliverableId, event.projectId)
-                .toString(),
-            event.deliverable,
-            participant.name),
-        deliverableCategory.internalInterestId)
   }
 
   @EventListener
