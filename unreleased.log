@@ -1,2 +1,1 @@
-e2ce83f4a31 SW-5870 Add endpoint to assign Terraformation contact (#2407)
-a36a7afd637 SW-5998 Fixed issue with admin UI events list (#2405)
+618574a86c9 SW-6023 Application grants permission to admins (#2408)
