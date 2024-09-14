@@ -3,22 +3,22 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesStore
 import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesEditedEvent
-import com.terraformation.backend.customer.model.SystemUser
+import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSpeciesModel
+import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
+import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
+import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import io.mockk.mockk
-import java.time.Instant
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -26,22 +26,12 @@ import org.junit.jupiter.api.Test
 class SpeciesNotifierTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val clock = TestClock()
-  private val eventPublisher = TestEventPublisher()
-
-  private val store: ParticipantProjectSpeciesStore by lazy {
-    ParticipantProjectSpeciesStore(
-        clock, dslContext, eventPublisher, participantProjectSpeciesDao, projectsDao)
-  }
+  private val rateLimitedEventPublisher = TestEventPublisher()
 
   private val notifier: SpeciesNotifier by lazy {
     SpeciesNotifier(
-        TestClock(),
-        store,
-        eventPublisher,
-        mockk(),
-        SubmissionStore(clock, dslContext, eventPublisher),
-        SystemUser(usersDao),
+        rateLimitedEventPublisher,
+        SubmissionStore(TestClock(), dslContext, TestEventPublisher()),
     )
   }
 
@@ -61,102 +51,103 @@ class SpeciesNotifierTest : DatabaseTest(), RunsAsUser {
 
     every { user.canReadProjectDeliverables(any()) } returns true
     every { user.canReadParticipantProjectSpecies(any()) } returns true
+    every { user.canReadSubmission(any()) } returns true
   }
 
   @Nested
-  inner class NotifyIfNoNewerAddedSpecies {
+  inner class OnParticipantProjectSpeciesAddedEvent {
     @Test
-    fun `does not publish event if there were new species added to a deliverable`() {
-      val speciesId1 = insertSpecies()
-      val speciesId2 = insertSpecies()
-      val participantProjectSpeciesId1 =
-          insertParticipantProjectSpecies(
-              createdTime = Instant.EPOCH, projectId = projectId, speciesId = speciesId1)
-      insertParticipantProjectSpecies(
-          createdTime = Instant.EPOCH.plusSeconds(1), projectId = projectId, speciesId = speciesId2)
-
-      notifier.notifyIfNoNewerUpdates(
+    fun `publishes event on species add`() {
+      val speciesId = insertSpecies()
+      val inputEvent =
           ParticipantProjectSpeciesAddedEvent(
               deliverableId,
-              participantProjectSpecies = store.fetchOneById(participantProjectSpeciesId1)))
-
-      eventPublisher.assertEventNotPublished(
-          ParticipantProjectSpeciesAddedToProjectNotificationDueEvent::class.java)
-    }
-
-    @Test
-    fun `publishes event if this is the latest species added to the deliverable`() {
-      val speciesId1 = insertSpecies()
-      val speciesId2 = insertSpecies()
-      insertParticipantProjectSpecies(
-          createdTime = Instant.EPOCH, projectId = projectId, speciesId = speciesId1)
-      val participantProjectSpeciesId2 =
-          insertParticipantProjectSpecies(
-              createdTime = Instant.EPOCH.plusSeconds(1),
-              projectId = projectId,
-              speciesId = speciesId2)
-
-      notifier.notifyIfNoNewerUpdates(
-          ParticipantProjectSpeciesAddedEvent(
-              deliverableId,
-              participantProjectSpecies = store.fetchOneById(participantProjectSpeciesId2)))
-
-      eventPublisher.assertEventPublished(
+              ExistingParticipantProjectSpeciesModel(
+                  id = ParticipantProjectSpeciesId(1),
+                  speciesId = speciesId,
+                  projectId = projectId))
+      val expectedEvent =
           ParticipantProjectSpeciesAddedToProjectNotificationDueEvent(
-              deliverableId, projectId, speciesId2))
+              deliverableId, projectId, speciesId)
+
+      notifier.on(inputEvent)
+
+      rateLimitedEventPublisher.assertEventPublished(expectedEvent)
+      assertIsEventListener<ParticipantProjectSpeciesAddedEvent>(notifier)
     }
   }
 
   @Nested
-  inner class NotifyIfNoNewerUpdatedSpecies {
+  inner class OnParticipantProjectSpeciesEditedEvent {
     @Test
-    fun `does not publish event if there were new, qualifying species updates for a deliverable`() {
-      val speciesId1 = insertSpecies()
-      val speciesId2 = insertSpecies()
-      val participantProjectSpeciesId1 =
-          insertParticipantProjectSpecies(
-              modifiedTime = Instant.EPOCH, projectId = projectId, speciesId = speciesId1)
-      insertParticipantProjectSpecies(
-          modifiedTime = Instant.EPOCH.plusSeconds(1),
-          projectId = projectId,
-          speciesId = speciesId2)
+    fun `does not publish event if species was not approved`() {
+      val speciesId = insertSpecies()
+      val participantProjectSpeciesId = insertParticipantProjectSpecies()
+      insertSubmission(projectId = projectId, deliverableId = deliverableId)
 
-      val existing = store.fetchOneById(participantProjectSpeciesId1)
+      val old =
+          ExistingParticipantProjectSpeciesModel(
+              id = participantProjectSpeciesId,
+              speciesId = speciesId,
+              projectId = projectId,
+              submissionStatus = SubmissionStatus.NotSubmitted)
+      val new =
+          ExistingParticipantProjectSpeciesModel(
+              id = participantProjectSpeciesId,
+              speciesId = speciesId,
+              projectId = projectId,
+              submissionStatus = SubmissionStatus.InReview)
 
-      notifier.notifyIfNoNewerUpdates(
-          ParticipantProjectSpeciesEditedEvent(
-              oldParticipantProjectSpecies = existing,
-              newParticipantProjectSpecies = existing,
-              projectId = projectId))
+      notifier.on(ParticipantProjectSpeciesEditedEvent(old, new, projectId))
 
-      eventPublisher.assertEventNotPublished(
-          ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent::class.java)
+      rateLimitedEventPublisher.assertNoEventsPublished()
     }
 
     @Test
-    fun `publishes event if this is the latest qualifying species update for the deliverable`() {
+    fun `does not publish event if nothing changed`() {
+      val speciesId = insertSpecies()
+      val participantProjectSpeciesId = insertParticipantProjectSpecies()
       insertSubmission(projectId = projectId, deliverableId = deliverableId)
-      val speciesId1 = insertSpecies()
-      val speciesId2 = insertSpecies()
-      insertParticipantProjectSpecies(
-          modifiedTime = Instant.EPOCH, projectId = projectId, speciesId = speciesId1)
-      val participantProjectSpeciesId2 =
-          insertParticipantProjectSpecies(
-              modifiedTime = Instant.EPOCH.plusSeconds(1),
+
+      val model =
+          ExistingParticipantProjectSpeciesModel(
+              id = participantProjectSpeciesId,
+              speciesId = speciesId,
               projectId = projectId,
-              speciesId = speciesId2)
+              submissionStatus = SubmissionStatus.Approved)
 
-      val existing = store.fetchOneById(participantProjectSpeciesId2)
+      notifier.on(ParticipantProjectSpeciesEditedEvent(model, model, projectId))
 
-      notifier.notifyIfNoNewerUpdates(
-          ParticipantProjectSpeciesEditedEvent(
-              oldParticipantProjectSpecies = existing,
-              newParticipantProjectSpecies = existing,
-              projectId = projectId))
+      rateLimitedEventPublisher.assertNoEventsPublished()
+    }
 
-      eventPublisher.assertEventPublished(
+    @Test
+    fun `publishes event if approved species was edited`() {
+      val speciesId = insertSpecies()
+      val participantProjectSpeciesId = insertParticipantProjectSpecies()
+      insertSubmission(projectId = projectId, deliverableId = deliverableId)
+
+      val old =
+          ExistingParticipantProjectSpeciesModel(
+              id = participantProjectSpeciesId,
+              speciesId = speciesId,
+              projectId = projectId,
+              submissionStatus = SubmissionStatus.Approved)
+      val new =
+          ExistingParticipantProjectSpeciesModel(
+              id = participantProjectSpeciesId,
+              speciesId = speciesId,
+              projectId = projectId,
+              submissionStatus = SubmissionStatus.InReview)
+
+      val expectedEvent =
           ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
-              deliverableId, projectId, speciesId2))
+              deliverableId, projectId, speciesId)
+
+      notifier.on(ParticipantProjectSpeciesEditedEvent(old, new, projectId))
+
+      rateLimitedEventPublisher.assertEventPublished(expectedEvent)
+      assertIsEventListener<ParticipantProjectSpeciesEditedEvent>(notifier)
     }
   }
 }
