@@ -24,6 +24,7 @@ import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.CreateNotificationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.InternalInterest
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -33,7 +34,6 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
@@ -162,12 +162,9 @@ class AppNotificationService(
 
     log.info("Creating app notifications for accession ${event.accessionNumber} ends drying.")
 
+    val facilityId = parentStore.getFacilityId(event.accessionId)!!
     insertFacilityNotifications(
-        event.accessionId,
-        NotificationType.AccessionScheduledToEndDrying,
-        renderMessage,
-        accessionUrl,
-    )
+        facilityId, NotificationType.AccessionScheduledToEndDrying, renderMessage, accessionUrl)
   }
 
   @EventListener
@@ -427,19 +424,7 @@ class AppNotificationService(
   @EventListener
   fun on(event: DeliverableStatusUpdatedEvent) {
     if (event.isUserVisible()) {
-      systemUser.run {
-        val organizationId = parentStore.getOrganizationId(event.projectId)!!
-        val deliverableUrl = webAppUrls.deliverable(event.deliverableId, event.projectId)
-        val renderMessage = { messages.deliverableStatusUpdated() }
-
-        log.info("Creating app notifications for deliverable ${event.deliverableId} status updated")
-        insertOrganizationNotifications(
-            organizationId,
-            NotificationType.DeliverableStatusUpdated,
-            renderMessage,
-            deliverableUrl,
-            setOf(Role.Owner, Role.Admin, Role.Manager))
-      }
+      notifyDeliverableStatusUpdated(event.projectId, event.deliverableId)
     }
   }
 
@@ -458,23 +443,28 @@ class AppNotificationService(
           )
         }
       }
-      moduleEvent.projects!!.forEach {
-        val organizationId = parentStore.getOrganizationId(it)!!
+      moduleEvent.projects.forEach { projectId ->
+        val organizationId = parentStore.getOrganizationId(projectId)!!
         val eventUrl =
-            webAppUrls.moduleEvent(moduleEvent.moduleId, moduleEvent.id, organizationId, it)
-        insertProjectNotifications(it, NotificationType.EventReminder, renderMessage, eventUrl)
+            webAppUrls.moduleEvent(moduleEvent.moduleId, moduleEvent.id, organizationId, projectId)
+        insertOrganizationNotifications(
+            organizationId, NotificationType.EventReminder, renderMessage, eventUrl)
       }
     }
   }
 
   @EventListener
   fun on(event: QuestionsDeliverableStatusUpdatedEvent) {
+    notifyDeliverableStatusUpdated(event.projectId, event.deliverableId)
+  }
+
+  private fun notifyDeliverableStatusUpdated(projectId: ProjectId, deliverableId: DeliverableId) {
     systemUser.run {
-      val organizationId = parentStore.getOrganizationId(event.projectId)!!
-      val deliverableUrl = webAppUrls.deliverable(event.deliverableId, event.projectId)
+      val organizationId = parentStore.getOrganizationId(projectId)!!
+      val deliverableUrl = webAppUrls.deliverable(deliverableId, projectId)
       val renderMessage = { messages.deliverableStatusUpdated() }
 
-      log.info("Creating app notifications for deliverable ${event.deliverableId} status updated")
+      log.info("Creating app notifications for deliverable $deliverableId status updated")
       insertOrganizationNotifications(
           organizationId,
           NotificationType.DeliverableStatusUpdated,
@@ -482,16 +472,6 @@ class AppNotificationService(
           deliverableUrl,
           setOf(Role.Owner, Role.Admin, Role.Manager))
     }
-  }
-
-  private fun insertFacilityNotifications(
-      accessionId: AccessionId,
-      notificationType: NotificationType,
-      renderMessage: () -> NotificationMessage,
-      localUrl: URI
-  ) {
-    val facilityId = parentStore.getFacilityId(accessionId)!!
-    insertFacilityNotifications(facilityId, notificationType, renderMessage, localUrl)
   }
 
   private fun insertFacilityNotifications(
@@ -521,8 +501,8 @@ class AppNotificationService(
       val renderMessage = { messages.userAddedToOrganizationNotification(organization.name) }
 
       log.info(
-          "Creating app notification for user ${userId} being added to an organization " +
-              "${organizationId}.")
+          "Creating app notification for user $userId being added to an organization " +
+              "$organizationId.")
 
       insert(
           NotificationType.UserAddedToOrganization,
@@ -548,16 +528,6 @@ class AppNotificationService(
         insert(notificationType, user, organizationId, renderMessage, localUrl, organizationId)
       }
     }
-  }
-
-  private fun insertProjectNotifications(
-      projectId: ProjectId,
-      notificationType: NotificationType,
-      renderMessage: () -> NotificationMessage,
-      localUrl: URI,
-  ) {
-    val organizationId = parentStore.getOrganizationId(projectId)!!
-    insertOrganizationNotifications(organizationId, notificationType, renderMessage, localUrl)
   }
 
   private fun insertAcceleratorNotification(
