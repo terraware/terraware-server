@@ -1,1 +1,3 @@
-618574a86c9 SW-6023 Application grants permission to admins (#2408)
+b7e90ce8318 Update dependency types-requests to v2.32.0.20240914 (#2413)
+fbb9203f4ef Update database dependencies (#2412)
+d2ea45bc20d Update dependency org.eclipse.jgit:org.eclipse.jgit to v7 (#2409)
