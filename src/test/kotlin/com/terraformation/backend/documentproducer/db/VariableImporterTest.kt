@@ -3,12 +3,14 @@ package com.terraformation.backend.documentproducer.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableVariablesRow
+import com.terraformation.backend.db.accelerator.tables.records.DeliverableVariablesRecord
 import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.tables.pojos.*
+import com.terraformation.backend.db.docprod.tables.records.VariableTableColumnsRecord
+import com.terraformation.backend.db.docprod.tables.records.VariablesRecord
 import com.terraformation.backend.documentproducer.db.variable.VariableImportResult
 import com.terraformation.backend.documentproducer.db.variable.VariableImporter
 import com.terraformation.backend.file.SizedInputStream
@@ -112,40 +114,35 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               variableId = actualTableVariable.id!!,
               variableTypeId = VariableType.Table,
               tableStyleId = VariableTableStyle.Horizontal)
+      assertEquals(emptyList<String>(), importResult.errors, "no errors")
+      assertEquals(
+          expectedTableVariable, actualTableVariable, "Variable DB row for table is correct")
+      assertEquals(expectedTableRow, actualTableRow, "Variable Table DB row for table is correct")
 
       val tableColumnVariableRow1 = getVariableByName("Organization Name")
       val tableColumnVariableRow2 = getVariableByName("Contact Person")
       val tableColumnVariableRow3 = getVariableByName("Title")
 
-      val actualTableColumnRows = variableTableColumnsDao.findAll()
-      val expectedTableColumnRows =
+      assertTableEquals(
           listOf(
-              VariableTableColumnsRow(
+              VariableTableColumnsRecord(
                   variableId = tableColumnVariableRow1.id!!,
                   tableVariableId = actualTableVariable.id!!,
                   tableVariableTypeId = VariableType.Table,
                   position = 1,
                   isHeader = false),
-              VariableTableColumnsRow(
+              VariableTableColumnsRecord(
                   variableId = tableColumnVariableRow2.id!!,
                   tableVariableId = actualTableVariable.id!!,
                   tableVariableTypeId = VariableType.Table,
                   position = 2,
                   isHeader = false),
-              VariableTableColumnsRow(
+              VariableTableColumnsRecord(
                   variableId = tableColumnVariableRow3.id!!,
                   tableVariableId = actualTableVariable.id!!,
                   tableVariableTypeId = VariableType.Table,
                   position = 3,
-                  isHeader = false))
-
-      assertEquals(emptyList<String>(), importResult.errors, "no errors")
-      assertEquals(
-          expectedTableVariable, actualTableVariable, "Variable DB row for table is correct")
-      assertEquals(expectedTableRow, actualTableRow, "Variable Table DB row for table is correct")
-      assertEquals(
-          expectedTableColumnRows,
-          actualTableColumnRows,
+                  isHeader = false)),
           "Variable Table Column DB rows are correct")
     }
 
@@ -165,9 +162,9 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       val tableColumnVariableRow1 = getVariableByName("Audit type")
       val tableColumnVariableRow2 = getVariableByName("Number of years")
 
-      val actualTableColumnRows = variableTableColumnsDao.findAll()
+      val actualTableColumnRows = variableTableColumnsDao.findAll().toSet()
       val expectedTableColumnRows =
-          listOf(
+          setOf(
               VariableTableColumnsRow(
                   variableId = tableColumnVariableRow1.id!!,
                   tableVariableId = actualTableVariable.id!!,
@@ -760,14 +757,11 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import(sizedInputStream(csv))
 
-      val insertedVariables = variablesDao.findAll().sortedBy { it.stableId }
-
-      assertEquals(
+      assertTableEquals(
           listOf(
-              VariablesRow(
+              VariablesRecord(
                   deliverableQuestion =
                       "What number of non-native species will you plant in this project?",
-                  id = null,
                   internalOnly = true,
                   isList = false,
                   isRequired = true,
@@ -775,13 +769,12 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   stableId = "1115",
                   variableTypeId = VariableType.Number,
               ),
-              VariablesRow(
+              VariablesRecord(
                   deliverableQuestion =
                       "What is the reason these non-native species are being planted?",
                   dependencyConditionId = DependencyCondition.Gte,
                   dependencyVariableStableId = "1115",
                   dependencyValue = "5",
-                  id = null,
                   internalOnly = true,
                   isList = false,
                   isRequired = false,
@@ -789,9 +782,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   stableId = "1116",
                   variableTypeId = VariableType.Select,
               ),
-              VariablesRow(
+              VariablesRecord(
                   deliverableQuestion = "This is a table",
-                  id = null,
                   internalOnly = true,
                   isList = true,
                   isRequired = true,
@@ -799,9 +791,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   stableId = "1117",
                   variableTypeId = VariableType.Table,
               ),
-              VariablesRow(
+              VariablesRecord(
                   deliverableQuestion = "This is a column",
-                  id = null,
                   internalOnly = true,
                   isList = false,
                   isRequired = true,
@@ -810,7 +801,6 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   variableTypeId = VariableType.Number,
               ),
           ),
-          insertedVariables.map { it.copy(id = null) },
           "New variables are created with deliverable related fields")
     }
 
@@ -840,10 +830,9 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val updatedVariables = variablesDao.findAll().sortedBy { it.id }
 
-      assertEquals(
+      assertTableEquals(
           listOf(
-              VariablesRow(
-                  id = null,
+              VariablesRecord(
                   internalOnly = false,
                   isList = false,
                   isRequired = false,
@@ -851,8 +840,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   stableId = "1111",
                   variableTypeId = VariableType.Number,
               ),
-              VariablesRow(
-                  id = null,
+              VariablesRecord(
                   internalOnly = false,
                   isList = false,
                   isRequired = false,
@@ -860,8 +848,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   stableId = "1112",
                   variableTypeId = VariableType.Number,
               ),
-              VariablesRow(
-                  id = null,
+              VariablesRecord(
                   internalOnly = false,
                   isList = false,
                   isRequired = false,
@@ -869,8 +856,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   stableId = "1113",
                   variableTypeId = VariableType.Number,
               ),
-              VariablesRow(
-                  id = null,
+              VariablesRecord(
                   internalOnly = false,
                   isList = false,
                   isRequired = false,
@@ -880,16 +866,14 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   variableTypeId = VariableType.Number,
               ),
           ),
-          updatedVariables.map { it.copy(id = null) },
           "New variable is created")
 
-      assertEquals(
-          setOf(
-              DeliverableVariablesRow(deliverableId1, updatedVariables[3].id, 0),
-              DeliverableVariablesRow(deliverableId2, variables[1].id, 0),
-              DeliverableVariablesRow(deliverableId1, variables[2].id, 1),
+      assertTableEquals(
+          listOf(
+              DeliverableVariablesRecord(deliverableId1, updatedVariables[3].id, 0),
+              DeliverableVariablesRecord(deliverableId2, variables[1].id, 0),
+              DeliverableVariablesRecord(deliverableId1, variables[2].id, 1),
           ),
-          deliverableVariablesDao.findAll().toSet(),
           "Deliverable variables are updated as expected")
     }
 

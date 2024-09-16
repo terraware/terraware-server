@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.tables.pojos.DefaultVotersRow
+import com.terraformation.backend.db.accelerator.tables.records.DefaultVotersRecord
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -90,8 +91,7 @@ class DefaultVoterStoreTest : DatabaseTest(), RunsAsUser {
       insertDefaultVoter(user1)
       store.insert(user2)
 
-      assertEquals(
-          listOf(DefaultVotersRow(user1), DefaultVotersRow(user2)), defaultVotersDao.findAll())
+      assertTableEquals(listOf(DefaultVotersRecord(user1), DefaultVotersRecord(user2)))
     }
 
     @Test

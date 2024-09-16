@@ -26,9 +26,9 @@ import com.terraformation.backend.db.default_schema.OrganizationType
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
-import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationManagedLocationTypesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserPreferencesRow
+import com.terraformation.backend.db.default_schema.tables.records.OrganizationManagedLocationTypesRecord
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -285,18 +285,14 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val createdModel =
         store.createWithAdmin(row, setOf(ManagedLocationType.Nursery, ManagedLocationType.SeedBank))
 
-    val expected =
+    assertTableEquals(
         listOf(
-            OrganizationManagedLocationTypesRow(
+            OrganizationManagedLocationTypesRecord(
                 organizationId = createdModel.id,
                 managedLocationTypeId = ManagedLocationType.Nursery),
-            OrganizationManagedLocationTypesRow(
+            OrganizationManagedLocationTypesRecord(
                 organizationId = createdModel.id,
-                managedLocationTypeId = ManagedLocationType.SeedBank))
-
-    val actual = organizationManagedLocationTypesDao.findAll()
-
-    assertEquals(expected, actual)
+                managedLocationTypeId = ManagedLocationType.SeedBank)))
   }
 
   @Test
@@ -814,18 +810,14 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val createdModel =
         store.createWithAdmin(row, setOf(ManagedLocationType.Nursery, ManagedLocationType.SeedBank))
 
-    val expected =
+    assertTableEquals(
         listOf(
-            OrganizationManagedLocationTypesRow(
+            OrganizationManagedLocationTypesRecord(
                 organizationId = createdModel.id,
                 managedLocationTypeId = ManagedLocationType.Nursery),
-            OrganizationManagedLocationTypesRow(
+            OrganizationManagedLocationTypesRecord(
                 organizationId = createdModel.id,
-                managedLocationTypeId = ManagedLocationType.SeedBank))
-
-    val actual = organizationManagedLocationTypesDao.findAll()
-
-    assertEquals(expected, actual)
+                managedLocationTypeId = ManagedLocationType.SeedBank)))
 
     store.delete(createdModel.id)
 

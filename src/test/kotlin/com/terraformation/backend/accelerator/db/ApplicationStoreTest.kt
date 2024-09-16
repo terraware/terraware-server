@@ -30,6 +30,8 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationHistori
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
 import com.terraformation.backend.db.accelerator.tables.records.ApplicationHistoriesRecord
+import com.terraformation.backend.db.accelerator.tables.records.ApplicationModulesRecord
+import com.terraformation.backend.db.accelerator.tables.records.ApplicationsRecord
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -103,41 +105,35 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       val model = store.create(inserted.projectId)
 
-      assertEquals(
-          listOf(
-              ApplicationsRow(
-                  applicationStatusId = ApplicationStatus.NotSubmitted,
-                  createdBy = user.userId,
-                  createdTime = now,
-                  id = model.id,
-                  internalName = "XXX_Organization 1",
-                  modifiedBy = user.userId,
-                  modifiedTime = now,
-                  projectId = inserted.projectId,
-              )),
-          applicationsDao.findAll())
+      assertTableEquals(
+          ApplicationsRecord(
+              applicationStatusId = ApplicationStatus.NotSubmitted,
+              createdBy = user.userId,
+              createdTime = now,
+              id = model.id,
+              internalName = "XXX_Organization 1",
+              modifiedBy = user.userId,
+              modifiedTime = now,
+              projectId = inserted.projectId))
 
-      assertEquals(
-          listOf(
-              ApplicationHistoriesRow(
-                  applicationId = model.id,
-                  applicationStatusId = ApplicationStatus.NotSubmitted,
-                  modifiedBy = user.userId,
-                  modifiedTime = now,
-              )),
-          applicationHistoriesDao.findAll().map { it.copy(id = null) })
+      assertTableEquals(
+          ApplicationHistoriesRecord(
+              applicationId = model.id,
+              applicationStatusId = ApplicationStatus.NotSubmitted,
+              modifiedBy = user.userId,
+              modifiedTime = now,
+          ))
 
-      assertEquals(
+      assertTableEquals(
           listOf(
-              ApplicationModulesRow(
+              ApplicationModulesRecord(
                   applicationId = model.id,
                   moduleId = prescreenModuleId,
                   applicationModuleStatusId = ApplicationModuleStatus.Incomplete),
-              ApplicationModulesRow(
+              ApplicationModulesRecord(
                   applicationId = model.id,
                   moduleId = applicationModuleId,
-                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete)),
-          applicationModulesDao.findAll())
+                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete)))
     }
 
     @Test
@@ -1445,18 +1441,16 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   applicationStatusId = ApplicationStatus.PassedPreScreen)),
           applicationHistoriesDao.findAll().map { it.copy(id = null) })
 
-      assertEquals(
-          setOf(
-              ApplicationModulesRow(
+      assertTableEquals(
+          listOf(
+              ApplicationModulesRecord(
                   applicationId = applicationId,
                   moduleId = moduleId1,
                   applicationModuleStatusId = ApplicationModuleStatus.Incomplete),
-              ApplicationModulesRow(
+              ApplicationModulesRecord(
                   applicationId = applicationId,
                   moduleId = moduleId2,
-                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete),
-          ),
-          applicationModulesDao.findAll().toSet())
+                  applicationModuleStatusId = ApplicationModuleStatus.Incomplete)))
     }
 
     @Test
