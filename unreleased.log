@@ -1,3 +1,4 @@
+a821cb2b98d Tidy AppNotificationService (#2417)
 9a5d08348fe SW-5607 Use rate-limited events for species notifications (#2416)
 0de1258e8af SW-5607 Use rate-limited events for submission notifications (#2415)
 f2038b586d3 SW-5607 Add rate limiting service (#2414)
