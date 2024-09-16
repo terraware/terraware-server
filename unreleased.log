@@ -1,3 +1,4 @@
+0de1258e8af SW-5607 Use rate-limited events for submission notifications (#2415)
 f2038b586d3 SW-5607 Add rate limiting service (#2414)
 9715d8f646d Revert "Update dependency gradle to v8.10.1 (#2411)"
 4d16abc6d66 Update dependency gradle to v8.10.1 (#2411)
