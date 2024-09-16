@@ -7,8 +7,9 @@ import com.terraformation.backend.accelerator.model.VoteModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.VoteOption
-import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVoteDecisionsRow
-import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
+import com.terraformation.backend.db.accelerator.tables.records.ProjectVoteDecisionsRecord
+import com.terraformation.backend.db.accelerator.tables.records.ProjectVotesRecord
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.mockUser
@@ -232,7 +233,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.delete(projectId, phase, newUser)
 
-      assertEquals(emptyList<ProjectVotesRow>(), projectVotesDao.findAll())
+      assertTableEmpty(PROJECT_VOTES)
     }
 
     @Test
@@ -255,9 +256,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.delete(projectId, phase, user2)
 
-      assertEquals(
-          listOf(
-              ProjectVotesRow(
+      assertTableEquals(
+          setOf(
+              ProjectVotesRecord(
                   projectId = projectId,
                   phaseId = phase,
                   userId = user1,
@@ -268,7 +269,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-              ProjectVotesRow(
+              ProjectVotesRecord(
                   projectId = projectId,
                   phaseId = phase,
                   userId = user3,
@@ -278,8 +279,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )),
-          projectVotesDao.findAll())
+              )))
     }
 
     @Test
@@ -327,9 +327,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.delete(projectId, phase1)
 
-      assertEquals(
-          listOf(
-              ProjectVotesRow(
+      assertTableEquals(
+          setOf(
+              ProjectVotesRecord(
                   projectId = projectId,
                   phaseId = phase0,
                   userId = user1,
@@ -340,7 +340,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-              ProjectVotesRow(
+              ProjectVotesRecord(
                   projectId = projectId,
                   phaseId = phase0,
                   userId = user2,
@@ -350,8 +350,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )),
-          projectVotesDao.findAll())
+              )))
     }
 
     @Test
@@ -406,9 +405,8 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
       store.delete(projectId, phase, user2)
-      assertEquals(
-          listOf(ProjectVoteDecisionsRow(projectId, phase, vote1, clock.instant)),
-          projectVoteDecisionDao.findAll())
+
+      assertTableEquals(ProjectVoteDecisionsRecord(projectId, phase, vote1, clock.instant))
     }
 
     @Test
@@ -425,9 +423,8 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
       store.delete(projectId, phase, newUser)
-      assertEquals(
-          listOf(ProjectVoteDecisionsRow(projectId, phase, null, clock.instant)),
-          projectVoteDecisionDao.findAll())
+
+      assertTableEquals(ProjectVoteDecisionsRecord(projectId, phase, null, clock.instant))
     }
   }
 
@@ -441,20 +438,18 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       store.upsert(projectId, phase, user.userId, null, null)
 
-      assertEquals(
-          listOf(
-              ProjectVotesRow(
-                  projectId = projectId,
-                  phaseId = phase,
-                  userId = user.userId,
-                  voteOptionId = null,
-                  conditionalInfo = null,
-                  createdBy = user.userId,
-                  createdTime = clock.instant,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
-              )),
-          projectVotesDao.findAll())
+      assertTableEquals(
+          ProjectVotesRecord(
+              projectId = projectId,
+              phaseId = phase,
+              userId = user.userId,
+              voteOptionId = null,
+              conditionalInfo = null,
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          ))
     }
 
     @Test
@@ -466,20 +461,18 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       store.upsert(projectId, phase, otherUser, null, null)
 
-      assertEquals(
-          listOf(
-              ProjectVotesRow(
-                  projectId = projectId,
-                  phaseId = phase,
-                  userId = otherUser,
-                  voteOptionId = null,
-                  conditionalInfo = null,
-                  createdBy = user.userId,
-                  createdTime = clock.instant,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
-              )),
-          projectVotesDao.findAll())
+      assertTableEquals(
+          ProjectVotesRecord(
+              projectId = projectId,
+              phaseId = phase,
+              userId = otherUser,
+              voteOptionId = null,
+              conditionalInfo = null,
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          ))
     }
 
     @Test
@@ -493,20 +486,18 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val conditionalInfo = "Reason why the vote is a maybe"
       store.upsert(projectId, phase, otherUser, voteOption, conditionalInfo)
 
-      assertEquals(
-          listOf(
-              ProjectVotesRow(
-                  projectId = projectId,
-                  phaseId = phase,
-                  userId = otherUser,
-                  voteOptionId = voteOption,
-                  conditionalInfo = conditionalInfo,
-                  createdBy = user.userId,
-                  createdTime = clock.instant,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
-              )),
-          projectVotesDao.findAll())
+      assertTableEquals(
+          ProjectVotesRecord(
+              projectId = projectId,
+              phaseId = phase,
+              userId = otherUser,
+              voteOptionId = voteOption,
+              conditionalInfo = conditionalInfo,
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          ))
     }
 
     @Test
@@ -526,20 +517,18 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.upsert(projectId, phase, newUser, newVote, newCondition)
 
-      assertEquals(
-          listOf(
-              ProjectVotesRow(
-                  projectId = projectId,
-                  phaseId = phase,
-                  userId = newUser,
-                  voteOptionId = newVote,
-                  conditionalInfo = newCondition,
-                  createdBy = user.userId,
-                  createdTime = createdTime,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
-              )),
-          projectVotesDao.findAll())
+      assertTableEquals(
+          ProjectVotesRecord(
+              projectId = projectId,
+              phaseId = phase,
+              userId = newUser,
+              voteOptionId = newVote,
+              conditionalInfo = newCondition,
+              createdBy = user.userId,
+              createdTime = createdTime,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          ))
     }
 
     @Test
@@ -568,9 +557,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = Instant.EPOCH.plusSeconds(1000)
       store.upsert(projectId, phase, user3, newVote, newCondition)
 
-      assertEquals(
-          listOf(
-              ProjectVotesRow(
+      assertTableEquals(
+          setOf(
+              ProjectVotesRecord(
                   projectId = projectId,
                   phaseId = phase,
                   userId = user1,
@@ -581,7 +570,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = user.userId,
                   modifiedTime = createdTime,
               ),
-              ProjectVotesRow(
+              ProjectVotesRecord(
                   projectId = projectId,
                   phaseId = phase,
                   userId = user2,
@@ -592,7 +581,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = user.userId,
                   modifiedTime = createdTime,
               ),
-              ProjectVotesRow(
+              ProjectVotesRecord(
                   projectId = projectId,
                   phaseId = phase,
                   userId = user3,
@@ -602,8 +591,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = createdTime,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )),
-          projectVotesDao.findAll())
+              )))
     }
 
     @Test
@@ -627,9 +615,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.upsert(projectId, phase1, user.userId, newVote)
 
-      assertEquals(
-          listOf(
-              ProjectVotesRow(
+      assertTableEquals(
+          setOf(
+              ProjectVotesRecord(
                   projectId = projectId,
                   phaseId = phase0,
                   userId = user.userId,
@@ -640,7 +628,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = user.userId,
                   modifiedTime = createdTime,
               ),
-              ProjectVotesRow(
+              ProjectVotesRecord(
                   projectId = projectId,
                   phaseId = phase1,
                   userId = user.userId,
@@ -650,8 +638,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = createdTime,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )),
-          projectVotesDao.findAll())
+              )))
     }
 
     @Test
@@ -675,9 +662,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.upsert(project2, phase, user.userId, newVote)
 
-      assertEquals(
-          listOf(
-              ProjectVotesRow(
+      assertTableEquals(
+          setOf(
+              ProjectVotesRecord(
                   projectId = project1,
                   phaseId = phase,
                   userId = user.userId,
@@ -688,7 +675,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedBy = user.userId,
                   modifiedTime = createdTime,
               ),
-              ProjectVotesRow(
+              ProjectVotesRecord(
                   projectId = project2,
                   phaseId = phase,
                   userId = user.userId,
@@ -698,8 +685,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
                   createdTime = createdTime,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-              )),
-          projectVotesDao.findAll())
+              )))
     }
 
     @Test
@@ -752,9 +738,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.upsert(projectId, phase, newUser, vote, null)
 
-      assertEquals(
-          listOf(ProjectVoteDecisionsRow(projectId, phase, vote, clock.instant)),
-          projectVoteDecisionDao.findAll())
+      assertTableEquals(ProjectVoteDecisionsRecord(projectId, phase, vote, clock.instant))
     }
 
     @Test
@@ -767,9 +751,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.upsert(projectId, phase, newUser, null, null)
 
-      assertEquals(
-          listOf(ProjectVoteDecisionsRow(projectId, phase, null, clock.instant)),
-          projectVoteDecisionDao.findAll())
+      assertTableEquals(ProjectVoteDecisionsRecord(projectId, phase, null, clock.instant))
     }
 
     @Test
@@ -787,9 +769,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.upsert(projectId, phase, newUser, newVote, null)
 
-      assertEquals(
-          listOf(ProjectVoteDecisionsRow(projectId, phase, newVote, clock.instant)),
-          projectVoteDecisionDao.findAll())
+      assertTableEquals(ProjectVoteDecisionsRecord(projectId, phase, newVote, clock.instant))
     }
 
     @Test
@@ -809,9 +789,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.upsert(projectId, phase, user2, vote2, null)
 
-      assertEquals(
-          listOf(ProjectVoteDecisionsRow(projectId, phase, null, clock.instant)),
-          projectVoteDecisionDao.findAll())
+      assertTableEquals(ProjectVoteDecisionsRecord(projectId, phase, null, clock.instant))
     }
 
     @Test
@@ -830,9 +808,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
       store.upsert(projectId, phase, user2, null, null)
 
-      assertEquals(
-          listOf(ProjectVoteDecisionsRow(projectId, phase, null, clock.instant)),
-          projectVoteDecisionDao.findAll())
+      assertTableEquals(ProjectVoteDecisionsRecord(projectId, phase, null, clock.instant))
     }
   }
 }

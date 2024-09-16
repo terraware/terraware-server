@@ -12,9 +12,12 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
-import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
+import com.terraformation.backend.db.accelerator.tables.records.ParticipantProjectSpeciesRecord
+import com.terraformation.backend.db.accelerator.tables.records.SubmissionsRecord
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_SNAPSHOTS
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
@@ -110,31 +113,29 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       val userId = currentUser().userId
       val now = clock.instant
 
-      assertEquals(
-          listOf(
-              SubmissionsRow(
-                  createdBy = userId,
-                  createdTime = now,
-                  deliverableId = deliverableId,
-                  modifiedBy = userId,
-                  modifiedTime = now,
-                  projectId = projectId,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)),
-          submissionsDao.fetchByDeliverableId(deliverableId).map { it.copy(id = null) })
+      assertTableEquals(
+          SubmissionsRecord(
+              createdBy = userId,
+              createdTime = now,
+              deliverableId = deliverableId,
+              modifiedBy = userId,
+              modifiedTime = now,
+              projectId = projectId,
+              submissionStatusId = SubmissionStatus.NotSubmitted),
+          clearPrimaryKeys = true)
 
-      assertEquals(
-          listOf(
-              ParticipantProjectSpeciesRow(
-                  createdBy = userId,
-                  createdTime = now,
-                  feedback = "feedback",
-                  modifiedBy = userId,
-                  modifiedTime = now,
-                  projectId = projectId,
-                  rationale = "rationale",
-                  speciesId = speciesId,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)),
-          participantProjectSpeciesDao.findAll().map { it.copy(id = null) })
+      assertTableEquals(
+          ParticipantProjectSpeciesRecord(
+              createdBy = userId,
+              createdTime = now,
+              feedback = "feedback",
+              modifiedBy = userId,
+              modifiedTime = now,
+              projectId = projectId,
+              rationale = "rationale",
+              speciesId = speciesId,
+              submissionStatusId = SubmissionStatus.NotSubmitted),
+          clearPrimaryKeys = true)
 
       eventPublisher.assertEventPublished(
           ParticipantProjectSpeciesAddedEvent(
@@ -166,19 +167,18 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       val userId = currentUser().userId
       val now = clock.instant
 
-      assertEquals(
-          listOf(
-              SubmissionsRow(
-                  createdBy = userId,
-                  createdTime = now,
-                  deliverableId = deliverableId,
-                  feedback = "So far so good",
-                  id = submissionId,
-                  modifiedBy = userId,
-                  modifiedTime = now,
-                  projectId = projectId,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)),
-          submissionsDao.fetchByDeliverableId(deliverableId))
+      assertTableEquals(
+          SubmissionsRecord(
+              createdBy = userId,
+              createdTime = now,
+              deliverableId = deliverableId,
+              feedback = "So far so good",
+              id = submissionId,
+              modifiedBy = userId,
+              modifiedTime = now,
+              projectId = projectId,
+              submissionStatusId = SubmissionStatus.NotSubmitted),
+          where = SUBMISSIONS.DELIVERABLE_ID.eq(deliverableId))
     }
 
     @Test
@@ -325,7 +325,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
       service.create(setOf(projectId1, projectId2), setOf(speciesId1, speciesId2))
 
-      assertEquals(emptyList<SubmissionsRow>(), submissionsDao.findAll().map { it.copy(id = null) })
+      assertTableEmpty(SUBMISSIONS)
 
       eventPublisher.assertNoEventsPublished(
           "No events published for species added to deliverables")
@@ -508,7 +508,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
               newStatus = SubmissionStatus.InReview,
               submissionId = submissionId))
 
-      assertEquals(emptyList<SubmissionSnapshotsRow>(), submissionSnapshotsDao.findAll())
+      assertTableEmpty(SUBMISSION_SNAPSHOTS)
 
       verify(exactly = 0) {
         participantProjectSpeciesStore.fetchSpeciesForParticipantProject(projectId)
@@ -535,7 +535,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
               newStatus = SubmissionStatus.Approved,
               submissionId = submissionId))
 
-      assertEquals(emptyList<SubmissionSnapshotsRow>(), submissionSnapshotsDao.findAll())
+      assertTableEmpty(SUBMISSION_SNAPSHOTS)
 
       verify(exactly = 0) {
         participantProjectSpeciesStore.fetchSpeciesForParticipantProject(projectId)
