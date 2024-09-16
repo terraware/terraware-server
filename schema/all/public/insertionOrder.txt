@@ -65,4 +65,5 @@ species_problems
 automations
 organization_users
 app_versions
+rate_limited_events
 test_clock

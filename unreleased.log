@@ -1,3 +1,4 @@
+f2038b586d3 SW-5607 Add rate limiting service (#2414)
 9715d8f646d Revert "Update dependency gradle to v8.10.1 (#2411)"
 4d16abc6d66 Update dependency gradle to v8.10.1 (#2411)
 b7e90ce8318 Update dependency types-requests to v2.32.0.20240914 (#2413)
