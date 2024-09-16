@@ -138,6 +138,9 @@ COMMENT ON TABLE project_report_settings IS 'Which projects require reports to b
 
 COMMENT ON TABLE projects IS 'Distinguishes among an organization''s projects.';
 
+COMMENT ON TABLE rate_limited_events IS 'Tracks events such as notifications that should have a minimum interval between instances.';
+COMMENT ON COLUMN rate_limited_events.event_class IS 'Fully-qualified class name of the event whose rate limit is being tracked.';
+
 COMMENT ON TABLE regions IS '(Enum) Parts of the world where countries are located.';
 
 COMMENT ON TABLE report_files IS 'Linking table between `reports` and `files` for non-photo files.';
