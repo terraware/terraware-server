@@ -3,7 +3,6 @@ package com.terraformation.backend.documentproducer.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.docprod.VariableId
@@ -40,26 +39,6 @@ class VariableWorkflowStore(
     return fetchCurrentByCondition(VARIABLE_WORKFLOW_HISTORY.PROJECT_ID.eq(projectId)).associateBy {
       it.variableId
     }
-  }
-
-  /**
-   * Returns the current workflow information for the variables in a project and deliverable.
-   * Internal comment is only populated if the current user has permission to read it.
-   */
-  fun fetchCurrentForProjectDeliverable(
-      projectId: ProjectId,
-      deliverableId: DeliverableId
-  ): Map<VariableId, ExistingVariableWorkflowHistoryModel> {
-    requirePermissions { readProject(projectId) }
-
-    return fetchCurrentByCondition(
-            DSL.and(
-                VARIABLE_WORKFLOW_HISTORY.PROJECT_ID.eq(projectId),
-                VARIABLE_WORKFLOW_HISTORY.VARIABLE_ID.`in`(
-                    DSL.select(VARIABLES.ID)
-                        .from(VARIABLES)
-                        .where(VARIABLES.DELIVERABLE_ID.eq(deliverableId)))))
-        .associateBy { it.variableId }
   }
 
   fun update(
@@ -106,7 +85,10 @@ class VariableWorkflowStore(
 
       if (existing == null || status != existing.status || feedback != existing.feedback) {
         // Notify a reviewable event, if changed
-        notifyQuestionDeliverableReviewed(projectId, variableId)
+        val deliverableId = variablesDao.fetchOneById(variableId)?.deliverableId
+        if (deliverableId != null) {
+          eventPublisher.publishEvent(QuestionsDeliverableReviewedEvent(deliverableId, projectId))
+        }
       }
 
       return newModel!!
@@ -142,16 +124,6 @@ class VariableWorkflowStore(
               model.copy(internalComment = null)
             }
           }
-    }
-  }
-
-  private fun notifyQuestionDeliverableReviewed(projectId: ProjectId, variableId: VariableId) {
-    val deliverableId = variablesDao.fetchOneById(variableId)?.deliverableId
-
-    if (deliverableId != null) {
-      val currentWorkflows = fetchCurrentForProjectDeliverable(projectId, deliverableId)
-      eventPublisher.publishEvent(
-          QuestionsDeliverableReviewedEvent(deliverableId, projectId, currentWorkflows))
     }
   }
 }

@@ -1,250 +1,53 @@
 package com.terraformation.backend.accelerator
 
-import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
-import com.terraformation.backend.customer.model.SystemUser
-import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.docprod.VariableWorkflowStatus
-import com.terraformation.backend.documentproducer.db.VariableStore
-import com.terraformation.backend.documentproducer.db.VariableValueStore
-import com.terraformation.backend.documentproducer.db.VariableWorkflowStore
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableReviewedEvent
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableStatusUpdatedEvent
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
-import com.terraformation.backend.documentproducer.model.ExistingVariableWorkflowHistoryModel
-import com.terraformation.backend.mockUser
-import io.mockk.every
-import io.mockk.mockk
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class SubmissionNotifierTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockUser()
+class SubmissionNotifierTest {
+  private val rateLimitedEventPublisher = TestEventPublisher()
 
-  private val clock = TestClock()
-  private val eventPublisher = TestEventPublisher()
+  private val notifier = SubmissionNotifier(rateLimitedEventPublisher)
 
-  private val deliverableStore: DeliverableStore by lazy { DeliverableStore(dslContext) }
+  @Test
+  fun `publishes DeliverableReadyForReviewEvent on document upload`() {
+    val event =
+        DeliverableDocumentUploadedEvent(DeliverableId(1), SubmissionDocumentId(2), ProjectId(3))
 
-  private val notifier: SubmissionNotifier by lazy {
-    SubmissionNotifier(
-        clock,
-        deliverableStore,
-        eventPublisher,
-        mockk(),
-        SystemUser(usersDao),
-        VariableStore(
-            dslContext,
-            variableNumbersDao,
-            variablesDao,
-            variableSectionDefaultValuesDao,
-            variableSectionRecommendationsDao,
-            variableSectionsDao,
-            variableSelectsDao,
-            variableSelectOptionsDao,
-            variableTablesDao,
-            variableTableColumnsDao,
-            variableTextsDao),
-        VariableValueStore(
-            clock,
-            dslContext,
-            eventPublisher,
-            variableImageValuesDao,
-            variableLinkValuesDao,
-            variablesDao,
-            variableSectionValuesDao,
-            variableSelectOptionValuesDao,
-            variableValuesDao,
-            variableValueTableRowsDao),
-        VariableWorkflowStore(
-            clock,
-            dslContext,
-            eventPublisher,
-            variablesDao,
-        ))
+    notifier.on(event)
+
+    rateLimitedEventPublisher.assertEventPublished(
+        DeliverableReadyForReviewEvent(event.deliverableId, event.projectId))
+    assertIsEventListener<DeliverableDocumentUploadedEvent>(notifier)
   }
 
-  private lateinit var deliverableId: DeliverableId
-  private lateinit var projectId: ProjectId
+  @Test
+  fun `publishes DeliverableReadyForReviewEvent on questionnaire deliverable submission`() {
+    val event = QuestionsDeliverableSubmittedEvent(DeliverableId(1), ProjectId(2), emptyMap())
 
-  @BeforeEach
-  fun setUp() {
-    insertOrganization()
-    insertModule()
-    insertCohort()
-    insertCohortModule()
-    insertParticipant(cohortId = inserted.cohortId)
-    every { user.canReadAllDeliverables() } returns true
+    notifier.on(event)
 
-    projectId = insertProject(participantId = inserted.participantId)
-    deliverableId = insertDeliverable()
+    rateLimitedEventPublisher.assertEventPublished(
+        DeliverableReadyForReviewEvent(event.deliverableId, event.projectId))
+    assertIsEventListener<QuestionsDeliverableSubmittedEvent>(notifier)
   }
 
-  @Nested
-  inner class NotifyIfNoNewerDocumentSubmission {
-    @Test
-    fun `does not publish event if there are newer documents`() {
-      insertSubmission()
+  @Test
+  fun `publishes QuestionsDeliverableStatusUpdatedEvent on questions deliverable review`() {
+    val event = QuestionsDeliverableReviewedEvent(DeliverableId(1), ProjectId(2))
 
-      val documentId = insertSubmissionDocument()
-      insertSubmissionDocument()
+    notifier.on(event)
 
-      notifier.notifyIfNoNewerUploads(
-          DeliverableDocumentUploadedEvent(deliverableId, documentId, projectId))
-
-      eventPublisher.assertEventNotPublished<DeliverableReadyForReviewEvent>()
-    }
-
-    @Test
-    fun `publishes event if this is the latest document`() {
-      insertSubmission()
-
-      insertSubmissionDocument()
-      val documentId = insertSubmissionDocument()
-
-      val deliverable =
-          deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
-
-      notifier.notifyIfNoNewerUploads(
-          DeliverableDocumentUploadedEvent(deliverableId, documentId, projectId))
-
-      eventPublisher.assertEventPublished(DeliverableReadyForReviewEvent(deliverable, projectId))
-    }
-  }
-
-  @Nested
-  inner class NotifyIfNoNewerQuestionSubmission {
-    @BeforeEach
-    fun setup() {
-      insertDocumentTemplate()
-      insertVariableManifest()
-      insertDocument()
-
-      insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
-    }
-
-    @Test
-    fun `does not publish event if there are newer variable values`() {
-      val oldValueId = insertValue(variableId = inserted.variableId, textValue = "Old")
-      insertValue(variableId = inserted.variableId, textValue = "New")
-
-      notifier.notifyIfNoNewerSubmissions(
-          QuestionsDeliverableSubmittedEvent(
-              deliverableId, projectId, mapOf(inserted.variableId to oldValueId)))
-
-      eventPublisher.assertEventNotPublished<DeliverableReadyForReviewEvent>()
-    }
-
-    @Test
-    fun `publishes event if these are the latest variable values`() {
-      val valueId = insertValue(variableId = inserted.variableId, textValue = "Only")
-
-      val deliverable =
-          deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverableId).first()
-
-      notifier.notifyIfNoNewerSubmissions(
-          QuestionsDeliverableSubmittedEvent(
-              deliverableId, projectId, mapOf(inserted.variableId to valueId)))
-
-      eventPublisher.assertEventPublished(DeliverableReadyForReviewEvent(deliverable, projectId))
-    }
-  }
-
-  @Nested
-  inner class NotifyIfNoNewerReviews {
-    @BeforeEach
-    fun setup() {
-      insertDocumentTemplate()
-      insertVariableManifest()
-      insertDocument()
-
-      insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
-
-      insertValue(variableId = inserted.variableId)
-    }
-
-    @Test
-    fun `does not publish event if there are newer variable workflows`() {
-      val oldWorkflowHistoryId =
-          insertVariableWorkflowHistory(
-              feedback = "old feedback",
-              status = VariableWorkflowStatus.InReview,
-          )
-
-      insertVariableWorkflowHistory(
-          feedback = "new feedback",
-          status = VariableWorkflowStatus.Approved,
-      )
-
-      val oldWorkflowHistory =
-          ExistingVariableWorkflowHistoryModel(
-              variableWorkflowHistoryDao.fetchOneById(oldWorkflowHistoryId)!!)
-
-      notifier.notifyIfNoNewerReviews(
-          QuestionsDeliverableReviewedEvent(
-              inserted.deliverableId,
-              inserted.projectId,
-              mapOf(inserted.variableId to oldWorkflowHistory)))
-
-      eventPublisher.assertEventNotPublished<QuestionsDeliverableStatusUpdatedEvent>()
-    }
-
-    @Test
-    fun `publishes event if these are the latest variable workflows`() {
-      val workflowId =
-          insertVariableWorkflowHistory(
-              feedback = "feedback",
-              status = VariableWorkflowStatus.Approved,
-          )
-
-      val workflowHistory =
-          ExistingVariableWorkflowHistoryModel(
-              variableWorkflowHistoryDao.fetchOneById(workflowId)!!)
-
-      notifier.notifyIfNoNewerReviews(
-          QuestionsDeliverableReviewedEvent(
-              inserted.deliverableId,
-              inserted.projectId,
-              mapOf(inserted.variableId to workflowHistory)))
-
-      eventPublisher.assertEventPublished(
-          QuestionsDeliverableStatusUpdatedEvent(deliverableId, projectId))
-    }
-
-    @Test
-    fun `publishes event if newer variable workflows contain only internal comment changes`() {
-      val oldWorkflowId =
-          insertVariableWorkflowHistory(
-              feedback = "unchanged feedback",
-              status = VariableWorkflowStatus.Approved,
-          )
-
-      insertVariableWorkflowHistory(
-          feedback = "unchanged feedback",
-          status = VariableWorkflowStatus.Approved,
-          internalComment = "added internal comment",
-      )
-
-      val oldWorkflowHistory =
-          ExistingVariableWorkflowHistoryModel(
-              variableWorkflowHistoryDao.fetchOneById(oldWorkflowId)!!)
-
-      notifier.notifyIfNoNewerReviews(
-          QuestionsDeliverableReviewedEvent(
-              inserted.deliverableId,
-              inserted.projectId,
-              mapOf(inserted.variableId to oldWorkflowHistory)))
-
-      eventPublisher.assertEventPublished(
-          QuestionsDeliverableStatusUpdatedEvent(deliverableId, projectId))
-    }
+    rateLimitedEventPublisher.assertEventPublished(
+        QuestionsDeliverableStatusUpdatedEvent(event.deliverableId, event.projectId))
+    assertIsEventListener<QuestionsDeliverableReviewedEvent>(notifier)
   }
 }

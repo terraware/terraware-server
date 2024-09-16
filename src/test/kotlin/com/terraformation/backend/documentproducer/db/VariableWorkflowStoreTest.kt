@@ -7,7 +7,6 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableReviewedEvent
-import com.terraformation.backend.documentproducer.model.ExistingVariableWorkflowHistoryModel
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import org.junit.jupiter.api.BeforeEach
@@ -48,26 +47,21 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class PublishEvent {
     @Test
-    fun `publishes event for the first workflow history`() {
-      val newWorkflowHistory =
-          store.update(
-              projectId = inserted.projectId,
-              variableId = inserted.variableId,
-              status = VariableWorkflowStatus.Approved,
-              feedback = null,
-              internalComment = null,
-          )
+    fun `publishes event for the first workflow action`() {
+      store.update(
+          projectId = inserted.projectId,
+          variableId = inserted.variableId,
+          status = VariableWorkflowStatus.Approved,
+          feedback = null,
+          internalComment = null,
+      )
 
       eventPublisher.assertEventPublished(
-          QuestionsDeliverableReviewedEvent(
-              inserted.deliverableId,
-              inserted.projectId,
-              mapOf(inserted.variableId to newWorkflowHistory),
-          ))
+          QuestionsDeliverableReviewedEvent(inserted.deliverableId, inserted.projectId))
     }
 
     @Test
-    fun `publishes event for deliverable with all latest workflow`() {
+    fun `publishes event for deliverable`() {
       val variableId = inserted.variableId
       insertVariableWorkflowHistory(
           status = VariableWorkflowStatus.Rejected,
@@ -79,35 +73,17 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
           insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
 
       insertValue(variableId = otherVariableId)
-      val otherWorkflowId =
-          insertVariableWorkflowHistory(
-              status = VariableWorkflowStatus.Rejected,
-              feedback = null,
-              internalComment = null,
-          )
 
-      val otherWorkflowHistory =
-          ExistingVariableWorkflowHistoryModel(
-              variableWorkflowHistoryDao.fetchOneById(otherWorkflowId)!!)
-
-      val updatedWorkflowHistory =
-          store.update(
-              projectId = inserted.projectId,
-              variableId = variableId,
-              status = VariableWorkflowStatus.Approved,
-              feedback = null,
-              internalComment = null,
-          )
+      store.update(
+          projectId = inserted.projectId,
+          variableId = variableId,
+          status = VariableWorkflowStatus.Approved,
+          feedback = null,
+          internalComment = null,
+      )
 
       eventPublisher.assertEventPublished(
-          QuestionsDeliverableReviewedEvent(
-              inserted.deliverableId,
-              inserted.projectId,
-              mapOf(
-                  variableId to updatedWorkflowHistory,
-                  otherVariableId to otherWorkflowHistory,
-              ),
-          ))
+          QuestionsDeliverableReviewedEvent(inserted.deliverableId, inserted.projectId))
     }
 
     @Test
