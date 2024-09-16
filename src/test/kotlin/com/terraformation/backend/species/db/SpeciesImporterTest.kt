@@ -341,7 +341,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 modifiedTime = Instant.EPOCH),
         )
 
-    val actualSpecies = speciesDao.findAll()
+    val actualSpecies = speciesDao.findAll().sortedBy { it.id!!.value }
     val mappedSpeciesIds = mapTo1IndexedIds(actualSpecies, ::SpeciesId, SpeciesRow::id)
     assertEquals(
         expectedSpecies.map { it.copy(id = null) }.toSet(),
