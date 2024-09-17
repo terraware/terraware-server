@@ -103,7 +103,7 @@ class WebAppUrls(
   }
 
   fun acceleratorConsoleApplication(applicationId: ApplicationId): URI {
-    return UriBuilder.fromPath("/applications/$applicationId").build()
+    return UriBuilder.fromUri(config.webAppUrl).path("/applications/$applicationId").build()
   }
 
   fun fullNurseryInventory(organizationId: OrganizationId): URI {
