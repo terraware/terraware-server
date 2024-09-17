@@ -1335,10 +1335,36 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               initial.copy(
                   applicationStatusId = ApplicationStatus.PassedPreScreen,
+                  countryCode = "US",
                   feedback = null,
+                  internalName = "USA_Organization 1",
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant)),
           applicationsDao.findAll())
+    }
+
+    @Test
+    fun `adds suffix to conflicting internal name after passing prescreen`() {
+      val otherUserId = insertUser()
+      insertApplication(createdBy = otherUserId, internalName = "USA_Organization 1")
+      val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) }
+
+      insertProject()
+      val applicationId = insertApplication(boundary = boundary, createdBy = otherUserId)
+      val initial = applicationsDao.fetchOneById(applicationId)!!
+
+      clock.instant = Instant.ofEpochSecond(30)
+
+      store.submit(applicationId, validVariables(boundary))
+
+      assertEquals(
+          initial.copy(
+              applicationStatusId = ApplicationStatus.PassedPreScreen,
+              countryCode = "US",
+              internalName = "USA_Organization 1_2",
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant),
+          applicationsDao.fetchOneById(applicationId))
     }
 
     @Test
@@ -1370,7 +1396,9 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               initial.copy(
                   applicationStatusId = ApplicationStatus.PassedPreScreen,
+                  countryCode = "US",
                   feedback = null,
+                  internalName = "USA_Organization 1",
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant)),
           applicationsDao.findAll())
@@ -1394,6 +1422,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               initial.copy(
                   applicationStatusId = ApplicationStatus.PassedPreScreen,
+                  countryCode = "US",
+                  internalName = "USA_Organization 1",
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant)),
           applicationsDao.findAll())
