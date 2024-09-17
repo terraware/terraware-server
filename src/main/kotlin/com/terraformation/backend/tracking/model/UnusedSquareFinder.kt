@@ -135,14 +135,10 @@ class UnusedSquareFinder(
     val regionWidth = northeast.x - southwest.x
     val regionHeight = northeast.y - southwest.y
 
-    // If all possible points in the region will round to the same point on the grid, or if the
-    // region is less than a quarter the size of a grid square, check it and return; trying random
-    // points within the region wouldn't be useful, nor would dividing the region in quarters and
-    // drilling down.
-    val minimumArea = (gridInterval * gridInterval) / 4.0
-    if (roundToGrid(southwest.x) == roundToGrid(northeast.x) &&
-        roundToGrid(southwest.y) == roundToGrid(northeast.y) ||
-        regionWidth * regionHeight < minimumArea) {
+    // If the region is less than the size of a grid square in both height and width, check it and
+    // return; trying random points within the region wouldn't be useful, nor would dividing the
+    // region and drilling down.
+    if (regionWidth < gridInterval && regionHeight < gridInterval) {
       val polygon = gridAlignedSquare(southwest.x, southwest.y)
 
       return if (coveredByZone(polygon)) {
@@ -166,19 +162,40 @@ class UnusedSquareFinder(
       }
     }
 
-    // No luck. This might be a sparse site map. Split the region into equal-sized quadrants and
-    // search them in random order but with the ones that cover the most zone area more likely to
-    // come first.
-    val middleX = (southwest.x + northeast.x) / 2.0
-    val middleY = (southwest.y + northeast.y) / 2.0
+    // No luck. This might be a sparse site map. Split the region into smaller areas and search them
+    // in random order but with the ones that cover the most zone area more likely to come first.
+    //
+    // The subdivided areas have some overlap; otherwise there can be scenarios where the only
+    // available result straddles the border of two subdivided areas and thus can't be found in
+    // either of them.
+
+    val xRanges =
+        if (regionWidth >= gridInterval) {
+          listOf(
+              southwest.x to (southwest.x + northeast.x * 2.0) / 3.0,
+              (southwest.x + northeast.x) / 2.0 to northeast.x,
+          )
+        } else {
+          listOf(southwest.x to northeast.x)
+        }
+    val yRanges =
+        if (regionHeight >= gridInterval) {
+          listOf(
+              southwest.y to (southwest.y + northeast.y * 2.0) / 3.0,
+              (southwest.y + northeast.y) / 2.0 to northeast.y,
+          )
+        } else {
+          listOf(southwest.y to northeast.y)
+        }
 
     // List of quadrant geometry and how much usable area the quadrant has.
     val quadrants: MutableList<Pair<Polygon, Double>> =
-        listOf(
-                geometryFactory.createRectangle(southwest.x, southwest.y, middleX, middleY),
-                geometryFactory.createRectangle(middleX, southwest.y, northeast.x, middleY),
-                geometryFactory.createRectangle(middleX, middleY, northeast.x, northeast.y),
-                geometryFactory.createRectangle(southwest.x, middleY, middleX, northeast.y))
+        xRanges
+            .flatMap { (west, east) ->
+              yRanges.map { (south, north) ->
+                geometryFactory.createRectangle(west, south, east, north)
+              }
+            }
             .map { quadrant ->
               val quadrantPolygon =
                   meterOffsetRectangle(quadrant.coordinates[0], quadrant.coordinates[2])
