@@ -1,3 +1,4 @@
+4c0864c44ed SW-6029 Use application cohort phases for projects (#2419)
 d3b8200bb31 Fix query order dependency in test (#2410)
 a821cb2b98d Tidy AppNotificationService (#2417)
 9a5d08348fe SW-5607 Use rate-limited events for species notifications (#2416)
