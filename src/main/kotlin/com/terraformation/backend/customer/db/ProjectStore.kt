@@ -12,7 +12,10 @@ import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.ApplicationStatus
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -47,17 +50,32 @@ class ProjectStore(
   }
 
   fun fetchCohortData(projectId: ProjectId): ProjectCohortData? {
+    requirePermissions { readProject(projectId) }
+
     return dslContext
-        .select(COHORTS.ID, COHORTS.PHASE_ID)
+        .select(COHORTS.ID, COHORTS.PHASE_ID, APPLICATIONS.APPLICATION_STATUS_ID)
         .from(PROJECTS)
-        .join(PARTICIPANTS)
+        .leftJoin(PARTICIPANTS)
         .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
-        .join(COHORTS)
+        .leftJoin(COHORTS)
         .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
+        .leftJoin(APPLICATIONS)
+        .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
         .where(PROJECTS.ID.eq(projectId))
-        .fetch()
-        .map { ProjectCohortData.of(it) }
-        .firstOrNull { currentUser().canReadCohort(it.cohortId) }
+        .fetchOne { (cohortId, cohortPhase, applicationStatus) ->
+          if (cohortId != null && cohortPhase != null) {
+            ProjectCohortData(cohortId, cohortPhase)
+          } else {
+            when (applicationStatus) {
+              ApplicationStatus.NotSubmitted,
+              ApplicationStatus.FailedPreScreen,
+              ApplicationStatus.PassedPreScreen ->
+                  ProjectCohortData(cohortPhase = CohortPhase.PreScreen)
+              null -> null
+              else -> ProjectCohortData(cohortPhase = CohortPhase.Application)
+            }
+          }
+        }
   }
 
   fun findAll(): List<ExistingProjectModel> {
