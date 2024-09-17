@@ -590,7 +590,7 @@ class EmailNotificationService(
         organizationId,
         ApplicationSubmitted(
             config,
-            webAppUrls.acceleratorConsoleApplication(event.applicationId).toString(),
+            webAppUrls.fullAcceleratorConsoleApplication(event.applicationId).toString(),
             organization.name,
             date,
         ),
