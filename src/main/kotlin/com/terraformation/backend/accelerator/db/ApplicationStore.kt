@@ -104,16 +104,6 @@ class ApplicationStore(
         ?: throw ApplicationNotFoundException(applicationId)
   }
 
-  fun fetchOneByInternalName(internalName: String): ExistingApplicationModel? {
-    val application = fetchByCondition(APPLICATIONS.INTERNAL_NAME.eq(internalName)).singleOrNull()
-
-    if (application != null) {
-      requirePermissions { readApplication(application.id) }
-    }
-
-    return application
-  }
-
   fun fetchByProjectId(projectId: ProjectId): List<ExistingApplicationModel> {
     requirePermissions { readProject(projectId) }
 
