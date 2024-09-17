@@ -22,7 +22,7 @@ import org.jooq.impl.DSL
 class VoteStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
-    private val phaseChecker: PhaseChecker,
+    private val projectCohortFetcher: ProjectCohortFetcher,
 ) {
   fun fetchAllVotes(projectId: ProjectId, phase: CohortPhase? = null): List<VoteModel> {
     requirePermissions { readProjectVotes(projectId) }
@@ -63,7 +63,7 @@ class VoteStore(
   fun delete(projectId: ProjectId, phase: CohortPhase, userId: UserId? = null) {
     requirePermissions { updateProjectVotes(projectId) }
 
-    phaseChecker.ensureProjectPhase(projectId, phase)
+    projectCohortFetcher.ensureProjectPhase(projectId, phase)
 
     val now = clock.instant()
 
@@ -91,7 +91,7 @@ class VoteStore(
   ) {
     requirePermissions { updateProjectVotes(projectId) }
 
-    phaseChecker.ensureProjectPhase(projectId, phase)
+    projectCohortFetcher.ensureProjectPhase(projectId, phase)
 
     val now = clock.instant()
     val currentUserId = currentUser().userId
@@ -129,7 +129,7 @@ class VoteStore(
 
     val now = clock.instant()
     val currentUserId = currentUser().userId
-    val phase = phaseChecker.getProjectPhase(projectId) ?: return
+    val phase = projectCohortFetcher.getProjectPhase(projectId) ?: return
 
     dslContext.transaction { _ ->
       with(PROJECT_VOTES) {
