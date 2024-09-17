@@ -65,15 +65,16 @@ class ProjectStore(
         .fetchOne { (cohortId, cohortPhase, applicationStatus) ->
           if (cohortId != null && cohortPhase != null) {
             ProjectCohortData(cohortId, cohortPhase)
-          } else
-              when (applicationStatus) {
-                ApplicationStatus.NotSubmitted,
-                ApplicationStatus.FailedPreScreen,
-                ApplicationStatus.PassedPreScreen ->
-                    ProjectCohortData(cohortPhase = CohortPhase.PreScreen)
-                null -> null
-                else -> ProjectCohortData(cohortPhase = CohortPhase.Application)
-              }
+          } else {
+            when (applicationStatus) {
+              ApplicationStatus.NotSubmitted,
+              ApplicationStatus.FailedPreScreen,
+              ApplicationStatus.PassedPreScreen ->
+                  ProjectCohortData(cohortPhase = CohortPhase.PreScreen)
+              null -> null
+              else -> ProjectCohortData(cohortPhase = CohortPhase.Application)
+            }
+          }
         }
   }
 
