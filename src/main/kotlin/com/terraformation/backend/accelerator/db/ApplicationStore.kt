@@ -10,8 +10,6 @@ import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
@@ -288,12 +286,6 @@ class ApplicationStore(
 
     val userId = currentUser().userId
     val now = clock.instant()
-    val organizationName =
-        dslContext
-            .select(PROJECTS.organizations.NAME)
-            .from(PROJECTS)
-            .where(PROJECTS.ID.eq(projectId))
-            .fetchOne(PROJECTS.organizations.NAME) ?: throw ProjectNotFoundException(projectId)
 
     return dslContext.transactionResult { _ ->
       val applicationId =
@@ -318,7 +310,7 @@ class ApplicationStore(
       assignModules(applicationId, CohortPhase.PreScreen)
       assignModules(applicationId, CohortPhase.Application)
 
-      updateInternalName(applicationId, "${defaultInternalNamePrefix}_$organizationName")
+      updateInternalName(applicationId)
 
       fetchOneById(applicationId)
     }
@@ -387,6 +379,9 @@ class ApplicationStore(
       } else {
         updateStatus(applicationId, ApplicationStatus.PassedPreScreen)
         assignModules(applicationId, CohortPhase.Application)
+
+        applicationVariableValues.countryCode?.let { updateCountryCode(applicationId, it) }
+        updateInternalName(applicationId)
       }
 
       ApplicationSubmissionResult(fetchOneById(applicationId), problems)
@@ -484,14 +479,8 @@ class ApplicationStore(
 
         if (countries.size == 1) {
           val countryCode = countries.single()
-          val alpha3CountryCode = countriesDao.fetchOneByCode(countryCode)?.codeAlpha3 ?: "XXX"
-          val organizationName =
-              organizationsDao.fetchOneById(existing.organizationId)?.name
-                  ?: throw OrganizationNotFoundException(existing.organizationId)
-          val internalName = "${alpha3CountryCode}_$organizationName"
-
-          updateInternalName(applicationId, internalName)
           updateCountryCode(applicationId, countryCode)
+          updateInternalName(applicationId)
         } else {
           log.debug(
               "Not setting internal name for application $applicationId because boundary is not " +
@@ -514,8 +503,10 @@ class ApplicationStore(
   }
 
   /**
-   * Updates the internal name of an application, attempting to make the name unique if it is
-   * already in use.
+   * Updates the internal name of an application, using the application alpha3 country code and the
+   * organization name, attempting to make the name unique if it is already in use.
+   *
+   * If the country column of an application is not set, "XXX" will be used as the country code.
    *
    * The uniqueness calculation is not robust against concurrent attempts to use the same name.
    * Given the low volume of expected usage, it isn't worth the added complexity to make it
@@ -523,8 +514,17 @@ class ApplicationStore(
    *
    * @return The name that was actually used, possibly including a suffix.
    */
-  private fun updateInternalName(applicationId: ApplicationId, internalName: String): String {
+  private fun updateInternalName(applicationId: ApplicationId): String {
     return with(APPLICATIONS) {
+      val application = fetchOneById(applicationId)
+
+      val countryCode = application.countryCode
+      val organizationName = application.organizationName
+
+      val alpha3CountryCode =
+          countryCode?.let { countriesDao.fetchOneByCode(it)?.codeAlpha3 } ?: "XXX"
+      val internalName = "${alpha3CountryCode}_$organizationName"
+
       // If the internal name already exists, add the first unused numeric suffix to make it unique.
       val existingNames =
           dslContext
