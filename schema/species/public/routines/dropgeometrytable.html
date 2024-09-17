@@ -155,7 +155,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;"> SELECT public.DropGeometryTable(&#39;&#39;,&#39;&#39;,$1) </textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">&#10;DECLARE&#10;&#9;real_schema name;&#10;&#10;BEGIN&#10;&#10;&#9;IF ( schema_name = &#39;&#39; ) THEN&#10;&#9;&#9;SELECT current_schema() into real_schema;&#10;&#9;ELSE&#10;&#9;&#9;real_schema = schema_name;&#10;&#9;END IF;&#10;&#10;&#9;-- TODO: Should we warn if table doesn&#39;t exist probably instead just saying dropped&#10;&#9;-- Remove table&#10;&#9;EXECUTE &#39;DROP TABLE IF EXISTS &#39;&#10;&#9;&#9;|| quote_ident(real_schema) || &#39;.&#39; ||&#10;&#9;&#9;quote_ident(table_name) || &#39; RESTRICT&#39;;&#10;&#10;&#9;RETURN&#10;&#9;&#9;real_schema || &#39;.&#39; ||&#10;&#9;&#9;table_name ||&#39; dropped.&#39;;&#10;&#10;END;&#10;</textarea>
                         </div>
                     </div>
                 </section>
