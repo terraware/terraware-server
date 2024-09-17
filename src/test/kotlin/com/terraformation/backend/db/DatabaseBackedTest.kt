@@ -349,10 +349,14 @@ import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.roundToInt
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSupertypeOf
+import org.jooq.Condition
 import org.jooq.Configuration
 import org.jooq.DSLContext
 import org.jooq.JSONB
+import org.jooq.Table
+import org.jooq.UpdatableRecord
 import org.jooq.impl.DAOImpl
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
@@ -3045,6 +3049,133 @@ abstract class DatabaseBackedTest {
     variableWorkflowHistoryDao.insert(row)
 
     return row.id!!.also { inserted.variableWorkflowHistoryIds.add(it) }
+  }
+
+  /**
+   * Asserts that a table (or a filtered subset of it) contains an expected set of records and
+   * nothing else.
+   *
+   * You will usually want one of the other variants of this that require fewer parameters.
+   *
+   * @param table The table whose contents should be examined.
+   * @param expected The set of records the table should contain.
+   * @param message Assertion failure message; defaults to the table name.
+   * @param where Optional query condition to assert on a subset of a table's contents. Only rows
+   *   matching the condition will be considered.
+   * @param includePrimaryKeys If false, the primary key field(s) of the records from the database
+   *   will be cleared before comparing against [expected]. This can be used to ignore
+   *   database-generated IDs.
+   * @param transform Function to apply to records from the database before comparing them to
+   *   [expected]. Can be used to clear or hardwire specific fields that aren't relevant to the
+   *   behavior being tested.
+   */
+  protected fun <R : UpdatableRecord<R>> assertTableEquals(
+      table: Table<R>,
+      expected: Set<R>,
+      message: String = table.name,
+      where: Condition? = null,
+      includePrimaryKeys: Boolean = true,
+      transform: ((R) -> R)? = null,
+  ) {
+    val actual =
+        dslContext
+            .selectFrom(table)
+            .where(where)
+            .fetch()
+            .map { record: R ->
+              val transformed = transform?.invoke(record) ?: record
+              if (includePrimaryKeys) {
+                transformed
+              } else {
+                // This is not the Kotlin data class copy(), but the one from UpdatableRecord, which
+                // clears primary key fields.
+                transformed.copy()
+              }
+            }
+            .toSet()
+
+    assertEquals(expected, actual, message)
+  }
+
+  /**
+   * Asserts that a table (or a filtered subset of it) contains an expected set of records and
+   * nothing else.
+   *
+   * @param expected The set of records the table should contain. Must be non-empty.
+   * @param message Assertion failure message; defaults to the table name.
+   * @param where Optional query condition to assert on a subset of a table's contents. Only rows
+   *   matching the condition will be considered.
+   * @param includePrimaryKeys If false, the primary key field(s) of the records from the database
+   *   will be cleared before comparing against [expected]. This can be used to ignore
+   *   database-generated IDs.
+   * @param transform Function to apply to records from the database before comparing them to
+   *   [expected]. Can be used to clear or hardwire specific fields that aren't relevant to the
+   *   behavior being tested.
+   */
+  protected fun <R : UpdatableRecord<R>> assertTableEquals(
+      expected: Set<R>,
+      message: String? = null,
+      where: Condition? = null,
+      includePrimaryKeys: Boolean = true,
+      transform: ((R) -> R)? = null,
+  ) {
+    val table =
+        expected.firstOrNull()?.table
+            ?: throw IllegalArgumentException("Use assertTableEmpty to check for empty tables")
+
+    assertTableEquals(
+        table = table,
+        expected = expected,
+        message = message ?: table.name,
+        where = where,
+        includePrimaryKeys = includePrimaryKeys,
+        transform = transform,
+    )
+  }
+
+  /**
+   * Asserts that a table (or a filtered subset of it) contains exactly one row.
+   *
+   * @param expected The single row that the table should contain.
+   * @param message Assertion failure message; defaults to the table name.
+   * @param where Optional query condition to assert on a subset of a table's contents. Only rows
+   *   matching the condition will be considered.
+   * @param includePrimaryKeys If false, the primary key field(s) of the records from the database
+   *   will be cleared before comparing against [expected]. This can be used to ignore
+   *   database-generated IDs.
+   * @param transform Function to apply to records from the database before comparing them to
+   *   [expected]. Can be used to clear or hardwire specific fields that aren't relevant to the
+   *   behavior being tested.
+   */
+  protected fun <R : UpdatableRecord<R>> assertTableEquals(
+      expected: R,
+      message: String? = null,
+      where: Condition? = null,
+      includePrimaryKeys: Boolean = true,
+      transform: ((R) -> R)? = null,
+  ) {
+    assertTableEquals(
+        expected = setOf(expected),
+        message = message,
+        where = where,
+        includePrimaryKeys = includePrimaryKeys,
+        transform = transform)
+  }
+
+  /**
+   * Asserts that a table (or a filtered subset of it) contains no rows.
+   *
+   * @param table The table whose contents should be examined.
+   * @param message Assertion failure message; defaults to the table name.
+   * @param where Optional query condition to assert on a subset of a table's contents. Only rows
+   *   matching the condition will be considered.
+   */
+  protected fun <R : UpdatableRecord<R>> assertTableEmpty(
+      table: Table<R>,
+      message: String = table.name,
+      where: Condition? = null,
+  ) {
+    assertTableEquals(table = table, expected = emptySet(), message = message, where = where)
   }
 
   @Suppress("unused")

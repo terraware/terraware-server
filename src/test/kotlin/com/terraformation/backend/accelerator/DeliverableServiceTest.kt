@@ -13,13 +13,13 @@ import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
-import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationModulesRow
-import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
+import com.terraformation.backend.db.accelerator.tables.records.ApplicationModulesRecord
+import com.terraformation.backend.db.accelerator.tables.records.SubmissionsRecord
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -71,8 +71,8 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
   fun `creates a submission with Complete status`() {
     val id = service.setDeliverableCompletion(deliverable1, inserted.projectId, true)
 
-    assertEquals(
-        SubmissionsRow(
+    assertTableEquals(
+        SubmissionsRecord(
             id,
             inserted.projectId,
             deliverable1,
@@ -81,16 +81,15 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
             clock.instant,
             user.userId,
             clock.instant,
-        ),
-        submissionsDao.fetchOneById(id))
+        ))
   }
 
   @Test
   fun `creates a submission with Not Submitted status if isComplete is false`() {
     val id = service.setDeliverableCompletion(deliverable1, inserted.projectId, false)
 
-    assertEquals(
-        SubmissionsRow(
+    assertTableEquals(
+        SubmissionsRecord(
             id,
             inserted.projectId,
             deliverable1,
@@ -99,64 +98,51 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
             clock.instant,
             user.userId,
             clock.instant,
-        ),
-        submissionsDao.fetchOneById(id))
+        ))
   }
 
   @Test
   fun `updates existing submission to Complete status`() {
     insertSubmission(deliverableId = deliverable1, submissionStatus = SubmissionStatus.NotNeeded)
-    val existing = submissionsDao.fetchOneById(inserted.submissionId)!!
+    val existing = dslContext.fetchSingle(SUBMISSIONS)
     service.setDeliverableCompletion(deliverable1, inserted.projectId, true)
-    assertEquals(
-        existing.copy(submissionStatusId = SubmissionStatus.Completed),
-        submissionsDao.fetchOneById(inserted.submissionId))
+    assertTableEquals(existing.apply { submissionStatusId = SubmissionStatus.Completed })
   }
 
   @Test
   fun `updates existing submission to NotSubmitted status if isComplete is false`() {
     insertSubmission(deliverableId = deliverable1, submissionStatus = SubmissionStatus.NotNeeded)
-    val existing = submissionsDao.fetchOneById(inserted.submissionId)!!
+    val existing = dslContext.fetchSingle(SUBMISSIONS)
     service.setDeliverableCompletion(deliverable1, inserted.projectId, false)
-    assertEquals(
-        existing.copy(submissionStatusId = SubmissionStatus.NotSubmitted),
-        submissionsDao.fetchOneById(inserted.submissionId))
+    assertTableEquals(existing.apply { submissionStatusId = SubmissionStatus.NotSubmitted })
   }
 
   @Test
   fun `updates application module status according to deliverable completion status`() {
-    assertEquals(
-        listOf(
-            ApplicationModulesRow(
-                inserted.applicationId, inserted.moduleId, ApplicationModuleStatus.Incomplete)),
-        applicationModulesDao.findAll(),
+    assertTableEquals(
+        ApplicationModulesRecord(
+            inserted.applicationId, inserted.moduleId, ApplicationModuleStatus.Incomplete),
         "0/2 completed deliverables")
 
     service.setDeliverableCompletion(deliverable1, inserted.projectId, true)
 
-    assertEquals(
-        listOf(
-            ApplicationModulesRow(
-                inserted.applicationId, inserted.moduleId, ApplicationModuleStatus.Incomplete)),
-        applicationModulesDao.findAll(),
+    assertTableEquals(
+        ApplicationModulesRecord(
+            inserted.applicationId, inserted.moduleId, ApplicationModuleStatus.Incomplete),
         "1/2 completed deliverables")
 
     service.setDeliverableCompletion(deliverable2, inserted.projectId, true)
 
-    assertEquals(
-        listOf(
-            ApplicationModulesRow(
-                inserted.applicationId, inserted.moduleId, ApplicationModuleStatus.Complete)),
-        applicationModulesDao.findAll(),
+    assertTableEquals(
+        ApplicationModulesRecord(
+            inserted.applicationId, inserted.moduleId, ApplicationModuleStatus.Complete),
         "2/2 completed deliverables")
 
     service.setDeliverableCompletion(deliverable2, inserted.projectId, false)
 
-    assertEquals(
-        listOf(
-            ApplicationModulesRow(
-                inserted.applicationId, inserted.moduleId, ApplicationModuleStatus.Incomplete)),
-        applicationModulesDao.findAll(),
+    assertTableEquals(
+        ApplicationModulesRecord(
+            inserted.applicationId, inserted.moduleId, ApplicationModuleStatus.Incomplete),
         "1/2 completed deliverables after un-submitting a deliverable")
   }
 }
