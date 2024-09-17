@@ -2,7 +2,6 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
-import com.terraformation.backend.accelerator.model.ProjectCohortData
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
@@ -12,12 +11,7 @@ import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.accelerator.ApplicationStatus
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ParticipantId
-import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
-import com.terraformation.backend.db.accelerator.tables.references.COHORTS
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
@@ -47,35 +41,6 @@ class ProjectStore(
     requirePermissions { readOrganization(organizationId) }
 
     return projectsDao.fetchByOrganizationId(organizationId).map { ProjectModel.of(it) }
-  }
-
-  fun fetchCohortData(projectId: ProjectId): ProjectCohortData? {
-    requirePermissions { readProject(projectId) }
-
-    return dslContext
-        .select(COHORTS.ID, COHORTS.PHASE_ID, APPLICATIONS.APPLICATION_STATUS_ID)
-        .from(PROJECTS)
-        .leftJoin(PARTICIPANTS)
-        .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
-        .leftJoin(COHORTS)
-        .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
-        .leftJoin(APPLICATIONS)
-        .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
-        .where(PROJECTS.ID.eq(projectId))
-        .fetchOne { (cohortId, cohortPhase, applicationStatus) ->
-          if (cohortId != null && cohortPhase != null) {
-            ProjectCohortData(cohortId, cohortPhase)
-          } else {
-            when (applicationStatus) {
-              ApplicationStatus.NotSubmitted,
-              ApplicationStatus.FailedPreScreen,
-              ApplicationStatus.PassedPreScreen ->
-                  ProjectCohortData(cohortPhase = CohortPhase.PreScreen)
-              null -> null
-              else -> ProjectCohortData(cohortPhase = CohortPhase.Application)
-            }
-          }
-        }
   }
 
   fun findAll(): List<ExistingProjectModel> {

@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.accelerator.db.ProjectCohortFetcher
 import com.terraformation.backend.accelerator.model.ProjectCohortData
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/projects")
 @RestController
 class ProjectsController(
+    private val projectCohortFetcher: ProjectCohortFetcher,
     private val projectService: ProjectService,
     private val projectStore: ProjectStore,
 ) {
@@ -53,14 +55,14 @@ class ProjectsController(
             ?: projectStore.findAll()
 
     return ListProjectsResponsePayload(
-        projects.map { ProjectPayload(it, projectStore.fetchCohortData(it.id)) })
+        projects.map { ProjectPayload(it, projectCohortFetcher.fetchCohortData(it.id)) })
   }
 
   @GetMapping("/{id}")
   @Operation(summary = "Gets information about a specific project.")
   fun getProject(@PathVariable id: ProjectId): GetProjectResponsePayload {
     val project = projectStore.fetchOneById(id)
-    val cohortData = projectStore.fetchCohortData(id)
+    val cohortData = projectCohortFetcher.fetchCohortData(id)
 
     return GetProjectResponsePayload(ProjectPayload(project, cohortData))
   }

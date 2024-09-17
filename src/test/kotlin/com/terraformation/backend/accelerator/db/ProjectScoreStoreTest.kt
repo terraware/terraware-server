@@ -23,7 +23,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val store: ProjectScoreStore by lazy {
-    ProjectScoreStore(clock, dslContext, PhaseChecker(dslContext))
+    ProjectScoreStore(clock, dslContext, ProjectCohortFetcher(dslContext))
   }
 
   @BeforeEach

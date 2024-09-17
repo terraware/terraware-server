@@ -26,7 +26,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
-  private val store: VoteStore by lazy { VoteStore(clock, dslContext, PhaseChecker(dslContext)) }
+  private val store: VoteStore by lazy {
+    VoteStore(clock, dslContext, ProjectCohortFetcher(dslContext))
+  }
 
   data class VoteKey(val userId: UserId, val projectId: ProjectId, val phase: CohortPhase)
 

@@ -5,7 +5,6 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
-import com.terraformation.backend.accelerator.model.ProjectCohortData
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
@@ -15,9 +14,6 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.accelerator.ApplicationStatus
-import com.terraformation.backend.db.accelerator.CohortPhase
-import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
@@ -361,98 +357,6 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
       store.delete(projectId)
 
       eventPublisher.assertEventPublished(ProjectDeletionStartedEvent(projectId))
-    }
-  }
-
-  @Nested
-  inner class FetchCohortData {
-    @Test
-    fun `fetches project's cohort data`() {
-      val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId1 = insertProject(participantId = participantId)
-
-      val expected =
-          ProjectCohortData(cohortId = cohortId, cohortPhase = CohortPhase.Phase0DueDiligence)
-      val actual = store.fetchCohortData(projectId1)
-
-      assertEquals(expected, actual)
-    }
-
-    @Test
-    fun `uses cohort data even if project has an application`() {
-      val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId1 = insertProject(participantId = participantId)
-      insertApplication(projectId = projectId1)
-
-      val expected =
-          ProjectCohortData(cohortId = cohortId, cohortPhase = CohortPhase.Phase0DueDiligence)
-      val actual = store.fetchCohortData(projectId1)
-
-      assertEquals(expected, actual)
-    }
-
-    @Test
-    fun `returns correct cohort phase for each application state`() {
-      insertApplication(projectId = projectId)
-
-      val phasesByState =
-          ApplicationStatus.entries.associateWith { state ->
-            dslContext.update(APPLICATIONS).set(APPLICATIONS.APPLICATION_STATUS_ID, state).execute()
-
-            val cohortData = store.fetchCohortData(projectId)
-
-            assertNotNull(cohortData, "Cohort data")
-            assertNull(cohortData!!.cohortId, "Cohort ID")
-
-            cohortData.cohortPhase
-          }
-
-      assertEquals(
-          mapOf(
-              ApplicationStatus.Accepted to CohortPhase.Application,
-              ApplicationStatus.CarbonEligible to CohortPhase.Application,
-              ApplicationStatus.FailedPreScreen to CohortPhase.PreScreen,
-              ApplicationStatus.IssueActive to CohortPhase.Application,
-              ApplicationStatus.IssuePending to CohortPhase.Application,
-              ApplicationStatus.IssueResolved to CohortPhase.Application,
-              ApplicationStatus.NeedsFollowUp to CohortPhase.Application,
-              ApplicationStatus.NotAccepted to CohortPhase.Application,
-              ApplicationStatus.NotSubmitted to CohortPhase.PreScreen,
-              ApplicationStatus.PassedPreScreen to CohortPhase.PreScreen,
-              ApplicationStatus.PLReview to CohortPhase.Application,
-              ApplicationStatus.PreCheck to CohortPhase.Application,
-              ApplicationStatus.ReadyForReview to CohortPhase.Application,
-              ApplicationStatus.Submitted to CohortPhase.Application,
-          ),
-          phasesByState)
-    }
-
-    @Test
-    fun `throws exception if no permission to read project`() {
-      val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId1 = insertProject(participantId = participantId)
-
-      every { user.canReadProject(projectId1) } returns false
-
-      assertThrows<ProjectNotFoundException> { store.fetchCohortData(projectId1) }
-    }
-
-    @Test
-    fun `returns null if the project is not associated to a participant which is associated to a cohort`() {
-      val participantId = insertParticipant()
-      val projectId1 = insertProject(participantId = participantId)
-
-      val actual = store.fetchCohortData(projectId1)
-      assertNull(actual)
-    }
-
-    @Test
-    fun `returns null if the project is not associated to a participant and has no application`() {
-      val actual = store.fetchCohortData(projectId)
-      assertNull(actual)
     }
   }
 }

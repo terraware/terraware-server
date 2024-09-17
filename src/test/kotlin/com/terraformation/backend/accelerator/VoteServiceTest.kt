@@ -5,7 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.CohortStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
-import com.terraformation.backend.accelerator.db.PhaseChecker
+import com.terraformation.backend.accelerator.db.ProjectCohortFetcher
 import com.terraformation.backend.accelerator.db.VoteStore
 import com.terraformation.backend.accelerator.event.CohortParticipantAddedEvent
 import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
@@ -40,7 +40,7 @@ class VoteServiceTest : DatabaseTest(), RunsAsUser {
         dslContext,
         ParticipantStore(clock, dslContext, eventPublisher, participantsDao),
         systemUser,
-        VoteStore(clock, dslContext, PhaseChecker(dslContext)))
+        VoteStore(clock, dslContext, ProjectCohortFetcher(dslContext)))
   }
 
   private lateinit var voter1: UserId

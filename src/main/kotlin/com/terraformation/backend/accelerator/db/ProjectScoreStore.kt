@@ -17,7 +17,7 @@ import org.jooq.DSLContext
 class ProjectScoreStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
-    private val phaseChecker: PhaseChecker,
+    private val projectCohortFetcher: ProjectCohortFetcher,
 ) {
   /**
    * Returns the per-category scores for a project.
@@ -53,7 +53,7 @@ class ProjectScoreStore(
   ) {
     requirePermissions { updateProjectScores(projectId) }
 
-    phaseChecker.ensureProjectPhase(projectId, phase)
+    projectCohortFetcher.ensureProjectPhase(projectId, phase)
 
     val now = clock.instant()
     val userId = currentUser().userId
