@@ -20,7 +20,6 @@ import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -105,7 +104,7 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `updates existing submission to Complete status`() {
     insertSubmission(deliverableId = deliverable1, submissionStatus = SubmissionStatus.NotNeeded)
-    val existing = dslContext.fetchOne(SUBMISSIONS, SUBMISSIONS.ID.eq(inserted.submissionId))!!
+    val existing = dslContext.fetchSingle(SUBMISSIONS)
     service.setDeliverableCompletion(deliverable1, inserted.projectId, true)
     assertTableEquals(existing.apply { submissionStatusId = SubmissionStatus.Completed })
   }
@@ -113,11 +112,9 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `updates existing submission to NotSubmitted status if isComplete is false`() {
     insertSubmission(deliverableId = deliverable1, submissionStatus = SubmissionStatus.NotNeeded)
-    val existing = submissionsDao.fetchOneById(inserted.submissionId)!!
+    val existing = dslContext.fetchSingle(SUBMISSIONS)
     service.setDeliverableCompletion(deliverable1, inserted.projectId, false)
-    assertEquals(
-        existing.copy(submissionStatusId = SubmissionStatus.NotSubmitted),
-        submissionsDao.fetchOneById(inserted.submissionId))
+    assertTableEquals(existing.apply { submissionStatusId = SubmissionStatus.NotSubmitted })
   }
 
   @Test
