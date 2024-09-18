@@ -1,3 +1,4 @@
+427aa4bd72c Fix UnusedSquareFinder edge-case failure (#2427)
 c5929123fc3 Revert "Remove PDH importer code" (#2428)
 6e1693de86f Limit size of parallel test thread pool (#2424)
 ed665843f49 SW-6038 Added module info to event APIs (#2429)
