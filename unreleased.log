@@ -1,3 +1,5 @@
+6e1693de86f Limit size of parallel test thread pool (#2424)
+ed665843f49 SW-6038 Added module info to event APIs (#2429)
 4a66b638757 Fix BatchImporterTest failure (#2425)
 28ee7f565a8 SW-6034 Fix "View Application" console email link (#2426)
 bb64d9ce67c SW-6034 "View Application" email links invalid (#2421)
