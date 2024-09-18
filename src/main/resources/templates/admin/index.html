@@ -107,6 +107,19 @@
     </form>
 </th:block>
 
+
+<th:block th:if="${canDeleteUsers}">
+    <h2>Delete User</h2>
+
+    <form method="POST" action="/admin/users/delete">
+        <label for="deleteUserEmail">Email (user must already exist)</label>
+        <input id="deleteUserEmail" type="email" name="email" required />
+        <label for="deleteUserConfirm">Confirm for deleting user (This is irreversible)</label>
+        <input id="deleteUserConfirm" type="checkbox" name="confirm" />
+        <input type="submit" value="Delete User"/>
+    </form>
+</th:block>
+
 <th:block th:if="${canManageParticipants}">
     <h2>Participants</h2>
 
