@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.db.ModuleEventStore
+import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class EventsController(
     private val eventStore: ModuleEventStore,
+    private val moduleStore: ModuleStore,
 ) {
   @ApiResponse200
   @ApiResponse404
@@ -35,7 +37,7 @@ class EventsController(
       @RequestParam moduleId: ModuleId?,
   ): ListEventsResponsePayload {
     val models = eventStore.fetchById(projectId = projectId, moduleId = moduleId)
-    return ListEventsResponsePayload(models.map { model -> ModuleEvent(model) })
+    return ListEventsResponsePayload(models.map { model -> ModuleEvent(model, moduleStore.fetchOneById(model.moduleId).name) })
   }
 
   @ApiResponse200
@@ -46,7 +48,8 @@ class EventsController(
       @PathVariable eventId: EventId,
   ): GetEventResponsePayload {
     val model = eventStore.fetchOneById(eventId)
-    return GetEventResponsePayload(ModuleEvent(model))
+    val moduleName = moduleStore.fetchOneById(model.moduleId).name
+    return GetEventResponsePayload(ModuleEvent(model, moduleName))
   }
 }
 
@@ -55,6 +58,8 @@ data class ModuleEvent(
     val endTime: Instant?,
     val id: EventId,
     val meetingUrl: URI?,
+    val moduleId: ModuleId,
+    val moduleName: String,
     val recordingUrl: URI?,
     val slidesUrl: URI?,
     val startTime: Instant?,
@@ -63,11 +68,14 @@ data class ModuleEvent(
 ) {
   constructor(
       model: EventModel,
+      moduleName: String,
   ) : this(
       description = model.description,
       endTime = model.endTime,
       id = model.id,
       meetingUrl = model.meetingUrl,
+      moduleId = model.moduleId,
+      moduleName = moduleName,
       recordingUrl = model.recordingUrl,
       slidesUrl = model.slidesUrl,
       startTime = model.startTime,
