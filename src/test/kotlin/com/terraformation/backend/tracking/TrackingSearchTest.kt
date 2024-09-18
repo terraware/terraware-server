@@ -16,6 +16,7 @@ import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.table.SearchTables
 import io.mockk.every
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import org.jooq.impl.DSL
@@ -47,10 +48,10 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val plantingZoneGeometry = multiPolygon(2.0)
     val plantingSubzoneGeometry3 = multiPolygon(1.0)
     val plantingSubzoneGeometry4 = multiPolygon(1.0)
-    val monitoringPlotGeometry5 = polygon(0.1)
-    val monitoringPlotGeometry6 = polygon(0.1)
-    val monitoringPlotGeometry7 = polygon(0.1)
-    val monitoringPlotGeometry8 = polygon(0.1)
+    val monitoringPlotGeometry5 = polygon(5, 6, 7, 8)
+    val monitoringPlotGeometry6 = polygon(6, 7, 8, 9)
+    val monitoringPlotGeometry7 = polygon(7, 8, 9, 10)
+    val monitoringPlotGeometry8 = polygon(8, 9, 10, BigDecimal("11.0123456789"))
     val plantingSiteId =
         insertPlantingSite(
             boundary = plantingSiteGeometry, exclusion = exclusionGeometry, projectId = projectId)
@@ -233,8 +234,28 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                     )),
                                             "monitoringPlots" to
                                                 listOf(
-                                                    mapOf("id" to "$monitoringPlotId5"),
-                                                    mapOf("id" to "$monitoringPlotId6"))),
+                                                    mapOf(
+                                                        "id" to "$monitoringPlotId5",
+                                                        "northeastLatitude" to "8",
+                                                        "northeastLongitude" to "7",
+                                                        "northwestLatitude" to "8",
+                                                        "northwestLongitude" to "5",
+                                                        "southeastLatitude" to "6",
+                                                        "southeastLongitude" to "7",
+                                                        "southwestLatitude" to "6",
+                                                        "southwestLongitude" to "5",
+                                                    ),
+                                                    mapOf(
+                                                        "id" to "$monitoringPlotId6",
+                                                        "northeastLatitude" to "9",
+                                                        "northeastLongitude" to "8",
+                                                        "northwestLatitude" to "9",
+                                                        "northwestLongitude" to "6",
+                                                        "southeastLatitude" to "7",
+                                                        "southeastLongitude" to "8",
+                                                        "southwestLatitude" to "7",
+                                                        "southwestLongitude" to "6",
+                                                    ))),
                                         mapOf(
                                             "boundary" to
                                                 postgisRenderGeoJson(plantingSubzoneGeometry4),
@@ -259,8 +280,28 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                     )),
                                             "monitoringPlots" to
                                                 listOf(
-                                                    mapOf("id" to "$monitoringPlotId7"),
-                                                    mapOf("id" to "$monitoringPlotId8")))),
+                                                    mapOf(
+                                                        "id" to "$monitoringPlotId7",
+                                                        "northeastLatitude" to "10",
+                                                        "northeastLongitude" to "9",
+                                                        "northwestLatitude" to "10",
+                                                        "northwestLongitude" to "7",
+                                                        "southeastLatitude" to "8",
+                                                        "southeastLongitude" to "9",
+                                                        "southwestLatitude" to "8",
+                                                        "southwestLongitude" to "7",
+                                                    ),
+                                                    mapOf(
+                                                        "id" to "$monitoringPlotId8",
+                                                        "northeastLatitude" to "11.01234568",
+                                                        "northeastLongitude" to "10",
+                                                        "northwestLatitude" to "11.01234568",
+                                                        "northwestLongitude" to "8",
+                                                        "southeastLatitude" to "9",
+                                                        "southeastLongitude" to "10",
+                                                        "southwestLatitude" to "9",
+                                                        "southwestLongitude" to "8",
+                                                    )))),
                                 "populations" to
                                     listOf(
                                         mapOf(
@@ -336,6 +377,14 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingZones.plantingSubzones.populations.species_id",
                 "plantingZones.plantingSubzones.populations.totalPlants",
                 "plantingZones.plantingSubzones.monitoringPlots.id",
+                "plantingZones.plantingSubzones.monitoringPlots.northeastLatitude",
+                "plantingZones.plantingSubzones.monitoringPlots.northeastLongitude",
+                "plantingZones.plantingSubzones.monitoringPlots.northwestLatitude",
+                "plantingZones.plantingSubzones.monitoringPlots.northwestLongitude",
+                "plantingZones.plantingSubzones.monitoringPlots.southeastLatitude",
+                "plantingZones.plantingSubzones.monitoringPlots.southeastLongitude",
+                "plantingZones.plantingSubzones.monitoringPlots.southwestLatitude",
+                "plantingZones.plantingSubzones.monitoringPlots.southwestLongitude",
                 "plantingZones.plantingSubzones.totalPlants",
                 "plantingZones.populations.plantsSinceLastObservation",
                 "plantingZones.populations.species_id",
