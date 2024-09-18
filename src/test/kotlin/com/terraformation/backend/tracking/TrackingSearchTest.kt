@@ -7,6 +7,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.tracking.PlantingType
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
@@ -122,6 +123,29 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     insertPlantingSubzonePopulation(plantingSubzoneId4, speciesId1, 12, 11)
     insertPlantingSubzonePopulation(plantingSubzoneId4, speciesId2, 14, 13)
 
+    val observationId1 =
+        insertObservation(
+            completedTime = Instant.ofEpochSecond(2),
+            createdTime = Instant.ofEpochSecond(1),
+            endDate = LocalDate.of(2023, 1, 30),
+            plantingSiteId = plantingSiteId,
+            startDate = LocalDate.of(2023, 1, 1),
+        )
+    insertObservationPlot(
+        ObservationPlotsRow(notes = "Plot notes"),
+        claimedTime = Instant.ofEpochSecond(5),
+        completedTime = Instant.ofEpochSecond(6),
+        monitoringPlotId = monitoringPlotId5,
+        isPermanent = true,
+    )
+    insertObservationPlot(monitoringPlotId = monitoringPlotId6)
+    val observationId2 =
+        insertObservation(
+            plantingSiteId = plantingSiteId,
+            startDate = LocalDate.of(2024, 2, 2),
+            endDate = LocalDate.of(2024, 2, 28))
+    insertObservationPlot(monitoringPlotId = monitoringPlotId5, isPermanent = true)
+
     val expected =
         SearchResults(
             listOf(
@@ -191,6 +215,52 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                     "name" to "Site 1",
                     "numPlantingZones" to "1",
                     "numPlantingSubzones" to "2",
+                    "observations" to
+                        listOf(
+                            mapOf(
+                                "completedTime" to "1970-01-01T00:00:02Z",
+                                "createdTime" to "1970-01-01T00:00:01Z",
+                                "endDate" to "2023-01-30",
+                                "id" to "$observationId1",
+                                "startDate" to "2023-01-01",
+                                "observationPlots" to
+                                    listOf(
+                                        mapOf(
+                                            "claimedTime" to "1970-01-01T00:00:05Z",
+                                            "completedTime" to "1970-01-01T00:00:06Z",
+                                            "isPermanent" to "true",
+                                            "monitoringPlot" to
+                                                mapOf(
+                                                    "id" to "$monitoringPlotId5",
+                                                ),
+                                            "notes" to "Plot notes",
+                                        ),
+                                        mapOf(
+                                            "isPermanent" to "false",
+                                            "monitoringPlot" to
+                                                mapOf(
+                                                    "id" to "$monitoringPlotId6",
+                                                ),
+                                        ),
+                                    ),
+                            ),
+                            mapOf(
+                                "createdTime" to "1970-01-01T00:00:00Z",
+                                "endDate" to "2024-02-28",
+                                "id" to "$observationId2",
+                                "startDate" to "2024-02-02",
+                                "observationPlots" to
+                                    listOf(
+                                        mapOf(
+                                            "isPermanent" to "true",
+                                            "monitoringPlot" to
+                                                mapOf(
+                                                    "id" to "$monitoringPlotId5",
+                                                ),
+                                        ),
+                                    ),
+                            ),
+                        ),
                     "plantingSeasons" to
                         listOf(
                             mapOf(
@@ -357,6 +427,16 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "name",
                 "numPlantingZones",
                 "numPlantingSubzones",
+                "observations.completedTime",
+                "observations.createdTime",
+                "observations.endDate",
+                "observations.id",
+                "observations.observationPlots.claimedTime",
+                "observations.observationPlots.completedTime",
+                "observations.observationPlots.isPermanent",
+                "observations.observationPlots.monitoringPlot.id",
+                "observations.observationPlots.notes",
+                "observations.startDate",
                 "plantingSeasons.endDate",
                 "plantingSeasons.id",
                 "plantingSeasons.isActive",
