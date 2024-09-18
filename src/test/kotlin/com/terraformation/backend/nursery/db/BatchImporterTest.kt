@@ -14,12 +14,11 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
-import com.terraformation.backend.db.default_schema.UploadProblemId
 import com.terraformation.backend.db.default_schema.UploadProblemType
 import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
-import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
+import com.terraformation.backend.db.default_schema.tables.records.UploadProblemsRecord
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchSubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
@@ -294,20 +293,17 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
 
     importer.validateCsv(uploadId)
 
-    assertEquals(
-        listOf(
-            UploadProblemsRow(
-                id = UploadProblemId(1),
-                isError = true,
-                field = "Species (Scientific Name)",
-                message = messages.csvScientificNameTooShort(),
-                position = 2,
-                typeId = UploadProblemType.MalformedValue,
-                uploadId = uploadId,
-                value = "ShortName",
-            )),
-        uploadProblemsDao.findAll(),
-        "Upload problems")
+    assertTableEquals(
+        UploadProblemsRecord(
+            isError = true,
+            field = "Species (Scientific Name)",
+            message = messages.csvScientificNameTooShort(),
+            position = 2,
+            typeId = UploadProblemType.MalformedValue,
+            uploadId = uploadId,
+            value = "ShortName",
+        ),
+        includePrimaryKeys = false)
 
     assertStatus(UploadStatus.Invalid)
   }
