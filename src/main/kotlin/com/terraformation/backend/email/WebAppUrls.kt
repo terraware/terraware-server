@@ -103,7 +103,7 @@ class WebAppUrls(
   }
 
   fun fullAcceleratorConsoleApplication(applicationId: ApplicationId): URI {
-    return UriBuilder.fromUri(config.webAppUrl).path("/applications/$applicationId").build()
+    return UriBuilder.fromUri(config.webAppUrl).path("/accelerator/applications/$applicationId").build()
   }
 
   fun acceleratorConsoleApplication(applicationId: ApplicationId): URI {
