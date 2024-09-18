@@ -37,7 +37,8 @@ class EventsController(
       @RequestParam moduleId: ModuleId?,
   ): ListEventsResponsePayload {
     val models = eventStore.fetchById(projectId = projectId, moduleId = moduleId)
-    return ListEventsResponsePayload(models.map { model -> ModuleEvent(model, moduleStore.fetchOneById(model.moduleId).name) })
+    return ListEventsResponsePayload(
+        models.map { model -> ModuleEvent(model, moduleStore.fetchOneById(model.moduleId).name) })
   }
 
   @ApiResponse200
