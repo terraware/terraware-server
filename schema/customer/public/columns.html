@@ -601,15 +601,15 @@
     {
         "tableName": "countries",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>region_id",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>code",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>ISO-3166 alpha-2 country code. We use this code to refer to countries elsewhere in the data model.<\/p>"
     },
     {
         "tableName": "report_files",
@@ -651,13 +651,13 @@
         "comments": "<p>Time at which the facility became idle. Null if the facility is not currently considered idle.<\/p>"
     },
     {
-        "tableName": "roles",
+        "tableName": "report_photos",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
-        "type": "text",
-        "length": 2147483647,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>file_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -755,7 +755,7 @@
         "comments": "<p>If true, the user wants to receive notifications via email.<\/p>"
     },
     {
-        "tableName": "facility_types",
+        "tableName": "organization_types",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
@@ -1028,17 +1028,17 @@
         "comments": ""
     },
     {
-        "tableName": "countries",
+        "tableName": "facility_connection_states",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>code",
-        "type": "text",
-        "length": 2147483647,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>ISO-3166 alpha-2 country code. We use this code to refer to countries elsewhere in the data model.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "files",
@@ -1067,7 +1067,7 @@
         "comments": ""
     },
     {
-        "tableName": "organization_types",
+        "tableName": "facility_types",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
@@ -1160,15 +1160,15 @@
     {
         "tableName": "countries",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "eligible",
-        "type": "bool",
-        "length": 1,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>region_id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>If false, projects in this country are ineligible for the accelerator program.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "facilities",
@@ -1717,17 +1717,17 @@
         "comments": ""
     },
     {
-        "tableName": "countries",
+        "tableName": "facility_connection_states",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "name",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Name of country in US English.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "device_managers",
@@ -1782,20 +1782,20 @@
         "comments": ""
     },
     {
-        "tableName": "report_photos",
+        "tableName": "roles",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>file_id",
-        "type": "int8",
-        "length": 19,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
     },
     {
-        "tableName": "organization_types",
+        "tableName": "facility_types",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
@@ -2315,14 +2315,14 @@
         "comments": ""
     },
     {
-        "tableName": "report_photos",
+        "tableName": "roles",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "caption",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
         "type": "text",
         "length": 2147483647,
-        "nullable": "√",
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -2345,13 +2345,13 @@
         "tableType": "Table",
         "keyClass": "indexedColumn",
         "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>code_alpha3",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>ISO-3166 alpha-3 country code. This is used in cases where an external system or user needs an alpha-3 code instad of an alpha-2 code, but is treated purely as descriptive data in the data model.<\/p>"
+        "comments": "<p>Name of country in US English.<\/p>"
     },
     {
         "tableName": "reports",
@@ -2460,12 +2460,12 @@
     {
         "tableName": "report_photos",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>report_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "caption",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -2523,17 +2523,17 @@
         "comments": ""
     },
     {
-        "tableName": "facility_connection_states",
+        "tableName": "countries",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "name",
-        "type": "text",
-        "length": 2147483647,
+        "name": "eligible",
+        "type": "bool",
+        "length": 1,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>If false, projects in this country are ineligible for the accelerator program.<\/p>"
     },
     {
         "tableName": "organizations",
@@ -2627,7 +2627,7 @@
         "comments": ""
     },
     {
-        "tableName": "facility_types",
+        "tableName": "organization_types",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
@@ -2679,13 +2679,13 @@
         "comments": ""
     },
     {
-        "tableName": "roles",
+        "tableName": "report_photos",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int4",
-        "length": 10,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>report_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -2809,17 +2809,17 @@
         "comments": ""
     },
     {
-        "tableName": "facility_connection_states",
+        "tableName": "countries",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>code_alpha3",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>ISO-3166 alpha-3 country code. This is used in cases where an external system or user needs an alpha-3 code instad of an alpha-2 code, but is treated purely as descriptive data in the data model.<\/p>"
     },
     {
         "tableName": "organization_users",
