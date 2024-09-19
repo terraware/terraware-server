@@ -71,14 +71,25 @@ class VariableStore(
     private val variableTextsDao: VariableTextsDao,
 ) {
   /**
-   * Cache of information about variables. This just holds variable definitions, not values! There
-   * is currently no mechanism to limit the size of this cache; the assumption for now is that all
-   * the variables in the system will easily fit in memory.
+   * Cache of information about variables including internal-only ones. This just holds variable
+   * definitions, not values! There is currently no mechanism to limit the size of this cache; the
+   * assumption for now is that all the variables in the system will easily fit in memory.
    *
    * The manifest ID in the key must be non-null for section variables and null for all other
    * variable types.
    */
   private val variables = ConcurrentHashMap<Pair<VariableManifestId?, VariableId>, Variable>()
+
+  /**
+   * Cache of information about variables that are visible to unprivileged users. This just holds
+   * variable definitions, not values! There is currently no mechanism to limit the size of this
+   * cache; the assumption for now is that all the variables in the system will easily fit in
+   * memory.
+   *
+   * The manifest ID in the key must be non-null for section variables and null for all other
+   * variable types.
+   */
+  private val publicVariables = ConcurrentHashMap<Pair<VariableManifestId?, VariableId>, Variable>()
 
   /**
    * Cache of information about which variables were replaced by which other variables. If a
@@ -117,10 +128,18 @@ class VariableStore(
     val replacementVariables = VARIABLES.`as`("replacement_variables")
 
     return with(VARIABLES) {
+      val internalOnlyCondition =
+          if (currentUser().canReadInternalOnlyVariables()) {
+            null
+          } else {
+            INTERNAL_ONLY.isFalse
+          }
+
       dslContext
           .select(DSL.max(ID))
           .from(VARIABLES)
           .where(DELIVERABLE_ID.eq(deliverableId))
+          .and(internalOnlyCondition)
           .andNotExists(
               DSL.selectOne()
                   .from(VARIABLE_TABLE_COLUMNS)
@@ -321,6 +340,7 @@ class VariableStore(
 
   /** Clears the variable cache. Used in tests. */
   fun clearCache() {
+    publicVariables.clear()
     replacements.clear()
     variables.clear()
   }
@@ -330,9 +350,17 @@ class VariableStore(
       variableId: VariableId,
       manifestId: VariableManifestId? = null
   ): Variable? {
+    val cache =
+        if (currentUser().canReadInternalOnlyVariables()) {
+          variables
+        } else {
+          publicVariables
+        }
+
     val variable =
         try {
-          variables[manifestId to variableId] ?: FetchContext(manifestId).fetchVariable(variableId)
+          cache[manifestId to variableId]
+              ?: FetchContext(manifestId, cache).fetchVariable(variableId)
         } catch (_: VariableNotFoundException) {
           null
         }
@@ -344,7 +372,10 @@ class VariableStore(
    * Logic for recursively fetching a variable and the variables it's related to. Variable fetching
    * is stateful because we want to detect cycles.
    */
-  private inner class FetchContext(private val manifestId: VariableManifestId?) {
+  private inner class FetchContext(
+      private val manifestId: VariableManifestId?,
+      private val cache: ConcurrentHashMap<Pair<VariableManifestId?, VariableId>, Variable>
+  ) {
     /** Stack of variables that are being fetched in this context. Used to detect cycles. */
     val fetchesInProgress = ArrayDeque<VariableId>()
 
@@ -354,7 +385,7 @@ class VariableStore(
         throw CircularReferenceException(fetchesInProgress)
       }
 
-      return variables.getOrPut(manifestId to variableId) {
+      return cache.getOrPut(manifestId to variableId) {
         fetchesInProgress.addLast(variableId)
 
         val variablesRow =
@@ -461,7 +492,13 @@ class VariableStore(
               .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId))
               .orderBy(VARIABLE_MANIFEST_ENTRIES.POSITION)
               .fetch(VARIABLE_SECTIONS.VARIABLE_ID.asNonNullable())
-              .map { fetchVariable(it) as SectionVariable }
+              .mapNotNull {
+                try {
+                  fetchVariable(it) as SectionVariable
+                } catch (_: VariableNotFoundException) {
+                  null
+                }
+              }
 
       val recommends =
           with(VARIABLE_SECTION_RECOMMENDATIONS) {
@@ -511,10 +548,18 @@ class VariableStore(
               .where(VARIABLE_TABLE_COLUMNS.TABLE_VARIABLE_ID.eq(base.id))
               .orderBy(VARIABLE_TABLE_COLUMNS.POSITION)
               .fetch { record ->
-                TableColumn(
-                    record[VARIABLE_TABLE_COLUMNS.IS_HEADER.asNonNullable()],
-                    fetchVariable(record[VARIABLE_TABLE_COLUMNS.VARIABLE_ID.asNonNullable()]))
+                val columnVariable =
+                    try {
+                      fetchVariable(record[VARIABLE_TABLE_COLUMNS.VARIABLE_ID.asNonNullable()])
+                    } catch (_: VariableNotFoundException) {
+                      null
+                    }
+
+                columnVariable?.let {
+                  TableColumn(record[VARIABLE_TABLE_COLUMNS.IS_HEADER.asNonNullable()], it)
+                }
               }
+              .filterNotNull()
 
       return TableVariable(base, tableRow.tableStyleId!!, columns)
     }

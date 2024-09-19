@@ -363,7 +363,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `does not return internal-only variables if the user lacks permission`() {
+    fun `only returns internal-only variables if the user has permission`() {
       val stableId = "${UUID.randomUUID()}"
 
       insertModule()
@@ -374,34 +374,68 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                   type = VariableType.Number,
                   deliverableId = deliverableId,
                   stableId = "$stableId-1"))
-      insertNumberVariable(
-          insertVariable(
-              type = VariableType.Number,
-              deliverableId = deliverableId,
-              stableId = "$stableId-2",
-              internalOnly = true))
+      val internalOnlyVariableId =
+          insertNumberVariable(
+              insertVariable(
+                  type = VariableType.Number,
+                  deliverableId = deliverableId,
+                  stableId = "$stableId-2",
+                  internalOnly = true))
+
+      val expectedPublicVariable =
+          NumberVariable(
+              base =
+                  BaseVariableProperties(
+                      deliverableId = deliverableId,
+                      deliverablePosition = 1,
+                      id = publicVariableId,
+                      isRequired = false,
+                      manifestId = null,
+                      name = "Variable 1",
+                      position = 0,
+                      stableId = "$stableId-1",
+                  ),
+              decimalPlaces = 0,
+              minValue = null,
+              maxValue = null)
+      val expectedInternalOnlyVariable =
+          NumberVariable(
+              base =
+                  BaseVariableProperties(
+                      deliverableId = deliverableId,
+                      deliverablePosition = 2,
+                      id = internalOnlyVariableId,
+                      internalOnly = true,
+                      isRequired = false,
+                      manifestId = null,
+                      name = "Variable 2",
+                      position = 0,
+                      stableId = "$stableId-2",
+                  ),
+              decimalPlaces = 0,
+              minValue = null,
+              maxValue = null)
+
+      every { user.canReadInternalOnlyVariables() } returns true
+
+      assertEquals(
+          listOf(expectedPublicVariable, expectedInternalOnlyVariable),
+          store.fetchDeliverableVariables(deliverableId),
+          "Result with permission to read internal-only variables")
 
       every { user.canReadInternalOnlyVariables() } returns false
 
-      val expected =
-          listOf(
-              NumberVariable(
-                  base =
-                      BaseVariableProperties(
-                          deliverableId = deliverableId,
-                          deliverablePosition = 1,
-                          id = publicVariableId,
-                          isRequired = false,
-                          manifestId = null,
-                          name = "Variable 1",
-                          position = 0,
-                          stableId = "$stableId-1",
-                      ),
-                  decimalPlaces = 0,
-                  minValue = null,
-                  maxValue = null))
+      assertEquals(
+          listOf(expectedPublicVariable),
+          store.fetchDeliverableVariables(deliverableId),
+          "Result without permission to read internal-only variables")
 
-      assertEquals(expected, store.fetchDeliverableVariables(deliverableId))
+      every { user.canReadInternalOnlyVariables() } returns true
+
+      assertEquals(
+          listOf(expectedPublicVariable, expectedInternalOnlyVariable),
+          store.fetchDeliverableVariables(deliverableId),
+          "Result with permission to read internal-only variables after unprivileged read")
     }
   }
 
