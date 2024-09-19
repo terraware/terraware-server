@@ -1,1 +1,2 @@
+7a33afcd293 Fix caching of internal-only variables (#2434)
 397387a7913 Skip internal-only variables for unprivileged users (#2433)
