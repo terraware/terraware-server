@@ -1,1 +1,1 @@
-1e23af59784 SW-4674 Added user deletion for super admins on the admin UI (#2430)
+397387a7913 Skip internal-only variables for unprivileged users (#2433)
