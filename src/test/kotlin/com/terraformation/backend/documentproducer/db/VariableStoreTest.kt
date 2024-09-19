@@ -13,6 +13,7 @@ import com.terraformation.backend.documentproducer.model.TableVariable
 import com.terraformation.backend.documentproducer.model.TextVariable
 import com.terraformation.backend.documentproducer.model.Variable
 import com.terraformation.backend.mockUser
+import io.mockk.every
 import java.math.BigDecimal
 import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -359,6 +360,48 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
               replacesVariableId = oldVariableId))
 
       assertEquals(emptyList<Variable>(), store.fetchDeliverableVariables(oldDeliverableId))
+    }
+
+    @Test
+    fun `does not return internal-only variables if the user lacks permission`() {
+      val stableId = "${UUID.randomUUID()}"
+
+      insertModule()
+      val deliverableId = insertDeliverable()
+      val publicVariableId =
+          insertNumberVariable(
+              insertVariable(
+                  type = VariableType.Number,
+                  deliverableId = deliverableId,
+                  stableId = "$stableId-1"))
+      insertNumberVariable(
+          insertVariable(
+              type = VariableType.Number,
+              deliverableId = deliverableId,
+              stableId = "$stableId-2",
+              internalOnly = true))
+
+      every { user.canReadInternalOnlyVariables() } returns false
+
+      val expected =
+          listOf(
+              NumberVariable(
+                  base =
+                      BaseVariableProperties(
+                          deliverableId = deliverableId,
+                          deliverablePosition = 1,
+                          id = publicVariableId,
+                          isRequired = false,
+                          manifestId = null,
+                          name = "Variable 1",
+                          position = 0,
+                          stableId = "$stableId-1",
+                      ),
+                  decimalPlaces = 0,
+                  minValue = null,
+                  maxValue = null))
+
+      assertEquals(expected, store.fetchDeliverableVariables(deliverableId))
     }
   }
 

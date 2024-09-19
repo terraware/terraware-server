@@ -132,7 +132,7 @@ class VariableStore(
                   .where(replacementVariables.REPLACES_VARIABLE_ID.eq(ID)))
           .groupBy(STABLE_ID)
           .fetch()
-          .map { fetchVariable(it[DSL.max(ID)]!!) }
+          .mapNotNull { fetchVariable(it[DSL.max(ID)]!!) }
           .sortedBy { it.deliverablePosition }
     }
   }
