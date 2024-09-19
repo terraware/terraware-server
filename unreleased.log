@@ -1,2 +1,1 @@
-7a33afcd293 Fix caching of internal-only variables (#2434)
-397387a7913 Skip internal-only variables for unprivileged users (#2433)
+3b39285f8d0 SW-5884 Search fields for monitoring plot coordinates (#2431)
