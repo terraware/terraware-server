@@ -7,6 +7,7 @@ import com.terraformation.backend.search.field.AgeField
 import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.BigDecimalField
 import com.terraformation.backend.search.field.BooleanField
+import com.terraformation.backend.search.field.CoordinateField
 import com.terraformation.backend.search.field.DateField
 import com.terraformation.backend.search.field.DoubleField
 import com.terraformation.backend.search.field.EnumField
@@ -231,6 +232,13 @@ abstract class SearchTable {
 
   fun booleanField(fieldName: String, databaseField: Field<Boolean?>) =
       BooleanField(fieldName, databaseField, this)
+
+  fun coordinateField(
+      fieldName: String,
+      databaseField: Field<Geometry?>,
+      vertexIndex: Int,
+      axis: CoordinateField.Companion.Axis
+  ) = CoordinateField(fieldName, databaseField, vertexIndex, axis, this, true, true)
 
   fun dateField(fieldName: String, databaseField: TableField<*, LocalDate?>) =
       DateField(fieldName, databaseField, this)
