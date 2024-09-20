@@ -120,16 +120,6 @@ class VariableValueStore(
         .fetchOne(DSL.max(VARIABLE_VALUES.ID))
   }
 
-  /** Returns a project's highest value ID, by variable * */
-  fun fetchMaxValueId(projectId: ProjectId, variableId: VariableId): VariableValueId? {
-    return dslContext
-        .select(DSL.max(VARIABLE_VALUES.ID))
-        .from(VARIABLE_VALUES)
-        .where(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
-        .and(VARIABLE_VALUES.VARIABLE_ID.eq(variableId))
-        .fetchOne(DSL.max(VARIABLE_VALUES.ID))
-  }
-
   fun fetchOneById(valueId: VariableValueId): ExistingValue {
     val projectId = fetchProjectId(valueId)
     val values = listValues(projectId, valueId, valueId)
@@ -160,33 +150,17 @@ class VariableValueStore(
       projectId: ProjectId,
       deliverableId: DeliverableId? = null,
       minValueId: VariableValueId? = null,
-      maxValueId: VariableValueId? = null
+      maxValueId: VariableValueId? = null,
+      variableIds: Collection<VariableId>? = null,
+      includeDeletedValues: Boolean = minValueId != null,
   ): List<ExistingValue> {
-    val includeDeletedValues = minValueId != null
     val conditions =
         listOfNotNull(
             VARIABLE_VALUES.PROJECT_ID.eq(projectId),
             deliverableId?.let { VARIABLES.DELIVERABLE_ID.eq(it) },
             minValueId?.let { VARIABLE_VALUES.ID.ge(it) },
             maxValueId?.let { VARIABLE_VALUES.ID.le(it) },
-        )
-
-    return fetchByConditions(conditions, includeDeletedValues)
-  }
-
-  /**
-   * Returns a single project's values for a list of variable IDs, useful for getting injected
-   * variable values
-   */
-  fun listValues(
-      projectId: ProjectId,
-      variableIds: Collection<VariableId>,
-      includeDeletedValues: Boolean = true
-  ): List<ExistingValue> {
-    val conditions =
-        listOf(
-            VARIABLE_VALUES.PROJECT_ID.eq(projectId),
-            VARIABLE_VALUES.VARIABLE_ID.`in`(variableIds),
+            variableIds?.let { VARIABLE_VALUES.VARIABLE_ID.`in`(it) },
         )
 
     return fetchByConditions(conditions, includeDeletedValues)

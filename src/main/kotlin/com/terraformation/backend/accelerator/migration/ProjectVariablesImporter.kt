@@ -74,7 +74,9 @@ class ProjectVariablesImporter(
                         "Deal $dealName has not been imported yet; import the project setup sheet first.")
             val currentValues =
                 variableValueStore
-                    .listValues(application.projectId, variables.mapNotNull { it?.id })
+                    .listValues(
+                        projectId = application.projectId,
+                        variableIds = variables.mapNotNull { it?.id })
                     .associateBy { it.variableId }
 
             val operations =

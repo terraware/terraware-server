@@ -62,6 +62,12 @@ class ValuesController(
                   "saved document versions.")
       @RequestParam
       maxValueId: VariableValueId? = null,
+      @Parameter(
+          description =
+              "If specified, return the value of this variable. May be specified more than once " +
+                  "to return values for multiple variables.")
+      @RequestParam
+      variableId: List<VariableId>? = null,
   ): ListVariableValuesResponsePayload {
     val currentMax = variableValueStore.fetchMaxValueId(projectId) ?: VariableValueId(0)
     val nextValueId = VariableValueId(currentMax.value + 1)
@@ -71,9 +77,15 @@ class ValuesController(
     // the same time this endpoint is executing.
     val effectiveMax = maxValueId ?: currentMax
     val valuesByVariableId =
-        variableValueStore.listValues(projectId, deliverableId, minValueId, effectiveMax).groupBy {
-          it.variableId to it.rowValueId
-        }
+        variableValueStore
+            .listValues(
+                projectId = projectId,
+                deliverableId = deliverableId,
+                minValueId = minValueId,
+                maxValueId = effectiveMax,
+                variableIds = variableId?.ifEmpty { null },
+            )
+            .groupBy { it.variableId to it.rowValueId }
 
     val workflowDetailsByVariableId = variableWorkflowStore.fetchCurrentForProject(projectId)
 

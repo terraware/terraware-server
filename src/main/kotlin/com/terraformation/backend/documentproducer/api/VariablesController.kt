@@ -24,6 +24,7 @@ import com.terraformation.backend.documentproducer.model.TableVariable
 import com.terraformation.backend.documentproducer.model.TextVariable
 import com.terraformation.backend.documentproducer.model.Variable
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
@@ -40,21 +41,30 @@ class VariablesController(
     private val variableStore: VariableStore,
 ) {
   @Operation(
-      summary =
-          "List the variables, optionally filtered by a given manifest or deliverable. " +
-              "Variables returned for a manifest include all section hierarchies and variables " +
+      summary = "List the available variables, optionally filtered by a document or deliverable.",
+      description =
+          "Variables returned for a document include all section hierarchies and variables " +
               "injected into section text.")
   @GetMapping
   fun listVariables(
       @RequestParam deliverableId: DeliverableId?,
-      @RequestParam documentId: DocumentId?
+      @RequestParam documentId: DocumentId?,
+      @Parameter(
+          description =
+              "If specified, return the definition of a specific variable. May be specified more " +
+                  "than once to return multiple variables. deliverableId and documentId are " +
+                  "ignored if this is specified.")
+      @RequestParam
+      variableId: List<VariableId>?,
   ): ListVariablesResponsePayload {
     if (deliverableId != null && documentId != null) {
       throw BadRequestException("Only Deliverable ID or Document ID can be provided, not both.")
     }
 
     val variables =
-        if (deliverableId != null) {
+        if (!variableId.isNullOrEmpty()) {
+          variableId.distinct().mapNotNull { variableStore.fetchVariableOrNull(it) }
+        } else if (deliverableId != null) {
           variableStore.fetchDeliverableVariables(deliverableId)
         } else if (documentId != null) {
           variableStore.fetchManifestVariables(documentId) +
