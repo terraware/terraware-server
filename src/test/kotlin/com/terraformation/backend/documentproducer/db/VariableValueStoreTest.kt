@@ -358,7 +358,10 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         store.updateValues(listOf(DeleteValueOperation(inserted.projectId, row0Id)))
 
         val updatedValues =
-            store.listValues(inserted.projectId, listOf(tableVariableId, columnVariableId), false)
+            store.listValues(
+                projectId = inserted.projectId,
+                variableIds = listOf(tableVariableId, columnVariableId),
+                includeDeletedValues = false)
         assertEquals(emptyList<ExistingValue>(), updatedValues)
       }
     }

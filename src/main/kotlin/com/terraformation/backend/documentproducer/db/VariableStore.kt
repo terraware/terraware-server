@@ -109,7 +109,8 @@ class VariableStore(
    *   children.
    */
   fun fetchOneVariable(variableId: VariableId, manifestId: VariableManifestId? = null): Variable {
-    return fetchVariable(variableId, manifestId) ?: throw VariableNotFoundException(variableId)
+    return fetchVariableOrNull(variableId, manifestId)
+        ?: throw VariableNotFoundException(variableId)
   }
 
   fun fetchByStableId(stableId: String): Variable? =
@@ -121,7 +122,7 @@ class VariableStore(
             .orderBy(ID.desc())
             .limit(1)
             .fetchOne(VARIABLES.ID)
-            ?.let { fetchVariable(it) }
+            ?.let { fetchVariableOrNull(it) }
       }
 
   fun fetchDeliverableVariables(deliverableId: DeliverableId): List<Variable> {
@@ -151,7 +152,7 @@ class VariableStore(
                   .where(replacementVariables.REPLACES_VARIABLE_ID.eq(ID)))
           .groupBy(STABLE_ID)
           .fetch()
-          .mapNotNull { fetchVariable(it[DSL.max(ID)]!!) }
+          .mapNotNull { fetchVariableOrNull(it[DSL.max(ID)]!!) }
           .sortedBy { it.deliverablePosition }
     }
   }
@@ -175,7 +176,7 @@ class VariableStore(
                   .and(VARIABLE_SECTIONS.PARENT_VARIABLE_ID.isNotNull))
           .orderBy(POSITION)
           .fetch()
-          .mapNotNull { fetchVariable(it[VARIABLE_ID]!!, it[VARIABLE_MANIFEST_ID]!!) }
+          .mapNotNull { fetchVariableOrNull(it[VARIABLE_ID]!!, it[VARIABLE_MANIFEST_ID]!!) }
     }
   }
 
@@ -201,7 +202,7 @@ class VariableStore(
                   .and(VARIABLE_SECTIONS.PARENT_VARIABLE_ID.isNotNull))
           .orderBy(POSITION)
           .fetch(VARIABLE_ID.asNonNullable())
-          .mapNotNull { fetchVariable(it, manifestId) }
+          .mapNotNull { fetchVariableOrNull(it, manifestId) }
     }
   }
 
@@ -224,7 +225,7 @@ class VariableStore(
                   .where(VARIABLE_ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
           .orderBy(POSITION)
           .fetch(VARIABLE_ID.asNonNullable())
-          .mapNotNull { fetchVariable(it, manifestId) }
+          .mapNotNull { fetchVariableOrNull(it, manifestId) }
     }
   }
 
@@ -245,7 +246,7 @@ class VariableStore(
                   .where(ID.eq(VARIABLE_TABLE_COLUMNS.VARIABLE_ID)))
           .groupBy(STABLE_ID)
           .fetch(DSL.max(ID))
-          .mapNotNull { variableId -> variableId?.let { fetchVariable(it) } }
+          .mapNotNull { variableId -> variableId?.let { fetchVariableOrNull(it) } }
     }
   }
 
@@ -271,7 +272,7 @@ class VariableStore(
         .orderBy(
             VARIABLE_VALUES.VARIABLE_ID, VARIABLE_VALUES.LIST_POSITION, VARIABLE_VALUES.ID.desc())
         .fetchSet(VARIABLE_SECTION_VALUES.USED_VARIABLE_ID.asNonNullable())
-        .mapNotNull { fetchVariable(it) }
+        .mapNotNull { fetchVariableOrNull(it) }
   }
 
   fun importVariable(variable: VariablesRow): VariableId {
@@ -346,7 +347,7 @@ class VariableStore(
   }
 
   /** Returns variable if found. */
-  private fun fetchVariable(
+  fun fetchVariableOrNull(
       variableId: VariableId,
       manifestId: VariableManifestId? = null
   ): Variable? {

@@ -75,7 +75,7 @@ class ApplicationVariableValuesFetcher(
 
     val valuesByStableId: Map<String, ExistingValue> =
         variableValueStore
-            .listValues(projectId, variablesById.keys)
+            .listValues(projectId = projectId, variableIds = variablesById.keys)
             .mapNotNull { value ->
               val stableId = variablesById[value.variableId]?.stableId
               if (stableId != null) {
