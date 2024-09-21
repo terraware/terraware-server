@@ -9,6 +9,8 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.docprod.VariableWorkflowStatus
+import com.terraformation.backend.documentproducer.event.CompletedSectionVariableUpdatedEvent
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
 import com.terraformation.backend.documentproducer.model.AppendValueOperation
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
@@ -543,6 +545,83 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         store.writeValue(NewImageValue(newValueProps(variableId), ImageValueDetails("", fileId)))
         eventPublisher.assertEventPublished(
             VariableValueUpdatedEvent(inserted.projectId, variableId))
+      }
+
+      @Test
+      fun `publishes events for child and parents if a variable referenced in a completed section is written`() {
+        insertDocumentTemplate()
+        insertVariableManifest()
+        val documentId = insertDocument()
+        val topSectionVariableId = insertVariableManifestEntry(insertSectionVariable())
+        val middleSectionVariableId =
+            insertVariableManifestEntry(insertSectionVariable(parentId = topSectionVariableId))
+        val childSectionVariableId =
+            insertVariableManifestEntry(insertSectionVariable(parentId = middleSectionVariableId))
+        val variableId1 = insertTextVariable()
+        val variableId2 = insertTextVariable()
+
+        insertSectionValue(childSectionVariableId, listPosition = 0, usedVariableId = variableId1)
+        insertSectionValue(childSectionVariableId, listPosition = 1, usedVariableId = variableId2)
+        insertVariableWorkflowHistory(
+            variableId = childSectionVariableId, status = VariableWorkflowStatus.Complete)
+
+        store.updateValues(
+            listOf(
+                AppendValueOperation(NewTextValue(newValueProps(variableId1), "new 1")),
+                AppendValueOperation(NewTextValue(newValueProps(variableId2), "new 2"))))
+
+        eventPublisher.assertEventPublished(
+            CompletedSectionVariableUpdatedEvent(
+                documentId, inserted.projectId, childSectionVariableId, childSectionVariableId),
+            "Event for child section")
+        eventPublisher.assertEventPublished(
+            CompletedSectionVariableUpdatedEvent(
+                documentId, inserted.projectId, childSectionVariableId, middleSectionVariableId),
+            "Event for middle section")
+        eventPublisher.assertEventPublished(
+            CompletedSectionVariableUpdatedEvent(
+                documentId, inserted.projectId, childSectionVariableId, topSectionVariableId),
+            "Event for top section")
+      }
+
+      @Test
+      fun `does not publish event if a variable previously referenced by a completed section is written`() {
+        insertDocumentTemplate()
+        insertVariableManifest()
+        insertDocument()
+        val sectionVariableId = insertVariableManifestEntry(insertSectionVariable())
+        val variableId1 = insertTextVariable()
+        val variableId2 = insertTextVariable()
+
+        insertSectionValue(sectionVariableId, listPosition = 0, usedVariableId = variableId1)
+        insertSectionValue(sectionVariableId, listPosition = 0, usedVariableId = variableId2)
+        insertVariableWorkflowHistory(
+            variableId = sectionVariableId, status = VariableWorkflowStatus.Complete)
+
+        store.updateValues(
+            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId1), "new"))))
+
+        eventPublisher.assertEventNotPublished<CompletedSectionVariableUpdatedEvent>()
+      }
+
+      @Test
+      fun `does not publish event if a variable referenced by a previously-completed section is written`() {
+        insertDocumentTemplate()
+        insertVariableManifest()
+        insertDocument()
+        val sectionVariableId = insertVariableManifestEntry(insertSectionVariable())
+        val variableId = insertTextVariable()
+
+        insertSectionValue(sectionVariableId, listPosition = 0, usedVariableId = variableId)
+        insertVariableWorkflowHistory(
+            variableId = sectionVariableId, status = VariableWorkflowStatus.Complete)
+        insertVariableWorkflowHistory(
+            variableId = sectionVariableId, status = VariableWorkflowStatus.InReview)
+
+        store.updateValues(
+            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new 1"))))
+
+        eventPublisher.assertEventNotPublished<CompletedSectionVariableUpdatedEvent>()
       }
     }
   }
