@@ -1,3 +1,5 @@
+333f92e2ee5 Update dependency com.google.apis:google-api-services-drive to v3-rev20240914-2.0.0 (#2440)
+ed57ed7161e Update plugin org.springframework.boot to v3.3.4 (#2439)
 f402bfc28a2 Updated translations from Phrase (#2437)
 0bb25c67680 SW-6052 Support getting specific variables (#2436)
 0477e776f57 SW-5884 Add observation search tables (#2432)
