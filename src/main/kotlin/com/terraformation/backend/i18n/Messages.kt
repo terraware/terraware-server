@@ -351,6 +351,19 @@ class Messages {
           title = getMessage("notification.report.created.app.title", "$year", "$quarter"),
           body = getMessage("notification.report.created.app.body", "$year", "$quarter"))
 
+  fun completedSectionVariableUpdated(
+      documentName: String,
+      sectionName: String
+  ): NotificationMessage =
+      NotificationMessage(
+          title = getMessage("notification.document.completedSectionVariableUpdated.app.title"),
+          body =
+              getMessage(
+                  "notification.document.completedSectionVariableUpdated.app.body",
+                  documentName,
+                  sectionName),
+      )
+
   fun historyAccessionCreated() = getMessage("historyAccessionCreated")
 
   fun historyAccessionQuantityUpdated(newQuantity: SeedQuantityModel) =

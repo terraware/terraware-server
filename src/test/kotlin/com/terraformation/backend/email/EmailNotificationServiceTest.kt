@@ -54,6 +54,11 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
+import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.DocumentStatus
+import com.terraformation.backend.db.docprod.DocumentTemplateId
+import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -64,6 +69,13 @@ import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
+import com.terraformation.backend.documentproducer.db.DocumentStore
+import com.terraformation.backend.documentproducer.db.VariableOwnerStore
+import com.terraformation.backend.documentproducer.db.VariableStore
+import com.terraformation.backend.documentproducer.event.CompletedSectionVariableUpdatedEvent
+import com.terraformation.backend.documentproducer.model.BaseVariableProperties
+import com.terraformation.backend.documentproducer.model.ExistingDocumentModel
+import com.terraformation.backend.documentproducer.model.SectionVariable
 import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.email.model.ObservationNotScheduled
 import com.terraformation.backend.i18n.Locales
@@ -128,6 +140,7 @@ internal class EmailNotificationServiceTest {
   private val config: TerrawareServerConfig = mockk()
   private val deliverableStore: DeliverableStore = mockk()
   private val deviceStore: DeviceStore = mockk()
+  private val documentStore: DocumentStore = mockk()
   private val facilityStore: FacilityStore = mockk()
   private val organizationStore: OrganizationStore = mockk()
   private val parentStore: ParentStore = mockk()
@@ -140,6 +153,8 @@ internal class EmailNotificationServiceTest {
   private val user: IndividualUser = mockk()
   private val userInternalInterestsStore: UserInternalInterestsStore = mockk()
   private val userStore: UserStore = mockk()
+  private val variableOwnerStore: VariableOwnerStore = mockk()
+  private val variableStore: VariableStore = mockk()
 
   private val webAppUrls = WebAppUrls(config, dummyKeycloakInfo())
 
@@ -160,6 +175,7 @@ internal class EmailNotificationServiceTest {
           config,
           deliverableStore,
           deviceStore,
+          documentStore,
           emailService,
           facilityStore,
           organizationStore,
@@ -171,6 +187,8 @@ internal class EmailNotificationServiceTest {
           systemUser,
           userInternalInterestsStore,
           userStore,
+          variableOwnerStore,
+          variableStore,
           webAppUrls)
 
   private val organization =
@@ -275,11 +293,42 @@ internal class EmailNotificationServiceTest {
           type = DeliverableType.Questions,
       )
 
+  private val document =
+      ExistingDocumentModel(
+          createdBy = UserId(1),
+          createdTime = Instant.EPOCH,
+          documentTemplateId = DocumentTemplateId(1),
+          id = DocumentId(1),
+          modifiedBy = UserId(1),
+          modifiedTime = Instant.EPOCH,
+          name = "My Document",
+          ownedBy = UserId(1),
+          projectId = project.id,
+          projectName = project.name,
+          status = DocumentStatus.Ready,
+          variableManifestId = VariableManifestId(1),
+      )
+
+  private val sectionVariable =
+      SectionVariable(
+          BaseVariableProperties(
+              id = VariableId(1),
+              name = "Overview",
+              manifestId = VariableManifestId(1),
+              position = 0,
+              stableId = "stable",
+          ),
+          renderHeading = false)
+
   private val organizationRecipients = setOf("org1@terraware.io", "org2@terraware.io")
 
   private val tfContactUserId = UserId(5)
   private val tfContactEmail = "tfcontact@terraformation.com"
   private val tfContactUser = userForEmail(tfContactEmail)
+
+  private val sectionOwnerUserId = UserId(6)
+  private val sectionOwnerEmail = "owner@terraformation.com"
+  private val sectionOwnerUser = userForEmail(sectionOwnerEmail)
 
   private val mimeMessageSlot = slot<MimeMessage>()
   private val sentMessages = mutableMapOf<String, MutableList<MimeMessage>>()
@@ -304,7 +353,15 @@ internal class EmailNotificationServiceTest {
     every { adminUser.userId } returns UserId(1)
     every { automationStore.fetchOneById(automation.id) } returns automation
     every { deliverableStore.fetchDeliverableCategory(any()) } returns deliverableCategory
+    every {
+      deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverable.deliverableId)
+    } returns listOf(deliverable)
+    every {
+      deliverableStore.fetchDeliverableSubmissions(
+          deliverableId = deliverable.deliverableId, projectId = deliverable.projectId)
+    } returns listOf(deliverable)
     every { deviceStore.fetchOneById(devicesRow.id!!) } returns devicesRow
+    every { documentStore.fetchOneById(document.id) } returns document
     every { facilityStore.fetchOneById(facility.id) } returns facility
     every { organizationStore.fetchOneById(organization.id) } returns organization
     every { parentStore.getFacilityId(accessionId) } returns facility.id
@@ -337,15 +394,11 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchOneById(adminUser.userId) } returns adminUser
     every { userStore.fetchOneById(user.userId) } returns user
     every { userStore.fetchOneById(tfContactUserId) } returns tfContactUser
+    every { userStore.fetchOneById(sectionOwnerUserId) } returns sectionOwnerUser
     every { userStore.fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), any()) } returns
         listOf(acceleratorUser)
-    every {
-      deliverableStore.fetchDeliverableSubmissions(deliverableId = deliverable.deliverableId)
-    } returns listOf(deliverable)
-    every {
-      deliverableStore.fetchDeliverableSubmissions(
-          deliverableId = deliverable.deliverableId, projectId = deliverable.projectId)
-    } returns listOf(deliverable)
+    every { variableStore.fetchOneVariable(sectionVariable.id, sectionVariable.manifestId) } returns
+        sectionVariable
 
     every { sender.send(capture(mimeMessageSlot)) } answers
         { answer ->
@@ -1072,6 +1125,37 @@ internal class EmailNotificationServiceTest {
             SubmissionStatus.InReview,
             SubmissionStatus.NeedsTranslation,
             SubmissionId(1))
+
+    service.on(event)
+
+    assertRecipientsEqual(emptySet())
+  }
+
+  @Test
+  fun `completedSectionVariableUpdated should notify section owner`() {
+    every { variableOwnerStore.fetchOwner(any(), any()) } returns sectionOwnerUserId
+
+    val event =
+        CompletedSectionVariableUpdatedEvent(
+            document.id, project.id, VariableId(-1), sectionVariable.id)
+
+    service.on(event)
+
+    assertSubjectContains("Variable edited")
+    assertBodyContains("A variable has been")
+
+    assertRecipientsEqual(setOf(sectionOwnerEmail))
+
+    assertIsEventListener<CompletedSectionVariableUpdatedEvent>(service)
+  }
+
+  @Test
+  fun `completedSectionVariableUpdated should not notify if section has no owner`() {
+    every { variableOwnerStore.fetchOwner(any(), any()) } returns null
+
+    val event =
+        CompletedSectionVariableUpdatedEvent(
+            DocumentId(1), project.id, VariableId(2), VariableId(3))
 
     service.on(event)
 

@@ -50,12 +50,17 @@ import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.NotificationsRow
+import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
+import com.terraformation.backend.documentproducer.db.DocumentStore
+import com.terraformation.backend.documentproducer.db.VariableOwnerStore
+import com.terraformation.backend.documentproducer.db.VariableStore
+import com.terraformation.backend.documentproducer.event.CompletedSectionVariableUpdatedEvent
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableStatusUpdatedEvent
 import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.email.WebAppUrls
@@ -115,6 +120,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var automationStore: AutomationStore
   private lateinit var deliverableStore: DeliverableStore
   private lateinit var deviceStore: DeviceStore
+  private lateinit var documentStore: DocumentStore
   private lateinit var facilityStore: FacilityStore
   private lateinit var moduleEventStore: ModuleEventStore
   private lateinit var moduleStore: ModuleStore
@@ -127,8 +133,10 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var speciesStore: SpeciesStore
   private lateinit var userInternalInterestsStore: UserInternalInterestsStore
   private lateinit var userStore: UserStore
-  private lateinit var service: AppNotificationService
+  private lateinit var variableOwnerStore: VariableOwnerStore
+  private lateinit var variableStore: VariableStore
   private lateinit var webAppUrls: WebAppUrls
+  private lateinit var service: AppNotificationService
 
   @BeforeEach
   fun setUp() {
@@ -157,6 +165,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     automationStore = AutomationStore(automationsDao, clock, dslContext, objectMapper, parentStore)
     deliverableStore = DeliverableStore(dslContext)
     deviceStore = DeviceStore(devicesDao)
+    documentStore =
+        DocumentStore(
+            clock, documentSavedVersionsDao, documentsDao, dslContext, documentTemplatesDao)
     facilityStore =
         FacilityStore(
             clock,
@@ -207,12 +218,27 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             publisher,
             usersDao,
         )
+    variableOwnerStore = VariableOwnerStore(dslContext)
+    variableStore =
+        VariableStore(
+            dslContext,
+            variableNumbersDao,
+            variablesDao,
+            variableSectionDefaultValuesDao,
+            variableSectionRecommendationsDao,
+            variableSectionsDao,
+            variableSelectsDao,
+            variableSelectOptionsDao,
+            variableTablesDao,
+            variableTableColumnsDao,
+            variableTextsDao)
     webAppUrls = WebAppUrls(config, dummyKeycloakInfo())
     service =
         AppNotificationService(
             automationStore,
             deliverableStore,
             deviceStore,
+            documentStore,
             dslContext,
             facilityStore,
             moduleEventStore,
@@ -227,6 +253,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             SystemUser(usersDao),
             userInternalInterestsStore,
             userStore,
+            variableOwnerStore,
+            variableStore,
             messages,
             webAppUrls)
 
@@ -879,6 +907,35 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `should store completed section variable updated notification`() {
+    insertDocumentTemplate()
+    insertVariableManifest()
+    val projectId = insertProject()
+    val documentId = insertDocument(name = "My Document")
+    val sectionVariableId =
+        insertVariableManifestEntry(
+            insertSectionVariable(insertVariable(type = VariableType.Section, name = "Overview")))
+    insertVariableOwner(ownedBy = user.userId)
+
+    every { messages.completedSectionVariableUpdated("My Document", "Overview") } returns
+        NotificationMessage("updated title", "updated body")
+
+    service.on(
+        CompletedSectionVariableUpdatedEvent(
+            documentId, projectId, sectionVariableId, sectionVariableId))
+
+    assertNotification(
+        type = NotificationType.CompletedSectionVariableUpdated,
+        title = "updated title",
+        body = "updated body",
+        localUrl = webAppUrls.document(documentId, sectionVariableId),
+        userId = user.userId,
+        organizationId = null)
+
+    assertIsEventListener<CompletedSectionVariableUpdatedEvent>(service)
+  }
+
+  @Test
   fun `is a listener for Module Event Starting event`() {
     assertIsEventListener<ModuleEventStartingEvent>(service)
   }
@@ -975,8 +1032,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     val actual = notificationsDao.findAll().map { it.copy(id = null) }
 
-    assertEquals(expected.size, actual.size)
     assertEquals(expectedWithDefaults.toSet(), actual.toSet())
+    assertEquals(expected.size, actual.size, "Number of notifications")
   }
 
   /** Asserts that only a single notification exists. */
