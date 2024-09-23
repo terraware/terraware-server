@@ -11,7 +11,6 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.RATE_LIMITED_EVENTS
 import com.terraformation.backend.mockUser
 import java.time.Duration
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class RateLimitedEventPublisherTest : DatabaseTest(), RunsAsUser {
@@ -34,10 +33,10 @@ class RateLimitedEventPublisherTest : DatabaseTest(), RunsAsUser {
     val event = TestEvent()
     val otherKeyEvent = TestEvent(UserId(2))
 
-    rateLimitedEventPublisher.publishOrDefer(otherKeyEvent)
+    rateLimitedEventPublisher.publishEvent(otherKeyEvent)
     eventPublisher.clear()
 
-    rateLimitedEventPublisher.publishOrDefer(event)
+    rateLimitedEventPublisher.publishEvent(event)
 
     eventPublisher.assertEventPublished(event)
   }
@@ -46,10 +45,10 @@ class RateLimitedEventPublisherTest : DatabaseTest(), RunsAsUser {
   fun `does not publish event immediately if another one has just been published`() {
     val event = TestEvent()
 
-    rateLimitedEventPublisher.publishOrDefer(event)
+    rateLimitedEventPublisher.publishEvent(event)
     eventPublisher.clear()
 
-    rateLimitedEventPublisher.publishOrDefer(event)
+    rateLimitedEventPublisher.publishEvent(event)
 
     eventPublisher.assertEventNotPublished<TestEvent>()
   }
@@ -58,12 +57,12 @@ class RateLimitedEventPublisherTest : DatabaseTest(), RunsAsUser {
   fun `publishes event immediately if previous one was longer ago than the minimum interval`() {
     val event = TestEvent()
 
-    rateLimitedEventPublisher.publishOrDefer(event)
+    rateLimitedEventPublisher.publishEvent(event)
     eventPublisher.clear()
 
     clock.instant += event.getMinimumInterval().plusSeconds(1)
 
-    rateLimitedEventPublisher.publishOrDefer(event)
+    rateLimitedEventPublisher.publishEvent(event)
 
     eventPublisher.assertEventPublished(event)
   }
@@ -75,12 +74,12 @@ class RateLimitedEventPublisherTest : DatabaseTest(), RunsAsUser {
     val event4 = TestEvent(data = 4)
     val combinedEvent2And4 = TestEvent(data = 6)
 
-    rateLimitedEventPublisher.publishOrDefer(event1)
+    rateLimitedEventPublisher.publishEvent(event1)
     eventPublisher.clear()
-    rateLimitedEventPublisher.publishOrDefer(event2)
+    rateLimitedEventPublisher.publishEvent(event2)
 
     clock.instant += event1.getMinimumInterval().minusSeconds(1)
-    rateLimitedEventPublisher.publishOrDefer(event4)
+    rateLimitedEventPublisher.publishEvent(event4)
 
     clock.instant += Duration.ofSeconds(1)
     rateLimitedEventPublisher.scanPendingEvents()
@@ -92,9 +91,9 @@ class RateLimitedEventPublisherTest : DatabaseTest(), RunsAsUser {
   fun `does not publish pending event until the minimum interval has elapsed`() {
     val event = TestEvent()
 
-    rateLimitedEventPublisher.publishOrDefer(event)
+    rateLimitedEventPublisher.publishEvent(event)
     eventPublisher.clear()
-    rateLimitedEventPublisher.publishOrDefer(event)
+    rateLimitedEventPublisher.publishEvent(event)
 
     clock.instant += event.getMinimumInterval().minusSeconds(1)
     rateLimitedEventPublisher.scanPendingEvents()
@@ -108,7 +107,7 @@ class RateLimitedEventPublisherTest : DatabaseTest(), RunsAsUser {
     eventPublisher.clear()
 
     clock.instant += event.getMinimumInterval().minusSeconds(1)
-    rateLimitedEventPublisher.publishOrDefer(event)
+    rateLimitedEventPublisher.publishEvent(event)
 
     eventPublisher.assertNoEventsPublished("Published event before second interval")
 
@@ -122,7 +121,7 @@ class RateLimitedEventPublisherTest : DatabaseTest(), RunsAsUser {
   fun `cleans up rate limit records once they are no longer relevant`() {
     val event = TestEvent()
 
-    rateLimitedEventPublisher.publishOrDefer(event)
+    rateLimitedEventPublisher.publishEvent(event)
     eventPublisher.clear()
 
     clock.instant += event.getMinimumInterval()
@@ -130,8 +129,23 @@ class RateLimitedEventPublisherTest : DatabaseTest(), RunsAsUser {
 
     eventPublisher.assertNoEventsPublished()
 
-    assertEquals(
-        emptyList<Any>(), dslContext.selectFrom(RATE_LIMITED_EVENTS).fetch(), "Rate limit records")
+    assertTableEmpty(RATE_LIMITED_EVENTS)
+  }
+
+  @Test
+  fun `publishes non-rate-limited events immediately`() {
+    val event = "an object that does not implement RateLimitedEvent"
+
+    rateLimitedEventPublisher.publishEvent(event)
+
+    eventPublisher.assertEventPublished(event, "Initial event")
+    eventPublisher.clear()
+
+    rateLimitedEventPublisher.publishEvent(event)
+
+    eventPublisher.assertEventPublished(event, "Second event")
+
+    assertTableEmpty(RATE_LIMITED_EVENTS)
   }
 
   data class TestEvent(

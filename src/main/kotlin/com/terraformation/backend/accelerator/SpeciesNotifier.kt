@@ -18,7 +18,7 @@ class SpeciesNotifier(
   /** Schedules a "species added" notification when a new species is added to a project. */
   @EventListener
   fun on(event: ParticipantProjectSpeciesAddedEvent) {
-    rateLimitedEventPublisher.publishOrDefer(
+    rateLimitedEventPublisher.publishEvent(
         ParticipantProjectSpeciesAddedToProjectNotificationDueEvent(
             deliverableId = event.deliverableId,
             projectId = event.participantProjectSpecies.projectId,
@@ -36,7 +36,7 @@ class SpeciesNotifier(
           submissionStore.fetchMostRecentSpeciesDeliverableSubmission(event.projectId)
 
       if (deliverableSubmission != null) {
-        rateLimitedEventPublisher.publishOrDefer(
+        rateLimitedEventPublisher.publishEvent(
             ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
                 deliverableSubmission.deliverableId,
                 event.projectId,
