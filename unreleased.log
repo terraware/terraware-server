@@ -1,3 +1,4 @@
+de8a9fe0799 SW-6052 Fetch variables by stable ID (#2444)
 a8556bb4014 Update plugin dev.monosoul.jooq-docker to v6.1.6 (#2443)
 4c5c04e60d6 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.26.0 (#2442)
 333f92e2ee5 Update dependency com.google.apis:google-api-services-drive to v3-rev20240914-2.0.0 (#2440)
