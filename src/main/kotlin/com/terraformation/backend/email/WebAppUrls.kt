@@ -12,6 +12,8 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
+import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -229,6 +231,16 @@ class WebAppUrls(
     return UriBuilder.fromPath(
             "/accelerator/deliverables/${deliverableId.value}/submissions/${projectId.value}")
         .build()
+  }
+
+  // Section variable ID is unused for now but included in anticipation of being able to link
+  // directly to a section in a document.
+  fun fullDocument(documentId: DocumentId, sectionVariableId: VariableId?): URI {
+    return UriBuilder.fromUri(config.webAppUrl).path("/accelerator/documents/$documentId").build()
+  }
+
+  fun document(documentId: DocumentId, sectionVariableId: VariableId?): URI {
+    return UriBuilder.fromPath("/accelerator/documents/$documentId").build()
   }
 
   /** URL of the mobile app's page in the App Store. */

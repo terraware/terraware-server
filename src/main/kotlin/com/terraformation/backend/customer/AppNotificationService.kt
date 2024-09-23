@@ -38,6 +38,10 @@ import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
+import com.terraformation.backend.documentproducer.db.DocumentStore
+import com.terraformation.backend.documentproducer.db.VariableOwnerStore
+import com.terraformation.backend.documentproducer.db.VariableStore
+import com.terraformation.backend.documentproducer.event.CompletedSectionVariableUpdatedEvent
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableStatusUpdatedEvent
 import com.terraformation.backend.email.WebAppUrls
 import com.terraformation.backend.i18n.Messages
@@ -67,6 +71,7 @@ class AppNotificationService(
     private val automationStore: AutomationStore,
     private val deliverableStore: DeliverableStore,
     private val deviceStore: DeviceStore,
+    private val documentStore: DocumentStore,
     private val dslContext: DSLContext,
     private val facilityStore: FacilityStore,
     private val moduleEventStore: ModuleEventStore,
@@ -81,6 +86,8 @@ class AppNotificationService(
     private val systemUser: SystemUser,
     private val userInternalInterestsStore: UserInternalInterestsStore,
     private val userStore: UserStore,
+    private val variableOwnerStore: VariableOwnerStore,
+    private val variableStore: VariableStore,
     private val messages: Messages,
     private val webAppUrls: WebAppUrls,
 ) {
@@ -456,6 +463,30 @@ class AppNotificationService(
   @EventListener
   fun on(event: QuestionsDeliverableStatusUpdatedEvent) {
     notifyDeliverableStatusUpdated(event.projectId, event.deliverableId)
+  }
+
+  @EventListener
+  fun on(event: CompletedSectionVariableUpdatedEvent) {
+    systemUser.run {
+      val sectionOwnerUserId =
+          variableOwnerStore.fetchOwner(event.projectId, event.sectionVariableId)
+
+      if (sectionOwnerUserId != null) {
+        val document = documentStore.fetchOneById(event.documentId)
+        val project = projectStore.fetchOneById(event.projectId)
+        val sectionVariable =
+            variableStore.fetchOneVariable(event.sectionVariableId, document.variableManifestId)
+        val user = userStore.fetchOneById(sectionOwnerUserId)
+
+        insert(
+            NotificationType.CompletedSectionVariableUpdated,
+            user,
+            null,
+            { messages.completedSectionVariableUpdated(document.name, sectionVariable.name) },
+            webAppUrls.document(event.documentId, event.referencingSectionVariableId),
+            project.organizationId)
+      }
+    }
   }
 
   private fun notifyDeliverableStatusUpdated(projectId: ProjectId, deliverableId: DeliverableId) {

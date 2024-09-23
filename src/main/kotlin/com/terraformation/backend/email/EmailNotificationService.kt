@@ -40,8 +40,13 @@ import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
 import com.terraformation.backend.device.event.UnknownAutomationTriggeredEvent
+import com.terraformation.backend.documentproducer.db.DocumentStore
+import com.terraformation.backend.documentproducer.db.VariableOwnerStore
+import com.terraformation.backend.documentproducer.db.VariableStore
+import com.terraformation.backend.documentproducer.event.CompletedSectionVariableUpdatedEvent
 import com.terraformation.backend.email.model.AccessionDryingEnd
 import com.terraformation.backend.email.model.ApplicationSubmitted
+import com.terraformation.backend.email.model.CompletedSectionVariableUpdated
 import com.terraformation.backend.email.model.DeliverableReadyForReview
 import com.terraformation.backend.email.model.DeliverableStatusUpdated
 import com.terraformation.backend.email.model.DeviceUnresponsive
@@ -108,6 +113,7 @@ class EmailNotificationService(
     private val config: TerrawareServerConfig,
     private val deliverableStore: DeliverableStore,
     private val deviceStore: DeviceStore,
+    private val documentStore: DocumentStore,
     private val emailService: EmailService,
     private val facilityStore: FacilityStore,
     private val organizationStore: OrganizationStore,
@@ -119,6 +125,8 @@ class EmailNotificationService(
     private val systemUser: SystemUser,
     private val userInternalInterestsStore: UserInternalInterestsStore,
     private val userStore: UserStore,
+    private val variableOwnerStore: VariableOwnerStore,
+    private val variableStore: VariableStore,
     private val webAppUrls: WebAppUrls,
 ) {
   private val log = perClassLogger()
@@ -666,6 +674,38 @@ class EmailNotificationService(
             organizationName = organization.name,
             plantingSiteName = event.plantingSiteEdit.existingModel.name,
         ))
+  }
+
+  @EventListener
+  fun on(event: CompletedSectionVariableUpdatedEvent) {
+    systemUser.run {
+      val sectionOwnerUserId =
+          variableOwnerStore.fetchOwner(event.projectId, event.sectionVariableId)
+
+      if (sectionOwnerUserId != null) {
+        val document = documentStore.fetchOneById(event.documentId)
+        val project = projectStore.fetchOneById(event.projectId)
+        val sectionVariable =
+            variableStore.fetchOneVariable(event.sectionVariableId, document.variableManifestId)
+
+        val user =
+            userStore.fetchOneById(sectionOwnerUserId) as? IndividualUser
+                ?: throw IllegalArgumentException("Section owner must be an individual user")
+        emailService.sendUserNotification(
+            user,
+            CompletedSectionVariableUpdated(
+                config = config,
+                documentName = document.name,
+                documentUrl =
+                    webAppUrls
+                        .fullDocument(event.documentId, event.referencingSectionVariableId)
+                        .toString(),
+                projectName = project.name,
+                sectionName = sectionVariable.name,
+            ),
+            false)
+      }
+    }
   }
 
   @EventListener

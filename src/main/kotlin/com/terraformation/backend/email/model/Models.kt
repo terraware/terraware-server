@@ -469,3 +469,14 @@ class PlantingSiteMapEdited(
   override val templateDir: String
     get() = "plantingSite/mapEdited"
 }
+
+class CompletedSectionVariableUpdated(
+    config: TerrawareServerConfig,
+    val documentName: String,
+    val documentUrl: String,
+    val projectName: String,
+    val sectionName: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "document/completedSectionVariableUpdated"
+}

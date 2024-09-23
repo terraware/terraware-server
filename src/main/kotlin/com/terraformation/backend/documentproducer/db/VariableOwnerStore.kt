@@ -18,6 +18,19 @@ import org.jooq.DSLContext
 class VariableOwnerStore(
     private val dslContext: DSLContext,
 ) {
+  fun fetchOwner(projectId: ProjectId, variableId: VariableId): UserId? {
+    requirePermissions { readInternalVariableWorkflowDetails(projectId) }
+
+    return with(VARIABLE_OWNERS) {
+      dslContext
+          .select(OWNED_BY)
+          .from(VARIABLE_OWNERS)
+          .where(PROJECT_ID.eq(projectId))
+          .and(VARIABLE_ID.eq(variableId))
+          .fetchOne(OWNED_BY)
+    }
+  }
+
   fun listOwners(projectId: ProjectId): Map<VariableId, UserId> {
     requirePermissions { readInternalVariableWorkflowDetails(projectId) }
 
