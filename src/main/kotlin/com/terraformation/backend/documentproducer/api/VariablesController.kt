@@ -51,9 +51,16 @@ class VariablesController(
       @RequestParam documentId: DocumentId?,
       @Parameter(
           description =
+              "If specified, return the definition of a specific variable given its stable ID. " +
+                  "May be specified more than once to return multiple variables. deliverableId " +
+                  "and documentId are ignored if this is specified.")
+      @RequestParam
+      stableId: List<String>?,
+      @Parameter(
+          description =
               "If specified, return the definition of a specific variable. May be specified more " +
-                  "than once to return multiple variables. deliverableId and documentId are " +
-                  "ignored if this is specified.")
+                  "than once to return multiple variables. deliverableId, documentId, and " +
+                  "stableId are ignored if this is specified.")
       @RequestParam
       variableId: List<VariableId>?,
   ): ListVariablesResponsePayload {
@@ -64,6 +71,8 @@ class VariablesController(
     val variables =
         if (!variableId.isNullOrEmpty()) {
           variableId.distinct().mapNotNull { variableStore.fetchVariableOrNull(it) }
+        } else if (!stableId.isNullOrEmpty()) {
+          stableId.distinct().mapNotNull { variableStore.fetchByStableId(it) }
         } else if (deliverableId != null) {
           variableStore.fetchDeliverableVariables(deliverableId)
         } else if (documentId != null) {

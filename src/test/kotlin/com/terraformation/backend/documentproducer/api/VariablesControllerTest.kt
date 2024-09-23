@@ -28,11 +28,13 @@ class VariablesControllerTest : ControllerIntegrationTest() {
   inner class ListVariables {
     private fun path(
         documentId: DocumentId? = inserted.documentId,
-        variableIds: List<VariableId>? = null
+        stableIds: List<String>? = null,
+        variableIds: List<VariableId>? = null,
     ): String {
       val builder = UriBuilder.fromPath("/api/v1/document-producer/variables")
 
       documentId?.let { builder.queryParam("documentId", it) }
+      stableIds?.forEach { builder.queryParam("stableId", it) }
       variableIds?.forEach { builder.queryParam("variableId", it) }
 
       return builder.build().toString()
@@ -572,6 +574,71 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                           // Specify the same variable twice; should only be returned once.
                           externalVariableId2,
                           internalVariableId)))
+          .andExpectJson(
+              """
+                {
+                  "variables": [
+                    {
+                      "deliverableId": $deliverableId,
+                      "id": $externalVariableId1,
+                      "internalOnly": false,
+                      "isList": false,
+                      "isRequired": false,
+                      "name": "Variable 1",
+                      "position": 0,
+                      "stableId": "$stableIdPrefix-1",
+                      "textType": "SingleLine",
+                      "type": "Text"
+                    },
+                    {
+                      "id": $externalVariableId2,
+                      "internalOnly": false,
+                      "isList": false,
+                      "isRequired": false,
+                      "name": "Variable 2",
+                      "position": 0,
+                      "stableId": "$stableIdPrefix-2",
+                      "textType": "SingleLine",
+                      "type": "Text"
+                    }
+                  ],
+                  "status": "ok"
+                }
+              """
+                  .trimIndent(),
+              strict = true)
+    }
+
+    @Test
+    fun `returns definitions of specific variables by stable ID if requested`() {
+      val stableIdPrefix = "${UUID.randomUUID()}"
+
+      insertModule()
+      val deliverableId = insertDeliverable()
+      val externalVariableId1 =
+          insertTextVariable(deliverableId = deliverableId, stableId = "$stableIdPrefix-1")
+      val externalVariableId2 = insertTextVariable(stableId = "$stableIdPrefix-2")
+
+      // Internal-only variable shouldn't be returned because user doesn't have permission.
+      insertTextVariable(
+          insertVariable(
+              internalOnly = true, stableId = "$stableIdPrefix-3", type = VariableType.Text))
+
+      // Additional variable in deliverable, but we won't request it.
+      insertTextVariable(deliverableId = deliverableId, stableId = "$stableIdPrefix-4")
+
+      mockMvc
+          .get(
+              path(
+                  documentId = null,
+                  stableIds =
+                      listOf(
+                          "$stableIdPrefix-1",
+                          "$stableIdPrefix-2",
+                          // Specify the same variable twice; should only be returned once.
+                          "$stableIdPrefix-2",
+                          "$stableIdPrefix-3",
+                      )))
           .andExpectJson(
               """
                 {
