@@ -29,7 +29,6 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
-  private val eventPublisher = TestEventPublisher()
 
   private val variableStore: VariableStore by lazy {
     VariableStore(
@@ -49,7 +48,7 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
     VariableValueStore(
         clock,
         dslContext,
-        eventPublisher,
+        TestEventPublisher(),
         variableImageValuesDao,
         variableLinkValuesDao,
         variablesDao,

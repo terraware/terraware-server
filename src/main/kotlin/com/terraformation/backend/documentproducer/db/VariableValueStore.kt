@@ -10,6 +10,7 @@ import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.db.docprod.tables.daos.VariableImageValuesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableLinkValuesDao
 import com.terraformation.backend.db.docprod.tables.daos.VariableSectionValuesDao
@@ -28,12 +29,15 @@ import com.terraformation.backend.db.docprod.tables.references.VARIABLES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_IMAGE_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_LINK_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_MANIFEST_ENTRIES
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SECTIONS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SECTION_DEFAULT_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SECTION_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_SELECT_OPTION_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_TABLE_COLUMNS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUE_TABLE_ROWS
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_WORKFLOW_HISTORY
+import com.terraformation.backend.documentproducer.event.CompletedSectionVariableUpdatedEvent
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
 import com.terraformation.backend.documentproducer.model.AppendValueOperation
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
@@ -68,19 +72,19 @@ import com.terraformation.backend.documentproducer.model.UpdateValueOperation
 import com.terraformation.backend.documentproducer.model.ValueOperation
 import com.terraformation.backend.documentproducer.model.VariableValue
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
 import jakarta.inject.Named
 import java.net.URI
 import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
-import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class VariableValueStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
-    private val eventPublisher: ApplicationEventPublisher,
+    private val eventPublisher: RateLimitedEventPublisher,
     private val variableImageValuesDao: VariableImageValuesDao,
     private val variableLinkValuesDao: VariableLinkValuesDao,
     private val variablesDao: VariablesDao,
@@ -437,6 +441,7 @@ class VariableValueStore(
     val values = listValues(projectId, VariableValueId(maxValueIdBefore.value + 1), maxValueIdAfter)
 
     if (triggerWorkflows) {
+      notifyForCompletedSections(projectId, values)
       notifyForReview(projectId, values)
       updateStatus(projectId, values)
     }
@@ -931,6 +936,84 @@ class VariableValueStore(
 
       eventPublisher.publishEvent(
           QuestionsDeliverableSubmittedEvent(deliverableId, projectId, highestValuesByVariables))
+    }
+  }
+
+  private fun notifyForCompletedSections(
+      projectId: ProjectId,
+      values: List<ExistingValue>,
+  ) {
+    val updatedVariableIds = values.map { it.variableId }.toSet()
+
+    val currentWorkflowStatuses =
+        DSL.lateral(
+            DSL.select(VARIABLE_WORKFLOW_HISTORY.VARIABLE_WORKFLOW_STATUS_ID)
+                .distinctOn(
+                    VARIABLE_WORKFLOW_HISTORY.VARIABLE_ID, VARIABLE_WORKFLOW_HISTORY.PROJECT_ID)
+                .from(VARIABLE_WORKFLOW_HISTORY)
+                .where(VARIABLE_WORKFLOW_HISTORY.VARIABLE_ID.eq(VARIABLE_VALUES.VARIABLE_ID))
+                .and(VARIABLE_WORKFLOW_HISTORY.PROJECT_ID.eq(VARIABLE_VALUES.PROJECT_ID))
+                .orderBy(
+                    VARIABLE_WORKFLOW_HISTORY.VARIABLE_ID,
+                    VARIABLE_WORKFLOW_HISTORY.PROJECT_ID,
+                    VARIABLE_WORKFLOW_HISTORY.ID.desc()))
+    val currentWorkflowStatusField =
+        currentWorkflowStatuses.field(VARIABLE_WORKFLOW_HISTORY.VARIABLE_WORKFLOW_STATUS_ID)!!
+
+    val newerValuesTable = VARIABLE_VALUES.`as`("newer_values")
+
+    val childSectionEvents =
+        dslContext
+            .selectDistinct(VARIABLE_VALUES.VARIABLE_ID, DOCUMENTS.ID)
+            .from(VARIABLE_SECTION_VALUES)
+            .join(VARIABLE_VALUES)
+            .on(VARIABLE_SECTION_VALUES.VARIABLE_VALUE_ID.eq(VARIABLE_VALUES.ID))
+            .join(VARIABLE_MANIFEST_ENTRIES)
+            .on(VARIABLE_VALUES.VARIABLE_ID.eq(VARIABLE_MANIFEST_ENTRIES.VARIABLE_ID))
+            .join(DOCUMENTS)
+            .on(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(DOCUMENTS.VARIABLE_MANIFEST_ID))
+            .and(VARIABLE_VALUES.PROJECT_ID.eq(DOCUMENTS.PROJECT_ID))
+            .join(currentWorkflowStatuses)
+            .on(DSL.trueCondition())
+            .where(VARIABLE_SECTION_VALUES.USED_VARIABLE_ID.`in`(updatedVariableIds))
+            .and(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
+            .and(currentWorkflowStatusField.eq(VariableWorkflowStatus.Complete))
+            .andNotExists(
+                DSL.selectOne()
+                    .from(newerValuesTable)
+                    .where(VARIABLE_VALUES.VARIABLE_ID.eq(newerValuesTable.VARIABLE_ID))
+                    .and(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
+                    .and(VARIABLE_VALUES.LIST_POSITION.eq(newerValuesTable.LIST_POSITION))
+                    .and(VARIABLE_VALUES.ID.lt(newerValuesTable.ID)))
+            .fetch { record ->
+              CompletedSectionVariableUpdatedEvent(
+                  documentId = record[DOCUMENTS.ID]!!,
+                  projectId = projectId,
+                  referencingSectionVariableId = record[VARIABLE_VALUES.VARIABLE_ID]!!,
+                  sectionVariableId = record[VARIABLE_VALUES.VARIABLE_ID]!!,
+              )
+            }
+
+    // Publishes events for the parent sections, if any.
+    fun publishParentSectionEvents(event: CompletedSectionVariableUpdatedEvent) {
+      val parentSectionId =
+          dslContext
+              .select(VARIABLE_SECTIONS.PARENT_VARIABLE_ID)
+              .from(VARIABLE_SECTIONS)
+              .where(VARIABLE_SECTIONS.VARIABLE_ID.eq(event.sectionVariableId))
+              .fetchOne(VARIABLE_SECTIONS.PARENT_VARIABLE_ID)
+
+      if (parentSectionId != null) {
+        val parentEvent = event.copy(sectionVariableId = parentSectionId)
+
+        eventPublisher.publishEvent(parentEvent)
+        publishParentSectionEvents(parentEvent)
+      }
+    }
+
+    childSectionEvents.forEach { event ->
+      eventPublisher.publishEvent(event)
+      publishParentSectionEvents(event)
     }
   }
 
