@@ -81,6 +81,9 @@ class AutomationNotFoundException(val automationId: AutomationId) :
 class CannotRemoveLastOwnerException(val organizationId: OrganizationId) :
     RuntimeException("Cannot remove last owner of organization $organizationId")
 
+class CountryNotFoundException(val countryCode: String) :
+    EntityNotFoundException("Country $countryCode not found")
+
 class DeviceManagerNotFoundException(val deviceManagerId: DeviceManagerId) :
     EntityNotFoundException("Device manager $deviceManagerId not found")
 
