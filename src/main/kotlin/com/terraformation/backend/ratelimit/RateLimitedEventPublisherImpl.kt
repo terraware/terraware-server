@@ -32,7 +32,11 @@ class RateLimitedEventPublisherImpl(
 ) : RateLimitedEventPublisher {
   private val log = perClassLogger()
 
-  override fun <T : RateLimitedEvent<T>> publishOrDefer(event: T) {
+  override fun publishEvent(event: Any) {
+    eventPublisher.publishEvent(event)
+  }
+
+  override fun <T : RateLimitedEvent<T>> publishEvent(event: T) {
     publishOrDefer(event, true)
   }
 

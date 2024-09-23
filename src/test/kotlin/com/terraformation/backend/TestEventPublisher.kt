@@ -22,7 +22,7 @@ class TestEventPublisher : ApplicationEventPublisher, RateLimitedEventPublisher 
     publishedEvents.add(event)
   }
 
-  override fun <T : RateLimitedEvent<T>> publishOrDefer(event: T) {
+  override fun <T : RateLimitedEvent<T>> publishEvent(event: T) {
     publishedEvents.add(event)
   }
 
