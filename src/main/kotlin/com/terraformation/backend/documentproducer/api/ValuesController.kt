@@ -10,6 +10,7 @@ import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.documentproducer.VariableValueService
+import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.db.VariableWorkflowStore
 import io.swagger.v3.oas.annotations.Operation
@@ -30,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/document-producer")
 @RestController
 class ValuesController(
+    private val variableStore: VariableStore,
     private val variableValueStore: VariableValueStore,
     private val variableValueService: VariableValueService,
     private val variableWorkflowStore: VariableWorkflowStore,
@@ -64,6 +66,13 @@ class ValuesController(
       maxValueId: VariableValueId? = null,
       @Parameter(
           description =
+              "If specified, return the value of the variable with this stable ID. May be " +
+                  "specified more than once to return values for multiple variables. Ignored if " +
+                  "variableId is specified.")
+      @RequestParam
+      stableId: List<String>? = null,
+      @Parameter(
+          description =
               "If specified, return the value of this variable. May be specified more than once " +
                   "to return values for multiple variables.")
       @RequestParam
@@ -71,6 +80,8 @@ class ValuesController(
   ): ListVariableValuesResponsePayload {
     val currentMax = variableValueStore.fetchMaxValueId(projectId) ?: VariableValueId(0)
     val nextValueId = VariableValueId(currentMax.value + 1)
+
+    val variableIds = variableId ?: stableId?.mapNotNull { variableStore.fetchByStableId(it)?.id }
 
     // If the client didn't explicitly tell us otherwise, only return values whose IDs are less
     // than the nextValueId we'll be returning, in case new values are inserted by another user at
@@ -83,7 +94,7 @@ class ValuesController(
                 deliverableId = deliverableId,
                 minValueId = minValueId,
                 maxValueId = effectiveMax,
-                variableIds = variableId?.ifEmpty { null },
+                variableIds = variableIds?.ifEmpty { null },
             )
             .groupBy { it.variableId to it.rowValueId }
 

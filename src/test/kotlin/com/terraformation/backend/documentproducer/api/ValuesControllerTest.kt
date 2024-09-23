@@ -12,6 +12,7 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariableImageValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableValuesRow
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -495,6 +496,79 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                   deliverable2VariableId2,
               )
               .joinToString(separator = "&") { "variableId=$it" }
+
+      mockMvc
+          .get("${path()}?$queryString")
+          .andExpectJson(
+              """
+                {
+                  "nextValueId": ${deliverable2ValueId2.value + 1},
+                  "values": [
+                    {
+                      "variableId": $deliverable1VariableId1,
+                      "status": "Not Submitted",
+                      "values": [
+                        {
+                          "id": $deliverable1ValueId1,
+                          "listPosition": 0,
+                          "type": "Text",
+                          "textValue": "Value 1"
+                        }
+                      ]
+                    },
+                    {
+                      "variableId": $deliverable2VariableId1,
+                      "status": "Not Submitted",
+                      "values": [
+                        {
+                          "id": $deliverable2ValueId1,
+                          "listPosition": 0,
+                          "type": "Text",
+                          "textValue": "Value 3"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "ok"
+                }
+              """
+                  .trimIndent(),
+              strict = true)
+    }
+
+    @Test
+    fun `returns values across multiple deliverables if stable IDs are specified`() {
+      val stableIdPrefix = "${UUID.randomUUID()}"
+
+      insertModule()
+      val deliverableId1 = insertDeliverable()
+      val deliverable1VariableId1 =
+          insertTextVariable(deliverableId = deliverableId1, stableId = "$stableIdPrefix-11")
+      val deliverable1ValueId1 =
+          insertValue(variableId = deliverable1VariableId1, textValue = "Value 1")
+      val deliverableId2 = insertDeliverable()
+      val deliverable2VariableId1 =
+          insertTextVariable(deliverableId = deliverableId2, stableId = "$stableIdPrefix-21")
+      val deliverable2ValueId1 =
+          insertValue(variableId = deliverable2VariableId1, textValue = "Value 3")
+
+      // Has a value, but we won't request it so it shouldn't be included in the response.
+      val deliverable1VariableId2 =
+          insertTextVariable(deliverableId = deliverableId1, stableId = "$stableIdPrefix-12")
+      val deliverable2ValueId2 =
+          insertValue(variableId = deliverable1VariableId2, textValue = "Value 2")
+
+      // Has no value; we'll request it but it shouldn't be included in the response.
+      insertTextVariable(deliverableId = deliverableId2, stableId = "$stableIdPrefix-22")
+
+      val queryString =
+          listOf(
+                  "$stableIdPrefix-11",
+                  "$stableIdPrefix-21",
+                  "$stableIdPrefix-22",
+                  "nonexistent-stable-id",
+              )
+              .joinToString(separator = "&") { "stableId=$it" }
 
       mockMvc
           .get("${path()}?$queryString")
