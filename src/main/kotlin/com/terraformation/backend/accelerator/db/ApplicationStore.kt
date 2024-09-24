@@ -514,7 +514,7 @@ class ApplicationStore(
    *
    * @return The name that was actually used, possibly including a suffix.
    */
-  private fun updateInternalName(applicationId: ApplicationId): String {
+  fun updateInternalName(applicationId: ApplicationId): String {
     return with(APPLICATIONS) {
       val application = fetchOneById(applicationId)
 
@@ -554,7 +554,7 @@ class ApplicationStore(
   }
 
   /** Updates the country code of an application. */
-  private fun updateCountryCode(applicationId: ApplicationId, countryCode: String) {
+  fun updateCountryCode(applicationId: ApplicationId, countryCode: String) {
     with(APPLICATIONS) {
       dslContext
           .update(APPLICATIONS)
