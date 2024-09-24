@@ -1,3 +1,4 @@
+3dbe872a2c1 SW-6055 Add cohort module management endpoints (#2455)
 ce6be41b083 SW-6055 Add event management endpoints (#2454)
 486ab72db3a Added gis.api package to spring doc (#2453)
 17e244c16bc SW-5585 Notify completed parent section owners (#2452)
