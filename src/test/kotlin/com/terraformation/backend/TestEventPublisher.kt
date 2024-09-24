@@ -3,6 +3,7 @@ package com.terraformation.backend
 import com.terraformation.backend.ratelimit.RateLimitedEvent
 import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.springframework.context.ApplicationEventPublisher
 
 /**
@@ -90,6 +91,14 @@ class TestEventPublisher : ApplicationEventPublisher, RateLimitedEventPublisher 
     if (!publishedEvents.any(predicate)) {
       // Fail with an assertion that shows which events were actually published.
       assertEquals("Event matching predicate", publishedEvents as Any, message)
+    }
+  }
+
+  /** Asserts that a particular event has not been published. */
+  fun assertEventNotPublished(event: Any, message: String = "Expected event not to be published") {
+    if (event in publishedEvents) {
+      // Fail with an assertion that shows which events were actually published.
+      assertNotEquals(listOf(event), publishedEvents, message)
     }
   }
 

@@ -548,7 +548,7 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       @Test
-      fun `publishes events for child and parents if a variable referenced in a completed section is written`() {
+      fun `publishes events if a variable referenced in a child of a completed section is written`() {
         insertDocumentTemplate()
         insertVariableManifest()
         val documentId = insertDocument()
@@ -563,7 +563,9 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         insertSectionValue(childSectionVariableId, listPosition = 0, usedVariableId = variableId1)
         insertSectionValue(childSectionVariableId, listPosition = 1, usedVariableId = variableId2)
         insertVariableWorkflowHistory(
-            variableId = childSectionVariableId, status = VariableWorkflowStatus.Complete)
+            variableId = topSectionVariableId, status = VariableWorkflowStatus.Complete)
+        insertVariableWorkflowHistory(
+            variableId = middleSectionVariableId, status = VariableWorkflowStatus.Complete)
 
         store.updateValues(
             listOf(
@@ -572,12 +574,37 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
 
         eventPublisher.assertEventPublished(
             CompletedSectionVariableUpdatedEvent(
-                documentId, inserted.projectId, childSectionVariableId, childSectionVariableId),
-            "Event for child section")
-        eventPublisher.assertEventPublished(
-            CompletedSectionVariableUpdatedEvent(
                 documentId, inserted.projectId, childSectionVariableId, middleSectionVariableId),
             "Event for middle section")
+        eventPublisher.assertEventPublished(
+            CompletedSectionVariableUpdatedEvent(
+                documentId, inserted.projectId, childSectionVariableId, topSectionVariableId),
+            "Event for top section")
+      }
+
+      @Test
+      fun `only publishes events for completed parent sections when variable referenced in a child is written`() {
+        insertDocumentTemplate()
+        insertVariableManifest()
+        val documentId = insertDocument()
+        val topSectionVariableId = insertVariableManifestEntry(insertSectionVariable())
+        val middleSectionVariableId =
+            insertVariableManifestEntry(insertSectionVariable(parentId = topSectionVariableId))
+        val childSectionVariableId =
+            insertVariableManifestEntry(insertSectionVariable(parentId = middleSectionVariableId))
+        val variableId = insertTextVariable()
+
+        insertSectionValue(childSectionVariableId, listPosition = 0, usedVariableId = variableId)
+        insertVariableWorkflowHistory(
+            variableId = topSectionVariableId, status = VariableWorkflowStatus.Complete)
+
+        store.updateValues(
+            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new 1"))))
+
+        eventPublisher.assertEventNotPublished(
+            CompletedSectionVariableUpdatedEvent(
+                documentId, inserted.projectId, childSectionVariableId, middleSectionVariableId),
+            "Event for middle section should not have been published")
         eventPublisher.assertEventPublished(
             CompletedSectionVariableUpdatedEvent(
                 documentId, inserted.projectId, childSectionVariableId, topSectionVariableId),
@@ -605,18 +632,20 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       @Test
-      fun `does not publish event if a variable referenced by a previously-completed section is written`() {
+      fun `does not publish event if a variable referenced by a child of a previously-completed section is written`() {
         insertDocumentTemplate()
         insertVariableManifest()
         insertDocument()
-        val sectionVariableId = insertVariableManifestEntry(insertSectionVariable())
+        val parentSectionVariableId = insertVariableManifestEntry(insertSectionVariable())
+        val childSectionVariableId =
+            insertVariableManifestEntry(insertSectionVariable(parentId = parentSectionVariableId))
         val variableId = insertTextVariable()
 
-        insertSectionValue(sectionVariableId, listPosition = 0, usedVariableId = variableId)
+        insertSectionValue(childSectionVariableId, listPosition = 0, usedVariableId = variableId)
         insertVariableWorkflowHistory(
-            variableId = sectionVariableId, status = VariableWorkflowStatus.Complete)
+            variableId = parentSectionVariableId, status = VariableWorkflowStatus.Complete)
         insertVariableWorkflowHistory(
-            variableId = sectionVariableId, status = VariableWorkflowStatus.InReview)
+            variableId = parentSectionVariableId, status = VariableWorkflowStatus.InReview)
 
         store.updateValues(
             listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new 1"))))
