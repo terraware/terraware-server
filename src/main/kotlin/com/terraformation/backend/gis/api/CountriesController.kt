@@ -20,10 +20,11 @@ class CountriesController(
 ) {
 
   @GetMapping("/{countryCode}/boundary")
-  @Operation(summary = "Gets boundary of one country.")
+  @Operation(summary = "Gets boundary of one country given the 2-letter country code.")
   fun getBorder(@PathVariable countryCode: String): GetCountryBorderResponsePayload {
     val border =
-        countryDetector.getCountryBorder(countryCode) ?: throw CountryNotFoundException(countryCode)
+        countryDetector.getCountryBorder(countryCode.uppercase())
+            ?: throw CountryNotFoundException(countryCode)
     return GetCountryBorderResponsePayload(border.toMultiPolygon())
   }
 }
