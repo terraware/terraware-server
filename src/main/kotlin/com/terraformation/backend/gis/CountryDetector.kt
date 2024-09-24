@@ -57,6 +57,11 @@ class CountryDetector {
     result
   }
 
+  /** Returns the country border geometry given the 2-letter country code */
+  fun getCountryBorder(countryCode: String): Geometry? {
+    return countryBorders[countryCode]
+  }
+
   /**
    * Returns the 2-letter country codes for the countries that contain a geometry. If the geometry
    * falls outside any country, returns an empty set.
