@@ -183,13 +183,13 @@
         "comments": "<p>When the batch was initially created.<\/p>"
     },
     {
-        "tableName": "batch_details_history_sub_locations",
+        "tableName": "batch_quantity_history_types",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>sub_location_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "name",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -248,13 +248,13 @@
         "comments": "<p>Which user most recently modified the withdrawal.<\/p>"
     },
     {
-        "tableName": "batch_details_history_sub_locations",
+        "tableName": "batch_quantity_history_types",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>batch_details_history_id",
-        "type": "int8",
-        "length": 19,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -287,13 +287,13 @@
         "comments": ""
     },
     {
-        "tableName": "batch_quantity_history_types",
+        "tableName": "batch_details_history_sub_locations",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int4",
-        "length": 10,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>sub_location_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -692,15 +692,15 @@
     {
         "tableName": "batch_details_history_sub_locations",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "sub_location_name",
-        "type": "text",
-        "length": 2147483647,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>batch_details_history_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Name of sub-location as of the time the batch was edited. Not updated if sub-location is later renamed.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "batch_withdrawals",
@@ -872,17 +872,17 @@
         "comments": "<p>Increases by 1 each time the batch is modified. Used to detect when clients have stale data about batches.<\/p>"
     },
     {
-        "tableName": "batch_quantity_history_types",
+        "tableName": "batch_details_history_sub_locations",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "name",
+        "name": "sub_location_name",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Name of sub-location as of the time the batch was edited. Not updated if sub-location is later renamed.<\/p>"
     },
     {
         "tableName": "batches",

@@ -1,3 +1,5 @@
+8465d61a786 Updated translations from Phrase (#2450)
+ac82b0871ec Update dependency com.google.auth:google-auth-library-oauth2-http to v1.27.0 (#2449)
 f5a91da4a8d SW-5585 Notify on variable edit in completed section (#2447)
 9f22cf74131 SW-5585 Publish event on variable edit in completed section (#2446)
 1d098af79a3 Support regular events in RateLimitedEventPublisher (#2445)
