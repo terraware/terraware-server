@@ -559,6 +559,8 @@ class ApplicationStore(
       dslContext
           .update(APPLICATIONS)
           .set(COUNTRY_CODE, countryCode)
+          .set(MODIFIED_BY, currentUser().userId)
+          .set(MODIFIED_TIME, clock.instant())
           .where(ID.eq(applicationId))
           .execute()
     }
