@@ -973,21 +973,6 @@ class VariableValueStore(
   ) {
     val updatedVariableIds = values.map { it.variableId }.toSet()
 
-    val currentWorkflowStatuses =
-        DSL.lateral(
-            DSL.select(VARIABLE_WORKFLOW_HISTORY.VARIABLE_WORKFLOW_STATUS_ID)
-                .distinctOn(
-                    VARIABLE_WORKFLOW_HISTORY.VARIABLE_ID, VARIABLE_WORKFLOW_HISTORY.PROJECT_ID)
-                .from(VARIABLE_WORKFLOW_HISTORY)
-                .where(VARIABLE_WORKFLOW_HISTORY.VARIABLE_ID.eq(VARIABLE_VALUES.VARIABLE_ID))
-                .and(VARIABLE_WORKFLOW_HISTORY.PROJECT_ID.eq(VARIABLE_VALUES.PROJECT_ID))
-                .orderBy(
-                    VARIABLE_WORKFLOW_HISTORY.VARIABLE_ID,
-                    VARIABLE_WORKFLOW_HISTORY.PROJECT_ID,
-                    VARIABLE_WORKFLOW_HISTORY.ID.desc()))
-    val currentWorkflowStatusField =
-        currentWorkflowStatuses.field(VARIABLE_WORKFLOW_HISTORY.VARIABLE_WORKFLOW_STATUS_ID)!!
-
     val newerValuesTable = VARIABLE_VALUES.`as`("newer_values")
 
     val childSectionEvents =
@@ -1001,11 +986,8 @@ class VariableValueStore(
             .join(DOCUMENTS)
             .on(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(DOCUMENTS.VARIABLE_MANIFEST_ID))
             .and(VARIABLE_VALUES.PROJECT_ID.eq(DOCUMENTS.PROJECT_ID))
-            .join(currentWorkflowStatuses)
-            .on(DSL.trueCondition())
             .where(VARIABLE_SECTION_VALUES.USED_VARIABLE_ID.`in`(updatedVariableIds))
             .and(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
-            .and(currentWorkflowStatusField.eq(VariableWorkflowStatus.Complete))
             .andNotExists(
                 DSL.selectOne()
                     .from(newerValuesTable)
@@ -1022,8 +1004,9 @@ class VariableValueStore(
               )
             }
 
-    // Publishes events for the parent sections, if any.
-    fun publishParentSectionEvents(event: CompletedSectionVariableUpdatedEvent) {
+    fun addParentEvents(
+        event: CompletedSectionVariableUpdatedEvent
+    ): List<CompletedSectionVariableUpdatedEvent> {
       val parentSectionId =
           dslContext
               .select(VARIABLE_SECTIONS.PARENT_VARIABLE_ID)
@@ -1031,17 +1014,38 @@ class VariableValueStore(
               .where(VARIABLE_SECTIONS.VARIABLE_ID.eq(event.sectionVariableId))
               .fetchOne(VARIABLE_SECTIONS.PARENT_VARIABLE_ID)
 
-      if (parentSectionId != null) {
+      return if (parentSectionId != null) {
         val parentEvent = event.copy(sectionVariableId = parentSectionId)
-
-        eventPublisher.publishEvent(parentEvent)
-        publishParentSectionEvents(parentEvent)
+        listOf(event) + addParentEvents(parentEvent)
+      } else {
+        listOf(event)
       }
     }
 
-    childSectionEvents.forEach { event ->
-      eventPublisher.publishEvent(event)
-      publishParentSectionEvents(event)
+    // This is the list of events for all child and parent sections, regardless of completion status
+    val allSectionEvents = childSectionEvents.flatMap { addParentEvents(it) }.toSet()
+
+    val sectionStatuses: Map<Pair<ProjectId, VariableId>, VariableWorkflowStatus> =
+        with(VARIABLE_WORKFLOW_HISTORY) {
+          dslContext
+              .select(PROJECT_ID, VARIABLE_ID, VARIABLE_WORKFLOW_STATUS_ID)
+              .distinctOn(PROJECT_ID, VARIABLE_ID)
+              .from(VARIABLE_WORKFLOW_HISTORY)
+              .where(
+                  DSL.row(PROJECT_ID, VARIABLE_ID)
+                      .`in`(allSectionEvents.map { DSL.row(projectId, it.sectionVariableId) }))
+              .orderBy(PROJECT_ID, VARIABLE_ID, ID.desc())
+              .fetch { (projectId, variableId, status) ->
+                (projectId!! to variableId!!) to status!!
+              }
+              .toMap()
+        }
+
+    allSectionEvents.forEach { event ->
+      val sectionStatus = sectionStatuses[event.projectId to event.sectionVariableId]
+      if (sectionStatus == VariableWorkflowStatus.Complete) {
+        eventPublisher.publishEvent(event)
+      }
     }
   }
 
