@@ -190,7 +190,7 @@ class DeliverablesController(
       @PathVariable deliverableId: DeliverableId,
       @PathVariable projectId: ProjectId,
   ): SimpleSuccessResponsePayload {
-    submissionStore.createSubmission(deliverableId, projectId, SubmissionStatus.InReview)
+    deliverableService.submitDeliverable(deliverableId, projectId)
 
     return SimpleSuccessResponsePayload()
   }

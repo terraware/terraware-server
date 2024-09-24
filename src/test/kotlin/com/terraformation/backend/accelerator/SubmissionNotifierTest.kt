@@ -31,7 +31,7 @@ class SubmissionNotifierTest {
 
   @Test
   fun `publishes DeliverableReadyForReviewEvent on questionnaire deliverable submission`() {
-    val event = QuestionsDeliverableSubmittedEvent(DeliverableId(1), ProjectId(2), emptyMap())
+    val event = QuestionsDeliverableSubmittedEvent(DeliverableId(1), ProjectId(2))
 
     notifier.on(event)
 
