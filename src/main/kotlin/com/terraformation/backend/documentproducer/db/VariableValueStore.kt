@@ -38,7 +38,6 @@ import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUE_TABLE_ROWS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_WORKFLOW_HISTORY
 import com.terraformation.backend.documentproducer.event.CompletedSectionVariableUpdatedEvent
-import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
 import com.terraformation.backend.documentproducer.model.AppendValueOperation
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
 import com.terraformation.backend.documentproducer.model.DateValue
@@ -470,7 +469,6 @@ class VariableValueStore(
 
     if (triggerWorkflows) {
       notifyForCompletedSections(projectId, values)
-      notifyForReview(projectId, values)
       updateStatus(projectId, values)
     }
 
@@ -939,32 +937,6 @@ class VariableValueStore(
   private fun fetchProjectId(valueId: VariableValueId): ProjectId {
     return dslContext.fetchValue(VARIABLE_VALUES.PROJECT_ID, VARIABLE_VALUES.ID.eq(valueId))
         ?: throw VariableValueNotFoundException(valueId)
-  }
-
-  private fun notifyForReview(
-      projectId: ProjectId,
-      values: List<ExistingValue>,
-  ) {
-    val variableRows =
-        values
-            .map { it.variableId }
-            .toSet()
-            .associateWith { variablesDao.fetchOneById(it) ?: throw VariableNotFoundException(it) }
-
-    val valuesByDeliverables =
-        values
-            .filter { variableRows[it.variableId]?.deliverableId != null }
-            .groupBy { variableRows[it.variableId]?.deliverableId!! }
-
-    valuesByDeliverables.keys.forEach { deliverableId ->
-      val highestValuesByVariables =
-          valuesByDeliverables[deliverableId]!!
-              .groupBy { it.variableId }
-              .mapValues { mapEntry -> mapEntry.value.maxBy { it.id.value }.id }
-
-      eventPublisher.publishEvent(
-          QuestionsDeliverableSubmittedEvent(deliverableId, projectId, highestValuesByVariables))
-    }
   }
 
   private fun notifyForCompletedSections(
