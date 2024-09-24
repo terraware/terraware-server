@@ -31,6 +31,8 @@ class VariableService(
           operationsByProject.values.forEach { operations ->
             variableValueStore.updateValues(operations, triggerWorkflows = false)
           }
+
+          variableValueStore.upgradeSectionDefaultValues(result.replacements)
         }
       }
 
@@ -71,6 +73,8 @@ class VariableService(
               operationsByProject.values.forEach { operations ->
                 variableValueStore.updateValues(operations, triggerWorkflows = false)
               }
+
+              variableValueStore.upgradeSectionDefaultValues(replacements)
             }
       }
     }

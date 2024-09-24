@@ -404,6 +404,34 @@ class VariableValueStore(
   }
 
   /**
+   * Updates the variable references in section default values to point to the newest versions of
+   * the variables. This is called after uploading a new all-variables list.
+   */
+  fun upgradeSectionDefaultValues(replacements: Map<VariableId, VariableId>) {
+    dslContext.transaction { _ ->
+      val newVariableTypes: Map<VariableId, VariableType> =
+          with(VARIABLES) {
+            dslContext
+                .select(ID, VARIABLE_TYPE_ID)
+                .from(VARIABLES)
+                .where(ID.`in`(replacements.values))
+                .fetchMap(ID.asNonNullable(), VARIABLE_TYPE_ID.asNonNullable())
+          }
+
+      replacements.forEach { (oldVariableId, newVariableId) ->
+        with(VARIABLE_SECTION_DEFAULT_VALUES) {
+          dslContext
+              .update(VARIABLE_SECTION_DEFAULT_VALUES)
+              .set(USED_VARIABLE_ID, newVariableId)
+              .set(USED_VARIABLE_TYPE_ID, newVariableTypes[newVariableId])
+              .where(USED_VARIABLE_ID.eq(oldVariableId))
+              .execute()
+        }
+      }
+    }
+  }
+
+  /**
    * Updates the values in a document by applying a list of operations.
    *
    * @param triggerWorkflows If true, publish events about the updates that trigger additional
