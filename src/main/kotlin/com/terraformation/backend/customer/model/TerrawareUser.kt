@@ -410,6 +410,8 @@ interface TerrawareUser : Principal {
 
   fun canUpdateApplicationBoundary(applicationId: ApplicationId): Boolean = defaultPermission
 
+  fun canUpdateApplicationCountry(applicationId: ApplicationId): Boolean = defaultPermission
+
   fun canUpdateApplicationSubmissionStatus(applicationId: ApplicationId): Boolean =
       defaultPermission
 

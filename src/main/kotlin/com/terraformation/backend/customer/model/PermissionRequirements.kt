@@ -1018,7 +1018,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun updateApplicationBoundary(applicationId: ApplicationId) {
     if (!user.canUpdateApplicationBoundary(applicationId)) {
       readApplication(applicationId)
-      throw AccessDeniedException("No permission to update application boundary $applicationId")
+      throw AccessDeniedException("No permission to update boundary for application $applicationId")
+    }
+  }
+
+  fun updateApplicationCountry(applicationId: ApplicationId) {
+    if (!user.canUpdateApplicationCountry(applicationId)) {
+      readApplication(applicationId)
+      throw AccessDeniedException("No permission to update country for application $applicationId")
     }
   }
 

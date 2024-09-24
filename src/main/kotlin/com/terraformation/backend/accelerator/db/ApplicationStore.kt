@@ -381,7 +381,6 @@ class ApplicationStore(
         assignModules(applicationId, CohortPhase.Application)
 
         applicationVariableValues.countryCode?.let { updateCountryCode(applicationId, it) }
-        updateInternalName(applicationId)
       }
 
       ApplicationSubmissionResult(fetchOneById(applicationId), problems)
@@ -480,7 +479,6 @@ class ApplicationStore(
         if (countries.size == 1) {
           val countryCode = countries.single()
           updateCountryCode(applicationId, countryCode)
-          updateInternalName(applicationId)
         } else {
           log.debug(
               "Not setting internal name for application $applicationId because boundary is not " +
@@ -554,14 +552,19 @@ class ApplicationStore(
   }
 
   /** Updates the country code of an application. */
-  private fun updateCountryCode(applicationId: ApplicationId, countryCode: String) {
+  fun updateCountryCode(applicationId: ApplicationId, countryCode: String) {
+    requirePermissions { updateApplicationCountry(applicationId) }
+
     with(APPLICATIONS) {
       dslContext
           .update(APPLICATIONS)
           .set(COUNTRY_CODE, countryCode)
+          .set(MODIFIED_BY, currentUser().userId)
+          .set(MODIFIED_TIME, clock.instant())
           .where(ID.eq(applicationId))
           .execute()
     }
+    updateInternalName(applicationId)
   }
 
   private fun insertHistory(applicationId: ApplicationId) {
