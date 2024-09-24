@@ -21,14 +21,12 @@ class ApplicationCountryUpdater(
   fun on(event: VariableValueUpdatedEvent) {
     systemUser.run {
       val variable = variableStore.fetchOneVariable(event.variableId)
-      val application = applicationStore.fetchByProjectId(event.projectId).firstOrNull()
 
-      // If the project has an application, and the country variable is updated
-      if (variable.stableId == STABLE_ID_COUNTRY && application != null) {
-        val variableValues = applicationVariableValuesFetcher.fetchValues(event.projectId)
-        variableValues.countryCode?.let {
-          applicationStore.updateCountryCode(application.id, it)
-          applicationStore.updateInternalName(application.id)
+      if (variable.stableId == STABLE_ID_COUNTRY) {
+        val application = applicationStore.fetchByProjectId(event.projectId).singleOrNull()
+        if (application != null) {
+          val variableValues = applicationVariableValuesFetcher.fetchValues(event.projectId)
+          variableValues.countryCode?.let { applicationStore.updateCountryCode(application.id, it) }
         }
       }
     }

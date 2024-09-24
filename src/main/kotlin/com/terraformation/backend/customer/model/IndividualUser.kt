@@ -551,6 +551,9 @@ data class IndividualUser(
   override fun canUpdateApplicationBoundary(applicationId: ApplicationId) =
       isTFExpertOrHigher() || isAdminOrHigher(parentStore.getOrganizationId(applicationId))
 
+  override fun canUpdateApplicationCountry(applicationId: ApplicationId) =
+      isTFExpertOrHigher() || isAdminOrHigher(parentStore.getOrganizationId(applicationId))
+
   override fun canUpdateApplicationSubmissionStatus(applicationId: ApplicationId) =
       isAdminOrHigher(parentStore.getOrganizationId(applicationId))
 

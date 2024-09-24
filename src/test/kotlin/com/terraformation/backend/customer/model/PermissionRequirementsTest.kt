@@ -845,6 +845,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
           }
 
   @Test
+  fun updateApplicationCountry() =
+      allow { updateApplicationCountry(applicationId) } ifUser
+          {
+            canUpdateApplicationCountry(applicationId)
+          }
+
+  @Test
   fun updateApplicationSubmissionStatus() =
       allow { updateApplicationSubmissionStatus(applicationId) } ifUser
           {

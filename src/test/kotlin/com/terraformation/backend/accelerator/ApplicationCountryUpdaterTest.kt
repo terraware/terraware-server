@@ -76,7 +76,6 @@ class ApplicationCountryUpdaterTest : DatabaseTest(), RunsAsUser {
   fun setup() {
     every { applicationStore.fetchByProjectId(projectId) } returns listOf(applicationModel)
     every { applicationStore.updateCountryCode(applicationId, any()) } returns Unit
-    every { applicationStore.updateInternalName(applicationId) } returns "XXX"
     every { variableStore.fetchOneVariable(countryVariableId) } returns countryVariable
     every { applicationVariableValuesFetcher.fetchValues(projectId) } returns
         ApplicationVariableValues(
@@ -92,7 +91,6 @@ class ApplicationCountryUpdaterTest : DatabaseTest(), RunsAsUser {
     updater.on(VariableValueUpdatedEvent(projectId, countryVariableId))
 
     verify(exactly = 1) { applicationStore.updateCountryCode(applicationId, "US") }
-    verify(exactly = 1) { applicationStore.updateInternalName(applicationId) }
   }
 
   @Test
@@ -103,7 +101,6 @@ class ApplicationCountryUpdaterTest : DatabaseTest(), RunsAsUser {
 
     verify(exactly = 0) { applicationVariableValuesFetcher.fetchValues(any()) }
     verify(exactly = 0) { applicationStore.updateCountryCode(any(), any()) }
-    verify(exactly = 0) { applicationStore.updateInternalName(any()) }
   }
 
   @Test
@@ -125,6 +122,5 @@ class ApplicationCountryUpdaterTest : DatabaseTest(), RunsAsUser {
 
     verify(exactly = 0) { applicationVariableValuesFetcher.fetchValues(any()) }
     verify(exactly = 0) { applicationStore.updateCountryCode(any(), any()) }
-    verify(exactly = 0) { applicationStore.updateInternalName(any()) }
   }
 }

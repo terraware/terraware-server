@@ -617,6 +617,7 @@ internal class PermissionTest : DatabaseTest() {
         *applicationIds.forOrg1(),
         readApplication = true,
         updateApplicationBoundary = true,
+        updateApplicationCountry = true,
         updateApplicationSubmissionStatus = true,
     )
 
@@ -872,6 +873,7 @@ internal class PermissionTest : DatabaseTest() {
         *applicationIds.forOrg1(),
         readApplication = true,
         updateApplicationBoundary = true,
+        updateApplicationCountry = true,
         updateApplicationSubmissionStatus = true,
     )
 
@@ -1504,6 +1506,7 @@ internal class PermissionTest : DatabaseTest() {
         readApplication = true,
         reviewApplication = true,
         updateApplicationBoundary = true,
+        updateApplicationCountry = true,
         updateApplicationSubmissionStatus = true,
     )
 
@@ -1664,6 +1667,7 @@ internal class PermissionTest : DatabaseTest() {
         readApplication = true,
         reviewApplication = true,
         updateApplicationBoundary = true,
+        updateApplicationCountry = true,
         updateApplicationSubmissionStatus = true,
     )
 
@@ -1683,6 +1687,7 @@ internal class PermissionTest : DatabaseTest() {
         readApplication = true,
         reviewApplication = true,
         updateApplicationBoundary = true,
+        updateApplicationCountry = true,
     )
 
     permissions.expect(
@@ -1872,6 +1877,7 @@ internal class PermissionTest : DatabaseTest() {
         readApplication = true,
         reviewApplication = true,
         updateApplicationBoundary = true,
+        updateApplicationCountry = true,
         updateApplicationSubmissionStatus = true,
     )
 
@@ -1891,6 +1897,7 @@ internal class PermissionTest : DatabaseTest() {
         readApplication = true,
         reviewApplication = true,
         updateApplicationBoundary = true,
+        updateApplicationCountry = true,
     )
 
     permissions.expect(
@@ -2064,6 +2071,7 @@ internal class PermissionTest : DatabaseTest() {
         readApplication = true,
         reviewApplication = true,
         updateApplicationBoundary = true,
+        updateApplicationCountry = true,
         updateApplicationSubmissionStatus = true,
     )
 
@@ -2083,6 +2091,7 @@ internal class PermissionTest : DatabaseTest() {
         readApplication = true,
         reviewApplication = true,
         updateApplicationBoundary = true,
+        updateApplicationCountry = true,
     )
 
     permissions.expect(
@@ -3331,6 +3340,7 @@ internal class PermissionTest : DatabaseTest() {
         readApplication: Boolean = false,
         reviewApplication: Boolean = false,
         updateApplicationBoundary: Boolean = false,
+        updateApplicationCountry: Boolean = false,
         updateApplicationSubmissionStatus: Boolean = false,
     ) {
       applicationIds
@@ -3349,7 +3359,11 @@ internal class PermissionTest : DatabaseTest() {
             assertEquals(
                 updateApplicationBoundary,
                 user.canUpdateApplicationBoundary(idInDatabase),
-                "Can update application boundary $applicationId")
+                "Can update boundary for application $applicationId")
+            assertEquals(
+                updateApplicationBoundary,
+                user.canUpdateApplicationCountry(idInDatabase),
+                "Can update country for application $applicationId")
             assertEquals(
                 updateApplicationSubmissionStatus,
                 user.canUpdateApplicationSubmissionStatus(idInDatabase),

@@ -86,6 +86,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadProject(any()) } returns true
     every { user.canReviewApplication(any()) } returns true
     every { user.canUpdateApplicationBoundary(any()) } returns true
+    every { user.canUpdateApplicationCountry(any()) } returns true
     every { user.canUpdateApplicationSubmissionStatus(any()) } returns true
   }
 
@@ -1708,6 +1709,44 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canUpdateApplicationBoundary(applicationId) } returns false
 
       assertThrows<AccessDeniedException> { store.updateBoundary(applicationId, rectangle(1)) }
+    }
+  }
+
+  @Nested
+  inner class UpdateCountry {
+    @Test
+    fun `updates internal name and country code`() {
+      val otherUserId = insertUser()
+      val applicationId =
+          insertApplication(createdBy = otherUserId, internalName = "XXX_Organization 1")
+
+      clock.instant = Instant.ofEpochSecond(30)
+
+      store.updateCountryCode(applicationId, "US")
+
+      val applicationRow = applicationsDao.findAll().single()
+      assertEquals(
+          ApplicationsRow(
+              applicationStatusId = ApplicationStatus.NotSubmitted,
+              countryCode = "US",
+              createdBy = otherUserId,
+              createdTime = Instant.EPOCH,
+              id = applicationId,
+              internalName = "USA_Organization 1",
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+              projectId = inserted.projectId,
+          ),
+          applicationRow)
+    }
+
+    @Test
+    fun `throws exception if no permission`() {
+      val applicationId = insertApplication()
+
+      every { user.canUpdateApplicationCountry(applicationId) } returns false
+
+      assertThrows<AccessDeniedException> { store.updateCountryCode(applicationId, "US") }
     }
   }
 
