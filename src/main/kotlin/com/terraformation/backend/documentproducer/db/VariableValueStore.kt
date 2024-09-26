@@ -2,6 +2,7 @@ package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -444,6 +445,11 @@ class VariableValueStore(
       triggerWorkflows: Boolean = true
   ): List<ExistingValue> {
     val projectId = operations.firstOrNull()?.projectId ?: return emptyList()
+
+    if (!triggerWorkflows) {
+      // Require internal workflow permission to not use default workflow update
+      requirePermissions { updateInternalVariableWorkflowDetails(projectId) }
+    }
 
     val latestRowIds = mutableMapOf<VariableId, VariableValueId>()
     if (operations.any { it.projectId != projectId }) {

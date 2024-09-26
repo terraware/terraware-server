@@ -162,7 +162,7 @@ class ValuesController(
 
     variableValueService.validate(operations)
 
-    variableValueStore.updateValues(operations)
+    variableValueStore.updateValues(operations, payload.triggerWorkflow)
 
     return SimpleSuccessResponsePayload()
   }
@@ -194,6 +194,11 @@ data class UpdateVariableValuesRequestPayload(
                         "applied in order, and atomically: if any of them fail, none of them " +
                         "will be applied."))
     val operations: List<ValueOperationPayload>,
+    @Schema(
+        description =
+            "Whether to trigger workflow. Defaults to true. Accelerator admins can bypass the " +
+                "workflows by setting the flag to false.")
+    val triggerWorkflow: Boolean = true,
 ) {
   companion object {
     /** Examples are added to the OpenAPI schema programmatically in OpenApiConfig. */
