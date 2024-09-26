@@ -198,7 +198,7 @@ data class UpdateVariableValuesRequestPayload(
         description =
             "Whether to update variable statuses. Defaults to true. Accelerator admins can " +
                 "bypass the status updates by setting the flag to false.")
-    val updateStatuses: Boolean = true,
+    val updateStatuses: Boolean? = true,
 ) {
   companion object {
     /** Examples are added to the OpenAPI schema programmatically in OpenApiConfig. */
