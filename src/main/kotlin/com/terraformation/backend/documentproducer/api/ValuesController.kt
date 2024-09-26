@@ -162,7 +162,7 @@ class ValuesController(
 
     variableValueService.validate(operations)
 
-    variableValueStore.updateValues(operations, payload.updateStatuses)
+    variableValueStore.updateValues(operations, payload.updateStatuses ?: true)
 
     return SimpleSuccessResponsePayload()
   }
