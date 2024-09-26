@@ -23,10 +23,13 @@ import com.terraformation.backend.documentproducer.model.NewImageValue
 import com.terraformation.backend.documentproducer.model.NewTableValue
 import com.terraformation.backend.documentproducer.model.NewTextValue
 import com.terraformation.backend.mockUser
+import io.mockk.every
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.security.access.AccessDeniedException
 
 class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -394,11 +397,26 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
         val variableId =
             insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
 
+        every { user.canUpdateInternalVariableWorkflowDetails(any()) } returns true
         store.updateValues(
             listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))),
             triggerWorkflows = false)
 
         eventPublisher.assertEventNotPublished<VariableValueUpdatedEvent>()
+      }
+
+      @Test
+      fun `throws exception if not permission to set triggerWorkflows to false`() {
+        val variableId =
+            insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
+
+        every { user.canUpdateInternalVariableWorkflowDetails(any()) } returns false
+        every { user.canReadProject(any()) } returns true
+        assertThrows<AccessDeniedException> {
+          store.updateValues(
+              listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))),
+              triggerWorkflows = false)
+        }
       }
 
       @Test
