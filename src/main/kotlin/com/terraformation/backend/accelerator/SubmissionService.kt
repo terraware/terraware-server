@@ -52,9 +52,6 @@ class SubmissionService(
 ) {
   private val log = perClassLogger()
 
-  /** Suffix added to the project's file naming when creating new folders for their files. */
-  private val newFolderSuffix = " [Internal]"
-
   /**
    * Matches characters that aren't allowed in filenames.
    *
@@ -320,7 +317,7 @@ class SubmissionService(
    * @return The URL of the new folder, or null if it couldn't be created.
    */
   private fun createGoogleDriveFolder(projectId: ProjectId, fileNaming: String): URI? {
-    val folderName = fileNaming + newFolderSuffix
+    val folderName = fileNaming + INTERNAL_FOLDER_SUFFIX
     val parentFolderId = config.accelerator.applicationGoogleFolderId ?: return null
     val driveId = googleDriveWriter.getDriveIdForFile(parentFolderId)
 

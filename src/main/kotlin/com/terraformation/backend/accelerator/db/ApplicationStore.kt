@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.model.ApplicationModuleModel
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
@@ -547,6 +548,8 @@ class ApplicationStore(
           .where(ID.eq(applicationId))
           .execute()
 
+      eventPublisher.publishEvent(ApplicationInternalNameUpdatedEvent(applicationId))
+
       suffixedName
     }
   }
@@ -555,16 +558,25 @@ class ApplicationStore(
   fun updateCountryCode(applicationId: ApplicationId, countryCode: String) {
     requirePermissions { updateApplicationCountry(applicationId) }
 
-    with(APPLICATIONS) {
-      dslContext
-          .update(APPLICATIONS)
-          .set(COUNTRY_CODE, countryCode)
-          .set(MODIFIED_BY, currentUser().userId)
-          .set(MODIFIED_TIME, clock.instant())
-          .where(ID.eq(applicationId))
-          .execute()
+    val rowsUpdated =
+        with(APPLICATIONS) {
+          dslContext
+              .update(APPLICATIONS)
+              .set(COUNTRY_CODE, countryCode)
+              .set(MODIFIED_BY, currentUser().userId)
+              .set(MODIFIED_TIME, clock.instant())
+              .where(ID.eq(applicationId))
+              .and(
+                  DSL.or(
+                      COUNTRY_CODE.notEqual(countryCode),
+                      COUNTRY_CODE.isNull(),
+                  ))
+              .execute()
+        }
+
+    if (rowsUpdated > 0) {
+      updateInternalName(applicationId)
     }
-    updateInternalName(applicationId)
   }
 
   private fun insertHistory(applicationId: ApplicationId) {
