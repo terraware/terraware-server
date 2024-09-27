@@ -6,6 +6,7 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -31,6 +32,7 @@ class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock = TestClock()
+  private val config: TerrawareServerConfig = mockk()
   private val eventPublisher = TestEventPublisher()
   private val googleDriveWriter: GoogleDriveWriter = mockk()
 
@@ -45,6 +47,8 @@ class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
             Messages(),
             organizationsDao,
         ),
+        config,
+        dslContext,
         googleDriveWriter,
         ProjectAcceleratorDetailsStore(clock, dslContext, eventPublisher),
         SystemUser(usersDao))
@@ -53,28 +57,57 @@ class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
   private lateinit var projectId: ProjectId
   private lateinit var applicationId: ApplicationId
 
+  private val driveId: String = "drive"
+  private val parentFolderId = "parent"
+  private val newFolderId = "newFolder"
+  private val newFolderUrl = URI("https://drive.google.com/drive/$newFolderId")
+  private val oldFolderId = "oldFolder"
+  private val oldFolderUrl = URI("https://drive.google.com/drive/$oldFolderId")
+
   @BeforeEach
   fun setUp() {
     insertOrganization()
     projectId = insertProject()
     applicationId = insertApplication(internalName = "XXX_Organization")
 
-    every { googleDriveWriter.getFileIdForFolderUrl(any()) } returns "fileId"
-    every { googleDriveWriter.renameFile("fileId", any()) } returns Unit
+    every { config.accelerator } returns
+        TerrawareServerConfig.AcceleratorConfig(applicationGoogleFolderId = parentFolderId)
+    every { googleDriveWriter.findOrCreateFolders(driveId, parentFolderId, any()) } returns
+        newFolderId
+    every { googleDriveWriter.getDriveIdForFile(any()) } returns driveId
+
+    every { googleDriveWriter.getFileIdForFolderUrl(newFolderUrl) } returns newFolderId
+    every { googleDriveWriter.shareFile(newFolderId) } returns newFolderUrl
+
+    every { googleDriveWriter.getFileIdForFolderUrl(oldFolderUrl) } returns oldFolderId
+    every { googleDriveWriter.shareFile(oldFolderId) } returns oldFolderUrl
+
+    every { googleDriveWriter.renameFile(any(), any()) } returns Unit
   }
 
   @Nested
   inner class ApplicationInternalNameUpdated {
     @Test
     fun `Updates Google folder name if drive url exists, but project file naming does not`() {
-      insertProjectAcceleratorDetails(
-          projectId = projectId, googleFolderUrl = URI.create("https://terraformation.com"))
+      insertProjectAcceleratorDetails(projectId = projectId, googleFolderUrl = oldFolderUrl)
 
       updater.on(ApplicationInternalNameUpdatedEvent(applicationId))
 
       verify(exactly = 1) {
-        googleDriveWriter.renameFile("fileId", "XXX_Organization$INTERNAL_FOLDER_SUFFIX")
+        googleDriveWriter.renameFile(oldFolderId, "XXX_Organization$INTERNAL_FOLDER_SUFFIX")
       }
+      verify(exactly = 0) { googleDriveWriter.findOrCreateFolders(any(), any(), any()) }
+    }
+
+    @Test
+    fun `Creates Google folder name if drive url does not exist`() {
+      updater.on(ApplicationInternalNameUpdatedEvent(applicationId))
+
+      verify(exactly = 1) {
+        googleDriveWriter.findOrCreateFolders(
+            driveId, parentFolderId, listOf("XXX_Organization$INTERNAL_FOLDER_SUFFIX"))
+      }
+      verify(exactly = 0) { googleDriveWriter.renameFile(any(), any()) }
     }
 
     @MethodSource(
@@ -93,13 +126,6 @@ class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
       } else {
         verify(exactly = 0) { googleDriveWriter.renameFile(any(), any()) }
       }
-    }
-
-    @Test
-    fun `Does not update Google folder name if drive url does not exist`() {
-      updater.on(ApplicationInternalNameUpdatedEvent(applicationId))
-
-      verify(exactly = 0) { googleDriveWriter.renameFile(any(), any()) }
     }
   }
 

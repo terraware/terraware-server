@@ -62,6 +62,7 @@ class AdminController(
     model.addAttribute("canUpdateDefaultVoters", currentUser().canUpdateDefaultVoters())
     model.addAttribute("canUpdateDeviceTemplates", currentUser().canUpdateDeviceTemplates())
     model.addAttribute("canUpdateGlobalRoles", currentUser().canUpdateGlobalRoles())
+    model.addAttribute("isSuperAdmin", currentUser().globalRoles.contains(GlobalRole.SuperAdmin))
     model.addAttribute("organizations", organizations)
     model.addAttribute("roles", Role.entries.map { it to it.getDisplayName(Locale.ENGLISH) })
 
