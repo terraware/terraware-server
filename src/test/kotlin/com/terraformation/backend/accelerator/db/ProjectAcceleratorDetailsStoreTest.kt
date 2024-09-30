@@ -2,6 +2,8 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.event.ParticipantProjectFileNamingUpdatedEvent
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DealStage
@@ -23,7 +25,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
-  private val store by lazy { ProjectAcceleratorDetailsStore(clock, dslContext) }
+  private val eventPublisher = TestEventPublisher()
+  private val store by lazy { ProjectAcceleratorDetailsStore(clock, dslContext, eventPublisher) }
 
   @BeforeEach
   fun setUp() {
@@ -240,6 +243,78 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
           otherDetails,
           store.fetchOneById(otherProjectId),
           "Should not have updated details of other project")
+    }
+
+    @Test
+    fun `publishes event if fileNaming is updated`() {
+      val projectId = insertProject(countryCode = "KE")
+      insertProjectLandUseModelType(landUseModelType = LandUseModelType.Agroforestry)
+      insertProjectLandUseModelType(landUseModelType = LandUseModelType.Mangroves)
+
+      val detailsRow =
+          insertProjectAcceleratorDetails(
+              annualCarbon = BigDecimal(7),
+              applicationReforestableLand = BigDecimal(1),
+              carbonCapacity = BigDecimal(8),
+              confirmedReforestableLand = BigDecimal(2),
+              dealDescription = "description",
+              dealStage = DealStage.Phase0DocReview,
+              dropboxFolderPath = "/dropbox/path",
+              failureRisk = "failure",
+              fileNaming = "naming",
+              googleFolderUrl = "https://google.com/",
+              hubSpotUrl = "https://hubspot.com/",
+              investmentThesis = "thesis",
+              maxCarbonAccumulation = BigDecimal(5),
+              minCarbonAccumulation = BigDecimal(4),
+              numCommunities = 2,
+              numNativeSpecies = 1,
+              perHectareBudget = BigDecimal(6),
+              pipeline = Pipeline.AcceleratorProjects,
+              projectId = projectId,
+              projectLead = "lead",
+              totalCarbon = BigDecimal(9),
+              totalExpansionPotential = BigDecimal(3),
+              whatNeedsToBeTrue = "needs",
+          )
+
+      val existing =
+          ProjectAcceleratorDetailsModel(
+              annualCarbon = detailsRow.annualCarbon,
+              applicationReforestableLand = detailsRow.applicationReforestableLand,
+              carbonCapacity = detailsRow.carbonCapacity,
+              confirmedReforestableLand = detailsRow.confirmedReforestableLand,
+              countryCode = "KE",
+              dealDescription = detailsRow.dealDescription,
+              dealStage = detailsRow.dealStageId,
+              dropboxFolderPath = detailsRow.dropboxFolderPath,
+              failureRisk = detailsRow.failureRisk,
+              fileNaming = detailsRow.fileNaming,
+              googleFolderUrl = detailsRow.googleFolderUrl,
+              hubSpotUrl = detailsRow.hubspotUrl,
+              investmentThesis = detailsRow.investmentThesis,
+              landUseModelTypes = setOf(LandUseModelType.Agroforestry, LandUseModelType.Mangroves),
+              maxCarbonAccumulation = detailsRow.maxCarbonAccumulation,
+              minCarbonAccumulation = detailsRow.minCarbonAccumulation,
+              numCommunities = detailsRow.numCommunities,
+              numNativeSpecies = detailsRow.numNativeSpecies,
+              perHectareBudget = detailsRow.perHectareBudget,
+              pipeline = detailsRow.pipelineId,
+              projectId = projectId,
+              projectLead = detailsRow.projectLead,
+              region = Region.SubSaharanAfrica,
+              totalCarbon = detailsRow.totalCarbon,
+              totalExpansionPotential = detailsRow.totalExpansionPotential,
+              whatNeedsToBeTrue = detailsRow.whatNeedsToBeTrue,
+          )
+
+      store.update(projectId) { existing.copy(maxCarbonAccumulation = BigDecimal(50)) }
+      eventPublisher.assertEventNotPublished<ParticipantProjectFileNamingUpdatedEvent>(
+          "File naming not updated")
+
+      store.update(projectId) { existing.copy(fileNaming = "new naming") }
+      eventPublisher.assertEventPublished(
+          ParticipantProjectFileNamingUpdatedEvent(projectId), "File naming updated")
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.model.ApplicationModuleModel
 import com.terraformation.backend.accelerator.model.ApplicationVariableValues
@@ -1715,7 +1716,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class UpdateCountry {
     @Test
-    fun `updates internal name and country code`() {
+    fun `updates internal name and country code, and pubilshes event if they are changed`() {
       val otherUserId = insertUser()
       val applicationId =
           insertApplication(createdBy = otherUserId, internalName = "XXX_Organization 1")
@@ -1738,6 +1739,14 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               projectId = inserted.projectId,
           ),
           applicationRow)
+
+      eventPublisher.assertEventPublished(
+          ApplicationInternalNameUpdatedEvent(applicationId), "Country and internal name updated")
+      eventPublisher.clear()
+
+      store.updateCountryCode(applicationId, "US")
+      eventPublisher.assertEventNotPublished<ApplicationInternalNameUpdatedEvent>(
+          "Country and internal name not updated")
     }
 
     @Test

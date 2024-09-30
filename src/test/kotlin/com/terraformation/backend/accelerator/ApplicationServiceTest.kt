@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
@@ -43,10 +44,11 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val config = mockk<TerrawareServerConfig>()
   private val countryDetector = mockk<CountryDetector>()
+  private val eventPublisher = TestEventPublisher()
   private val preScreenBoundarySubmissionFetcher = mockk<PreScreenBoundarySubmissionFetcher>()
   private val hubSpotService = mockk<HubSpotService>()
   private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore by lazy {
-    ProjectAcceleratorDetailsStore(clock, dslContext)
+    ProjectAcceleratorDetailsStore(clock, dslContext, eventPublisher)
   }
   private val service: ApplicationService by lazy {
     ApplicationService(

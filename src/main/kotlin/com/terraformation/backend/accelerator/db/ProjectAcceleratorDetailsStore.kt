@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.ParticipantProjectFileNamingUpdatedEvent
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
@@ -16,11 +17,13 @@ import java.net.URI
 import java.time.InstantSource
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class ProjectAcceleratorDetailsStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
   /**
    * Returns the accelerator details for a project. If the project doesn't have any details yet,
@@ -126,6 +129,10 @@ class ProjectAcceleratorDetailsStore(
               .set(updated.landUseModelTypes.map { ProjectLandUseModelTypesRecord(projectId, it) })
               .execute()
         }
+      }
+
+      if (existing.fileNaming != updated.fileNaming) {
+        eventPublisher.publishEvent(ParticipantProjectFileNamingUpdatedEvent(projectId))
       }
     }
   }
