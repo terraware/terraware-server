@@ -3,7 +3,6 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectFileNamingUpdatedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.file.GoogleDriveWriter
 import java.net.URI
@@ -28,16 +27,6 @@ class GoogleFolderUpdater(
       // If a project has a Google folder, but doesn't have a file naming set up
       if (projectDetails.googleFolderUrl != null && projectDetails.fileNaming == null) {
         renameFolder(projectDetails.googleFolderUrl, application.internalName)
-      }
-    }
-  }
-
-  @EventListener
-  fun on(event: ParticipantProjectFileNamingUpdatedEvent) {
-    systemUser.run {
-      val projectDetails = projectAcceleratorDetailsStore.fetchOneById(event.projectId)
-      if (projectDetails.googleFolderUrl != null && projectDetails.fileNaming != null) {
-        renameFolder(projectDetails.googleFolderUrl, projectDetails.fileNaming)
       }
     }
   }

@@ -6,7 +6,6 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectFileNamingUpdatedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -89,42 +88,6 @@ class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `Does not update Google folder name if drive url does not exist`() {
       updater.on(ApplicationInternalNameUpdatedEvent(applicationId))
-
-      verify(exactly = 0) { googleDriveWriter.renameFile(any(), any()) }
-    }
-  }
-
-  @Nested
-  inner class ParticipantProjectNamingUpdated {
-    @Test
-    fun `Updates Google folder name if drive url and project naming exists`() {
-      insertProjectAcceleratorDetails(
-          projectId = projectId,
-          googleFolderUrl = URI.create("https://terraformation.com"),
-          fileNaming = "New file naming")
-
-      updater.on(ParticipantProjectFileNamingUpdatedEvent(projectId))
-
-      verify(exactly = 1) {
-        googleDriveWriter.renameFile("fileId", "New file naming$INTERNAL_FOLDER_SUFFIX")
-      }
-    }
-
-    @Test
-    fun `Does not update Google folder name if project file naming does not exist`() {
-      insertProjectAcceleratorDetails(
-          projectId = projectId, googleFolderUrl = URI.create("https://terraformation.com"))
-
-      updater.on(ParticipantProjectFileNamingUpdatedEvent(projectId))
-
-      verify(exactly = 0) { googleDriveWriter.renameFile(any(), any()) }
-    }
-
-    @Test
-    fun `Does not update Google folder name if drive url does not exist`() {
-      insertProjectAcceleratorDetails(projectId = projectId, fileNaming = "New file naming")
-
-      updater.on(ParticipantProjectFileNamingUpdatedEvent(projectId))
 
       verify(exactly = 0) { googleDriveWriter.renameFile(any(), any()) }
     }
