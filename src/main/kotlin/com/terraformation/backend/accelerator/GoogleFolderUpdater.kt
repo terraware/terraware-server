@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
 import com.terraformation.backend.customer.model.SystemUser
+import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.file.GoogleDriveWriter
 import java.net.URI
 import javax.inject.Named
@@ -24,8 +25,10 @@ class GoogleFolderUpdater(
       val application = applicationStore.fetchOneById(event.applicationId)
       val projectDetails = projectAcceleratorDetailsStore.fetchOneById(application.projectId)
 
-      // If a project has a Google folder, but doesn't have a file naming set up
-      if (projectDetails.googleFolderUrl != null && projectDetails.fileNaming == null) {
+      // If a project has a Google folder, and is still in pre-screen
+      if (projectDetails.googleFolderUrl != null &&
+          setOf(ApplicationStatus.NotSubmitted, ApplicationStatus.FailedPreScreen)
+              .contains(application.status)) {
         renameFolder(projectDetails.googleFolderUrl, application.internalName)
       }
     }
