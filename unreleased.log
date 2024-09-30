@@ -1,3 +1,2 @@
+e4d2afd3020 SW-6066 Added events and updater to handle file naming updates (#2461)
 976f1a57ec9 Updated translations from Phrase (#2459)
-a44ce7efac6 SW-6061 Allow accelerator admins to not trigger workflows after updating variable values (#2458)
-f13a2dd1d3d SW-6045 Update applications when project variable is updated (#2456)
