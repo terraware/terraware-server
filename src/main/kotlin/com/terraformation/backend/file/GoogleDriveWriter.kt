@@ -61,7 +61,8 @@ class GoogleDriveWriter(
     Drive.Builder(
             NetHttpTransport(),
             GsonFactory.getDefaultInstance(),
-            HttpCredentialsAdapter(credentials))
+            HttpCredentialsAdapter(credentials),
+        )
         .setApplicationName("terraware-server")
         .build()
   }
@@ -162,7 +163,8 @@ class GoogleDriveWriter(
           inputStream = inputStream,
           driveId = driveId,
           description = description,
-          fileId = metadata.id)
+          fileId = metadata.id,
+      )
     }
   }
 
@@ -209,6 +211,21 @@ class GoogleDriveWriter(
    */
   fun shareFile(googleFileId: String): URI {
     return URI.create(getFileMetadata(googleFileId, "webViewLink").webViewLink)
+  }
+
+  fun moveFile(googleFileId: String, folderUrl: URI) {
+    // Retrieve the existing parents to remove
+    val file = getFileMetadata(googleFileId, "parents")
+
+    val parentId = getFileIdForFolderUrl(folderUrl)
+    val previousParents = file.parents.joinToString(",")
+
+    driveClient
+        .files()
+        .update(googleFileId, null)
+        .setAddParents(parentId)
+        .setRemoveParents(previousParents)
+        .execute()
   }
 
   /** Returns the metadata for an existing file. */
