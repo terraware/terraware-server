@@ -1015,6 +1015,13 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateAccessionProject(accessionId: AccessionId) {
+    if (!user.canUpdateAccessionProject(accessionId)) {
+      readAccession(accessionId)
+      throw AccessDeniedException("No permission to assign project to accession $accessionId")
+    }
+  }
+
   fun updateApplicationBoundary(applicationId: ApplicationId) {
     if (!user.canUpdateApplicationBoundary(applicationId)) {
       readApplication(applicationId)
@@ -1173,6 +1180,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdatePlantingSite(plantingSiteId)) {
       readPlantingSite(plantingSiteId)
       throw AccessDeniedException("No permission to update planting site $plantingSiteId")
+    }
+  }
+
+  fun updatePlantingSiteProject(plantingSiteId: PlantingSiteId) {
+    if (!user.canUpdatePlantingSiteProject(plantingSiteId)) {
+      readPlantingSite(plantingSiteId)
+      throw AccessDeniedException(
+          "No permission to assign project to planting site $plantingSiteId")
     }
   }
 

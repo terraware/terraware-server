@@ -734,7 +734,7 @@ class AccessionStore(
     requirePermissions {
       // All accessions are in the same organization, so it's sufficient to check permissions on
       // just one of them.
-      updateAccession(accessionIds.first())
+      updateAccessionProject(accessionIds.first())
     }
 
     with(ACCESSIONS) {

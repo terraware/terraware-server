@@ -548,6 +548,9 @@ data class IndividualUser(
   override fun canUpdateAccession(accessionId: AccessionId) =
       isManagerOrHigher(parentStore.getFacilityId(accessionId))
 
+  override fun canUpdateAccessionProject(accessionId: AccessionId) =
+      isMember(parentStore.getFacilityId(accessionId))
+
   override fun canUpdateApplicationBoundary(applicationId: ApplicationId) =
       isTFExpertOrHigher() || isAdminOrHigher(parentStore.getOrganizationId(applicationId))
 
@@ -632,6 +635,9 @@ data class IndividualUser(
 
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId) =
       isAdminOrHigher(parentStore.getOrganizationId(plantingSiteId))
+
+  override fun canUpdatePlantingSiteProject(plantingSiteId: PlantingSiteId) =
+      isMember(parentStore.getOrganizationId(plantingSiteId))
 
   override fun canUpdatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId) =
       isAdminOrHigher(parentStore.getOrganizationId(plantingSubzoneId))
