@@ -7,6 +7,7 @@ import com.terraformation.backend.accelerator.db.ProjectDocumentSettingsNotConfi
 import com.terraformation.backend.accelerator.db.ProjectDocumentStorageFailedException
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadFailedEvent
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadFailedEvent.FailureReason
+import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -18,7 +19,10 @@ import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import jakarta.ws.rs.core.MediaType
+import java.net.URI
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -29,12 +33,13 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock = TestClock()
+  private val config: TerrawareServerConfig = mockk()
   private val dropboxWriter: DropboxWriter = mockk()
   private val eventPublisher = TestEventPublisher()
   private val googleDriveWriter: GoogleDriveWriter = mockk()
 
   private val service: SubmissionService by lazy {
-    SubmissionService(clock, dropboxWriter, dslContext, eventPublisher, googleDriveWriter)
+    SubmissionService(clock, config, dropboxWriter, dslContext, eventPublisher, googleDriveWriter)
   }
 
   private val contentType = MediaType.APPLICATION_OCTET_STREAM
@@ -74,6 +79,9 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `publishes event and throws exception if Google folder ID not configured`() {
+      every { config.accelerator } returns
+          TerrawareServerConfig.AcceleratorConfig(applicationGoogleFolderId = null)
+
       insertProjectAcceleratorDetails(fileNaming = "xyz")
 
       assertEventAndException<ProjectDocumentSettingsNotConfiguredException>(
@@ -87,6 +95,76 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEventAndException<ProjectDocumentSettingsNotConfiguredException>(
           FailureReason.FolderNotConfigured, DocumentStore.Dropbox)
+    }
+
+    @Test
+    fun `creates new Google Drive folder if none exists and deliverable is not sensitive`() {
+      val parentFolderId = "parent"
+      val driveId = "drive"
+      val fileNaming = "xyz"
+      val newFolderId = "xyzzy"
+      val newFolderUrl = URI("https://drive.google.com/drive/$newFolderId")
+
+      insertProjectAcceleratorDetails(fileNaming = fileNaming)
+
+      every { config.accelerator } returns
+          TerrawareServerConfig.AcceleratorConfig(applicationGoogleFolderId = parentFolderId)
+      every { googleDriveWriter.findOrCreateFolders(driveId, parentFolderId, any()) } returns
+          newFolderId
+      every { googleDriveWriter.getDriveIdForFile(any()) } returns driveId
+      every { googleDriveWriter.getFileIdForFolderUrl(newFolderUrl) } returns newFolderId
+      every { googleDriveWriter.shareFile(newFolderId) } returns newFolderUrl
+      every {
+        googleDriveWriter.uploadFile(
+            newFolderId, any(), any(), any(), driveId, any(), any(), any(), any())
+      } returns "file"
+
+      receiveDocument()
+
+      verify(exactly = 1) {
+        googleDriveWriter.findOrCreateFolders(
+            driveId, parentFolderId, listOf("$fileNaming [Internal]"))
+      }
+
+      assertEquals(
+          newFolderUrl,
+          projectAcceleratorDetailsDao.fetchOneByProjectId(projectId)?.googleFolderUrl,
+          "Google folder URL")
+    }
+
+    @Test
+    fun `creates new Google Drive folder for new application`() {
+      val parentFolderId = "parent"
+      val driveId = "drive"
+      val fileNaming = "xyz"
+      val newFolderId = "xyzzy"
+      val newFolderUrl = URI("https://drive.google.com/drive/$newFolderId")
+
+      insertApplication(internalName = fileNaming)
+
+      every { config.accelerator } returns
+          TerrawareServerConfig.AcceleratorConfig(applicationGoogleFolderId = parentFolderId)
+      every { googleDriveWriter.findOrCreateFolders(driveId, parentFolderId, any()) } returns
+          newFolderId
+      every { googleDriveWriter.getDriveIdForFile(any()) } returns driveId
+      every { googleDriveWriter.getFileIdForFolderUrl(newFolderUrl) } returns newFolderId
+      every { googleDriveWriter.shareFile(newFolderId) } returns newFolderUrl
+      every {
+        googleDriveWriter.uploadFile(
+            newFolderId, any(), any(), any(), driveId, any(), any(), any(), any())
+      } returns "file"
+
+      receiveDocument()
+
+      verify(exactly = 1) {
+        googleDriveWriter.findOrCreateFolders(
+            driveId, parentFolderId, listOf("$fileNaming [Internal]"))
+      }
+
+      assertEquals(
+          newFolderUrl,
+          projectAcceleratorDetailsDao.fetchOneByProjectId(projectId)?.googleFolderUrl,
+          "Google folder URL")
     }
 
     @Test

@@ -120,20 +120,6 @@
     </form>
 </th:block>
 
-<th:block th:if="${isSuperAdmin}">
-    <h2>Configure application folders</h2>
-
-    <p>
-        One time action to set up Google Drive folders for existing applications. This action may
-        take some time to complete after success. This should only be used once, since future
-        applications will automatically create/update Google Drive folders.
-    </p>
-
-    <form method="POST" action="/admin/applications/configureFolders">
-        <input type="submit" value="Run"/>
-    </form>
-</th:block>
-
 <th:block th:if="${canManageParticipants}">
     <h2>Participants</h2>
 
