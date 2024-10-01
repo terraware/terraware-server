@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.DeliverableService
 import com.terraformation.backend.accelerator.SubmissionService
 import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.DeliverableStore
+import com.terraformation.backend.accelerator.db.DeliverablesImporter
 import com.terraformation.backend.accelerator.db.ProjectDocumentStorageFailedException
 import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
@@ -54,6 +55,7 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/accelerator/deliverables")
 @RestController
 class DeliverablesController(
+    private val deliverablesImporter: DeliverablesImporter,
     private val deliverableService: DeliverableService,
     private val deliverableStore: DeliverableStore,
     private val submissionService: SubmissionService,
@@ -165,6 +167,18 @@ class DeliverablesController(
       throw ServerErrorException(
           "Unable to store uploaded file", HttpStatus.INSUFFICIENT_STORAGE.value(), e)
     }
+  }
+
+  @ApiResponse200
+  @Operation(summary = "Import a list of deliverables metadata. ")
+  @PostMapping("/import", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+  @io.swagger.v3.oas.annotations.parameters.RequestBody(
+      content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])])
+  fun importDeliverables(
+      @RequestPart(required = true) file: MultipartFile
+  ): SimpleSuccessResponsePayload {
+    file.inputStream.use { inputStream -> deliverablesImporter.importDeliverables(inputStream) }
+    return SimpleSuccessResponsePayload()
   }
 
   @ApiResponseSimpleSuccess
