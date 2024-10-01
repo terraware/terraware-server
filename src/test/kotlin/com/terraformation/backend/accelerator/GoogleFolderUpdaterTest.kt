@@ -6,11 +6,11 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectFileNamingUpdatedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.ApplicationId
+import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.gis.CountryDetector
@@ -23,6 +23,9 @@ import java.net.URI
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 
 class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
@@ -74,16 +77,22 @@ class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
       }
     }
 
-    @Test
-    fun `Does not update Google folder name if project file naming exists`() {
-      insertProjectAcceleratorDetails(
-          projectId = projectId,
-          googleFolderUrl = URI.create("https://terraformation.com"),
-          fileNaming = "Existing file naming")
+    @MethodSource(
+        "com.terraformation.backend.accelerator.GoogleFolderUpdaterTest#applicationStatues")
+    @ParameterizedTest
+    fun `Does not update Google folder name if application is not in Pre-screen`(
+        status: ApplicationStatus
+    ) {
+      val existing = applicationsDao.fetchOneById(applicationId)!!
+      applicationsDao.update(existing.copy(applicationStatusId = status))
 
       updater.on(ApplicationInternalNameUpdatedEvent(applicationId))
 
-      verify(exactly = 0) { googleDriveWriter.renameFile(any(), any()) }
+      if (status == ApplicationStatus.NotSubmitted || status == ApplicationStatus.FailedPreScreen) {
+        googleDriveWriter.renameFile("fileId", "XXX_Organization$INTERNAL_FOLDER_SUFFIX")
+      } else {
+        verify(exactly = 0) { googleDriveWriter.renameFile(any(), any()) }
+      }
     }
 
     @Test
@@ -94,39 +103,7 @@ class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
     }
   }
 
-  @Nested
-  inner class ParticipantProjectNamingUpdated {
-    @Test
-    fun `Updates Google folder name if drive url and project naming exists`() {
-      insertProjectAcceleratorDetails(
-          projectId = projectId,
-          googleFolderUrl = URI.create("https://terraformation.com"),
-          fileNaming = "New file naming")
-
-      updater.on(ParticipantProjectFileNamingUpdatedEvent(projectId))
-
-      verify(exactly = 1) {
-        googleDriveWriter.renameFile("fileId", "New file naming$INTERNAL_FOLDER_SUFFIX")
-      }
-    }
-
-    @Test
-    fun `Does not update Google folder name if project file naming does not exist`() {
-      insertProjectAcceleratorDetails(
-          projectId = projectId, googleFolderUrl = URI.create("https://terraformation.com"))
-
-      updater.on(ParticipantProjectFileNamingUpdatedEvent(projectId))
-
-      verify(exactly = 0) { googleDriveWriter.renameFile(any(), any()) }
-    }
-
-    @Test
-    fun `Does not update Google folder name if drive url does not exist`() {
-      insertProjectAcceleratorDetails(projectId = projectId, fileNaming = "New file naming")
-
-      updater.on(ParticipantProjectFileNamingUpdatedEvent(projectId))
-
-      verify(exactly = 0) { googleDriveWriter.renameFile(any(), any()) }
-    }
+  companion object {
+    @JvmStatic fun applicationStatues() = ApplicationStatus.entries.map { Arguments.of(it) }
   }
 }
