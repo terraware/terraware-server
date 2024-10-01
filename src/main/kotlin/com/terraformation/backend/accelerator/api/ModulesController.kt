@@ -1,19 +1,25 @@
 package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.db.CohortModuleStore
+import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleNotFoundException
+import com.terraformation.backend.accelerator.model.ModuleDeliverableModel
 import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.DeliverableCategory
+import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.i18n.TimeZones
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import java.time.InstantSource
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController
 class ModulesController(
     private val clock: InstantSource,
     private val cohortModuleStore: CohortModuleStore,
+    private val deliverableStore: DeliverableStore,
 ) {
   @ApiResponse200
   @ApiResponse404
@@ -66,6 +73,17 @@ class ModulesController(
     val today = LocalDate.ofInstant(clock.instant(), TimeZones.UTC)
     return GetModuleResponsePayload(ModulePayload(model, today))
   }
+
+  @ApiResponse200
+  @ApiResponse404
+  @GetMapping("/{moduleId}/deliverables")
+  @Operation(summary = "List module deliverables.")
+  fun listModuleDeliverables(
+      @PathVariable moduleId: ModuleId,
+  ): ListModuleDeliverablesResponsePayload {
+    val deliverables = deliverableStore.fetchDeliverables(moduleId = moduleId)
+    return ListModuleDeliverablesResponsePayload(deliverables.map { ModuleDeliverablePayload(it) })
+  }
 }
 
 data class ModulePayload(
@@ -96,6 +114,32 @@ data class ModulePayload(
       eventDescriptions = model.eventDescriptions,
   )
 }
+
+data class ModuleDeliverablePayload(
+    val category: DeliverableCategory,
+    @Schema(description = "Optional description of the deliverable in HTML form.")
+    val descriptionHtml: String?,
+    val id: DeliverableId,
+    val name: String,
+    val required: Boolean,
+    val position: Int,
+    val type: DeliverableType,
+    val sensitive: Boolean,
+) {
+  constructor(
+      model: ModuleDeliverableModel
+  ) : this(
+      model.category,
+      model.descriptionHtml,
+      model.id,
+      model.name,
+      model.required,
+      model.position,
+      model.type,
+      model.sensitive)
+}
+
+data class ListModuleDeliverablesResponsePayload(val deliverables: List<ModuleDeliverablePayload>)
 
 data class GetModuleResponsePayload(
     val module: ModulePayload,
