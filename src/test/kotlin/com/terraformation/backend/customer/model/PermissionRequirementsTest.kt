@@ -838,6 +838,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { updateAccession(accessionId) } ifUser { canUpdateAccession(accessionId) }
 
   @Test
+  fun updateAccessionProject() =
+      allow { updateAccessionProject(accessionId) } ifUser
+          {
+            canUpdateAccessionProject(accessionId)
+          }
+
+  @Test
   fun updateApplicationBoundary() =
       allow { updateApplicationBoundary(applicationId) } ifUser
           {
@@ -945,6 +952,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun updatePlantingSite() =
       allow { updatePlantingSite(plantingSiteId) } ifUser { canUpdatePlantingSite(plantingSiteId) }
+
+  @Test
+  fun updatePlantingSiteProject() =
+      allow { updatePlantingSiteProject(plantingSiteId) } ifUser
+          {
+            canUpdatePlantingSiteProject(plantingSiteId)
+          }
 
   @Test
   fun updatePlantingSubzone() =

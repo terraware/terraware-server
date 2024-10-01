@@ -124,9 +124,9 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadBatch(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
     every { user.canReadProject(any()) } returns true
-    every { user.canUpdateAccession(any()) } returns true
+    every { user.canUpdateAccessionProject(any()) } returns true
     every { user.canUpdateBatch(any()) } returns true
-    every { user.canUpdatePlantingSite(any()) } returns true
+    every { user.canUpdatePlantingSiteProject(any()) } returns true
 
     insertOrganization()
     insertFacility()
@@ -184,8 +184,8 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception if no permission to update accession`() {
-      every { user.canUpdateAccession(any()) } returns false
+    fun `throws exception if no permission to update accession project`() {
+      every { user.canUpdateAccessionProject(any()) } returns false
 
       assertThrows<AccessDeniedException> {
         service.assignProject(projectId, listOf(accessionId1), emptyList(), emptyList())
@@ -218,8 +218,8 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception if no permission to update planting site`() {
-      every { user.canUpdatePlantingSite(any()) } returns false
+    fun `throws exception if no permission to update planting site project`() {
+      every { user.canUpdatePlantingSiteProject(any()) } returns false
 
       assertThrows<AccessDeniedException> {
         service.assignProject(projectId, emptyList(), emptyList(), listOf(plantingSiteId1))

@@ -408,6 +408,8 @@ interface TerrawareUser : Principal {
 
   fun canUpdateAccession(accessionId: AccessionId): Boolean = defaultPermission
 
+  fun canUpdateAccessionProject(accessionId: AccessionId): Boolean = defaultPermission
+
   fun canUpdateApplicationBoundary(applicationId: ApplicationId): Boolean = defaultPermission
 
   fun canUpdateApplicationCountry(applicationId: ApplicationId): Boolean = defaultPermission
@@ -463,6 +465,8 @@ interface TerrawareUser : Principal {
   ): Boolean = defaultPermission
 
   fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
+
+  fun canUpdatePlantingSiteProject(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 
   fun canUpdatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean = defaultPermission
 

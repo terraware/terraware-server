@@ -460,6 +460,7 @@ internal class PermissionTest : DatabaseTest() {
         readAccession = true,
         setWithdrawalUser = true,
         updateAccession = true,
+        updateAccessionProject = true,
         uploadPhoto = true,
     )
 
@@ -527,6 +528,7 @@ internal class PermissionTest : DatabaseTest() {
         readPlantingSite = true,
         scheduleObservation = true,
         updatePlantingSite = true,
+        updatePlantingSiteProject = true,
     )
 
     permissions.expect(
@@ -722,6 +724,7 @@ internal class PermissionTest : DatabaseTest() {
         readAccession = true,
         setWithdrawalUser = true,
         updateAccession = true,
+        updateAccessionProject = true,
         uploadPhoto = true,
     )
 
@@ -789,6 +792,7 @@ internal class PermissionTest : DatabaseTest() {
         readPlantingSite = true,
         scheduleObservation = true,
         updatePlantingSite = true,
+        updatePlantingSiteProject = true,
     )
 
     permissions.expect(
@@ -917,6 +921,7 @@ internal class PermissionTest : DatabaseTest() {
         readAccession = true,
         setWithdrawalUser = true,
         updateAccession = true,
+        updateAccessionProject = true,
         uploadPhoto = true,
     )
 
@@ -972,6 +977,7 @@ internal class PermissionTest : DatabaseTest() {
         createDelivery = true,
         createObservation = true,
         readPlantingSite = true,
+        updatePlantingSiteProject = true,
     )
 
     permissions.expect(
@@ -1077,6 +1083,7 @@ internal class PermissionTest : DatabaseTest() {
         deleteAccession = false,
         readAccession = true,
         updateAccession = false,
+        updateAccessionProject = true,
         uploadPhoto = true,
     )
 
@@ -1128,6 +1135,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSiteIds.forOrg1(),
         readPlantingSite = true,
+        updatePlantingSiteProject = true,
     )
 
     permissions.expect(
@@ -1297,6 +1305,7 @@ internal class PermissionTest : DatabaseTest() {
         readAccession = true,
         setWithdrawalUser = true,
         updateAccession = true,
+        updateAccessionProject = true,
         uploadPhoto = true,
     )
 
@@ -1399,6 +1408,7 @@ internal class PermissionTest : DatabaseTest() {
         readPlantingSite = true,
         scheduleObservation = true,
         updatePlantingSite = true,
+        updatePlantingSiteProject = true,
     )
 
     permissions.expect(
@@ -1575,6 +1585,7 @@ internal class PermissionTest : DatabaseTest() {
         readPlantingSite = true,
         scheduleObservation = true,
         updatePlantingSite = true,
+        updatePlantingSiteProject = true,
     )
 
     permissions.expect(
@@ -1781,6 +1792,7 @@ internal class PermissionTest : DatabaseTest() {
         readPlantingSite = true,
         scheduleObservation = true,
         updatePlantingSite = true,
+        updatePlantingSiteProject = true,
     )
 
     permissions.expect(
@@ -1988,6 +2000,7 @@ internal class PermissionTest : DatabaseTest() {
         readPlantingSite = true,
         scheduleObservation = true,
         updatePlantingSite = true,
+        updatePlantingSiteProject = true,
     )
 
     permissions.expect(
@@ -2162,6 +2175,7 @@ internal class PermissionTest : DatabaseTest() {
         readPlantingSite = true,
         scheduleObservation = false,
         updatePlantingSite = false,
+        updatePlantingSiteProject = true,
     )
 
     permissions.expect(
@@ -2562,6 +2576,7 @@ internal class PermissionTest : DatabaseTest() {
         readAccession: Boolean = false,
         setWithdrawalUser: Boolean = false,
         updateAccession: Boolean = false,
+        updateAccessionProject: Boolean = false,
         uploadPhoto: Boolean = false,
     ) {
       accessions.forEach { accessionId ->
@@ -2581,6 +2596,10 @@ internal class PermissionTest : DatabaseTest() {
             updateAccession,
             user.canUpdateAccession(idInDatabase),
             "Can update accession $accessionId")
+        assertEquals(
+            updateAccessionProject,
+            user.canUpdateAccessionProject(idInDatabase),
+            "Can update project for accession $accessionId")
         assertEquals(
             uploadPhoto,
             user.canUploadPhoto(idInDatabase),
@@ -2910,6 +2929,7 @@ internal class PermissionTest : DatabaseTest() {
         readPlantingSite: Boolean = false,
         scheduleObservation: Boolean = false,
         updatePlantingSite: Boolean = false,
+        updatePlantingSiteProject: Boolean = false,
     ) {
       plantingSiteIds.forEach { plantingSiteId ->
         val idInDatabase = getDatabaseId(plantingSiteId)
@@ -2942,6 +2962,10 @@ internal class PermissionTest : DatabaseTest() {
             updatePlantingSite,
             user.canUpdatePlantingSite(idInDatabase),
             "Can update planting site $plantingSiteId")
+        assertEquals(
+            updatePlantingSiteProject,
+            user.canUpdatePlantingSiteProject(idInDatabase),
+            "Can update project for planting site $plantingSiteId")
 
         uncheckedPlantingSites.remove(plantingSiteId)
       }
@@ -3361,7 +3385,7 @@ internal class PermissionTest : DatabaseTest() {
                 user.canUpdateApplicationBoundary(idInDatabase),
                 "Can update boundary for application $applicationId")
             assertEquals(
-                updateApplicationBoundary,
+                updateApplicationCountry,
                 user.canUpdateApplicationCountry(idInDatabase),
                 "Can update country for application $applicationId")
             assertEquals(

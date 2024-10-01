@@ -1014,7 +1014,7 @@ class PlantingSiteStore(
     requirePermissions {
       // All planting sites are in the same organization, so it's sufficient to check permissions
       // on just one of them.
-      updatePlantingSite(plantingSiteIds.first())
+      updatePlantingSiteProject(plantingSiteIds.first())
     }
 
     with(PLANTING_SITES) {
