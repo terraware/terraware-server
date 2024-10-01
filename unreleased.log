@@ -1,2 +1,4 @@
+b32ef30223a SW-6066 Only update pre-screen applicaitons folders and do not update participant folders (#2468)
+a9ad1db6d8b SW-5899 Updated permissions for assigning projects (#2469)
 e4d2afd3020 SW-6066 Added events and updater to handle file naming updates (#2461)
 976f1a57ec9 Updated translations from Phrase (#2459)
