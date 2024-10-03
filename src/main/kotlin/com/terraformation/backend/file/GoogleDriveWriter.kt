@@ -219,12 +219,14 @@ class GoogleDriveWriter(
     val file = getFileMetadata(googleFileId, "parents")
     val previousParents = file.parents.joinToString(",")
 
-    driveClient
-        .files()
-        .update(googleFileId, null)
-        .setAddParents(parentFileId)
-        .setRemoveParents(previousParents)
-        .execute()
+    if (previousParents != parentFileId) {
+      driveClient
+          .files()
+          .update(googleFileId, null)
+          .setAddParents(parentFileId)
+          .setRemoveParents(previousParents)
+          .execute()
+    }
   }
 
   /** Returns the metadata for an existing file. */

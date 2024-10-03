@@ -7,8 +7,11 @@ import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdat
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.accelerator.ApplicationStatus
+import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DOCUMENTS
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.file.GoogleDriveWriter
 import java.net.URI
@@ -16,6 +19,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import javax.inject.Named
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.springframework.context.event.EventListener
 
 /** Event listeners for updating deliverable files when file namings are changed */
@@ -76,44 +80,69 @@ class DeliverableFilesRenamer(
     val allDeliverables = listOf(cohortDeliverables, applicationDeliverables).flatten()
 
     allDeliverables.forEach { deliverable ->
-      // Use a map to keep track of in use fileNames. Because this is a sequential operation, we
-      // should not run into race conditions that we see in Submission Service
-      val nextSuffix = mutableMapOf<String, Int>()
+      deliverable.documents
+          .filter { it.documentStore == DocumentStore.Google } // only rename Google files
+          .forEach { existing ->
+            // Move the document file to the correct folder
+            val documentRow = submissionDocumentsDao.fetchOneById(existing.id)!!
+            val fileId = documentRow.location!!
+            googleDriveWriter.moveFile(fileId, folderId)
 
-      deliverable.documents.forEach {
-        // Recreate the proper filename by the document model
-        val extension =
-            sanitizeForFilename(
-                it.originalName?.substringAfterLast('.')?.let { ext -> ".$ext" } ?: "")
-        val createdDateUtc = LocalDate.ofInstant(it.createdTime, ZoneOffset.UTC)
-        val rawFileName =
-            listOf(
-                    deliverable.name,
-                    createdDateUtc.toString(),
-                    fileNaming,
-                    it.description,
-                )
-                .joinToString("_")
-        val baseName = sanitizeForFilename(rawFileName)
+            // Recreate the proper filename by the document model
+            val extension =
+                sanitizeForFilename(
+                    existing.originalName?.substringAfterLast('.')?.let { ".$it" } ?: "")
 
-        val suffix =
-            if (nextSuffix.keys.contains(baseName)) {
-              val suffixNumber = nextSuffix[baseName] ?: 1
-              nextSuffix[baseName] = suffixNumber + 1
-              "_$suffixNumber"
-            } else {
-              nextSuffix[baseName] = 2
-              ""
+            val createdDateUtc = LocalDate.ofInstant(existing.createdTime, ZoneOffset.UTC)
+            val rawFileName =
+                listOf(
+                        deliverable.name,
+                        createdDateUtc.toString(),
+                        fileNaming,
+                        existing.description,
+                    )
+                    .joinToString("_")
+
+            val baseName = sanitizeForFilename(rawFileName)
+
+            // Only update if name is different.
+            if (!(existing.name.startsWith(baseName) && existing.name.endsWith(extension))) {
+              // Find the existing suffixed filenames, if any, so we can bump the suffix number.
+              val namePattern = DSL.escape(baseName, '\\') + "\\_%" + DSL.escape(extension, '\\')
+
+              val allMatchingNames =
+                  dslContext
+                      .select(SUBMISSION_DOCUMENTS.NAME)
+                      .from(SUBMISSION_DOCUMENTS)
+                      .where(SUBMISSION_DOCUMENTS.PROJECT_ID.eq(projectId))
+                      .and(
+                          DSL.or(
+                              SUBMISSION_DOCUMENTS.NAME.like(namePattern),
+                              SUBMISSION_DOCUMENTS.NAME.eq("$baseName$extension")))
+                      .fetch(SUBMISSION_DOCUMENTS.NAME.asNonNullable())
+
+              val suffix =
+                  if (allMatchingNames.isEmpty()) {
+                    // First entry with this name, no suffix required
+                    ""
+                  } else {
+                    val maxSuffix =
+                        allMatchingNames
+                            .map { name ->
+                              name.substring(baseName.length + 1).substringBefore('.')
+                            }
+                            .mapNotNull { suffix -> suffix.toIntOrNull() }
+                            .maxOrNull()
+                    val nextSuffix = maxSuffix?.let { it + 1 } ?: 2
+                    "_${nextSuffix}"
+                  }
+
+              val fileName = baseName + suffix + extension
+
+              googleDriveWriter.renameFile(fileId, fileName)
+              submissionDocumentsDao.update(documentRow.copy(name = fileName))
             }
-
-        val fileName = baseName + suffix + extension
-        val documentRow = submissionDocumentsDao.fetchOneById(it.id)!!
-        val fileId = documentRow.location!!
-
-        googleDriveWriter.renameFile(fileId, fileName)
-        googleDriveWriter.moveFile(fileId, folderId)
-        submissionDocumentsDao.update(documentRow.copy(name = fileName))
-      }
+          }
     }
   }
 
