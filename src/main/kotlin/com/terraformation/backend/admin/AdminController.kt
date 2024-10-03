@@ -42,6 +42,10 @@ class AdminController(
     val allOrganizations = organizationsDao.findAll().sortedBy { it.id!!.value }
 
     model.addAttribute("allOrganizations", allOrganizations)
+    model.addAttribute(
+        "canCleanupApplicationDrive",
+        config.accelerator.applicationGoogleFolderId != null &&
+            GlobalRole.SuperAdmin in currentUser().globalRoles)
     model.addAttribute("canAddAnyOrganizationUser", currentUser().canAddAnyOrganizationUser())
     model.addAttribute("canCreateDeviceManager", currentUser().canCreateDeviceManager())
     model.addAttribute("canDeleteUsers", currentUser().canDeleteUsers())
