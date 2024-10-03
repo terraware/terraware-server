@@ -1,3 +1,4 @@
+a78927a385b Fail gracefully and add failure details for application cleanup step (#2475)
 12e99a5530b Use addParent and removeParents for files, added shared drive flag (#2474)
 fd7a9d0cdf4 Fixed move file function (#2473)
 2823be607f2 Implemented feature to rename deliverable files and ensure correct directory (#2472)
