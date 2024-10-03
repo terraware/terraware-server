@@ -1,10 +1,10 @@
 package com.terraformation.backend.admin
 
-import com.terraformation.backend.accelerator.DeliverableFilesRenamer
 import com.terraformation.backend.accelerator.db.ApplicationStore
+import com.terraformation.backend.accelerator.event.ProjectGoogleDriveCleanupEvent
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.db.default_schema.GlobalRole
-import com.terraformation.backend.log.perClassLogger
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Controller
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
@@ -17,10 +17,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @Validated
 class AdminApplicationsController(
     private val applicationStore: ApplicationStore,
-    private val deliverableFilesRenamer: DeliverableFilesRenamer,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
-  private val log = perClassLogger()
-
   @PostMapping("/applications/cleanUpDrive")
   fun cleanUpApplicationDrive(
       redirectAttributes: RedirectAttributes,
@@ -33,22 +31,13 @@ class AdminApplicationsController(
           return redirectToHome()
         }
 
-    val failedAttempts = mutableListOf<String>()
     applications.forEach {
-      try {
-        deliverableFilesRenamer.createOrUpdateGoogleDriveFolder(it.projectId, it.internalName)
-      } catch (e: Exception) {
-        log.warn("Clean up folder for application ${it.id} failed", e)
-        failedAttempts.add("Application ${it.id}: ${e.message}")
-      }
+      eventPublisher.publishEvent(ProjectGoogleDriveCleanupEvent(it.projectId, it.internalName))
     }
 
-    if (failedAttempts.size == 0) {
-      redirectAttributes.successMessage = "Application drive clean up success!"
-    } else {
-      redirectAttributes.failureMessage = "Some application drive clean up failed."
-      redirectAttributes.failureDetails = failedAttempts
-    }
+    redirectAttributes.successMessage =
+        "Dispatched ${applications.size} clean up jobs. " +
+            "Please wait a few minutes for all the jobs to complete. Check logs for results."
 
     return redirectToHome()
   }
