@@ -25,15 +25,29 @@ class AdminApplicationsController(
   fun cleanUpApplicationDrive(
       redirectAttributes: RedirectAttributes,
   ): String {
-    try {
-      val applications = applicationStore.fetchAll()
-      applications.forEach {
+    val applications =
+        try {
+          applicationStore.fetchAll()
+        } catch (e: Exception) {
+          redirectAttributes.failureMessage = "Failed to fetch applications: ${e.message}"
+          return redirectToHome()
+        }
+
+    val failedAttempts = mutableListOf<String>()
+    applications.forEach {
+      try {
         deliverableFilesRenamer.createOrUpdateGoogleDriveFolder(it.projectId, it.internalName)
+      } catch (e: Exception) {
+        log.warn("Clean up folder for application ${it.id} failed", e)
+        failedAttempts.add("Application ${it.id}: ${e.message}")
       }
-      redirectAttributes.successMessage = "Success!"
-    } catch (e: Exception) {
-      log.warn("Clean up application Google Drive failed", e)
-      redirectAttributes.failureMessage = "Failed: ${e.message}"
+    }
+
+    if (failedAttempts.size == 0) {
+      redirectAttributes.successMessage = "Application drive clean up success!"
+    } else {
+      redirectAttributes.failureMessage = "Some application drive clean up failed."
+      redirectAttributes.failureDetails = failedAttempts
     }
 
     return redirectToHome()
