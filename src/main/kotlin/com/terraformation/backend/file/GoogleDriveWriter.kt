@@ -220,11 +220,12 @@ class GoogleDriveWriter(
     val previousParents = file.parents.joinToString(",")
 
     if (previousParents != parentFileId) {
-      val updateRequest = driveClient
-          .files()
-          .update(googleFileId, null)
-          .setAddParents(parentFileId)
-          .setRemoveParents(previousParents)
+      val updateRequest =
+          driveClient
+              .files()
+              .update(googleFileId, null)
+              .setAddParents(parentFileId)
+              .setRemoveParents(previousParents)
 
       updateRequest.supportsAllDrives = true
       updateRequest.execute()
