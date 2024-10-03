@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ApplicationStore
+import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -12,15 +13,21 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationStatus
+import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.util.toInstant
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.net.URI
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -28,7 +35,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 
-class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
+class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock = TestClock()
@@ -36,8 +43,8 @@ class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
   private val eventPublisher = TestEventPublisher()
   private val googleDriveWriter: GoogleDriveWriter = mockk()
 
-  private val updater: GoogleFolderUpdater by lazy {
-    GoogleFolderUpdater(
+  private val renamer: DeliverableFilesRenamer by lazy {
+    DeliverableFilesRenamer(
         ApplicationStore(
             clock,
             countriesDao,
@@ -48,9 +55,11 @@ class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
             organizationsDao,
         ),
         config,
+        DeliverableStore(dslContext),
         dslContext,
         googleDriveWriter,
         ProjectAcceleratorDetailsStore(clock, dslContext, eventPublisher),
+        submissionDocumentsDao,
         SystemUser(usersDao))
   }
 
@@ -67,7 +76,9 @@ class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    projectId = insertProject()
+    insertCohort()
+    insertParticipant(cohortId = inserted.cohortId)
+    projectId = insertProject(participantId = inserted.participantId)
     applicationId = insertApplication(internalName = "XXX_Organization")
 
     every { config.accelerator } returns
@@ -83,6 +94,9 @@ class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
     every { googleDriveWriter.shareFile(oldFolderId) } returns oldFolderUrl
 
     every { googleDriveWriter.renameFile(any(), any()) } returns Unit
+    every { googleDriveWriter.moveFile(any(), any()) } returns Unit
+
+    every { user.canUpdateProjectDocumentSettings(any()) } returns true
   }
 
   @Nested
@@ -91,7 +105,7 @@ class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
     fun `Updates Google folder name if drive url exists, but project file naming does not`() {
       insertProjectAcceleratorDetails(projectId = projectId, googleFolderUrl = oldFolderUrl)
 
-      updater.on(ApplicationInternalNameUpdatedEvent(applicationId))
+      renamer.on(ApplicationInternalNameUpdatedEvent(applicationId))
 
       verify(exactly = 1) {
         googleDriveWriter.renameFile(oldFolderId, "XXX_Organization$INTERNAL_FOLDER_SUFFIX")
@@ -101,7 +115,7 @@ class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `Creates Google folder name if drive url does not exist`() {
-      updater.on(ApplicationInternalNameUpdatedEvent(applicationId))
+      renamer.on(ApplicationInternalNameUpdatedEvent(applicationId))
 
       verify(exactly = 1) {
         googleDriveWriter.findOrCreateFolders(
@@ -110,8 +124,80 @@ class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
       verify(exactly = 0) { googleDriveWriter.renameFile(any(), any()) }
     }
 
+    @Test
+    fun `Renames project document submissions and moves them to the folder`() {
+      insertModule()
+      insertCohortModule()
+      insertDeliverable(name = "Test Documents", deliverableTypeId = DeliverableType.Document)
+      insertSubmission()
+
+      val uploadDate = LocalDate.of(2024, 8, 1)
+      val fileId1 = "documentId1"
+      val fileId2 = "documentId2"
+      val fileId3 = "documentId3"
+
+      val document1 =
+          insertSubmissionDocument(
+              createdTime = uploadDate.toInstant(ZoneId.of("UTC"), LocalTime.MIDNIGHT),
+              description = "Same",
+              location = fileId1,
+              originalName = "file.txt")
+      val document2 =
+          insertSubmissionDocument(
+              createdTime = uploadDate.toInstant(ZoneId.of("UTC"), LocalTime.NOON),
+              description = "Same",
+              location = fileId2,
+              originalName = "file.txt")
+      val document3 =
+          insertSubmissionDocument(
+              createdTime = uploadDate.toInstant(ZoneId.of("UTC"), LocalTime.NOON),
+              description = "Different",
+              location = fileId3,
+              originalName = "file.txt")
+
+      val existingDocument1 = submissionDocumentsDao.fetchOneById(document1)!!
+      val existingDocument2 = submissionDocumentsDao.fetchOneById(document2)!!
+      val existingDocument3 = submissionDocumentsDao.fetchOneById(document3)!!
+
+      insertProjectAcceleratorDetails(projectId = projectId, googleFolderUrl = oldFolderUrl)
+
+      renamer.on(ApplicationInternalNameUpdatedEvent(applicationId))
+
+      verify(exactly = 1) {
+        googleDriveWriter.renameFile(oldFolderId, "XXX_Organization$INTERNAL_FOLDER_SUFFIX")
+      }
+      verify(exactly = 1) {
+        googleDriveWriter.renameFile(fileId1, "Test Documents_2024-08-01_XXX_Organization_Same.txt")
+      }
+      verify(exactly = 1) {
+        googleDriveWriter.renameFile(
+            fileId2, "Test Documents_2024-08-01_XXX_Organization_Same_2.txt")
+      }
+      verify(exactly = 1) {
+        googleDriveWriter.renameFile(
+            fileId3, "Test Documents_2024-08-01_XXX_Organization_Different.txt")
+      }
+
+      verify(exactly = 1) { googleDriveWriter.moveFile(fileId1, oldFolderId) }
+      verify(exactly = 1) { googleDriveWriter.moveFile(fileId2, oldFolderId) }
+      verify(exactly = 1) { googleDriveWriter.moveFile(fileId3, oldFolderId) }
+
+      assertEquals(
+          existingDocument1.copy(name = "Test Documents_2024-08-01_XXX_Organization_Same.txt"),
+          submissionDocumentsDao.fetchOneById(document1),
+          "Document 1 after rename")
+      assertEquals(
+          existingDocument2.copy(name = "Test Documents_2024-08-01_XXX_Organization_Same_2.txt"),
+          submissionDocumentsDao.fetchOneById(document2),
+          "Document 2 after rename has a suffix")
+      assertEquals(
+          existingDocument3.copy(name = "Test Documents_2024-08-01_XXX_Organization_Different.txt"),
+          submissionDocumentsDao.fetchOneById(document3),
+          "Document 3 after rename")
+    }
+
     @MethodSource(
-        "com.terraformation.backend.accelerator.GoogleFolderUpdaterTest#applicationStatues")
+        "com.terraformation.backend.accelerator.DeliverableFilesRenamerTest#applicationStatues")
     @ParameterizedTest
     fun `Does not update Google folder name if application is not in Pre-screen`(
         status: ApplicationStatus
@@ -119,7 +205,7 @@ class GoogleFolderUpdaterTest : DatabaseTest(), RunsAsUser {
       val existing = applicationsDao.fetchOneById(applicationId)!!
       applicationsDao.update(existing.copy(applicationStatusId = status))
 
-      updater.on(ApplicationInternalNameUpdatedEvent(applicationId))
+      renamer.on(ApplicationInternalNameUpdatedEvent(applicationId))
 
       if (status == ApplicationStatus.NotSubmitted || status == ApplicationStatus.FailedPreScreen) {
         googleDriveWriter.renameFile("fileId", "XXX_Organization$INTERNAL_FOLDER_SUFFIX")

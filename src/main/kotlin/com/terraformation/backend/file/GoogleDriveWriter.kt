@@ -213,17 +213,16 @@ class GoogleDriveWriter(
     return URI.create(getFileMetadata(googleFileId, "webViewLink").webViewLink)
   }
 
-  fun moveFile(googleFileId: String, folderUrl: URI) {
+  /** Moves a file or folder to a different parent folder. */
+  fun moveFile(googleFileId: String, parentFileId: String) {
     // Retrieve the existing parents to remove
     val file = getFileMetadata(googleFileId, "parents")
-
-    val parentId = getFileIdForFolderUrl(folderUrl)
     val previousParents = file.parents.joinToString(",")
 
     driveClient
         .files()
         .update(googleFileId, null)
-        .setAddParents(parentId)
+        .setAddParents(parentFileId)
         .setRemoveParents(previousParents)
         .execute()
   }

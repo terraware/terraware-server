@@ -168,6 +168,21 @@
     </p>
 </th:block>
 
+<th:block th:if="${canCleanupApplicationDrive}">
+    <h2>Clean Up Application Google Drive</h2>
+
+    <p>
+        This is a one-time operation to clean up any uploaded application project deliverable
+        submissions. This will ensure that each application has a Google drive folder with the
+        proper naming configuration, move every uploaded file to that folder, and rename each file
+        according to the naming convention.
+    </p>
+
+    <form method="POST" action="/admin/applications/cleanUpDrive">
+        <input type="submit" value="Clean up Google drive"/>
+    </form>
+</th:block>
+
 <th:block th:if="${canImportGlobalSpeciesData}">
     <h2>PDH Migration</h2>
 
