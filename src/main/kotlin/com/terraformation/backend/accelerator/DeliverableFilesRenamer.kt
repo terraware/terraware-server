@@ -14,6 +14,7 @@ import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DO
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.file.GoogleDriveWriter
+import com.terraformation.backend.log.perClassLogger
 import java.net.URI
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -34,6 +35,7 @@ class DeliverableFilesRenamer(
     private val submissionDocumentsDao: SubmissionDocumentsDao,
     private val systemUser: SystemUser,
 ) {
+  private val log = perClassLogger()
 
   @EventListener
   fun on(event: ApplicationInternalNameUpdatedEvent) {
@@ -51,8 +53,15 @@ class DeliverableFilesRenamer(
     val projectDetails = projectAcceleratorDetailsStore.fetchOneById(projectId)
     val folderUrl =
         if (projectDetails.googleFolderUrl != null) {
-          renameFolder(projectDetails.googleFolderUrl, fileNaming)
-          projectDetails.googleFolderUrl
+          try {
+            renameFolder(projectDetails.googleFolderUrl, fileNaming)
+            projectDetails.googleFolderUrl
+          } catch (e: IllegalArgumentException) {
+            // Google url is invalid. Create a new one
+            log.warn("Project $projectId had an invalid Google Drive URL. Recreating a new drive. ")
+            createGoogleDriveFolder(projectId, fileNaming)
+                ?: throw RuntimeException("Failed to create a Google Drive folder")
+          }
         } else {
           createGoogleDriveFolder(projectId, fileNaming)
               ?: throw RuntimeException("Failed to create a Google Drive folder")
@@ -76,7 +85,13 @@ class DeliverableFilesRenamer(
           it.documents.isNotEmpty()
         }
 
-    val folderId = googleDriveWriter.getFileIdForFolderUrl(folderUrl)
+    val folderId =
+        try {
+          googleDriveWriter.getFileIdForFolderUrl(folderUrl)
+        } catch (e: Exception) {
+          log.warn("Folder $folderUrl is not a valid Google drive")
+          null
+        }
     val allDeliverables = listOf(cohortDeliverables, applicationDeliverables).flatten()
 
     allDeliverables.forEach { deliverable ->
@@ -86,7 +101,14 @@ class DeliverableFilesRenamer(
             // Move the document file to the correct folder
             val documentRow = submissionDocumentsDao.fetchOneById(existing.id)!!
             val fileId = documentRow.location!!
-            googleDriveWriter.moveFile(fileId, folderId)
+
+            folderId?.let {
+              try {
+                googleDriveWriter.moveFile(fileId, it)
+              } catch (e: Exception) {
+                log.warn("Failed to move file $fileId into drive $folderUrl")
+              }
+            }
 
             // Recreate the proper filename by the document model
             val extension =
@@ -139,8 +161,12 @@ class DeliverableFilesRenamer(
 
               val fileName = baseName + suffix + extension
 
-              googleDriveWriter.renameFile(fileId, fileName)
-              submissionDocumentsDao.update(documentRow.copy(name = fileName))
+              try {
+                googleDriveWriter.renameFile(fileId, fileName)
+                submissionDocumentsDao.update(documentRow.copy(name = fileName))
+              } catch (e: Exception) {
+                log.warn("Failed to rename file $fileId")
+              }
             }
           }
     }
