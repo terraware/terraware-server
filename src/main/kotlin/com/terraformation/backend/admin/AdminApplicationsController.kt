@@ -5,8 +5,10 @@ import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.log.perClassLogger
-import kotlinx.coroutines.async
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import org.springframework.stereotype.Controller
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
@@ -22,7 +24,9 @@ class AdminApplicationsController(
     private val deliverableFilesRenamer: DeliverableFilesRenamer,
 ) {
   private val log = perClassLogger()
+  private val JOB_TIMEOUT_MS: Long = 600 * 1000 // 10 Minutes
 
+  @OptIn(DelicateCoroutinesApi::class)
   @PostMapping("/applications/cleanUpDrive")
   fun cleanUpApplicationDrive(
       redirectAttributes: RedirectAttributes,
@@ -35,14 +39,14 @@ class AdminApplicationsController(
           return redirectToHome()
         }
 
-    runBlocking {
-      applications.forEach {
-        async {
-          try {
+    applications.forEach {
+      GlobalScope.launch {
+        try {
+          withTimeout(JOB_TIMEOUT_MS) {
             deliverableFilesRenamer.createOrUpdateGoogleDriveFolder(it.projectId, it.internalName)
-          } catch (e: Exception) {
-            log.warn("Failed to cleanup Google Drive folder for project ${it.projectId}", e)
           }
+        } catch (e: Exception) {
+          log.error("Failed to cleanup Google Drive folder for project ${it.projectId}", e)
         }
       }
     }
