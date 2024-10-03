@@ -13,6 +13,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationStatus
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.file.GoogleDriveWriter
@@ -126,6 +127,24 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `Renames project document submissions and moves them to the folder`() {
+      // Application Modules
+      insertModule(phase = CohortPhase.Application)
+      insertApplicationModule()
+      insertDeliverable(
+          name = "Application Documents", deliverableTypeId = DeliverableType.Document)
+      insertSubmission()
+      val applicationUploadDate = LocalDate.of(2024, 6, 1)
+      val applicationFileId = "applicationDocumentId"
+
+      val applicationDocument =
+          insertSubmissionDocument(
+              createdTime = applicationUploadDate.toInstant(ZoneId.of("UTC"), LocalTime.MIDNIGHT),
+              description = "Application submission",
+              location = applicationFileId,
+              originalName = "file.txt")
+      val existingApplicationDocument = submissionDocumentsDao.fetchOneById(applicationDocument)!!
+
+      // Participant Modules
       insertModule()
       insertCohortModule()
       insertDeliverable(name = "Test Documents", deliverableTypeId = DeliverableType.Document)
@@ -167,6 +186,11 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
         googleDriveWriter.renameFile(oldFolderId, "XXX_Organization$INTERNAL_FOLDER_SUFFIX")
       }
       verify(exactly = 1) {
+        googleDriveWriter.renameFile(
+            applicationFileId,
+            "Application Documents_2024-06-01_XXX_Organization_Application submission.txt")
+      }
+      verify(exactly = 1) {
         googleDriveWriter.renameFile(fileId1, "Test Documents_2024-08-01_XXX_Organization_Same.txt")
       }
       verify(exactly = 1) {
@@ -178,10 +202,17 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
             fileId3, "Test Documents_2024-08-01_XXX_Organization_Different.txt")
       }
 
+      verify(exactly = 1) { googleDriveWriter.moveFile(applicationFileId, oldFolderId) }
       verify(exactly = 1) { googleDriveWriter.moveFile(fileId1, oldFolderId) }
       verify(exactly = 1) { googleDriveWriter.moveFile(fileId2, oldFolderId) }
       verify(exactly = 1) { googleDriveWriter.moveFile(fileId3, oldFolderId) }
 
+      assertEquals(
+          existingApplicationDocument.copy(
+              name =
+                  "Application Documents_2024-06-01_XXX_Organization_Application submission.txt"),
+          submissionDocumentsDao.fetchOneById(applicationDocument),
+          "Application document after rename")
       assertEquals(
           existingDocument1.copy(name = "Test Documents_2024-08-01_XXX_Organization_Same.txt"),
           submissionDocumentsDao.fetchOneById(document1),

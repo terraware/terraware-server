@@ -6,7 +6,6 @@ import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
-import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
@@ -45,8 +44,6 @@ class DeliverableFilesRenamer(
   }
 
   fun createOrUpdateGoogleDriveFolder(projectId: ProjectId, fileNaming: String) {
-    requirePermissions { updateProjectDocumentSettings(projectId) }
-
     val projectDetails = projectAcceleratorDetailsStore.fetchOneById(projectId)
     val folderUrl =
         if (projectDetails.googleFolderUrl != null) {
@@ -65,14 +62,20 @@ class DeliverableFilesRenamer(
       fileNaming: String,
       folderUrl: URI,
   ) {
-    val deliverables =
+    val cohortDeliverables =
         deliverableStore.fetchDeliverableSubmissions(projectId = projectId).filter {
           it.documents.isNotEmpty()
         }
 
-    val folderId = googleDriveWriter.getFileIdForFolderUrl(folderUrl)
+    val applicationDeliverables =
+        applicationStore.fetchApplicationDeliverables(projectId = projectId).filter {
+          it.documents.isNotEmpty()
+        }
 
-    deliverables.forEach { deliverable ->
+    val folderId = googleDriveWriter.getFileIdForFolderUrl(folderUrl)
+    val allDeliverables = listOf(cohortDeliverables, applicationDeliverables).flatten()
+
+    allDeliverables.forEach { deliverable ->
       // Use a map to keep track of in use fileNames. Because this is a sequential operation, we
       // should not run into race conditions that we see in Submission Service
       val nextSuffix = mutableMapOf<String, Int>()
