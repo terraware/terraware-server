@@ -4,7 +4,6 @@ import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
-import com.terraformation.backend.accelerator.event.ProjectGoogleDriveCleanupEvent
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.accelerator.ApplicationStatus
@@ -48,11 +47,6 @@ class DeliverableFilesRenamer(
         createOrUpdateGoogleDriveFolder(application.projectId, application.internalName)
       }
     }
-  }
-
-  @EventListener
-  fun on(event: ProjectGoogleDriveCleanupEvent) {
-    systemUser.run { createOrUpdateGoogleDriveFolder(event.projectId, event.fileNaming) }
   }
 
   fun createOrUpdateGoogleDriveFolder(projectId: ProjectId, fileNaming: String) {
