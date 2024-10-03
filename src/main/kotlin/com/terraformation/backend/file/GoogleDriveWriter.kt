@@ -215,12 +215,21 @@ class GoogleDriveWriter(
 
   /** Moves a file or folder to a different parent folder. */
   fun moveFile(googleFileId: String, parentFileId: String) {
-    val newMetadata = File()
-    newMetadata.parents = listOf(parentFileId)
+    // Retrieve the existing parents to remove
+    val file = getFileMetadata(googleFileId, "parents")
+    val previousParents = file.parents.joinToString(",")
 
-    val updateRequest = driveClient.files().update(googleFileId, newMetadata)
-    updateRequest.supportsAllDrives = true
-    updateRequest.execute()
+    if (previousParents != parentFileId) {
+      val updateRequest =
+          driveClient
+              .files()
+              .update(googleFileId, null)
+              .setAddParents(parentFileId)
+              .setRemoveParents(previousParents)
+
+      updateRequest.supportsAllDrives = true
+      updateRequest.execute()
+    }
   }
 
   /** Returns the metadata for an existing file. */
