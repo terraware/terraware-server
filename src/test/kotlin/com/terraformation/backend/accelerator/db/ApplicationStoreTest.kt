@@ -1584,7 +1584,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class UpdateBoundary {
     @Test
-    fun `updates boundary and sets internal name and country code if country part not already set`() {
+    fun `updates boundary`() {
       val otherUserId = insertUser()
       val applicationId =
           insertApplication(createdBy = otherUserId, internalName = "XXX_Organization 1")
@@ -1598,11 +1598,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           ApplicationsRow(
               applicationStatusId = ApplicationStatus.NotSubmitted,
-              countryCode = "GB",
+              countryCode = null,
               createdBy = otherUserId,
               createdTime = Instant.EPOCH,
               id = applicationId,
-              internalName = "GBR_Organization 1",
+              internalName = "XXX_Organization 1",
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               projectId = inserted.projectId,
@@ -1625,82 +1625,6 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedTime = clock.instant,
               )),
           applicationHistoriesDao.findAll().map { it.copy(id = null) })
-    }
-
-    @Test
-    fun `updates boundary without overwriting existing internal name`() {
-      val otherUserId = insertUser()
-      val applicationId =
-          insertApplication(boundary = rectangle(1), createdBy = otherUserId, internalName = "name")
-      val boundary = Turtle(point(0, 51)).makePolygon { rectangle(100, 100) }
-
-      clock.instant = Instant.ofEpochSecond(30)
-
-      store.updateBoundary(applicationId, boundary)
-
-      val applicationRow = applicationsDao.findAll().single()
-      assertEquals(
-          ApplicationsRow(
-              applicationStatusId = ApplicationStatus.NotSubmitted,
-              createdBy = otherUserId,
-              createdTime = Instant.EPOCH,
-              id = applicationId,
-              internalName = "name",
-              modifiedBy = user.userId,
-              modifiedTime = clock.instant,
-              projectId = inserted.projectId,
-          ),
-          applicationRow.copy(boundary = null))
-
-      // Produce a meaningful assertion failure message if the boundary isn't as expected within
-      // the default floating-point inaccuracy tolerance.
-      if (!boundary.equalsOrBothNull(applicationRow.boundary)) {
-        assertEquals(boundary, applicationRow.boundary, "Boundary in applications row")
-      }
-
-      assertEquals(
-          listOf(
-              ApplicationHistoriesRow(
-                  applicationId = applicationId,
-                  applicationStatusId = ApplicationStatus.NotSubmitted,
-                  boundary = applicationRow.boundary,
-                  modifiedBy = user.userId,
-                  modifiedTime = clock.instant,
-              )),
-          applicationHistoriesDao.findAll().map { it.copy(id = null) })
-    }
-
-    @Test
-    fun `does not set internal name if boundary is not all in one country`() {
-      val otherUserId = insertUser()
-      val applicationId = insertApplication(createdBy = otherUserId)
-
-      // Intersects France, Belgium, Netherlands
-      val boundary = Turtle(point(3.5, 50)).makePolygon { rectangle(200000, 100000) }
-
-      clock.instant = Instant.ofEpochSecond(30)
-
-      store.updateBoundary(applicationId, boundary)
-
-      val applicationRow = applicationsDao.findAll().single()
-      assertEquals(
-          ApplicationsRow(
-              applicationStatusId = ApplicationStatus.NotSubmitted,
-              createdBy = otherUserId,
-              createdTime = Instant.EPOCH,
-              id = applicationId,
-              internalName = "XXX",
-              modifiedBy = user.userId,
-              modifiedTime = clock.instant,
-              projectId = inserted.projectId,
-          ),
-          applicationRow.copy(boundary = null))
-
-      // Produce a meaningful assertion failure message if the boundary isn't as expected within
-      // the default floating-point inaccuracy tolerance.
-      if (!boundary.equalsOrBothNull(applicationRow.boundary)) {
-        assertEquals(boundary, applicationRow.boundary, "Boundary in applications row")
-      }
     }
 
     @Test

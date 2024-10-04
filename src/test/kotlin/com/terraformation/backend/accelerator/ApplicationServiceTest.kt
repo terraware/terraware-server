@@ -43,7 +43,6 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
   private val applicationVariableValuesFetcher = mockk<ApplicationVariableValuesFetcher>()
   private val clock = TestClock()
   private val config = mockk<TerrawareServerConfig>()
-  private val countryDetector = mockk<CountryDetector>()
   private val eventPublisher = TestEventPublisher()
   private val preScreenBoundarySubmissionFetcher = mockk<PreScreenBoundarySubmissionFetcher>()
   private val hubSpotService = mockk<HubSpotService>()
@@ -56,7 +55,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
         applicationVariableValuesFetcher,
         config,
         countriesDao,
-        countryDetector,
+        CountryDetector(),
         defaultProjectLeadsDao,
         hubSpotService,
         preScreenBoundarySubmissionFetcher,
@@ -238,7 +237,6 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
 
       every { applicationStore.fetchOneById(applicationId) } returns applicationModel
       every { applicationStore.submit(applicationId, any(), any()) } returns submissionResult
-      every { countryDetector.getCountries(any()) } returns setOf("KE")
       every { applicationVariableValuesFetcher.fetchValues(projectId) } returns
           applicationVariableValues
       every { preScreenBoundarySubmissionFetcher.fetchSubmission(projectId) } returns
@@ -263,6 +261,56 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
           ),
           projectAcceleratorDetailsStore.fetchOneById(projectId),
           "Project accelerator details after submission")
+    }
+  }
+
+  @Nested
+  inner class UpdateBoundary {
+    @BeforeEach
+    fun setup() {
+      val applicationModel =
+          ExistingApplicationModel(
+              createdTime = Instant.EPOCH,
+              id = applicationId,
+              internalName = "XXX",
+              modifiedTime = null,
+              projectId = projectId,
+              projectName = "Project Name",
+              organizationId = organizationId,
+              organizationName = "Organization 1",
+              status = ApplicationStatus.NotSubmitted)
+
+      every { applicationStore.fetchOneById(applicationId) } returns applicationModel
+      every { applicationStore.updateBoundary(applicationId, any()) } returns Unit
+      every { applicationStore.updateCountryCode(applicationId, any()) } returns Unit
+
+      every { applicationVariableValuesFetcher.updateCountryVariable(projectId, any()) } returns
+          Unit
+    }
+
+    @Test
+    fun `sets boundary and updates country column and variable if all in one country`() {
+      val boundary = Turtle(point(0, 51)).makePolygon { rectangle(100, 100) }
+      service.updateBoundary(applicationId, boundary)
+
+      verify(exactly = 1) { applicationStore.updateBoundary(applicationId, boundary) }
+      verify(exactly = 1) { applicationStore.updateCountryCode(applicationId, "GB") }
+      verify(exactly = 1) {
+        applicationVariableValuesFetcher.updateCountryVariable(projectId, "GB")
+      }
+    }
+
+    @Test
+    fun `does not set internal name if boundary is not all in one country`() {
+      // Intersects France, Belgium, Netherlands
+      val boundary = Turtle(point(3.5, 50)).makePolygon { rectangle(200000, 100000) }
+      service.updateBoundary(applicationId, boundary)
+
+      verify(exactly = 1) { applicationStore.updateBoundary(applicationId, boundary) }
+      verify(exactly = 0) { applicationStore.updateCountryCode(applicationId, any()) }
+      verify(exactly = 0) {
+        applicationVariableValuesFetcher.updateCountryVariable(projectId, any())
+      }
     }
   }
 }

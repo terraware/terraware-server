@@ -17,6 +17,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.calculateAreaHectares
 import jakarta.inject.Named
 import java.net.URI
+import org.locationtech.jts.geom.Geometry
 
 @Named
 class ApplicationService(
@@ -85,6 +86,27 @@ class ApplicationService(
       }
 
       result
+    }
+  }
+
+  /**
+   * Updates the application boundary, and sets the country variable if the boundary falls within
+   * one country.
+   */
+  fun updateBoundary(applicationId: ApplicationId, boundary: Geometry) {
+    val existing = applicationStore.fetchOneById(applicationId)
+    applicationStore.updateBoundary(applicationId, boundary)
+
+    val countries = countryDetector.getCountries(boundary)
+
+    if (countries.size == 1) {
+      val countryCode = countries.single()
+      applicationVariableValuesFetcher.updateCountryVariable(existing.projectId, countryCode)
+      applicationStore.updateCountryCode(applicationId, countryCode)
+    } else {
+      log.debug(
+          "Not setting internal name for application $applicationId because boundary is not " +
+              "all in one country: $countries")
     }
   }
 

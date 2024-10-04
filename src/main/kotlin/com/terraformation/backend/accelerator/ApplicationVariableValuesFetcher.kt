@@ -2,7 +2,9 @@ package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.model.ApplicationVariableValues
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.CountryNotFoundException
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -10,10 +12,13 @@ import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
+import com.terraformation.backend.documentproducer.model.AppendValueOperation
+import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
 import com.terraformation.backend.documentproducer.model.ExistingNumberValue
 import com.terraformation.backend.documentproducer.model.ExistingSelectValue
 import com.terraformation.backend.documentproducer.model.ExistingTextValue
 import com.terraformation.backend.documentproducer.model.ExistingValue
+import com.terraformation.backend.documentproducer.model.NewSelectValue
 import com.terraformation.backend.documentproducer.model.SelectVariable
 import com.terraformation.backend.documentproducer.model.Variable
 import com.terraformation.backend.log.perClassLogger
@@ -26,6 +31,7 @@ class ApplicationVariableValuesFetcher(
     private val countriesDao: CountriesDao,
     private val variableStore: VariableStore,
     private val variableValueStore: VariableValueStore,
+    private val systemUser: SystemUser,
     @Value("102") // From deliverables spreadsheet
     val preScreenDeliverableId: DeliverableId,
 ) {
@@ -133,6 +139,29 @@ class ApplicationVariableValuesFetcher(
         totalExpansionPotential = totalExpansionPotential,
         website = website,
     )
+  }
+
+  /** Update country variable for a project. */
+  fun updateCountryVariable(projectId: ProjectId, countryCode: String) {
+    val countryVariable =
+        variablesById.values.firstOrNull { it.stableId == STABLE_ID_COUNTRY } as? SelectVariable
+            ?: throw IllegalStateException("Country variable stable ID not configured correctly")
+
+    val countryName =
+        countriesDao.fetchOneByCode(countryCode)?.name
+            ?: throw CountryNotFoundException(countryCode)
+    val selectOption =
+        countryVariable.options.firstOrNull { it.name == countryName }
+            ?: throw IllegalStateException("Country $countryName select option not recognized")
+    val selectValue =
+        NewSelectValue(
+            BaseVariableValueProperties(null, projectId, 0, countryVariable.id, null, null),
+            setOf(selectOption.id))
+
+    systemUser.run {
+      // Uses elevated permission to update variables without trigger workflow
+      variableValueStore.updateValues(listOf(AppendValueOperation(selectValue)), false)
+    }
   }
 
   private fun getNumberValue(values: Map<String, ExistingValue>, stableId: String): BigDecimal? {

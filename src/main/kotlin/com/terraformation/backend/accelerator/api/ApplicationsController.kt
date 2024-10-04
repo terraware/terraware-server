@@ -217,7 +217,7 @@ class ApplicationsController(
       @PathVariable applicationId: ApplicationId,
       @RequestBody payload: UpdateApplicationBoundaryRequestPayload
   ): SimpleSuccessResponsePayload {
-    applicationStore.updateBoundary(applicationId, payload.boundary)
+    applicationService.updateBoundary(applicationId, payload.boundary)
 
     return SimpleSuccessResponsePayload()
   }
@@ -235,7 +235,7 @@ class ApplicationsController(
           throw BadRequestException(e.message)
         }
 
-    applicationStore.updateBoundary(applicationId, geometry)
+    applicationService.updateBoundary(applicationId, geometry)
 
     return SimpleSuccessResponsePayload()
   }
