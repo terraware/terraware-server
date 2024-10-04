@@ -105,10 +105,13 @@ class ApplicationService(
     val region = countryCode?.let { countriesDao.fetchOneByCode(it) }?.regionId
     val projectLead = region?.let { defaultProjectLeadsDao.fetchOneByRegionId(it) }?.projectLead
 
+    val boundaryAreaHectares = application.boundary?.calculateAreaHectares()
+    val totalLandUseHectares = variableValues.landUseModelHectares.values.sumOf { it }
+
     systemUser.run {
       projectAcceleratorDetailsStore.update(application.projectId) { model ->
         model.copy(
-            applicationReforestableLand = application.boundary?.calculateAreaHectares(),
+            applicationReforestableLand = boundaryAreaHectares ?: totalLandUseHectares,
             countryCode = countryCode,
             fileNaming = application.internalName,
             landUseModelTypes = landUseModelTypes,
