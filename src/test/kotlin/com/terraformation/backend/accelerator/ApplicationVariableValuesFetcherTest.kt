@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.model.ApplicationVariableValues
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
@@ -20,6 +21,7 @@ import io.mockk.every
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
@@ -53,6 +55,7 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
             variableSelectOptionValuesDao,
             variableValuesDao,
             variableValueTableRowsDao),
+        SystemUser(usersDao),
         deliverableId)
   }
 
@@ -68,6 +71,7 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
   private lateinit var landUseHectaresVariableIds: Map<LandUseModelType, VariableId>
 
   private lateinit var brazilOptionId: VariableSelectOptionId
+  private lateinit var chileOptionId: VariableSelectOptionId
   private lateinit var terrestrialOptionId: VariableSelectOptionId
 
   @BeforeEach
@@ -96,7 +100,7 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
                 stableId = ApplicationVariableValuesFetcher.STABLE_ID_COUNTRY))
 
     brazilOptionId = insertSelectOption(inserted.variableId, "Brazil")
-    insertSelectOption(inserted.variableId, "Chile")
+    chileOptionId = insertSelectOption(inserted.variableId, "Chile")
     insertSelectOption(inserted.variableId, "Ghana")
 
     numSpeciesVariableId =
@@ -144,48 +148,92 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
             .toMap()
 
     every { user.canReadProjectDeliverables(any()) } returns true
+    every { user.canReadProjectDeliverables(any()) } returns true
   }
 
-  @Test
-  fun `returns null or empty values if variables not set`() {
-    assertEquals(
-        ApplicationVariableValues(null, null, null, emptyMap(), null, null, null, null),
-        fetcher.fetchValues(inserted.projectId))
-  }
-
-  @Test
-  fun `fetches values for all variables`() {
-    insertValue(variableId = contactEmailVariableId, textValue = "a@b.com")
-    insertValue(variableId = contactNameVariableId, textValue = "John Smith")
-    insertSelectValue(variableId = countryVariableId, optionIds = setOf(brazilOptionId))
-    insertValue(variableId = numSpeciesVariableId, numberValue = BigDecimal(123))
-    insertValue(variableId = totalExpansionPotentialVariableId, numberValue = BigDecimal(5555))
-    insertValue(variableId = websiteVariableId, textValue = "https://example.com/")
-    insertSelectValue(variableId = projectTypeVariableId, optionIds = setOf(terrestrialOptionId))
-    LandUseModelType.entries.forEach { type ->
-      insertValue(
-          variableId = landUseHectaresVariableIds[type]!!, numberValue = BigDecimal(type.id))
+  @Nested
+  inner class FetchValues {
+    @Test
+    fun `returns null or empty values if variables not set`() {
+      assertEquals(
+          ApplicationVariableValues(null, null, null, emptyMap(), null, null, null, null),
+          fetcher.fetchValues(inserted.projectId))
     }
 
-    assertEquals(
-        ApplicationVariableValues(
-            contactEmail = "a@b.com",
-            contactName = "John Smith",
-            countryCode = "BR",
-            landUseModelHectares = LandUseModelType.entries.associateWith { BigDecimal(it.id) },
-            numSpeciesToBePlanted = 123,
-            projectType = PreScreenProjectType.Terrestrial,
-            totalExpansionPotential = BigDecimal(5555),
-            website = "https://example.com/",
-        ),
-        fetcher.fetchValues(inserted.projectId))
+    @Test
+    fun `fetches values for all variables`() {
+      insertValue(variableId = contactEmailVariableId, textValue = "a@b.com")
+      insertValue(variableId = contactNameVariableId, textValue = "John Smith")
+      insertSelectValue(variableId = countryVariableId, optionIds = setOf(brazilOptionId))
+      insertValue(variableId = numSpeciesVariableId, numberValue = BigDecimal(123))
+      insertValue(variableId = totalExpansionPotentialVariableId, numberValue = BigDecimal(5555))
+      insertValue(variableId = websiteVariableId, textValue = "https://example.com/")
+      insertSelectValue(variableId = projectTypeVariableId, optionIds = setOf(terrestrialOptionId))
+      LandUseModelType.entries.forEach { type ->
+        insertValue(
+            variableId = landUseHectaresVariableIds[type]!!, numberValue = BigDecimal(type.id))
+      }
+
+      assertEquals(
+          ApplicationVariableValues(
+              contactEmail = "a@b.com",
+              contactName = "John Smith",
+              countryCode = "BR",
+              landUseModelHectares = LandUseModelType.entries.associateWith { BigDecimal(it.id) },
+              numSpeciesToBePlanted = 123,
+              projectType = PreScreenProjectType.Terrestrial,
+              totalExpansionPotential = BigDecimal(5555),
+              website = "https://example.com/",
+          ),
+          fetcher.fetchValues(inserted.projectId))
+    }
+
+    @Test
+    fun `throws exception if no permission to read project deliverables`() {
+      every { user.canReadProjectDeliverables(any()) } returns false
+      every { user.canReadProject(any()) } returns true
+
+      assertThrows<AccessDeniedException> { fetcher.fetchValues(inserted.projectId) }
+    }
   }
 
-  @Test
-  fun `throws exception if no permission to read project deliverables`() {
-    every { user.canReadProjectDeliverables(any()) } returns false
-    every { user.canReadProject(any()) } returns true
+  @Nested
+  inner class UpdateCountryVariable {
+    @Test
+    fun `adds a new country variable value`() {
+      fetcher.updateCountryVariable(inserted.projectId, "BR")
 
-    assertThrows<AccessDeniedException> { fetcher.fetchValues(inserted.projectId) }
+      val lastValueRow =
+          variableValuesDao
+              .fetchByVariableId(countryVariableId)
+              .filter { it.projectId!! == inserted.projectId }
+              .maxBy { it.id!!.value }
+
+      val selections =
+          variableSelectOptionValuesDao.fetchByVariableValueId(lastValueRow.id!!).map {
+            it.optionId
+          }
+
+      assertEquals(listOf(brazilOptionId), selections, "Project country variable value selections")
+    }
+
+    @Test
+    fun `replaces existing country variable value`() {
+      insertSelectValue(variableId = countryVariableId, optionIds = setOf(chileOptionId))
+      fetcher.updateCountryVariable(inserted.projectId, "BR")
+
+      val lastValueRow =
+          variableValuesDao
+              .fetchByVariableId(countryVariableId)
+              .filter { it.projectId!! == inserted.projectId }
+              .maxBy { it.id!!.value }
+
+      val selections =
+          variableSelectOptionValuesDao.fetchByVariableValueId(lastValueRow.id!!).map {
+            it.optionId
+          }
+
+      assertEquals(listOf(brazilOptionId), selections, "Project country variable value selections")
+    }
   }
 }

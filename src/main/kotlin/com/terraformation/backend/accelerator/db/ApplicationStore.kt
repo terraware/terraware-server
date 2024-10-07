@@ -472,21 +472,6 @@ class ApplicationStore(
     requirePermissions { updateApplicationBoundary(applicationId) }
 
     dslContext.transaction { _ ->
-      val existing = fetchOneById(applicationId)
-
-      if (existing.internalName.startsWith(defaultInternalNamePrefix)) {
-        val countries = countryDetector.getCountries(boundary)
-
-        if (countries.size == 1) {
-          val countryCode = countries.single()
-          updateCountryCode(applicationId, countryCode)
-        } else {
-          log.debug(
-              "Not setting internal name for application $applicationId because boundary is not " +
-                  "all in one country: $countries")
-        }
-      }
-
       with(APPLICATIONS) {
         dslContext
             .update(APPLICATIONS)
