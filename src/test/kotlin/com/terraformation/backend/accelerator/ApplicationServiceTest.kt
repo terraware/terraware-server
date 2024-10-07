@@ -199,7 +199,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `populates project accelerator details on pre-screen success`() {
+    fun `populates project accelerator details with boundary area size on pre-screen success`() {
       val projectLead = "Johnny Appleseed"
       val internalName = "KEN_Project 1"
       val totalExpansionPotential = BigDecimal(1000)
@@ -252,6 +252,73 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           ProjectAcceleratorDetailsModel(
               applicationReforestableLand = BigDecimal("100.0"),
+              countryCode = "KE",
+              fileNaming = internalName,
+              landUseModelTypes = setOf(LandUseModelType.Mangroves, LandUseModelType.NativeForest),
+              numNativeSpecies = 50,
+              projectId = projectId,
+              region = Region.SubSaharanAfrica,
+              projectLead = projectLead,
+              totalExpansionPotential = totalExpansionPotential,
+          ),
+          projectAcceleratorDetailsStore.fetchOneById(projectId),
+          "Project accelerator details after submission")
+    }
+
+    @Test
+    fun `populates project accelerator details with total land use on pre-screen success if no boundary`() {
+      val projectLead = "Johnny Appleseed"
+      val internalName = "KEN_Project 1"
+      val totalExpansionPotential = BigDecimal(1000)
+
+      val projectId = insertProject()
+      insertDefaultProjectLead(Region.SubSaharanAfrica, projectLead)
+
+      val applicationVariableValues =
+          ApplicationVariableValues(
+              countryCode = "KE",
+              landUseModelHectares =
+                  mapOf(
+                      LandUseModelType.Agroforestry to BigDecimal.ZERO,
+                      LandUseModelType.Mangroves to BigDecimal(1),
+                      LandUseModelType.NativeForest to BigDecimal(100),
+                  ),
+              numSpeciesToBePlanted = 50,
+              projectType = PreScreenProjectType.Mixed,
+              totalExpansionPotential = totalExpansionPotential,
+          )
+      val applicationModel =
+          ExistingApplicationModel(
+              boundary = null,
+              createdTime = Instant.EPOCH,
+              id = applicationId,
+              internalName = internalName,
+              modifiedTime = null,
+              projectId = projectId,
+              projectName = "Project Name",
+              organizationId = organizationId,
+              organizationName = "Organization 1",
+              status = ApplicationStatus.NotSubmitted,
+          )
+
+      val submissionResult = ApplicationSubmissionResult(applicationModel, emptyList())
+
+      every { applicationStore.fetchOneById(applicationId) } returns applicationModel
+      every { applicationStore.submit(applicationId, any(), any()) } returns submissionResult
+      every { countryDetector.getCountries(any()) } returns setOf("KE")
+      every { applicationVariableValuesFetcher.fetchValues(projectId) } returns
+          applicationVariableValues
+      every { preScreenBoundarySubmissionFetcher.fetchSubmission(projectId) } returns
+          boundarySubmission
+
+      assertEquals(submissionResult, service.submit(applicationId))
+
+      // Allow the assertion to call ProjectAcceleratorDetailsStore.fetchOneById
+      every { user.canReadProjectAcceleratorDetails(projectId) } returns true
+
+      assertEquals(
+          ProjectAcceleratorDetailsModel(
+              applicationReforestableLand = BigDecimal("101"),
               countryCode = "KE",
               fileNaming = internalName,
               landUseModelTypes = setOf(LandUseModelType.Mangroves, LandUseModelType.NativeForest),
