@@ -15,6 +15,7 @@ import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.CoordinateXY
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
 import org.locationtech.jts.geom.util.GeometryEditor
@@ -49,10 +50,11 @@ class PlantingSiteImporter(
       description: String? = null,
       organizationId: OrganizationId,
       shapefiles: Collection<Shapefile>,
+      gridOrigin: Point? = null,
   ): PlantingSiteId {
     requirePermissions { createPlantingSite(organizationId) }
 
-    val newModel = shapefilesToModel(shapefiles, name, description, organizationId)
+    val newModel = shapefilesToModel(shapefiles, name, description, organizationId, gridOrigin)
 
     return plantingSiteStore.createPlantingSite(newModel).id
   }
@@ -61,7 +63,8 @@ class PlantingSiteImporter(
       shapefiles: Collection<Shapefile>,
       name: String,
       description: String?,
-      organizationId: OrganizationId
+      organizationId: OrganizationId,
+      gridOrigin: Point? = null,
   ): NewPlantingSiteModel {
     if (shapefiles.isEmpty() || shapefiles.size > 2) {
       throw ShapefilesInvalidException(
@@ -91,7 +94,9 @@ class PlantingSiteImporter(
             ?: throw ShapefilesInvalidException(
                 "Subzones shapefile features must include one of these properties: " +
                     subzoneNameProperties.joinToString()),
-        exclusionsFile)
+        exclusionsFile,
+        gridOrigin,
+    )
   }
 
   private fun shapefilesToModel(
@@ -99,7 +104,8 @@ class PlantingSiteImporter(
       description: String?,
       organizationId: OrganizationId,
       subzonesFile: Shapefile,
-      exclusionsFile: Shapefile?
+      exclusionsFile: Shapefile?,
+      gridOrigin: Point? = null,
   ): NewPlantingSiteModel {
     val problems = mutableListOf<String>()
 
@@ -117,6 +123,7 @@ class PlantingSiteImporter(
             boundary = siteBoundary,
             description = description,
             exclusion = exclusion,
+            gridOrigin = gridOrigin,
             name = name,
             organizationId = organizationId,
             plantingZones = zonesWithSubzones,

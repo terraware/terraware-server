@@ -18,6 +18,8 @@ import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
 import java.time.ZoneId
+import org.geotools.geometry.jts.JTS
+import org.geotools.referencing.CRS
 import org.jooq.Field
 import org.jooq.Record
 import org.locationtech.jts.geom.MultiPolygon
@@ -185,6 +187,8 @@ data class PlantingSiteModel<
         boundary: MultiPolygon? = null,
         description: String? = null,
         exclusion: MultiPolygon? = null,
+        // The point that will be used as the origin for the grid of monitoring plots.
+        gridOrigin: Point? = null,
         name: String,
         organizationId: OrganizationId,
         plantingSeasons: List<ExistingPlantingSeasonModel> = emptyList(),
@@ -193,22 +197,35 @@ data class PlantingSiteModel<
         timeZone: ZoneId? = null,
     ): NewPlantingSiteModel {
       // If usable region is so small that its area rounds down to 0 hectares, treat the site as
-      // having no area so we don't try to calculate area-denominated statistics.
+      // having no area, so we don't try to calculate area-denominated statistics.
       val areaHa =
           boundary?.differenceNullable(exclusion)?.calculateAreaHectares()?.let { area ->
             if (area.signum() > 0) area else null
           }
 
-      // The point that will be used as the origin for the grid of monitoring plots. We use the
-      // southwest corner of the envelope (bounding box) of the site boundary.
-      val gridOrigin = boundary?.factory?.createPoint(boundary.envelope.coordinates[0])
+      val gridOriginWithBoundaryCrs =
+          if (boundary != null && gridOrigin != null) {
+            val crs = CRS.decode("EPSG:${gridOrigin.srid}", true)
+            val boundaryCrs = CRS.decode("EPSG:${boundary.srid}", true)
+            if (crs == boundaryCrs) {
+              gridOrigin
+            } else {
+              val transform = CRS.findMathTransform(crs, boundaryCrs)
+              val transformedCoordinates = JTS.transform(gridOrigin.coordinate, null, transform)
+              boundary.factory.createPoint(transformedCoordinates)
+            }
+          } else {
+            // Use the southwest corner of the envelope (bounding box) of the site boundary by
+            // default.
+            boundary?.factory?.createPoint(boundary.envelope.coordinates[0])
+          }
 
       return NewPlantingSiteModel(
           areaHa = areaHa,
           boundary = boundary,
           description = description,
           exclusion = exclusion,
-          gridOrigin = gridOrigin,
+          gridOrigin = gridOriginWithBoundaryCrs,
           id = null,
           name = name,
           organizationId = organizationId,

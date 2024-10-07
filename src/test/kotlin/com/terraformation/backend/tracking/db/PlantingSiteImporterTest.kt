@@ -102,6 +102,60 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       }
     }
 
+    @Test
+    fun `validates site map with overriden grid origin`() {
+      val gen = ShapefileGenerator()
+
+      // a 2x3 rows of 30m squares, with the top left one missing. This geometry has 5 valid plots
+      // and 1 valid cluster, but will fail with a grid origin at the SW corne.
+      //
+      // Note: A perfect 25m by 25m leads to  99.46147461447877 percent of coverage, which is below
+      // our tolerance
+      val siteBoundary =
+          gen.multiPolygon(
+              0 to 0,
+              30 to 0,
+              30 to 30,
+              60 to 30,
+              60 to 90,
+              0 to 90,
+          )
+
+      val subzoneFeature = gen.subzoneFeature(siteBoundary)
+
+      val expected = PlantingSiteValidationFailure.zoneTooSmall("Z1")
+
+      // Without grid origin
+      try {
+        importer.import(
+            name = "Test Site",
+            organizationId = organizationId,
+            shapefiles = listOf(Shapefile(listOf(subzoneFeature))))
+        fail("Should have throw exception for validation failure")
+      } catch (e: PlantingSiteMapInvalidException) {
+        if (e.problems.none { it == expected }) {
+          // Assertion failure message will include the list of problems we actually got back.
+          assertEquals(
+              listOf(expected), e.problems, "Did not find expected problem in problems list")
+        }
+      }
+
+      // With grid origin
+      try {
+        importer.import(
+            name = "Test Site",
+            organizationId = organizationId,
+            shapefiles = listOf(Shapefile(listOf(subzoneFeature))),
+            gridOrigin = gen.point(3 to 33))
+      } catch (e: PlantingSiteMapInvalidException) {
+        // Display meaningful assertion message for a test failure
+        assertEquals(
+            emptyList<PlantingSiteValidationFailure>(),
+            e.problems,
+            "Import should not have any problems")
+      }
+    }
+
     private fun assertHasProblem(expected: String, importFunc: () -> Unit) {
       try {
         importFunc()
