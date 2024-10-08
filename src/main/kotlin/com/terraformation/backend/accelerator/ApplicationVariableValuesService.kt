@@ -27,7 +27,7 @@ import java.math.BigDecimal
 import org.springframework.beans.factory.annotation.Value
 
 @Named
-class ApplicationVariableValuesFetcher(
+class ApplicationVariableValuesService(
     private val countriesDao: CountriesDao,
     private val variableStore: VariableStore,
     private val variableValueStore: VariableValueStore,

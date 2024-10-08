@@ -1,7 +1,7 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.accelerator.ApplicationVariableValuesFetcher.Companion.STABLE_ID_COUNTRY
+import com.terraformation.backend.accelerator.ApplicationVariableValuesService.Companion.STABLE_ID_COUNTRY
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.accelerator.model.ApplicationVariableValues
@@ -32,14 +32,14 @@ class ApplicationCountryUpdaterTest : DatabaseTest(), RunsAsUser {
 
   private val applicationStore = mockk<ApplicationStore>()
   private val variableStore = mockk<VariableStore>()
-  private val applicationVariableValuesFetcher = mockk<ApplicationVariableValuesFetcher>()
+  private val applicationVariableValuesService = mockk<ApplicationVariableValuesService>()
 
   private val updater: ApplicationCountryUpdater by lazy {
     ApplicationCountryUpdater(
         SystemUser(usersDao),
         applicationStore,
         variableStore,
-        applicationVariableValuesFetcher,
+        applicationVariableValuesService,
     )
   }
 
@@ -77,7 +77,7 @@ class ApplicationCountryUpdaterTest : DatabaseTest(), RunsAsUser {
     every { applicationStore.fetchByProjectId(projectId) } returns listOf(applicationModel)
     every { applicationStore.updateCountryCode(applicationId, any()) } returns Unit
     every { variableStore.fetchOneVariable(countryVariableId) } returns countryVariable
-    every { applicationVariableValuesFetcher.fetchValues(projectId) } returns
+    every { applicationVariableValuesService.fetchValues(projectId) } returns
         ApplicationVariableValues(
             countryCode = "US",
             landUseModelHectares = emptyMap(),
@@ -99,7 +99,7 @@ class ApplicationCountryUpdaterTest : DatabaseTest(), RunsAsUser {
 
     updater.on(VariableValueUpdatedEvent(projectId, countryVariableId))
 
-    verify(exactly = 0) { applicationVariableValuesFetcher.fetchValues(any()) }
+    verify(exactly = 0) { applicationVariableValuesService.fetchValues(any()) }
     verify(exactly = 0) { applicationStore.updateCountryCode(any(), any()) }
   }
 
@@ -120,7 +120,7 @@ class ApplicationCountryUpdaterTest : DatabaseTest(), RunsAsUser {
 
     updater.on(VariableValueUpdatedEvent(projectId, variableId))
 
-    verify(exactly = 0) { applicationVariableValuesFetcher.fetchValues(any()) }
+    verify(exactly = 0) { applicationVariableValuesService.fetchValues(any()) }
     verify(exactly = 0) { applicationStore.updateCountryCode(any(), any()) }
   }
 }

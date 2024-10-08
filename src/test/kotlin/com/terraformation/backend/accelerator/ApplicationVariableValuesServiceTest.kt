@@ -26,11 +26,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
+class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val fetcher: ApplicationVariableValuesFetcher by lazy {
-    ApplicationVariableValuesFetcher(
+  private val service: ApplicationVariableValuesService by lazy {
+    ApplicationVariableValuesService(
         countriesDao,
         VariableStore(
             dslContext,
@@ -85,19 +85,19 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
         insertTextVariable(
             insertVariable(
                 type = VariableType.Text,
-                stableId = ApplicationVariableValuesFetcher.STABLE_ID_CONTACT_EMAIL))
+                stableId = ApplicationVariableValuesService.STABLE_ID_CONTACT_EMAIL))
     contactNameVariableId =
         insertTextVariable(
             insertVariable(
                 type = VariableType.Text,
-                stableId = ApplicationVariableValuesFetcher.STABLE_ID_CONTACT_NAME))
+                stableId = ApplicationVariableValuesService.STABLE_ID_CONTACT_NAME))
     countryVariableId =
         insertSelectVariable(
             insertVariable(
                 type = VariableType.Select,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 1,
-                stableId = ApplicationVariableValuesFetcher.STABLE_ID_COUNTRY))
+                stableId = ApplicationVariableValuesService.STABLE_ID_COUNTRY))
 
     brazilOptionId = insertSelectOption(inserted.variableId, "Brazil")
     chileOptionId = insertSelectOption(inserted.variableId, "Chile")
@@ -109,19 +109,19 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Number,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 2,
-                stableId = ApplicationVariableValuesFetcher.STABLE_ID_NUM_SPECIES))
+                stableId = ApplicationVariableValuesService.STABLE_ID_NUM_SPECIES))
     totalExpansionPotentialVariableId =
         insertNumberVariable(
             insertVariable(
                 type = VariableType.Number,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 3,
-                stableId = ApplicationVariableValuesFetcher.STABLE_ID_TOTAL_EXPANSION_POTENTIAL))
+                stableId = ApplicationVariableValuesService.STABLE_ID_TOTAL_EXPANSION_POTENTIAL))
     websiteVariableId =
         insertTextVariable(
             insertVariable(
                 type = VariableType.Text,
-                stableId = ApplicationVariableValuesFetcher.STABLE_ID_WEBSITE))
+                stableId = ApplicationVariableValuesService.STABLE_ID_WEBSITE))
 
     projectTypeVariableId =
         insertSelectVariable(
@@ -129,13 +129,13 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Select,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 4,
-                stableId = ApplicationVariableValuesFetcher.STABLE_ID_PROJECT_TYPE))
+                stableId = ApplicationVariableValuesService.STABLE_ID_PROJECT_TYPE))
     terrestrialOptionId = insertSelectOption(inserted.variableId, "Terrestrial")
     insertSelectOption(inserted.variableId, "Mangrove")
     insertSelectOption(inserted.variableId, "Mixed")
 
     landUseHectaresVariableIds =
-        ApplicationVariableValuesFetcher.stableIdsByLandUseModelType.entries
+        ApplicationVariableValuesService.stableIdsByLandUseModelType.entries
             .mapIndexed { index, (landUseType, stableId) ->
               landUseType to
                   insertNumberVariable(
@@ -157,7 +157,7 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
     fun `returns null or empty values if variables not set`() {
       assertEquals(
           ApplicationVariableValues(null, null, null, emptyMap(), null, null, null, null),
-          fetcher.fetchValues(inserted.projectId))
+          service.fetchValues(inserted.projectId))
     }
 
     @Test
@@ -185,7 +185,7 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
               totalExpansionPotential = BigDecimal(5555),
               website = "https://example.com/",
           ),
-          fetcher.fetchValues(inserted.projectId))
+          service.fetchValues(inserted.projectId))
     }
 
     @Test
@@ -193,7 +193,7 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
       every { user.canReadProjectDeliverables(any()) } returns false
       every { user.canReadProject(any()) } returns true
 
-      assertThrows<AccessDeniedException> { fetcher.fetchValues(inserted.projectId) }
+      assertThrows<AccessDeniedException> { service.fetchValues(inserted.projectId) }
     }
   }
 
@@ -201,7 +201,7 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
   inner class UpdateCountryVariable {
     @Test
     fun `adds a new country variable value`() {
-      fetcher.updateCountryVariable(inserted.projectId, "BR")
+      service.updateCountryVariable(inserted.projectId, "BR")
 
       val lastValueRow =
           variableValuesDao
@@ -220,7 +220,7 @@ class ApplicationVariableValuesFetcherTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `replaces existing country variable value`() {
       insertSelectValue(variableId = countryVariableId, optionIds = setOf(chileOptionId))
-      fetcher.updateCountryVariable(inserted.projectId, "BR")
+      service.updateCountryVariable(inserted.projectId, "BR")
 
       val lastValueRow =
           variableValuesDao
