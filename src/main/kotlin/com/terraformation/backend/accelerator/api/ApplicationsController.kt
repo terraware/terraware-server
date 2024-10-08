@@ -400,8 +400,11 @@ data class ApplicationDeliverablePayload(
     val name: String,
     val organizationId: OrganizationId,
     val organizationName: String,
+    val position: Int,
     val projectId: ProjectId,
     val projectName: String,
+    val required: Boolean,
+    val sensitive: Boolean,
     val status: SubmissionStatus,
     val type: DeliverableType,
 ) {
@@ -419,8 +422,11 @@ data class ApplicationDeliverablePayload(
       model.name,
       model.organizationId,
       model.organizationName,
+      model.position,
       model.projectId,
       model.projectName,
+      model.required,
+      model.sensitive,
       model.status,
       model.type,
   )
