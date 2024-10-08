@@ -7,6 +7,7 @@ import org.geotools.referencing.CRS
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
+import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
 
@@ -91,5 +92,10 @@ class ShapefileGenerator(
    */
   fun multiPolygon(vararg points: Pair<Int, Int>): MultiPolygon {
     return geometryFactory.createMultiPolygon(arrayOf(polygon(*points)))
+  }
+
+  /** Returns a point in UTM 20S coordinate space. */
+  fun point(point: Pair<Int, Int>): Point {
+    return geometryFactory.createPoint(Coordinate(point.first.toDouble(), point.second.toDouble()))
   }
 }

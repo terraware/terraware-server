@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
@@ -41,7 +42,10 @@ import java.time.LocalDate
 import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
+import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Polygon
+import org.locationtech.jts.geom.PrecisionModel
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -136,7 +140,9 @@ class AdminPlantingSitesController(
     model.addAttribute("canManageObservations", canManageObservations)
     model.addAttribute("canStartObservations", canStartObservations)
     model.addAttribute(
-        "canMovePlantingSiteToAnyOrg", currentUser().canMovePlantingSiteToAnyOrg(plantingSiteId))
+        "canMovePlantingSiteToAnyOrg",
+        currentUser().canMovePlantingSiteToAnyOrg(plantingSiteId),
+    )
     model.addAttribute("canUpdatePlantingSite", currentUser().canUpdatePlantingSite(plantingSiteId))
     model.addAttribute("futurePlantingSeasons", futurePlantingSeasons)
     model.addAttribute("months", months)
@@ -170,7 +176,9 @@ class AdminPlantingSitesController(
       model.addAttribute("siteGeoJson", objectMapper.valueToTree(plantingSite.boundary))
       model.addAttribute("zonesGeoJson", objectMapper.valueToTree(zonesToGeoJson(plantingSite)))
       model.addAttribute(
-          "subzonesGeoJson", objectMapper.valueToTree(subzonesToGeoJson(plantingSite)))
+          "subzonesGeoJson",
+          objectMapper.valueToTree(subzonesToGeoJson(plantingSite)),
+      )
       model.addAttribute("mapboxToken", mapboxService.generateTemporaryToken())
     }
 
@@ -197,7 +205,8 @@ class AdminPlantingSitesController(
                     "properties" to mapOf("name" to zone.name),
                     "geometry" to zone.boundary,
                 )
-              })
+              },
+      )
 
   private fun subzonesToGeoJson(site: ExistingPlantingSiteModel) =
       mapOf(
@@ -211,7 +220,8 @@ class AdminPlantingSitesController(
                       "geometry" to subzone.boundary,
                   )
                 }
-              })
+              },
+      )
 
   private fun plotsToGeoJson(
       site: ExistingPlantingSiteModel,
@@ -246,7 +256,8 @@ class AdminPlantingSitesController(
                                       "subzone" to zone.findPlantingSubzone(plotBoundary)?.name,
                                       "type" to "temporary",
                                       "zone" to zone.name,
-                                  ))
+                                  ),
+                          )
                         }
 
                 val existingPlots =
@@ -290,12 +301,15 @@ class AdminPlantingSitesController(
                     }
 
                 existingPlots + newTemporaryPlots
-              })
+              },
+      )
 
   @PostMapping("/createPlantingSite", consumes = ["multipart/form-data"])
   fun createPlantingSite(
       @RequestParam organizationId: OrganizationId,
       @RequestParam siteName: String,
+      @RequestParam gridOriginLat: Double?,
+      @RequestParam gridOriginLong: Double?,
       @RequestPart zipfile: MultipartFile,
       redirectAttributes: RedirectAttributes,
   ): String {
@@ -305,9 +319,22 @@ class AdminPlantingSitesController(
           Files.copy(inputStream, localZipFile, StandardCopyOption.REPLACE_EXISTING)
         }
 
+        val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+        val gridOrigin =
+            if (gridOriginLat != null && gridOriginLong != null) {
+              geometryFactory.createPoint(Coordinate(gridOriginLong, gridOriginLat))
+            } else {
+              null
+            }
+
         val siteId =
             plantingSiteImporter.import(
-                siteName, null, organizationId, Shapefile.fromZipFile(localZipFile))
+                siteName,
+                null,
+                organizationId,
+                Shapefile.fromZipFile(localZipFile),
+                gridOrigin,
+            )
 
         redirectAttributes.successMessage = "Planting site $siteId imported successfully."
       }
@@ -345,7 +372,9 @@ class AdminPlantingSitesController(
                     siteBoundary,
                     mapOf(
                         PlantingSiteImporter.zoneNameProperties.first() to "Zone",
-                        PlantingSiteImporter.subzoneNameProperties.first() to "Subzone"))
+                        PlantingSiteImporter.subzoneNameProperties.first() to "Subzone",
+                    ),
+                )
 
             plantingSiteImporter.import(siteName, null, organizationId, listOf(subzonesFile))
           } else {
@@ -355,7 +384,8 @@ class AdminPlantingSitesController(
                         boundary = siteBoundary,
                         name = siteName,
                         organizationId = organizationId,
-                    ))
+                    ),
+                )
                 .id
           }
 
@@ -426,7 +456,8 @@ class AdminPlantingSitesController(
                 Shapefile.fromZipFile(localZipFile),
                 existing.name,
                 existing.description,
-                existing.organizationId)
+                existing.organizationId,
+            )
         val plantedSubzoneIds = plantingSiteStore.fetchSubzoneIdsWithPastPlantings(plantingSiteId)
         val edit =
             PlantingSiteEditCalculator(existing, desired, plantedSubzoneIds).calculateSiteEdit()
@@ -453,7 +484,8 @@ class AdminPlantingSitesController(
                 subzoneIdsToMarkIncomplete
                     ?.split(",")
                     ?.map { PlantingSubzoneId(it.trim()) }
-                    ?.toSet() ?: emptySet())
+                    ?.toSet() ?: emptySet(),
+            )
             redirectAttributes.successMessage = "Site map updated."
           }
         } else {
@@ -565,7 +597,9 @@ class AdminPlantingSitesController(
       val desiredSeasons =
           site.plantingSeasons.map { UpdatedPlantingSeasonModel(it) } +
               UpdatedPlantingSeasonModel(
-                  endDate = LocalDate.parse(endDate), startDate = LocalDate.parse(startDate))
+                  endDate = LocalDate.parse(endDate),
+                  startDate = LocalDate.parse(startDate),
+              )
 
       plantingSiteStore.updatePlantingSite(plantingSiteId, desiredSeasons) { it }
 
@@ -618,7 +652,8 @@ class AdminPlantingSitesController(
               UpdatedPlantingSeasonModel(
                   endDate = LocalDate.parse(endDate),
                   id = plantingSeasonId,
-                  startDate = LocalDate.parse(startDate))
+                  startDate = LocalDate.parse(startDate),
+              )
             } else {
               UpdatedPlantingSeasonModel(season)
             }
@@ -652,7 +687,9 @@ class AdminPlantingSitesController(
                   plantingSiteId = plantingSiteId,
                   requestedSubzoneIds = requestedSubzoneIds ?: emptySet(),
                   startDate = LocalDate.parse(startDate),
-                  state = ObservationState.Upcoming))
+                  state = ObservationState.Upcoming,
+              ),
+          )
 
       redirectAttributes.successMessage = "Created observation $observationId"
     } catch (e: Exception) {
