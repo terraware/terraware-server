@@ -1,6 +1,6 @@
 package com.terraformation.backend.accelerator
 
-import com.terraformation.backend.accelerator.ApplicationVariableValuesFetcher.Companion.STABLE_ID_COUNTRY
+import com.terraformation.backend.accelerator.ApplicationVariableValuesService.Companion.STABLE_ID_COUNTRY
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.customer.model.SystemUser
@@ -13,7 +13,7 @@ class ApplicationCountryUpdater(
     private val systemUser: SystemUser,
     private val applicationStore: ApplicationStore,
     private val variableStore: VariableStore,
-    private val applicationVariableValuesFetcher: ApplicationVariableValuesFetcher,
+    private val applicationVariableValuesService: ApplicationVariableValuesService,
 ) {
 
   /** Update application country when project country variable is updated */
@@ -25,7 +25,7 @@ class ApplicationCountryUpdater(
       if (variable.stableId == STABLE_ID_COUNTRY) {
         val application = applicationStore.fetchByProjectId(event.projectId).singleOrNull()
         if (application != null) {
-          val variableValues = applicationVariableValuesFetcher.fetchValues(event.projectId)
+          val variableValues = applicationVariableValuesService.fetchValues(event.projectId)
           variableValues.countryCode?.let { applicationStore.updateCountryCode(application.id, it) }
         }
       }

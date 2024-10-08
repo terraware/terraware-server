@@ -40,7 +40,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val applicationStore = mockk<ApplicationStore>()
-  private val applicationVariableValuesFetcher = mockk<ApplicationVariableValuesFetcher>()
+  private val applicationVariableValuesService = mockk<ApplicationVariableValuesService>()
   private val clock = TestClock()
   private val config = mockk<TerrawareServerConfig>()
   private val eventPublisher = TestEventPublisher()
@@ -52,7 +52,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
   private val service: ApplicationService by lazy {
     ApplicationService(
         applicationStore,
-        applicationVariableValuesFetcher,
+        applicationVariableValuesService,
         config,
         countriesDao,
         CountryDetector(),
@@ -108,7 +108,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
 
       every { applicationStore.fetchOneById(applicationId) } returns applicationModel
       every { applicationStore.submit(applicationId, any(), any()) } returns submissionResult
-      every { applicationVariableValuesFetcher.fetchValues(projectId) } returns
+      every { applicationVariableValuesService.fetchValues(projectId) } returns
           applicationVariableValues
       every { preScreenBoundarySubmissionFetcher.fetchSubmission(projectId) } returns
           boundarySubmission
@@ -162,7 +162,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       every { config.hubSpot } returns hubSpotConfig
       every { applicationStore.fetchOneById(applicationId) } returns applicationModel
       every { applicationStore.submit(applicationId, any()) } returns submissionResult
-      every { applicationVariableValuesFetcher.fetchValues(projectId) } returns
+      every { applicationVariableValuesService.fetchValues(projectId) } returns
           applicationVariableValues
       every {
         hubSpotService.createApplicationObjects(any(), any(), any(), any(), any(), any(), any())
@@ -237,7 +237,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
 
       every { applicationStore.fetchOneById(applicationId) } returns applicationModel
       every { applicationStore.submit(applicationId, any(), any()) } returns submissionResult
-      every { applicationVariableValuesFetcher.fetchValues(projectId) } returns
+      every { applicationVariableValuesService.fetchValues(projectId) } returns
           applicationVariableValues
       every { preScreenBoundarySubmissionFetcher.fetchSubmission(projectId) } returns
           boundarySubmission
@@ -303,8 +303,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
 
       every { applicationStore.fetchOneById(applicationId) } returns applicationModel
       every { applicationStore.submit(applicationId, any(), any()) } returns submissionResult
-      every { countryDetector.getCountries(any()) } returns setOf("KE")
-      every { applicationVariableValuesFetcher.fetchValues(projectId) } returns
+      every { applicationVariableValuesService.fetchValues(projectId) } returns
           applicationVariableValues
       every { preScreenBoundarySubmissionFetcher.fetchSubmission(projectId) } returns
           boundarySubmission
@@ -351,7 +350,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       every { applicationStore.updateBoundary(applicationId, any()) } returns Unit
       every { applicationStore.updateCountryCode(applicationId, any()) } returns Unit
 
-      every { applicationVariableValuesFetcher.updateCountryVariable(projectId, any()) } returns
+      every { applicationVariableValuesService.updateCountryVariable(projectId, any()) } returns
           Unit
     }
 
@@ -363,7 +362,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       verify(exactly = 1) { applicationStore.updateBoundary(applicationId, boundary) }
       verify(exactly = 1) { applicationStore.updateCountryCode(applicationId, "GB") }
       verify(exactly = 1) {
-        applicationVariableValuesFetcher.updateCountryVariable(projectId, "GB")
+        applicationVariableValuesService.updateCountryVariable(projectId, "GB")
       }
     }
 
@@ -376,7 +375,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       verify(exactly = 1) { applicationStore.updateBoundary(applicationId, boundary) }
       verify(exactly = 0) { applicationStore.updateCountryCode(applicationId, any()) }
       verify(exactly = 0) {
-        applicationVariableValuesFetcher.updateCountryVariable(projectId, any())
+        applicationVariableValuesService.updateCountryVariable(projectId, any())
       }
     }
   }

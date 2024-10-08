@@ -22,7 +22,7 @@ import org.locationtech.jts.geom.Geometry
 @Named
 class ApplicationService(
     private val applicationStore: ApplicationStore,
-    private val applicationVariableValuesFetcher: ApplicationVariableValuesFetcher,
+    private val applicationVariableValuesService: ApplicationVariableValuesService,
     private val config: TerrawareServerConfig,
     private val countriesDao: CountriesDao,
     private val countryDetector: CountryDetector,
@@ -39,7 +39,7 @@ class ApplicationService(
    * variables that affect the eligibility checks.
    *
    * The variable fetching happens here rather than directly in [ApplicationStore] to avoid adding a
-   * peer dependency between store classes, since [ApplicationVariableValuesFetcher] depends on the
+   * peer dependency between store classes, since [ApplicationVariableValuesService] depends on the
    * variable stores.
    */
   fun submit(applicationId: ApplicationId): ApplicationSubmissionResult {
@@ -47,7 +47,7 @@ class ApplicationService(
 
     val existing = applicationStore.fetchOneById(applicationId)
     val projectId = existing.projectId
-    val variableValues = applicationVariableValuesFetcher.fetchValues(projectId)
+    val variableValues = applicationVariableValuesService.fetchValues(projectId)
 
     return if (existing.status == ApplicationStatus.NotSubmitted) {
       val boundarySubmission = preScreenBoundarySubmissionFetcher.fetchSubmission(projectId)
@@ -101,7 +101,7 @@ class ApplicationService(
 
     if (countries.size == 1) {
       val countryCode = countries.single()
-      applicationVariableValuesFetcher.updateCountryVariable(existing.projectId, countryCode)
+      applicationVariableValuesService.updateCountryVariable(existing.projectId, countryCode)
       applicationStore.updateCountryCode(applicationId, countryCode)
     } else {
       log.debug(
