@@ -34,9 +34,12 @@ data class DeliverableSubmissionModel(
     val organizationName: String,
     val participantId: ParticipantId?,
     val participantName: String?,
+    val position: Int,
     val projectId: ProjectId,
     val projectName: String,
+    val sensitive: Boolean,
     val status: SubmissionStatus,
+    val required: Boolean,
     val templateUrl: URI?,
     val type: DeliverableType,
 )

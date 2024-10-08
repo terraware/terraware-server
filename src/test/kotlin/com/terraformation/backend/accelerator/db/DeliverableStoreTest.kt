@@ -211,8 +211,11 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               organizationName = "Organization 1",
               participantId = participantId1,
               participantName = "Participant 1 $suffix",
+              position = 1,
               projectId = projectId1,
               projectName = "Project 1",
+              required = false,
+              sensitive = false,
               status = SubmissionStatus.InReview,
               submissionId = submissionId1,
               templateUrl = null,
@@ -225,6 +228,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
                   deliverableId = deliverableId2,
                   descriptionHtml = "Description 2",
                   name = "Deliverable 2",
+                  position = 2,
               )
               .withoutSubmission()
       val deliverable3Project1 =
@@ -237,6 +241,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               moduleName = "Name 2",
               moduleTitle = "Module 2",
               name = "Deliverable 3",
+              position = 3,
               templateUrl = URI("https://example.com/"),
           )
 
@@ -445,8 +450,11 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
                   organizationName = "Organization 1",
                   participantId = null,
                   participantName = null,
+                  position = 1,
                   projectId = projectId,
                   projectName = "Project 1",
+                  required = false,
+                  sensitive = false,
                   status = SubmissionStatus.Approved,
                   submissionId = submissionId,
                   templateUrl = null,

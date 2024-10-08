@@ -729,8 +729,11 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 organizationName = "Organization 1",
                 participantId = null,
                 participantName = null,
+                position = 1,
                 projectId = org1ProjectId1,
                 projectName = "Project A",
+                required = false,
+                sensitive = false,
                 status = SubmissionStatus.InReview,
                 submissionId = org1Project1PrescreenSubmission,
                 templateUrl = null,
@@ -747,6 +750,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 moduleId = applicationModuleId,
                 moduleName = "Application",
                 name = "Application deliverable",
+                position = 2,
                 submissionId = org1Project1ApplicationSubmission,
             )
 
@@ -802,6 +806,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 moduleId = extraApplicationModuleId,
                 moduleName = "Extra Application",
                 name = "Extra application deliverable",
+                position = 3,
                 submissionId = org2Project1ExtraApplicationSubmission,
                 status = SubmissionStatus.Completed,
             )
