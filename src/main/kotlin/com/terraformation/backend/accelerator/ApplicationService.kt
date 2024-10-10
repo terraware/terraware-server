@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.db.ApplicationStore
-import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
 import com.terraformation.backend.accelerator.model.ApplicationVariableValues
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
@@ -30,7 +29,7 @@ class ApplicationService(
     private val defaultProjectLeadsDao: DefaultProjectLeadsDao,
     private val hubSpotService: HubSpotService,
     private val preScreenBoundarySubmissionFetcher: PreScreenBoundarySubmissionFetcher,
-    private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore,
+    private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
     private val systemUser: SystemUser,
 ) {
   private val log = perClassLogger()
@@ -60,7 +59,7 @@ class ApplicationService(
       result
     } else {
       val result = applicationStore.submit(applicationId)
-      val details = systemUser.run { projectAcceleratorDetailsStore.fetchOneById(projectId) }
+      val details = systemUser.run { projectAcceleratorDetailsService.fetchOneById(projectId) }
 
       if (config.hubSpot.enabled &&
           result.isSuccessful &&
@@ -113,7 +112,7 @@ class ApplicationService(
 
   private fun updateHubSpotUrl(application: ExistingApplicationModel, url: URI) {
     systemUser.run {
-      projectAcceleratorDetailsStore.update(application.projectId) { it.copy(hubSpotUrl = url) }
+      projectAcceleratorDetailsService.update(application.projectId) { it.copy(hubSpotUrl = url) }
     }
   }
 
@@ -132,7 +131,7 @@ class ApplicationService(
     val totalLandUseHectares = variableValues.landUseModelHectares.values.sumOf { it }
 
     systemUser.run {
-      projectAcceleratorDetailsStore.update(application.projectId) { model ->
+      projectAcceleratorDetailsService.update(application.projectId) { model ->
         model.copy(
             applicationReforestableLand = boundaryAreaHectares ?: totalLandUseHectares,
             countryCode = countryCode,
