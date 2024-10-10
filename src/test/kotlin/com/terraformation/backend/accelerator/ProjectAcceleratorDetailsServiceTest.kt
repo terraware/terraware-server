@@ -9,9 +9,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.mockUser
-import io.mockk.Runs
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
@@ -43,16 +41,14 @@ class ProjectAcceleratorDetailsServiceTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setup() {
     every { updateFunc(existingDetails) } returns updatedDetails
-    every { existingDetails.toVariableValuesModel() } returns existingValues
     every { updatedDetails.toVariableValuesModel() } returns updatedValues
-
     every { existingValues.toProjectAcceleratorDetails() } returns existingDetails
 
     every { projectAcceleratorDetailsStore.fetchOneById(projectId) } returns existingDetails
     every { projectAcceleratorDetailsStore.update(projectId, any()) } returns Unit
 
     every { acceleratorProjectVariableValuesService.fetchValues(projectId) } returns existingValues
-    every { acceleratorProjectVariableValuesService.writeValues(projectId, any()) } just Runs
+    every { acceleratorProjectVariableValuesService.writeValues(projectId, any()) } returns Unit
   }
 
   @Test
@@ -60,5 +56,8 @@ class ProjectAcceleratorDetailsServiceTest : DatabaseTest(), RunsAsUser {
     service.update(projectId, updateFunc)
 
     verify(exactly = 1) { projectAcceleratorDetailsStore.update(projectId, updateFunc) }
+    verify(exactly = 1) {
+      acceleratorProjectVariableValuesService.writeValues(projectId, updatedValues)
+    }
   }
 }

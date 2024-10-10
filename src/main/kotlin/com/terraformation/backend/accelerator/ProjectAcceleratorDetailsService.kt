@@ -21,8 +21,9 @@ class ProjectAcceleratorDetailsService(
       applyFunc: (ProjectAcceleratorDetailsModel) -> ProjectAcceleratorDetailsModel,
   ) {
     projectAcceleratorDetailsStore.update(projectId, applyFunc)
-    acceleratorProjectVariableValuesService.writeValues(projectId) {
-      applyFunc(it.toProjectAcceleratorDetails()).toVariableValuesModel()
-    }
+
+    val variableValues = acceleratorProjectVariableValuesService.fetchValues(projectId)
+    acceleratorProjectVariableValuesService.writeValues(
+        projectId, applyFunc(variableValues.toProjectAcceleratorDetails()).toVariableValuesModel())
   }
 }
