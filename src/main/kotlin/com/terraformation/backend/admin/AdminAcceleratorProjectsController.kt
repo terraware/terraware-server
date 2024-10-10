@@ -47,9 +47,8 @@ class AdminAcceleratorProjectsController(
     log.info("Migrating ${projectDetails.size} project details to variables.")
     projectDetails.forEach { acceleratorDetail ->
       try {
-        acceleratorProjectVariableValuesService.writeValues(acceleratorDetail.projectId) {
-          acceleratorDetail.toVariableValuesModel()
-        }
+        acceleratorProjectVariableValuesService.writeValues(
+            acceleratorDetail.projectId, acceleratorDetail.toVariableValuesModel())
         log.info("Variables migration for project ${acceleratorDetail.projectId} succeeded.")
       } catch (e: Exception) {
         problems.add("Project ${acceleratorDetail.projectId}: ${e.message}")
