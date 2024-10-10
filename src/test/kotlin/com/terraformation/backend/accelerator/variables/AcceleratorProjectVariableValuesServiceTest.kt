@@ -246,7 +246,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
               whatNeedsToBeTrue = "New what needs to be true",
           )
 
-      service.writeValues(inserted.projectId) { values }
+      service.writeValues(inserted.projectId, values)
 
       assertEquals(
           // Region is extracted from country
@@ -268,15 +268,15 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
       insertSelectValue(landUseModelTypesVariableId, optionIds = setOf(nativeForestOptionId))
 
       val existing = service.fetchValues(inserted.projectId)
-      service.writeValues(inserted.projectId) {
-        it.copy(
-            countryCode = null,
-            landUseModelTypes = setOf(LandUseModelType.Agroforestry),
-            maxCarbonAccumulation = null,
-            minCarbonAccumulation = BigDecimal(20),
-            totalCarbon = BigDecimal(30),
-        )
-      }
+      service.writeValues(
+          inserted.projectId,
+          existing.copy(
+              countryCode = null,
+              landUseModelTypes = setOf(LandUseModelType.Agroforestry),
+              maxCarbonAccumulation = null,
+              minCarbonAccumulation = BigDecimal(20),
+              totalCarbon = BigDecimal(30),
+          ))
 
       assertEquals(
           existing.copy(
@@ -296,7 +296,8 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
       insertValue(minCarbonAccumulationVariableId, numberValue = BigDecimal.ONE)
 
       val existing = variableValuesDao.findAll()
-      service.writeValues(inserted.projectId) { it }
+      val model = service.fetchValues(inserted.projectId)
+      service.writeValues(inserted.projectId, model)
 
       assertEquals(existing, variableValuesDao.findAll())
     }
@@ -306,10 +307,18 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
       every { user.canUpdateProjectAcceleratorDetails(any()) } returns false
       every { user.canReadProject(any()) } returns true
 
-      assertThrows<AccessDeniedException> { service.writeValues(inserted.projectId) { it } }
+      assertThrows<AccessDeniedException> {
+        service.writeValues(
+            inserted.projectId,
+            ProjectAcceleratorVariableValuesModel(projectId = inserted.projectId))
+      }
 
       every { user.canReadProject(any()) } returns false
-      assertThrows<ProjectNotFoundException> { service.writeValues(inserted.projectId) { it } }
+      assertThrows<ProjectNotFoundException> {
+        service.writeValues(
+            inserted.projectId,
+            ProjectAcceleratorVariableValuesModel(projectId = inserted.projectId))
+      }
     }
   }
 }
