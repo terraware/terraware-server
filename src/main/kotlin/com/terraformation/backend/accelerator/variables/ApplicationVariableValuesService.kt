@@ -1,4 +1,4 @@
-package com.terraformation.backend.accelerator
+package com.terraformation.backend.accelerator.variables
 
 import com.terraformation.backend.accelerator.model.ApplicationVariableValues
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
@@ -6,24 +6,17 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.CountryNotFoundException
 import com.terraformation.backend.db.accelerator.DeliverableId
-import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
-import com.terraformation.backend.documentproducer.model.AppendValueOperation
-import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
-import com.terraformation.backend.documentproducer.model.ExistingNumberValue
-import com.terraformation.backend.documentproducer.model.ExistingSelectValue
-import com.terraformation.backend.documentproducer.model.ExistingTextValue
 import com.terraformation.backend.documentproducer.model.ExistingValue
-import com.terraformation.backend.documentproducer.model.NewSelectValue
+import com.terraformation.backend.documentproducer.model.SelectValue
 import com.terraformation.backend.documentproducer.model.SelectVariable
 import com.terraformation.backend.documentproducer.model.Variable
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
-import java.math.BigDecimal
 import org.springframework.beans.factory.annotation.Value
 
 @Named
@@ -36,31 +29,10 @@ class ApplicationVariableValuesService(
     val preScreenDeliverableId: DeliverableId,
 ) {
   companion object {
-    const val STABLE_ID_CONTACT_EMAIL = "26"
-    const val STABLE_ID_CONTACT_NAME = "25"
-    const val STABLE_ID_COUNTRY = "1"
-    const val STABLE_ID_NUM_SPECIES = "22"
-    const val STABLE_ID_PROJECT_TYPE = "3"
-    const val STABLE_ID_TOTAL_EXPANSION_POTENTIAL = "24"
-    const val STABLE_ID_WEBSITE = "27"
-
-    val stableIdsByLandUseModelType =
-        mapOf(
-            LandUseModelType.Agroforestry to "15",
-            LandUseModelType.Mangroves to "13",
-            LandUseModelType.Monoculture to "7",
-            LandUseModelType.NativeForest to "5",
-            LandUseModelType.OtherLandUseModel to "19",
-            LandUseModelType.OtherTimber to "11",
-            LandUseModelType.Silvopasture to "17",
-            LandUseModelType.SustainableTimber to "9",
-        )
-
     private val log = perClassLogger()
-  }
 
-  private val variablesById: Map<VariableId, Variable> by lazy {
-    (listOf(
+    private val APPLICATION_STABLE_IDS =
+        listOf(
             STABLE_ID_CONTACT_EMAIL,
             STABLE_ID_CONTACT_NAME,
             STABLE_ID_COUNTRY,
@@ -68,12 +40,19 @@ class ApplicationVariableValuesService(
             STABLE_ID_PROJECT_TYPE,
             STABLE_ID_TOTAL_EXPANSION_POTENTIAL,
             STABLE_ID_WEBSITE,
-        ) + stableIdsByLandUseModelType.values)
-        .map {
+        ) + stableIdsByLandUseModelType.values
+  }
+
+  private val variablesById: Map<VariableId, Variable> by lazy {
+    APPLICATION_STABLE_IDS.map {
           variableStore.fetchByStableId(it)
               ?: throw IllegalStateException("No variable with stable ID $it")
         }
         .associateBy { it.id }
+  }
+
+  private val variablesByStableId: Map<String, Variable> by lazy {
+    variablesById.values.associateBy { it.stableId }
   }
 
   fun fetchValues(projectId: ProjectId): ApplicationVariableValues {
@@ -144,43 +123,29 @@ class ApplicationVariableValuesService(
   /** Update country variable for a project. */
   fun updateCountryVariable(projectId: ProjectId, countryCode: String) {
     val countryVariable =
-        variablesById.values.firstOrNull { it.stableId == STABLE_ID_COUNTRY } as? SelectVariable
+        variablesByStableId[STABLE_ID_COUNTRY] as? SelectVariable
             ?: throw IllegalStateException("Country variable stable ID not configured correctly")
 
     val countryName =
         countriesDao.fetchOneByCode(countryCode)?.name
             ?: throw CountryNotFoundException(countryCode)
-    val selectOption =
-        countryVariable.options.firstOrNull { it.name == countryName }
-            ?: throw IllegalStateException("Country $countryName select option not recognized")
-    val selectValue =
-        NewSelectValue(
-            BaseVariableValueProperties(null, projectId, 0, countryVariable.id, null, null),
-            setOf(selectOption.id))
+
+    val existingCountryValue =
+        variableValueStore
+            .listValues(projectId = projectId, variableIds = listOf(countryVariable.id))
+            .singleOrNull() as? SelectValue
+
+    val operation =
+        updateSelectValueOperation(
+            projectId,
+            countryVariable,
+            existingCountryValue,
+            setOf(countryName),
+        )
 
     systemUser.run {
       // Uses elevated permission to update variables without trigger workflow
-      variableValueStore.updateValues(listOf(AppendValueOperation(selectValue)), false)
+      operation?.let { variableValueStore.updateValues(listOf(it), false) }
     }
-  }
-
-  private fun getNumberValue(values: Map<String, ExistingValue>, stableId: String): BigDecimal? {
-    return (values[stableId] as? ExistingNumberValue)?.value
-  }
-
-  private fun getTextValue(values: Map<String, ExistingValue>, stableId: String): String? {
-    return (values[stableId] as? ExistingTextValue)?.value
-  }
-
-  private fun getSingleSelectValue(
-      variables: Map<VariableId, Variable>,
-      values: Map<String, ExistingValue>,
-      stableId: String,
-  ): String? {
-    val selectValue = values[stableId] as? ExistingSelectValue ?: return null
-    val variable = variables[selectValue.variableId] as? SelectVariable ?: return null
-    val selectOptionId = selectValue.value.firstOrNull() ?: return null
-
-    return variable.options.firstOrNull { it.id == selectOptionId }?.name
   }
 }
