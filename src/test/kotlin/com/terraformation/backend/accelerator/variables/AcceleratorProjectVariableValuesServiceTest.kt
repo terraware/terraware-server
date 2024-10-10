@@ -258,14 +258,20 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can add, update and remove values`() {
+      insertSelectValue(countryVariableId, optionIds = setOf(brazilOptionId))
+
       insertValue(maxCarbonAccumulationVariableId, numberValue = BigDecimal.TWO)
       insertValue(maxCarbonAccumulationVariableId, numberValue = BigDecimal.TEN)
 
       insertValue(minCarbonAccumulationVariableId, numberValue = BigDecimal.ONE)
 
+      insertSelectValue(landUseModelTypesVariableId, optionIds = setOf(nativeForestOptionId))
+
       val existing = service.fetchValues(inserted.projectId)
       service.writeValues(inserted.projectId) {
         it.copy(
+            countryCode = null,
+            landUseModelTypes = setOf(LandUseModelType.Agroforestry),
             maxCarbonAccumulation = null,
             minCarbonAccumulation = BigDecimal(20),
             totalCarbon = BigDecimal(30),
@@ -274,11 +280,25 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           existing.copy(
+              countryCode = null,
+              landUseModelTypes = setOf(LandUseModelType.Agroforestry),
               maxCarbonAccumulation = null,
               minCarbonAccumulation = BigDecimal(20),
+              region = null,
               totalCarbon = BigDecimal(30),
           ),
           service.fetchValues(inserted.projectId))
+    }
+
+    @Test
+    fun `unchanged values will not write new records`() {
+      insertValue(maxCarbonAccumulationVariableId, numberValue = BigDecimal.TWO)
+      insertValue(minCarbonAccumulationVariableId, numberValue = BigDecimal.ONE)
+
+      val existing = variableValuesDao.findAll()
+      service.writeValues(inserted.projectId) { it }
+
+      assertEquals(existing, variableValuesDao.findAll())
     }
 
     @Test
