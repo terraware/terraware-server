@@ -11,6 +11,8 @@ import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
+import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
+import com.terraformation.backend.accelerator.variables.AcceleratorProjectVariableValuesService
 import com.terraformation.backend.accelerator.variables.ApplicationVariableValuesService
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
@@ -42,13 +44,22 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
 
   private val applicationStore = mockk<ApplicationStore>()
   private val applicationVariableValuesService = mockk<ApplicationVariableValuesService>()
+  private val acceleratorProjectVariableValuesService =
+      mockk<AcceleratorProjectVariableValuesService>()
   private val clock = TestClock()
   private val config = mockk<TerrawareServerConfig>()
   private val eventPublisher = TestEventPublisher()
   private val preScreenBoundarySubmissionFetcher = mockk<PreScreenBoundarySubmissionFetcher>()
   private val hubSpotService = mockk<HubSpotService>()
-  private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore by lazy {
-    ProjectAcceleratorDetailsStore(clock, dslContext, eventPublisher)
+  private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService by lazy {
+    ProjectAcceleratorDetailsService(
+        acceleratorProjectVariableValuesService,
+        ProjectAcceleratorDetailsStore(
+            clock,
+            dslContext,
+            eventPublisher,
+        ),
+    )
   }
   private val service: ApplicationService by lazy {
     ApplicationService(
@@ -60,7 +71,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
         defaultProjectLeadsDao,
         hubSpotService,
         preScreenBoundarySubmissionFetcher,
-        projectAcceleratorDetailsStore,
+        projectAcceleratorDetailsService,
         SystemUser(usersDao),
     )
   }
@@ -154,6 +165,11 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               totalExpansionPotential = BigDecimal.ONE,
               website = website,
           )
+      val acceleratorVariableValues =
+          ProjectAcceleratorVariableValuesModel(
+              applicationReforestableLand = applicationReforestableLand,
+              projectId = projectId,
+          )
       val hubSpotConfig =
           TerrawareServerConfig.HubSpotConfig(clientId = "", clientSecret = "", enabled = true)
       val submissionResult =
@@ -165,6 +181,8 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       every { applicationStore.submit(applicationId, any()) } returns submissionResult
       every { applicationVariableValuesService.fetchValues(projectId) } returns
           applicationVariableValues
+      every { acceleratorProjectVariableValuesService.fetchValues(projectId) } returns
+          acceleratorVariableValues
       every {
         hubSpotService.createApplicationObjects(any(), any(), any(), any(), any(), any(), any())
       } returns dealUrl
@@ -240,6 +258,9 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       every { applicationStore.submit(applicationId, any(), any()) } returns submissionResult
       every { applicationVariableValuesService.fetchValues(projectId) } returns
           applicationVariableValues
+      every { acceleratorProjectVariableValuesService.fetchValues(projectId) } returns
+          ProjectAcceleratorVariableValuesModel(projectId = projectId)
+      every { acceleratorProjectVariableValuesService.writeValues(projectId, any()) } returns Unit
       every { preScreenBoundarySubmissionFetcher.fetchSubmission(projectId) } returns
           boundarySubmission
 
@@ -247,6 +268,27 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
 
       // Allow the assertion to call ProjectAcceleratorDetailsStore.fetchOneById
       every { user.canReadProjectAcceleratorDetails(projectId) } returns true
+
+      val updatedVariableValues =
+          ProjectAcceleratorVariableValuesModel(
+              applicationReforestableLand = BigDecimal("100.0"),
+              countryCode = "KE",
+              landUseModelTypes = setOf(LandUseModelType.Mangroves, LandUseModelType.NativeForest),
+              numNativeSpecies = 50,
+              projectId = projectId,
+              region = Region.SubSaharanAfrica,
+              totalExpansionPotential = totalExpansionPotential,
+          )
+
+      // Verify that updates are written to variables
+      verify(exactly = 1) {
+        acceleratorProjectVariableValuesService.writeValues(
+            projectId, updatedVariableValues.copy(region = null))
+      }
+
+      // After variable writes, service should return updated variables
+      every { acceleratorProjectVariableValuesService.fetchValues(projectId) } returns
+          updatedVariableValues.copy(region = Region.SubSaharanAfrica)
 
       assertEquals(
           ProjectAcceleratorDetailsModel(
@@ -260,7 +302,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               projectLead = projectLead,
               totalExpansionPotential = totalExpansionPotential,
           ),
-          projectAcceleratorDetailsStore.fetchOneById(projectId),
+          projectAcceleratorDetailsService.fetchOneById(projectId),
           "Project accelerator details after submission")
     }
 
@@ -306,6 +348,9 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
       every { applicationStore.submit(applicationId, any(), any()) } returns submissionResult
       every { applicationVariableValuesService.fetchValues(projectId) } returns
           applicationVariableValues
+      every { acceleratorProjectVariableValuesService.fetchValues(projectId) } returns
+          ProjectAcceleratorVariableValuesModel(projectId = projectId)
+      every { acceleratorProjectVariableValuesService.writeValues(projectId, any()) } returns Unit
       every { preScreenBoundarySubmissionFetcher.fetchSubmission(projectId) } returns
           boundarySubmission
 
@@ -313,6 +358,27 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
 
       // Allow the assertion to call ProjectAcceleratorDetailsStore.fetchOneById
       every { user.canReadProjectAcceleratorDetails(projectId) } returns true
+
+      val updatedVariableValues =
+          ProjectAcceleratorVariableValuesModel(
+              applicationReforestableLand = BigDecimal("101"),
+              countryCode = "KE",
+              landUseModelTypes = setOf(LandUseModelType.Mangroves, LandUseModelType.NativeForest),
+              numNativeSpecies = 50,
+              projectId = projectId,
+              region = Region.SubSaharanAfrica,
+              totalExpansionPotential = totalExpansionPotential,
+          )
+
+      // Verify that updates are written to variables
+      verify(exactly = 1) {
+        acceleratorProjectVariableValuesService.writeValues(
+            projectId, updatedVariableValues.copy(region = null))
+      }
+
+      // After variable writes, service should return updated variables
+      every { acceleratorProjectVariableValuesService.fetchValues(projectId) } returns
+          updatedVariableValues
 
       assertEquals(
           ProjectAcceleratorDetailsModel(
@@ -326,7 +392,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
               projectLead = projectLead,
               totalExpansionPotential = totalExpansionPotential,
           ),
-          projectAcceleratorDetailsStore.fetchOneById(projectId),
+          projectAcceleratorDetailsService.fetchOneById(projectId),
           "Project accelerator details after submission")
     }
   }
