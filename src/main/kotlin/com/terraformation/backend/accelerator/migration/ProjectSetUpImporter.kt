@@ -1,7 +1,7 @@
 package com.terraformation.backend.accelerator.migration
 
+import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.accelerator.db.ApplicationStore
-import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.OrganizationStore
@@ -39,7 +39,7 @@ class ProjectSetUpImporter(
     private val countriesDao: CountriesDao,
     private val dslContext: DSLContext,
     private val organizationStore: OrganizationStore,
-    private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore,
+    private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
     private val projectStore: ProjectStore,
     private val systemUser: SystemUser,
 ) {
@@ -197,7 +197,7 @@ class ProjectSetUpImporter(
             }
             ?.toSet()
 
-    projectAcceleratorDetailsStore.update(project.id) { model ->
+    projectAcceleratorDetailsService.update(project.id) { model ->
       model.copy(
           annualCarbon = getBigDecimal(valuesByName, "Annual Carbon (t)"),
           applicationReforestableLand =
