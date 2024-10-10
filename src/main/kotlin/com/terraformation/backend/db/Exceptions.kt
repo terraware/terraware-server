@@ -68,6 +68,9 @@ abstract class MismatchedStateException(message: String) : RuntimeException(mess
     get() = super.message!!
 }
 
+class AcceleratorProjectNotFoundException(val projectId: ProjectId) :
+    EntityNotFoundException("Project $projectId not found or not in accelerator")
+
 class AccessionNotFoundException(val accessionId: AccessionId) :
     EntityNotFoundException("Accession $accessionId not found")
 

@@ -1,7 +1,9 @@
 package com.terraformation.backend.accelerator.api
 
+import com.terraformation.backend.accelerator.AcceleratorProjectService
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
+import com.terraformation.backend.accelerator.model.AcceleratorProjectModel
 import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
@@ -9,10 +11,13 @@ import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
+import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import io.swagger.v3.oas.annotations.Operation
@@ -33,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/accelerator/events")
 @RestController
 class EventsController(
+    private val acceleratorProjectService: AcceleratorProjectService,
     private val eventStore: ModuleEventStore,
     private val moduleStore: ModuleStore,
 ) {
@@ -58,7 +64,15 @@ class EventsController(
   ): GetEventResponsePayload {
     val model = eventStore.fetchOneById(eventId)
     val moduleName = moduleStore.fetchOneById(model.moduleId).name
-    return GetEventResponsePayload(ModuleEvent(model, moduleName))
+
+    val projects =
+        if (currentUser().canReadModuleEventParticipants()) {
+          model.projects.map { ModuleEventProject(acceleratorProjectService.fetchOneById(it)) }
+        } else {
+          null
+        }
+
+    return GetEventResponsePayload(ModuleEvent(model, moduleName, projects))
   }
 
   @ApiResponse200
@@ -136,6 +150,26 @@ class EventsController(
   }
 }
 
+data class ModuleEventProject(
+    val projectId: ProjectId,
+    val projectName: String,
+    val participantId: ParticipantId,
+    val participantName: String,
+    val cohortId: CohortId,
+    val cohortName: String,
+) {
+  constructor(
+      model: AcceleratorProjectModel
+  ) : this(
+      model.projectId,
+      model.projectName,
+      model.participantId,
+      model.participantName,
+      model.cohortId,
+      model.cohortName,
+  )
+}
+
 data class ModuleEvent(
     val description: String?,
     val endTime: Instant?,
@@ -143,6 +177,7 @@ data class ModuleEvent(
     val meetingUrl: URI?,
     val moduleId: ModuleId,
     val moduleName: String,
+    val projects: List<ModuleEventProject>?,
     val recordingUrl: URI?,
     val slidesUrl: URI?,
     val startTime: Instant?,
@@ -152,6 +187,7 @@ data class ModuleEvent(
   constructor(
       model: EventModel,
       moduleName: String,
+      projects: List<ModuleEventProject>? = null,
   ) : this(
       description = model.description,
       endTime = model.endTime,
@@ -159,6 +195,7 @@ data class ModuleEvent(
       meetingUrl = model.meetingUrl,
       moduleId = model.moduleId,
       moduleName = moduleName,
+      projects = projects,
       recordingUrl = model.recordingUrl,
       slidesUrl = model.slidesUrl,
       startTime = model.startTime,
