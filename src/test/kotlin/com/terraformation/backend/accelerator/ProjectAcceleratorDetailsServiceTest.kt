@@ -1,64 +1,35 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.TestClock
-import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
+import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
+import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
 import com.terraformation.backend.accelerator.variables.AcceleratorProjectVariableValuesService
-import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.documentproducer.db.VariableStore
-import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.mockUser
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 class ProjectAcceleratorDetailsServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  val clock = TestClock()
-  val eventPublisher = TestEventPublisher()
+  val acceleratorProjectVariableValuesService: AcceleratorProjectVariableValuesService = mockk()
+  val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore = mockk()
 
-  val variableStore: VariableStore by lazy {
-    VariableStore(
-        dslContext,
-        variableNumbersDao,
-        variablesDao,
-        variableSectionDefaultValuesDao,
-        variableSectionRecommendationsDao,
-        variableSectionsDao,
-        variableSelectsDao,
-        variableSelectOptionsDao,
-        variableTablesDao,
-        variableTableColumnsDao,
-        variableTextsDao)
-  }
-  val variableValueStore: VariableValueStore by lazy {
-    VariableValueStore(
-        clock,
-        dslContext,
-        eventPublisher,
-        variableImageValuesDao,
-        variableLinkValuesDao,
-        variablesDao,
-        variableSectionValuesDao,
-        variableSelectOptionValuesDao,
-        variableValuesDao,
-        variableValueTableRowsDao)
-  }
+  val existingDetails: ProjectAcceleratorDetailsModel = mockk()
+  val updatedDetails: ProjectAcceleratorDetailsModel = mockk()
 
-  val acceleratorProjectVariableValuesService: AcceleratorProjectVariableValuesService by lazy {
-    AcceleratorProjectVariableValuesService(
-        countriesDao, variableStore, variableValueStore, SystemUser(usersDao))
-  }
-  val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore by lazy {
-    ProjectAcceleratorDetailsStore(
-        clock,
-        dslContext,
-        eventPublisher,
-    )
-  }
+  val existingValues: ProjectAcceleratorVariableValuesModel = mockk()
+  val updatedValues: ProjectAcceleratorVariableValuesModel = mockk()
+
+  val updateFunc: (ProjectAcceleratorDetailsModel) -> ProjectAcceleratorDetailsModel = mockk()
 
   private val service: ProjectAcceleratorDetailsService by lazy {
     ProjectAcceleratorDetailsService(
@@ -69,5 +40,25 @@ class ProjectAcceleratorDetailsServiceTest : DatabaseTest(), RunsAsUser {
 
   private val projectId = ProjectId(1)
 
-  @BeforeEach fun setup() {}
+  @BeforeEach
+  fun setup() {
+    every { updateFunc(existingDetails) } returns updatedDetails
+    every { existingDetails.toVariableValuesModel() } returns existingValues
+    every { updatedDetails.toVariableValuesModel() } returns updatedValues
+
+    every { existingValues.toProjectAcceleratorDetails() } returns existingDetails
+
+    every { projectAcceleratorDetailsStore.fetchOneById(projectId) } returns existingDetails
+    every { projectAcceleratorDetailsStore.update(projectId, any()) } returns Unit
+
+    every { acceleratorProjectVariableValuesService.fetchValues(projectId) } returns existingValues
+    every { acceleratorProjectVariableValuesService.writeValues(projectId, any()) } just Runs
+  }
+
+  @Test
+  fun `updates both accelerator details and project variable values`() {
+    service.update(projectId, updateFunc)
+
+    verify(exactly = 1) { projectAcceleratorDetailsStore.update(projectId, updateFunc) }
+  }
 }

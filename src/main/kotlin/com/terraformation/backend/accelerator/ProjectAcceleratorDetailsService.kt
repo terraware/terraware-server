@@ -20,7 +20,7 @@ class ProjectAcceleratorDetailsService(
       projectId: ProjectId,
       applyFunc: (ProjectAcceleratorDetailsModel) -> ProjectAcceleratorDetailsModel,
   ) {
-    projectAcceleratorDetailsStore.update(projectId) { applyFunc(it) }
+    projectAcceleratorDetailsStore.update(projectId, applyFunc)
     acceleratorProjectVariableValuesService.writeValues(projectId) {
       applyFunc(it.toProjectAcceleratorDetails()).toVariableValuesModel()
     }
