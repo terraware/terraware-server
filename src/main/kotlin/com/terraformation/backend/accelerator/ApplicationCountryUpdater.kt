@@ -1,8 +1,9 @@
 package com.terraformation.backend.accelerator
 
-import com.terraformation.backend.accelerator.ApplicationVariableValuesService.Companion.STABLE_ID_COUNTRY
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
+import com.terraformation.backend.accelerator.variables.ApplicationVariableValuesService
+import com.terraformation.backend.accelerator.variables.STABLE_ID_COUNTRY
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.documentproducer.db.VariableStore
 import jakarta.inject.Named
