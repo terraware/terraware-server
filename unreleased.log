@@ -1,3 +1,4 @@
+9d298f057cf Added project accelerator details as part of event controller (#2487)
 c2b6cd832e3 Updated deliverable submission model to include reuqired, sensitive, positions (#2484)
 7e89ef2d6ba Renamed fetcher to service (#2483)
 1da828c2f60 SW-6099 Added feature to specify grid origin when importing planting sites (#2482)
