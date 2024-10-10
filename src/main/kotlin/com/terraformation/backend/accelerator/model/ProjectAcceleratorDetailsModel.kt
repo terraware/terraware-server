@@ -77,6 +77,43 @@ data class ProjectAcceleratorDetailsModel(
         )
       }
     }
+
+    /** Combining variables and table values. Unused columns will be deprecated going forward. */
+    fun of(
+        record: Record,
+        variableValues: ProjectAcceleratorVariableValuesModel
+    ): ProjectAcceleratorDetailsModel {
+      return with(PROJECT_ACCELERATOR_DETAILS) {
+        ProjectAcceleratorDetailsModel(
+            annualCarbon = variableValues.annualCarbon,
+            applicationReforestableLand = variableValues.applicationReforestableLand,
+            carbonCapacity = variableValues.carbonCapacity,
+            confirmedReforestableLand = variableValues.confirmedReforestableLand,
+            countryCode = variableValues.countryCode,
+            dealDescription = variableValues.dealDescription,
+            dealStage = record[DEAL_STAGE_ID],
+            dropboxFolderPath = record[DROPBOX_FOLDER_PATH],
+            failureRisk = variableValues.failureRisk,
+            fileNaming = record[FILE_NAMING],
+            googleFolderUrl = record[GOOGLE_FOLDER_URL],
+            hubSpotUrl = record[HUBSPOT_URL],
+            investmentThesis = variableValues.investmentThesis,
+            landUseModelTypes = variableValues.landUseModelTypes,
+            maxCarbonAccumulation = variableValues.maxCarbonAccumulation,
+            minCarbonAccumulation = variableValues.minCarbonAccumulation,
+            numCommunities = record[NUM_COMMUNITIES],
+            numNativeSpecies = variableValues.numNativeSpecies,
+            perHectareBudget = variableValues.perHectareBudget,
+            pipeline = record[PIPELINE_ID],
+            projectId = variableValues.projectId,
+            projectLead = record[PROJECT_LEAD],
+            region = variableValues.region,
+            totalCarbon = variableValues.totalCarbon,
+            totalExpansionPotential = variableValues.totalExpansionPotential,
+            whatNeedsToBeTrue = variableValues.whatNeedsToBeTrue,
+        )
+      }
+    }
   }
 
   fun toVariableValuesModel() =

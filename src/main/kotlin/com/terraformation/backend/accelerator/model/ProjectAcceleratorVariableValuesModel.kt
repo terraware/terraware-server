@@ -25,4 +25,26 @@ data class ProjectAcceleratorVariableValuesModel(
     val totalCarbon: BigDecimal? = null,
     val totalExpansionPotential: BigDecimal? = null,
     val whatNeedsToBeTrue: String? = null,
-)
+) {
+
+  fun toProjectAcceleratorDetails() =
+      ProjectAcceleratorDetailsModel(
+          annualCarbon = annualCarbon,
+          applicationReforestableLand = applicationReforestableLand,
+          carbonCapacity = carbonCapacity,
+          confirmedReforestableLand = confirmedReforestableLand,
+          countryCode = countryCode,
+          dealDescription = dealDescription,
+          failureRisk = failureRisk,
+          investmentThesis = investmentThesis,
+          landUseModelTypes = landUseModelTypes,
+          maxCarbonAccumulation = maxCarbonAccumulation,
+          minCarbonAccumulation = minCarbonAccumulation,
+          numNativeSpecies = numNativeSpecies,
+          perHectareBudget = perHectareBudget,
+          projectId = projectId,
+          region = region,
+          totalCarbon = totalCarbon,
+          totalExpansionPotential = totalExpansionPotential,
+          whatNeedsToBeTrue = whatNeedsToBeTrue)
+}
