@@ -90,20 +90,21 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
     annualCarbonVariableId =
         insertNumberVariable(
-            insertVariable(type = VariableType.Number, stableId = STABLE_ID_ANNUAL_CARBON))
+            insertVariable(type = VariableType.Number, stableId = StableId.ANNUAL_CARBON.value))
     applicationRestorableLandVariableId =
         insertNumberVariable(
             insertVariable(
-                type = VariableType.Number, stableId = STABLE_ID_APPLICATION_RESTORABLE_LAND))
+                type = VariableType.Number, stableId = StableId.APPLICATION_RESTORABLE_LAND.value))
     carbonCapacityVariableId =
         insertNumberVariable(
-            insertVariable(type = VariableType.Number, stableId = STABLE_ID_CARBON_CAPACITY))
+            insertVariable(type = VariableType.Number, stableId = StableId.CARBON_CAPACITY.value))
     confirmedRestorableLandVariableId =
         insertNumberVariable(
-            insertVariable(type = VariableType.Number, stableId = STABLE_ID_TF_RESTORABLE_LAND))
+            insertVariable(
+                type = VariableType.Number, stableId = StableId.TF_RESTORABLE_LAND.value))
     countryVariableId =
         insertSelectVariable(
-            insertVariable(type = VariableType.Select, stableId = STABLE_ID_COUNTRY))
+            insertVariable(type = VariableType.Select, stableId = StableId.COUNTRY.value))
 
     brazilOptionId = insertSelectOption(inserted.variableId, "Brazil")
     chileOptionId = insertSelectOption(inserted.variableId, "Chile")
@@ -111,20 +112,21 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
     dealDescriptionVariableId =
         insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = STABLE_ID_DEAL_DESCRIPTION))
+            insertVariable(type = VariableType.Text, stableId = StableId.DEAL_DESCRIPTION.value))
     failureRiskVariableId =
         insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = STABLE_ID_FAILURE_RISK))
+            insertVariable(type = VariableType.Text, stableId = StableId.FAILURE_RISK.value))
     investmentThesisVariableId =
         insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = STABLE_ID_INVESTMENT_THESIS))
+            insertVariable(type = VariableType.Text, stableId = StableId.INVESTMENT_THESIS.value))
     investmentThesisVariableId =
         insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = STABLE_ID_INVESTMENT_THESIS))
+            insertVariable(type = VariableType.Text, stableId = StableId.INVESTMENT_THESIS.value))
 
     landUseModelTypesVariableId =
         insertSelectVariable(
-            insertVariable(type = VariableType.Select, stableId = STABLE_ID_LAND_USE_MODEL_TYPES))
+            insertVariable(
+                type = VariableType.Select, stableId = StableId.LAND_USE_MODEL_TYPES.value))
 
     agroforestryOptionId =
         insertSelectOption(inserted.variableId, LandUseModelType.Agroforestry.name)
@@ -137,28 +139,29 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     maxCarbonAccumulationVariableId =
         insertNumberVariable(
             insertVariable(
-                type = VariableType.Number, stableId = STABLE_ID_MAX_CARBON_ACCUMULATION))
+                type = VariableType.Number, stableId = StableId.MAX_CARBON_ACCUMULATION.value))
     minCarbonAccumulationVariableId =
         insertNumberVariable(
             insertVariable(
-                type = VariableType.Number, stableId = STABLE_ID_MIN_CARBON_ACCUMULATION))
+                type = VariableType.Number, stableId = StableId.MIN_CARBON_ACCUMULATION.value))
     numNativeSpeciesVariableId =
         insertNumberVariable(
-            insertVariable(type = VariableType.Number, stableId = STABLE_ID_NUM_SPECIES))
+            insertVariable(type = VariableType.Number, stableId = StableId.NUM_SPECIES.value))
     perHectareBudgetVariableId =
         insertNumberVariable(
             insertVariable(
-                type = VariableType.Number, stableId = STABLE_ID_PER_HECTARE_ESTIMATED_BUDGET))
+                type = VariableType.Number, stableId = StableId.PER_HECTARE_ESTIMATED_BUDGET.value))
     totalCarbonVariableId =
         insertNumberVariable(
-            insertVariable(type = VariableType.Number, stableId = STABLE_ID_TOTAL_CARBON))
+            insertVariable(type = VariableType.Number, stableId = StableId.TOTAL_CARBON.value))
     totalExpansionPotentialVariableId =
         insertNumberVariable(
             insertVariable(
-                type = VariableType.Number, stableId = STABLE_ID_TOTAL_EXPANSION_POTENTIAL))
+                type = VariableType.Number, stableId = StableId.TOTAL_EXPANSION_POTENTIAL.value))
     whatNeedsToBeTrueVariableId =
         insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = STABLE_ID_WHAT_NEEDS_TO_BE_TRUE))
+            insertVariable(
+                type = VariableType.Text, stableId = StableId.WHAT_NEEDS_TO_BE_TRUE.value))
 
     every { user.canReadProjectAcceleratorDetails(any()) } returns true
     every { user.canUpdateProjectAcceleratorDetails(any()) } returns true

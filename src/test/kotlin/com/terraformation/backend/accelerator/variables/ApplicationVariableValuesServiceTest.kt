@@ -83,17 +83,17 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
     contactEmailVariableId =
         insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = STABLE_ID_CONTACT_EMAIL))
+            insertVariable(type = VariableType.Text, stableId = StableId.CONTACT_EMAIL.value))
     contactNameVariableId =
         insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = STABLE_ID_CONTACT_NAME))
+            insertVariable(type = VariableType.Text, stableId = StableId.CONTACT_NAME.value))
     countryVariableId =
         insertSelectVariable(
             insertVariable(
                 type = VariableType.Select,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 1,
-                stableId = STABLE_ID_COUNTRY))
+                stableId = StableId.COUNTRY.value))
 
     brazilOptionId = insertSelectOption(inserted.variableId, "Brazil")
     chileOptionId = insertSelectOption(inserted.variableId, "Chile")
@@ -105,16 +105,17 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Number,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 2,
-                stableId = STABLE_ID_NUM_SPECIES))
+                stableId = StableId.NUM_SPECIES.value))
     totalExpansionPotentialVariableId =
         insertNumberVariable(
             insertVariable(
                 type = VariableType.Number,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 3,
-                stableId = STABLE_ID_TOTAL_EXPANSION_POTENTIAL))
+                stableId = StableId.TOTAL_EXPANSION_POTENTIAL.value))
     websiteVariableId =
-        insertTextVariable(insertVariable(type = VariableType.Text, stableId = STABLE_ID_WEBSITE))
+        insertTextVariable(
+            insertVariable(type = VariableType.Text, stableId = StableId.WEBSITE.value))
 
     projectTypeVariableId =
         insertSelectVariable(
@@ -122,13 +123,13 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Select,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 4,
-                stableId = STABLE_ID_PROJECT_TYPE))
+                stableId = StableId.PROJECT_TYPE.value))
     terrestrialOptionId = insertSelectOption(inserted.variableId, "Terrestrial")
     insertSelectOption(inserted.variableId, "Mangrove")
     insertSelectOption(inserted.variableId, "Mixed")
 
     landUseHectaresVariableIds =
-        stableIdsByLandUseModelType.entries
+        StableId.landUseHectaresByLandUseModel.entries
             .mapIndexed { index, (landUseType, stableId) ->
               landUseType to
                   insertNumberVariable(
@@ -136,7 +137,7 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
                           type = VariableType.Number,
                           deliverableId = inserted.deliverableId,
                           deliverablePosition = index + 4,
-                          stableId = stableId))
+                          stableId = stableId.value))
             }
             .toMap()
 

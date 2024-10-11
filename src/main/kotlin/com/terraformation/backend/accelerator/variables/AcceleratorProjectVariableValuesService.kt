@@ -31,47 +31,51 @@ class AcceleratorProjectVariableValuesService(
   companion object {
     private val log = perClassLogger()
 
-    private val PROJECT_ACCELERATOR_STABLE_IDS =
+    private val projectAcceleratorVariablesStableIds =
         listOf(
-            STABLE_ID_ANNUAL_CARBON,
-            STABLE_ID_APPLICATION_RESTORABLE_LAND,
-            STABLE_ID_CARBON_CAPACITY,
-            STABLE_ID_COUNTRY,
-            STABLE_ID_DEAL_DESCRIPTION,
-            STABLE_ID_FAILURE_RISK,
-            STABLE_ID_INVESTMENT_THESIS,
-            STABLE_ID_LAND_USE_MODEL_TYPES,
-            STABLE_ID_MAX_CARBON_ACCUMULATION,
-            STABLE_ID_MIN_CARBON_ACCUMULATION,
-            STABLE_ID_NUM_SPECIES,
-            STABLE_ID_PER_HECTARE_ESTIMATED_BUDGET,
-            STABLE_ID_TF_RESTORABLE_LAND,
-            STABLE_ID_TOTAL_CARBON,
-            STABLE_ID_TOTAL_EXPANSION_POTENTIAL,
-            STABLE_ID_WHAT_NEEDS_TO_BE_TRUE,
-        )
+                StableId.ANNUAL_CARBON,
+                StableId.APPLICATION_RESTORABLE_LAND,
+                StableId.CARBON_CAPACITY,
+                StableId.COUNTRY,
+                StableId.DEAL_DESCRIPTION,
+                StableId.FAILURE_RISK,
+                StableId.INVESTMENT_THESIS,
+                StableId.LAND_USE_MODEL_TYPES,
+                StableId.MAX_CARBON_ACCUMULATION,
+                StableId.MIN_CARBON_ACCUMULATION,
+                StableId.NUM_SPECIES,
+                StableId.PER_HECTARE_ESTIMATED_BUDGET,
+                StableId.TF_RESTORABLE_LAND,
+                StableId.TOTAL_CARBON,
+                StableId.TOTAL_EXPANSION_POTENTIAL,
+                StableId.WHAT_NEEDS_TO_BE_TRUE,
+            )
+            .map { it.value }
   }
 
   private val variablesById: Map<VariableId, Variable> by lazy {
-    PROJECT_ACCELERATOR_STABLE_IDS.map {
+    projectAcceleratorVariablesStableIds
+        .map {
           variableStore.fetchByStableId(it)
               ?: throw IllegalStateException("No variable with stable ID $it")
         }
         .associateBy { it.id }
   }
 
-  private val variablesByStableId: Map<String, Variable> by lazy {
-    variablesById.values.associateBy { it.stableId }
+  private val variablesByStableId: Map<StableId, Variable> by lazy {
+    variablesById.values
+        .mapNotNull { variable -> StableId.from(variable.stableId)?.let { it to variable } }
+        .toMap()
   }
 
   fun fetchValues(projectId: ProjectId): ProjectAcceleratorVariableValuesModel {
     requirePermissions { readProjectAcceleratorDetails(projectId) }
 
-    val valuesByStableId: Map<String, ExistingValue> =
+    val valuesByStableId: Map<StableId, ExistingValue> =
         variableValueStore
             .listValues(projectId = projectId, variableIds = variablesById.keys)
             .mapNotNull { value ->
-              val stableId = variablesById[value.variableId]?.stableId
+              val stableId = variablesById[value.variableId]?.let { StableId.from(it.stableId) }
               if (stableId != null) {
                 stableId to value
               } else {
@@ -80,13 +84,13 @@ class AcceleratorProjectVariableValuesService(
             }
             .toMap()
 
-    val annualCarbon = getNumberValue(valuesByStableId, STABLE_ID_ANNUAL_CARBON)
+    val annualCarbon = getNumberValue(valuesByStableId, StableId.ANNUAL_CARBON)
     val applicationReforestableLand =
-        getNumberValue(valuesByStableId, STABLE_ID_APPLICATION_RESTORABLE_LAND)
-    val carbonCapacity = getNumberValue(valuesByStableId, STABLE_ID_CARBON_CAPACITY)
-    val confirmedReforestableLand = getNumberValue(valuesByStableId, STABLE_ID_TF_RESTORABLE_LAND)
+        getNumberValue(valuesByStableId, StableId.APPLICATION_RESTORABLE_LAND)
+    val carbonCapacity = getNumberValue(valuesByStableId, StableId.CARBON_CAPACITY)
+    val confirmedReforestableLand = getNumberValue(valuesByStableId, StableId.TF_RESTORABLE_LAND)
     val countryRow =
-        getSingleSelectValue(variablesById, valuesByStableId, STABLE_ID_COUNTRY)?.let {
+        getSingleSelectValue(variablesById, valuesByStableId, StableId.COUNTRY)?.let {
           // This depends on the countries table name field matching up to the select values of the
           // country variable
           val countryRow = countriesDao.fetchOneByName(it)
@@ -95,11 +99,11 @@ class AcceleratorProjectVariableValuesService(
           }
           countryRow
         }
-    val dealDescription = getTextValue(valuesByStableId, STABLE_ID_DEAL_DESCRIPTION)
-    val failureRisk = getTextValue(valuesByStableId, STABLE_ID_FAILURE_RISK)
-    val investmentThesis = getTextValue(valuesByStableId, STABLE_ID_INVESTMENT_THESIS)
+    val dealDescription = getTextValue(valuesByStableId, StableId.DEAL_DESCRIPTION)
+    val failureRisk = getTextValue(valuesByStableId, StableId.FAILURE_RISK)
+    val investmentThesis = getTextValue(valuesByStableId, StableId.INVESTMENT_THESIS)
     val landUseModelTypes =
-        getMultiSelectValue(variablesById, valuesByStableId, STABLE_ID_LAND_USE_MODEL_TYPES)
+        getMultiSelectValue(variablesById, valuesByStableId, StableId.LAND_USE_MODEL_TYPES)
             ?.mapNotNull {
               try {
                 LandUseModelType.valueOf(it)
@@ -109,14 +113,14 @@ class AcceleratorProjectVariableValuesService(
               }
             }
             ?.toSet() ?: emptySet()
-    val maxCarbonAccumulation = getNumberValue(valuesByStableId, STABLE_ID_MAX_CARBON_ACCUMULATION)
-    val minCarbonAccumulation = getNumberValue(valuesByStableId, STABLE_ID_MIN_CARBON_ACCUMULATION)
-    val numNativeSpecies = getNumberValue(valuesByStableId, STABLE_ID_NUM_SPECIES)?.toInt()
-    val perHectareBudget = getNumberValue(valuesByStableId, STABLE_ID_PER_HECTARE_ESTIMATED_BUDGET)
-    val totalCarbon = getNumberValue(valuesByStableId, STABLE_ID_TOTAL_CARBON)
+    val maxCarbonAccumulation = getNumberValue(valuesByStableId, StableId.MAX_CARBON_ACCUMULATION)
+    val minCarbonAccumulation = getNumberValue(valuesByStableId, StableId.MIN_CARBON_ACCUMULATION)
+    val numNativeSpecies = getNumberValue(valuesByStableId, StableId.NUM_SPECIES)?.toInt()
+    val perHectareBudget = getNumberValue(valuesByStableId, StableId.PER_HECTARE_ESTIMATED_BUDGET)
+    val totalCarbon = getNumberValue(valuesByStableId, StableId.TOTAL_CARBON)
     val totalExpansionPotential =
-        getNumberValue(valuesByStableId, STABLE_ID_TOTAL_EXPANSION_POTENTIAL)
-    val whatNeedsToBeTrue = getTextValue(valuesByStableId, STABLE_ID_WHAT_NEEDS_TO_BE_TRUE)
+        getNumberValue(valuesByStableId, StableId.TOTAL_EXPANSION_POTENTIAL)
+    val whatNeedsToBeTrue = getTextValue(valuesByStableId, StableId.WHAT_NEEDS_TO_BE_TRUE)
 
     return ProjectAcceleratorVariableValuesModel(
         annualCarbon = annualCarbon,
@@ -147,11 +151,11 @@ class AcceleratorProjectVariableValuesService(
     requirePermissions { updateProjectAcceleratorDetails(projectId) }
 
     val existing = fetchValues(projectId)
-    val valuesByStableId: Map<String, ExistingValue> =
+    val valuesByStableId: Map<StableId, ExistingValue> =
         variableValueStore
             .listValues(projectId = projectId, variableIds = variablesById.keys)
             .mapNotNull { value ->
-              val stableId = variablesById[value.variableId]?.stableId
+              val stableId = variablesById[value.variableId]?.stableId?.let { StableId.from(it) }
               if (stableId != null) {
                 stableId to value
               } else {
@@ -165,8 +169,8 @@ class AcceleratorProjectVariableValuesService(
     if (existing.annualCarbon != model.annualCarbon) {
       updateNumberValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_ANNUAL_CARBON) as NumberVariable,
-              valuesByStableId[STABLE_ID_ANNUAL_CARBON] as? ExistingNumberValue,
+              getVariableByStableId(StableId.ANNUAL_CARBON) as NumberVariable,
+              valuesByStableId[StableId.ANNUAL_CARBON] as? ExistingNumberValue,
               model.annualCarbon,
           )
           ?.let { operations.add(it) }
@@ -175,8 +179,8 @@ class AcceleratorProjectVariableValuesService(
     if (existing.applicationReforestableLand != model.applicationReforestableLand) {
       updateNumberValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_APPLICATION_RESTORABLE_LAND) as NumberVariable,
-              valuesByStableId[STABLE_ID_APPLICATION_RESTORABLE_LAND] as? ExistingNumberValue,
+              getVariableByStableId(StableId.APPLICATION_RESTORABLE_LAND) as NumberVariable,
+              valuesByStableId[StableId.APPLICATION_RESTORABLE_LAND] as? ExistingNumberValue,
               model.applicationReforestableLand,
           )
           ?.let { operations.add(it) }
@@ -185,8 +189,8 @@ class AcceleratorProjectVariableValuesService(
     if (existing.carbonCapacity != model.carbonCapacity) {
       updateNumberValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_CARBON_CAPACITY) as NumberVariable,
-              valuesByStableId[STABLE_ID_CARBON_CAPACITY] as? ExistingNumberValue,
+              getVariableByStableId(StableId.CARBON_CAPACITY) as NumberVariable,
+              valuesByStableId[StableId.CARBON_CAPACITY] as? ExistingNumberValue,
               model.carbonCapacity,
           )
           ?.let { operations.add(it) }
@@ -195,8 +199,8 @@ class AcceleratorProjectVariableValuesService(
     if (existing.confirmedReforestableLand != model.confirmedReforestableLand) {
       updateNumberValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_TF_RESTORABLE_LAND) as NumberVariable,
-              valuesByStableId[STABLE_ID_TF_RESTORABLE_LAND] as? ExistingNumberValue,
+              getVariableByStableId(StableId.TF_RESTORABLE_LAND) as NumberVariable,
+              valuesByStableId[StableId.TF_RESTORABLE_LAND] as? ExistingNumberValue,
               model.confirmedReforestableLand,
           )
           ?.let { operations.add(it) }
@@ -210,8 +214,8 @@ class AcceleratorProjectVariableValuesService(
 
       updateSelectValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_COUNTRY) as SelectVariable,
-              valuesByStableId[STABLE_ID_COUNTRY] as? ExistingSelectValue,
+              getVariableByStableId(StableId.COUNTRY) as SelectVariable,
+              valuesByStableId[StableId.COUNTRY] as? ExistingSelectValue,
               countryNameSelectValue,
           )
           ?.let { operations.add(it) }
@@ -220,8 +224,8 @@ class AcceleratorProjectVariableValuesService(
     if (existing.dealDescription != model.dealDescription) {
       updateTextValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_DEAL_DESCRIPTION) as TextVariable,
-              valuesByStableId[STABLE_ID_DEAL_DESCRIPTION] as? ExistingTextValue,
+              getVariableByStableId(StableId.DEAL_DESCRIPTION) as TextVariable,
+              valuesByStableId[StableId.DEAL_DESCRIPTION] as? ExistingTextValue,
               model.dealDescription,
           )
           ?.let { operations.add(it) }
@@ -230,8 +234,8 @@ class AcceleratorProjectVariableValuesService(
     if (existing.failureRisk != model.failureRisk) {
       updateTextValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_FAILURE_RISK) as TextVariable,
-              valuesByStableId[STABLE_ID_FAILURE_RISK] as? ExistingTextValue,
+              getVariableByStableId(StableId.FAILURE_RISK) as TextVariable,
+              valuesByStableId[StableId.FAILURE_RISK] as? ExistingTextValue,
               model.failureRisk,
           )
           ?.let { operations.add(it) }
@@ -240,8 +244,8 @@ class AcceleratorProjectVariableValuesService(
     if (existing.investmentThesis != model.investmentThesis) {
       updateTextValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_INVESTMENT_THESIS) as TextVariable,
-              valuesByStableId[STABLE_ID_INVESTMENT_THESIS] as? ExistingTextValue,
+              getVariableByStableId(StableId.INVESTMENT_THESIS) as TextVariable,
+              valuesByStableId[StableId.INVESTMENT_THESIS] as? ExistingTextValue,
               model.investmentThesis,
           )
           ?.let { operations.add(it) }
@@ -252,8 +256,8 @@ class AcceleratorProjectVariableValuesService(
 
       updateSelectValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_LAND_USE_MODEL_TYPES) as SelectVariable,
-              valuesByStableId[STABLE_ID_LAND_USE_MODEL_TYPES] as? ExistingSelectValue,
+              getVariableByStableId(StableId.LAND_USE_MODEL_TYPES) as SelectVariable,
+              valuesByStableId[StableId.LAND_USE_MODEL_TYPES] as? ExistingSelectValue,
               landUseModelTypesSelectValue,
           )
           ?.let { operations.add(it) }
@@ -262,8 +266,8 @@ class AcceleratorProjectVariableValuesService(
     if (existing.maxCarbonAccumulation != model.maxCarbonAccumulation) {
       updateNumberValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_MAX_CARBON_ACCUMULATION) as NumberVariable,
-              valuesByStableId[STABLE_ID_MAX_CARBON_ACCUMULATION] as? ExistingNumberValue,
+              getVariableByStableId(StableId.MAX_CARBON_ACCUMULATION) as NumberVariable,
+              valuesByStableId[StableId.MAX_CARBON_ACCUMULATION] as? ExistingNumberValue,
               model.maxCarbonAccumulation,
           )
           ?.let { operations.add(it) }
@@ -272,8 +276,8 @@ class AcceleratorProjectVariableValuesService(
     if (existing.minCarbonAccumulation != model.minCarbonAccumulation) {
       updateNumberValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_MIN_CARBON_ACCUMULATION) as NumberVariable,
-              valuesByStableId[STABLE_ID_MIN_CARBON_ACCUMULATION] as? ExistingNumberValue,
+              getVariableByStableId(StableId.MIN_CARBON_ACCUMULATION) as NumberVariable,
+              valuesByStableId[StableId.MIN_CARBON_ACCUMULATION] as? ExistingNumberValue,
               model.minCarbonAccumulation,
           )
           ?.let { operations.add(it) }
@@ -282,8 +286,8 @@ class AcceleratorProjectVariableValuesService(
     if (existing.numNativeSpecies != model.numNativeSpecies) {
       updateNumberValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_NUM_SPECIES) as NumberVariable,
-              valuesByStableId[STABLE_ID_NUM_SPECIES] as? ExistingNumberValue,
+              getVariableByStableId(StableId.NUM_SPECIES) as NumberVariable,
+              valuesByStableId[StableId.NUM_SPECIES] as? ExistingNumberValue,
               model.numNativeSpecies?.toBigDecimal(),
           )
           ?.let { operations.add(it) }
@@ -292,8 +296,8 @@ class AcceleratorProjectVariableValuesService(
     if (existing.perHectareBudget != model.perHectareBudget) {
       updateNumberValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_PER_HECTARE_ESTIMATED_BUDGET) as NumberVariable,
-              valuesByStableId[STABLE_ID_PER_HECTARE_ESTIMATED_BUDGET] as? ExistingNumberValue,
+              getVariableByStableId(StableId.PER_HECTARE_ESTIMATED_BUDGET) as NumberVariable,
+              valuesByStableId[StableId.PER_HECTARE_ESTIMATED_BUDGET] as? ExistingNumberValue,
               model.perHectareBudget,
           )
           ?.let { operations.add(it) }
@@ -302,8 +306,8 @@ class AcceleratorProjectVariableValuesService(
     if (existing.totalCarbon != model.totalCarbon) {
       updateNumberValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_TOTAL_CARBON) as NumberVariable,
-              valuesByStableId[STABLE_ID_TOTAL_CARBON] as? ExistingNumberValue,
+              getVariableByStableId(StableId.TOTAL_CARBON) as NumberVariable,
+              valuesByStableId[StableId.TOTAL_CARBON] as? ExistingNumberValue,
               model.totalCarbon,
           )
           ?.let { operations.add(it) }
@@ -312,8 +316,8 @@ class AcceleratorProjectVariableValuesService(
     if (existing.totalExpansionPotential != model.totalExpansionPotential) {
       updateNumberValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_TOTAL_EXPANSION_POTENTIAL) as NumberVariable,
-              valuesByStableId[STABLE_ID_TOTAL_EXPANSION_POTENTIAL] as? ExistingNumberValue,
+              getVariableByStableId(StableId.TOTAL_EXPANSION_POTENTIAL) as NumberVariable,
+              valuesByStableId[StableId.TOTAL_EXPANSION_POTENTIAL] as? ExistingNumberValue,
               model.totalExpansionPotential,
           )
           ?.let { operations.add(it) }
@@ -322,8 +326,8 @@ class AcceleratorProjectVariableValuesService(
     if (existing.whatNeedsToBeTrue != model.whatNeedsToBeTrue) {
       updateTextValueOperation(
               projectId = projectId,
-              getVariableByStableId(STABLE_ID_WHAT_NEEDS_TO_BE_TRUE) as TextVariable,
-              valuesByStableId[STABLE_ID_WHAT_NEEDS_TO_BE_TRUE] as? ExistingTextValue,
+              getVariableByStableId(StableId.WHAT_NEEDS_TO_BE_TRUE) as TextVariable,
+              valuesByStableId[StableId.WHAT_NEEDS_TO_BE_TRUE] as? ExistingTextValue,
               model.whatNeedsToBeTrue,
           )
           ?.let { operations.add(it) }
@@ -332,7 +336,7 @@ class AcceleratorProjectVariableValuesService(
     systemUser.run { variableValueStore.updateValues(operations, false) }
   }
 
-  private fun getVariableByStableId(stableId: String): Variable {
+  private fun getVariableByStableId(stableId: StableId): Variable {
     return variablesByStableId[stableId]
         ?: throw IllegalStateException("Variable with stable ID $stableId not found")
   }
