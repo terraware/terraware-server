@@ -52,7 +52,17 @@ class EventsController(
   ): ListEventsResponsePayload {
     val models = eventStore.fetchById(projectId = projectId, moduleId = moduleId)
     return ListEventsResponsePayload(
-        models.map { model -> ModuleEvent(model, moduleStore.fetchOneById(model.moduleId).name) })
+        models.map { model ->
+          val projects =
+              if (currentUser().canReadModuleEventParticipants()) {
+                model.projects.map {
+                  ModuleEventProject(acceleratorProjectService.fetchOneById(it))
+                }
+              } else {
+                null
+              }
+          ModuleEvent(model, moduleStore.fetchOneById(model.moduleId).name, projects)
+        })
   }
 
   @ApiResponse200
