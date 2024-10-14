@@ -153,7 +153,7 @@ class VariableStore(
           .groupBy(STABLE_ID)
           .fetch()
           .mapNotNull { fetchVariableOrNull(it[DSL.max(ID)]!!) }
-          .sortedBy { it.deliverablePosition }
+          .sortedBy { it.deliverablePositions[deliverableId] }
     }
   }
 
@@ -399,10 +399,13 @@ class VariableStore(
         val manifestRecord = fetchManifestRecord(variableId)
         val recommendedBy = fetchRecommendedBy(variableId)
 
+        val deliverablePositions =
+            variablesRow.deliverableId?.let { mapOf(it to variablesRow.deliverablePosition!!) }
+                ?: emptyMap()
+
         val base =
             BaseVariableProperties(
-                deliverableId = variablesRow.deliverableId,
-                deliverablePosition = variablesRow.deliverablePosition,
+                deliverablePositions = deliverablePositions,
                 deliverableQuestion = variablesRow.deliverableQuestion,
                 dependencyCondition = variablesRow.dependencyConditionId,
                 dependencyValue = variablesRow.dependencyValue,

@@ -402,9 +402,15 @@ class VariableImporter(
         csvVariable: AllVariableCsvVariable,
         variable: Variable
     ): Boolean {
+      val csvPositions =
+          if (csvVariable.deliverableId != null) {
+            mapOf(csvVariable.deliverableId to csvVariable.deliverablePosition)
+          } else {
+            emptyMap()
+          }
+
       return csvVariable.description == variable.description &&
-          csvVariable.deliverableId == variable.deliverableId &&
-          csvVariable.deliverablePosition == variable.deliverablePosition &&
+          csvPositions == variable.deliverablePositions &&
           csvVariable.dependencyCondition == variable.dependencyCondition &&
           csvVariable.dependencyValue == variable.dependencyValue &&
           csvVariable.dependencyVariableStableId == variable.dependencyVariableStableId &&

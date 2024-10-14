@@ -113,7 +113,7 @@ interface VariablePayload {
   @get:JsonIgnore val model: Variable
 
   val deliverableId: DeliverableId?
-    get() = model.deliverableId
+    get() = model.deliverablePositions.keys.firstOrNull()
 
   val deliverableQuestion: String?
     get() = model.deliverableQuestion
