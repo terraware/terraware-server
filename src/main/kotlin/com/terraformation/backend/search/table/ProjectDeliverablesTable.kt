@@ -3,6 +3,7 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.SubmissionId
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_DELIVERABLES
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
@@ -21,8 +22,10 @@ class ProjectDeliverablesTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          projects.asSingleValueSublist("project", PROJECTS.ID.eq(PROJECT_DELIVERABLES.PROJECT_ID)),
+          deliverables.asSingleValueSublist(
+              "deliverable", DELIVERABLES.ID.eq(PROJECT_DELIVERABLES.DELIVERABLE_ID)),
           modules.asSingleValueSublist("module", MODULES.ID.eq(PROJECT_DELIVERABLES.MODULE_ID)),
+          projects.asSingleValueSublist("project", PROJECTS.ID.eq(PROJECT_DELIVERABLES.PROJECT_ID)),
       )
     }
   }
