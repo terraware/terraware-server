@@ -56,7 +56,7 @@ class AdminAcceleratorProjectsController(
       }
     }
 
-    if (problems.size == 0) {
+    if (problems.isEmpty()) {
       redirectAttributes.successMessage =
           "Successfully migrated ${projectDetails.size} project details to variables."
       return redirectToHome()
