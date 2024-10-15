@@ -20,20 +20,23 @@ import com.terraformation.backend.documentproducer.model.ValueOperation
 import com.terraformation.backend.documentproducer.model.Variable
 import java.math.BigDecimal
 
-fun getNumberValue(values: Map<StableId, ExistingValue>, stableId: StableId): BigDecimal? {
-  return (values[stableId] as? ExistingNumberValue)?.value
+fun getNumberValue(
+    valuesByStableId: Map<StableId, ExistingValue>,
+    stableId: StableId
+): BigDecimal? {
+  return (valuesByStableId[stableId] as? ExistingNumberValue)?.value
 }
 
-fun getTextValue(values: Map<StableId, ExistingValue>, stableId: StableId): String? {
-  return (values[stableId] as? ExistingTextValue)?.value
+fun getTextValue(valuesByStableId: Map<StableId, ExistingValue>, stableId: StableId): String? {
+  return (valuesByStableId[stableId] as? ExistingTextValue)?.value
 }
 
 fun getSingleSelectValue(
     variables: Map<VariableId, Variable>,
-    values: Map<StableId, ExistingValue>,
+    valuesByStableId: Map<StableId, ExistingValue>,
     stableId: StableId,
 ): String? {
-  val selectValue = values[stableId] as? ExistingSelectValue ?: return null
+  val selectValue = valuesByStableId[stableId] as? ExistingSelectValue ?: return null
   val variable = variables[selectValue.variableId] as? SelectVariable ?: return null
   val selectOptionId = selectValue.value.firstOrNull() ?: return null
 
@@ -42,10 +45,10 @@ fun getSingleSelectValue(
 
 fun getMultiSelectValue(
     variables: Map<VariableId, Variable>,
-    values: Map<StableId, ExistingValue>,
+    valuesByStableId: Map<StableId, ExistingValue>,
     stableId: StableId,
 ): Set<String>? {
-  val selectValue = values[stableId] as? ExistingSelectValue ?: return null
+  val selectValue = valuesByStableId[stableId] as? ExistingSelectValue ?: return null
   val variable = variables[selectValue.variableId] as? SelectVariable ?: return null
   val selectOptionIds = selectValue.value
 
