@@ -1,3 +1,4 @@
+ea215b123ac SW-6134 Implemented project accelerator variables (#2485)
 021b75eaed4 Removed permission checker for fetching deliverable category (#2493)
 e19fac5de67 Added projects to list events (#2492)
 99e9b7319ca Update dependency io.mockk:mockk to v1.13.13 (#2490)
