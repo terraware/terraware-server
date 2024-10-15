@@ -74,8 +74,6 @@ data class AllVariableCsvVariable(
 ) {
   fun mapToVariablesRow() =
       VariablesRow(
-          deliverableId = deliverableId,
-          deliverablePosition = deliverablePosition,
           deliverableQuestion = deliverableQuestion,
           dependencyVariableStableId = dependencyVariableStableId,
           dependencyConditionId = dependencyCondition,
