@@ -18,14 +18,19 @@ import org.junit.jupiter.api.Test
 class ProjectAcceleratorDetailsServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
+  private val projectId = ProjectId(1)
   val acceleratorProjectVariableValuesService: AcceleratorProjectVariableValuesService = mockk()
   val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore = mockk()
 
-  val existingDetails: ProjectAcceleratorDetailsModel = mockk()
-  val updatedDetails: ProjectAcceleratorDetailsModel = mockk()
+  val existingDetails: ProjectAcceleratorDetailsModel =
+      ProjectAcceleratorDetailsModel(projectId = projectId)
+  val updatedDetails: ProjectAcceleratorDetailsModel =
+      ProjectAcceleratorDetailsModel(projectId = projectId, whatNeedsToBeTrue = "updated")
 
-  val existingValues: ProjectAcceleratorVariableValuesModel = mockk()
-  val updatedValues: ProjectAcceleratorVariableValuesModel = mockk()
+  val existingValues: ProjectAcceleratorVariableValuesModel =
+      ProjectAcceleratorVariableValuesModel(projectId = projectId)
+  val updatedValues: ProjectAcceleratorVariableValuesModel =
+      ProjectAcceleratorVariableValuesModel(projectId = projectId, whatNeedsToBeTrue = "updated")
 
   val updateFunc: (ProjectAcceleratorDetailsModel) -> ProjectAcceleratorDetailsModel = mockk()
 
@@ -36,13 +41,9 @@ class ProjectAcceleratorDetailsServiceTest : DatabaseTest(), RunsAsUser {
     )
   }
 
-  private val projectId = ProjectId(1)
-
   @BeforeEach
   fun setup() {
     every { updateFunc(existingDetails) } returns updatedDetails
-    every { updatedDetails.toVariableValuesModel() } returns updatedValues
-    every { existingValues.toProjectAcceleratorDetails() } returns existingDetails
 
     every { projectAcceleratorDetailsStore.fetchOneById(projectId) } returns existingDetails
     every { projectAcceleratorDetailsStore.update(projectId, any()) } returns Unit
