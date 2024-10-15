@@ -1,12 +1,13 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.accelerator.ApplicationVariableValuesService.Companion.STABLE_ID_COUNTRY
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.accelerator.model.ApplicationVariableValues
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
+import com.terraformation.backend.accelerator.variables.ApplicationVariableValuesService
+import com.terraformation.backend.accelerator.variables.StableIds
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -67,7 +68,7 @@ class ApplicationCountryUpdaterTest : DatabaseTest(), RunsAsUser {
               manifestId = null,
               name = "country",
               position = 1,
-              stableId = STABLE_ID_COUNTRY),
+              stableId = StableIds.country.value),
           false,
           emptyList(),
       )

@@ -1,4 +1,4 @@
-package com.terraformation.backend.accelerator
+package com.terraformation.backend.accelerator.variables
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
@@ -83,21 +83,17 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
     contactEmailVariableId =
         insertTextVariable(
-            insertVariable(
-                type = VariableType.Text,
-                stableId = ApplicationVariableValuesService.STABLE_ID_CONTACT_EMAIL))
+            insertVariable(type = VariableType.Text, stableId = StableIds.contactEmail.value))
     contactNameVariableId =
         insertTextVariable(
-            insertVariable(
-                type = VariableType.Text,
-                stableId = ApplicationVariableValuesService.STABLE_ID_CONTACT_NAME))
+            insertVariable(type = VariableType.Text, stableId = StableIds.contactName.value))
     countryVariableId =
         insertSelectVariable(
             insertVariable(
                 type = VariableType.Select,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 1,
-                stableId = ApplicationVariableValuesService.STABLE_ID_COUNTRY))
+                stableId = StableIds.country.value))
 
     brazilOptionId = insertSelectOption(inserted.variableId, "Brazil")
     chileOptionId = insertSelectOption(inserted.variableId, "Chile")
@@ -109,19 +105,17 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Number,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 2,
-                stableId = ApplicationVariableValuesService.STABLE_ID_NUM_SPECIES))
+                stableId = StableIds.numSpecies.value))
     totalExpansionPotentialVariableId =
         insertNumberVariable(
             insertVariable(
                 type = VariableType.Number,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 3,
-                stableId = ApplicationVariableValuesService.STABLE_ID_TOTAL_EXPANSION_POTENTIAL))
+                stableId = StableIds.totalExpansionPotential.value))
     websiteVariableId =
         insertTextVariable(
-            insertVariable(
-                type = VariableType.Text,
-                stableId = ApplicationVariableValuesService.STABLE_ID_WEBSITE))
+            insertVariable(type = VariableType.Text, stableId = StableIds.website.value))
 
     projectTypeVariableId =
         insertSelectVariable(
@@ -129,13 +123,13 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
                 type = VariableType.Select,
                 deliverableId = inserted.deliverableId,
                 deliverablePosition = 4,
-                stableId = ApplicationVariableValuesService.STABLE_ID_PROJECT_TYPE))
+                stableId = StableIds.projectType.value))
     terrestrialOptionId = insertSelectOption(inserted.variableId, "Terrestrial")
     insertSelectOption(inserted.variableId, "Mangrove")
     insertSelectOption(inserted.variableId, "Mixed")
 
     landUseHectaresVariableIds =
-        ApplicationVariableValuesService.stableIdsByLandUseModelType.entries
+        StableIds.landUseHectaresByLandUseModel.entries
             .mapIndexed { index, (landUseType, stableId) ->
               landUseType to
                   insertNumberVariable(
@@ -143,11 +137,10 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
                           type = VariableType.Number,
                           deliverableId = inserted.deliverableId,
                           deliverablePosition = index + 4,
-                          stableId = stableId))
+                          stableId = stableId.value))
             }
             .toMap()
 
-    every { user.canReadProjectDeliverables(any()) } returns true
     every { user.canReadProjectDeliverables(any()) } returns true
   }
 
