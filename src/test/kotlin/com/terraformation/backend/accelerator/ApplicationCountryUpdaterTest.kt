@@ -7,7 +7,7 @@ import com.terraformation.backend.accelerator.model.ApplicationVariableValues
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.accelerator.variables.ApplicationVariableValuesService
-import com.terraformation.backend.accelerator.variables.StableId
+import com.terraformation.backend.accelerator.variables.StableIds
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -68,7 +68,7 @@ class ApplicationCountryUpdaterTest : DatabaseTest(), RunsAsUser {
               manifestId = null,
               name = "country",
               position = 1,
-              stableId = StableId.COUNTRY.value),
+              stableId = StableIds.country.value),
           false,
           emptyList(),
       )

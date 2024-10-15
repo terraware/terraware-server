@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.accelerator.variables.ApplicationVariableValuesService
 import com.terraformation.backend.accelerator.variables.StableId
+import com.terraformation.backend.accelerator.variables.StableIds
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.documentproducer.db.VariableStore
 import jakarta.inject.Named
@@ -23,7 +24,7 @@ class ApplicationCountryUpdater(
     systemUser.run {
       val variable = variableStore.fetchOneVariable(event.variableId)
 
-      if (variable.stableId == StableId.COUNTRY.value) {
+      if (StableId(variable.stableId) == StableIds.country) {
         val application = applicationStore.fetchByProjectId(event.projectId).singleOrNull()
         if (application != null) {
           val variableValues = applicationVariableValuesService.fetchValues(event.projectId)

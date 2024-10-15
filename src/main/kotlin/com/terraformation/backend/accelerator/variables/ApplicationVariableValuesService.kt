@@ -33,30 +33,27 @@ class ApplicationVariableValuesService(
 
     private val applicationVariablesStableIds =
         (listOf(
-                StableId.CONTACT_EMAIL,
-                StableId.CONTACT_NAME,
-                StableId.COUNTRY,
-                StableId.NUM_SPECIES,
-                StableId.PROJECT_TYPE,
-                StableId.TOTAL_EXPANSION_POTENTIAL,
-                StableId.WEBSITE,
-            ) + StableId.landUseHectaresByLandUseModel.values)
-            .map { it.value }
+            StableIds.contactEmail,
+            StableIds.contactName,
+            StableIds.country,
+            StableIds.numSpecies,
+            StableIds.projectType,
+            StableIds.totalExpansionPotential,
+            StableIds.website,
+        ) + StableIds.landUseHectaresByLandUseModel.values)
   }
 
   private val variablesById: Map<VariableId, Variable> by lazy {
     applicationVariablesStableIds
         .map {
-          variableStore.fetchByStableId(it)
-              ?: throw IllegalStateException("No variable with stable ID $it")
+          variableStore.fetchByStableId(it.value)
+              ?: throw IllegalStateException("No variable with stable ID ${it.value}")
         }
         .associateBy { it.id }
   }
 
   private val variablesByStableId: Map<StableId, Variable> by lazy {
-    variablesById.values
-        .mapNotNull { variable -> StableId.from(variable.stableId)?.let { it to variable } }
-        .toMap()
+    variablesById.values.associateBy { StableId(it.stableId) }
   }
 
   fun fetchValues(projectId: ProjectId): ApplicationVariableValues {
@@ -66,7 +63,7 @@ class ApplicationVariableValuesService(
         variableValueStore
             .listValues(projectId = projectId, variableIds = variablesById.keys)
             .mapNotNull { value ->
-              val stableId = variablesById[value.variableId]?.stableId?.let { StableId.from(it) }
+              val stableId = variablesById[value.variableId]?.stableId?.let { StableId(it) }
               if (stableId != null) {
                 stableId to value
               } else {
@@ -76,7 +73,7 @@ class ApplicationVariableValuesService(
             .toMap()
 
     val countryCode =
-        getSingleSelectValue(variablesById, valuesByStableId, StableId.COUNTRY)?.let {
+        getSingleSelectValue(variablesById, valuesByStableId, StableIds.country)?.let {
           // This depends on the countries table name field matching up to the select values of the
           // country variable
           val countryRow = countriesDao.fetchOneByName(it)
@@ -87,16 +84,16 @@ class ApplicationVariableValuesService(
         }
 
     val landUseHectares =
-        StableId.landUseHectaresByLandUseModel
+        StableIds.landUseHectaresByLandUseModel
             .mapNotNull { (landUseType, stableId) ->
               getNumberValue(valuesByStableId, stableId)?.let { landUseType to it }
             }
             .toMap()
 
-    val numSpeciesToBePlanted = getNumberValue(valuesByStableId, StableId.NUM_SPECIES)?.toInt()
+    val numSpeciesToBePlanted = getNumberValue(valuesByStableId, StableIds.numSpecies)?.toInt()
 
     val projectType =
-        getSingleSelectValue(variablesById, valuesByStableId, StableId.PROJECT_TYPE)?.let {
+        getSingleSelectValue(variablesById, valuesByStableId, StableIds.projectType)?.let {
             projectTypeString ->
           try {
             PreScreenProjectType.valueOf(projectTypeString)
@@ -106,11 +103,11 @@ class ApplicationVariableValuesService(
           }
         }
 
-    val contactEmail = getTextValue(valuesByStableId, StableId.CONTACT_EMAIL)
-    val contactName = getTextValue(valuesByStableId, StableId.CONTACT_NAME)
+    val contactEmail = getTextValue(valuesByStableId, StableIds.contactEmail)
+    val contactName = getTextValue(valuesByStableId, StableIds.contactName)
     val totalExpansionPotential =
-        getNumberValue(valuesByStableId, StableId.TOTAL_EXPANSION_POTENTIAL)
-    val website = getTextValue(valuesByStableId, StableId.WEBSITE)
+        getNumberValue(valuesByStableId, StableIds.totalExpansionPotential)
+    val website = getTextValue(valuesByStableId, StableIds.website)
 
     return ApplicationVariableValues(
         contactEmail = contactEmail,
@@ -127,7 +124,7 @@ class ApplicationVariableValuesService(
   /** Update country variable for a project. */
   fun updateCountryVariable(projectId: ProjectId, countryCode: String) {
     val countryVariable =
-        variablesByStableId[StableId.COUNTRY] as? SelectVariable
+        variablesByStableId[StableIds.country] as? SelectVariable
             ?: throw IllegalStateException("Country variable stable ID not configured correctly")
 
     val countryName =
