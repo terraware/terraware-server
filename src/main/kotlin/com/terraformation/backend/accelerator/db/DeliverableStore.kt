@@ -38,8 +38,6 @@ class DeliverableStore(
   }
 
   fun fetchDeliverableCategory(deliverableId: DeliverableId): DeliverableCategory {
-    requirePermissions { readAllDeliverables() }
-
     return dslContext
         .select(DELIVERABLES.DELIVERABLE_CATEGORY_ID)
         .from(DELIVERABLES)
