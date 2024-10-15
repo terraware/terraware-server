@@ -1,6 +1,6 @@
 package com.terraformation.backend.accelerator.api
 
-import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
+import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/accelerator/projects/{projectId}")
 @RestController
 class ProjectAcceleratorDetailsController(
-    private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore,
+    private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
 ) {
   @ApiResponse200
   @ApiResponse404
@@ -41,7 +41,7 @@ class ProjectAcceleratorDetailsController(
   fun getProjectAcceleratorDetails(
       @PathVariable projectId: ProjectId
   ): GetProjectAcceleratorDetailsResponsePayload {
-    val model = projectAcceleratorDetailsStore.fetchOneById(projectId)
+    val model = projectAcceleratorDetailsService.fetchOneById(projectId)
 
     return GetProjectAcceleratorDetailsResponsePayload(ProjectAcceleratorDetailsPayload(model))
   }
@@ -54,7 +54,7 @@ class ProjectAcceleratorDetailsController(
       @PathVariable projectId: ProjectId,
       @RequestBody payload: UpdateProjectAcceleratorDetailsRequestPayload
   ): SimpleSuccessResponsePayload {
-    projectAcceleratorDetailsStore.update(projectId, payload::applyTo)
+    projectAcceleratorDetailsService.update(projectId, payload::applyTo)
 
     return SimpleSuccessResponsePayload()
   }

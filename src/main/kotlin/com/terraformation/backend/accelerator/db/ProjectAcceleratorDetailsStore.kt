@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.event.ParticipantProjectFileNamingUpdatedEvent
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
+import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -33,6 +34,16 @@ class ProjectAcceleratorDetailsStore(
     requirePermissions { readProjectAcceleratorDetails(projectId) }
 
     return fetchOneByIdOrNull(projectId) ?: throw ProjectNotFoundException(projectId)
+  }
+
+  fun fetchOneById(
+      projectId: ProjectId,
+      variableValuesModel: ProjectAcceleratorVariableValuesModel
+  ): ProjectAcceleratorDetailsModel {
+    requirePermissions { readProjectAcceleratorDetails(projectId) }
+
+    return fetchOneByIdOrNull(projectId, variableValuesModel)
+        ?: throw ProjectNotFoundException(projectId)
   }
 
   fun update(
@@ -161,5 +172,18 @@ class ProjectAcceleratorDetailsStore(
         .on(PROJECTS.COUNTRY_CODE.eq(COUNTRIES.CODE))
         .where(PROJECTS.ID.eq(projectId))
         .fetchOne { ProjectAcceleratorDetailsModel.of(it, landUseModelTypesMultiset) }
+  }
+
+  private fun fetchOneByIdOrNull(
+      projectId: ProjectId,
+      variableValues: ProjectAcceleratorVariableValuesModel
+  ): ProjectAcceleratorDetailsModel? {
+    return dslContext
+        .select(
+            PROJECT_ACCELERATOR_DETAILS.asterisk(),
+        )
+        .from(PROJECT_ACCELERATOR_DETAILS)
+        .where(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID.eq(projectId))
+        .fetchOne { ProjectAcceleratorDetailsModel.of(it, variableValues) }
   }
 }
