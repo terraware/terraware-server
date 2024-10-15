@@ -42,6 +42,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.DefaultVotersDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableCohortDueDatesDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableProjectDueDatesDao
+import com.terraformation.backend.db.accelerator.tables.daos.DeliverableVariablesDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.db.accelerator.tables.daos.EventProjectsDao
 import com.terraformation.backend.db.accelerator.tables.daos.EventsDao
@@ -66,6 +67,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.DefaultVotersRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableCohortDueDatesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableDocumentsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableProjectDueDatesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableVariablesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverablesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.EventProjectsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
@@ -462,6 +464,7 @@ abstract class DatabaseBackedTest {
   protected val deliverableDocumentsDao: DeliverableDocumentsDao by lazyDao()
   protected val deliverableProjectDueDatesDao: DeliverableProjectDueDatesDao by lazyDao()
   protected val deliverablesDao: DeliverablesDao by lazyDao()
+  protected val deliverableVariablesDao: DeliverableVariablesDao by lazyDao()
   protected val deliveriesDao: DeliveriesDao by lazyDao()
   protected val deviceManagersDao: DeviceManagersDao by lazyDao()
   protected val devicesDao: DevicesDao by lazyDao()
@@ -855,6 +858,21 @@ abstract class DatabaseBackedTest {
         )
 
     deliverableProjectDueDatesDao.insert(row)
+  }
+
+  private var nextDeliverablePosition = 1
+
+  protected fun insertDeliverableVariable(
+      deliverableId: DeliverableId = inserted.deliverableId,
+      variableId: VariableId = inserted.variableId,
+      position: Int = nextDeliverablePosition++,
+  ) {
+    deliverableVariablesDao.insert(
+        DeliverableVariablesRow(
+            deliverableId = deliverableId,
+            position = position,
+            variableId = variableId,
+        ))
   }
 
   private var nextDeviceNumber = 1
@@ -2929,7 +2947,6 @@ abstract class DatabaseBackedTest {
     variableValueTableRowsDao.insert(row)
   }
 
-  private var nextDeliverablePosition = 1
   private var nextVariableNumber = 1
 
   protected fun insertVariable(
@@ -2952,8 +2969,6 @@ abstract class DatabaseBackedTest {
 
     val row =
         VariablesRow(
-            deliverableId = deliverableId,
-            deliverablePosition = deliverablePosition,
             deliverableQuestion = deliverableQuestion,
             dependencyConditionId = dependencyCondition,
             dependencyValue = dependencyValue,
@@ -2970,7 +2985,18 @@ abstract class DatabaseBackedTest {
 
     variablesDao.insert(row)
 
-    return row.id!!.also { inserted.variableIds.add(it) }
+    val variableId = row.id!!
+    inserted.variableIds.add(variableId)
+
+    if (deliverableId != null && deliverablePosition != null) {
+      insertDeliverableVariable(
+          deliverableId = deliverableId,
+          variableId = variableId,
+          position = deliverablePosition,
+      )
+    }
+
+    return variableId
   }
 
   protected fun insertVariableManifest(

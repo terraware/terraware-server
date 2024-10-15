@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_VARIABLES
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.DocumentId
@@ -161,7 +162,13 @@ class VariableValueStore(
     val conditions =
         listOfNotNull(
             VARIABLE_VALUES.PROJECT_ID.eq(projectId),
-            deliverableId?.let { VARIABLES.DELIVERABLE_ID.eq(it) },
+            deliverableId?.let {
+              DSL.exists(
+                  DSL.selectOne()
+                      .from(DELIVERABLE_VARIABLES)
+                      .where(DELIVERABLE_VARIABLES.VARIABLE_ID.eq(VARIABLE_VALUES.VARIABLE_ID))
+                      .and(DELIVERABLE_VARIABLES.DELIVERABLE_ID.eq(deliverableId)))
+            },
             minValueId?.let { VARIABLE_VALUES.ID.ge(it) },
             maxValueId?.let { VARIABLE_VALUES.ID.le(it) },
             variableIds?.let { VARIABLE_VALUES.VARIABLE_ID.`in`(it) },
@@ -1031,16 +1038,17 @@ class VariableValueStore(
       projectId: ProjectId,
       values: List<ExistingValue>,
   ) {
-    val variableRows =
-        values
-            .map { it.variableId }
-            .toSet()
-            .associateWith { variablesDao.fetchOneById(it) ?: throw VariableNotFoundException(it) }
+    val variableIdsInDeliverables: Set<VariableId> =
+        with(DELIVERABLE_VARIABLES) {
+          dslContext
+              .select(VARIABLE_ID)
+              .from(DELIVERABLE_VARIABLES)
+              .where(VARIABLE_ID.`in`(values.map { it.variableId }.toSet()))
+              .fetchSet(VARIABLE_ID.asNonNullable())
+        }
 
     val valuesByVariables =
-        values
-            .filter { variableRows[it.variableId]?.deliverableId != null }
-            .groupBy { it.variableId }
+        values.filter { it.variableId in variableIdsInDeliverables }.groupBy { it.variableId }
 
     valuesByVariables.keys.forEach { variableId ->
       eventPublisher.publishEvent(VariableValueUpdatedEvent(projectId, variableId))

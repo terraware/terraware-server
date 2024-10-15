@@ -3,11 +3,12 @@ package com.terraformation.backend.documentproducer.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_VARIABLES
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
-import com.terraformation.backend.db.docprod.tables.daos.VariablesDao
 import com.terraformation.backend.db.docprod.tables.references.VARIABLES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_WORKFLOW_HISTORY
@@ -25,7 +26,6 @@ class VariableWorkflowStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
-    private val variablesDao: VariablesDao,
 ) {
   /**
    * Returns the current workflow information for the variables in a project. Internal comment is
@@ -85,8 +85,16 @@ class VariableWorkflowStore(
 
       if (existing == null || status != existing.status || feedback != existing.feedback) {
         // Notify a reviewable event, if changed
-        val deliverableId = variablesDao.fetchOneById(variableId)?.deliverableId
-        if (deliverableId != null) {
+        val deliverableIds =
+            with(DELIVERABLE_VARIABLES) {
+              dslContext
+                  .select(DELIVERABLE_ID)
+                  .from(DELIVERABLE_VARIABLES)
+                  .where(VARIABLE_ID.eq(variableId))
+                  .fetch(DELIVERABLE_ID.asNonNullable())
+            }
+
+        deliverableIds.forEach { deliverableId ->
           eventPublisher.publishEvent(QuestionsDeliverableReviewedEvent(deliverableId, projectId))
         }
       }

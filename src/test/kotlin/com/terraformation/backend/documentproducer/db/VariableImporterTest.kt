@@ -3,6 +3,7 @@ package com.terraformation.backend.documentproducer.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableVariablesRow
 import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableTextType
@@ -774,13 +775,13 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import(sizedInputStream(csv))
 
+      val insertedVariables = variablesDao.findAll().sortedBy { it.stableId }
+
       assertEquals(
           listOf(
               VariablesRow(
-                  deliverableId = deliverableId,
                   deliverableQuestion =
                       "What number of non-native species will you plant in this project?",
-                  deliverablePosition = 0,
                   id = null,
                   internalOnly = true,
                   isList = false,
@@ -790,10 +791,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   variableTypeId = VariableType.Number,
               ),
               VariablesRow(
-                  deliverableId = deliverableId,
                   deliverableQuestion =
                       "What is the reason these non-native species are being planted?",
-                  deliverablePosition = 1,
                   dependencyConditionId = DependencyCondition.Gte,
                   dependencyVariableStableId = "1115",
                   dependencyValue = "5",
@@ -806,9 +805,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   variableTypeId = VariableType.Select,
               ),
               VariablesRow(
-                  deliverableId = deliverableId,
                   deliverableQuestion = "This is a table",
-                  deliverablePosition = 2,
                   id = null,
                   internalOnly = true,
                   isList = true,
@@ -818,9 +815,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   variableTypeId = VariableType.Table,
               ),
               VariablesRow(
-                  deliverableId = deliverableId,
                   deliverableQuestion = "This is a column",
-                  deliverablePosition = 3,
                   id = null,
                   internalOnly = true,
                   isList = false,
@@ -830,12 +825,23 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   variableTypeId = VariableType.Number,
               ),
           ),
-          variablesDao.findAll().map { it.copy(id = null) }.sortedBy { it.stableId!! },
+          insertedVariables.map { it.copy(id = null) },
           "New variables are created with deliverable related fields")
+
+      val expectedPositionsRows =
+          insertedVariables.mapIndexed { index, variablesRow ->
+            DeliverableVariablesRow(
+                deliverableId = deliverableId, variableId = variablesRow.id, position = index)
+          }
+
+      assertEquals(
+          expectedPositionsRows,
+          deliverableVariablesDao.findAll().sortedBy { it.position },
+          "Deliverable positions are allocated as expected")
     }
 
     @Test
-    fun `saves and updates deliverable position field as expected`() {
+    fun `saves and updates deliverable positions as expected`() {
       every { user.canReadAllDeliverables() } returns true
 
       insertModule()
@@ -850,13 +856,11 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import(sizedInputStream(csv1))
 
-      val variables = variablesDao.findAll()
+      val variables = variablesDao.findAll().sortedBy { it.id!!.value }
 
       assertEquals(
           listOf(
               VariablesRow(
-                  deliverableId = deliverableId1,
-                  deliverablePosition = 0,
                   id = null,
                   internalOnly = false,
                   isList = false,
@@ -866,8 +870,6 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   variableTypeId = VariableType.Number,
               ),
               VariablesRow(
-                  deliverableId = deliverableId2,
-                  deliverablePosition = 0,
                   id = null,
                   internalOnly = false,
                   isList = false,
@@ -877,8 +879,6 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   variableTypeId = VariableType.Number,
               ),
               VariablesRow(
-                  deliverableId = deliverableId1,
-                  deliverablePosition = 1,
                   id = null,
                   internalOnly = false,
                   isList = false,
@@ -889,7 +889,16 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               ),
           ),
           variables.map { it.copy(id = null) },
-          "New variables are created with correct deliverable positions")
+          "New variables are created")
+
+      assertEquals(
+          listOf(
+              DeliverableVariablesRow(deliverableId1, variables[0].id, 0),
+              DeliverableVariablesRow(deliverableId2, variables[1].id, 0),
+              DeliverableVariablesRow(deliverableId1, variables[2].id, 1),
+          ),
+          deliverableVariablesDao.findAll().sortedBy { it.variableId!!.value },
+          "Deliverable positions are allocated as expected at creation time")
 
       val csv2 =
           header +
@@ -900,11 +909,11 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import(sizedInputStream(csv2))
 
+      val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+
       assertEquals(
           listOf(
               VariablesRow(
-                  deliverableId = deliverableId1,
-                  deliverablePosition = 0,
                   id = null,
                   internalOnly = false,
                   isList = false,
@@ -914,8 +923,6 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   variableTypeId = VariableType.Number,
               ),
               VariablesRow(
-                  deliverableId = deliverableId2,
-                  deliverablePosition = 0,
                   id = null,
                   internalOnly = false,
                   isList = false,
@@ -925,8 +932,6 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   variableTypeId = VariableType.Number,
               ),
               VariablesRow(
-                  deliverableId = deliverableId1,
-                  deliverablePosition = 1,
                   id = null,
                   internalOnly = false,
                   isList = false,
@@ -936,8 +941,6 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   variableTypeId = VariableType.Number,
               ),
               VariablesRow(
-                  deliverableId = deliverableId1,
-                  deliverablePosition = 1,
                   id = null,
                   internalOnly = false,
                   isList = false,
@@ -948,8 +951,6 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               ),
               // Since the position has changed within the deliverable, a new variable is created
               VariablesRow(
-                  deliverableId = deliverableId1,
-                  deliverablePosition = 2,
                   id = null,
                   internalOnly = false,
                   isList = false,
@@ -960,8 +961,19 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
                   variableTypeId = VariableType.Number,
               ),
           ),
-          variablesDao.findAll().map { it.copy(id = null) },
+          updatedVariables.map { it.copy(id = null) },
           "New variables are created with correct deliverable positions")
+
+      assertEquals(
+          setOf(
+              DeliverableVariablesRow(deliverableId1, variables[0].id, 0),
+              DeliverableVariablesRow(deliverableId2, variables[1].id, 0),
+              DeliverableVariablesRow(deliverableId1, variables[2].id, 1),
+              DeliverableVariablesRow(deliverableId1, updatedVariables[3].id, 1),
+              DeliverableVariablesRow(deliverableId1, updatedVariables[4].id, 2),
+          ),
+          deliverableVariablesDao.findAll().toSet(),
+          "Deliverable positions are allocated as expected at creation time")
     }
 
     @Test
