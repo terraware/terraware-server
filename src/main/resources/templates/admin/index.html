@@ -183,6 +183,19 @@
     </form>
 </th:block>
 
+<th:block th:if="${canMigrateAcceleratorProjectDetails}">
+    <h2>Migrate accelerator project details to variables</h2>
+
+    <p>
+        This is a one-time operation to migrate existing project details from the table to
+        variables. This is necessary before deprecating those columns.
+    </p>
+
+    <form method="POST" action="/admin/applications/cleanUpDrive">
+        <input type="submit" value="Migrate"/>
+    </form>
+</th:block>
+
 <th:block th:if="${canImportGlobalSpeciesData}">
     <h2>PDH Migration</h2>
 

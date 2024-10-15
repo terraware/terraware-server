@@ -78,4 +78,26 @@ data class ProjectAcceleratorDetailsModel(
       }
     }
   }
+
+  fun toVariableValuesModel() =
+      ProjectAcceleratorVariableValuesModel(
+          annualCarbon,
+          applicationReforestableLand,
+          carbonCapacity,
+          confirmedReforestableLand,
+          countryCode,
+          dealDescription,
+          failureRisk,
+          investmentThesis,
+          landUseModelTypes,
+          maxCarbonAccumulation,
+          minCarbonAccumulation,
+          numNativeSpecies,
+          perHectareBudget,
+          projectId,
+          region,
+          totalCarbon,
+          totalExpansionPotential,
+          whatNeedsToBeTrue,
+      )
 }
