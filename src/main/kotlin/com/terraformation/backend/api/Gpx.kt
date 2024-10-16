@@ -4,7 +4,6 @@ import com.opencsv.CSVWriter
 import io.ktor.utils.io.charsets.name
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
-import java.math.BigDecimal
 import java.nio.charset.StandardCharsets
 import javax.xml.stream.XMLOutputFactory
 import javax.xml.stream.XMLStreamWriter
@@ -45,7 +44,7 @@ fun gpxResponse(
 
 // TODO: Add track, or routes data types if applicable
 // https://www.topografix.com/GPX/1/1/gpx.xsd (wptType)
-data class GpxWaypoint(val latitude: BigDecimal, val longitude: BigDecimal, val name: String?)
+data class GpxWaypoint(val latitude: Double, val longitude: Double, val name: String?)
 
 class GpxWriter(output: OutputStream, private val waypoints: List<GpxWaypoint>) {
   private val writer: XMLStreamWriter =

@@ -15,6 +15,7 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.api.getPlainContentType
+import com.terraformation.backend.api.gpxResponse
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -57,7 +58,9 @@ import com.terraformation.backend.tracking.model.ReplacementResult
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.ws.rs.BadRequestException
 import java.math.BigDecimal
 import java.time.Instant
@@ -185,6 +188,24 @@ class ObservationsController(
         observationStore.fetchObservationPlotDetails(observationId).map { AssignedPlotPayload(it) }
 
     return ListAssignedPlotsResponsePayload(payloads)
+  }
+
+  @ApiResponse(
+      responseCode = "200",
+      content =
+          [
+              Content(
+                  mediaType = "application/gpx+xml",
+                  schema = Schema(type = "string", format = "binary"))])
+  @GetMapping("/{observationId}/plots", produces = ["application/gpx+xml"])
+  @Operation(summary = "Exports monitoring plots assigned to an observation as a GPX file.")
+  fun exportAssignedPlots(@PathVariable observationId: ObservationId): ResponseEntity<ByteArray> {
+    val observations = observationStore.fetchObservationPlotDetails(observationId)
+    val waypoints = observations.flatMap { it.gpxWaypoints() }
+
+    val filename = "observation.gpx"
+
+    return gpxResponse(filename, waypoints)
   }
 
   @GetMapping("/{observationId}/results")
