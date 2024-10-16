@@ -7,8 +7,8 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.EventNotFoundException
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.log.perClassLogger
+import jakarta.inject.Named
 import java.time.InstantSource
-import javax.inject.Named
 import org.jobrunr.scheduling.JobScheduler
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.annotation.Lazy
