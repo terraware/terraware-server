@@ -172,7 +172,7 @@ data class ModuleDeliverablePayload(
 data class ImportModuleProblemElement(
     val row: Int,
     val problem: String,
-) : SuccessResponsePayload
+)
 
 data class ImportModuleResponsePayload(
     override val status: SuccessOrError,

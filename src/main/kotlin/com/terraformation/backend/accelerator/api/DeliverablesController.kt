@@ -375,7 +375,7 @@ data class DeliverablePayload(
 data class ImportDeliverableProblemElement(
     val row: Int,
     val problem: String,
-) : SuccessResponsePayload
+)
 
 data class ImportDeliverableResponsePayload(
     override val status: SuccessOrError,
