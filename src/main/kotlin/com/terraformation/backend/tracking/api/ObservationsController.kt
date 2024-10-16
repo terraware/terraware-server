@@ -65,6 +65,7 @@ import jakarta.ws.rs.BadRequestException
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
@@ -200,10 +201,16 @@ class ObservationsController(
   @GetMapping("/{observationId}/plots", produces = ["application/gpx+xml"])
   @Operation(summary = "Exports monitoring plots assigned to an observation as a GPX file.")
   fun exportAssignedPlots(@PathVariable observationId: ObservationId): ResponseEntity<ByteArray> {
+    val observation = observationStore.fetchObservationById(observationId)
     val observations = observationStore.fetchObservationPlotDetails(observationId)
+    val plantingSite =
+        plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Site)
     val waypoints = observations.flatMap { it.gpxWaypoints() }
 
-    val filename = "observation.gpx"
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+    val startDate = dateTimeFormatter.format(observation.startDate)
+    val endDate = dateTimeFormatter.format(observation.endDate)
+    val filename = "observation_${plantingSite.name}_$startDate-$endDate.gpx"
 
     return gpxResponse(filename, waypoints)
   }

@@ -24,6 +24,10 @@ data class AssignedPlotDetails(
             boundary.coordinates[SOUTHWEST].x,
             "$plotName Southwest Corner"),
         GpxWaypoint(
+            boundary.coordinates[SOUTHEAST].y,
+            boundary.coordinates[SOUTHEAST].x,
+            "$plotName Southeast Corner"),
+        GpxWaypoint(
             boundary.coordinates[NORTHWEST].y,
             boundary.coordinates[NORTHWEST].x,
             "$plotName Northwest Corner"),
@@ -31,18 +35,14 @@ data class AssignedPlotDetails(
             boundary.coordinates[NORTHEAST].y,
             boundary.coordinates[NORTHEAST].x,
             "$plotName Northeast Corner"),
-        GpxWaypoint(
-            boundary.coordinates[SOUTHEAST].y,
-            boundary.coordinates[SOUTHEAST].x,
-            "$plotName Southeast Corner"),
     )
   }
 
   companion object {
     // 0 Index vertices for monitoring plot corners.
     const val SOUTHWEST = 0
-    const val NORTHWEST = 1
+    const val SOUTHEAST = 1
     const val NORTHEAST = 2
-    const val SOUTHEAST = 3
+    const val NORTHWEST = 3
   }
 }

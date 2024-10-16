@@ -1,9 +1,10 @@
 package com.terraformation.backend.api
 
-import com.opencsv.CSVWriter
 import io.ktor.utils.io.charsets.name
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.nio.charset.StandardCharsets
 import javax.xml.stream.XMLOutputFactory
 import javax.xml.stream.XMLStreamWriter
@@ -17,10 +18,7 @@ import org.springframework.http.ResponseEntity
  *
  * @param filename Filename that will be used by default if the user saves the GPX file. If null,
  *   response will not include a filename.
- * @param columnNames Contents of the first row of the CSV; this should be a list of the names of
- *   the columns, typically in human-readable form.
- * @param writeRows Callback function that writes the data rows to the CSV stream. This should call
- *   [CSVWriter.writeNext] for each data row.
+ * @param waypoints Waypoints to be written to the GPX file.
  */
 fun gpxResponse(
     filename: String?,
@@ -44,16 +42,32 @@ fun gpxResponse(
 
 // TODO: Add track, or routes data types if applicable
 // https://www.topografix.com/GPX/1/1/gpx.xsd (wptType)
-data class GpxWaypoint(val latitude: Double, val longitude: Double, val name: String?)
+data class GpxWaypoint(val latitude: BigDecimal, val longitude: BigDecimal, val name: String?) {
+  constructor(
+      latitude: Double,
+      longitude: Double,
+      name: String?
+  ) : this(
+      BigDecimal(latitude),
+      BigDecimal(longitude),
+      name,
+  )
+}
 
 class GpxWriter(output: OutputStream, private val waypoints: List<GpxWaypoint>) {
   private val writer: XMLStreamWriter =
       XMLOutputFactory.newInstance().createXMLStreamWriter(output, StandardCharsets.UTF_8.name)
 
+  private val MAX_DECIMAL_PLACE = 8 // precision to about 1mm for latitude longitude
+
   private fun writeWaypoint(waypoint: GpxWaypoint) {
     writer.writeStartElement("wpt")
-    writer.writeAttribute("lat", "${waypoint.latitude}")
-    writer.writeAttribute("lon", "${waypoint.longitude}")
+
+    val roundedLatitude = waypoint.latitude.setScale(MAX_DECIMAL_PLACE, RoundingMode.HALF_UP)
+    val roundedLongitude = waypoint.longitude.setScale(MAX_DECIMAL_PLACE, RoundingMode.HALF_UP)
+
+    writer.writeAttribute("lat", "$roundedLatitude")
+    writer.writeAttribute("lon", "$roundedLongitude")
 
     writer.writeStartElement("name")
     writer.writeCharacters(waypoint.name)
@@ -72,7 +86,6 @@ class GpxWriter(output: OutputStream, private val waypoints: List<GpxWaypoint>) 
     writer.writeEndElement()
     writer.writeEndDocument()
 
-    writer.flush()
     writer.close()
   }
 }
