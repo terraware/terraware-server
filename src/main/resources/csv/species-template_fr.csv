@@ -1,0 +1,72 @@
+"Nom scientifique
+
+Veuillez entrer le nom scientifique au format suivant :
+
+Genre espèce",Nom commun,Famille,"Catégorie de la Liste Rouge de l'UICN
+
+Veuillez choisir parmi la liste suivante ou une erreur se produira lors du téléchargement :
+
+- CR
+- DD
+- EN
+- EW
+- EX
+- LC
+- NE
+- NT
+- VU","Rare
+
+Veuillez choisir parmi la liste suivante ou une erreur se produira lors du téléchargement :
+
+- Oui
+- Non","Forme de croissance
+
+Veuillez choisir parmi la liste suivante ou une erreur se produira lors du téléchargement :
+
+- Arbre
+- Arbuste
+- Arbuste ou arbre
+- Champignons
+- Forb
+- Formes multiples
+- Graminoïde
+- Herbe
+- Liane
+- Lichen
+- Loin
+- Mangrove
+- Mousse
+- Sous-arbuste
+- Vigne","Comportement de stockage des graines
+
+Veuillez choisir parmi la liste suivante ou une erreur se produira lors du téléchargement :
+
+- Orthodoxe
+- Récalcitrant
+- Intermédiaire
+- Intermédiaire - Sensible aux températures froides
+- Intermédiaire - Tolérance partielle à la dessiccation
+- Intermédiaire - courte durée de vie
+- Probablement intermédiaire
+- Probablement orthodoxe
+- Probablement récalcitrant
+- Inconnu","Types d'écosystèmes
+
+Veuillez choisir parmi la liste suivante ou une erreur se produira lors du téléchargement :
+
+- Déserts et zones arbustives xériques
+- Forêt tempérée de conifères
+- Forêts boréales/Taïga
+- Forêts de conifères tropicales et subtropicales
+- Forêts sèches de feuillus tropicales et subtropicales
+- Forêts tempérées à feuilles larges et forêts mixtes
+- Forêts tropicales et subtropicales humides à larges feuilles
+- Forêts, bois et maquis méditerranéens
+- Mangroves
+- Prairies et arbustes montagnards
+- Prairies et savanes inondées
+- Prairies, savanes et zones arbustives tempérées
+- Prairies, savanes et zones arbustives tropicales et subtropicales
+- Toundra
+
+Vous pouvez ajouter plusieurs types d'écosystèmes en les séparant par des sauts de ligne."
