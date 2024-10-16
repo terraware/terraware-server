@@ -1,3 +1,5 @@
+3bad98e7609 Fix usages of obsolete javax.inject package (#2499)
+5eed0e0ecea SW-6146 Add French CSV templates (#2500)
 f1657a509fc Added problems details for importing modules/deliverables CSV (#2494)
 f53ea480120 Update ktor monorepo to v3 (major) (#2491)
 d83ecae7b81 SW-6136 Implemented ProjectAcceleratorDetailsService (#2488)
