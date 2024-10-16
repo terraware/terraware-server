@@ -15,10 +15,10 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.log.perClassLogger
+import jakarta.inject.Named
 import java.net.URI
 import java.time.LocalDate
 import java.time.ZoneOffset
-import javax.inject.Named
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.springframework.context.event.EventListener

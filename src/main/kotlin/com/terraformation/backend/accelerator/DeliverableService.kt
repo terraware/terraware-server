@@ -14,7 +14,7 @@ import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableSubmittedEvent
-import javax.inject.Named
+import jakarta.inject.Named
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
