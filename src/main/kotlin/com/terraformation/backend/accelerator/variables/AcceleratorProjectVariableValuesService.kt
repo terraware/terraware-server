@@ -103,7 +103,7 @@ class AcceleratorProjectVariableValuesService(
         getMultiSelectValue(variablesById, valuesByStableId, StableIds.landUseModelType)
             ?.mapNotNull {
               try {
-                LandUseModelType.valueOf(it)
+                LandUseModelType.forJsonValue(it)
               } catch (e: IllegalArgumentException) {
                 log.error("Found unknown land use model type $it for project $projectId")
                 null
