@@ -34,6 +34,7 @@ import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.db.ObservationStore
@@ -88,6 +89,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @TrackingEndpoint
 class ObservationsController(
+    private val messages: Messages,
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
     private val observationResultsStore: ObservationResultsStore,
@@ -205,7 +207,7 @@ class ObservationsController(
     val observations = observationStore.fetchObservationPlotDetails(observationId)
     val plantingSite =
         plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Site)
-    val waypoints = observations.flatMap { it.gpxWaypoints() }
+    val waypoints = observations.flatMap { it.gpxWaypoints(messages) }
 
     val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
     val startDate = dateTimeFormatter.format(observation.startDate)

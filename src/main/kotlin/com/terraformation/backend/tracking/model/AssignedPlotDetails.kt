@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.api.GpxWaypoint
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.i18n.Messages
 import org.locationtech.jts.geom.Geometry
 
 /**
@@ -17,24 +18,28 @@ data class AssignedPlotDetails(
     val plantingSubzoneName: String,
     val plotName: String,
 ) {
-  fun gpxWaypoints(): List<GpxWaypoint> {
+  fun gpxWaypoints(messages: Messages): List<GpxWaypoint> {
     return listOf(
         GpxWaypoint(
             boundary.coordinates[SOUTHWEST].y,
             boundary.coordinates[SOUTHWEST].x,
-            "$plotName Southwest Corner"),
+            messages.monitoringPlotSouthwestCorner(plotName),
+        ),
         GpxWaypoint(
             boundary.coordinates[SOUTHEAST].y,
             boundary.coordinates[SOUTHEAST].x,
-            "$plotName Southeast Corner"),
-        GpxWaypoint(
-            boundary.coordinates[NORTHWEST].y,
-            boundary.coordinates[NORTHWEST].x,
-            "$plotName Northwest Corner"),
+            messages.monitoringPlotSoutheastCorner(plotName),
+        ),
         GpxWaypoint(
             boundary.coordinates[NORTHEAST].y,
             boundary.coordinates[NORTHEAST].x,
-            "$plotName Northeast Corner"),
+            messages.monitoringPlotNortheastCorner(plotName),
+        ),
+        GpxWaypoint(
+            boundary.coordinates[NORTHWEST].y,
+            boundary.coordinates[NORTHWEST].x,
+            messages.monitoringPlotNorthwestCorner(plotName),
+        ),
     )
   }
 
