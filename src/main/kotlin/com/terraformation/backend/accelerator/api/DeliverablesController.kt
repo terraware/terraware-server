@@ -13,7 +13,9 @@ import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
+import com.terraformation.backend.api.ResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
+import com.terraformation.backend.api.SuccessOrError
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.db.accelerator.DeliverableCategory
@@ -26,6 +28,7 @@ import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.importer.CsvImportFailedException
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.headers.Header
@@ -176,9 +179,16 @@ class DeliverablesController(
       content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])])
   fun importDeliverables(
       @RequestPart(required = true) file: MultipartFile
-  ): SimpleSuccessResponsePayload {
-    file.inputStream.use { inputStream -> deliverablesImporter.importDeliverables(inputStream) }
-    return SimpleSuccessResponsePayload()
+  ): ImportDeliverableResponsePayload {
+    try {
+      file.inputStream.use { inputStream -> deliverablesImporter.importDeliverables(inputStream) }
+    } catch (e: CsvImportFailedException) {
+      return ImportDeliverableResponsePayload(
+          SuccessOrError.Error,
+          e.errors.map { ImportDeliverableProblemElement(it.rowNumber, it.message) },
+          e.message)
+    }
+    return ImportDeliverableResponsePayload(SuccessOrError.Ok)
   }
 
   @ApiResponseSimpleSuccess
@@ -361,6 +371,17 @@ data class DeliverablePayload(
       model.type,
   )
 }
+
+data class ImportDeliverableProblemElement(
+    val row: Int,
+    val problem: String,
+)
+
+data class ImportDeliverableResponsePayload(
+    override val status: SuccessOrError,
+    val problems: List<ImportDeliverableProblemElement> = emptyList(),
+    val message: String? = null,
+) : ResponsePayload
 
 data class GetDeliverableResponsePayload(
     val deliverable: DeliverablePayload,

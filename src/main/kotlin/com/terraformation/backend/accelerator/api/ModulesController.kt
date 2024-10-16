@@ -9,7 +9,8 @@ import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
-import com.terraformation.backend.api.SimpleSuccessResponsePayload
+import com.terraformation.backend.api.ResponsePayload
+import com.terraformation.backend.api.SuccessOrError
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableCategory
@@ -20,6 +21,7 @@ import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.i18n.TimeZones
+import com.terraformation.backend.importer.CsvImportFailedException
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Encoding
@@ -101,9 +103,16 @@ class ModulesController(
       content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])])
   fun importModules(
       @RequestPart(required = true) file: MultipartFile
-  ): SimpleSuccessResponsePayload {
-    file.inputStream.use { inputStream -> modulesImporter.importModules(inputStream) }
-    return SimpleSuccessResponsePayload()
+  ): ImportModuleResponsePayload {
+    try {
+      file.inputStream.use { inputStream -> modulesImporter.importModules(inputStream) }
+    } catch (e: CsvImportFailedException) {
+      return ImportModuleResponsePayload(
+          SuccessOrError.Error,
+          e.errors.map { ImportModuleProblemElement(it.rowNumber, it.message) },
+          e.message)
+    }
+    return ImportModuleResponsePayload(SuccessOrError.Ok)
   }
 }
 
@@ -159,6 +168,17 @@ data class ModuleDeliverablePayload(
       model.type,
       model.sensitive)
 }
+
+data class ImportModuleProblemElement(
+    val row: Int,
+    val problem: String,
+)
+
+data class ImportModuleResponsePayload(
+    override val status: SuccessOrError,
+    val problems: List<ImportModuleProblemElement> = emptyList(),
+    val message: String? = null,
+) : ResponsePayload
 
 data class ListModuleDeliverablesResponsePayload(val deliverables: List<ModuleDeliverablePayload>)
 
