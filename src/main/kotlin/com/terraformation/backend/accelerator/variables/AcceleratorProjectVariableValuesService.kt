@@ -249,7 +249,7 @@ class AcceleratorProjectVariableValuesService(
     }
 
     if (existing.landUseModelTypes != model.landUseModelTypes) {
-      val landUseModelTypesSelectValue = model.landUseModelTypes.map { it.name }.toSet()
+      val landUseModelTypesSelectValue = model.landUseModelTypes.map { it.jsonValue }.toSet()
 
       updateSelectValueOperation(
               projectId = projectId,
