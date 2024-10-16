@@ -408,6 +408,7 @@ class VariableImporter(
           csvVariable.dependencyCondition == variable.dependencyCondition &&
           csvVariable.dependencyValue == variable.dependencyValue &&
           csvVariable.dependencyVariableStableId == variable.dependencyVariableStableId &&
+          csvVariable.internalOnly == variable.internalOnly &&
           csvVariable.isList == variable.isList &&
           csvVariable.isRequired == variable.isRequired &&
           csvVariable.name == variable.name &&
