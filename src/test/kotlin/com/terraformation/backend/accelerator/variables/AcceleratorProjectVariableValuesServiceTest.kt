@@ -79,7 +79,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var chileOptionId: VariableSelectOptionId
 
   private lateinit var agroforestryOptionId: VariableSelectOptionId
-  private lateinit var mangroveOptionId: VariableSelectOptionId
+  private lateinit var mangrovesOptionId: VariableSelectOptionId
   private lateinit var nativeForestOptionId: VariableSelectOptionId
   private lateinit var sustainableTimberOptionId: VariableSelectOptionId
 
@@ -122,13 +122,10 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     landUseModelTypesVariableId =
         insertSelectVariable(
             insertVariable(type = VariableType.Select, stableId = StableIds.landUseModelType.value))
-    agroforestryOptionId =
-        insertSelectOption(inserted.variableId, LandUseModelType.Agroforestry.name)
-    mangroveOptionId = insertSelectOption(inserted.variableId, LandUseModelType.Mangroves.name)
-    nativeForestOptionId =
-        insertSelectOption(inserted.variableId, LandUseModelType.NativeForest.name)
-    sustainableTimberOptionId =
-        insertSelectOption(inserted.variableId, LandUseModelType.SustainableTimber.name)
+    agroforestryOptionId = insertSelectOption(inserted.variableId, "Agroforestry")
+    mangrovesOptionId = insertSelectOption(inserted.variableId, "Mangroves")
+    nativeForestOptionId = insertSelectOption(inserted.variableId, "Native Forest")
+    sustainableTimberOptionId = insertSelectOption(inserted.variableId, "Sustainable Timber")
 
     maxCarbonAccumulationVariableId =
         insertNumberVariable(
@@ -176,7 +173,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
       // Multi-select
       insertSelectValue(
-          landUseModelTypesVariableId, optionIds = setOf(agroforestryOptionId, mangroveOptionId))
+          landUseModelTypesVariableId, optionIds = setOf(agroforestryOptionId, mangrovesOptionId))
 
       // Number value
       insertValue(minCarbonAccumulationVariableId, numberValue = BigDecimal.ONE)

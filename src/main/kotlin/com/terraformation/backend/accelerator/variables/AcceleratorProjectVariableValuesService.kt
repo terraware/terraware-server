@@ -103,7 +103,7 @@ class AcceleratorProjectVariableValuesService(
         getMultiSelectValue(variablesById, valuesByStableId, StableIds.landUseModelType)
             ?.mapNotNull {
               try {
-                LandUseModelType.valueOf(it)
+                LandUseModelType.forJsonValue(it)
               } catch (e: IllegalArgumentException) {
                 log.error("Found unknown land use model type $it for project $projectId")
                 null
@@ -249,7 +249,7 @@ class AcceleratorProjectVariableValuesService(
     }
 
     if (existing.landUseModelTypes != model.landUseModelTypes) {
-      val landUseModelTypesSelectValue = model.landUseModelTypes.map { it.name }.toSet()
+      val landUseModelTypesSelectValue = model.landUseModelTypes.map { it.jsonValue }.toSet()
 
       updateSelectValueOperation(
               projectId = projectId,
