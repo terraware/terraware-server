@@ -1,0 +1,37 @@
+Numéro d'accession,"Espèce (Nom scientifique)*
+
+Veuillez entrer le nom scientifique au format suivant:
+
+Genre espèce",Espèce (Nom commun),"Quantité (QTE)
+
+Veuillez entrer uniquement des chiffres pour éviter une erreur lors du téléchargement.","Unités de QTE
+
+Veuillez choisir parmi la liste suivante ou une erreur se produira lors du téléchargement:
+
+- Grammes
+- Kilogrammes
+- Milligrammes
+- Livres
+- Onces
+- Semences","Statut
+
+Veuillez choisir parmi la liste suivante ou une erreur se produira lors du téléchargement:
+
+- En attente de traitement
+- En cours de traitement
+- Séchage
+- En entreposage
+- Épuisé","Date de collecte*
+
+Veuillez entrer au format AAAA-MM-JJ ou une erreur se produira lors du téléchargement. Si vous n'êtes pas sûr de la date exacte, une estimation est acceptable!",Nom du site de collecte,Propriétaire foncier,Ville ou Comté,État / Province / Région,Pays,Description du site / Notes,Nom du collecteur,"Source de collecte
+
+Veuillez choisir parmi la liste suivante ou une erreur se produira lors du téléchargement:
+
+- Sauvage (In Situ)
+- Réintroduit
+- Cultivé (Ex Situ)
+- Autre",Nombre de plantes,ID de la plante,"Latitude
+
+Latitude décimale de l'emplacement de collecte des graines (positif = nord, négatif = sud)","Longitude
+
+Longitude décimale de l'emplacement de collecte des graines (positif = est, négatif = ouest)"
