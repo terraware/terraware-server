@@ -1,3 +1,4 @@
+f1657a509fc Added problems details for importing modules/deliverables CSV (#2494)
 f53ea480120 Update ktor monorepo to v3 (major) (#2491)
 d83ecae7b81 SW-6136 Implemented ProjectAcceleratorDetailsService (#2488)
 f28a460d190 SW-6135 Implemented admin UI functionality to migrate project details to variables (#2486)
