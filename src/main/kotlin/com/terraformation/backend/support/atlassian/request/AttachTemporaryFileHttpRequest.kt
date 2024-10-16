@@ -14,7 +14,7 @@ import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.path
-import io.ktor.util.cio.toByteReadChannel
+import io.ktor.utils.io.jvm.javaio.toByteReadChannel
 import java.io.InputStream
 
 class AttachTemporaryFilesHttpRequest(
