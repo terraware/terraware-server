@@ -9,6 +9,8 @@ import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.ResponsePayload
+import com.terraformation.backend.api.SuccessOrError
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableCategory
@@ -106,9 +108,11 @@ class ModulesController(
       file.inputStream.use { inputStream -> modulesImporter.importModules(inputStream) }
     } catch (e: CsvImportFailedException) {
       return ImportModuleResponsePayload(
-          false, e.errors.map { ImportModuleProblemElement(it.rowNumber, it.message) }, e.message)
+          SuccessOrError.Error,
+          e.errors.map { ImportModuleProblemElement(it.rowNumber, it.message) },
+          e.message)
     }
-    return ImportModuleResponsePayload(true)
+    return ImportModuleResponsePayload(SuccessOrError.Ok)
   }
 }
 
@@ -171,10 +175,10 @@ data class ImportModuleProblemElement(
 ) : SuccessResponsePayload
 
 data class ImportModuleResponsePayload(
-    val success: Boolean,
+    override val status: SuccessOrError,
     val problems: List<ImportModuleProblemElement> = emptyList(),
     val message: String? = null,
-) : SuccessResponsePayload
+) : ResponsePayload
 
 data class ListModuleDeliverablesResponsePayload(val deliverables: List<ModuleDeliverablePayload>)
 

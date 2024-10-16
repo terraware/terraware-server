@@ -13,7 +13,9 @@ import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
+import com.terraformation.backend.api.ResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
+import com.terraformation.backend.api.SuccessOrError
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.db.accelerator.DeliverableCategory
@@ -182,11 +184,11 @@ class DeliverablesController(
       file.inputStream.use { inputStream -> deliverablesImporter.importDeliverables(inputStream) }
     } catch (e: CsvImportFailedException) {
       return ImportDeliverableResponsePayload(
-          false,
+          SuccessOrError.Error,
           e.errors.map { ImportDeliverableProblemElement(it.rowNumber, it.message) },
           e.message)
     }
-    return ImportDeliverableResponsePayload(true)
+    return ImportDeliverableResponsePayload(SuccessOrError.Ok)
   }
 
   @ApiResponseSimpleSuccess
@@ -376,10 +378,10 @@ data class ImportDeliverableProblemElement(
 ) : SuccessResponsePayload
 
 data class ImportDeliverableResponsePayload(
-    val success: Boolean,
+    override val status: SuccessOrError,
     val problems: List<ImportDeliverableProblemElement> = emptyList(),
     val message: String? = null,
-) : SuccessResponsePayload
+) : ResponsePayload
 
 data class GetDeliverableResponsePayload(
     val deliverable: DeliverablePayload,
