@@ -1,3 +1,4 @@
+6ce90113c71 updated POST endpoint (#2502)
 2d060264d4e SW-6146 Remove unused list of supported locales (#2497)
 bd2bff14621 Update geoToolsVersion to v32 (#2441)
 3bad98e7609 Fix usages of obsolete javax.inject package (#2499)
