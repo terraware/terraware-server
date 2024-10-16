@@ -148,16 +148,16 @@ class Messages {
   fun batchCsvQuantityInvalid() = getMessage("batchCsvQuantityInvalid")
 
   fun monitoringPlotNortheastCorner(plotName: String) =
-      getMessage("monitoringPlotsNortheastCorner", plotName)
+      getMessage("monitoringPlotNortheastCorner", plotName)
 
   fun monitoringPlotNorthwestCorner(plotName: String) =
-      getMessage("monitoringPlotsNorthwestCorner", plotName)
+      getMessage("monitoringPlotNorthwestCorner", plotName)
 
   fun monitoringPlotSoutheastCorner(plotName: String) =
-      getMessage("monitoringPlotsSoutheastCorner", plotName)
+      getMessage("monitoringPlotSoutheastCorner", plotName)
 
   fun monitoringPlotSouthwestCorner(plotName: String) =
-      getMessage("monitoringPlotsSouthwestCorner", plotName)
+      getMessage("monitoringPlotSouthwestCorner", plotName)
 
   fun speciesCsvColumnName(position: Int) = getMessage("speciesCsvColumnName.$position")
 

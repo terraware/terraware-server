@@ -66,8 +66,8 @@ class GpxWriter(output: OutputStream, private val waypoints: List<GpxWaypoint>) 
     val roundedLatitude = waypoint.latitude.setScale(MAX_DECIMAL_PLACE, RoundingMode.HALF_UP)
     val roundedLongitude = waypoint.longitude.setScale(MAX_DECIMAL_PLACE, RoundingMode.HALF_UP)
 
-    writer.writeAttribute("lat", "$roundedLatitude")
-    writer.writeAttribute("lon", "$roundedLongitude")
+    writer.writeAttribute("lat", roundedLatitude.toPlainString())
+    writer.writeAttribute("lon", roundedLongitude.toPlainString())
 
     writer.writeStartElement("name")
     writer.writeCharacters(waypoint.name)
