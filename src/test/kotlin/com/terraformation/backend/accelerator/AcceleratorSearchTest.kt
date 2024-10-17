@@ -287,6 +287,57 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `searches modules and deliverables`() {
+    val suffix = "${UUID.randomUUID()}"
+    val moduleId1 = insertModule(name = "Module 1 $suffix")
+    val deliverableId1 = insertDeliverable(name = "Deliverable 1 $suffix")
+    val deliverableId2 = insertDeliverable(name = "Deliverable 2 $suffix")
+    val cohortId1 = insertCohort(name = "Cohort 1 $suffix")
+    val cohortId2 = insertCohort(name = "Cohort 2 $suffix")
+    val moduleId2 = insertModule(name = "Module 2 $suffix")
+    insertDeliverable(name = "Deliverable 3 $suffix")
+    insertCohortModule(cohortId1, moduleId1)
+    insertCohortModule(cohortId2, moduleId1)
+    insertCohortModule(cohortId2, moduleId2)
+
+    val prefix = SearchFieldPrefix(searchTables.modules)
+    val fields =
+        listOf(
+                "id",
+                "name",
+                "cohortModules.cohort_id",
+                "deliverables.id",
+            )
+            .map { prefix.resolve(it) }
+
+    val expected =
+        SearchResults(
+            listOf(
+                mapOf(
+                    "id" to "$moduleId1",
+                    "name" to "Module 1 $suffix",
+                    "cohortModules" to
+                        listOf(
+                            mapOf("cohort_id" to "$cohortId1"),
+                            mapOf("cohort_id" to "$cohortId2"),
+                        ),
+                    "deliverables" to
+                        listOf(
+                            mapOf("id" to "$deliverableId1"),
+                            mapOf("id" to "$deliverableId2"),
+                        ))),
+            cursor = null)
+
+    val actual =
+        searchService.search(
+            prefix,
+            fields,
+            FieldNode(prefix.resolve("cohortModules.cohort_id"), listOf("$cohortId1")))
+
+    assertJsonEquals(expected, actual)
+  }
+
+  @Test
   fun `searches cohorts and participants`() {
     val suffix = "${UUID.randomUUID()}"
     val cohortId1 = insertCohort(name = "Cohort 1 $suffix")

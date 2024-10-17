@@ -3,6 +3,7 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.EVENTS
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
@@ -25,6 +26,7 @@ class ModulesTable(tables: SearchTables) : SearchTable() {
       listOf(
           cohortModules.asMultiValueSublist(
               "cohortModules", MODULES.ID.eq(COHORT_MODULES.MODULE_ID)),
+          deliverables.asMultiValueSublist("deliverables", MODULES.ID.eq(DELIVERABLES.MODULE_ID)),
           events.asMultiValueSublist("events", MODULES.ID.eq(EVENTS.MODULE_ID)),
       )
     }
