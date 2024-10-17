@@ -34,7 +34,9 @@ class DeliverablesImporter(
     private const val COLUMN_SENSITIVE = COLUMN_CATEGORY + 1
     private const val COLUMN_REQUIRED = COLUMN_SENSITIVE + 1
     private const val COLUMN_DELIVERABLE_TYPE = COLUMN_REQUIRED + 1
-    private const val NUM_COLUMNS = COLUMN_DELIVERABLE_TYPE + 1
+    private const val COLUMN_VARIABLES = COLUMN_DELIVERABLE_TYPE + 1
+    private const val MIN_COLUMNS = COLUMN_DELIVERABLE_TYPE + 1
+    private const val MAX_COLUMNS = COLUMN_VARIABLES + 1
 
     /** Values we treat as true in boolean columns. */
     private val trueValues = setOf("y", "yes", "true", "t")
@@ -71,8 +73,8 @@ class DeliverablesImporter(
           .execute()
 
       processCsvFile(inputStream) { values, rowNumber, addError ->
-        if (values.size != NUM_COLUMNS) {
-          addError("Expected $NUM_COLUMNS columns but found ${values.size}")
+        if (values.size < MIN_COLUMNS || values.size > MAX_COLUMNS) {
+          addError("Expected $MIN_COLUMNS-$MAX_COLUMNS columns but found ${values.size}")
           return@processCsvFile
         }
 
