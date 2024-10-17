@@ -8,8 +8,11 @@ import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_DOCUMENTS
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_VARIABLES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.importer.CsvImportFailedException
 import com.terraformation.backend.importer.processCsvFile
 import jakarta.inject.Named
@@ -23,6 +26,7 @@ import org.jooq.DSLContext
 class DeliverablesImporter(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val variableStore: VariableStore,
 ) {
   companion object {
     private const val COLUMN_NAME = 0
@@ -35,8 +39,7 @@ class DeliverablesImporter(
     private const val COLUMN_REQUIRED = COLUMN_SENSITIVE + 1
     private const val COLUMN_DELIVERABLE_TYPE = COLUMN_REQUIRED + 1
     private const val COLUMN_VARIABLES = COLUMN_DELIVERABLE_TYPE + 1
-    private const val MIN_COLUMNS = COLUMN_DELIVERABLE_TYPE + 1
-    private const val MAX_COLUMNS = COLUMN_VARIABLES + 1
+    private const val NUM_COLUMNS = COLUMN_VARIABLES + 1
 
     /** Values we treat as true in boolean columns. */
     private val trueValues = setOf("y", "yes", "true", "t")
@@ -73,8 +76,8 @@ class DeliverablesImporter(
           .execute()
 
       processCsvFile(inputStream) { values, rowNumber, addError ->
-        if (values.size < MIN_COLUMNS || values.size > MAX_COLUMNS) {
-          addError("Expected $MIN_COLUMNS-$MAX_COLUMNS columns but found ${values.size}")
+        if (values.size != NUM_COLUMNS) {
+          addError("Expected $NUM_COLUMNS columns but found ${values.size}")
           return@processCsvFile
         }
 
@@ -95,6 +98,25 @@ class DeliverablesImporter(
                 null
               }
             }
+        val variableStableIdsRawString =
+            if (values.size >= COLUMN_VARIABLES) {
+              values[COLUMN_VARIABLES]
+            } else {
+              null
+            }
+        val variableIds: List<VariableId>? =
+            variableStableIdsRawString
+                ?.split("\n", ",")
+                ?.mapNotNull { it.trim().ifBlank { null } }
+                ?.ifEmpty { null }
+                ?.mapNotNull { stableId ->
+                  val variable = variableStore.fetchByStableId(stableId)
+                  if (variable == null) {
+                    addError(
+                        "Deliverable $deliverableId references variable $stableId which doesn't exist")
+                  }
+                  variable?.id
+                }
 
         if (deliverableId == null || deliverableId.value <= 0) {
           if (values[COLUMN_ID] != null) {
@@ -110,6 +132,9 @@ class DeliverablesImporter(
           } else {
             addError("Missing deliverable type.")
           }
+        }
+        if (deliverableType != DeliverableType.Questions && variableIds != null) {
+          addError("Deliverable type $deliverableType cannot be associated with variables")
         }
         if (moduleId == null || moduleId.value <= 0) {
           if (values[COLUMN_MODULE_ID] != null) {
@@ -168,6 +193,24 @@ class DeliverablesImporter(
                 .set(IS_REQUIRED, isRequired)
                 .set(DESCRIPTION_HTML, values[COLUMN_DESCRIPTION])
                 .execute()
+          }
+
+          if (variableIds != null) {
+            with(DELIVERABLE_VARIABLES) {
+              dslContext
+                  .deleteFrom(DELIVERABLE_VARIABLES)
+                  .where(DELIVERABLE_ID.eq(deliverableId))
+                  .execute()
+
+              variableIds.forEachIndexed { index, variableId ->
+                dslContext
+                    .insertInto(DELIVERABLE_VARIABLES)
+                    .set(DELIVERABLE_ID, deliverableId)
+                    .set(VARIABLE_ID, variableId)
+                    .set(POSITION, index)
+                    .execute()
+              }
+            }
           }
 
           if (deliverableType == DeliverableType.Document) {
