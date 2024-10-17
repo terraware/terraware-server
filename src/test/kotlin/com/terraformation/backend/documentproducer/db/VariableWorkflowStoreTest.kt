@@ -18,14 +18,7 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
-  private val store by lazy {
-    VariableWorkflowStore(
-        clock,
-        dslContext,
-        eventPublisher,
-        variablesDao,
-    )
-  }
+  private val store by lazy { VariableWorkflowStore(clock, dslContext, eventPublisher) }
 
   @BeforeEach
   fun setUp() {
