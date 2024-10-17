@@ -28,11 +28,8 @@ import java.time.format.DateTimeParseException
  * implementations can delegate to [BaseVariableProperties] to cut down on needless repetition.
  */
 interface BaseVariable {
-  /** The ID of its associated deliverable, if applicable * */
-  val deliverableId: DeliverableId?
-
-  /** The position of this variable within its associated deliverable, if applicable * */
-  val deliverablePosition: Int?
+  /** The position of this variable in each of its associated deliverables, if applicable. */
+  val deliverablePositions: Map<DeliverableId, Int>
 
   /** The display question of this variable, if applicable * */
   val deliverableQuestion: String?
@@ -93,8 +90,7 @@ interface BaseVariable {
  * classes that implement [Variable].
  */
 data class BaseVariableProperties(
-    override val deliverableId: DeliverableId? = null,
-    override val deliverablePosition: Int? = null,
+    override val deliverablePositions: Map<DeliverableId, Int> = emptyMap(),
     override val deliverableQuestion: String? = null,
     override val dependencyCondition: DependencyCondition? = null,
     override val dependencyValue: String? = null,

@@ -251,8 +251,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
               NumberVariable(
                   base =
                       BaseVariableProperties(
-                          deliverableId = deliverableId1,
-                          deliverablePosition = 0,
+                          deliverablePositions = mapOf(deliverableId1 to 0),
                           deliverableQuestion = "Question 3",
                           id = variableId3,
                           isRequired = true,
@@ -267,8 +266,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
               NumberVariable(
                   base =
                       BaseVariableProperties(
-                          deliverableId = deliverableId1,
-                          deliverablePosition = 1,
+                          deliverablePositions = mapOf(deliverableId1 to 1),
                           deliverableQuestion = "Question 1",
                           id = variableId1,
                           isRequired = false,
@@ -309,8 +307,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
               TableVariable(
                   base =
                       BaseVariableProperties(
-                          deliverableId = deliverableId,
-                          deliverablePosition = 1,
+                          deliverablePositions = mapOf(deliverableId to 1),
                           id = tableId,
                           isList = true,
                           manifestId = null,
@@ -327,8 +324,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                                   TextVariable(
                                       base =
                                           BaseVariableProperties(
-                                              deliverableId = deliverableId,
-                                              deliverablePosition = 2,
+                                              deliverablePositions = mapOf(deliverableId to 2),
                                               id = columnId,
                                               isList = false,
                                               manifestId = null,
@@ -386,8 +382,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
           NumberVariable(
               base =
                   BaseVariableProperties(
-                      deliverableId = deliverableId,
-                      deliverablePosition = 1,
+                      deliverablePositions = mapOf(deliverableId to 1),
                       id = publicVariableId,
                       isRequired = false,
                       manifestId = null,
@@ -402,8 +397,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
           NumberVariable(
               base =
                   BaseVariableProperties(
-                      deliverableId = deliverableId,
-                      deliverablePosition = 2,
+                      deliverablePositions = mapOf(deliverableId to 2),
                       id = internalOnlyVariableId,
                       internalOnly = true,
                       isRequired = false,
