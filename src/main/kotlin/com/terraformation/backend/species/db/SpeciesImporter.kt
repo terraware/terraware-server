@@ -120,26 +120,24 @@ class SpeciesImporter(
           .map { rawValues -> rawValues.map { it.trim().ifEmpty { null } } }
           .map { values ->
             NewSpeciesModel(
-                scientificName = normalizeScientificName(values[0]!!),
                 commonName = values[1],
-                familyName = values[2],
                 conservationCategory =
                     values[3]?.let {
                       ConservationCategory.forJsonValue(it.trim().uppercase(Locale.ENGLISH))
                     },
-                rare = values[4]?.let { it in trueValues },
-                growthForms =
-                    values[5]?.let { setOf(GrowthForm.forDisplayName(it, locale)) } ?: emptySet(),
-                seedStorageBehavior =
-                    values[6]?.let { SeedStorageBehavior.forDisplayName(it, locale) },
                 ecosystemTypes =
                     values[7]
                         ?.split(SpeciesCsvValidator.ECOSYSTEM_TYPES_DELIMITER)
                         ?.map { EcosystemType.forDisplayName(it, locale) }
                         ?.toSet() ?: emptySet(),
-                id = null,
+                familyName = values[2],
+                growthForms =
+                    values[5]?.let { setOf(GrowthForm.forDisplayName(it, locale)) } ?: emptySet(),
                 organizationId = organizationId,
-            )
+                rare = values[4]?.let { it in trueValues },
+                scientificName = normalizeScientificName(values[0]!!),
+                seedStorageBehavior =
+                    values[6]?.let { SeedStorageBehavior.forDisplayName(it, locale) })
           }
           .forEach { row ->
             speciesStore.importSpecies(row, overwriteExisting)

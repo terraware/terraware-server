@@ -86,7 +86,6 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             growthForms = setOf(GrowthForm.Shrub),
             heightAtMaturitySource = "height source",
             heightAtMaturityValue = BigDecimal(3.1),
-            id = null,
             localUsesKnown = "uses",
             nativeEcosystem = "ecosystem",
             organizationId = organizationId,
@@ -94,8 +93,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             rare = false,
             scientificName = "test",
             seedStorageBehavior = SeedStorageBehavior.Recalcitrant,
-            woodDensityLevel = WoodDensityLevel.Family,
-        )
+            woodDensityLevel = WoodDensityLevel.Family)
 
     val speciesId = store.createSpecies(model)
     assertNotNull(speciesId, "Should have returned ID")
@@ -138,7 +136,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `createSpecies allows the same name to be used in different organizations`() {
     val otherOrgId = insertOrganization()
 
-    val model = NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "test")
+    val model = NewSpeciesModel(organizationId = organizationId, scientificName = "test")
     store.createSpecies(model)
 
     assertDoesNotThrow { store.createSpecies(model.copy(organizationId = otherOrgId)) }
@@ -160,7 +158,6 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 growthForms = setOf(GrowthForm.Fern),
                 heightAtMaturitySource = "original height source",
                 heightAtMaturityValue = BigDecimal(3.1),
-                id = null,
                 localUsesKnown = "original uses",
                 nativeEcosystem = "original ecosystem",
                 organizationId = organizationId,
@@ -170,8 +167,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 scientificName = "test",
                 seedStorageBehavior = SeedStorageBehavior.Orthodox,
                 successionalGroups = setOf(SuccessionalGroup.Pioneer),
-                woodDensityLevel = WoodDensityLevel.Family,
-            ))
+                woodDensityLevel = WoodDensityLevel.Family))
     val originalRow = speciesDao.fetchOneById(originalSpeciesId)!!
 
     store.deleteSpecies(originalSpeciesId)
@@ -189,7 +185,6 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             growthForms = setOf(GrowthForm.Shrub),
             heightAtMaturitySource = "edited height source",
             heightAtMaturityValue = BigDecimal(3.99),
-            id = null,
             localUsesKnown = "edited uses",
             nativeEcosystem = "edited ecosystem",
             organizationId = organizationId,
@@ -199,8 +194,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             scientificName = "test",
             seedStorageBehavior = SeedStorageBehavior.Recalcitrant,
             successionalGroups = setOf(SuccessionalGroup.Mature),
-            woodDensityLevel = WoodDensityLevel.Species,
-        )
+            woodDensityLevel = WoodDensityLevel.Species)
 
     val newInstant = Instant.ofEpochSecond(500)
     clock.instant = newInstant
@@ -262,7 +256,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createSpecies throws exception if name already exists for organization`() {
-    val model = NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "test")
+    val model = NewSpeciesModel(organizationId = organizationId, scientificName = "test")
     store.createSpecies(model)
 
     assertThrows<DuplicateKeyException> { store.createSpecies(model) }
@@ -273,7 +267,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreateSpecies(organizationId) } returns false
     assertThrows<AccessDeniedException> {
       store.createSpecies(
-          NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "dummy"))
+          NewSpeciesModel(organizationId = organizationId, scientificName = "dummy"))
     }
   }
 
@@ -286,13 +280,12 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             conservationCategory = ConservationCategory.Extinct,
             dbhSource = "original db source",
             dbhValue = BigDecimal(2.1),
-            ecosystemTypes = setOf(EcosystemType.Mangroves, EcosystemType.Tundra),
             ecologicalRoleKnown = "original role",
+            ecosystemTypes = setOf(EcosystemType.Mangroves, EcosystemType.Tundra),
             familyName = "original family",
             growthForms = setOf(GrowthForm.Shrub),
             heightAtMaturitySource = "original height source",
             heightAtMaturityValue = BigDecimal(3.1),
-            id = null,
             localUsesKnown = "original uses",
             nativeEcosystem = "original ecosystem",
             organizationId = organizationId,
@@ -302,8 +295,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             scientificName = "original scientific",
             seedStorageBehavior = SeedStorageBehavior.Unknown,
             successionalGroups = setOf(SuccessionalGroup.Pioneer),
-            woodDensityLevel = WoodDensityLevel.Family,
-        )
+            woodDensityLevel = WoodDensityLevel.Family)
     val speciesId = store.createSpecies(initial)
 
     val bogusOrganizationId = OrganizationId(-1)
@@ -317,6 +309,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             averageWoodDensity = BigDecimal(1.99),
             commonName = "new common",
             conservationCategory = ConservationCategory.ExtinctInTheWild,
+            createdTime = Instant.EPOCH,
             dbhSource = "new db source",
             dbhValue = BigDecimal(2.99),
             deletedTime = bogusInstant,
@@ -329,6 +322,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             id = speciesId,
             initialScientificName = "new initial",
             localUsesKnown = "new uses",
+            modifiedTime = Instant.EPOCH,
             nativeEcosystem = "new ecosystem",
             organizationId = bogusOrganizationId,
             otherFacts = "new facts",
@@ -406,26 +400,28 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     val speciesId =
         store.createSpecies(
-            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "dummy"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "dummy"))
 
     assertThrows<AccessDeniedException> {
       store.updateSpecies(
           ExistingSpeciesModel(
-              id = speciesId, organizationId = organizationId, scientificName = "other"))
+              createdTime = Instant.EPOCH,
+              id = speciesId,
+              modifiedTime = Instant.EPOCH,
+              organizationId = organizationId,
+              scientificName = "other"))
     }
   }
 
   @Test
   fun `deleteSpecies marks species as deleted`() {
     // Make sure it only deletes the species in question, not the whole table
-    store.createSpecies(
-        NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "other"))
+    store.createSpecies(NewSpeciesModel(organizationId = organizationId, scientificName = "other"))
     val expected = store.findAllSpecies(organizationId)
 
     val speciesId =
         store.createSpecies(
-            NewSpeciesModel(
-                id = null, organizationId = organizationId, scientificName = "to delete"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "to delete"))
 
     store.deleteSpecies(speciesId)
 
@@ -439,7 +435,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     val speciesId =
         store.createSpecies(
-            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "dummy"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "dummy"))
 
     assertThrows<AccessDeniedException> { store.deleteSpecies(speciesId) }
   }
@@ -455,15 +451,16 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
         store.createSpecies(
             NewSpeciesModel(
                 ecosystemTypes = setOf(EcosystemType.Mangroves, EcosystemType.Tundra),
-                id = null,
                 organizationId = organizationId,
                 scientificName = "test"))
 
     val expected =
         ExistingSpeciesModel(
+            createdTime = Instant.EPOCH,
             ecosystemTypes = setOf(EcosystemType.Mangroves, EcosystemType.Tundra),
             id = speciesId,
             initialScientificName = "test",
+            modifiedTime = Instant.EPOCH,
             organizationId = organizationId,
             scientificName = "test",
         )
@@ -476,7 +473,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchSpeciesById throws exception if species is deleted`() {
     val speciesId =
         store.createSpecies(
-            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "test"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "test"))
     store.deleteSpecies(speciesId)
 
     assertThrows<SpeciesNotFoundException> { store.fetchSpeciesById(speciesId) }
@@ -525,15 +522,19 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val expected =
           listOf(
               ExistingSpeciesModel(
+                  createdTime = Instant.EPOCH,
                   id = speciesId1,
                   initialScientificName = "Species 1",
+                  modifiedTime = Instant.EPOCH,
                   organizationId = organizationId,
                   scientificName = "Species 1",
               ),
               ExistingSpeciesModel(
                   commonName = "Common 2",
+                  createdTime = Instant.EPOCH,
                   id = speciesId2,
                   initialScientificName = "Species 2",
+                  modifiedTime = Instant.EPOCH,
                   organizationId = organizationId,
                   scientificName = "Species 2",
               ),
@@ -562,7 +563,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `fetchAllUncheckedSpeciesIds does not return deleted species`() {
     val speciesId =
         store.createSpecies(
-            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "dummy"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "dummy"))
     store.deleteSpecies(speciesId)
 
     assertEquals(emptyList<SpeciesId>(), store.fetchUncheckedSpeciesIds(organizationId))
@@ -572,7 +573,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `findAllProblems does not return problems with deleted species`() {
     val speciesId =
         store.createSpecies(
-            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "dummy"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "dummy"))
     speciesProblemsDao.insert(
         SpeciesProblemsRow(
             createdTime = Instant.EPOCH,
@@ -591,8 +592,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     val scientificName = "species"
     val speciesId =
         store.createSpecies(
-            NewSpeciesModel(
-                id = null, organizationId = organizationId, scientificName = scientificName))
+            NewSpeciesModel(organizationId = organizationId, scientificName = scientificName))
 
     every { user.canReadOrganization(organizationId) } returns false
     every { user.canReadSpecies(speciesId) } returns false
@@ -607,12 +607,10 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `acceptProblemSuggestion throws exception if suggested scientific name is already in use`() {
     store.createSpecies(
-        NewSpeciesModel(
-            id = null, organizationId = organizationId, scientificName = "Correct name"))
+        NewSpeciesModel(organizationId = organizationId, scientificName = "Correct name"))
     val speciesIdWithOutdatedName =
         store.createSpecies(
-            NewSpeciesModel(
-                id = null, organizationId = organizationId, scientificName = "Outdated name"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "Outdated name"))
     val problemsRow =
         SpeciesProblemsRow(
             createdTime = Instant.EPOCH,
@@ -627,8 +625,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `find all species in use returns no species when none in use`() {
-    store.createSpecies(
-        NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "other"))
+    store.createSpecies(NewSpeciesModel(organizationId = organizationId, scientificName = "other"))
 
     val actual = store.findAllSpecies(organizationId, true)
 
@@ -639,9 +636,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `find all species in use returns species used in batches`() {
     val created =
         store.createSpecies(
-            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "batch"))
-    store.createSpecies(
-        NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "unused"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "batch"))
+    store.createSpecies(NewSpeciesModel(organizationId = organizationId, scientificName = "unused"))
 
     // create a batch with 'other' species
     insertFacility()
@@ -650,8 +646,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     // create another org batch
     val otherOrgId = insertOrganization()
     val other =
-        store.createSpecies(
-            NewSpeciesModel(id = null, organizationId = otherOrgId, scientificName = "other"))
+        store.createSpecies(NewSpeciesModel(organizationId = otherOrgId, scientificName = "other"))
     insertFacility()
     insertBatch(speciesId = other)
 
@@ -665,9 +660,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `find all species in use returns species used in accessions`() {
     val created =
         store.createSpecies(
-            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "batch"))
-    store.createSpecies(
-        NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "unused"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "batch"))
+    store.createSpecies(NewSpeciesModel(organizationId = organizationId, scientificName = "unused"))
 
     // create an accession with 'other' species
     insertFacility()
@@ -676,8 +670,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     // create another org accession
     val otherOrgId = insertOrganization()
     val other =
-        store.createSpecies(
-            NewSpeciesModel(id = null, organizationId = otherOrgId, scientificName = "other"))
+        store.createSpecies(NewSpeciesModel(organizationId = otherOrgId, scientificName = "other"))
     insertFacility()
     insertAccession(row = AccessionsRow(speciesId = other))
 
@@ -691,9 +684,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   fun `find all species in use returns species used in plantings`() {
     val created =
         store.createSpecies(
-            NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "batch"))
-    store.createSpecies(
-        NewSpeciesModel(id = null, organizationId = organizationId, scientificName = "unused"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "batch"))
+    store.createSpecies(NewSpeciesModel(organizationId = organizationId, scientificName = "unused"))
 
     // create plantings with 'other' species
     insertFacility()
@@ -707,8 +699,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     // create another org planting
     val otherOrgId = insertOrganization()
     val other =
-        store.createSpecies(
-            NewSpeciesModel(id = null, organizationId = otherOrgId, scientificName = "other"))
+        store.createSpecies(NewSpeciesModel(organizationId = otherOrgId, scientificName = "other"))
     insertFacility()
     insertPlantingSite()
     insertPlantingZone()

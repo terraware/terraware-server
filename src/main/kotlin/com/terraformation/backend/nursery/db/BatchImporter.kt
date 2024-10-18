@@ -124,7 +124,6 @@ class BatchImporter(
         speciesStore.importSpecies(
             NewSpeciesModel(
                 commonName = commonName,
-                id = null,
                 organizationId = organizationId,
                 scientificName = scientificName),
             overwriteExisting = false)

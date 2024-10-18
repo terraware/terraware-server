@@ -428,7 +428,9 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   species =
                       ExistingSpeciesModel(
                           commonName = null,
+                          createdTime = now,
                           id = speciesId1,
+                          modifiedTime = now,
                           organizationId = inserted.organizationId,
                           scientificName = "Acacia Kochi")),
               SpeciesForParticipantProject(
@@ -455,7 +457,9 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   species =
                       ExistingSpeciesModel(
                           commonName = null,
+                          createdTime = now,
                           id = speciesId2,
+                          modifiedTime = now,
                           organizationId = inserted.organizationId,
                           scientificName = "Juniperus scopulorum"))),
           store.fetchSpeciesForParticipantProject(projectId))

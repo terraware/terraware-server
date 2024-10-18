@@ -27,6 +27,13 @@ internal class SpeciesCheckerTest {
           speciesId = speciesId,
           fieldId = SpeciesProblemField.ScientificName,
           typeId = SpeciesProblemType.NameNotFound)
+  private val skeletonSpecies =
+      ExistingSpeciesModel(
+          createdTime = Instant.EPOCH,
+          id = speciesId,
+          modifiedTime = Instant.EPOCH,
+          organizationId = organizationId,
+          scientificName = "Skeleton species")
 
   @BeforeEach
   fun setUp() {
@@ -43,11 +50,9 @@ internal class SpeciesCheckerTest {
 
     every { speciesStore.fetchUncheckedSpeciesIds(organizationId) } returns uncheckedSpeciesIds
     every { speciesStore.fetchSpeciesById(correctId) } returns
-        ExistingSpeciesModel(
-            id = correctId, organizationId = organizationId, scientificName = "Correct name")
+        skeletonSpecies.copy(id = correctId, scientificName = "Correct name")
     every { speciesStore.fetchSpeciesById(bogusId) } returns
-        ExistingSpeciesModel(
-            id = bogusId, organizationId = organizationId, scientificName = "Bogus name")
+        skeletonSpecies.copy(id = bogusId, scientificName = "Bogus name")
 
     checker.checkAllUncheckedSpecies(organizationId)
 
@@ -60,8 +65,7 @@ internal class SpeciesCheckerTest {
   @Test
   fun `checkSpecies checks scientific name if species has not been checked`() {
     every { speciesStore.fetchSpeciesById(speciesId) } returns
-        ExistingSpeciesModel(
-            id = speciesId, organizationId = organizationId, scientificName = "Bogus name")
+        skeletonSpecies.copy(scientificName = "Bogus name")
 
     checker.checkSpecies(speciesId)
 
@@ -72,11 +76,7 @@ internal class SpeciesCheckerTest {
   @Test
   fun `checkSpecies does nothing if species has already been checked`() {
     every { speciesStore.fetchSpeciesById(speciesId) } returns
-        ExistingSpeciesModel(
-            id = speciesId,
-            organizationId = organizationId,
-            scientificName = "Bogus name",
-            checkedTime = Instant.EPOCH)
+        skeletonSpecies.copy(scientificName = "Bogus name", checkedTime = Instant.EPOCH)
 
     checker.checkSpecies(speciesId)
 
@@ -87,10 +87,8 @@ internal class SpeciesCheckerTest {
   @Test
   fun `recheckSpecies checks scientific name again if it changed`() {
     checker.recheckSpecies(
-        ExistingSpeciesModel(
-            id = speciesId, organizationId = organizationId, scientificName = "Correct name"),
-        ExistingSpeciesModel(
-            id = speciesId, organizationId = organizationId, scientificName = "Bogus name"))
+        skeletonSpecies.copy(scientificName = "Correct name"),
+        skeletonSpecies.copy(scientificName = "Bogus name"))
 
     verify { gbifStore.checkScientificName("Bogus name") }
     verify { speciesStore.updateProblems(speciesId, listOf(nonexistentProblem)) }
@@ -98,12 +96,7 @@ internal class SpeciesCheckerTest {
 
   @Test
   fun `recheckSpecies does not check scientific name again if it did not change`() {
-    val model =
-        ExistingSpeciesModel(
-            id = speciesId,
-            organizationId = organizationId,
-            scientificName = "Bogus name",
-            familyName = "Old family")
+    val model = skeletonSpecies.copy(scientificName = "Bogus name", familyName = "Old family")
 
     checker.recheckSpecies(model, model.copy(familyName = "New family"))
 
