@@ -4,9 +4,13 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import kotlin.math.roundToInt
 
-/** Aggregated statistics for a nursery. Totals are across all batches and withdrawals. */
+/**
+ * Aggregated statistics for a nursery or an organization. Totals are across all batches and
+ * withdrawals.
+ */
 data class NurseryStats(
-    val facilityId: FacilityId,
+    /** If null, stats are organization-wide. */
+    val facilityId: FacilityId?,
     val germinationRate: Int?,
     val lossRate: Int?,
     val totalGerminating: Long,

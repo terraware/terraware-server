@@ -9,8 +9,9 @@ import org.junit.jupiter.api.Test
 
 internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
   @Test
-  fun `rolls up multiple species and withdrawals only for specified facility`() {
+  fun `rolls up multiple species and withdrawals for facility or organization`() {
     every { user.canReadFacility(any()) } returns true
+    every { user.canReadOrganization(any()) } returns true
 
     val otherNurseryId = insertFacility(type = FacilityType.Nursery)
     val speciesId2 = insertSpecies(scientificName = "Second species")
@@ -113,7 +114,20 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
         notReadyQuantityWithdrawn = -35,
         readyQuantityWithdrawn = -36)
 
-    val expected =
+    // Batch in other organization's facility should not affect stats.
+    insertOrganization()
+    insertFacility(type = FacilityType.Nursery)
+    insertSpecies()
+    insertBatch(
+        germinatingQuantity = 1000,
+        notReadyQuantity = 2000,
+        readyQuantity = 3000,
+        totalGerminated = 10000,
+        totalGerminationCandidates = 20000,
+        totalLost = 30000,
+        totalLossCandidates = 40000)
+
+    assertJsonEquals(
         NurseryStats(
             facilityId = facilityId,
             germinationRate = 50,
@@ -127,10 +141,26 @@ internal class BatchStoreGetNurseryStatsTest : BatchStoreTest() {
                     WithdrawalPurpose.OutPlant to 11L + 12L + 14L + 15L + 17L + 18L,
                     WithdrawalPurpose.NurseryTransfer to 0L,
                     WithdrawalPurpose.Other to 0L,
-                ))
+                )),
+        store.getNurseryStats(facilityId),
+        "Stats for single facility")
 
-    val actual = store.getNurseryStats(facilityId)
-
-    assertJsonEquals(expected, actual)
+    assertJsonEquals(
+        NurseryStats(
+            facilityId = null,
+            germinationRate = 80,
+            lossRate = 85,
+            totalGerminating = 1 + 4 + 7,
+            totalNotReady = 2 + 5 + 8,
+            totalReady = 3 + 6 + 9,
+            totalWithdrawnByPurpose =
+                mapOf(
+                    WithdrawalPurpose.Dead to 20L + 21L + 23L + 24L + 26L + 27L + 32L + 33L,
+                    WithdrawalPurpose.OutPlant to 11L + 12L + 14L + 15L + 17L + 18L + 29L + 30L,
+                    WithdrawalPurpose.NurseryTransfer to 0L,
+                    WithdrawalPurpose.Other to 0L,
+                )),
+        store.getNurseryStats(organizationId = organizationId),
+        "Stats for organization")
   }
 }
