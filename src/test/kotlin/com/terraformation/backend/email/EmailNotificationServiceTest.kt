@@ -254,9 +254,11 @@ internal class EmailNotificationServiceTest {
       )
   private val species =
       ExistingSpeciesModel(
+          createdTime = Instant.EPOCH,
           id = SpeciesId(1),
-          scientificName = "A Species",
+          modifiedTime = Instant.EPOCH,
           organizationId = organization.id,
+          scientificName = "A Species",
       )
   private val upcomingObservation =
       ExistingObservationModel(

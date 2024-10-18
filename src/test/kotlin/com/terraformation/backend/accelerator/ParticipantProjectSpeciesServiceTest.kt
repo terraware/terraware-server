@@ -374,7 +374,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
           SpeciesEditedEvent(
               species =
                   ExistingSpeciesModel(
+                      createdTime = Instant.EPOCH,
                       id = speciesId,
+                      modifiedTime = Instant.EPOCH,
                       organizationId = inserted.organizationId,
                       scientificName = "Species 1")))
 
@@ -403,7 +405,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
           SpeciesEditedEvent(
               species =
                   ExistingSpeciesModel(
+                      createdTime = Instant.EPOCH,
                       id = speciesId,
+                      modifiedTime = Instant.EPOCH,
                       organizationId = inserted.organizationId,
                       scientificName = "Species 1")))
 

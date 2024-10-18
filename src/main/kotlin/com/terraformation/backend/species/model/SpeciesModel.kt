@@ -15,11 +15,12 @@ import java.time.Instant
 import org.jooq.Field
 import org.jooq.Record
 
-data class SpeciesModel<ID : SpeciesId?>(
+data class ExistingSpeciesModel(
     val averageWoodDensity: BigDecimal? = null,
     val checkedTime: Instant? = null,
     val commonName: String? = null,
     val conservationCategory: ConservationCategory? = null,
+    val createdTime: Instant,
     val dbhSource: String? = null,
     val dbhValue: BigDecimal? = null,
     val deletedTime: Instant? = null,
@@ -29,8 +30,9 @@ data class SpeciesModel<ID : SpeciesId?>(
     val growthForms: Set<GrowthForm> = emptySet(),
     val heightAtMaturitySource: String? = null,
     val heightAtMaturityValue: BigDecimal? = null,
-    val id: ID,
+    val id: SpeciesId,
     val localUsesKnown: String? = null,
+    val modifiedTime: Instant,
     val nativeEcosystem: String? = null,
     val organizationId: OrganizationId,
     val otherFacts: String? = null,
@@ -55,6 +57,7 @@ data class SpeciesModel<ID : SpeciesId?>(
             checkedTime = record[SPECIES.CHECKED_TIME],
             commonName = record[SPECIES.COMMON_NAME],
             conservationCategory = record[SPECIES.CONSERVATION_CATEGORY_ID],
+            createdTime = record[SPECIES.CREATED_TIME]!!,
             dbhSource = record[SPECIES.DBH_SOURCE],
             dbhValue = record[SPECIES.DBH_VALUE],
             deletedTime = record[SPECIES.DELETED_TIME],
@@ -67,6 +70,7 @@ data class SpeciesModel<ID : SpeciesId?>(
             id = record[SPECIES.ID]!!,
             initialScientificName = record[SPECIES.INITIAL_SCIENTIFIC_NAME]!!,
             localUsesKnown = record[SPECIES.LOCAL_USES_KNOWN],
+            modifiedTime = record[SPECIES.MODIFIED_TIME]!!,
             nativeEcosystem = record[SPECIES.NATIVE_ECOSYSTEM],
             organizationId = record[SPECIES.ORGANIZATION_ID]!!,
             otherFacts = record[SPECIES.OTHER_FACTS],
@@ -81,6 +85,28 @@ data class SpeciesModel<ID : SpeciesId?>(
   }
 }
 
-typealias NewSpeciesModel = SpeciesModel<Nothing?>
-
-typealias ExistingSpeciesModel = SpeciesModel<SpeciesId>
+data class NewSpeciesModel(
+    val averageWoodDensity: BigDecimal? = null,
+    val checkedTime: Instant? = null,
+    val commonName: String? = null,
+    val conservationCategory: ConservationCategory? = null,
+    val dbhSource: String? = null,
+    val dbhValue: BigDecimal? = null,
+    val deletedTime: Instant? = null,
+    val ecologicalRoleKnown: String? = null,
+    val ecosystemTypes: Set<EcosystemType> = emptySet(),
+    val familyName: String? = null,
+    val growthForms: Set<GrowthForm> = emptySet(),
+    val heightAtMaturitySource: String? = null,
+    val heightAtMaturityValue: BigDecimal? = null,
+    val localUsesKnown: String? = null,
+    val nativeEcosystem: String? = null,
+    val organizationId: OrganizationId,
+    val otherFacts: String? = null,
+    val plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod> = emptySet(),
+    val rare: Boolean? = null,
+    val scientificName: String,
+    val seedStorageBehavior: SeedStorageBehavior? = null,
+    val successionalGroups: Set<SuccessionalGroup> = emptySet(),
+    val woodDensityLevel: WoodDensityLevel? = null,
+)

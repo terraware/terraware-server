@@ -12,8 +12,8 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.db.SpeciesChecker
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.event.SpeciesEditedEvent
+import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.NewSpeciesModel
-import com.terraformation.backend.species.model.SpeciesModel
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -62,8 +62,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
   fun `createSpecies checks for problems with species data`() {
     val speciesId =
         service.createSpecies(
-            NewSpeciesModel(
-                id = null, organizationId = organizationId, scientificName = "Scientific name"))
+            NewSpeciesModel(organizationId = organizationId, scientificName = "Scientific name"))
 
     verify { speciesChecker.checkSpecies(speciesId) }
   }
@@ -87,11 +86,12 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
     eventPublisher.assertEventPublished(
         SpeciesEditedEvent(
             species =
-                SpeciesModel(
+                ExistingSpeciesModel(
                     averageWoodDensity = null,
                     checkedTime = null,
                     commonName = null,
                     conservationCategory = null,
+                    createdTime = originalModel.createdTime,
                     dbhSource = null,
                     dbhValue = null,
                     deletedTime = null,
@@ -99,6 +99,7 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
                     familyName = null,
                     id = inserted.speciesId,
                     initialScientificName = "Old name",
+                    modifiedTime = clock.instant(),
                     organizationId = inserted.organizationId,
                     scientificName = "New name")))
   }

@@ -26,13 +26,14 @@ import com.terraformation.backend.seedbank.api.ValuesController
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
-import com.terraformation.backend.species.model.SpeciesModel
+import com.terraformation.backend.species.model.NewSpeciesModel
 import io.swagger.v3.oas.annotations.ExternalDocumentation
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.responses.ApiResponses
 import java.math.BigDecimal
+import java.time.Instant
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -94,7 +95,7 @@ class SpeciesController(
   @PostMapping
   fun createSpecies(@RequestBody payload: SpeciesRequestPayload): CreateSpeciesResponsePayload {
     try {
-      val speciesId = speciesService.createSpecies(payload.toModel(null))
+      val speciesId = speciesService.createSpecies(payload.toNew())
       return CreateSpeciesResponsePayload(speciesId)
     } catch (e: DuplicateKeyException) {
       throw DuplicateNameException("A species with that name already exists.")
@@ -127,7 +128,7 @@ class SpeciesController(
       @PathVariable speciesId: SpeciesId,
       @RequestBody payload: SpeciesRequestPayload
   ): SimpleSuccessResponsePayload {
-    speciesService.updateSpecies(payload.toModel(speciesId))
+    speciesService.updateSpecies(payload.toExisting(speciesId))
     return SimpleSuccessResponsePayload()
   }
 
@@ -224,6 +225,7 @@ data class SpeciesResponseElement(
         externalDocs =
             ExternalDocumentation(url = "https://en.wikipedia.org/wiki/IUCN_Red_List#Categories"))
     val conservationCategory: ConservationCategory?,
+    val createdTime: Instant,
     val dbhSource: String?,
     val dbhValue: BigDecimal?,
     val ecologicalRoleKnown: String?,
@@ -234,6 +236,7 @@ data class SpeciesResponseElement(
     val heightAtMaturityValue: BigDecimal?,
     val id: SpeciesId,
     val localUsesKnown: String?,
+    val modifiedTime: Instant,
     val nativeEcosystem: String?,
     val plantMaterialSourcingMethods: Set<PlantMaterialSourcingMethod>?,
     val problems: List<SpeciesProblemElement>?,
@@ -251,6 +254,7 @@ data class SpeciesResponseElement(
       averageWoodDensity = model.averageWoodDensity,
       commonName = model.commonName,
       conservationCategory = model.conservationCategory,
+      createdTime = model.createdTime,
       dbhSource = model.dbhSource,
       dbhValue = model.dbhValue,
       ecologicalRoleKnown = model.ecologicalRoleKnown,
@@ -261,6 +265,7 @@ data class SpeciesResponseElement(
       heightAtMaturityValue = model.heightAtMaturityValue,
       id = model.id,
       localUsesKnown = model.localUsesKnown,
+      modifiedTime = model.modifiedTime,
       nativeEcosystem = model.nativeEcosystem,
       plantMaterialSourcingMethods = model.plantMaterialSourcingMethods,
       problems = problems?.map { SpeciesProblemElement(it) }?.ifEmpty { null },
@@ -301,8 +306,37 @@ data class SpeciesRequestPayload(
     val successionalGroups: Set<SuccessionalGroup>?,
     val woodDensityLevel: WoodDensityLevel?,
 ) {
-  fun <T : SpeciesId?> toModel(id: T) =
-      SpeciesModel(
+  fun toExisting(id: SpeciesId) =
+      ExistingSpeciesModel(
+          averageWoodDensity = averageWoodDensity,
+          commonName = commonName,
+          conservationCategory = conservationCategory,
+          createdTime = Instant.EPOCH, // Dummy value; ignored on update
+          dbhSource = dbhSource,
+          dbhValue = dbhValue,
+          ecologicalRoleKnown = ecologicalRoleKnown,
+          ecosystemTypes = ecosystemTypes ?: emptySet(),
+          familyName = familyName,
+          growthForms = growthForms ?: emptySet(),
+          heightAtMaturitySource = heightAtMaturitySource,
+          heightAtMaturityValue = heightAtMaturityValue,
+          id = id,
+          initialScientificName = scientificName,
+          localUsesKnown = localUsesKnown,
+          modifiedTime = Instant.EPOCH, // Dummy value; ignored on update
+          nativeEcosystem = nativeEcosystem,
+          rare = rare,
+          organizationId = organizationId,
+          otherFacts = otherFacts,
+          plantMaterialSourcingMethods = plantMaterialSourcingMethods ?: emptySet(),
+          scientificName = scientificName,
+          seedStorageBehavior = seedStorageBehavior,
+          successionalGroups = successionalGroups ?: emptySet(),
+          woodDensityLevel = woodDensityLevel,
+      )
+
+  fun toNew() =
+      NewSpeciesModel(
           averageWoodDensity = averageWoodDensity,
           commonName = commonName,
           conservationCategory = conservationCategory,
@@ -314,8 +348,6 @@ data class SpeciesRequestPayload(
           growthForms = growthForms ?: emptySet(),
           heightAtMaturitySource = heightAtMaturitySource,
           heightAtMaturityValue = heightAtMaturityValue,
-          id = id,
-          initialScientificName = scientificName,
           localUsesKnown = localUsesKnown,
           nativeEcosystem = nativeEcosystem,
           rare = rare,
