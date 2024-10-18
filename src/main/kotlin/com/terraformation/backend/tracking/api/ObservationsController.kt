@@ -15,6 +15,7 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.api.getPlainContentType
+import com.terraformation.backend.api.gpxResponse
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -33,6 +34,7 @@ import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.db.ObservationStore
@@ -57,11 +59,14 @@ import com.terraformation.backend.tracking.model.ReplacementResult
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.ws.rs.BadRequestException
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
@@ -84,6 +89,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @TrackingEndpoint
 class ObservationsController(
+    private val messages: Messages,
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
     private val observationResultsStore: ObservationResultsStore,
@@ -185,6 +191,30 @@ class ObservationsController(
         observationStore.fetchObservationPlotDetails(observationId).map { AssignedPlotPayload(it) }
 
     return ListAssignedPlotsResponsePayload(payloads)
+  }
+
+  @ApiResponse(
+      responseCode = "200",
+      content =
+          [
+              Content(
+                  mediaType = "application/gpx+xml",
+                  schema = Schema(type = "string", format = "binary"))])
+  @GetMapping("/{observationId}/plots", produces = ["application/gpx+xml"])
+  @Operation(summary = "Exports monitoring plots assigned to an observation as a GPX file.")
+  fun exportAssignedPlots(@PathVariable observationId: ObservationId): ResponseEntity<ByteArray> {
+    val observation = observationStore.fetchObservationById(observationId)
+    val observations = observationStore.fetchObservationPlotDetails(observationId)
+    val plantingSite =
+        plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Site)
+    val waypoints = observations.flatMap { it.gpxWaypoints(messages) }
+
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+    val startDate = dateTimeFormatter.format(observation.startDate)
+    val endDate = dateTimeFormatter.format(observation.endDate)
+    val filename = "observation_${plantingSite.name}_$startDate-$endDate.gpx"
+
+    return gpxResponse(filename, waypoints)
   }
 
   @GetMapping("/{observationId}/results")
