@@ -41,6 +41,10 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
 
   protected val checkedTimeString = "2021-08-18T11:33:55Z"
   protected val checkedTime = Instant.parse(checkedTimeString)
+  protected val createdTimeString = "2021-07-15T22:55:12Z"
+  protected val createdTime = Instant.parse(createdTimeString)
+  protected val modifiedTimeString = "2021-07-16T23:56:55Z"
+  protected val modifiedTime = Instant.parse(modifiedTimeString)
 
   protected val clock = TestClock()
 
@@ -98,7 +102,8 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
             commonName = "Common 1",
             rare = false,
             createdBy = user.userId,
-            createdTime = now,
+            createdTime = createdTime,
+            modifiedTime = modifiedTime,
             organizationId = organizationId)
     speciesId2 =
         insertSpecies(
@@ -109,7 +114,8 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
             conservationCategory = ConservationCategory.Endangered,
             seedStorageBehavior = SeedStorageBehavior.Orthodox,
             createdBy = user.userId,
-            createdTime = now,
+            createdTime = createdTime,
+            modifiedTime = modifiedTime,
             organizationId = organizationId)
     insertSpecies(
         scientificName = "Deleted species",
