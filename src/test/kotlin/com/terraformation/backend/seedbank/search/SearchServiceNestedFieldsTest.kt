@@ -909,14 +909,18 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             mapOf(
                 "checkedTime" to checkedTimeString,
                 "commonName" to "Common 1",
+                "createdTime" to createdTimeString,
                 "id" to "$speciesId1",
+                "modifiedTime" to modifiedTimeString,
                 "rare" to "false",
                 "scientificName" to "Kousa Dogwood",
             ),
             mapOf(
                 "commonName" to "Common 2",
                 "conservationCategory" to "EN",
+                "createdTime" to createdTimeString,
                 "id" to "$speciesId2",
+                "modifiedTime" to modifiedTimeString,
                 "rare" to "true",
                 "scientificName" to "Other Dogwood",
                 "seedStorageBehavior" to "Orthodox",
