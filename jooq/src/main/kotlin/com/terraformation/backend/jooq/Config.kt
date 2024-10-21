@@ -80,8 +80,8 @@ val ENUM_TABLES =
                 EnumTable("facility_types", listOf("facilities\\.type_id")),
                 EnumTable("global_roles", isLocalizable = false),
                 EnumTable("growth_forms"),
-                EnumTable("managed_location_types", isLocalizable = false),
                 EnumTable("land_use_model_types"),
+                EnumTable("managed_location_types", isLocalizable = false),
                 EnumTable(
                     "notification_criticalities",
                     listOf(".*\\.notification_criticality_id"),

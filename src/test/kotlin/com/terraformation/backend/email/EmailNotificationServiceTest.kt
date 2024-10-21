@@ -28,6 +28,7 @@ import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.NotificationJobFinishedEvent
@@ -193,7 +194,18 @@ internal class EmailNotificationServiceTest {
 
   private val organization =
       OrganizationModel(
-          OrganizationId(99), "Test Organization", createdTime = Instant.EPOCH, totalUsers = 1)
+          OrganizationId(99),
+          "Test Organization",
+          createdTime = Instant.EPOCH,
+          internalTags = setOf(InternalTagIds.Accelerator),
+          totalUsers = 1)
+  private val nonAcceleratorOrganization =
+      OrganizationModel(
+          OrganizationId(100),
+          "Test Organization",
+          createdTime = Instant.EPOCH,
+          internalTags = emptySet(),
+          totalUsers = 1)
   private val facility: FacilityModel =
       FacilityModel(
           connectionState = FacilityConnectionState.Configured,
@@ -335,6 +347,8 @@ internal class EmailNotificationServiceTest {
   private val sectionOwnerEmail = "owner@terraformation.com"
   private val sectionOwnerUser = userForEmail(sectionOwnerEmail)
 
+  private val supportContactEmail = "support@terraformation.com"
+
   private val mimeMessageSlot = slot<MimeMessage>()
   private val sentMessages = mutableMapOf<String, MutableList<MimeMessage>>()
 
@@ -344,6 +358,7 @@ internal class EmailNotificationServiceTest {
 
     every { clock.instant() } returns Instant.EPOCH
     every { config.email } returns emailConfig
+    every { config.support.email } returns supportContactEmail
     every { config.webAppUrl } returns URI("https://test.terraware.io")
     every { emailConfig.enabled } returns true
     every { emailConfig.senderAddress } returns "testsender@terraware.io"
@@ -369,6 +384,8 @@ internal class EmailNotificationServiceTest {
     every { documentStore.fetchOneById(document.id) } returns document
     every { facilityStore.fetchOneById(facility.id) } returns facility
     every { organizationStore.fetchOneById(organization.id) } returns organization
+    every { organizationStore.fetchOneById(nonAcceleratorOrganization.id) } returns
+        nonAcceleratorOrganization
     every { parentStore.getFacilityId(accessionId) } returns facility.id
     every { parentStore.getFacilityName(accessionId) } returns facility.name
     every { parentStore.getOrganizationId(accessionId) } returns organization.id
@@ -668,7 +685,7 @@ internal class EmailNotificationServiceTest {
   }
 
   @Test
-  fun observationNotScheduledNotificationToTerraformationContact() {
+  fun `observationNotScheduledNotification with TFContact`() {
     every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
 
     val event = ObservationNotScheduledNotificationEvent(PlantingSiteId(1))
@@ -684,9 +701,7 @@ internal class EmailNotificationServiceTest {
   }
 
   @Test
-  fun observationNotScheduledNotificationToTerraformationSupport() {
-    every { config.support.email } returns "support@terraformation.com"
-
+  fun `observationNotScheduledNotification without TFContact`() {
     val event = ObservationNotScheduledNotificationEvent(PlantingSiteId(1))
 
     service.on(event)
@@ -699,18 +714,19 @@ internal class EmailNotificationServiceTest {
     assertSubjectContains("My Site", message)
     assertBodyContains("but the organization has not scheduled one", message = message)
 
-    assertRecipientsEqual(setOf("support@terraformation.com"))
+    assertRecipientsEqual(setOf(supportContactEmail))
   }
 
   @Test
-  fun noObservationNotScheduledNotificationWhenSupportNotConfigured() {
+  fun `observationNotScheduledNotification without TFContact for non-accelerator organization`() {
     every { config.support.email } returns null
 
     val event = ObservationNotScheduledNotificationEvent(PlantingSiteId(1))
+    every { parentStore.getOrganizationId(PlantingSiteId(1)) } returns nonAcceleratorOrganization.id
 
     service.on(event)
 
-    assert(sentMessages.isEmpty())
+    assertNoMessageSent()
   }
 
   @Test
@@ -734,8 +750,6 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `observationMonitoringPlotReplaced without Terraformation contact`() {
-    every { config.support.email } returns "support@terraformation.com"
-
     val event =
         ObservationPlotReplacedEvent(
             ReplacementDuration.LongTerm, "Just because", upcomingObservation, MonitoringPlotId(1))
@@ -749,7 +763,23 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("justification given is: Just because", message = message)
     assertBodyContains("duration for the change is: Long-Term/Permanent", message = message)
 
-    assertRecipientsEqual(setOf("support@terraformation.com"))
+    assertRecipientsEqual(setOf(supportContactEmail))
+  }
+
+  @Test
+  fun `observationMonitoringPlotReplaced without Terraformation contact for non-accelerator organization`() {
+    every { config.support.email } returns null
+
+    val event =
+        ObservationPlotReplacedEvent(
+            ReplacementDuration.LongTerm, "Just because", upcomingObservation, MonitoringPlotId(1))
+
+    every { parentStore.getOrganizationId(MonitoringPlotId(1)) } returns
+        nonAcceleratorOrganization.id
+
+    service.on(event)
+
+    assertNoMessageSent()
   }
 
   @Test
@@ -776,8 +806,6 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `plantingSeasonScheduled without Terraformation contact`() {
-    every { config.support.email } returns "support@terraformation.com"
-
     val event =
         PlantingSeasonScheduledEvent(
             plantingSite.id,
@@ -787,7 +815,7 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
-    assertEquals(emptyMap<Any, Any>(), sentMessages, "Should not have sent any messages")
+    assertNoMessageSent()
   }
 
   @Test
@@ -817,8 +845,6 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `plantingSeasonRescheduled without Terraformation contact`() {
-    every { config.support.email } returns "support@terraformation.com"
-
     val event =
         PlantingSeasonRescheduledEvent(
             plantingSite.id,
@@ -830,7 +856,7 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
-    assertEquals(emptyMap<Any, Any>(), sentMessages, "Should not have sent any messages")
+    assertNoMessageSent()
   }
 
   @Test
@@ -874,7 +900,7 @@ internal class EmailNotificationServiceTest {
   }
 
   @Test
-  fun plantingSeasonNotScheduledSupport() {
+  fun `PlantingSeasonNotScheduledSupport with Terraformation contact`() {
     every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
 
     val event = PlantingSeasonNotScheduledSupportNotificationEvent(plantingSite.id, 1)
@@ -887,6 +913,39 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("My Site")
     assertBodyContains("missing a planting season")
     assertRecipientsEqual(setOf(tfContactEmail))
+    assertIsEventListener<PlantingSeasonNotScheduledSupportNotificationEvent>(service)
+  }
+
+  @Test
+  fun `PlantingSeasonNotScheduledSupport without Terraformation contact`() {
+    every { userStore.getTerraformationContactUser(any()) } returns null
+
+    val event = PlantingSeasonNotScheduledSupportNotificationEvent(plantingSite.id, 1)
+
+    service.on(event)
+
+    assertSentNoContactNotification()
+
+    val message = sentMessageWithSubject("has not scheduled a planting season for planting site")
+    assertSubjectContains("Test Organization", message = message)
+    assertSubjectContains("My Site", message = message)
+    assertSubjectContains("not scheduled", message = message)
+    assertBodyContains("My Site", message = message)
+    assertBodyContains("missing a planting season", message = message)
+    assertRecipientsEqual(setOf(supportContactEmail))
+    assertIsEventListener<PlantingSeasonNotScheduledSupportNotificationEvent>(service)
+  }
+
+  @Test
+  fun `PlantingSeasonNotScheduledSupport without Terraformation contact non-accelerator org`() {
+    val event = PlantingSeasonNotScheduledSupportNotificationEvent(plantingSite.id, 1)
+
+    every { plantingSiteStore.fetchSiteById(plantingSite.id, any()) } returns
+        plantingSite.copy(organizationId = nonAcceleratorOrganization.id)
+
+    service.on(event)
+
+    assertNoMessageSent()
     assertIsEventListener<PlantingSeasonNotScheduledSupportNotificationEvent>(service)
   }
 
@@ -910,8 +969,6 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `participantProjectAdded without Terraformation contact`() {
-    every { config.support.email } returns "support@terraformation.com"
-
     val event = ParticipantProjectAddedEvent(user.userId, participant.id, project.id)
 
     service.on(event)
@@ -925,7 +982,19 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(project.name, message = message)
     assertBodyContains("added to", message = message)
 
-    assertRecipientsEqual(setOf("support@terraformation.com"))
+    assertRecipientsEqual(setOf(supportContactEmail))
+  }
+
+  @Test
+  fun `participantProjectAdded without Terraformation contact for non-accelerator organization`() {
+    every { config.support.email } returns null
+
+    val event = ParticipantProjectAddedEvent(user.userId, participant.id, project.id)
+    every { parentStore.getOrganizationId(project.id) } returns nonAcceleratorOrganization.id
+
+    service.on(event)
+
+    assertNoMessageSent()
   }
 
   @Test
@@ -948,8 +1017,6 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `participantProjectRemoved without Terraformation contact`() {
-    every { config.support.email } returns "support@terraformation.com"
-
     val event = ParticipantProjectRemovedEvent(participant.id, project.id, user.userId)
 
     service.on(event)
@@ -963,13 +1030,11 @@ internal class EmailNotificationServiceTest {
     assertBodyContains(project.name, message = message)
     assertBodyContains("removed from", message = message)
 
-    assertRecipientsEqual(setOf("support@terraformation.com"))
+    assertRecipientsEqual(setOf(supportContactEmail))
   }
 
   @Test
   fun `participantProjectSpeciesAddedToProject without Terraformation contact`() {
-    every { config.support.email } returns "support@terraformation.com"
-
     val event =
         ParticipantProjectSpeciesAddedToProjectNotificationDueEvent(
             DeliverableId(1), project.id, species.id)
@@ -1008,8 +1073,6 @@ internal class EmailNotificationServiceTest {
 
   @Test
   fun `participantProjectSpeciesEditedToProject without Terraformation contact`() {
-    every { config.support.email } returns "support@terraformation.com"
-
     val event =
         ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent(
             DeliverableId(1), project.id, species.id)
@@ -1168,7 +1231,7 @@ internal class EmailNotificationServiceTest {
   }
 
   @Test
-  fun plantingSiteMapEdited() {
+  fun `plantingSiteMapEdited with Terraformation Contact`() {
     every { userStore.getTerraformationContactUser(any()) } returns tfContactUser
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser)
 
@@ -1191,11 +1254,84 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
-    assertSubjectContains(organization.name)
-    assertSubjectContains(siteName)
-    assertBodyContains("13.2 hectares have been removed from the")
+    val message = sentMessageWithSubject("has had a change to planting site")
+    assertSubjectContains(organization.name, message = message)
+    assertSubjectContains(siteName, message = message)
+    assertBodyContains("13.2 hectares have been removed from the", message = message)
 
     assertRecipientsEqual(setOf(tfContactEmail))
+
+    assertIsEventListener<PlantingSiteMapEditedEvent>(service)
+  }
+
+  @Test
+  fun `plantingSiteMapEdited without Terraformation Contact`() {
+    every { userStore.getTerraformationContactUser(any()) } returns null
+    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser)
+
+    val siteName = "Test Site"
+    val existingModel =
+        PlantingSiteBuilder.existingSite {
+          name = siteName
+          organizationId = organization.id
+        }
+
+    val event =
+        PlantingSiteMapEditedEvent(
+            existingModel,
+            PlantingSiteEdit(
+                areaHaDifference = BigDecimal("-13.2"),
+                desiredModel = PlantingSiteBuilder.newSite { name = siteName },
+                existingModel = existingModel,
+                plantingZoneEdits = emptyList()),
+            ReplacementResult(emptySet(), emptySet()))
+
+    service.on(event)
+
+    assertSentNoContactNotification()
+
+    val message = sentMessageWithSubject("has had a change to planting site")
+    assertSubjectContains(organization.name, message = message)
+    assertSubjectContains(siteName, message = message)
+    assertBodyContains("13.2 hectares have been removed from the", message = message)
+
+    assertRecipientsEqual(setOf(supportContactEmail))
+
+    assertIsEventListener<PlantingSiteMapEditedEvent>(service)
+  }
+
+  @Test
+  fun `plantingSiteMapEdited without Terraformation Contact for non-accelerator org`() {
+    every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser)
+
+    val siteName = "Test Site"
+    val existingModel =
+        PlantingSiteBuilder.existingSite {
+          name = siteName
+          organizationId = organization.id
+        }
+
+    every { parentStore.getOrganizationId(existingModel.id) } returns nonAcceleratorOrganization.id
+    val event =
+        PlantingSiteMapEditedEvent(
+            existingModel,
+            PlantingSiteEdit(
+                areaHaDifference = BigDecimal("-13.2"),
+                desiredModel = PlantingSiteBuilder.newSite { name = siteName },
+                existingModel = existingModel,
+                plantingZoneEdits = emptyList()),
+            ReplacementResult(emptySet(), emptySet()))
+
+    service.on(event)
+
+    assertSentNoContactNotification()
+
+    val message = sentMessageWithSubject("has had a change to planting site")
+    assertSubjectContains(organization.name, message = message)
+    assertSubjectContains(siteName, message = message)
+    assertBodyContains("13.2 hectares have been removed from the", message = message)
+
+    assertRecipientsEqual(setOf(supportContactEmail))
 
     assertIsEventListener<PlantingSiteMapEditedEvent>(service)
   }
@@ -1209,7 +1345,7 @@ internal class EmailNotificationServiceTest {
         listOf(userForEmail("2@test.com"))
     service.on(AccessionDryingEndEvent(accessionNumber, accessionId))
 
-    verify(exactly = 0) { sender.send(any()) }
+    assertNoMessageSent()
 
     service.on(NotificationJobSucceededEvent())
 
@@ -1345,6 +1481,25 @@ internal class EmailNotificationServiceTest {
       // This isn't actually checking for equality, just logging the expected and actual text in a
       // tool-friendly form.
       assertEquals(needle, haystack, message)
+    }
+  }
+
+  private fun assertNoMessageSent() {
+    if (sentMessages.isEmpty()) {
+      return
+    } else {
+      fail<Any> {
+        val header = "Should not have sent any message. But received the following messages:\n"
+        header +
+            sentMessages.values.flatten().joinToString("\n=============\n") {
+              listOf(
+                      "MessageID: ${it.messageID}",
+                      "Recipient: ${it.allRecipients.joinToString(", ")}",
+                      "Subject: ${it.subject}",
+                  )
+                  .joinToString("\n")
+            }
+      }
     }
   }
 
