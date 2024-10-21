@@ -20,8 +20,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
 
 class VariableImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -51,15 +49,8 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class UploadManifest {
-    private var oldAuthentication: Authentication? = null
-
     private val header =
         "Name,ID,Description,Data Type,List?,Parent,Options,Minimum value,Maximum value,Decimal places,Table Style,Header?,Notes,Deliverable ID,Deliverable Question,Dependency Variable ID,Dependency Condition,Dependency Value,Internal Only,Required"
-
-    @AfterEach
-    fun tearDown() {
-      SecurityContextHolder.getContext().authentication = oldAuthentication
-    }
 
     @Test
     fun `detects duplicate stable IDs`() {
