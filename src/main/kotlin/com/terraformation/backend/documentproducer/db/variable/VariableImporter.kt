@@ -366,6 +366,22 @@ class VariableImporter(
                 .execute()
           }
         }
+
+        // If there's no deliverable ID on this sheet, and this variable replaces an existing one,
+        // then the variable's deliverable(s) might have been specified on the deliverables sheet.
+        // The new variable should replace the old one in deliverables' variable lists.
+        //
+        // TODO: Remove the deliverableId null check here when we stop supporting deliverable IDs
+        //       on the all-variables sheet, but keep the replacesVariableId check and the update.
+        if (csvVariable.deliverableId == null && csvVariable.replacesVariableId != null) {
+          with(DELIVERABLE_VARIABLES) {
+            dslContext
+                .update(DELIVERABLE_VARIABLES)
+                .set(VARIABLE_ID, variableId)
+                .where(VARIABLE_ID.eq(csvVariable.replacesVariableId))
+                .execute()
+          }
+        }
       }
     }
 
@@ -416,15 +432,16 @@ class VariableImporter(
         csvVariable: AllVariableCsvVariable,
         variable: Variable
     ): Boolean {
-      val csvPositions =
-          if (csvVariable.deliverableId != null) {
-            mapOf(csvVariable.deliverableId to csvVariable.deliverablePosition)
-          } else {
-            emptyMap()
-          }
+      // If the deliverable ID is specified here, make sure the position matches the existing one;
+      // otherwise, positions don't affect reusability since they're populated by importing the
+      // deliverables sheet.
+      val positionsMatch =
+          csvVariable.deliverableId == null ||
+              variable.deliverablePositions[csvVariable.deliverableId] ==
+                  csvVariable.deliverablePosition
 
-      return csvVariable.description == variable.description &&
-          csvPositions == variable.deliverablePositions &&
+      return positionsMatch &&
+          csvVariable.description == variable.description &&
           csvVariable.dependencyCondition == variable.dependencyCondition &&
           csvVariable.dependencyValue == variable.dependencyValue &&
           csvVariable.dependencyVariableStableId == variable.dependencyVariableStableId &&

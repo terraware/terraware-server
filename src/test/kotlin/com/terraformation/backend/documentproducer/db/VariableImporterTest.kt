@@ -968,6 +968,85 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `updates deliverables to use new versions of replaced variables`() {
+      every { user.canReadAllDeliverables() } returns true
+
+      insertModule()
+      val deliverableId1 = insertDeliverable()
+      val deliverableId2 = insertDeliverable()
+      val variableId1111 = insertNumberVariable(stableId = "1111")
+      insertDeliverableVariable(deliverableId = deliverableId1, position = 0)
+      insertNumberVariable(stableId = "1112")
+      insertDeliverableVariable(deliverableId = deliverableId2, position = 0)
+      insertNumberVariable(stableId = "1113")
+      insertDeliverableVariable(deliverableId = deliverableId1, position = 1)
+
+      val variables = variablesDao.findAll().sortedBy { it.id!!.value }
+
+      val csv =
+          header +
+              "\nUpdated Variable 1,1111,,Number,,,,,,,,,,,,,,,," +
+              "\nVariable 2,1112,,Number,,,,,,,,,,,,,,,," +
+              "\nVariable 3,1113,,Number,,,,,,,,,,,,,,,,"
+
+      importer.import(sizedInputStream(csv))
+
+      val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+
+      assertEquals(
+          listOf(
+              VariablesRow(
+                  id = null,
+                  internalOnly = false,
+                  isList = false,
+                  isRequired = false,
+                  name = "Variable 1",
+                  stableId = "1111",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  id = null,
+                  internalOnly = false,
+                  isList = false,
+                  isRequired = false,
+                  name = "Variable 2",
+                  stableId = "1112",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  id = null,
+                  internalOnly = false,
+                  isList = false,
+                  isRequired = false,
+                  name = "Variable 3",
+                  stableId = "1113",
+                  variableTypeId = VariableType.Number,
+              ),
+              VariablesRow(
+                  id = null,
+                  internalOnly = false,
+                  isList = false,
+                  isRequired = false,
+                  name = "Updated Variable 1",
+                  replacesVariableId = variableId1111,
+                  stableId = "1111",
+                  variableTypeId = VariableType.Number,
+              ),
+          ),
+          updatedVariables.map { it.copy(id = null) },
+          "New variable is created")
+
+      assertEquals(
+          setOf(
+              DeliverableVariablesRow(deliverableId1, updatedVariables[3].id, 0),
+              DeliverableVariablesRow(deliverableId2, variables[1].id, 0),
+              DeliverableVariablesRow(deliverableId1, variables[2].id, 1),
+          ),
+          deliverableVariablesDao.findAll().toSet(),
+          "Deliverable variables are updated as expected")
+    }
+
+    @Test
     fun `returns an error if a deliverable ID is referenced that does not exist`() {
       every { user.canReadAllDeliverables() } returns true
 
