@@ -1485,10 +1485,8 @@ internal class EmailNotificationServiceTest {
   }
 
   private fun assertNoMessageSent() {
-    if (sentMessages.isEmpty()) {
-      return
-    } else {
-      fail<Any> {
+    if (sentMessages.isNotEmpty()) {
+      fail<String> {
         val header = "Should not have sent any message. But received the following messages:\n"
         header +
             sentMessages.values.flatten().joinToString("\n=============\n") {
