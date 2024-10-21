@@ -29,7 +29,7 @@ class VariableValueStatusUpdaterTest : DatabaseTest(), RunsAsUser {
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
 
   private val variableWorkflowStore: VariableWorkflowStore by lazy {
-    VariableWorkflowStore(clock, dslContext, eventPublisher, variablesDao)
+    VariableWorkflowStore(clock, dslContext, eventPublisher)
   }
 
   private val updater: VariableValueStatusUpdater by lazy {

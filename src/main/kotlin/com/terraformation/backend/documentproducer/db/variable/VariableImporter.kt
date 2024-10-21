@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.db.variable
 
 import com.terraformation.backend.accelerator.db.DeliverableStore
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_VARIABLES
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
@@ -352,6 +353,19 @@ class VariableImporter(
 
       if (isNewVariable) {
         importTypeSpecificVariable(csvVariable)
+
+        // Temporary while we transition from keeping deliverable IDs in the variables sheet to
+        // keeping variable IDs in the deliverables sheet.
+        if (csvVariable.deliverableId != null) {
+          with(DELIVERABLE_VARIABLES) {
+            dslContext
+                .insertInto(DELIVERABLE_VARIABLES)
+                .set(VARIABLE_ID, variableId)
+                .set(DELIVERABLE_ID, csvVariable.deliverableId)
+                .set(POSITION, csvVariable.deliverablePosition)
+                .execute()
+          }
+        }
       }
     }
 
@@ -378,7 +392,7 @@ class VariableImporter(
 
     /**
      * Returns true if a CSV variable representing a table has the same columns as an existing table
-     * variable. Manifest-specific settings on the columns (name, etc.) are ignored.
+     * variable.
      */
     private fun hasSameColumns(csvVariable: AllVariableCsvVariable, table: TableVariable): Boolean {
       val csvColumns = csvVariablesByParentPath[csvVariable.variablePath] ?: emptyList()
@@ -391,12 +405,12 @@ class VariableImporter(
     }
 
     /**
-     * Returns true if a CSV variable has the same non-manifest-specific settings as an existing
-     * variable, and thus the existing variable can be reused in the new manifest.
+     * Returns true if a CSV variable has the same settings as an existing variable, and thus the
+     * existing variable is still usable.
      *
-     * Sections and tables are counted as reusable if they have the same children as the existing
-     * variable and all the children are reusable. That is, non-reusability propagates from children
-     * up to parents here. Propagation in the other direction happens elsewhere.
+     * Tables are counted as reusable if they have the same children as the existing variable and
+     * all the children are reusable. That is, non-reusability propagates from children up to
+     * parents here. Propagation in the other direction happens elsewhere.
      */
     private fun canReuseExistingVariable(
         csvVariable: AllVariableCsvVariable,

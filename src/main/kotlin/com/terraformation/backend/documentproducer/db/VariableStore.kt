@@ -2,6 +2,7 @@ package com.terraformation.backend.documentproducer.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.DeliverableId
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_VARIABLES
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
@@ -139,7 +140,9 @@ class VariableStore(
       dslContext
           .select(DSL.max(ID))
           .from(VARIABLES)
-          .where(DELIVERABLE_ID.eq(deliverableId))
+          .join(DELIVERABLE_VARIABLES)
+          .on(ID.eq(DELIVERABLE_VARIABLES.VARIABLE_ID))
+          .where(DELIVERABLE_VARIABLES.DELIVERABLE_ID.eq(deliverableId))
           .and(internalOnlyCondition)
           .andNotExists(
               DSL.selectOne()
@@ -400,8 +403,13 @@ class VariableStore(
         val recommendedBy = fetchRecommendedBy(variableId)
 
         val deliverablePositions =
-            variablesRow.deliverableId?.let { mapOf(it to variablesRow.deliverablePosition!!) }
-                ?: emptyMap()
+            with(DELIVERABLE_VARIABLES) {
+              dslContext
+                  .select(DELIVERABLE_ID, POSITION)
+                  .from(DELIVERABLE_VARIABLES)
+                  .where(VARIABLE_ID.eq(variableId))
+                  .fetchMap(DELIVERABLE_ID.asNonNullable(), POSITION.asNonNullable())
+            }
 
         val base =
             BaseVariableProperties(

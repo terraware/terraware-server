@@ -508,6 +508,8 @@ COMMENT ON TABLE accelerator.deliverable_project_due_dates IS 'Deliverable due d
 
 COMMENT ON TABLE accelerator.deliverable_types IS '(Enum) Types of deliverables for an accelerator module.';
 
+COMMENT ON TABLE accelerator.deliverable_variables IS 'Which variables are associated with which deliverables. Note that this includes variables that have been replaced by newer versions, and the newer versions might be associated with different deliverables.';
+
 COMMENT ON TABLE accelerator.deliverables IS 'Information about expected deliverables. This describes what we request from users; the data we get back from users in response is recorded in `project_deliverables` and its child tables.';
 COMMENT ON COLUMN accelerator.deliverables.position IS 'Which position this deliverable appears in the module''s list of deliverables, starting with 1.';
 COMMENT ON COLUMN accelerator.deliverables.is_sensitive IS 'If true, the data users provide in response to this deliverable will be visible to a smaller subset of accelerator admins. Secure documents are saved to a different document store than non-secure ones.';
