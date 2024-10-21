@@ -414,17 +414,35 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `allows non-admin users to reset submission status to Not Submitted`() {
+      insertModule()
+      val projectId = insertProject()
+      val deliverableId = insertDeliverable()
+      insertSubmission(submissionStatus = SubmissionStatus.InReview)
+
+      every { user.canCreateSubmission(projectId) } returns true
+      every { user.canUpdateSubmissionStatus(deliverableId, projectId) } returns false
+
+      store.updateSubmissionStatus(
+          deliverableId, projectId, SubmissionStatus.NotSubmitted, null, null)
+
+      assertEquals(
+          SubmissionStatus.NotSubmitted, submissionsDao.findAll().first().submissionStatusId)
+    }
+
+    @Test
     fun `throws exception if no permission to update submission status`() {
       insertModule()
       val projectId = insertProject()
       val deliverableId = insertDeliverable()
       insertSubmission()
 
+      every { user.canCreateSubmission(projectId) } returns true
       every { user.canUpdateSubmissionStatus(deliverableId, projectId) } returns false
 
       assertThrows<AccessDeniedException> {
         store.updateSubmissionStatus(
-            deliverableId, projectId, SubmissionStatus.NotSubmitted, null, null)
+            deliverableId, projectId, SubmissionStatus.Rejected, null, null)
       }
     }
   }

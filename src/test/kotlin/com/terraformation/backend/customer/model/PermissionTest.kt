@@ -2053,6 +2053,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         ProjectId(4000),
         createParticipantProjectSpecies = true,
+        createSubmission = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
