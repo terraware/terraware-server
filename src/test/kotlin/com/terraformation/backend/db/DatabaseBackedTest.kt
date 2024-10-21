@@ -2572,7 +2572,7 @@ abstract class DatabaseBackedTest {
 
   protected fun insertNumberVariable(
       id: VariableId? = null,
-      decimalPlaces: Int = 0,
+      decimalPlaces: Int? = null,
       deliverableId: DeliverableId? = null,
       minValue: BigDecimal? = null,
       maxValue: BigDecimal? = null,
