@@ -6,11 +6,11 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.VariableWorkflowHistoryId
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.db.VariableWorkflowStore
-import com.terraformation.backend.documentproducer.model.ExistingValue
 import com.terraformation.backend.documentproducer.model.ExistingVariableWorkflowHistoryModel
 import io.swagger.v3.oas.annotations.Operation
 import java.time.Instant
@@ -36,13 +36,8 @@ class VariableWorkflowController(
   ): GetVariableWorkflowHistoryResponsePayload {
     val historyModels = variableWorkflowStore.fetchProjectVariableHistory(projectId, variableId)
 
-    val historyPayload =
-        historyModels.map {
-          val value = variableValueStore.fetchOneById(it.maxVariableValueId)
-          VariableWorkflowHistoryElement(it, value)
-        }
-
-    return GetVariableWorkflowHistoryResponsePayload(historyPayload)
+    return GetVariableWorkflowHistoryResponsePayload(
+        historyModels.map { VariableWorkflowHistoryElement(it) })
   }
 
   @Operation(summary = "Update the workflow details for a variable in a project.")
@@ -65,21 +60,20 @@ data class VariableWorkflowHistoryElement(
     val feedback: String?,
     val id: VariableWorkflowHistoryId,
     val internalComment: String?,
-    val variableValue: ExistingValuePayload,
+    val maxVariableValueId: VariableValueId,
     val projectId: ProjectId,
     val status: VariableWorkflowStatus,
     val variableId: VariableId,
 ) {
   constructor(
-      model: ExistingVariableWorkflowHistoryModel,
-      value: ExistingValue
+      model: ExistingVariableWorkflowHistoryModel
   ) : this(
       model.createdBy,
       model.createdTime,
       model.feedback,
       model.id,
       model.internalComment,
-      ExistingValuePayload.of(value),
+      model.maxVariableValueId,
       model.projectId,
       model.status,
       model.variableId,

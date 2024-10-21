@@ -160,9 +160,7 @@ class ValuesController(
           operationPayload.toOperationModel(projectId, base)
         }
 
-    variableValueService.validate(operations)
-
-    variableValueStore.updateValues(operations, payload.updateStatuses ?: true)
+    variableValueService.updateValues(operations, payload.updateStatuses ?: true)
 
     return SimpleSuccessResponsePayload()
   }
