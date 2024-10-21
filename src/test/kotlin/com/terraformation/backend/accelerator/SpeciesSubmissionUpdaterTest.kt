@@ -37,9 +37,9 @@ class SpeciesSubmissionUpdaterTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
 
+    every { user.canCreateSubmission(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canReadSubmission(any()) } returns true
-    every { user.canUpdateSubmissionStatus(any(), any()) } returns true
   }
 
   @Nested
