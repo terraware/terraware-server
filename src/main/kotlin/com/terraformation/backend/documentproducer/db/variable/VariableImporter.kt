@@ -354,26 +354,9 @@ class VariableImporter(
       if (isNewVariable) {
         importTypeSpecificVariable(csvVariable)
 
-        // Temporary while we transition from keeping deliverable IDs in the variables sheet to
-        // keeping variable IDs in the deliverables sheet.
-        if (csvVariable.deliverableId != null) {
-          with(DELIVERABLE_VARIABLES) {
-            dslContext
-                .insertInto(DELIVERABLE_VARIABLES)
-                .set(VARIABLE_ID, variableId)
-                .set(DELIVERABLE_ID, csvVariable.deliverableId)
-                .set(POSITION, csvVariable.deliverablePosition)
-                .execute()
-          }
-        }
-
-        // If there's no deliverable ID on this sheet, and this variable replaces an existing one,
-        // then the variable's deliverable(s) might have been specified on the deliverables sheet.
-        // The new variable should replace the old one in deliverables' variable lists.
-        //
-        // TODO: Remove the deliverableId null check here when we stop supporting deliverable IDs
-        //       on the all-variables sheet, but keep the replacesVariableId check and the update.
-        if (csvVariable.deliverableId == null && csvVariable.replacesVariableId != null) {
+        // If this variable replaces an existing one and the existing one is associated with
+        // deliverables, the deliverables should be updated to use this new variable instead.
+        if (csvVariable.replacesVariableId != null) {
           with(DELIVERABLE_VARIABLES) {
             dslContext
                 .update(DELIVERABLE_VARIABLES)
@@ -432,16 +415,7 @@ class VariableImporter(
         csvVariable: AllVariableCsvVariable,
         variable: Variable
     ): Boolean {
-      // If the deliverable ID is specified here, make sure the position matches the existing one;
-      // otherwise, positions don't affect reusability since they're populated by importing the
-      // deliverables sheet.
-      val positionsMatch =
-          csvVariable.deliverableId == null ||
-              variable.deliverablePositions[csvVariable.deliverableId] ==
-                  csvVariable.deliverablePosition
-
-      return positionsMatch &&
-          csvVariable.description == variable.description &&
+      return csvVariable.description == variable.description &&
           csvVariable.dependencyCondition == variable.dependencyCondition &&
           csvVariable.dependencyValue == variable.dependencyValue &&
           csvVariable.dependencyVariableStableId == variable.dependencyVariableStableId &&
