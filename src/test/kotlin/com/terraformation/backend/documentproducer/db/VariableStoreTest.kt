@@ -86,7 +86,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       replacesVariableId = variableId2,
                       stableId = stableId,
                   ),
-              decimalPlaces = 0,
+              decimalPlaces = null,
               minValue = null,
               maxValue = null)
 
@@ -260,7 +260,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                           position = 0,
                           stableId = "2",
                           replacesVariableId = variableId2),
-                  decimalPlaces = 0,
+                  decimalPlaces = null,
                   minValue = null,
                   maxValue = null),
               NumberVariable(
@@ -275,7 +275,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                           position = 0,
                           stableId = "1",
                       ),
-                  decimalPlaces = 0,
+                  decimalPlaces = null,
                   minValue = null,
                   maxValue = null))
 
@@ -390,7 +390,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       position = 0,
                       stableId = "$stableId-1",
                   ),
-              decimalPlaces = 0,
+              decimalPlaces = null,
               minValue = null,
               maxValue = null)
       val expectedInternalOnlyVariable =
@@ -406,7 +406,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                       position = 0,
                       stableId = "$stableId-2",
                   ),
-              decimalPlaces = 0,
+              decimalPlaces = null,
               minValue = null,
               maxValue = null)
 
@@ -562,7 +562,7 @@ class VariableStoreTest : DatabaseTest(), RunsAsUser {
                           name = "Number Variable",
                           position = 0,
                           stableId = "1"),
-                  decimalPlaces = 0,
+                  decimalPlaces = null,
                   minValue = null,
                   maxValue = BigDecimal(10)))
 

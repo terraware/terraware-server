@@ -137,8 +137,7 @@ class VariablesControllerTest : ControllerIntegrationTest() {
                         "position": 0,
                         "internalOnly": false,
                         "isRequired": false,
-                        "isList": false,
-                        "decimalPlaces": 0
+                        "isList": false
                     }
                   ],
                   "status": "ok"
