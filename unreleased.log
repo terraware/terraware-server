@@ -1,3 +1,4 @@
+cc1c4d0bc76 Remove unnecessary authentication cleanup (#2516)
 206d8a080ed SW-6131 Move deliverable positions to new table (#2508)
 562c07f1bea SW-6131 Deliverable positions in variable model (#2507)
 85eee9d52ed Update database dependencies (#2515)
