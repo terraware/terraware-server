@@ -22,6 +22,7 @@ import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
 import com.terraformation.backend.customer.event.UserAddedToTerrawareEvent
 import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
@@ -760,7 +761,7 @@ class EmailNotificationService(
     val user = userStore.getTerraformationContactUser(organization.id)
     if (user != null) {
       emailService.sendUserNotification(user, model, false)
-    } else if (fallBackToSupport) {
+    } else if (fallBackToSupport && InternalTagIds.Accelerator in organization.internalTags) {
       emailService.sendSupportNotification(model)
       emailService.sendSupportNotification(
           MissingContact(config, organization.id, organization.name))
