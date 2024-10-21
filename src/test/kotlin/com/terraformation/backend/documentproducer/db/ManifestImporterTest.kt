@@ -17,14 +17,11 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContextHolder
 
 class ManifestImporterTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -69,19 +66,12 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class UploadManifest {
-    private var oldAuthentication: Authentication? = null
-
     private val header =
         "Name,ID,Description,Recommended variables,Parent,Non-numbered section?,Default Text"
 
     @BeforeEach
     fun setUp() {
       every { user.canCreateVariableManifest() } returns true
-    }
-
-    @AfterEach
-    fun tearDown() {
-      SecurityContextHolder.getContext().authentication = oldAuthentication
     }
 
     @Test
