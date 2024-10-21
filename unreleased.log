@@ -1,3 +1,4 @@
+704f2393e9c SW-6176 Fix adding species to approved species list (#2520)
 8e0fa8c4719 SW-6172 Added accelerator tag checking before sending support emails (#2519)
 7076ad0944a SW-6131 Associate variables from deliverables sheet (#2518)
 f274bce3c9f SW-5925 Optional variable decimal places in tests (#2517)
