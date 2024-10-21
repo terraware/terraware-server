@@ -1,3 +1,7 @@
+562c07f1bea SW-6131 Deliverable positions in variable model (#2507)
+85eee9d52ed Update database dependencies (#2515)
+880ed0a1099 Update dependency org.apache.tika:tika-core to v3 (#2514)
+3aacbd03a67 Update amazoncorretto Docker tag to v21.0.5 (#2513)
 d1a787ef865 SW-6171 Add timestamps to species search table (#2512)
 f247a4ae607 SW-6170 Add org-wide nursery summary stats (#2510)
 de8d2ff2b90 SW-6171 Include timestamps in species data (#2509)
