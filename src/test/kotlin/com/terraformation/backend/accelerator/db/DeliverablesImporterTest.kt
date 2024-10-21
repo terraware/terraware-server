@@ -82,6 +82,35 @@ class DeliverablesImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `automatically includes column variables if table is associated with deliverable`() {
+      val moduleId = insertModule()
+      val deliverableId = getUnusedDeliverableId()
+      val tableStableId = "1-$stableIdSuffix"
+      val columnStableId1 = "2-$stableIdSuffix"
+      val columnStableId2 = "3-$stableIdSuffix"
+      val tableVariableId = insertTableVariable(stableId = tableStableId)
+      val columnVariableId1 = insertTextVariable(stableId = columnStableId1)
+      val columnVariableId2 = insertTextVariable(stableId = columnStableId2)
+      insertTableColumn(tableVariableId, columnVariableId1, position = 0)
+      insertTableColumn(tableVariableId, columnVariableId2, position = 1)
+
+      // One of the columns is explicitly listed in the variables list, but not the other.
+      val csv =
+          header +
+              "\nDeliverable 1,$deliverableId,Description,,$moduleId,Compliance,no,no,Questions,\"$tableStableId\n$columnStableId2\""
+
+      importer.importDeliverables(csv.byteInputStream())
+
+      assertEquals(
+          setOf(
+              DeliverableVariablesRow(deliverableId, tableVariableId, 0),
+              DeliverableVariablesRow(deliverableId, columnVariableId1, 1),
+              DeliverableVariablesRow(deliverableId, columnVariableId2, 2),
+          ),
+          deliverableVariablesDao.findAll().toSet())
+    }
+
+    @Test
     fun `uses latest variable versions`() {
       val moduleId = insertModule()
       val deliverableId = getUnusedDeliverableId()
