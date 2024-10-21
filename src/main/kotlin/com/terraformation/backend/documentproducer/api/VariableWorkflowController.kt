@@ -2,11 +2,19 @@ package com.terraformation.backend.documentproducer.api
 
 import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
+import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableWorkflowHistoryId
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
+import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.db.VariableWorkflowStore
+import com.terraformation.backend.documentproducer.model.ExistingValue
+import com.terraformation.backend.documentproducer.model.ExistingVariableWorkflowHistoryModel
 import io.swagger.v3.oas.annotations.Operation
+import java.time.Instant
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -16,7 +24,27 @@ import org.springframework.web.bind.annotation.RestController
 @InternalEndpoint
 @RequestMapping("/api/v1/document-producer/projects/{projectId}/workflow")
 @RestController
-class VariableWorkflowController(private val variableWorkflowStore: VariableWorkflowStore) {
+class VariableWorkflowController(
+    private val variableValueStore: VariableValueStore,
+    private val variableWorkflowStore: VariableWorkflowStore
+) {
+  @Operation(summary = "Get the workflow history for a variable in a project.")
+  @GetMapping("/{variableId}")
+  fun getVariableWorkflowHistory(
+      @PathVariable projectId: ProjectId,
+      @PathVariable variableId: VariableId,
+  ): GetVariableWorkflowHistoryResponsePayload {
+    val historyModels = variableWorkflowStore.fetchProjectVariableHistory(projectId, variableId)
+
+    val historyPayload =
+        historyModels.map {
+          val value = variableValueStore.fetchOneById(it.maxVariableValueId)
+          VariableWorkflowHistoryElement(it, value)
+        }
+
+    return GetVariableWorkflowHistoryResponsePayload(historyPayload)
+  }
+
   @Operation(summary = "Update the workflow details for a variable in a project.")
   @PutMapping("/{variableId}")
   fun updateVariableWorkflowDetails(
@@ -30,6 +58,37 @@ class VariableWorkflowController(private val variableWorkflowStore: VariableWork
     return SimpleSuccessResponsePayload()
   }
 }
+
+data class VariableWorkflowHistoryElement(
+    val createdBy: UserId,
+    val createdTime: Instant,
+    val feedback: String?,
+    val id: VariableWorkflowHistoryId,
+    val internalComment: String?,
+    val variableValue: ExistingValuePayload,
+    val projectId: ProjectId,
+    val status: VariableWorkflowStatus,
+    val variableId: VariableId,
+) {
+  constructor(
+      model: ExistingVariableWorkflowHistoryModel,
+      value: ExistingValue
+  ) : this(
+      model.createdBy,
+      model.createdTime,
+      model.feedback,
+      model.id,
+      model.internalComment,
+      ExistingValuePayload.of(value),
+      model.projectId,
+      model.status,
+      model.variableId,
+  )
+}
+
+data class GetVariableWorkflowHistoryResponsePayload(
+    val history: List<VariableWorkflowHistoryElement>,
+) : SuccessResponsePayload
 
 data class UpdateVariableWorkflowDetailsRequestPayload(
     val feedback: String?,

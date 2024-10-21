@@ -41,6 +41,33 @@ class VariableWorkflowStore(
     }
   }
 
+  fun fetchProjectVariableHistory(
+      projectId: ProjectId,
+      variableId: VariableId,
+  ): List<ExistingVariableWorkflowHistoryModel> {
+    requirePermissions { readInternalVariableWorkflowDetails(projectId) }
+
+    return with(VARIABLE_WORKFLOW_HISTORY) {
+      dslContext
+          .select(
+              CREATED_BY,
+              CREATED_TIME,
+              FEEDBACK,
+              ID,
+              INTERNAL_COMMENT,
+              MAX_VARIABLE_VALUE_ID,
+              PROJECT_ID,
+              VARIABLE_ID,
+              VARIABLE_WORKFLOW_STATUS_ID,
+          )
+          .from(VARIABLE_WORKFLOW_HISTORY)
+          .where(PROJECT_ID.eq(projectId))
+          .and(VARIABLE_ID.eq(variableId))
+          .orderBy(CREATED_TIME.desc())
+          .fetch { ExistingVariableWorkflowHistoryModel(it) }
+    }
+  }
+
   fun update(
       projectId: ProjectId,
       variableId: VariableId,

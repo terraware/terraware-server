@@ -7,11 +7,15 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableReviewedEvent
+import com.terraformation.backend.documentproducer.model.ExistingVariableWorkflowHistoryModel
 import com.terraformation.backend.mockUser
 import io.mockk.every
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.security.access.AccessDeniedException
 
 class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -34,7 +38,82 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
     insertValue(variableId = inserted.variableId)
 
     every { user.canReadProject(any()) } returns true
+    every { user.canReadInternalVariableWorkflowDetails(any()) } returns true
     every { user.canUpdateInternalVariableWorkflowDetails(any()) } returns true
+  }
+
+  @Nested
+  inner class FetchProjectVariableHistory {
+    @Test
+    fun `returns list of workflow details sorted by createdTime`() {
+      val oldWorkflowId =
+          insertVariableWorkflowHistory(
+              createdTime = clock.instant.plusSeconds(600),
+              feedback = "old feedback",
+              internalComment = "old comment",
+              status = VariableWorkflowStatus.InReview,
+          )
+
+      val oldestWorkflowId =
+          insertVariableWorkflowHistory(
+              createdTime = clock.instant.plusSeconds(300),
+              status = VariableWorkflowStatus.NotSubmitted,
+          )
+
+      val newWorkflowId =
+          insertVariableWorkflowHistory(
+              createdTime = clock.instant.plusSeconds(900),
+              feedback = "new feedback",
+              internalComment = "new comment",
+              status = VariableWorkflowStatus.Approved,
+          )
+
+      assertEquals(
+          listOf(
+              ExistingVariableWorkflowHistoryModel(
+                  createdBy = user.userId,
+                  createdTime = clock.instant.plusSeconds(900),
+                  feedback = "new feedback",
+                  id = newWorkflowId,
+                  internalComment = "new comment",
+                  maxVariableValueId = inserted.variableValueId,
+                  projectId = inserted.projectId,
+                  status = VariableWorkflowStatus.Approved,
+                  variableId = inserted.variableId,
+              ),
+              ExistingVariableWorkflowHistoryModel(
+                  createdBy = user.userId,
+                  createdTime = clock.instant.plusSeconds(600),
+                  feedback = "old feedback",
+                  id = oldWorkflowId,
+                  internalComment = "old comment",
+                  maxVariableValueId = inserted.variableValueId,
+                  projectId = inserted.projectId,
+                  status = VariableWorkflowStatus.InReview,
+                  variableId = inserted.variableId,
+              ),
+              ExistingVariableWorkflowHistoryModel(
+                  createdBy = user.userId,
+                  createdTime = clock.instant.plusSeconds(300),
+                  feedback = null,
+                  id = oldestWorkflowId,
+                  internalComment = null,
+                  maxVariableValueId = inserted.variableValueId,
+                  projectId = inserted.projectId,
+                  status = VariableWorkflowStatus.NotSubmitted,
+                  variableId = inserted.variableId,
+              ),
+          ),
+          store.fetchProjectVariableHistory(inserted.projectId, inserted.variableId))
+    }
+
+    @Test
+    fun `throws exception if no permission to read internal workflow details`() {
+      every { user.canReadInternalVariableWorkflowDetails(any()) } returns false
+      assertThrows<AccessDeniedException> {
+        store.fetchProjectVariableHistory(inserted.projectId, inserted.variableId)
+      }
+    }
   }
 
   @Nested
