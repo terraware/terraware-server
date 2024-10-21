@@ -13,6 +13,7 @@ import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
+import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.api.ResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessOrError
@@ -26,6 +27,7 @@ import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.importer.CsvImportFailedException
@@ -195,6 +197,7 @@ class DeliverablesController(
   @Operation(
       summary = "Updates the state of a submission from a project.",
       description = "Only permitted for users with accelerator admin privileges.")
+  @RequireGlobalRole([GlobalRole.TFExpert, GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin])
   @PutMapping("/{deliverableId}/submissions/{projectId}")
   fun updateSubmission(
       @PathVariable deliverableId: DeliverableId,

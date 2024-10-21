@@ -139,7 +139,14 @@ class SubmissionStore(
       feedback: String? = null,
       internalComment: String? = null,
   ): SubmissionId {
-    requirePermissions { updateSubmissionStatus(deliverableId, projectId) }
+    requirePermissions {
+      // Non-admin user actions can cause status to be reset to Not Submitted.
+      if (status == SubmissionStatus.NotSubmitted) {
+        createSubmission(projectId)
+      } else {
+        updateSubmissionStatus(deliverableId, projectId)
+      }
+    }
 
     val now = clock.instant()
 
