@@ -110,14 +110,14 @@
 </g>
 </g>
 <!-- deliverables&#45;&gt;deliverable_types -->
-<g id="edge8" class="edge"><title>deliverables:deliverable_type_id:w&#45;&gt;deliverable_types:id:e</title>
+<g id="edge9" class="edge"><title>deliverables:deliverable_type_id:w&#45;&gt;deliverable_types:id:e</title>
 <path fill="none" stroke="black" d="M386.096,-246.344C339.672,-226.028 406.986,-96 339.5,-96"/>
 <polygon fill="black" stroke="black" points="392.633,-247.55 399.847,-252.54 396.566,-248.275 400.5,-249 400.5,-249 400.5,-249 396.566,-248.275 401.153,-245.46 392.633,-247.55 392.633,-247.55"/>
 <ellipse fill="none" stroke="black" cx="389.486" cy="-246.969" rx="3.2" ry="3.2"/>
 </g>
 <!-- public.users -->
-<g id="node6" class="node"><title>public.users</title>
-<g id="a_node6"><a xlink:href="../../../public/tables/users.html" xlink:title="public.users" target="_top">
+<g id="node7" class="node"><title>public.users</title>
+<g id="a_node7"><a xlink:href="../../../public/tables/users.html" xlink:title="public.users" target="_top">
 <polygon fill="#ffffff" stroke="none" points="8,-209 8,-267 126,-267 126,-209 8,-209"/>
 <polygon fill="#f5f5f5" stroke="none" points="8,-245 8,-267 126,-267 126,-245 8,-245"/>
 <polygon fill="none" stroke="black" points="8,-245 8,-267 126,-267 126,-245 8,-245"/>
@@ -138,20 +138,20 @@
 </g>
 </g>
 <!-- deliverables&#45;&gt;public.users -->
-<g id="edge6" class="edge"><title>deliverables:created_by:w&#45;&gt;public.users:elipses:e</title>
+<g id="edge7" class="edge"><title>deliverables:created_by:w&#45;&gt;public.users:elipses:e</title>
 <path fill="none" stroke="black" d="M386.034,-182.837C293.087,-180.739 257.936,-159.753 167,-199 144.765,-208.596 151.217,-236 127,-236"/>
 <polygon fill="black" stroke="black" points="392.501,-182.91 400.459,-186.6 396.5,-182.955 400.5,-183 400.5,-183 400.5,-183 396.5,-182.955 400.541,-179.4 392.501,-182.91 392.501,-182.91"/>
 <ellipse fill="none" stroke="black" cx="389.301" cy="-182.874" rx="3.2" ry="3.2"/>
 </g>
 <!-- deliverables&#45;&gt;public.users -->
-<g id="edge9" class="edge"><title>deliverables:modified_by:w&#45;&gt;public.users:elipses:e</title>
+<g id="edge10" class="edge"><title>deliverables:modified_by:w&#45;&gt;public.users:elipses:e</title>
 <path fill="none" stroke="black" d="M386.012,-160.73C292.67,-157.245 252.368,-122.023 167,-172 138.053,-188.947 160.543,-236 127,-236"/>
 <polygon fill="black" stroke="black" points="392.501,-160.851 400.433,-164.599 396.501,-160.925 400.5,-161 400.5,-161 400.5,-161 396.501,-160.925 400.567,-157.401 392.501,-160.851 392.501,-160.851"/>
 <ellipse fill="none" stroke="black" cx="389.302" cy="-160.791" rx="3.2" ry="3.2"/>
 </g>
 <!-- deliverable_categories -->
-<g id="node7" class="node"><title>deliverable_categories</title>
-<g id="a_node7"><a xlink:href="../../tables/deliverable_categories.html" xlink:title="deliverable_categories" target="_top">
+<g id="node8" class="node"><title>deliverable_categories</title>
+<g id="a_node8"><a xlink:href="../../tables/deliverable_categories.html" xlink:title="deliverable_categories" target="_top">
 <polygon fill="#ffffff" stroke="none" points="175,-288 175,-346 352,-346 352,-288 175,-288"/>
 <polygon fill="#f5f5f5" stroke="none" points="175.5,-324 175.5,-346 352.5,-346 352.5,-324 175.5,-324"/>
 <polygon fill="none" stroke="black" points="175.5,-324 175.5,-346 352.5,-346 352.5,-324 175.5,-324"/>
@@ -172,14 +172,14 @@
 </g>
 </g>
 <!-- deliverables&#45;&gt;deliverable_categories -->
-<g id="edge7" class="edge"><title>deliverables:deliverable_category_id:w&#45;&gt;deliverable_categories:elipses:e</title>
+<g id="edge8" class="edge"><title>deliverables:deliverable_category_id:w&#45;&gt;deliverable_categories:elipses:e</title>
 <path fill="none" stroke="black" d="M386.848,-276.047C374.473,-287.605 376.078,-315 353.5,-315"/>
 <polygon fill="black" stroke="black" points="392.996,-273.774 401.748,-274.377 396.748,-272.387 400.5,-271 400.5,-271 400.5,-271 396.748,-272.387 399.252,-267.623 392.996,-273.774 392.996,-273.774"/>
 <ellipse fill="none" stroke="black" cx="389.995" cy="-274.884" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- modules -->
-<g id="node8" class="node"><title>modules</title>
-<g id="a_node8"><a xlink:href="../../tables/modules.html" xlink:title="modules" target="_top">
+<g id="node9" class="node"><title>modules</title>
+<g id="a_node9"><a xlink:href="../../tables/modules.html" xlink:title="modules" target="_top">
 <polygon fill="#ffffff" stroke="none" points="215,-209 215,-267 312,-267 312,-209 215,-209"/>
 <polygon fill="#f5f5f5" stroke="none" points="215.5,-245 215.5,-267 312.5,-267 312.5,-245 215.5,-245"/>
 <polygon fill="none" stroke="black" points="215.5,-245 215.5,-267 312.5,-267 312.5,-245 215.5,-245"/>
@@ -200,7 +200,7 @@
 </g>
 </g>
 <!-- deliverables&#45;&gt;modules -->
-<g id="edge10" class="edge"><title>deliverables:module_id:w&#45;&gt;modules:elipses:e</title>
+<g id="edge11" class="edge"><title>deliverables:module_id:w&#45;&gt;modules:elipses:e</title>
 <path fill="none" stroke="black" d="M386.066,-227.459C358.543,-229.293 347.058,-236 313.5,-236"/>
 <polygon fill="black" stroke="black" points="392.504,-227.254 400.614,-230.598 396.502,-227.127 400.5,-227 400.5,-227 400.5,-227 396.502,-227.127 400.386,-223.402 392.504,-227.254 392.504,-227.254"/>
 <ellipse fill="none" stroke="black" cx="389.306" cy="-227.356" rx="3.2" ry="3.2"/>
@@ -287,21 +287,49 @@
 <polygon fill="black" stroke="black" points="623.049,-274.883 631.397,-277.578 627.024,-274.442 631,-274 631,-274 631,-274 627.024,-274.442 630.603,-270.422 623.049,-274.883 623.049,-274.883"/>
 <ellipse fill="none" stroke="black" cx="619.868" cy="-275.237" rx="3.2" ry="3.2"/>
 </g>
+<!-- deliverable_variables -->
+<g id="node6" class="node"><title>deliverable_variables</title>
+<g id="a_node6"><a xlink:href="../../tables/deliverable_variables.html" xlink:title="deliverable_variables" target="_top">
+<polygon fill="#ffffff" stroke="none" points="657.5,-168 657.5,-226 828.5,-226 828.5,-168 657.5,-168"/>
+<polygon fill="#f5f5f5" stroke="none" points="658,-204 658,-226 829,-226 829,-204 658,-204"/>
+<polygon fill="none" stroke="black" points="658,-204 658,-226 829,-226 829,-204 658,-204"/>
+<text text-anchor="start" x="663" y="-213.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">deliverable_variables</text>
+<text text-anchor="start" x="790" y="-212.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="658,-186 658,-204 829,-204 829,-186 658,-186"/>
+<text text-anchor="start" x="661" y="-192.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="658,-168 658,-186 727,-186 727,-168 658,-168"/>
+<polygon fill="none" stroke="black" points="658,-168 658,-186 727,-186 727,-168 658,-168"/>
+<text text-anchor="start" x="661" y="-174.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="none" points="727,-168 727,-186 792,-186 792,-168 727,-168"/>
+<polygon fill="none" stroke="black" points="727,-168 727,-186 792,-186 792,-168 727,-168"/>
+<text text-anchor="start" x="753" y="-174.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="792,-168 792,-186 829,-186 829,-168 792,-168"/>
+<polygon fill="none" stroke="black" points="792,-168 792,-186 829,-186 829,-168 792,-168"/>
+<text text-anchor="start" x="819" y="-174.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- deliverable_variables&#45;&gt;deliverables -->
+<g id="edge6" class="edge"><title>deliverable_variables:elipses:w&#45;&gt;deliverables:id:e</title>
+<path fill="none" stroke="black" d="M642.525,-196.991C624.972,-202.572 620.055,-219.128 603,-237 581.972,-259.034 593.957,-293 563.5,-293"/>
+<polygon fill="black" stroke="black" points="649.075,-196.09 657.491,-198.566 653.037,-195.545 657,-195 657,-195 657,-195 653.037,-195.545 656.509,-191.434 649.075,-196.09 649.075,-196.09"/>
+<ellipse fill="none" stroke="black" cx="645.904" cy="-196.526" rx="3.2" ry="3.2"/>
+</g>
 <!-- modules&#45;&gt;public.users -->
-<g id="edge11" class="edge"><title>modules:elipses:w&#45;&gt;public.users:elipses:e</title>
+<g id="edge12" class="edge"><title>modules:elipses:w&#45;&gt;public.users:elipses:e</title>
 <path fill="none" stroke="black" d="M200.036,-233.876C172.408,-230.112 160.572,-230.82 127,-236"/>
 <polygon fill="black" stroke="black" points="206.585,-234.837 213.977,-239.562 210.542,-235.419 214.5,-236 214.5,-236 214.5,-236 210.542,-235.419 215.023,-232.438 206.585,-234.837 206.585,-234.837"/>
 <ellipse fill="none" stroke="black" cx="203.419" cy="-234.372" rx="3.2" ry="3.2"/>
 </g>
 <!-- modules&#45;&gt;public.users -->
-<g id="edge12" class="edge"><title>modules:elipses:w&#45;&gt;public.users:elipses:e</title>
+<g id="edge13" class="edge"><title>modules:elipses:w&#45;&gt;public.users:elipses:e</title>
 <path fill="none" stroke="black" d="M200.036,-238.479C172.408,-242.869 160.572,-242.043 127,-236"/>
 <polygon fill="black" stroke="black" points="206.615,-237.351 215.108,-239.548 210.557,-236.676 214.5,-236 214.5,-236 214.5,-236 210.557,-236.676 213.892,-232.452 206.615,-237.351 206.615,-237.351"/>
 <ellipse fill="none" stroke="black" cx="203.461" cy="-237.892" rx="3.2" ry="3.2"/>
 </g>
 <!-- submissions -->
-<g id="node9" class="node"><title>submissions</title>
-<g id="a_node9"><a xlink:href="../../tables/submissions.html" xlink:title="submissions" target="_top">
+<g id="node10" class="node"><title>submissions</title>
+<g id="a_node10"><a xlink:href="../../tables/submissions.html" xlink:title="submissions" target="_top">
 <polygon fill="#ffffff" stroke="none" points="684,-405 684,-463 802,-463 802,-405 684,-405"/>
 <polygon fill="#f5f5f5" stroke="none" points="684,-441 684,-463 802,-463 802,-441 684,-441"/>
 <polygon fill="none" stroke="black" points="684,-441 684,-463 802,-463 802,-441 684,-441"/>
@@ -322,50 +350,22 @@
 </g>
 </g>
 <!-- submissions&#45;&gt;deliverables -->
-<g id="edge14" class="edge"><title>submissions:elipses:w&#45;&gt;deliverables:id:e</title>
+<g id="edge15" class="edge"><title>submissions:elipses:w&#45;&gt;deliverables:id:e</title>
 <path fill="none" stroke="black" d="M668.246,-431.497C639.753,-429.318 626.139,-419.663 603,-395 569.737,-359.547 612.114,-293 563.5,-293"/>
 <polygon fill="black" stroke="black" points="675.005,-431.728 682.877,-435.598 679.002,-431.864 683,-432 683,-432 683,-432 679.002,-431.864 683.123,-428.402 675.005,-431.728 675.005,-431.728"/>
 <ellipse fill="none" stroke="black" cx="671.806" cy="-431.619" rx="3.2" ry="3.2"/>
 </g>
 <!-- submissions&#45;&gt;public.users -->
-<g id="edge13" class="edge"><title>submissions:elipses:w&#45;&gt;public.users:elipses:e</title>
+<g id="edge14" class="edge"><title>submissions:elipses:w&#45;&gt;public.users:elipses:e</title>
 <path fill="none" stroke="black" d="M668.566,-432.095C446.745,-435.006 340.827,-502.799 167,-357 123.604,-320.601 183.64,-236 127,-236"/>
 <polygon fill="black" stroke="black" points="675,-432.053 683.024,-435.6 679,-432.026 683,-432 683,-432 683,-432 679,-432.026 682.976,-428.4 675,-432.053 675,-432.053"/>
 <ellipse fill="none" stroke="black" cx="671.8" cy="-432.074" rx="3.2" ry="3.2"/>
 </g>
 <!-- submissions&#45;&gt;public.users -->
-<g id="edge15" class="edge"><title>submissions:elipses:w&#45;&gt;public.users:elipses:e</title>
+<g id="edge16" class="edge"><title>submissions:elipses:w&#45;&gt;public.users:elipses:e</title>
 <path fill="none" stroke="black" d="M668.551,-432.09C446.51,-434.837 341.212,-498.741 167,-353 124.85,-317.738 181.955,-236 127,-236"/>
 <polygon fill="black" stroke="black" points="675,-432.05 683.022,-435.6 679,-432.025 683,-432 683,-432 683,-432 679,-432.025 682.978,-428.4 675,-432.05 675,-432.05"/>
 <ellipse fill="none" stroke="black" cx="671.8" cy="-432.07" rx="3.2" ry="3.2"/>
-</g>
-<!-- docprod.variables -->
-<g id="node10" class="node"><title>docprod.variables</title>
-<g id="a_node10"><a xlink:href="../../../docprod/tables/variables.html" xlink:title="docprod.variables" target="_top">
-<polygon fill="#ffffff" stroke="none" points="667.5,-168 667.5,-226 818.5,-226 818.5,-168 667.5,-168"/>
-<polygon fill="#f5f5f5" stroke="none" points="668,-204 668,-226 819,-226 819,-204 668,-204"/>
-<polygon fill="none" stroke="black" points="668,-204 668,-226 819,-226 819,-204 668,-204"/>
-<text text-anchor="start" x="673" y="-213.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">docprod.variables</text>
-<text text-anchor="start" x="780" y="-212.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="668,-186 668,-204 819,-204 819,-186 668,-186"/>
-<text text-anchor="start" x="671" y="-192.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="668,-168 668,-186 727,-186 727,-168 668,-168"/>
-<polygon fill="none" stroke="black" points="668,-168 668,-186 727,-186 727,-168 668,-168"/>
-<text text-anchor="start" x="671" y="-174.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="727,-168 727,-186 787,-186 787,-168 727,-168"/>
-<polygon fill="none" stroke="black" points="727,-168 727,-186 787,-186 787,-168 727,-168"/>
-<text text-anchor="start" x="748" y="-174.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="787,-168 787,-186 819,-186 819,-168 787,-168"/>
-<polygon fill="none" stroke="black" points="787,-168 787,-186 819,-186 819,-168 787,-168"/>
-<text text-anchor="start" x="809" y="-174.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- docprod.variables&#45;&gt;deliverables -->
-<g id="edge16" class="edge"><title>docprod.variables:elipses:w&#45;&gt;deliverables:id:e</title>
-<path fill="none" stroke="black" d="M652.652,-196.358C630.724,-201.014 623.541,-217.137 603,-237 581.105,-258.172 593.957,-293 563.5,-293"/>
-<polygon fill="black" stroke="black" points="659.036,-195.754 667.339,-198.584 663.018,-195.377 667,-195 667,-195 667,-195 663.018,-195.377 666.661,-191.416 659.036,-195.754 659.036,-195.754"/>
-<ellipse fill="none" stroke="black" cx="655.85" cy="-196.056" rx="3.2" ry="3.2"/>
 </g>
 </g>
 </svg>

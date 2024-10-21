@@ -16,12 +16,13 @@ cohort_modules
 application_histories
 user_internal_interests
 submission_snapshots
+deliverable_variables
 events
 deal_stages
 submissions
 applications
-participants
 deliverables
+participants
 deliverable_categories
 cohorts
 modules

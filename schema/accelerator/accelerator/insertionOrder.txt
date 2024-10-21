@@ -13,12 +13,13 @@ score_categories
 modules
 cohorts
 deliverable_categories
-deliverables
 participants
+deliverables
 applications
 submissions
 deal_stages
 events
+deliverable_variables
 submission_snapshots
 user_internal_interests
 application_histories
