@@ -28,37 +28,16 @@ class VariableValueService(
     private val variableWorkflowStore: VariableWorkflowStore
 ) {
   /**
-   * Checks the values that would be created by a list of operations to make sure they are all valid
-   * for their respective variables. Throws exceptions on validation failure; see
-   * [Variable.validate] for details.
+   * Service method to validate, write values, and update workflows.
+   *
+   * @param triggerWorkflows whether to trigger notifications and status changes workflows. Requires
+   *   additional privilege to not trigger workflows and should be used by admin overwrites of
+   *   values.
    */
-  fun validate(operations: List<ValueOperation>) {
-    if (operations.isEmpty()) {
-      return
-    }
-
-    operations.forEach { operation ->
-      when (operation) {
-        is AppendValueOperation -> validate(operation.value)
-        is DeleteValueOperation -> validateDelete(operation.valueId)
-        is ReplaceValuesOperation -> operation.values.forEach { newValue -> validate(newValue) }
-        is UpdateValueOperation -> validate(operation.value)
-      }
-    }
-  }
-
-  /**
-   * Checks that a single value is valid for its variable. Throws exceptions on validation failure;
-   * see [Variable.validate] for details.
-   */
-  fun validate(newValue: VariableValue<*, *>) {
-    val variable = variableStore.fetchOneVariable(newValue.variableId)
-
-    if (variable.internalOnly) {
-      requirePermissions { updateInternalOnlyVariables() }
-    }
-
-    variable.validate(newValue, variableStore::fetchOneVariable)
+  fun updateValues(operations: List<ValueOperation>, triggerWorkflows: Boolean = true) {
+    validate(operations)
+    val values = variableValueStore.updateValues(operations, triggerWorkflows)
+    updateWorkflowHistory(values, triggerWorkflows)
   }
 
   /**
@@ -67,7 +46,7 @@ class VariableValueService(
    * @param values list of updated values
    * @param updateStatus if set to true, will set status to In Review, and feedback to null
    */
-  fun updateWorkflowHistory(values: List<ExistingValue>, updateStatus: Boolean = true) {
+  private fun updateWorkflowHistory(values: List<ExistingValue>, updateStatus: Boolean = true) {
     val projectId = values.firstOrNull()?.projectId ?: return
 
     val variableIdsInDeliverables: Set<VariableId> =
@@ -110,16 +89,37 @@ class VariableValueService(
   }
 
   /**
-   * Service method to validate, write values, and update workflows.
-   *
-   * @param triggerWorkflows whether to trigger notifications and status changes workflows. Requires
-   *   additional privilege to not trigger workflows and should be used by admin overwrites of
-   *   values.
+   * Checks the values that would be created by a list of operations to make sure they are all valid
+   * for their respective variables. Throws exceptions on validation failure; see
+   * [Variable.validate] for details.
    */
-  fun updateValues(operations: List<ValueOperation>, triggerWorkflows: Boolean = true) {
-    validate(operations)
-    val values = variableValueStore.updateValues(operations, triggerWorkflows)
-    updateWorkflowHistory(values, triggerWorkflows)
+  private fun validate(operations: List<ValueOperation>) {
+    if (operations.isEmpty()) {
+      return
+    }
+
+    operations.forEach { operation ->
+      when (operation) {
+        is AppendValueOperation -> validate(operation.value)
+        is DeleteValueOperation -> validateDelete(operation.valueId)
+        is ReplaceValuesOperation -> operation.values.forEach { newValue -> validate(newValue) }
+        is UpdateValueOperation -> validate(operation.value)
+      }
+    }
+  }
+
+  /**
+   * Checks that a single value is valid for its variable. Throws exceptions on validation failure;
+   * see [Variable.validate] for details.
+   */
+  private fun validate(newValue: VariableValue<*, *>) {
+    val variable = variableStore.fetchOneVariable(newValue.variableId)
+
+    if (variable.internalOnly) {
+      requirePermissions { updateInternalOnlyVariables() }
+    }
+
+    variable.validate(newValue, variableStore::fetchOneVariable)
   }
 
   private fun validateDelete(valueId: VariableValueId) {

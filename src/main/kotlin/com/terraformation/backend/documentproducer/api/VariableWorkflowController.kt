@@ -9,7 +9,6 @@ import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.VariableWorkflowHistoryId
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
-import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.db.VariableWorkflowStore
 import com.terraformation.backend.documentproducer.model.ExistingVariableWorkflowHistoryModel
 import io.swagger.v3.oas.annotations.Operation
@@ -24,12 +23,9 @@ import org.springframework.web.bind.annotation.RestController
 @InternalEndpoint
 @RequestMapping("/api/v1/document-producer/projects/{projectId}/workflow")
 @RestController
-class VariableWorkflowController(
-    private val variableValueStore: VariableValueStore,
-    private val variableWorkflowStore: VariableWorkflowStore
-) {
+class VariableWorkflowController(private val variableWorkflowStore: VariableWorkflowStore) {
   @Operation(summary = "Get the workflow history for a variable in a project.")
-  @GetMapping("/{variableId}")
+  @GetMapping("/{variableId}/history")
   fun getVariableWorkflowHistory(
       @PathVariable projectId: ProjectId,
       @PathVariable variableId: VariableId,
