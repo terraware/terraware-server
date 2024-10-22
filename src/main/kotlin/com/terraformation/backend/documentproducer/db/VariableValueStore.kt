@@ -480,9 +480,9 @@ class VariableValueStore(
 
     val values = listValues(projectId, VariableValueId(maxValueIdBefore.value + 1), maxValueIdAfter)
 
+    publishUpdatedEvent(projectId, values)
     if (triggerWorkflows) {
       notifyForCompletedSections(projectId, values)
-      updateStatus(projectId, values)
     }
 
     return values
@@ -1034,21 +1034,11 @@ class VariableValueStore(
     }
   }
 
-  private fun updateStatus(
+  private fun publishUpdatedEvent(
       projectId: ProjectId,
       values: List<ExistingValue>,
   ) {
-    val variableIdsInDeliverables: Set<VariableId> =
-        with(DELIVERABLE_VARIABLES) {
-          dslContext
-              .select(VARIABLE_ID)
-              .from(DELIVERABLE_VARIABLES)
-              .where(VARIABLE_ID.`in`(values.map { it.variableId }.toSet()))
-              .fetchSet(VARIABLE_ID.asNonNullable())
-        }
-
-    val valuesByVariables =
-        values.filter { it.variableId in variableIdsInDeliverables }.groupBy { it.variableId }
+    val valuesByVariables = values.groupBy { it.variableId }
 
     valuesByVariables.keys.forEach { variableId ->
       eventPublisher.publishEvent(VariableValueUpdatedEvent(projectId, variableId))

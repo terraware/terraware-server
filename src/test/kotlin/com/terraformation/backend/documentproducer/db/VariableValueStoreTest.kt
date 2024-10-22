@@ -393,19 +393,6 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       @Test
-      fun `does not publish event if a variable value is updated and triggerWorkflows is false`() {
-        val variableId =
-            insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
-
-        every { user.canUpdateInternalVariableWorkflowDetails(any()) } returns true
-        store.updateValues(
-            listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "new"))),
-            triggerWorkflows = false)
-
-        eventPublisher.assertEventNotPublished<VariableValueUpdatedEvent>()
-      }
-
-      @Test
       fun `throws exception if not permission to set triggerWorkflows to false`() {
         val variableId =
             insertVariableManifestEntry(insertTextVariable(deliverableId = inserted.deliverableId))
