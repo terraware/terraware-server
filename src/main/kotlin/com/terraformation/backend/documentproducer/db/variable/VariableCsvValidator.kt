@@ -1,7 +1,6 @@
 package com.terraformation.backend.documentproducer.db.variable
 
 import com.terraformation.backend.accelerator.db.DeliverableStore
-import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.documentproducer.db.CsvValidator
 import com.terraformation.backend.i18n.Messages
 
@@ -32,29 +31,24 @@ const val VARIABLE_CSV_COLUMN_INDEX_IS_HEADER = VARIABLE_CSV_COLUMN_INDEX_TABLE_
 // Column 13/M
 const val VARIABLE_CSV_COLUMN_INDEX_NOTES = VARIABLE_CSV_COLUMN_INDEX_IS_HEADER + 1
 // Column 14/N
-const val VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID = VARIABLE_CSV_COLUMN_INDEX_NOTES + 1
+const val VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION = VARIABLE_CSV_COLUMN_INDEX_NOTES + 1
 // Column 15/O
-const val VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION =
-    VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID + 1
-// Column 16/P
 const val VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID =
     VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION + 1
-// Column 17/Q
+// Column 16/P
 const val VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_CONDITION =
     VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID + 1
-// Column 18/R
+// Column 17/Q
 const val VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VALUE =
     VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_CONDITION + 1
-// Column 19/S
+// Column 18/R
 const val VARIABLE_CSV_COLUMN_INDEX_INTERNAL_ONLY = VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VALUE + 1
-// Column 20/T
+// Column 19/S
 const val VARIABLE_CSV_COLUMN_INDEX_IS_REQUIRED = VARIABLE_CSV_COLUMN_INDEX_INTERNAL_ONLY + 1
 
 class VariableCsvValidator(messages: Messages, val deliverableStore: DeliverableStore) :
     CsvValidator(messages) {
   private val existingStableIds = mutableSetOf<String>()
-
-  private val existingDeliverableIds = mutableSetOf<DeliverableId>()
 
   private val parentPathToChildrenNamesMap = mutableMapOf<String, MutableSet<String>>()
   private val variableTypeByPath = mutableMapOf<String, AllVariableCsvVariableType>()
@@ -74,7 +68,6 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
           null,
           null,
           null,
-          this::validateDeliverable,
           null,
           null,
           null,
@@ -91,22 +84,6 @@ class VariableCsvValidator(messages: Messages, val deliverableStore: Deliverable
 
   override fun getColumnName(position: Int): String {
     return messages.variablesCsvColumnName(position)
-  }
-
-  private fun validateDeliverable(value: String?, field: String) {
-    if (value.isNullOrBlank()) {
-      return
-    }
-
-    val deliverableId = DeliverableId(value)
-
-    if (deliverableId in existingDeliverableIds) {
-      return
-    } else if (!deliverableStore.deliverableIdExists(deliverableId)) {
-      addError(field, value, messages.variableCsvDeliverableDoesNotExist())
-    }
-
-    existingDeliverableIds.add(deliverableId)
   }
 
   private fun validateDependencyVariableStableId(values: List<String?>) {
