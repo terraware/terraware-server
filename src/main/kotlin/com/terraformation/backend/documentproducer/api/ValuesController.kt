@@ -125,6 +125,7 @@ class ValuesController(
     val valuelessWorkflowDetailsPayloads =
         workflowDetailsByVariableId.entries
             .filterNot { (it.key to null) in valuesByVariableId }
+            .filter { variableIds?.let { variableIds -> it.key in variableIds } ?: true }
             .map { (_, workflowDetails) ->
               ExistingVariableValuesPayload(
                   workflowDetails.variableId,
