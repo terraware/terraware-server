@@ -17,6 +17,7 @@ data class AssignedPlotDetails(
     val plantingSubzoneId: PlantingSubzoneId,
     val plantingSubzoneName: String,
     val plotName: String,
+    val sizeMeters: Int,
 ) {
   fun gpxWaypoints(messages: Messages): List<GpxWaypoint> {
     return listOf(

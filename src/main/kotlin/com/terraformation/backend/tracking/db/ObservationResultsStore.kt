@@ -206,6 +206,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       monitoringPlotsBoundaryField,
                       MONITORING_PLOTS.ID,
                       MONITORING_PLOTS.FULL_NAME,
+                      MONITORING_PLOTS.SIZE_METERS,
                       monitoringPlotSpeciesMultiset,
                       coordinatesMultiset,
                       photosMultiset)
@@ -257,6 +258,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   notes = record[OBSERVATION_PLOTS.NOTES],
                   photos = record[photosMultiset],
                   plantingDensity = plantingDensity,
+                  sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!,
                   species = species,
                   status = status,
                   totalPlants = totalPlants,

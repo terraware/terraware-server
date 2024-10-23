@@ -461,6 +461,8 @@ data class AssignedPlotPayload(
     val plantingSubzoneName: String,
     val plotId: MonitoringPlotId,
     val plotName: String,
+    @Schema(description = "Length of each edge of the monitoring plot in meters.")
+    val sizeMeters: Int,
 ) {
   constructor(
       details: AssignedPlotDetails
@@ -478,6 +480,7 @@ data class AssignedPlotPayload(
       plantingSubzoneName = details.plantingSubzoneName,
       plotId = details.model.monitoringPlotId,
       plotName = details.plotName,
+      sizeMeters = details.sizeMeters,
   )
 }
 
@@ -597,6 +600,8 @@ data class ObservationMonitoringPlotResultsPayload(
     val photos: List<ObservationMonitoringPlotPhotoPayload>,
     @Schema(description = "Number of live plants per hectare.") //
     val plantingDensity: Int,
+    @Schema(description = "Length of each edge of the monitoring plot in meters.")
+    val sizeMeters: Int,
     val species: List<ObservationSpeciesResultsPayload>,
     val status: ObservationMonitoringPlotStatus,
     @Schema(
@@ -626,6 +631,7 @@ data class ObservationMonitoringPlotResultsPayload(
       notes = model.notes,
       photos = model.photos.map { ObservationMonitoringPlotPhotoPayload(it) },
       plantingDensity = model.plantingDensity,
+      sizeMeters = model.sizeMeters,
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
