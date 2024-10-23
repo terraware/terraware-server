@@ -61,6 +61,7 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
+import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewPlantingSubzoneModel
@@ -1424,6 +1425,7 @@ class PlantingSiteStore(
                   permanentCluster = clusterNumber,
                   permanentClusterSubplot = plotIndex + 1,
                   plantingSubzoneId = subzone.id,
+                  sizeMeters = MONITORING_PLOT_SIZE_INT,
               )
 
           monitoringPlotsDao.insert(monitoringPlotsRow)
@@ -1437,7 +1439,7 @@ class PlantingSiteStore(
   fun createTemporaryPlot(
       plantingSiteId: PlantingSiteId,
       plantingZoneId: PlantingZoneId,
-      plotBoundary: Polygon
+      plotBoundary: Polygon,
   ): MonitoringPlotId {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
@@ -1469,7 +1471,8 @@ class PlantingSiteStore(
                 modifiedBy = userId,
                 modifiedTime = now,
                 name = "$plotNumber",
-                plantingSubzoneId = subzone.id)
+                plantingSubzoneId = subzone.id,
+                sizeMeters = MONITORING_PLOT_SIZE_INT)
         monitoringPlotsDao.insert(monitoringPlotsRow)
 
         monitoringPlotsRow.id!!
@@ -1511,6 +1514,7 @@ class PlantingSiteStore(
                       MONITORING_PLOTS.NAME,
                       MONITORING_PLOTS.PERMANENT_CLUSTER,
                       MONITORING_PLOTS.PERMANENT_CLUSTER_SUBPLOT,
+                      MONITORING_PLOTS.SIZE_METERS,
                       monitoringPlotBoundaryField)
                   .from(MONITORING_PLOTS)
                   .where(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
@@ -1525,6 +1529,7 @@ class PlantingSiteStore(
                   name = record[MONITORING_PLOTS.NAME]!!,
                   permanentCluster = record[MONITORING_PLOTS.PERMANENT_CLUSTER],
                   permanentClusterSubplot = record[MONITORING_PLOTS.PERMANENT_CLUSTER_SUBPLOT],
+                  sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!,
               )
             }
           }

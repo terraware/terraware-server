@@ -634,6 +634,7 @@ class PlantingZoneModelTest {
         name = "name",
         permanentCluster = permanentCluster,
         permanentClusterSubplot = if (permanentCluster != null) 1 else null,
+        sizeMeters = 25,
     )
   }
 

@@ -336,6 +336,7 @@ import com.terraformation.backend.rectangle
 import com.terraformation.backend.rectanglePolygon
 import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
+import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.util.toInstant
 import jakarta.ws.rs.NotFoundException
@@ -1744,13 +1745,14 @@ abstract class DatabaseBackedTest {
       row: MonitoringPlotsRow = MonitoringPlotsRow(),
       x: Number = 0,
       y: Number = 0,
+      sizeMeters: Int = row.sizeMeters ?: MONITORING_PLOT_SIZE_INT,
       boundary: Polygon =
           (row.boundary as? Polygon)
               ?: rectanglePolygon(
-                  MONITORING_PLOT_SIZE,
-                  MONITORING_PLOT_SIZE,
-                  x.toDouble() * MONITORING_PLOT_SIZE,
-                  y.toDouble() * MONITORING_PLOT_SIZE),
+                  sizeMeters,
+                  sizeMeters,
+                  x.toDouble() * sizeMeters.toDouble(),
+                  y.toDouble() * sizeMeters.toDouble()),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       isAvailable: Boolean = row.isAvailable ?: true,
@@ -1776,6 +1778,7 @@ abstract class DatabaseBackedTest {
             permanentCluster = permanentCluster,
             permanentClusterSubplot = permanentClusterSubplot,
             plantingSubzoneId = plantingSubzoneId,
+            sizeMeters = sizeMeters,
         )
 
     monitoringPlotsDao.insert(rowWithDefaults)
