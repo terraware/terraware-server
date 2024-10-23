@@ -9,7 +9,10 @@ import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.VariableWorkflowHistoryId
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
+import com.terraformation.backend.documentproducer.db.VariableStore
+import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.db.VariableWorkflowStore
+import com.terraformation.backend.documentproducer.model.ExistingValue
 import com.terraformation.backend.documentproducer.model.ExistingVariableWorkflowHistoryModel
 import io.swagger.v3.oas.annotations.Operation
 import java.time.Instant
@@ -23,17 +26,30 @@ import org.springframework.web.bind.annotation.RestController
 @InternalEndpoint
 @RequestMapping("/api/v1/document-producer/projects/{projectId}/workflow")
 @RestController
-class VariableWorkflowController(private val variableWorkflowStore: VariableWorkflowStore) {
+class VariableWorkflowController(
+    private val variableStore: VariableStore,
+    private val variableValueStore: VariableValueStore,
+    private val variableWorkflowStore: VariableWorkflowStore,
+) {
   @Operation(summary = "Get the workflow history for a variable in a project.")
   @GetMapping("/{variableId}/history")
   fun getVariableWorkflowHistory(
       @PathVariable projectId: ProjectId,
       @PathVariable variableId: VariableId,
   ): GetVariableWorkflowHistoryResponsePayload {
+    val variable = variableStore.fetchOneVariable(variableId)
     val historyModels = variableWorkflowStore.fetchProjectVariableHistory(projectId, variableId)
 
     return GetVariableWorkflowHistoryResponsePayload(
-        historyModels.map { VariableWorkflowHistoryElement(it) })
+        VariablePayload.of(variable),
+        historyModels.map {
+          val values =
+              variableValueStore.listValues(
+                  projectId = projectId,
+                  maxValueId = it.maxVariableValueId,
+                  variableIds = setOf(variableId))
+          VariableWorkflowHistoryElement(it, values)
+        })
   }
 
   @Operation(summary = "Update the workflow details for a variable in a project.")
@@ -59,10 +75,11 @@ data class VariableWorkflowHistoryElement(
     val maxVariableValueId: VariableValueId,
     val projectId: ProjectId,
     val status: VariableWorkflowStatus,
-    val variableId: VariableId,
+    val variableValues: List<ExistingValuePayload>,
 ) {
   constructor(
-      model: ExistingVariableWorkflowHistoryModel
+      model: ExistingVariableWorkflowHistoryModel,
+      values: List<ExistingValue>,
   ) : this(
       model.createdBy,
       model.createdTime,
@@ -72,11 +89,11 @@ data class VariableWorkflowHistoryElement(
       model.maxVariableValueId,
       model.projectId,
       model.status,
-      model.variableId,
-  )
+      values.map { ExistingValuePayload.of(it) })
 }
 
 data class GetVariableWorkflowHistoryResponsePayload(
+    val variable: VariablePayload,
     val history: List<VariableWorkflowHistoryElement>,
 ) : SuccessResponsePayload
 
