@@ -13,6 +13,7 @@ planting_subzone_histories
 planting_site_populations
 planting_site_notifications
 observation_requested_subzones
+monitoring_plot_overlaps
 planting_seasons
 planting_zone_histories
 deliveries
