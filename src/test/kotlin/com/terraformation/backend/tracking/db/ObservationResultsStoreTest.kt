@@ -185,6 +185,31 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `returns plot overlaps in both directions`() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertObservation(completedTime = Instant.EPOCH)
+      val oldPlotId1 = insertMonitoringPlot()
+      val oldPlotId2 = insertMonitoringPlot()
+      val currentPlotId = insertMonitoringPlot()
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+      val newPlotId1 = insertMonitoringPlot()
+      val newPlotId2 = insertMonitoringPlot()
+
+      // Current plot overlaps with two older plots and is overlapped by two newer plots.
+      insertMonitoringPlotOverlap(monitoringPlotId = currentPlotId, overlapsPlotId = oldPlotId1)
+      insertMonitoringPlotOverlap(monitoringPlotId = currentPlotId, overlapsPlotId = oldPlotId2)
+      insertMonitoringPlotOverlap(monitoringPlotId = newPlotId1, overlapsPlotId = currentPlotId)
+      insertMonitoringPlotOverlap(monitoringPlotId = newPlotId2, overlapsPlotId = currentPlotId)
+
+      val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
+      val plotResults = results[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0]
+
+      assertEquals(setOf(oldPlotId1, oldPlotId2), plotResults.overlapsWithPlotIds, "Overlaps with")
+      assertEquals(setOf(newPlotId1, newPlotId2), plotResults.overlappedByPlotIds, "Overlapped by")
+    }
+
+    @Test
     fun `throws exception if no permission to read planting site`() {
       every { user.canReadPlantingSite(plantingSiteId) } returns false
 
