@@ -209,7 +209,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     private fun runScenario(prefix: String, numObservations: Int) {
       importFromCsvFiles(prefix, numObservations)
       val allResults =
-          resultsStore.fetchByPlantingSiteId(plantingSiteId).sortedBy { it.observationId.value }
+          resultsStore.fetchByPlantingSiteId(plantingSiteId).sortedBy { it.observationId }
       assertResults(prefix, allResults)
     }
 

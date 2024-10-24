@@ -112,7 +112,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
 
       mockMvc.post(path) { content = payload }.andExpect { status { isOk() } }
 
-      val values = variableSectionValuesDao.findAll().sortedBy { it.variableValueId!!.value }
+      val values = variableSectionValuesDao.findAll().sortedBy { it.variableValueId }
 
       assertEquals(2, values.size, "Should have copied both default value entries")
       assertEquals("Some text", values[0].textValue, "Should have copied text value")

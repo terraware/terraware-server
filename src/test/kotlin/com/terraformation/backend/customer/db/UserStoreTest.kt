@@ -275,7 +275,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         listOf(userIdWithOneRole, userIdWithTwoRoles),
-        userStore.fetchWithGlobalRoles().map { it.userId }.sortedBy { it.value },
+        userStore.fetchWithGlobalRoles().map { it.userId }.sorted(),
         "IDs of users with global roles")
   }
 

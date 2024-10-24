@@ -63,7 +63,7 @@ internal class PlantingSiteStoreUpdateSeasonsTest : PlantingSiteStoreTest() {
 
       store.updatePlantingSite(plantingSiteId, desiredSeasons) { it }
 
-      val actual = plantingSeasonsDao.findAll().sortedBy { it.startDate!! }
+      val actual = plantingSeasonsDao.findAll().sortedBy { it.startDate }
 
       val expected =
           listOf(

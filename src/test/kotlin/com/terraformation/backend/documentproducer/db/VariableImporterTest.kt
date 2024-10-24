@@ -424,7 +424,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       val updateResult = importer.import(sizedInputStream(updatedCsv))
 
-      val variablesRows = variablesDao.findAll().sortedBy { it.id!!.value }
+      val variablesRows = variablesDao.findAll().sortedBy { it.id }
       val updatedVariableId = variablesRows.filter { it.id != originalVariableId }.single().id!!
 
       assertEquals(2, variablesRows.size, "Number of imported variables")
@@ -560,12 +560,12 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import(sizedInputStream(initialCsv))
 
-      val initialVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+      val initialVariables = variablesDao.findAll().sortedBy { it.id }
       assertEquals(3, initialVariables.size, "Should have imported 3 variables")
 
       val updateResult = importer.import(sizedInputStream(updatedCsv))
 
-      val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+      val updatedVariables = variablesDao.findAll().sortedBy { it.id }
       assertEquals(6, updatedVariables.size, "Should have created 2 new variables")
 
       assertEquals(
@@ -657,12 +657,12 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import(sizedInputStream(initialCsv))
 
-      val initialVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+      val initialVariables = variablesDao.findAll().sortedBy { it.id }
       assertEquals(3, initialVariables.size, "Should have imported 3 variables")
 
       val updateResult = importer.import(sizedInputStream(updatedCsv))
 
-      val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+      val updatedVariables = variablesDao.findAll().sortedBy { it.id }
       assertEquals(6, updatedVariables.size, "Should have imported new copies of all variables")
       val newTableVariableId = updatedVariables[3].id!!
 
@@ -699,12 +699,12 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import(sizedInputStream(initialCsv))
 
-      val initialVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+      val initialVariables = variablesDao.findAll().sortedBy { it.id }
       assertEquals(2, initialVariables.size, "Should have imported 2 variables")
 
       val updateResult = importer.import(sizedInputStream(updatedCsv))
 
-      val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+      val updatedVariables = variablesDao.findAll().sortedBy { it.id }
       assertEquals(5, updatedVariables.size, "Should have imported new copies of all variables")
       val newTableVariableId = updatedVariables[2].id!!
 
@@ -847,7 +847,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import(sizedInputStream(csv1))
 
-      val variables = variablesDao.findAll().sortedBy { it.id!!.value }
+      val variables = variablesDao.findAll().sortedBy { it.id }
 
       assertEquals(
           listOf(
@@ -888,7 +888,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
               DeliverableVariablesRow(deliverableId2, variables[1].id, 0),
               DeliverableVariablesRow(deliverableId1, variables[2].id, 1),
           ),
-          deliverableVariablesDao.findAll().sortedBy { it.variableId!!.value },
+          deliverableVariablesDao.findAll().sortedBy { it.variableId },
           "Deliverable positions are allocated as expected at creation time")
 
       val csv2 =
@@ -900,7 +900,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import(sizedInputStream(csv2))
 
-      val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+      val updatedVariables = variablesDao.findAll().sortedBy { it.id }
 
       assertEquals(
           listOf(
@@ -981,7 +981,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       insertNumberVariable(stableId = "1113")
       insertDeliverableVariable(deliverableId = deliverableId1, position = 1)
 
-      val variables = variablesDao.findAll().sortedBy { it.id!!.value }
+      val variables = variablesDao.findAll().sortedBy { it.id }
 
       val csv =
           header +
@@ -991,7 +991,7 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import(sizedInputStream(csv))
 
-      val updatedVariables = variablesDao.findAll().sortedBy { it.id!!.value }
+      val updatedVariables = variablesDao.findAll().sortedBy { it.id }
 
       assertEquals(
           listOf(
@@ -1177,6 +1177,6 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
     // does not care about hierarchy and will grab the first one that matches by name in reversed
     // order
     private fun getVariableByName(name: String): VariablesRow =
-        variablesDao.fetchByName(name).sortedBy { it.id!!.value }.reversed().first()
+        variablesDao.fetchByName(name).sortedBy { it.id }.reversed().first()
   }
 }

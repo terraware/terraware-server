@@ -31,7 +31,7 @@ class AdminInternalTagsController(
   @GetMapping("/internalTags")
   fun listInternalTags(model: Model, redirectAttributes: RedirectAttributes): String {
     val tags = internalTagStore.findAllTags()
-    val allOrganizations = organizationsDao.findAll().sortedBy { it.id!!.value }
+    val allOrganizations = organizationsDao.findAll().sortedBy { it.id }
     val organizationTags = internalTagStore.fetchAllOrganizationTagIds()
 
     model.addAttribute("allOrganizations", allOrganizations)

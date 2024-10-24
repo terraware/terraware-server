@@ -384,8 +384,8 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           uploadsDao.fetchOneById(inserted.uploadId)?.statusId,
           "Status after import")
 
-      val actualSpecies = speciesDao.findAll().sortedBy { it.id!!.value }
-      val actualAccessions = accessionsDao.findAll().sortedBy { it.id!!.value }
+      val actualSpecies = speciesDao.findAll().sortedBy { it.id }
+      val actualAccessions = accessionsDao.findAll().sortedBy { it.id }
       val mappedSpeciesIds = mapTo1IndexedIds(actualSpecies, ::SpeciesId, SpeciesRow::id)
       val mappedAccessionIds = mapTo1IndexedIds(actualAccessions, ::AccessionId, AccessionsRow::id)
 
@@ -410,7 +410,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           },
           geolocationsDao
               .findAll()
-              .sortedBy { it.id!!.value }
+              .sortedBy { it.id }
               .map {
                 it.copy(
                     id = null,
@@ -832,7 +832,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           problems.toList().map { it.copy(uploadId = inserted.uploadId) },
           uploadProblemsDao
               .findAll()
-              .sortedBy { it.id?.value }
+              .sortedBy { it.id }
               .map { it.copy(id = null, uploadId = inserted.uploadId) },
           "Upload problems")
       assertStatus(status)
@@ -1070,7 +1070,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.importCsv(uploadId, false)
 
-      val accessions = accessionsDao.findAll().sortedBy { it.id!!.value }
+      val accessions = accessionsDao.findAll().sortedBy { it.id }
       assertEquals(2, accessions.size, "Should have inserted 2 accessions")
       assertEquals(
           "UG", accessions[0].collectionSiteCountryCode, "Country code looked up from name")
