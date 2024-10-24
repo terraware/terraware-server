@@ -28,6 +28,54 @@ class PlantingZoneModelTest {
   private val siteOrigin = geometryFactory.createPoint(Coordinate(12.3, 45.6))
 
   @Nested
+  inner class ChoosePermanentPlots {
+    @Test
+    fun `chooses 4-plot cluster if all plots lie in planted subzones`() {
+      val model =
+          plantingZoneModel(
+              subzones =
+                  listOf(
+                      plantingSubzoneModel(
+                          id = 1, plots = monitoringPlotModels(permanentIds = listOf(1, 2))),
+                      plantingSubzoneModel(
+                          id = 2, plots = monitoringPlotModels(permanentIds = listOf(3, 4))),
+                  ))
+
+      assertEquals(
+          setOf(MonitoringPlotId(1), MonitoringPlotId(2), MonitoringPlotId(3), MonitoringPlotId(4)),
+          model.choosePermanentPlots(plantingSubzoneIds(1, 2), emptySet()))
+    }
+
+    @Test
+    fun `chooses 1-plot cluster if plot lies in planted subzone`() {
+      val model =
+          plantingZoneModel(
+              subzones =
+                  listOf(
+                      plantingSubzoneModel(
+                          id = 1, plots = monitoringPlotModels(permanentIds = listOf(1)))))
+
+      assertEquals(
+          setOf(MonitoringPlotId(1)), model.choosePermanentPlots(plantingSubzoneIds(1), emptySet()))
+    }
+
+    @Test
+    fun `does not choose cluster if some plots lie in unplanted subzones`() {
+      val model =
+          plantingZoneModel(
+              subzones =
+                  listOf(
+                      plantingSubzoneModel(
+                          id = 1, plots = monitoringPlotModels(permanentIds = listOf(1, 2))),
+                      plantingSubzoneModel(
+                          id = 2, plots = monitoringPlotModels(permanentIds = listOf(3, 4))),
+                  ))
+
+      assertEquals(emptySet<Any>(), model.choosePermanentPlots(plantingSubzoneIds(1), emptySet()))
+    }
+  }
+
+  @Nested
   inner class ChooseTemporaryPlots {
     @Test
     fun `does not choose permanent plots`() {
