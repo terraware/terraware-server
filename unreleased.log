@@ -1,3 +1,4 @@
+3d0a1a6a0ea Include docprod in generated schema docs (#2529)
 c9ad61b05a6 SW-6185 Expose monitoring plot size to clients (#2528)
 770c1cd787a SW-6185 Add plot size to database schema (#2527)
 16872547d6c Include variable and value data in workflow history (#2526)

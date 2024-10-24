@@ -1,0 +1,815 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<database name="terraware" schema="docprod" type="PostgreSQL - 13.1 (Debian 13.1-1.pgdg100+1)">
+   <tables>
+      <table name="dependency_conditions" numRows="6" remarks="(Enum) Types of conditions that can control whether or not a variable is presented to the user." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="dependency_condition_id" foreignKey="variables_dependency_condition_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="dependency_conditions_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="dependency_conditions_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="document_saved_versions" numRows="0" remarks="Saved versions of document variable values. A saved version is conceptually just a reference to a particular point in the edit history of the document; to restore that version, we ignore any later edits." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="document_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="document_saved_versions_document_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="documents"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_manifest_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="document_saved_versions_variable_manifest_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_manifests"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="max_variable_value_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="'-1'::integer" digits="0" id="4" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="7" name="is_submitted" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="8" name="is_accepted" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="document_saved_versions_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="document_statuses" numRows="5" remarks="(Enum) Current stage of a document's lifecycle." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="status_id" foreignKey="documents_status_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="document_statuses_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="document_statuses_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="document_templates" numRows="0" remarks="Templates for the different types of documents this system can produce." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="document_template_id" foreignKey="documents_document_template_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>
+            <child column="document_template_id" foreignKey="variable_manifests_document_template_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_manifests"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="document_templates_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="document_templates_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="documents" numRows="0" remarks="Top-level information about documents." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="document_id" foreignKey="document_saved_versions_document_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="document_saved_versions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="document_template_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="documents_document_template_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="document_templates"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_manifest_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="documents_variable_manifest_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_manifests"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="documents_status_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="document_statuses"/>
+         </column>
+         <column autoUpdated="false" defaultValue="'-1'::integer" digits="0" id="6" name="owned_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="'-1'::integer" digits="0" id="7" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="'-1'::integer" digits="0" id="9" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="10" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="internal_comment" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="documents_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="documents_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+         <index name="documents_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+         </index>
+      </table>
+      <table name="variable_image_values" numRows="0" remarks="Linking table that defines which image files are values of which variables." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="variable_value_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_image_values_variable_value_id_variable_id_variab_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="variable_id" foreignKey="variable_image_values_variable_value_id_variable_id_variab_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+            <parent column="id" foreignKey="variable_image_values_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="variable_type_id" foreignKey="variable_image_values_variable_value_id_variable_id_variab_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+            <parent column="id" foreignKey="variable_image_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="caption" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="variable_value_id" sequenceNumberInPK="1"/>
+         <index name="variable_image_values_pkey" unique="true">
+            <column ascending="true" name="variable_value_id"/>
+         </index>
+         <index name="variable_image_values_file_id_idx" unique="false">
+            <column ascending="true" name="file_id"/>
+         </index>
+         <checkConstraint constraint="((variable_type_id = 4))" name="variable_image_values_variable_type_id_check"/>
+      </table>
+      <table name="variable_injection_display_styles" numRows="2" remarks="(Enum) For injected variables, whether to render them as text fragments that are suitable for including in paragraphs or as separate items on the page. Analogous to the inline/block display styles in CSS. Not applicable to all variable types." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="display_style_id" foreignKey="variable_section_default_values_display_style_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_default_values"/>
+            <child column="display_style_id" foreignKey="variable_section_values_display_style_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_values"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="variable_injection_display_styles_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="variable_injection_display_styles_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="variable_link_values" numRows="0" remarks="Type-specific details of the values of link variables." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="variable_value_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_link_values_variable_value_id_variable_id_variabl_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="variable_id" foreignKey="variable_link_values_variable_value_id_variable_id_variabl_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+            <parent column="id" foreignKey="variable_link_values_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="variable_type_id" foreignKey="variable_link_values_variable_value_id_variable_id_variabl_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+            <parent column="id" foreignKey="variable_link_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="url" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="title" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="variable_value_id" sequenceNumberInPK="1"/>
+         <index name="variable_link_values_pkey" unique="true">
+            <column ascending="true" name="variable_value_id"/>
+         </index>
+         <checkConstraint constraint="((variable_type_id = 7))" name="variable_link_values_variable_type_id_check"/>
+      </table>
+      <table name="variable_manifest_entries" numRows="0" remarks="Linking table that defines which variables appear in which manifests and in what order." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="variable_manifest_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_manifest_entries_variable_manifest_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_manifests"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_manifest_entries_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="position" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="variable_manifest_id" sequenceNumberInPK="1"/>
+         <primaryKey column="variable_id" sequenceNumberInPK="2"/>
+         <index name="variable_manifest_entries_pkey" unique="true">
+            <column ascending="true" name="variable_manifest_id"/>
+            <column ascending="true" name="variable_id"/>
+         </index>
+         <index name="variable_manifest_entries_variable_manifest_id_position_key" unique="true">
+            <column ascending="true" name="variable_manifest_id"/>
+            <column ascending="true" name="position"/>
+         </index>
+      </table>
+      <table name="variable_manifests" numRows="0" remarks="A collection of the definitions of the variables for a document template. This is how we do versioning of variable definitions. Each revision of the variable definitions is represented as a new manifest." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="variable_manifest_id" foreignKey="document_saved_versions_variable_manifest_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="document_saved_versions"/>
+            <child column="variable_manifest_id" foreignKey="documents_variable_manifest_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>
+            <child column="variable_manifest_id" foreignKey="variable_manifest_entries_variable_manifest_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_manifest_entries"/>
+            <child column="variable_manifest_id" foreignKey="variable_section_default_values_variable_manifest_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_section_default_values"/>
+            <child column="variable_manifest_id" foreignKey="variable_section_recommendations_variable_manifest_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_section_recommendations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="document_template_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_manifests_document_template_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="document_templates"/>
+         </column>
+         <column autoUpdated="false" defaultValue="'-1'::integer" digits="0" id="2" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="variable_manifests_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="variable_numbers" numRows="0" remarks="Information about number variables that is not relevant for other variable types." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_numbers_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="variable_type_id" foreignKey="variable_numbers_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_numbers_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="min_value" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="max_value" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="decimal_places" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="variable_id" sequenceNumberInPK="1"/>
+         <index name="variable_numbers_pkey" unique="true">
+            <column ascending="true" name="variable_id"/>
+         </index>
+         <checkConstraint constraint="((variable_type_id = 1))" name="variable_numbers_variable_type_id_check"/>
+      </table>
+      <table name="variable_owners" numRows="0" remarks="Which internal users are responsible for reviewing the values of which variables for which projects." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_owners_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="owned_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="variable_id" sequenceNumberInPK="2"/>
+         <index name="variable_owners_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="variable_id"/>
+         </index>
+         <index name="variable_owners_owned_by_idx" unique="false">
+            <column ascending="true" name="owned_by"/>
+         </index>
+         <index name="variable_owners_variable_id_idx" unique="false">
+            <column ascending="true" name="variable_id"/>
+         </index>
+      </table>
+      <table name="variable_section_default_values" numRows="0" remarks="Section values that are set by default on newly-created documents." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_section_default_values_variable_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="variable_type_id" foreignKey="variable_section_default_valu_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_section_default_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="variable_manifest_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_section_default_values_variable_manifest_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_manifests"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="list_position" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="text_value" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="used_variable_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_section_default_values_used_variable_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="used_variable_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="variable_type_id" foreignKey="variable_section_default_valu_used_variable_id_used_variab_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_section_default_values_used_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="usage_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="variable_section_default_values_usage_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_usage_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="display_style_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="variable_section_default_values_display_style_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_injection_display_styles"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="variable_section_default_values_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="variable_section_default_valu_variable_manifest_id_variable_key" unique="true">
+            <column ascending="true" name="variable_manifest_id"/>
+            <column ascending="true" name="variable_id"/>
+            <column ascending="true" name="list_position"/>
+         </index>
+         <index name="variable_section_default_values_used_variable_id_idx" unique="false">
+            <column ascending="true" name="used_variable_id"/>
+         </index>
+         <checkConstraint constraint="(((text_value IS NULL) OR (used_variable_id IS NULL)))" name="cannot_have_both_text_and_reference"/>
+         <checkConstraint constraint="(((used_variable_type_id IS NULL) OR (used_variable_type_id &lt;&gt; 8)))" name="cannot_reference_other_sections"/>
+         <checkConstraint constraint="(((text_value IS NOT NULL) OR (used_variable_id IS NOT NULL)))" name="must_have_text_or_reference"/>
+         <checkConstraint constraint="((variable_type_id = 8))" name="variable_section_default_values_variable_type_id_check"/>
+      </table>
+      <table name="variable_section_recommendations" numRows="0" remarks="Which sections recommend using which other variables. Can vary between manifests." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="section_variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_section_recommendations_section_variable_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="section_variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="variable_section_recommendations_section_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="recommended_variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_section_recommendations_recommended_variable_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="variable_manifest_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_section_recommendations_variable_manifest_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_manifests"/>
+         </column>
+         <primaryKey column="section_variable_id" sequenceNumberInPK="1"/>
+         <primaryKey column="variable_manifest_id" sequenceNumberInPK="2"/>
+         <primaryKey column="recommended_variable_id" sequenceNumberInPK="3"/>
+         <index name="variable_section_recommendations_pkey" unique="true">
+            <column ascending="true" name="section_variable_id"/>
+            <column ascending="true" name="variable_manifest_id"/>
+            <column ascending="true" name="recommended_variable_id"/>
+         </index>
+         <index name="variable_section_recommendati_recommended_variable_id_varia_key" unique="true">
+            <column ascending="true" name="recommended_variable_id"/>
+            <column ascending="true" name="variable_manifest_id"/>
+            <column ascending="true" name="section_variable_id"/>
+         </index>
+         <checkConstraint constraint="((section_variable_type_id = 8))" name="variable_section_recommendations_section_variable_type_id_check"/>
+      </table>
+      <table name="variable_section_values" numRows="0" remarks="Fragments of the contents of document sections. Each fragment is either a block of text or a usage of a variable; they are assembled in order to render the contents of the section." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="variable_value_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_section_values_variable_value_id_variable_id_vari_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="variable_id" foreignKey="variable_section_values_variable_value_id_variable_id_vari_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+            <parent column="id" foreignKey="variable_section_values_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="variable_type_id" foreignKey="variable_section_values_variable_value_id_variable_id_vari_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+            <parent column="id" foreignKey="variable_section_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="usage_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="variable_section_values_usage_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_usage_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="text_value" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="used_variable_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_section_values_used_variable_id_used_variable_typ_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="used_variable_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="variable_type_id" foreignKey="variable_section_values_used_variable_id_used_variable_typ_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_section_values_used_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="display_style_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="variable_section_values_display_style_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_injection_display_styles"/>
+         </column>
+         <primaryKey column="variable_value_id" sequenceNumberInPK="1"/>
+         <index name="variable_section_values_pkey" unique="true">
+            <column ascending="true" name="variable_value_id"/>
+         </index>
+         <index name="variable_section_values_used_variable_id_idx" unique="false">
+            <column ascending="true" name="used_variable_id"/>
+         </index>
+         <checkConstraint constraint="(((text_value IS NULL) OR (used_variable_id IS NULL)))" name="cannot_have_both_text_and_reference"/>
+         <checkConstraint constraint="((NOT ((usage_type_id = 1) AND (used_variable_type_id = 8))))" name="cannot_inject_sections"/>
+         <checkConstraint constraint="(((used_variable_type_id IS NULL) OR (used_variable_type_id &lt;&gt; 8)))" name="cannot_reference_other_sections"/>
+         <checkConstraint constraint="(((usage_type_id = 1) = (display_style_id IS NOT NULL)))" name="injection_has_display_style"/>
+         <checkConstraint constraint="(((text_value IS NOT NULL) OR (used_variable_id IS NOT NULL)))" name="must_have_text_or_reference"/>
+         <checkConstraint constraint="(((usage_type_id &lt;&gt; 2) OR (used_variable_type_id = ANY (ARRAY[4, 6, 8]))))" name="reference_only_for_figures_and_sections"/>
+         <checkConstraint constraint="(((used_variable_id IS NULL) = (usage_type_id IS NULL)))" name="usages_must_have_types"/>
+      </table>
+      <table name="variable_sections" numRows="0" remarks="Hierarchy of sections that define the structure of the rendered document." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_sections_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="variable_type_id" foreignKey="variable_sections_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_sections_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="parent_variable_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_sections_parent_variable_id_parent_variable_type__fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="parent_variable_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="variable_type_id" foreignKey="variable_sections_parent_variable_id_parent_variable_type__fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_sections_parent_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="true" digits="0" id="4" name="render_heading" nullable="false" remarks="If false, the title is not included in the rendered document. False in cases where we want a single section to have multiple content blocks; in that case, we add them as child sections with this flag set to false." size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="variable_id" sequenceNumberInPK="1"/>
+         <index name="variable_sections_pkey" unique="true">
+            <column ascending="true" name="variable_id"/>
+         </index>
+         <checkConstraint constraint="(((parent_variable_type_id IS NULL) OR (parent_variable_type_id = 8)))" name="variable_sections_parent_variable_type_id_check"/>
+         <checkConstraint constraint="((variable_type_id = 8))" name="variable_sections_variable_type_id_check"/>
+      </table>
+      <table name="variable_select_option_values" numRows="0" remarks="The options of a select variable that are selected in a document. Options that are not selected do not appear in this table." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="variable_value_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_select_option_values_variable_value_id_variable_i_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="variable_id" foreignKey="variable_select_option_values_option_id_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_select_options"/>
+            <parent column="variable_id" foreignKey="variable_select_option_values_variable_value_id_variable_i_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+            <parent column="variable_id" foreignKey="variable_select_option_values_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_selects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="variable_type_id" foreignKey="variable_select_option_values_variable_value_id_variable_i_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+            <parent column="id" foreignKey="variable_select_option_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="option_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_select_option_values_option_id_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_select_options"/>
+         </column>
+         <primaryKey column="variable_value_id" sequenceNumberInPK="1"/>
+         <primaryKey column="option_id" sequenceNumberInPK="2"/>
+         <index name="variable_select_option_values_pkey" unique="true">
+            <column ascending="true" name="variable_value_id"/>
+            <column ascending="true" name="option_id"/>
+         </index>
+         <checkConstraint constraint="((variable_type_id = 5))" name="variable_select_option_values_variable_type_id_check"/>
+      </table>
+      <table name="variable_select_options" numRows="0" remarks="Available options for select variables." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="option_id" foreignKey="variable_select_option_values_option_id_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_select_option_values"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="variable_id" foreignKey="variable_select_option_values_option_id_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_select_option_values"/>
+            <parent column="id" foreignKey="variable_select_options_variable_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+            <parent column="variable_id" foreignKey="variable_select_options_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_selects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="variable_type_id" foreignKey="variable_select_options_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_selects"/>
+            <parent column="id" foreignKey="variable_select_options_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="position" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="rendered_text" nullable="true" remarks="What text should be rendered in the document when this option is selected. Null if the option's name should be rendered." size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="variable_select_options_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="variable_select_options_id_variable_id_key" unique="true">
+            <column ascending="true" name="id"/>
+            <column ascending="true" name="variable_id"/>
+         </index>
+      </table>
+      <table name="variable_selects" numRows="0" remarks="Information about select variables that is not relevant for other variable types. This table only has information about the variable as a whole; the options are in `variable_select_options`." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="variable_id" foreignKey="variable_select_option_values_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_select_option_values"/>
+            <child column="variable_id" foreignKey="variable_select_options_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_select_options"/>
+            <parent column="id" foreignKey="variable_selects_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="variable_type_id" foreignKey="variable_select_options_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_select_options"/>
+            <parent column="variable_type_id" foreignKey="variable_selects_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_selects_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="is_multiple" nullable="false" remarks="If true, allow multiple options to be selected. The list of selected options is considered a single value; do not set `variables.is_list` to true unless you want a list of multiple-select variables." size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="variable_id" sequenceNumberInPK="1"/>
+         <index name="variable_selects_pkey" unique="true">
+            <column ascending="true" name="variable_id"/>
+         </index>
+         <index name="variable_selects_variable_id_variable_type_id_key" unique="true">
+            <column ascending="true" name="variable_id"/>
+            <column ascending="true" name="variable_type_id"/>
+         </index>
+         <checkConstraint constraint="((variable_type_id = 5))" name="variable_selects_variable_type_id_check"/>
+      </table>
+      <table name="variable_table_columns" numRows="0" remarks="The order of the columns in a table. Each column must be a variable whose parent is the table." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_table_columns_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="table_variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="variable_id" foreignKey="variable_table_columns_table_variable_id_table_variable_ty_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_tables"/>
+            <parent column="id" foreignKey="variable_table_columns_table_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="table_variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="variable_table_columns_table_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+            <parent column="variable_type_id" foreignKey="variable_table_columns_table_variable_id_table_variable_ty_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_tables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="position" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="is_header" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="variable_id" sequenceNumberInPK="1"/>
+         <index name="variable_table_columns_pkey" unique="true">
+            <column ascending="true" name="variable_id"/>
+         </index>
+         <index name="variable_table_columns_table_variable_id_position_key" unique="true">
+            <column ascending="true" name="table_variable_id"/>
+            <column ascending="true" name="position"/>
+         </index>
+         <checkConstraint constraint="((table_variable_type_id = 6))" name="variable_table_columns_table_variable_type_id_check"/>
+      </table>
+      <table name="variable_table_styles" numRows="2" remarks="(Enum) How a table should be rendered visually in the document." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="table_style_id" foreignKey="variable_tables_table_style_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_tables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="variable_table_styles_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="variable_table_styles_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="variable_tables" numRows="0" remarks="Information about tables that is not relevant for other variable types." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="table_variable_id" foreignKey="variable_table_columns_table_variable_id_table_variable_ty_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_table_columns"/>
+            <parent column="id" foreignKey="variable_tables_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="table_variable_type_id" foreignKey="variable_table_columns_table_variable_id_table_variable_ty_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_table_columns"/>
+            <parent column="variable_type_id" foreignKey="variable_tables_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_tables_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="table_style_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="variable_tables_table_style_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_table_styles"/>
+         </column>
+         <primaryKey column="variable_id" sequenceNumberInPK="1"/>
+         <index name="variable_tables_pkey" unique="true">
+            <column ascending="true" name="variable_id"/>
+         </index>
+         <index name="variable_tables_variable_id_variable_type_id_key" unique="true">
+            <column ascending="true" name="variable_id"/>
+            <column ascending="true" name="variable_type_id"/>
+         </index>
+         <checkConstraint constraint="((variable_type_id = 6))" name="variable_tables_variable_type_id_check"/>
+      </table>
+      <table name="variable_text_types" numRows="2" remarks="(Enum) Types of text stored in a text variable field." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="variable_text_type_id" foreignKey="variable_texts_variable_text_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_texts"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="variable_text_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="variable_text_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="variable_texts" numRows="0" remarks="Information about text variables that is not relevant for other variable types." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_texts_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="variable_type_id" foreignKey="variable_texts_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_texts_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_text_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="variable_texts_variable_text_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_text_types"/>
+         </column>
+         <primaryKey column="variable_id" sequenceNumberInPK="1"/>
+         <index name="variable_texts_pkey" unique="true">
+            <column ascending="true" name="variable_id"/>
+         </index>
+         <checkConstraint constraint="((variable_type_id = 2))" name="variable_texts_variable_type_id_check"/>
+      </table>
+      <table name="variable_types" numRows="8" remarks="(Enum) Data types that can be assigned to variables." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="variable_type_id" foreignKey="variable_image_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_image_values"/>
+            <child column="variable_type_id" foreignKey="variable_link_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_link_values"/>
+            <child column="variable_type_id" foreignKey="variable_numbers_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_numbers"/>
+            <child column="used_variable_type_id" foreignKey="variable_section_default_values_used_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_default_values"/>
+            <child column="variable_type_id" foreignKey="variable_section_default_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_default_values"/>
+            <child column="section_variable_type_id" foreignKey="variable_section_recommendations_section_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_recommendations"/>
+            <child column="used_variable_type_id" foreignKey="variable_section_values_used_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_values"/>
+            <child column="variable_type_id" foreignKey="variable_section_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_values"/>
+            <child column="parent_variable_type_id" foreignKey="variable_sections_parent_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_sections"/>
+            <child column="variable_type_id" foreignKey="variable_sections_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_sections"/>
+            <child column="variable_type_id" foreignKey="variable_select_option_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_select_option_values"/>
+            <child column="variable_type_id" foreignKey="variable_select_options_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_select_options"/>
+            <child column="variable_type_id" foreignKey="variable_selects_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_selects"/>
+            <child column="table_variable_type_id" foreignKey="variable_table_columns_table_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_table_columns"/>
+            <child column="variable_type_id" foreignKey="variable_tables_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_tables"/>
+            <child column="variable_type_id" foreignKey="variable_texts_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_texts"/>
+            <child column="variable_type_id" foreignKey="variable_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+            <child column="variable_type_id" foreignKey="variables_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="variable_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="variable_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="variable_usage_types" numRows="2" remarks="(Enum) When a variable is used in a section, whether to inject the value of the variable or the location where the value is injected elsewhere in the doc." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="usage_type_id" foreignKey="variable_section_default_values_usage_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_default_values"/>
+            <child column="usage_type_id" foreignKey="variable_section_values_usage_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_values"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="variable_usage_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="variable_usage_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="variable_value_table_rows" numRows="0" remarks="Linking table that defines which variable values are in which rows of a table." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_value_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_value_table_rows_variable_value_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_values"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="table_row_value_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_value_table_rows_table_row_value_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_values"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="variable_value_table_rows_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="variable_value_table_rows_table_row_value_id_idx" unique="false">
+            <column ascending="true" name="table_row_value_id"/>
+         </index>
+         <index name="variable_value_table_rows_variable_value_id_table_row_value_key" unique="true">
+            <column ascending="true" name="variable_value_id"/>
+            <column ascending="true" name="table_row_value_id"/>
+         </index>
+      </table>
+      <table name="variable_values" numRows="0" remarks="Insert-only table with all historical and current values of all inputs." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="variable_value_id" foreignKey="variable_image_values_variable_value_id_variable_id_variab_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_image_values"/>
+            <child column="variable_value_id" foreignKey="variable_link_values_variable_value_id_variable_id_variabl_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_link_values"/>
+            <child column="variable_value_id" foreignKey="variable_section_values_variable_value_id_variable_id_vari_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_values"/>
+            <child column="variable_value_id" foreignKey="variable_select_option_values_variable_value_id_variable_i_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_select_option_values"/>
+            <child column="table_row_value_id" foreignKey="variable_value_table_rows_table_row_value_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_value_table_rows"/>
+            <child column="variable_value_id" foreignKey="variable_value_table_rows_variable_value_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_value_table_rows"/>
+            <child column="max_variable_value_id" foreignKey="variable_workflow_history_max_variable_value_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_workflow_history"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="variable_id" foreignKey="variable_image_values_variable_value_id_variable_id_variab_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_image_values"/>
+            <child column="variable_id" foreignKey="variable_link_values_variable_value_id_variable_id_variabl_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_link_values"/>
+            <child column="variable_id" foreignKey="variable_section_values_variable_value_id_variable_id_vari_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_values"/>
+            <child column="variable_id" foreignKey="variable_select_option_values_variable_value_id_variable_i_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_select_option_values"/>
+            <parent column="id" foreignKey="variable_values_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="variable_type_id" foreignKey="variable_image_values_variable_value_id_variable_id_variab_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_image_values"/>
+            <child column="variable_type_id" foreignKey="variable_link_values_variable_value_id_variable_id_variabl_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_link_values"/>
+            <child column="variable_type_id" foreignKey="variable_section_values_variable_value_id_variable_id_vari_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_values"/>
+            <child column="variable_type_id" foreignKey="variable_select_option_values_variable_value_id_variable_i_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_select_option_values"/>
+            <parent column="variable_type_id" foreignKey="variable_values_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+            <parent column="id" foreignKey="variable_values_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="4" name="list_position" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="'-1'::integer" digits="0" id="5" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="7" name="is_deleted" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="number_value" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="text_value" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="date_value" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="citation" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="variable_values_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="variable_values_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+         </index>
+         <index name="variable_values_variable_id_id_key" unique="true">
+            <column ascending="true" name="variable_id"/>
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="variable_values_variable_id_variable_type_id_id_key" unique="true">
+            <column ascending="true" name="variable_id"/>
+            <column ascending="true" name="variable_type_id"/>
+            <column ascending="true" name="id"/>
+         </index>
+         <checkConstraint constraint="(((number_value IS NULL) OR (variable_type_id = 1)))" name="variable_values_check"/>
+         <checkConstraint constraint="(((text_value IS NULL) OR (variable_type_id = 2)))" name="variable_values_check1"/>
+      </table>
+      <table name="variable_workflow_history" numRows="0" remarks="History of changes to the workflow details for a variable in a project. This table is append-only; edits to the values are represented as new rows, and the row with the highest ID for a given project and variable ID holds the current workflow details for that variable." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_workflow_history_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="max_variable_value_id" nullable="false" remarks="The highest variable value ID at the time the workflow operation happened. This is to support fetching the variable value as it existed at the time of the workflow operation. This ID is not required to be a value of the variable referenced by `variable_id` (it can be the maximum value ID for the project as a whole)." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variable_workflow_history_max_variable_value_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="variable_workflow_status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="variable_workflow_history_variable_workflow_status_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_workflow_statuses"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="feedback" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="internal_comment" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="variable_workflow_history_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="variable_workflow_history_created_by_idx" unique="false">
+            <column ascending="true" name="created_by"/>
+         </index>
+         <index name="variable_workflow_history_max_variable_value_id_idx" unique="false">
+            <column ascending="true" name="max_variable_value_id"/>
+         </index>
+         <index name="variable_workflow_history_project_id_variable_id_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="variable_id"/>
+            <column ascending="false" name="id"/>
+         </index>
+         <index name="variable_workflow_history_variable_id_idx" unique="false">
+            <column ascending="true" name="variable_id"/>
+         </index>
+      </table>
+      <table name="variable_workflow_statuses" numRows="8" remarks="(Enum) Workflow statuses of variables in projects. The list of valid statuses depends on the variable type." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="variable_workflow_status_id" foreignKey="variable_workflow_history_variable_workflow_status_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_workflow_history"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="variable_workflow_statuses_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="variable_workflow_statuses_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="variables" numRows="0" remarks="variables that can be supplied by the user. This table stores the variables themselves, not the values of the variables in a particular document. Type-specific information is in child tables such as `variable_numbers`." schema="docprod" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="variable_id" foreignKey="deliverable_variables_variable_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverable_variables"/>
+            <child column="variable_id" foreignKey="variable_image_values_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_image_values"/>
+            <child column="variable_id" foreignKey="variable_link_values_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_link_values"/>
+            <child column="variable_id" foreignKey="variable_manifest_entries_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_manifest_entries"/>
+            <child column="variable_id" foreignKey="variable_numbers_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_numbers"/>
+            <child column="variable_id" foreignKey="variable_owners_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_owners"/>
+            <child column="used_variable_id" foreignKey="variable_section_default_values_used_variable_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_section_default_values"/>
+            <child column="variable_id" foreignKey="variable_section_default_values_variable_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_section_default_values"/>
+            <child column="recommended_variable_id" foreignKey="variable_section_recommendations_recommended_variable_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_section_recommendations"/>
+            <child column="section_variable_id" foreignKey="variable_section_recommendations_section_variable_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_section_recommendations"/>
+            <child column="used_variable_id" foreignKey="variable_section_values_used_variable_id_used_variable_typ_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_values"/>
+            <child column="variable_id" foreignKey="variable_section_values_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_values"/>
+            <child column="parent_variable_id" foreignKey="variable_sections_parent_variable_id_parent_variable_type__fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_sections"/>
+            <child column="variable_id" foreignKey="variable_sections_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_sections"/>
+            <child column="variable_id" foreignKey="variable_select_options_variable_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_select_options"/>
+            <child column="variable_id" foreignKey="variable_selects_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_selects"/>
+            <child column="table_variable_id" foreignKey="variable_table_columns_table_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_table_columns"/>
+            <child column="variable_id" foreignKey="variable_table_columns_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_table_columns"/>
+            <child column="variable_id" foreignKey="variable_tables_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_tables"/>
+            <child column="variable_id" foreignKey="variable_texts_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_texts"/>
+            <child column="variable_id" foreignKey="variable_values_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+            <child column="variable_id" foreignKey="variable_workflow_history_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_workflow_history"/>
+            <child column="replaces_variable_id" foreignKey="variables_replaces_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="variable_type_id" foreignKey="variable_numbers_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_numbers"/>
+            <child column="used_variable_type_id" foreignKey="variable_section_default_valu_used_variable_id_used_variab_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_default_values"/>
+            <child column="variable_type_id" foreignKey="variable_section_default_valu_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_default_values"/>
+            <child column="used_variable_type_id" foreignKey="variable_section_values_used_variable_id_used_variable_typ_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_section_values"/>
+            <child column="parent_variable_type_id" foreignKey="variable_sections_parent_variable_id_parent_variable_type__fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_sections"/>
+            <child column="variable_type_id" foreignKey="variable_sections_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_sections"/>
+            <child column="variable_type_id" foreignKey="variable_selects_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_selects"/>
+            <child column="variable_type_id" foreignKey="variable_tables_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_tables"/>
+            <child column="variable_type_id" foreignKey="variable_texts_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variable_texts"/>
+            <child column="variable_type_id" foreignKey="variable_values_variable_id_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_values"/>
+            <parent column="id" foreignKey="variables_variable_type_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="replaces_variable_id" nullable="true" remarks="If this is a new version of a variable that existed in a previous manifest version, the ID of the previous version of the variable. This allows the system to automatically migrate values from older variable versions when a document is updated to a new manifest version." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="variables_replaces_variable_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variables"/>
+         </column>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="3" name="is_list" nullable="false" remarks="True if this variable is a list of values rather than a single value. If the variable is a table, true if the table can contain multiple rows." size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="stable_id" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="deliverable_question" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="dependency_variable_stable_id" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="dependency_condition_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="variables_dependency_condition_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="dependency_conditions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="dependency_value" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="false" digits="0" id="11" name="internal_only" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="is_required" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="variables_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="cannot_have_multiple_replacements" unique="true">
+            <column ascending="true" name="replaces_variable_id"/>
+         </index>
+         <index name="variables_id_variable_type_id_key" unique="true">
+            <column ascending="true" name="id"/>
+            <column ascending="true" name="variable_type_id"/>
+         </index>
+      </table>
+   </tables>
+   <routines>
+      <routine dataAccess="MODIFIES" deterministic="false" name="reject_delete" returnType="trigger" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="PLPGSQL"><![CDATA[
+BEGIN
+    RAISE 'This table does not allow deletes.';
+END;
+]]></definition>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="reject_delete_value" returnType="trigger" securityType="INVOKER" type="FUNCTION">
+         <comment><![CDATA[Trigger function that rejects deletion of `variable_values` rows unless the entire document is being deleted.]]></comment>
+         <definition language="PLPGSQL"><![CDATA[
+BEGIN
+    IF EXISTS (SELECT 1 FROM documents WHERE id = OLD.document_id) THEN
+        RAISE 'This table does not allow deletes.';
+    ELSE
+        -- The entire document is being deleted.
+        RETURN OLD;
+    END IF;
+END;
+]]></definition>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="reject_delete_value_child" returnType="trigger" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="PLPGSQL"><![CDATA[
+BEGIN
+    IF EXISTS (SELECT 1 FROM variable_values WHERE id = OLD.variable_value_id) THEN
+        RAISE 'This table does not allow deletes.';
+    ELSE
+        RETURN OLD;
+    END IF;
+END;
+]]></definition>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="reject_update" returnType="trigger" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="PLPGSQL"><![CDATA[
+BEGIN
+    RAISE 'This table does not allow updates.';
+END;
+]]></definition>
+      </routine>
+      <routine dataAccess="MODIFIES" deterministic="false" name="reject_update_value" returnType="trigger" securityType="INVOKER" type="FUNCTION">
+         <comment/>
+         <definition language="PLPGSQL"><![CDATA[
+BEGIN
+    IF (OLD.created_by != -1 AND NEW.created_by = -1
+        AND NOT EXISTS (SELECT 1 FROM users WHERE id = OLD.created_by))
+        OR (OLD.verified_by != -1 AND NEW.verified_by = -1
+            AND NOT EXISTS (SELECT 1 FROM users WHERE id = OLD.verified_by))
+    THEN
+        RAISE 'This table does not allow updates.';
+    ELSE
+        -- This is an update triggered by a user being deleted.
+        RETURN NEW;
+    END IF;
+END;
+]]></definition>
+      </routine>
+   </routines>
+</database>

@@ -265,8 +265,8 @@
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
             <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
+            <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="deliverable_id" sequenceNumberInPK="1"/>
@@ -308,7 +308,9 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="deliverable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="deliverable_variables_deliverable_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverables"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="variable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="deliverable_variables_variable_id_fkey" implied="false" onDeleteCascade="true" schema="docprod" table="variables"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="position" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <primaryKey column="variable_id" sequenceNumberInPK="1"/>
          <primaryKey column="deliverable_id" sequenceNumberInPK="2"/>

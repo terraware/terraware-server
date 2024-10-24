@@ -11,10 +11,10 @@ application_modules
 application_histories
 submission_snapshots
 event_projects
+deliverable_variables
 deliverable_project_due_dates
 deliverable_cohort_due_dates
 cohort_modules
-deliverable_variables
 default_voters
 default_project_leads
 events

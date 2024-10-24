@@ -21,10 +21,10 @@ deal_stages
 events
 default_project_leads
 default_voters
-deliverable_variables
 cohort_modules
 deliverable_cohort_due_dates
 deliverable_project_due_dates
+deliverable_variables
 event_projects
 submission_snapshots
 application_histories
