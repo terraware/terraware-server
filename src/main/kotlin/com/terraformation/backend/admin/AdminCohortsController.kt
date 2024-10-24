@@ -224,7 +224,7 @@ class AdminCohortsController(
         deliverableStore
             .fetchDeliverableSubmissions(deliverableId = deliverableId)
             .filter { cohortProjects.contains(it.projectId) }
-            .sortedBy { it.projectId.value }
+            .sortedBy { it.projectId }
 
     model.addAttribute("canManageDeliverables", currentUser().canManageDeliverables())
     model.addAttribute("cohort", cohort)

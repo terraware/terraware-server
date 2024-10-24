@@ -92,7 +92,7 @@ class AdminPlantingSitesController(
 
     val allOrganizations =
         if (currentUser().canMovePlantingSiteToAnyOrg(plantingSiteId)) {
-          organizationsDao.findAll().sortedBy { it.id!!.value }
+          organizationsDao.findAll().sortedBy { it.id }
         } else {
           null
         }

@@ -38,8 +38,8 @@ class AdminController(
 
   @GetMapping("/")
   fun getIndex(model: Model): String {
-    val organizations = organizationStore.fetchAll().sortedBy { it.id.value }
-    val allOrganizations = organizationsDao.findAll().sortedBy { it.id!!.value }
+    val organizations = organizationStore.fetchAll().sortedBy { it.id }
+    val allOrganizations = organizationsDao.findAll().sortedBy { it.id }
 
     model.addAttribute("allOrganizations", allOrganizations)
     model.addAttribute(

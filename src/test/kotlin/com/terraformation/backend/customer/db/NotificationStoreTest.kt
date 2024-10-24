@@ -117,7 +117,7 @@ internal class NotificationStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals(
         expected,
-        store.fetchByOrganization(orgId).sortedBy { it.id.value },
+        store.fetchByOrganization(orgId).sortedBy { it.id },
         "Listed organizations do not match what was created")
   }
 

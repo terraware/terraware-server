@@ -80,7 +80,7 @@ class ReportFileService(
     return reportPhotosDao
         .fetchByReportId(reportId)
         .map { ReportPhotoModel(it, filesRows[it.fileId]!!) }
-        .sortedBy { it.metadata.id.value }
+        .sortedBy { it.metadata.id }
   }
 
   fun listFiles(reportId: ReportId): List<ReportFileModel> {

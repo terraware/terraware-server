@@ -361,8 +361,8 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         uploadsDao.fetchOneById(inserted.uploadId)?.statusId,
         "Status after import")
 
-    val actualSpecies = speciesDao.findAll().sortedBy { it.id!!.value }
-    val actualBatches = batchesDao.findAll().sortedBy { it.id!!.value }
+    val actualSpecies = speciesDao.findAll().sortedBy { it.id }
+    val actualBatches = batchesDao.findAll().sortedBy { it.id }
     val mappedSpeciesIds = mapTo1IndexedIds(actualSpecies, ::SpeciesId, SpeciesRow::id)
     val mappedBatchIds = mapTo1IndexedIds(actualBatches, ::BatchId, BatchesRow::id)
 

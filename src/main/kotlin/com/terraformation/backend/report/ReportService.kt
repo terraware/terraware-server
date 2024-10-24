@@ -245,7 +245,7 @@ class ReportService(
                   ?.populate(facility, orgStats, projectStats)
                   ?: ReportBodyModelV1.Nursery(facility, orgStats, projectStats)
             }
-            .sortedBy { it.id.value }
+            .sortedBy { it.id }
 
     val plantingSiteBodies =
         plantingSiteModels
@@ -258,7 +258,7 @@ class ReportService(
                   ?.populate(plantingSiteModel, speciesModels)
                   ?: ReportBodyModelV1.PlantingSite(plantingSiteModel, speciesModels)
             }
-            .sortedBy { it.id.value }
+            .sortedBy { it.id }
 
     val seedBankBodies =
         seedBankModels
@@ -273,7 +273,7 @@ class ReportService(
                   ?.populate(facility, orgStats, projectStats)
                   ?: ReportBodyModelV1.SeedBank(facility, orgStats, projectStats)
             }
-            .sortedBy { it.id.value }
+            .sortedBy { it.id }
 
     return body?.copy(
         annualDetails = annualDetails,

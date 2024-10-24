@@ -341,7 +341,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
                 modifiedTime = Instant.EPOCH),
         )
 
-    val actualSpecies = speciesDao.findAll().sortedBy { it.id!!.value }
+    val actualSpecies = speciesDao.findAll().sortedBy { it.id }
     val mappedSpeciesIds = mapTo1IndexedIds(actualSpecies, ::SpeciesId, SpeciesRow::id)
     assertEquals(
         expectedSpecies.map { it.copy(id = null) }.toSet(),
@@ -723,7 +723,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
   }
 
   private fun assertProblems(expected: List<UploadProblemsRow>) {
-    val actual = uploadProblemsDao.findAll().sortedBy { it.id!!.value }.map { it.copy(id = null) }
+    val actual = uploadProblemsDao.findAll().sortedBy { it.id }.map { it.copy(id = null) }
     assertEquals(expected, actual)
   }
 

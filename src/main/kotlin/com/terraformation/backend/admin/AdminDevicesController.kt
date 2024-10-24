@@ -51,7 +51,7 @@ class AdminDevicesController(
 
   @GetMapping("/deviceTemplates")
   fun getDeviceTemplates(model: Model): String {
-    val templates = deviceTemplatesDao.findAll().sortedBy { it.id!!.value }
+    val templates = deviceTemplatesDao.findAll().sortedBy { it.id }
 
     model.addAttribute("canUpdateDeviceTemplates", currentUser().canUpdateDeviceTemplates())
     model.addAttribute("categories", DeviceTemplateCategory.entries)

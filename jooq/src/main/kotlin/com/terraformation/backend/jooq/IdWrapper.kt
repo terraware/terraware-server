@@ -20,8 +20,9 @@ class IdWrapper(private val className: String, includeExpressions: List<String>)
   fun render(out: JavaWriter) {
     out.println(
         """
-      class $className @JsonCreator constructor(@get:JsonValue val value: Long) {
+      class $className @JsonCreator constructor(@get:JsonValue val value: Long) : Comparable<$className> {
         constructor(value: String) : this(value.toLong())
+        override fun compareTo(other: $className) = value.compareTo(other.value)
         override fun equals(other: Any?): Boolean = other is $className && other.value == value
         override fun hashCode(): Int = value.hashCode()
         override fun toString(): String = value.toString()

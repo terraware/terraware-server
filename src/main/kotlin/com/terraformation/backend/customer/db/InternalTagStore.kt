@@ -86,7 +86,7 @@ class InternalTagStore(
   fun findAllTags(): List<InternalTagsRow> {
     requirePermissions { readInternalTags() }
 
-    return internalTagsDao.findAll().sortedBy { it.id!!.value }
+    return internalTagsDao.findAll().sortedBy { it.id }
   }
 
   fun fetchOrganizationsByTagId(tagId: InternalTagId): Collection<OrganizationsRow> {

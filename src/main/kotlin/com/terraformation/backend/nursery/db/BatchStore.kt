@@ -655,7 +655,7 @@ class BatchStore(
           withdrawal.batchWithdrawals
               // Sort by batch ID to avoid deadlocks if two clients withdraw from the same set of
               // batches at the same time; DB locks will be acquired in the same order on both.
-              .sortedBy { it.batchId.value }
+              .sortedBy { it.batchId }
               .map { batchWithdrawal ->
                 val batchId = batchWithdrawal.batchId
                 val batchWithdrawalsRow =

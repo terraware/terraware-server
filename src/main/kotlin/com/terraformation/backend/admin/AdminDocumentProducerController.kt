@@ -35,8 +35,7 @@ class AdminDocumentProducerController(
 
   @GetMapping("/")
   fun getIndex(model: Model): String {
-    model.addAttribute(
-        "documentTemplates", documentTemplatesDao.findAll().sortedBy { it.id?.value })
+    model.addAttribute("documentTemplates", documentTemplatesDao.findAll().sortedBy { it.id })
 
     return "/admin/documentProducer"
   }
