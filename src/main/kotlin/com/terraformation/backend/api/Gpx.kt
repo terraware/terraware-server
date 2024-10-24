@@ -79,6 +79,9 @@ class GpxWriter(output: OutputStream, private val waypoints: List<GpxWaypoint>) 
   fun write() {
     writer.writeStartDocument("utf-8", "1.0")
     writer.writeStartElement("gpx")
+    writer.writeAttribute("creator", "Terraformation")
+    writer.writeAttribute("xmlns", "http://www.topografix.com/GPX/1/1")
+    writer.writeAttribute("version", "1.1")
     waypoints.forEach { writeWaypoint(it) }
 
     // TODO: Write track, or routes if applicable
