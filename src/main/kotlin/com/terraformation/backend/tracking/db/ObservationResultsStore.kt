@@ -21,7 +21,6 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
-import com.terraformation.backend.tracking.model.MONITORING_PLOTS_PER_HECTARE
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotStatus
@@ -30,6 +29,7 @@ import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsM
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
+import com.terraformation.backend.util.SQUARE_METERS_PER_HECTARE
 import jakarta.inject.Named
 import kotlin.math.roundToInt
 import org.jooq.Condition
@@ -246,6 +246,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               val completedTime = record[OBSERVATION_PLOTS.COMPLETED_TIME]
               val isPermanent = record[OBSERVATION_PLOTS.IS_PERMANENT.asNonNullable()]
               val monitoringPlotName = record[MONITORING_PLOTS.FULL_NAME.asNonNullable()]
+              val sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!
               val species = record[monitoringPlotSpeciesMultiset]
               val totalLive = species.sumOf { it.totalLive }
               val totalPlants = species.sumOf { it.totalLive + it.totalExisting + it.totalDead }
@@ -257,7 +258,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
               val mortalityRate = if (isPermanent) calculateMortalityRate(species) else null
 
-              val plantingDensity = (totalLive * MONITORING_PLOTS_PER_HECTARE).roundToInt()
+              val areaSquareMeters = sizeMeters * sizeMeters
+              val plantingDensity =
+                  (totalLive * SQUARE_METERS_PER_HECTARE / areaSquareMeters).roundToInt()
 
               val status =
                   when {
@@ -283,7 +286,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   overlapsWithPlotIds = record[monitoringPlotOverlapsMultiset],
                   photos = record[photosMultiset],
                   plantingDensity = plantingDensity,
-                  sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!,
+                  sizeMeters = sizeMeters,
                   species = species,
                   status = status,
                   totalPlants = totalPlants,

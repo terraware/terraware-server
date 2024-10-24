@@ -222,17 +222,23 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class Scenarios {
     @Test
-    fun `site with two observations`() {
-      runScenario("/tracking/observation/TwoObservations", 2)
+    fun `site with two observations, 25m plots`() {
+      runScenario("/tracking/observation/TwoObservations", numObservations = 2, sizeMeters = 25)
+    }
+
+    @Test
+    fun `site with two observations, 30m plots`() {
+      runScenario("/tracking/observation/TwoObservations30m", numObservations = 2, sizeMeters = 30)
     }
 
     @Test
     fun `permanent plots being added and removed`() {
-      runScenario("/tracking/observation/PermanentPlotChanges", 3)
+      runScenario(
+          "/tracking/observation/PermanentPlotChanges", numObservations = 3, sizeMeters = 25)
     }
 
-    private fun runScenario(prefix: String, numObservations: Int) {
-      importFromCsvFiles(prefix, numObservations)
+    private fun runScenario(prefix: String, numObservations: Int, sizeMeters: Int) {
+      importFromCsvFiles(prefix, numObservations, sizeMeters)
       val allResults =
           resultsStore.fetchByPlantingSiteId(plantingSiteId).sortedBy { it.observationId }
       assertResults(prefix, allResults)
@@ -386,10 +392,10 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertResultsMatchCsv("$prefix/PlotStatsPerSpecies.csv", actual)
     }
 
-    private fun importFromCsvFiles(prefix: String, numObservations: Int) {
+    private fun importFromCsvFiles(prefix: String, numObservations: Int, sizeMeters: Int) {
       zoneIds = importZonesCsv(prefix)
       subzoneIds = importSubzonesCsv(prefix)
-      plotIds = importPlotsCsv(prefix)
+      plotIds = importPlotsCsv(prefix, sizeMeters)
       importPlantsCsv(prefix, numObservations)
     }
 
@@ -426,7 +432,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       }
     }
 
-    private fun importPlotsCsv(prefix: String): Map<String, MonitoringPlotId> {
+    private fun importPlotsCsv(prefix: String, sizeMeters: Int): Map<String, MonitoringPlotId> {
       return associateCsv("$prefix/Plots.csv") { cols ->
         val subzoneName = cols[0]
         val plotName = cols[1]
@@ -434,7 +440,10 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
         val plotId =
             insertMonitoringPlot(
-                fullName = plotName, name = plotName, plantingSubzoneId = subzoneId)
+                fullName = plotName,
+                name = plotName,
+                plantingSubzoneId = subzoneId,
+                sizeMeters = sizeMeters)
 
         if (cols[2] == "Permanent") {
           permanentPlotNames.add(plotName)
