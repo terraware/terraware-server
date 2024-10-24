@@ -32,7 +32,7 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
 ) {
   /**
    * Chooses a set of plots to act as permanent monitoring plots. The number of plots is determined
-   * by [numPermanentClusters] (where each cluster has 4 plots).
+   * by [numPermanentClusters] (where each cluster has either 1 or 4 plots).
    *
    * Only clusters whose plots are all in planted subzones are returned, meaning there may be fewer
    * plots than configured, or none at all. If particular subzones have been requested for the
@@ -54,9 +54,18 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
             plot.permanentCluster != null && plot.permanentCluster <= numPermanentClusters
           }
         }
-    val clustersWithFourQualifiedPlots =
-        plotsInPlantedSubzones.groupBy { it.permanentCluster }.values.filter { it.size == 4 }
-    return clustersWithFourQualifiedPlots.flatMap { cluster -> cluster.map { it.id } }.toSet()
+
+    val clusters =
+        plantingSubzones
+            .flatMap { subzone -> subzone.monitoringPlots.filter { it.permanentCluster != null } }
+            .groupBy { plot -> plot.permanentCluster }
+    val clustersCompletelyInPlantedSubzones =
+        plotsInPlantedSubzones
+            .groupBy { plot -> plot.permanentCluster }
+            .filter { (clusterNumber, plots) -> plots.size == clusters[clusterNumber]?.size }
+            .values
+
+    return clustersCompletelyInPlantedSubzones.flatMap { cluster -> cluster.map { it.id } }.toSet()
   }
 
   /**
