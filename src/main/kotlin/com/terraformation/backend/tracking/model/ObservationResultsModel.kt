@@ -97,6 +97,7 @@ data class ObservationMonitoringPlotResultsModel(
      * still alive.
      */
     val plantingDensity: Int,
+    val sizeMeters: Int,
     val species: List<ObservationSpeciesResultsModel>,
     val status: ObservationMonitoringPlotStatus,
     /**

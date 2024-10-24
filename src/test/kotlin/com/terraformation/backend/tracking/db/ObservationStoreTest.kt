@@ -207,6 +207,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   plantingSubzoneId = plantingSubzoneId1,
                   plantingSubzoneName = "Z1-S1",
                   plotName = "Z1-S1-1",
+                  sizeMeters = 25,
               ),
               AssignedPlotDetails(
                   model =
@@ -224,6 +225,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   plantingSubzoneId = plantingSubzoneId1,
                   plantingSubzoneName = "Z1-S1",
                   plotName = "Z1-S1-2",
+                  sizeMeters = 25,
               ),
               AssignedPlotDetails(
                   model =
@@ -245,6 +247,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   plantingSubzoneId = plantingSubzoneId2,
                   plantingSubzoneName = "Z1-S2",
                   plotName = "Z1-S2-1",
+                  sizeMeters = 25,
               ))
 
       val actual = store.fetchObservationPlotDetails(observationId)
