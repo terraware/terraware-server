@@ -75,6 +75,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="permanent_cluster" nullable="true" remarks="If this plot is a candidate to be a permanent monitoring plot, its position in the randomized list of plots for the planting zone. Starts at 1 for each planting zone. There are always 4 plots with a given sequence number in a given zone. If null, this plot is not part of a 4-plot cluster but may still be chosen as a temporary monitoring plot." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="permanent_cluster_subplot" nullable="true" remarks="If this plot is a candidate to be a permanent monitoring plot, its ordinal position from 1 to 4 in the 4-plot cluster. 1=southwest, 2=southeast, 3=northeast, 4=northwest." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="true" digits="0" id="11" name="is_available" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="size_meters" nullable="false" remarks="Length in meters of one side of the monitoring plot. Plots are always squares, so for a 30x30m plot, this would be 30." size="10" type="int4" typeCode="4"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="monitoring_plots_pkey" unique="true">
             <column ascending="true" name="id"/>

@@ -1,3 +1,4 @@
+770c1cd787a SW-6185 Add plot size to database schema (#2527)
 16872547d6c Include variable and value data in workflow history (#2526)
 a7c393bc778 Applied filter to valueless variable in get values controller (#2524)
 a90b41b5cde Updated translations from Phrase (#2523)
