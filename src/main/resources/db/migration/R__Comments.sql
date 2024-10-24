@@ -568,6 +568,8 @@ COMMENT ON TABLE accelerator.user_internal_interests IS 'Which internal interest
 
 COMMENT ON TABLE accelerator.vote_options IS '(Enum) Available vote options.';
 
+COMMENT ON TABLE docprod.dependency_conditions IS '(Enum) Types of conditions that can control whether or not a variable is presented to the user.';
+
 COMMENT ON TABLE docprod.document_saved_versions IS 'Saved versions of document variable values. A saved version is conceptually just a reference to a particular point in the edit history of the document; to restore that version, we ignore any later edits.';
 
 COMMENT ON TABLE docprod.document_statuses IS '(Enum) Current stage of a document''s lifecycle.';

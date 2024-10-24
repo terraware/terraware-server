@@ -25,10 +25,10 @@ The database has some subject-area-specific schemas as well as a default public 
   * [Device-related tables](schema/device/public/relationships.html)
   * [Species-related tables](schema/species/public/relationships.html)
 * [Accelerator schema](schema/all/accelerator/relationships.html) (`accelerator`)
+* [Document Producer schema](schema/all/docprod/relationships.html) (`docprod`)
 * [Nursery schema](schema/all/nursery/relationships.html) (`nursery`)
 * [Seed bank schema](schema/all/seedbank/relationships.html) (`seedbank`)
 * [Tracking schema](schema/all/tracking/relationships.html) (`tracking`)
-* Document Producer schema (`docprod`)
 
 ## Other docs
 

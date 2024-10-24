@@ -4,6 +4,7 @@ import com.terraformation.backend.db.SchemaDocsGenerator.Slice.ACCELERATOR
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.ALL
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.CUSTOMER
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.DEVICE
+import com.terraformation.backend.db.SchemaDocsGenerator.Slice.DOCPROD
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.NURSERY
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SEEDBANK
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SPECIES
@@ -113,6 +114,7 @@ class SchemaDocsGenerator : DatabaseTest() {
     ALL("all"),
     CUSTOMER("customer"),
     DEVICE("device"),
+    DOCPROD("docprod"),
     NURSERY("nursery"),
     SEEDBANK("seedbank"),
     SPECIES("species"),
@@ -167,6 +169,40 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "submissions" to setOf(ALL, ACCELERATOR),
                   "user_internal_interests" to setOf(ALL, ACCELERATOR),
                   "vote_options" to setOf(ALL, ACCELERATOR),
+              ),
+          "docprod" to
+              mapOf(
+                  "dependency_conditions" to setOf(ALL, DOCPROD),
+                  "document_saved_versions" to setOf(ALL, DOCPROD),
+                  "document_statuses" to setOf(ALL, DOCPROD),
+                  "document_templates" to setOf(ALL, DOCPROD),
+                  "documents" to setOf(ALL, DOCPROD),
+                  "variable_image_values" to setOf(ALL, DOCPROD),
+                  "variable_injection_display_styles" to setOf(ALL, DOCPROD),
+                  "variable_link_values" to setOf(ALL, DOCPROD),
+                  "variable_manifest_entries" to setOf(ALL, DOCPROD),
+                  "variable_manifests" to setOf(ALL, DOCPROD),
+                  "variable_numbers" to setOf(ALL, DOCPROD),
+                  "variable_owners" to setOf(ALL, DOCPROD),
+                  "variable_section_default_values" to setOf(ALL, DOCPROD),
+                  "variable_section_recommendations" to setOf(ALL, DOCPROD),
+                  "variable_section_values" to setOf(ALL, DOCPROD),
+                  "variable_sections" to setOf(ALL, DOCPROD),
+                  "variable_select_option_values" to setOf(ALL, DOCPROD),
+                  "variable_select_options" to setOf(ALL, DOCPROD),
+                  "variable_selects" to setOf(ALL, DOCPROD),
+                  "variable_table_columns" to setOf(ALL, DOCPROD),
+                  "variable_table_styles" to setOf(ALL, DOCPROD),
+                  "variable_tables" to setOf(ALL, DOCPROD),
+                  "variable_text_types" to setOf(ALL, DOCPROD),
+                  "variable_texts" to setOf(ALL, DOCPROD),
+                  "variable_types" to setOf(ALL, DOCPROD),
+                  "variable_usage_types" to setOf(ALL, DOCPROD),
+                  "variable_value_table_rows" to setOf(ALL, DOCPROD),
+                  "variable_values" to setOf(ALL, DOCPROD),
+                  "variable_workflow_history" to setOf(ALL, DOCPROD),
+                  "variable_workflow_statuses" to setOf(ALL, DOCPROD),
+                  "variables" to setOf(ALL, DOCPROD),
               ),
           "nursery" to
               mapOf(
