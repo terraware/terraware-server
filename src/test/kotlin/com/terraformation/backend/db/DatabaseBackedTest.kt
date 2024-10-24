@@ -291,6 +291,7 @@ import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.keys.PLANTING_SITES_PKEY
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
 import com.terraformation.backend.db.tracking.tables.daos.DraftPlantingSitesDao
+import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotOverlapsDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
@@ -313,6 +314,7 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.DraftPlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotOverlapsRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
@@ -481,6 +483,7 @@ abstract class DatabaseBackedTest {
   protected val internalTagsDao: InternalTagsDao by lazyDao()
   protected val documentTemplatesDao: DocumentTemplatesDao by lazyDao()
   protected val modulesDao: ModulesDao by lazyDao()
+  protected val monitoringPlotOverlapsDao: MonitoringPlotOverlapsDao by lazyDao()
   protected val monitoringPlotsDao: MonitoringPlotsDao by lazyDao()
   protected val notificationsDao: NotificationsDao by lazyDao()
   protected val nurseryWithdrawalsDao:
@@ -1784,6 +1787,13 @@ abstract class DatabaseBackedTest {
     monitoringPlotsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!.also { inserted.monitoringPlotIds.add(it) }
+  }
+
+  fun insertMonitoringPlotOverlap(
+      overlapsPlotId: MonitoringPlotId,
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+  ) {
+    monitoringPlotOverlapsDao.insert(MonitoringPlotOverlapsRow(monitoringPlotId, overlapsPlotId))
   }
 
   private var nextDraftPlantingSiteNumber = 1

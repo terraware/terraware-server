@@ -89,6 +89,10 @@ data class ObservationMonitoringPlotResultsModel(
      */
     val mortalityRate: Int?,
     val notes: String?,
+    /** IDs of newer monitoring plots that overlap with this one. */
+    val overlappedByPlotIds: Set<MonitoringPlotId>,
+    /** IDs of older monitoring plots that this one overlaps with. */
+    val overlapsWithPlotIds: Set<MonitoringPlotId>,
     val photos: List<ObservationMonitoringPlotPhotoModel>,
     /**
      * Number of live plants per hectare. This is calculated by dividing the number of live plants

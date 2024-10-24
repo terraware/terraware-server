@@ -345,6 +345,10 @@ COMMENT ON COLUMN tracking.draft_planting_sites.data IS 'Client-defined state of
 COMMENT ON COLUMN tracking.draft_planting_sites.num_planting_subzones is 'Number of planting subzones defined so far.';
 COMMENT ON COLUMN tracking.draft_planting_sites.num_planting_zones is 'Number of planting zones defined so far.';
 
+COMMENT ON TABLE tracking.monitoring_plot_overlaps IS 'Which monitoring plots overlap with previously-used monitoring plots. A plot may overlap with multiple older or newer plots.';
+COMMENT ON COLUMN tracking.monitoring_plot_overlaps.monitoring_plot_id IS 'ID of the newer monitoring plot.';
+COMMENT ON COLUMN tracking.monitoring_plot_overlaps.overlaps_plot_id IS 'ID of the older monitoring plot.';
+
 COMMENT ON TABLE tracking.monitoring_plots IS 'Regions within planting subzones that can be comprehensively surveyed in order to extrapolate results for the entire zone. Any monitoring plot in a subzone is expected to have roughly the same number of plants of the same species as any other monitoring plot in the same subzone.';
 COMMENT ON COLUMN tracking.monitoring_plots.boundary IS 'Boundary of the monitoring plot. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.monitoring_plots.created_by IS 'Which user created the monitoring plot.';

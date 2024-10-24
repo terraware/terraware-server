@@ -597,6 +597,10 @@ data class ObservationMonitoringPlotResultsPayload(
                 "all species that were dead.")
     val mortalityRate: Int?,
     val notes: String?,
+    @Schema(description = "IDs of any newer monitoring plots that overlap with this one.")
+    val overlappedByPlotIds: Set<MonitoringPlotId>,
+    @Schema(description = "IDs of any older monitoring plots this one overlaps with.")
+    val overlapsWithPlotIds: Set<MonitoringPlotId>,
     val photos: List<ObservationMonitoringPlotPhotoPayload>,
     @Schema(description = "Number of live plants per hectare.") //
     val plantingDensity: Int,
@@ -629,6 +633,8 @@ data class ObservationMonitoringPlotResultsPayload(
       monitoringPlotName = model.monitoringPlotName,
       mortalityRate = model.mortalityRate,
       notes = model.notes,
+      overlappedByPlotIds = model.overlappedByPlotIds,
+      overlapsWithPlotIds = model.overlapsWithPlotIds,
       photos = model.photos.map { ObservationMonitoringPlotPhotoPayload(it) },
       plantingDensity = model.plantingDensity,
       sizeMeters = model.sizeMeters,

@@ -11,6 +11,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_OVERLAPS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
@@ -170,6 +171,26 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     }
   }
 
+  private val monitoringPlotOverlappedByMultiset =
+      DSL.multiset(
+              DSL.select(MONITORING_PLOT_OVERLAPS.MONITORING_PLOT_ID)
+                  .from(MONITORING_PLOT_OVERLAPS)
+                  .where(MONITORING_PLOT_OVERLAPS.OVERLAPS_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                  .orderBy(MONITORING_PLOT_OVERLAPS.MONITORING_PLOT_ID))
+          .convertFrom { results ->
+            results.map { record -> record[MONITORING_PLOT_OVERLAPS.MONITORING_PLOT_ID]!! }.toSet()
+          }
+
+  private val monitoringPlotOverlapsMultiset =
+      DSL.multiset(
+              DSL.select(MONITORING_PLOT_OVERLAPS.OVERLAPS_PLOT_ID)
+                  .from(MONITORING_PLOT_OVERLAPS)
+                  .where(MONITORING_PLOT_OVERLAPS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                  .orderBy(MONITORING_PLOT_OVERLAPS.OVERLAPS_PLOT_ID))
+          .convertFrom { results ->
+            results.map { record -> record[MONITORING_PLOT_OVERLAPS.OVERLAPS_PLOT_ID]!! }.toSet()
+          }
+
   private val monitoringPlotSpeciesMultiset =
       with(OBSERVED_PLOT_SPECIES_TOTALS) {
         speciesMultiset(
@@ -207,6 +228,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       MONITORING_PLOTS.ID,
                       MONITORING_PLOTS.FULL_NAME,
                       MONITORING_PLOTS.SIZE_METERS,
+                      monitoringPlotOverlappedByMultiset,
+                      monitoringPlotOverlapsMultiset,
                       monitoringPlotSpeciesMultiset,
                       coordinatesMultiset,
                       photosMultiset)
@@ -256,6 +279,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   monitoringPlotName = monitoringPlotName,
                   mortalityRate = mortalityRate,
                   notes = record[OBSERVATION_PLOTS.NOTES],
+                  overlappedByPlotIds = record[monitoringPlotOverlappedByMultiset],
+                  overlapsWithPlotIds = record[monitoringPlotOverlapsMultiset],
                   photos = record[photosMultiset],
                   plantingDensity = plantingDensity,
                   sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!,
