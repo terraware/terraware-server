@@ -12,6 +12,9 @@ val MAX_SITE_ENVELOPE_AREA_HA = BigDecimal(20000)
 /** Monitoring plot width and height in meters. */
 const val MONITORING_PLOT_SIZE: Double = 25.0
 
+/** Monitoring plot width and height in meters. */
+const val MONITORING_PLOT_SIZE_INT = MONITORING_PLOT_SIZE.toInt()
+
 /** Number of square meters in a monitoring plot. */
 const val SQUARE_METERS_PER_MONITORING_PLOT: Double = MONITORING_PLOT_SIZE * MONITORING_PLOT_SIZE
 

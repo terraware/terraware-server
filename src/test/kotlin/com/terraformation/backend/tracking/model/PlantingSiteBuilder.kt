@@ -238,9 +238,10 @@ private constructor(
               },
           isAvailable: Boolean = true,
           name: String = "$nextMonitoringPlotId",
+          size: Int = MONITORING_PLOT_SIZE_INT,
       ): MonitoringPlotModel {
         lastCluster = cluster
-        nextMonitoringPlotX = x + MONITORING_PLOT_SIZE.toInt()
+        nextMonitoringPlotX = x + size.toInt()
 
         if (subplot != null) {
           nextSubplot = subplot + 1
@@ -248,13 +249,14 @@ private constructor(
 
         val plot =
             MonitoringPlotModel(
-                boundary = rectanglePolygon(MONITORING_PLOT_SIZE, MONITORING_PLOT_SIZE, x, y),
+                boundary = rectanglePolygon(size, size, x, y),
                 id = MonitoringPlotId(nextMonitoringPlotId++),
                 isAvailable = isAvailable,
                 fullName = "$fullName-$name",
                 name = name,
                 permanentCluster = cluster,
                 permanentClusterSubplot = subplot,
+                sizeMeters = size,
             )
 
         monitoringPlots.add(plot)
@@ -267,7 +269,7 @@ private constructor(
           cluster: Int = nextPermanentCluster++,
           isAvailable: Boolean = true,
       ): List<MonitoringPlotModel> {
-        val plotSize = MONITORING_PLOT_SIZE.toInt()
+        val plotSize = MONITORING_PLOT_SIZE_INT
         val plots =
             listOf(
                 plot(x, y, cluster, isAvailable = isAvailable),

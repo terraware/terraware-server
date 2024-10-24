@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.point
+import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.util.Turtle
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.*
@@ -42,6 +43,7 @@ internal class PlantingSiteStoreCreateTemporaryTest : PlantingSiteStoreTest() {
               modifiedTime = clock.instant,
               name = "18",
               plantingSubzoneId = plantingSubzoneId,
+              sizeMeters = MONITORING_PLOT_SIZE_INT,
           )
 
       val actual = monitoringPlotsDao.fetchOneById(newPlotId)!!
