@@ -53,6 +53,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       ex: DuplicateEntityException,
       request: WebRequest
   ): ResponseEntity<*> {
+    logError(ex, request)
     return simpleErrorResponse(ex.message, HttpStatus.CONFLICT, request)
   }
 
@@ -61,6 +62,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       ex: EntityNotFoundException,
       request: WebRequest
   ): ResponseEntity<*> {
+    logError(ex, request)
     return simpleErrorResponse(ex.message, HttpStatus.NOT_FOUND, request)
   }
 
@@ -74,6 +76,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       ex: MismatchedStateException,
       request: WebRequest
   ): ResponseEntity<*> {
+    logError(ex, request)
     return simpleErrorResponse(ex.message, HttpStatus.CONFLICT, request)
   }
 
@@ -82,6 +85,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       ex: OperationInProgressException,
       request: WebRequest
   ): ResponseEntity<*> {
+    logError(ex, request)
     return simpleErrorResponse(ex.message, HttpStatus.LOCKED, request)
   }
 
@@ -90,6 +94,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       ex: IllegalArgumentException,
       request: WebRequest
   ): ResponseEntity<*> {
+    logError(ex, request)
     return simpleErrorResponse(
         ex.message ?: "An internal error has occurred.", HttpStatus.BAD_REQUEST, request)
   }
@@ -108,6 +113,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       ex: WebApplicationException,
       request: WebRequest
   ): ResponseEntity<*> {
+    logError(ex, request)
     return simpleErrorResponse(
         ex.message ?: "An internal error has occurred.",
         HttpStatus.valueOf(ex.response.status),
@@ -145,14 +151,13 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       ex: AccessDeniedException,
       request: WebRequest
   ): ResponseEntity<*> {
+    logError(ex, request)
     return simpleErrorResponse(ex.localizedMessage, HttpStatus.FORBIDDEN, request)
   }
 
   @ExceptionHandler
   fun handleUnknownException(ex: Exception, request: WebRequest): ResponseEntity<*> {
-    val description = request.getDescription(false)
-    controllerLogger(ex).error("Controller threw exception on $description", ex)
-
+    logError(ex, request)
     return simpleErrorResponse(
         "An internal error has occurred.", HttpStatus.INTERNAL_SERVER_ERROR, request)
   }
@@ -298,6 +303,11 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   private fun controllerLogger(ex: Exception): Logger {
     val classToUseForLogMessage = ex.stackTrace.getOrNull(0)?.className ?: javaClass.name
     return LoggerFactory.getLogger(classToUseForLogMessage)
+  }
+
+  private fun logError(ex: Exception, request: WebRequest) {
+    val description = request.getDescription(false)
+    controllerLogger(ex).error("Exception thrown while handling request $description", ex)
   }
 
   /**
