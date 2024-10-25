@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_OVERLAPS
@@ -62,6 +63,21 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return fetchByCondition(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId), limit)
+  }
+
+  fun fetchLatestPerSubzone(
+      plantingSiteId: PlantingSiteId
+  ): Map<PlantingSubzoneId, ObservationPlantingSubzoneResultsModel> {
+    val subzoneObservations =
+        fetchByPlantingSiteId(plantingSiteId)
+            .flatMap { it.plantingZones.flatMap { it.plantingSubzones } }
+            .groupBy { it.plantingSubzoneId }
+
+    val latestObservations =
+        subzoneObservations.mapValues { entry ->
+          entry.value.filter { it.completedTime != null }.maxBy { it.completedTime!! }
+        }
+    return latestObservations
   }
 
   fun fetchByOrganizationId(
@@ -297,7 +313,11 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
   private val plantingSubzoneMultiset =
       DSL.multiset(
-              DSL.select(PLANTING_SUBZONES.ID, monitoringPlotMultiset)
+              DSL.select(
+                      PLANTING_SUBZONES.ID,
+                      PLANTING_SUBZONES.AREA_HA,
+                      PLANTING_SUBZONES.PLANTING_COMPLETED_TIME,
+                      monitoringPlotMultiset)
                   .from(PLANTING_SUBZONES)
                   .where(
                       PLANTING_SUBZONES.ID.`in`(
@@ -311,9 +331,51 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                               .and(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID)))))
           .convertFrom { results ->
             results.map { record ->
+              val monitoringPlots = record[monitoringPlotMultiset]
+
+              val areaHa = record[PLANTING_SUBZONES.AREA_HA.asNonNullable()]
+
+              val species = monitoringPlots.flatMap { it.species }
+              val totalPlants = species.sumOf { it.totalLive + it.totalDead }
+
+              val isCompleted =
+                  monitoringPlots.isNotEmpty() && monitoringPlots.all { it.completedTime != null }
+              val completedTime =
+                  if (isCompleted) {
+                    monitoringPlots.maxOf { it.completedTime!! }
+                  } else {
+                    null
+                  }
+
+              val mortalityRate = calculateMortalityRate(species)
+
+              val plantingDensity =
+                  if (record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME] != null) {
+                    val plotDensities = monitoringPlots.map { it.plantingDensity }
+                    if (plotDensities.isNotEmpty()) {
+                      plotDensities.average()
+                    } else {
+                      null
+                    }
+                  } else {
+                    null
+                  }
+
+              val estimatedPlants =
+                  if (plantingDensity != null && areaHa != null) {
+                    areaHa.toDouble() * plantingDensity
+                  } else {
+                    null
+                  }
               ObservationPlantingSubzoneResultsModel(
+                  areaHa = areaHa,
+                  completedTime = completedTime,
+                  estimatedPlants = estimatedPlants?.roundToInt(),
                   monitoringPlots = record[monitoringPlotMultiset],
+                  mortalityRate = mortalityRate,
+                  plantingDensity = plantingDensity?.roundToInt(),
                   plantingSubzoneId = record[PLANTING_SUBZONES.ID.asNonNullable()],
+                  totalPlants = totalPlants,
               )
             }
           }

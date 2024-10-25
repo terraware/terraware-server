@@ -118,8 +118,35 @@ data class ObservationMonitoringPlotResultsModel(
 )
 
 data class ObservationPlantingSubzoneResultsModel(
+    val areaHa: BigDecimal,
+    val completedTime: Instant?,
+    /**
+     * Estimated number of plants in planting zone based on estimated planting density and planting
+     * zone area. Only present if all the subzones in the zone have been marked as having completed
+     * planting.
+     */
+    val estimatedPlants: Int?,
+    /**
+     * Percentage of plants of all species that were dead in this zone's permanent monitoring plots.
+     * Dead plants from previous observations are counted in this percentage, but only live plants
+     * from the current observation are counted. Existing plants are not counted because the intent
+     * is to track the health of plants that were introduced to the site.
+     */
+    val mortalityRate: Int,
     val monitoringPlots: List<ObservationMonitoringPlotResultsModel>,
+    /**
+     * Estimated planting density for the zone based on the observed planting densities of
+     * monitoring plots. Only present if all the subzones in the zone have been marked as having
+     * completed planting.
+     */
+    val plantingDensity: Int?,
     val plantingSubzoneId: PlantingSubzoneId,
+
+    /**
+     * Total number of plants recorded. Includes all plants, regardless of live/dead status or
+     * species.
+     */
+    val totalPlants: Int,
 )
 
 data class ObservationPlantingZoneResultsModel(

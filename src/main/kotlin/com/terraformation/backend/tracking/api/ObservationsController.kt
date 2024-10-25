@@ -170,6 +170,19 @@ class ObservationsController(
     return ListObservationResultsResponsePayload(results.map { ObservationResultsPayload(it) })
   }
 
+  @GetMapping("/results/latestBySubzones")
+  @Operation(
+      summary =
+          "Gets a list of the latest results of observations for a planting site by subzones.")
+  fun listLatestSubzoneObservationResultsResponsePayload(
+      @RequestParam plantingSiteId: PlantingSiteId,
+  ): ListLatestSubzoneObservationResultsResponsePayload {
+    val results = observationResultsStore.fetchLatestPerSubzone(plantingSiteId)
+
+    return ListLatestSubzoneObservationResultsResponsePayload(
+        results.values.map { ObservationPlantingSubzoneResultsPayload(it) })
+  }
+
   @GetMapping("/{observationId}")
   @Operation(summary = "Gets information about a single observation.")
   fun getObservation(@PathVariable observationId: ObservationId): GetObservationResponsePayload {
@@ -649,14 +662,39 @@ data class ObservationMonitoringPlotResultsPayload(
 }
 
 data class ObservationPlantingSubzoneResultsPayload(
+    @Schema(description = "Area of this planting subzone in hectares.") //
+    val areaHa: BigDecimal,
+    val completedTime: Instant?,
+    @Schema(
+        description =
+            "Estimated number of plants in planting zone based on estimated planting density and " +
+                "planting zone area. Only present if the subzone has completed planting.")
+    val estimatedPlants: Int?,
+    @Schema(
+        description =
+            "Percentage of plants of all species that were dead in this subzone's permanent " +
+                "monitoring plots.")
     val monitoringPlots: List<ObservationMonitoringPlotResultsPayload>,
+    val mortalityRate: Int,
+    @Schema(
+        description =
+            "Estimated planting density for the subzone based on the observed planting densities " +
+                "of monitoring plots. Only present if the subzone has completed planting.")
+    val plantingDensity: Int?,
     val plantingSubzoneId: PlantingSubzoneId,
+    val totalPlants: Int,
 ) {
   constructor(
       model: ObservationPlantingSubzoneResultsModel
   ) : this(
+      areaHa = model.areaHa,
+      completedTime = model.completedTime,
+      estimatedPlants = model.estimatedPlants,
       monitoringPlots = model.monitoringPlots.map { ObservationMonitoringPlotResultsPayload(it) },
+      mortalityRate = model.mortalityRate,
+      plantingDensity = model.plantingDensity,
       plantingSubzoneId = model.plantingSubzoneId,
+      totalPlants = model.totalPlants,
   )
 }
 
@@ -813,6 +851,10 @@ data class GetObservationResultsResponsePayload(val observation: ObservationResu
 
 data class ListObservationResultsResponsePayload(
     val observations: List<ObservationResultsPayload>
+) : SuccessResponsePayload
+
+data class ListLatestSubzoneObservationResultsResponsePayload(
+    val subzones: List<ObservationPlantingSubzoneResultsPayload>
 ) : SuccessResponsePayload
 
 data class ScheduleObservationRequestPayload(
