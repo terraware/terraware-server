@@ -1,5 +1,1 @@
-1d9f03b23d4 Log details of failed requests (#2536)
-c1671b5ec4d SW-6070 Added creator, schema and version to GPX XML (#2535)
-0b8dc969482 SW-6188 Allow 1-plot permanent clusters to be chosen (#2533)
-22a4e33b2f3 SW-6186 Use plot size in planting density calculation (#2532)
-5be3fd1f87d SW-6187 Add overlapping plots to data model, API (#2531)
+bca80a24fe9 Fix plot replacement permission bug (#2537)
