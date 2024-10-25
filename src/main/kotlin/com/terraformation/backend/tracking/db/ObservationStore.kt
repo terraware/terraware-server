@@ -510,7 +510,9 @@ class ObservationStore(
       plotIds: Collection<MonitoringPlotId>,
       isPermanent: Boolean
   ) {
-    requirePermissions { manageObservation(observationId) }
+    if (!currentUser().canManageObservation(observationId)) {
+      requirePermissions { replaceObservationPlot(observationId) }
+    }
 
     if (plotIds.isEmpty()) {
       return
@@ -541,7 +543,9 @@ class ObservationStore(
       observationId: ObservationId,
       plotIds: Collection<MonitoringPlotId>
   ) {
-    requirePermissions { manageObservation(observationId) }
+    if (!currentUser().canManageObservation(observationId)) {
+      requirePermissions { replaceObservationPlot(observationId) }
+    }
 
     if (plotIds.isEmpty()) {
       return

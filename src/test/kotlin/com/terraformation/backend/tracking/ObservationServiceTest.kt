@@ -1414,6 +1414,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       helper.insertPlantedSite(width = 2, height = 7, subzoneCompletedTime = Instant.EPOCH)
       observationId = insertObservation()
 
+      every { user.canManageObservation(observationId) } returns false
       every { user.canReplaceObservationPlot(any()) } returns true
       every { user.canUpdatePlantingSite(any()) } returns true
     }
