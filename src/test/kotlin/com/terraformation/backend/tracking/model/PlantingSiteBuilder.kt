@@ -245,7 +245,7 @@ private constructor(
           size: Int = MONITORING_PLOT_SIZE_INT,
       ): MonitoringPlotModel {
         lastCluster = cluster
-        nextMonitoringPlotX = x + size.toInt()
+        nextMonitoringPlotX = x + size
 
         if (subplot != null) {
           nextSubplot = subplot + 1
@@ -272,19 +272,8 @@ private constructor(
           y: Int = this.y,
           cluster: Int = nextPermanentCluster++,
           isAvailable: Boolean = true,
-      ): List<MonitoringPlotModel> {
-        val plotSize = MONITORING_PLOT_SIZE_INT
-        val plots =
-            listOf(
-                plot(x, y, cluster, isAvailable = isAvailable),
-                plot(x + plotSize, y, cluster, isAvailable = isAvailable),
-                plot(x + plotSize, y + plotSize, cluster, isAvailable = isAvailable),
-                plot(x, y + plotSize, cluster, isAvailable = isAvailable),
-            )
-
-        nextMonitoringPlotX = x + plotSize * 2
-
-        return plots
+      ): MonitoringPlotModel {
+        return plot(x, y, cluster, isAvailable = isAvailable)
       }
     }
   }

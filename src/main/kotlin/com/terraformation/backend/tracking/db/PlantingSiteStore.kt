@@ -76,7 +76,6 @@ import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.calculateAreaHectares
-import com.terraformation.backend.util.createRectangle
 import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.toInstant
 import jakarta.inject.Named
@@ -951,7 +950,6 @@ class PlantingSiteStore(
   private fun setMonitoringPlotCluster(
       monitoringPlotId: MonitoringPlotId,
       permanentCluster: Int,
-      permanentClusterSubplot: Int
   ) {
     with(MONITORING_PLOTS) {
       dslContext
@@ -959,7 +957,7 @@ class PlantingSiteStore(
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .set(PERMANENT_CLUSTER, permanentCluster)
-          .set(PERMANENT_CLUSTER_SUBPLOT, permanentClusterSubplot)
+          .set(PERMANENT_CLUSTER_SUBPLOT, 1)
           .where(ID.eq(monitoringPlotId))
           .execute()
     }
@@ -1374,8 +1372,6 @@ class PlantingSiteStore(
       throw IllegalStateException("Planting site ${plantingSite.id} has no grid origin")
     }
 
-    val geometryFactory = plantingSite.gridOrigin.factory
-
     // List of [boundary, cluster number]
     val clusterBoundaries: List<Pair<Polygon, Int>> =
         plantingZone
@@ -1385,65 +1381,46 @@ class PlantingSiteStore(
                 exclusion = plantingSite.exclusion,
                 gridOrigin = plantingSite.gridOrigin,
                 searchBoundary = searchBoundary,
-                sizeMeters = MONITORING_PLOT_SIZE * 2,
+                sizeMeters = MONITORING_PLOT_SIZE,
             )
             .zip(clusterNumbers)
 
-    return clusterBoundaries.flatMap { (clusterBoundary, clusterNumber) ->
-      val westX = clusterBoundary.coordinates[0].x
-      val eastX = clusterBoundary.coordinates[2].x
-      val southY = clusterBoundary.coordinates[0].y
-      val northY = clusterBoundary.coordinates[2].y
-      val middleX = clusterBoundary.centroid.x
-      val middleY = clusterBoundary.centroid.y
-      val clusterPlots =
-          listOf(
-              // The order is important here: southwest, southeast, northeast, northwest
-              // (the position in this list turns into the cluster subplot number).
-              geometryFactory.createRectangle(westX, southY, middleX, middleY),
-              geometryFactory.createRectangle(middleX, southY, eastX, middleY),
-              geometryFactory.createRectangle(middleX, middleY, eastX, northY),
-              geometryFactory.createRectangle(westX, middleY, middleX, northY),
-          )
+    return clusterBoundaries.map { (plotBoundary, clusterNumber) ->
+      val existingPlot = plantingZone.findMonitoringPlot(plotBoundary)
 
-      clusterPlots.mapIndexed { plotIndex, plotBoundary ->
-        val existingPlot = plantingZone.findMonitoringPlot(plotBoundary.centroid)
-
-        if (existingPlot != null) {
-          if (existingPlot.permanentCluster != null) {
-            throw IllegalStateException("Cannot place new permanent cluster over existing one")
-          }
-
-          setMonitoringPlotCluster(existingPlot.id, clusterNumber, plotIndex + 1)
-
-          existingPlot.id
-        } else {
-          val subzone =
-              plantingZone.findPlantingSubzone(plotBoundary)
-                  ?: throw IllegalStateException(
-                      "Planting zone ${plantingZone.id} not fully covered by subzones",
-                  )
-          val plotNumber = nextPlotNumber++
-
-          val monitoringPlotsRow =
-              MonitoringPlotsRow(
-                  boundary = plotBoundary,
-                  createdBy = userId,
-                  createdTime = now,
-                  fullName = "${subzone.fullName}-$plotNumber",
-                  modifiedBy = userId,
-                  modifiedTime = now,
-                  name = "$plotNumber",
-                  permanentCluster = clusterNumber,
-                  permanentClusterSubplot = plotIndex + 1,
-                  plantingSubzoneId = subzone.id,
-                  sizeMeters = MONITORING_PLOT_SIZE_INT,
-              )
-
-          monitoringPlotsDao.insert(monitoringPlotsRow)
-
-          monitoringPlotsRow.id!!
+      if (existingPlot != null) {
+        if (existingPlot.permanentCluster != null) {
+          throw IllegalStateException("Cannot place new permanent cluster over existing one")
         }
+
+        setMonitoringPlotCluster(existingPlot.id, clusterNumber)
+
+        existingPlot.id
+      } else {
+        val subzone =
+            plantingZone.findPlantingSubzone(plotBoundary)
+                ?: throw IllegalStateException(
+                    "Planting zone ${plantingZone.id} not fully covered by subzones")
+        val plotNumber = nextPlotNumber++
+
+        val monitoringPlotsRow =
+            MonitoringPlotsRow(
+                boundary = plotBoundary,
+                createdBy = userId,
+                createdTime = now,
+                fullName = "${subzone.fullName}-$plotNumber",
+                modifiedBy = userId,
+                modifiedTime = now,
+                name = "$plotNumber",
+                permanentCluster = clusterNumber,
+                permanentClusterSubplot = 1,
+                plantingSubzoneId = subzone.id,
+                sizeMeters = MONITORING_PLOT_SIZE_INT,
+            )
+
+        monitoringPlotsDao.insert(monitoringPlotsRow)
+
+        monitoringPlotsRow.id!!
       }
     }
   }

@@ -466,7 +466,7 @@ class PlantingZoneModelTest {
   @Nested
   inner class FindUnusedSquare {
     @RepeatedTest(20)
-    fun `can place permanent cluster in minimal-size planting zone`() {
+    fun `can find square in non-rectangular planting zone`() {
       // Boundary shape:
       //
       // +-------+

@@ -146,7 +146,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     // go in either one of them depending on where the permanent plots ended up. Any temporary
     // plots that ended up in subzone 2 will be discarded because subzone 2 has no plants.
 
-    val numPermanentClusters = observationPlots.count { it.model.isPermanent } / 4
+    val numPermanentClusters = observationPlots.count { it.model.isPermanent }
     val numTemporaryPlots = observationPlots.count { !it.model.isPermanent }
 
     when (numPermanentClusters) {
