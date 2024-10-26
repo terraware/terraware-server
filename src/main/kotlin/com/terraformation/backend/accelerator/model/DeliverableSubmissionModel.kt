@@ -17,9 +17,8 @@ import java.time.LocalDate
  * The combination of a deliverable for a particular project and possibly one of its submissions.
  */
 data class DeliverableSubmissionModel(
-    val deliverableId: DeliverableId,
-    val submissionId: SubmissionId?,
     val category: DeliverableCategory,
+    val deliverableId: DeliverableId,
     val descriptionHtml: String?,
     val documents: List<SubmissionDocumentModel>,
     val dueDate: LocalDate?,
@@ -37,9 +36,10 @@ data class DeliverableSubmissionModel(
     val position: Int,
     val projectId: ProjectId,
     val projectName: String,
+    val required: Boolean,
     val sensitive: Boolean,
     val status: SubmissionStatus,
-    val required: Boolean,
+    val submissionId: SubmissionId?,
     val templateUrl: URI?,
     val type: DeliverableType,
 )
