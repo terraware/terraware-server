@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleStore
@@ -27,7 +28,6 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -47,7 +47,7 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
         ApplicationStore(
             clock,
             countriesDao,
-            CountryDetector(),
+            TestSingletons.countryDetector,
             dslContext,
             eventPublisher,
             Messages(),

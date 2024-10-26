@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.model.ApplicationSubmissionResult
@@ -24,7 +25,6 @@ import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Region
-import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.util.Turtle
@@ -67,7 +67,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
         applicationVariableValuesService,
         config,
         countriesDao,
-        CountryDetector(),
+        TestSingletons.countryDetector,
         defaultProjectLeadsDao,
         hubSpotService,
         preScreenBoundarySubmissionFetcher,
