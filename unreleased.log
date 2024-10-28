@@ -1,3 +1,5 @@
+47b10ad9929 Share CountryDetector instance across tests (#2543)
+5f583429600 Alphabetize fields in DeliverableSubmissionModel (#2544)
 841bc6b7f6a Update dependency com.google.apis:google-api-services-drive to v3-rev20241014-2.0.0 (#2542)
 5447fe402c3 Update database dependencies (#2541)
 0b8e7828c0c Update dependency mypy to v1.13.0 (#2540)
