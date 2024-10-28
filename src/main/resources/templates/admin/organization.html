@@ -41,7 +41,7 @@
         const mapButton = document.getElementById('showMap');
         const mapContainer = document.getElementById('map');
         const mapInstructions = document.getElementById('mapInstructions');
-        const temporaryPosition = document.getElementById('temporaryPosition');
+        const orientation = document.getElementById('orientation');
 
         loadCss('https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css');
         loadCss('https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.4.0/mapbox-gl-draw.css');
@@ -100,43 +100,26 @@
             map.on('draw.update', updateBoundary);
 
             /**
-             * Paths to follow to draw outlines at each valid clock position. Each step is an
-             * azimuth and a distance in meters. This creates a boundary that's 1 meter larger
-             * than strictly necessary, to account for differences in geometry calculation
-             * accuracy on the client and server sides.
+             * Paths to follow to draw outlines at each valid orientation. Each step is an azimuth
+             * and a distance in meters. The first step sets the starting point of the path
+             * relative to the center of the map view. The outline is closed automatically; there's
+             * no need to include a step that returns to the starting point.
+             *
+             * This creates a boundary that's 1 meter larger than strictly necessary since there
+             * can be differences in geometry calculation accuracy on the client and server sides.
              */
             const paths = {
-                '1': [
-                    [-135, 35],
-                    [90, 51],
-                    [0, 76],
-                    [-90, 27],
-                    [180, 25],
-                    [-90, 24],
+                'horizontal': [
+                    [-120, 33],
+                    [90, 61],
+                    [0, 31],
+                    [-90, 61],
                 ],
-                '2': [
-                    [-135, 35],
-                    [90, 51],
-                    [0, 24],
-                    [90, 25],
-                    [0, 27],
-                    [-90, 76],
-                ],
-                '4': [
-                    [-135, 35],
-                    [90, 76],
-                    [0, 26],
-                    [-90, 25],
-                    [0, 25],
-                    [-90, 51],
-                ],
-                '11': [
-                    [-135, 35],
-                    [90, 51],
-                    [0, 51],
-                    [-90, 24],
-                    [0, 25],
-                    [-90, 27],
+                'vertical': [
+                    [-150, 33],
+                    [0, 61],
+                    [90, 31],
+                    [180, 61],
                 ],
             };
 
@@ -160,7 +143,7 @@
             const addMinimalSite = (e) => {
                 const {lng, lat} = map.getCenter();
                 const centerPoint = turf.point([lng, lat]);
-                const polygon = outline(centerPoint, paths[temporaryPosition.value]);
+                const polygon = outline(centerPoint, paths[orientation.value]);
 
                 draw.deleteAll();
                 const featureIds = draw.add(polygon);
@@ -174,7 +157,7 @@
             };
 
             document.getElementById('addMinimalSite').addEventListener('click', addMinimalSite);
-            temporaryPosition.addEventListener('change', addMinimalSite);
+            orientation.addEventListener('change', addMinimalSite);
         });
     }
     /*]]>*/
@@ -295,15 +278,11 @@
         <p>
             Or you can
             <button type="button" id="addMinimalSite">add a minimal site</button>
-            with 4 permanent plots and 1 temporary plot at the
-            <select id="temporaryPosition">
-                <option value="1" selected>1:00</option>
-                <option value="2">2:00</option>
-                <option value="4">4:00</option>
-                <option value="11">11:00</option>
+            with 2 plots arranged
+            <select id="orientation">
+                <option value="horizontal" selected>horizontally</option>
+                <option value="vertical">vertically</option>
             </select>
-            position.
-            <a title="It is not currently possible for the temporary plot to be on the south or west edges of the site.">&#9432;</a>
         </p>
     </span>
 
