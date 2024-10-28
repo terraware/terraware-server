@@ -312,24 +312,15 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
   fun validate(newModel: PlantingSiteModel<*, *, *>): List<PlantingSiteValidationFailure> {
     val problems = mutableListOf<PlantingSiteValidationFailure>()
 
-    // Find 5 squares: 4 for the cluster and one for a temporary plot.
+    // Find two squares: one for a permanent plot and one for a temporary plot.
     val plotBoundaries =
         findUnusedSquares(
-            count = 5,
+            count = 2,
             exclusion = newModel.exclusion,
             gridOrigin = newModel.gridOrigin!!,
         )
 
-    // Make sure we have room for an actual cluster.
-    val clusterBoundaries =
-        findUnusedSquares(
-            count = 1,
-            exclusion = newModel.exclusion,
-            gridOrigin = newModel.gridOrigin,
-            sizeMeters = MONITORING_PLOT_SIZE * 2,
-        )
-
-    if (clusterBoundaries.isEmpty() || plotBoundaries.size < 5) {
+    if (plotBoundaries.size < 2) {
       problems.add(PlantingSiteValidationFailure.zoneTooSmall(name))
     }
 
