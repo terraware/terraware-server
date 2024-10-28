@@ -81,7 +81,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
             plantingCompletedTime = Instant.ofEpochSecond(1),
             name = "4")
     val monitoringPlotId7 = insertMonitoringPlot(boundary = monitoringPlotGeometry7)
-    val monitoringPlotId8 = insertMonitoringPlot(boundary = monitoringPlotGeometry8)
+    val monitoringPlotId8 =
+        insertMonitoringPlot(boundary = monitoringPlotGeometry8, sizeMeters = 25)
 
     val speciesId1 = insertSpecies()
     val speciesId2 = insertSpecies()
@@ -314,7 +315,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                         "northeastLongitude" to "7",
                                                         "northwestLatitude" to "8",
                                                         "northwestLongitude" to "5",
-                                                        "sizeMeters" to "25",
+                                                        "sizeMeters" to "30",
                                                         "southeastLatitude" to "6",
                                                         "southeastLongitude" to "7",
                                                         "southwestLatitude" to "6",
@@ -326,7 +327,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                         "northeastLongitude" to "8",
                                                         "northwestLatitude" to "9",
                                                         "northwestLongitude" to "6",
-                                                        "sizeMeters" to "25",
+                                                        "sizeMeters" to "30",
                                                         "southeastLatitude" to "7",
                                                         "southeastLongitude" to "8",
                                                         "southwestLatitude" to "7",
@@ -362,7 +363,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                         "northeastLongitude" to "9",
                                                         "northwestLatitude" to "10",
                                                         "northwestLongitude" to "7",
-                                                        "sizeMeters" to "25",
+                                                        "sizeMeters" to "30",
                                                         "southeastLatitude" to "8",
                                                         "southeastLongitude" to "9",
                                                         "southwestLatitude" to "8",

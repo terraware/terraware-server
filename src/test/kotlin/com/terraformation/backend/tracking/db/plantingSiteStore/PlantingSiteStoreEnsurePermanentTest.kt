@@ -76,13 +76,16 @@ internal class PlantingSiteStoreEnsurePermanentTest : PlantingSiteStoreTest() {
     @Test
     fun `can use temporary plot from previous observation as permanent plot`() {
       val gridOrigin = point(0)
-      val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(51, 26) }
+      val siteBoundary =
+          Turtle(gridOrigin).makeMultiPolygon {
+            rectangle(MONITORING_PLOT_SIZE * 2 + 1, MONITORING_PLOT_SIZE + 1)
+          }
 
       // Temporary plot is in the east half of the site.
       val existingPlotBoundary =
           Turtle(gridOrigin).makePolygon {
-            east(25)
-            square(25)
+            east(MONITORING_PLOT_SIZE)
+            square(MONITORING_PLOT_SIZE)
           }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)

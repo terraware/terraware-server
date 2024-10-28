@@ -158,24 +158,28 @@ class PlantingZoneModelTest {
 
     @Test
     fun `does not choose plots that lie partially outside subzone`() {
-      // Zone is 76 meters by 26 meters, split into two 38x26 subzones such that there are three
-      // plot locations but the middle one sits on the subzone boundary. Only subzone 1 is planted.
-      val subzone1Boundary = Turtle(siteOrigin).makeMultiPolygon { rectangle(38, 26) }
+      // Zone is three plots wide by one plot high, split horizontally into two equal-sized subzones
+      // such that there are three plot locations but the middle one sits on the subzone boundary.
+      // Only subzone 1 is planted.
+      val subzoneWidth = MONITORING_PLOT_SIZE * 1.5
+      val subzoneHeight = MONITORING_PLOT_SIZE + 1
+      val subzone1Boundary =
+          Turtle(siteOrigin).makeMultiPolygon { rectangle(subzoneWidth, subzoneHeight) }
       val subzone2Boundary =
           Turtle(siteOrigin).makeMultiPolygon {
-            east(38)
-            rectangle(38, 26)
+            east(subzoneWidth)
+            rectangle(subzoneWidth, subzoneHeight)
           }
-      val subzone1PlotBoundary = Turtle(siteOrigin).makePolygon { square(25) }
+      val subzone1PlotBoundary = Turtle(siteOrigin).makePolygon { square(MONITORING_PLOT_SIZE) }
       val bothSubzonesPlotBoundary =
           Turtle(siteOrigin).makePolygon {
-            east(25)
-            square(25)
+            east(MONITORING_PLOT_SIZE)
+            square(MONITORING_PLOT_SIZE)
           }
       val subzone2PlotBoundary =
           Turtle(siteOrigin).makePolygon {
-            east(50)
-            square(25)
+            east(MONITORING_PLOT_SIZE * 2)
+            square(MONITORING_PLOT_SIZE)
           }
 
       val model =
@@ -567,9 +571,9 @@ class PlantingZoneModelTest {
 
       val targetArea =
           Turtle(siteOrigin).makePolygon {
-            east(Random.nextInt(edgeMeters - 51))
-            north(Random.nextInt(edgeMeters - 51))
-            square(51)
+            east(Random.nextInt(edgeMeters - 61))
+            north(Random.nextInt(edgeMeters - 61))
+            square(61)
           }
 
       val siteBoundary = geometryFactory.createMultiPolygon((triangles + targetArea).toTypedArray())
@@ -578,7 +582,7 @@ class PlantingZoneModelTest {
               boundary = siteBoundary,
               subzones = listOf(plantingSubzoneModel(boundary = siteBoundary, plots = emptyList())))
 
-      val square = zone.findUnusedSquare(siteOrigin, 25)
+      val square = zone.findUnusedSquare(siteOrigin, 30)
       assertNotNull(square, "Unused square")
 
       if (square!!.intersection(targetArea).area < square.area * 0.99999) {
@@ -591,9 +595,9 @@ class PlantingZoneModelTest {
   inner class FindUnusedSquares {
     @Test
     fun `excludes permanent monitoring plots`() {
-      // Boundary is a 51x26m square, and there is an existing plot in the southwestern 25x25m.
-      val siteBoundary = Turtle(siteOrigin).makeMultiPolygon { rectangle(51, 26) }
-      val existingPlotPolygon = Turtle(siteOrigin).makePolygon { square(25) }
+      // Boundary is a 61x31m square, and there is an existing plot in the southwestern 30x30m.
+      val siteBoundary = Turtle(siteOrigin).makeMultiPolygon { rectangle(61, 31) }
+      val existingPlotPolygon = Turtle(siteOrigin).makePolygon { square(30) }
 
       val zone =
           plantingZoneModel(
@@ -609,15 +613,15 @@ class PlantingZoneModelTest {
 
       val expected =
           Turtle(siteOrigin).makePolygon {
-            east(25)
-            square(25)
+            east(30)
+            square(30)
           }
 
       repeat(20) {
         val actual =
             zone.findUnusedSquares(
                 gridOrigin = siteOrigin,
-                sizeMeters = 25,
+                sizeMeters = 30,
                 count = 1,
                 excludeAllPermanentPlots = true)
 
@@ -658,13 +662,13 @@ class PlantingZoneModelTest {
 
     return Turtle(siteOrigin).makePolygon {
       // Subzone corner
-      east(subzoneId * 50)
-      north(25 * (plotNumber / 2))
+      east(subzoneId * MONITORING_PLOT_SIZE * 2)
+      north(MONITORING_PLOT_SIZE * (plotNumber / 2))
       if (plotNumber.rem(2) == 1) {
-        east(25)
+        east(MONITORING_PLOT_SIZE)
       }
 
-      square(25)
+      square(MONITORING_PLOT_SIZE)
     }
   }
 
@@ -682,7 +686,7 @@ class PlantingZoneModelTest {
         name = "name",
         permanentCluster = permanentCluster,
         permanentClusterSubplot = if (permanentCluster != null) 1 else null,
-        sizeMeters = 25,
+        sizeMeters = MONITORING_PLOT_SIZE_INT,
     )
   }
 
@@ -703,27 +707,27 @@ class PlantingZoneModelTest {
    */
   private fun plantingSubzoneBoundary(id: Int, numPlots: Int): MultiPolygon {
     return Turtle(siteOrigin).makeMultiPolygon {
-      east(id * 50)
+      east(id * MONITORING_PLOT_SIZE * 2)
 
       val southwest = currentPosition
 
       // Figure out the northwest corner's location.
-      north(((numPlots + 1) / 2) * 25)
+      north(((numPlots + 1) / 2) * MONITORING_PLOT_SIZE)
       val northwest = currentPosition
 
       moveTo(southwest)
 
       startDrawing()
-      east(50)
-      north((numPlots / 2) * 25)
+      east(MONITORING_PLOT_SIZE * 2)
+      north((numPlots / 2) * MONITORING_PLOT_SIZE)
 
       if (numPlots.and(1) == 0) {
         // Even number of plots; the boundary is a plain rectangle.
         moveTo(northwest)
       } else {
         // Odd number of plots; space for the last plot is on the west half of the northern edge.
-        west(25)
-        north(25)
+        west(MONITORING_PLOT_SIZE)
+        north(MONITORING_PLOT_SIZE)
         moveTo(northwest)
       }
     }
