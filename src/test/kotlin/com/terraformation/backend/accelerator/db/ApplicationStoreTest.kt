@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.model.ApplicationModuleModel
@@ -31,7 +32,6 @@ import com.terraformation.backend.db.accelerator.tables.records.ApplicationHisto
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
@@ -66,7 +66,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     ApplicationStore(
         clock,
         countriesDao,
-        CountryDetector(),
+        TestSingletons.countryDetector,
         dslContext,
         eventPublisher,
         messages,

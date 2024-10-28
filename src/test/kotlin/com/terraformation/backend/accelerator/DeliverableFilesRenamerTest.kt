@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
@@ -18,7 +19,6 @@ import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.file.GoogleDriveWriter
-import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.util.toInstant
@@ -50,7 +50,7 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
         ApplicationStore(
             clock,
             countriesDao,
-            CountryDetector(),
+            TestSingletons.countryDetector,
             dslContext,
             eventPublisher,
             Messages(),

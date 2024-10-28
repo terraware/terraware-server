@@ -1,5 +1,6 @@
 package com.terraformation.backend.gis
 
+import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.point
 import com.terraformation.backend.util.Turtle
 import org.assertj.core.api.Assertions.assertThat
@@ -7,7 +8,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class CountryDetectorTest {
-  private val detector = CountryDetector()
+  private val detector = TestSingletons.countryDetector
 
   @Test
   fun `detects a geometry that is in one country`() {
