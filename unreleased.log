@@ -1,3 +1,4 @@
+841bc6b7f6a Update dependency com.google.apis:google-api-services-drive to v3-rev20241014-2.0.0 (#2542)
 5447fe402c3 Update database dependencies (#2541)
 0b8e7828c0c Update dependency mypy to v1.13.0 (#2540)
 bd365441e02 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.29.0 (#2539)
