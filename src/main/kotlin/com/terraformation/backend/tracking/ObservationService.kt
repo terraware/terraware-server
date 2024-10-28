@@ -80,6 +80,7 @@ class ObservationService(
         }
 
         plantingSiteStore.ensurePermanentClustersExist(observation.plantingSiteId)
+        plantingSiteStore.convert25MeterClusters(observation.plantingSiteId)
 
         val plantingSite =
             plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Plot)

@@ -299,7 +299,7 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
 
   /**
    * Returns the monitoring plot that is of the correct size and contains the center point of a
-   * shape, or null if the shape isn't in any plot.
+   * shape, or null if the point isn't in any plot.
    */
   fun findMonitoringPlot(geometry: Geometry): MonitoringPlotModel? {
     val centroid = geometry.centroid

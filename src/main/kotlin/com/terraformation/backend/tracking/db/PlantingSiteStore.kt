@@ -30,6 +30,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
+import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotOverlapsRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingSiteHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingSubzoneHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingZoneHistoriesRecord
@@ -78,6 +79,7 @@ import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.toInstant
+import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Instant
@@ -90,6 +92,7 @@ import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
 import org.jooq.impl.DSL
+import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
@@ -1310,8 +1313,9 @@ class PlantingSiteStore(
   }
 
   /**
-   * Ensures that the required number of permanent clusters exists in each of a planting site's
-   * zones. There need to be clusters with numbers from 1 to the zone's permanent cluster count.
+   * Ensures that the required number of permanent clusters of correct size exists in each of a
+   * planting site's zones. There need to be clusters with numbers from 1 to the zone's permanent
+   * cluster count.
    *
    * @return The IDs of any newly-created monitoring plots.
    */
@@ -1328,6 +1332,87 @@ class PlantingSiteStore(
             }
 
         createPermanentClusters(plantingSite, plantingZone, missingClusterNumbers)
+      }
+    }
+  }
+
+  /** Replaces permanent clusters of 4 25x25m plots with single 30x30m plots. */
+  fun convert25MeterClusters(plantingSiteId: PlantingSiteId) {
+    requirePermissions { updatePlantingSite(plantingSiteId) }
+
+    val now = clock.instant()
+
+    withLockedPlantingSite(plantingSiteId) {
+      val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
+
+      plantingSite.plantingZones.forEach { plantingZone ->
+        val plotsByCluster =
+            plantingZone.plantingSubzones
+                .flatMap { subzone ->
+                  subzone.monitoringPlots.filter { it.permanentCluster != null }
+                }
+                .groupBy { it.permanentCluster!! }
+
+        var nextPlotNumber = plantingZone.getMaxPlotName() + 1
+
+        plotsByCluster.values
+            .sortedBy { it[0].permanentCluster }
+            .filter { it.size == 4 }
+            .forEach { oldPlots ->
+              val clusterNumber = oldPlots[0].permanentCluster!!
+              val clusterBoundary =
+                  oldPlots
+                      .map { it.boundary as Geometry }
+                      .reduce { acc, plotBoundary -> acc.union(plotBoundary) }
+                      .envelope
+                      .toMultiPolygon()
+
+              with(MONITORING_PLOTS) {
+                dslContext
+                    .update(MONITORING_PLOTS)
+                    .set(MODIFIED_BY, currentUser().userId)
+                    .set(MODIFIED_TIME, now)
+                    .setNull(PERMANENT_CLUSTER)
+                    .setNull(PERMANENT_CLUSTER_SUBPLOT)
+                    .where(PERMANENT_CLUSTER.eq(clusterNumber))
+                    .and(SIZE_METERS.eq(25))
+                    .execute()
+              }
+
+              val plantingZoneWithoutCluster =
+                  plantingZone.copy(
+                      plantingSubzones =
+                          plantingZone.plantingSubzones.map { subzone ->
+                            subzone.copy(
+                                monitoringPlots =
+                                    subzone.monitoringPlots.filterNot {
+                                      it.permanentCluster == clusterNumber
+                                    })
+                          })
+
+              val newPlotIds =
+                  createPermanentClusters(
+                      plantingSite,
+                      plantingZoneWithoutCluster,
+                      listOf(clusterNumber),
+                      clusterBoundary,
+                      nextPlotNumber)
+
+              if (newPlotIds.isEmpty()) {
+                throw IllegalStateException(
+                    "Unable to find replacement plot for planting site $plantingSiteId zone " +
+                        "${plantingZone.id} cluster $clusterNumber")
+              }
+
+              nextPlotNumber += newPlotIds.size
+
+              oldPlots.forEach { oldPlot ->
+                MonitoringPlotOverlapsRecord(
+                        monitoringPlotId = newPlotIds[0], overlapsPlotId = oldPlot.id)
+                    .attach(dslContext)
+                    .insert()
+              }
+            }
       }
     }
   }
@@ -1362,11 +1447,12 @@ class PlantingSiteStore(
       plantingZone: ExistingPlantingZoneModel,
       clusterNumbers: List<Int>,
       searchBoundary: MultiPolygon = plantingZone.boundary,
+      firstNewPlotNumber: Int = plantingZone.getMaxPlotName() + 1
   ): List<MonitoringPlotId> {
     val userId = currentUser().userId
     val now = clock.instant()
 
-    var nextPlotNumber = plantingZone.getMaxPlotName() + 1
+    var nextPlotNumber = firstNewPlotNumber
 
     if (plantingSite.gridOrigin == null) {
       throw IllegalStateException("Planting site ${plantingSite.id} has no grid origin")
