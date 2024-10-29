@@ -75,6 +75,7 @@ class VariableService(
               }
 
               variableValueStore.upgradeSectionDefaultValues(replacements)
+              variableValueStore.upgradeSectionValueVariables(replacements)
             }
       }
     }

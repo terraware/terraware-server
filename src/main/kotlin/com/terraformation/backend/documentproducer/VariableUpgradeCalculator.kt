@@ -76,8 +76,8 @@ class VariableUpgradeCalculator(
   }
 
   private fun variableOperations(newVariable: Variable): List<ValueOperation> {
-    val valuesOfOldVariable =
-        oldVariableIds[newVariable.id]?.let { valuesOfOldVariables[it] } ?: return emptyList()
+    val oldVariableId = oldVariableIds[newVariable.id]
+    val valuesOfOldVariable = oldVariableId?.let { valuesOfOldVariables[it] } ?: return emptyList()
 
     val oldVariable = variableStore.fetchOneVariable(valuesOfOldVariable.first().variableId)
 
