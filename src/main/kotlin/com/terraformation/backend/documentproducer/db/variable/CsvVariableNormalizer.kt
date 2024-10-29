@@ -1,7 +1,6 @@
 package com.terraformation.backend.documentproducer.db.variable
 
 import com.opencsv.CSVReader
-import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.VariableTableStyle
 import com.terraformation.backend.db.docprod.VariableType
@@ -10,8 +9,6 @@ import java.io.InputStreamReader
 import java.math.BigDecimal
 
 class CsvVariableNormalizer {
-  private val deliverablePositions: MutableMap<DeliverableId, Int> = mutableMapOf()
-  private val deliverableIdsByPath: MutableMap<String, DeliverableId> = mutableMapOf()
   private val variablePaths: MutableList<String> = mutableListOf()
 
   fun normalizeFromCsv(inputBytes: ByteArray): List<AllVariableCsvVariable> {
@@ -33,14 +30,6 @@ class CsvVariableNormalizer {
       val parent = values[VARIABLE_CSV_COLUMN_INDEX_PARENT]?.trim()
       val parentPath = getParentPath(parent)
       val variablePath = getVariablePath(name, parent)
-
-      // Children always inherit their parents' deliverable IDs.
-      val deliverableId =
-          parentPath?.let { deliverableIdsByPath[it] }
-              ?: values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_ID]?.let { DeliverableId(it) }
-      if (deliverableId != null) {
-        deliverableIdsByPath[variablePath] = deliverableId
-      }
 
       AllVariableCsvVariable(
           name = name,
@@ -64,13 +53,6 @@ class CsvVariableNormalizer {
               else VariableTableStyle.Horizontal,
           isHeader = normalizeBoolean(values[VARIABLE_CSV_COLUMN_INDEX_IS_HEADER]),
           notes = values[VARIABLE_CSV_COLUMN_INDEX_NOTES],
-          deliverableId = deliverableId,
-          deliverablePosition =
-              deliverableId?.let {
-                deliverablePositions.getOrDefault(it, 0).also { deliverablePosition ->
-                  deliverablePositions[it] = deliverablePosition + 1
-                }
-              },
           deliverableQuestion = values[VARIABLE_CSV_COLUMN_INDEX_DELIVERABLE_QUESTION],
           dependencyVariableStableId =
               values[VARIABLE_CSV_COLUMN_INDEX_DEPENDENCY_VARIABLE_STABLE_ID],

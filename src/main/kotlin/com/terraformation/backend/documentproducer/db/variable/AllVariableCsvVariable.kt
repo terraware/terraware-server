@@ -1,6 +1,5 @@
 package com.terraformation.backend.documentproducer.db.variable
 
-import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableTableStyle
@@ -43,24 +42,20 @@ data class AllVariableCsvVariable(
     val isHeader: Boolean,
     /** Column 13/M - Notes */
     val notes: String?,
-    /** Column 14/N - Deliverable ID */
-    val deliverableId: DeliverableId?,
-    /** Column 15/O - Deliverable Question */
+    /** Column 14/N - Deliverable Question */
     val deliverableQuestion: String?,
-    /** Column 16/P - Dependency - Variable Stable ID */
+    /** Column 15/O - Dependency - Variable Stable ID */
     val dependencyVariableStableId: String?,
-    /** Column 17/Q - Dependency - Condition */
+    /** Column 16/P - Dependency - Condition */
     val dependencyCondition: DependencyCondition?,
-    /** Column 18/R - Dependency - Value */
+    /** Column 17/Q - Dependency - Value */
     val dependencyValue: String?,
-    /** Column 19/S - Internal Only */
+    /** Column 18/R - Internal Only */
     val internalOnly: Boolean,
-    /** Column 20/T - Required? */
+    /** Column 19/S - Required? */
     val isRequired: Boolean,
 
     /** These are calculated during the import */
-    /** The position of this variable within the associated deliverable, if applicable * */
-    var deliverablePosition: Int?,
     /** The path to the parent variable within the hierarchy */
     var parentPath: String?,
     /** Position in the sheet, recorded against the variable manifest entry */
