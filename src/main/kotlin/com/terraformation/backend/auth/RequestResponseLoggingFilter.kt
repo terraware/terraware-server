@@ -13,8 +13,11 @@ import jakarta.servlet.ServletResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.ws.rs.core.MediaType
+import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
+import java.util.UUID
 import kotlin.math.min
+import org.apache.commons.codec.binary.Base32
 import org.slf4j.MDC
 import org.springframework.web.util.ContentCachingRequestWrapper
 import org.springframework.web.util.ContentCachingResponseWrapper
@@ -41,40 +44,66 @@ class RequestResponseLoggingFilter(
   private val loggableContentTypes =
       listOf(MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED)
 
+  /**
+   * Prefix to include in request IDs. [ServletRequest.getRequestId] doesn't return globally unique
+   * request IDs, and it's useful to be able to search for logs from a specific request.
+   */
+  private val requestIdPrefix: String by lazy {
+    val uuid = UUID.randomUUID()
+    val buffer = ByteBuffer.allocate(16)
+
+    buffer.putLong(uuid.mostSignificantBits)
+    buffer.putLong(uuid.leastSignificantBits)
+
+    Base32().encodeToString(buffer.array()).trimEnd('=')
+  }
+
   override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     val user = CurrentUserHolder.getCurrentUser()
-    if (log.isDebugEnabled &&
-        requestLogConfig.emailRegex != null &&
-        user is IndividualUser &&
-        user.email.lowercase().matches(requestLogConfig.emailRegex) &&
-        request is HttpServletRequest &&
-        response is HttpServletResponse &&
-        request.dispatcherType != DispatcherType.ASYNC &&
-        (requestLogConfig.excludeRegex == null ||
-            !request.requestURI.matches(requestLogConfig.excludeRegex))) {
-      val wrappedRequest = ContentCachingRequestWrapper(request, maxPayloadSize)
-      val wrappedResponse = ContentCachingResponseWrapper(response)
+    val oldMdc = MDC.getCopyOfContextMap()
 
-      try {
-        chain.doFilter(wrappedRequest, wrappedResponse)
-      } finally {
-        val oldMdc = MDC.getCopyOfContextMap()
-        try {
-          mdcPut("request", payload(wrappedRequest.contentType, wrappedRequest.contentAsByteArray))
-          mdcPut(
-              "response", payload(wrappedResponse.contentType, wrappedResponse.contentAsByteArray))
-          mdcPut("email", user.email)
-          mdcPut("method", wrappedRequest.method)
-          mdcPut("uri", wrappedRequest.requestURI)
+    try {
+      mdcPut("authId", user?.authId)
+      mdcPut("requestId", "${requestIdPrefix}_${request.requestId}")
 
-          log.debug("Request")
-        } finally {
-          oldMdc?.let { MDC.setContextMap(it) } ?: MDC.clear()
-          wrappedResponse.copyBodyToResponse()
+      if (user is IndividualUser) {
+        mdcPut("email", user.email)
+
+        if (log.isDebugEnabled &&
+            requestLogConfig.emailRegex != null &&
+            user.email.lowercase().matches(requestLogConfig.emailRegex) &&
+            request is HttpServletRequest &&
+            response is HttpServletResponse &&
+            request.dispatcherType != DispatcherType.ASYNC &&
+            (requestLogConfig.excludeRegex == null ||
+                !request.requestURI.matches(requestLogConfig.excludeRegex))) {
+          val wrappedRequest = ContentCachingRequestWrapper(request, maxPayloadSize)
+          val wrappedResponse = ContentCachingResponseWrapper(response)
+
+          try {
+            chain.doFilter(wrappedRequest, wrappedResponse)
+          } finally {
+            try {
+              mdcPut(
+                  "request", payload(wrappedRequest.contentType, wrappedRequest.contentAsByteArray))
+              mdcPut(
+                  "response",
+                  payload(wrappedResponse.contentType, wrappedResponse.contentAsByteArray))
+              mdcPut("method", wrappedRequest.method)
+              mdcPut("queryString", wrappedRequest.queryString)
+              mdcPut("uri", wrappedRequest.requestURI)
+
+              log.debug("Request ${request.method} ${request.requestURI} ${user.email}")
+            } finally {
+              wrappedResponse.copyBodyToResponse()
+            }
+          }
+        } else {
+          chain.doFilter(request, response)
         }
       }
-    } else {
-      chain.doFilter(request, response)
+    } finally {
+      oldMdc?.let { MDC.setContextMap(it) } ?: MDC.clear()
     }
   }
 
