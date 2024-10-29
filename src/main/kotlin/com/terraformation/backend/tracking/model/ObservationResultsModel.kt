@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
+import kotlin.math.roundToInt
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
@@ -117,60 +118,52 @@ data class ObservationMonitoringPlotResultsModel(
     val totalSpecies: Int,
 )
 
+interface BaseMonitoringResult {
+  /**
+   * Estimated number of plants in planting zone based on estimated planting density and planting
+   * zone area. Only present if planting is completed.
+   */
+  val estimatedPlants: Int?
+
+  /**
+   * Percentage of plants of all species that were dead in this zone's permanent monitoring plots.
+   * Dead plants from previous observations are counted in this percentage, but only live plants
+   * from the current observation are counted. Existing plants are not counted because the intent is
+   * to track the health of plants that were introduced to the site.
+   */
+  val mortalityRate: Int
+
+  /**
+   * Whether planting has completed. Planting is considered completed if all containing subzones has
+   * completed planting.
+   */
+  val plantingCompleted: Boolean
+
+  /**
+   * Estimated planting density for the zone based on the observed planting densities of monitoring
+   * plots. Only present if planting is completed.
+   */
+  val plantingDensity: Int?
+}
+
 data class ObservationPlantingSubzoneResultsModel(
     val areaHa: BigDecimal,
     val completedTime: Instant?,
-    /**
-     * Estimated number of plants in planting zone based on estimated planting density and planting
-     * zone area. Only present if all the subzones in the zone have been marked as having completed
-     * planting.
-     */
-    val estimatedPlants: Int?,
-    /**
-     * Percentage of plants of all species that were dead in this zone's permanent monitoring plots.
-     * Dead plants from previous observations are counted in this percentage, but only live plants
-     * from the current observation are counted. Existing plants are not counted because the intent
-     * is to track the health of plants that were introduced to the site.
-     */
-    val mortalityRate: Int,
+    override val estimatedPlants: Int?,
+    override val mortalityRate: Int,
     val monitoringPlots: List<ObservationMonitoringPlotResultsModel>,
-    /**
-     * Estimated planting density for the zone based on the observed planting densities of
-     * monitoring plots. Only present if all the subzones in the zone have been marked as having
-     * completed planting.
-     */
-    val plantingDensity: Int?,
+    override val plantingCompleted: Boolean,
+    override val plantingDensity: Int?,
     val plantingSubzoneId: PlantingSubzoneId,
-
-    /**
-     * Total number of plants recorded. Includes all plants, regardless of live/dead status or
-     * species.
-     */
-    val totalPlants: Int,
-)
+) : BaseMonitoringResult
 
 data class ObservationPlantingZoneResultsModel(
     val areaHa: BigDecimal,
     val completedTime: Instant?,
-    /**
-     * Estimated number of plants in planting zone based on estimated planting density and planting
-     * zone area. Only present if all the subzones in the zone have been marked as having completed
-     * planting.
-     */
-    val estimatedPlants: Int?,
-    /**
-     * Percentage of plants of all species that were dead in this zone's permanent monitoring plots.
-     * Dead plants from previous observations are counted in this percentage, but only live plants
-     * from the current observation are counted. Existing plants are not counted because the intent
-     * is to track the health of plants that were introduced to the site.
-     */
-    val mortalityRate: Int,
-    /**
-     * Estimated planting density for the zone based on the observed planting densities of
-     * monitoring plots. Only present if all the subzones in the zone have been marked as having
-     * completed planting.
-     */
-    val plantingDensity: Int?,
+    override val estimatedPlants: Int?,
+    override val mortalityRate: Int,
+    override val plantingCompleted: Boolean,
+    override val plantingDensity: Int?,
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
     val plantingZoneId: PlantingZoneId,
     val species: List<ObservationSpeciesResultsModel>,
@@ -185,34 +178,154 @@ data class ObservationPlantingZoneResultsModel(
      * as a separate species for purposes of this total.
      */
     val totalSpecies: Int,
-)
+) : BaseMonitoringResult
 
 data class ObservationResultsModel(
     val completedTime: Instant?,
-    /**
-     * Estimated total number of live plants at the site, based on the estimated planting density
-     * and site size. Only present if all the subzones in the site have been marked as having
-     * completed planting.
-     */
-    val estimatedPlants: Int?,
-    /**
-     * Percentage of plants of all species that were dead in this site's permanent monitoring plots.
-     * Dead plants from previous observations are counted in this percentage, but only live plants
-     * from the current observation are counted. Existing plants are not counted because the intent
-     * is to track the health of plants that were introduced to the site.
-     */
-    val mortalityRate: Int,
+    override val estimatedPlants: Int?,
+    override val mortalityRate: Int,
     val observationId: ObservationId,
-    /**
-     * Estimated planting density for the site, based on the observed planting densities of
-     * monitoring plots. Only present if all the subzones in the site have been marked as having
-     * completed planting.
-     */
-    val plantingDensity: Int?,
+    override val plantingCompleted: Boolean,
+    override val plantingDensity: Int?,
     val plantingSiteId: PlantingSiteId,
     val plantingZones: List<ObservationPlantingZoneResultsModel>,
     val species: List<ObservationSpeciesResultsModel>,
     val startDate: LocalDate,
     val state: ObservationState,
     val totalSpecies: Int,
-)
+) : BaseMonitoringResult
+
+data class ObservationPlantingZoneRollupResultsModel(
+    val areaHa: BigDecimal,
+    /** Earliest and latest completed times of the observations used in this rollup. */
+    val completedTimeRange: Pair<Instant, Instant>,
+    override val estimatedPlants: Int?,
+    override val mortalityRate: Int,
+    override val plantingCompleted: Boolean,
+    override val plantingDensity: Int?,
+    /** List of subzone observation results used for this rollup */
+    val plantingSubzones: List<ObservationPlantingSubzoneResultsModel?>,
+    val plantingZoneId: PlantingZoneId,
+) : BaseMonitoringResult {
+  companion object {
+    fun of(
+        areaHa: BigDecimal,
+        plantingZoneId: PlantingZoneId,
+        subzoneResults: List<ObservationPlantingSubzoneResultsModel?>
+    ): ObservationPlantingZoneRollupResultsModel? {
+      if (subzoneResults.isEmpty()) {
+        return null
+      }
+
+      val plantingCompleted = subzoneResults.none { it == null || !it.plantingCompleted }
+
+      val nonNullSubzoneResults = subzoneResults.filterNotNull()
+
+      val monitoringPlots = nonNullSubzoneResults.flatMap { it.monitoringPlots }
+      val monitoringPlotsSpecies = monitoringPlots.flatMap { it.species }
+
+      val plantingDensity =
+          if (plantingCompleted) {
+            monitoringPlots.map { it.plantingDensity }.average().roundToInt()
+          } else {
+            null
+          }
+
+      val estimatedPlants =
+          if (plantingDensity != null) {
+            areaHa.toDouble() * plantingDensity
+          } else {
+            null
+          }
+
+      val mortalityRate = monitoringPlotsSpecies.calculateMortalityRate()
+
+      return ObservationPlantingZoneRollupResultsModel(
+          areaHa = areaHa,
+          completedTimeRange =
+              nonNullSubzoneResults.minOf { it.completedTime!! } to
+                  nonNullSubzoneResults.maxOf { it.completedTime!! },
+          estimatedPlants = estimatedPlants?.roundToInt(),
+          mortalityRate = mortalityRate,
+          plantingCompleted = plantingCompleted,
+          plantingDensity = plantingDensity,
+          plantingSubzones = subzoneResults,
+          plantingZoneId = plantingZoneId)
+    }
+  }
+}
+
+data class ObservationRollupResultsModel(
+    /** Earliest and latest completed times of the observations used in this rollup. */
+    val completedTimeRange: Pair<Instant, Instant>,
+    override val estimatedPlants: Int?,
+    override val mortalityRate: Int,
+    override val plantingCompleted: Boolean,
+    override val plantingDensity: Int?,
+    val plantingSiteId: PlantingSiteId,
+    /** List of subzone observation results used for this rollup */
+    val plantingZones: List<ObservationPlantingZoneRollupResultsModel?>,
+) : BaseMonitoringResult {
+  companion object {
+    fun of(
+        plantingSiteId: PlantingSiteId,
+        zoneResults: List<ObservationPlantingZoneRollupResultsModel?>
+    ): ObservationRollupResultsModel? {
+      if (zoneResults.isEmpty()) {
+        return null
+      }
+
+      val plantingCompleted = zoneResults.none { it == null || !it.plantingCompleted }
+      val nonNullZoneResults = zoneResults.filterNotNull()
+
+      val monitoringPlots =
+          nonNullZoneResults.flatMap { zone ->
+            zone.plantingSubzones.flatMap { it?.monitoringPlots ?: emptyList() }
+          }
+      val monitoringPlotsSpecies = monitoringPlots.flatMap { it.species }
+
+      val plantingDensity =
+          if (plantingCompleted) {
+            monitoringPlots.map { it.plantingDensity }.average().roundToInt()
+          } else {
+            null
+          }
+
+      val estimatedPlants =
+          if (plantingDensity != null) {
+            nonNullZoneResults.sumOf { it.estimatedPlants ?: 0 }
+          } else {
+            null
+          }
+
+      val mortalityRate = monitoringPlotsSpecies.calculateMortalityRate()
+
+      return ObservationRollupResultsModel(
+          completedTimeRange =
+              nonNullZoneResults.minOf { it.completedTimeRange.first } to
+                  nonNullZoneResults.maxOf { it.completedTimeRange.second },
+          estimatedPlants = estimatedPlants,
+          mortalityRate = mortalityRate,
+          plantingCompleted = plantingCompleted,
+          plantingDensity = plantingDensity,
+          plantingSiteId = plantingSiteId,
+          plantingZones = zoneResults,
+      )
+    }
+  }
+}
+
+/**
+ * Calculates the mortality rate across all non-preexisting plants of all species in permanent
+ * monitoring plots.
+ */
+fun List<ObservationSpeciesResultsModel>.calculateMortalityRate(): Int {
+  val numNonExistingPlants = this.sumOf { it.permanentLive + it.cumulativeDead }
+  val numDeadPlants = this.sumOf { it.cumulativeDead }
+
+  return if (numNonExistingPlants > 0) {
+    (numDeadPlants * 100.0 / numNonExistingPlants).roundToInt()
+  } else {
+    0
+  }
+}

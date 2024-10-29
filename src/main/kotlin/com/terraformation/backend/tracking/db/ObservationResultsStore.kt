@@ -9,7 +9,6 @@ import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_OVERLAPS
@@ -30,6 +29,7 @@ import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsM
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
+import com.terraformation.backend.tracking.model.calculateMortalityRate
 import com.terraformation.backend.util.SQUARE_METERS_PER_HECTARE
 import jakarta.inject.Named
 import kotlin.math.roundToInt
@@ -63,21 +63,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return fetchByCondition(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId), limit)
-  }
-
-  fun fetchLatestPerSubzone(
-      plantingSiteId: PlantingSiteId
-  ): Map<PlantingSubzoneId, ObservationPlantingSubzoneResultsModel> {
-    val subzoneObservations =
-        fetchByPlantingSiteId(plantingSiteId)
-            .flatMap { it.plantingZones.flatMap { it.plantingSubzones } }
-            .groupBy { it.plantingSubzoneId }
-
-    val latestObservations =
-        subzoneObservations.mapValues { entry ->
-          entry.value.filter { it.completedTime != null }.maxBy { it.completedTime!! }
-        }
-    return latestObservations
   }
 
   fun fetchByOrganizationId(
@@ -272,7 +257,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                         (it.totalLive + it.totalExisting) > 0
                   }
 
-              val mortalityRate = if (isPermanent) calculateMortalityRate(species) else null
+              val mortalityRate = if (isPermanent) species.calculateMortalityRate() else null
 
               val areaSquareMeters = sizeMeters * sizeMeters
               val plantingDensity =
@@ -336,7 +321,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               val areaHa = record[PLANTING_SUBZONES.AREA_HA.asNonNullable()]
 
               val species = monitoringPlots.flatMap { it.species }
-              val totalPlants = species.sumOf { it.totalLive + it.totalDead }
 
               val isCompleted =
                   monitoringPlots.isNotEmpty() && monitoringPlots.all { it.completedTime != null }
@@ -347,10 +331,11 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     null
                   }
 
-              val mortalityRate = calculateMortalityRate(species)
+              val mortalityRate = species.calculateMortalityRate()
 
+              val plantingCompleted = record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME] != null
               val plantingDensity =
-                  if (record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME] != null) {
+                  if (plantingCompleted) {
                     val plotDensities = monitoringPlots.map { it.plantingDensity }
                     if (plotDensities.isNotEmpty()) {
                       plotDensities.average()
@@ -373,9 +358,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   estimatedPlants = estimatedPlants?.roundToInt(),
                   monitoringPlots = record[monitoringPlotMultiset],
                   mortalityRate = mortalityRate,
+                  plantingCompleted = plantingCompleted,
                   plantingDensity = plantingDensity?.roundToInt(),
                   plantingSubzoneId = record[PLANTING_SUBZONES.ID.asNonNullable()],
-                  totalPlants = totalPlants,
               )
             }
           }
@@ -455,10 +440,11 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     null
                   }
 
-              val mortalityRate = calculateMortalityRate(species)
+              val mortalityRate = species.calculateMortalityRate()
 
+              val plantingCompleted = record[zonePlantingCompletedField]
               val plantingDensity =
-                  if (record[zonePlantingCompletedField]) {
+                  if (plantingCompleted) {
                     val plotDensities =
                         subzones.flatMap { subzone ->
                           subzone.monitoringPlots.map { it.plantingDensity }
@@ -484,6 +470,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   completedTime = completedTime,
                   estimatedPlants = estimatedPlants?.roundToInt(),
                   mortalityRate = mortalityRate,
+                  plantingCompleted = plantingCompleted,
                   plantingDensity = plantingDensity?.roundToInt(),
                   plantingSubzones = subzones,
                   plantingZoneId = record[PLANTING_ZONES.ID.asNonNullable()],
@@ -533,11 +520,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
           val knownSpecies = species.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
           val liveSpecies = knownSpecies.filter { it.totalLive > 0 || it.totalExisting > 0 }
 
-          var plantingDensity: Int? = null
-          var estimatedPlants: Int? = null
+          val plantingCompleted = zones.isNotEmpty() && zones.all { it.plantingCompleted }
 
-          if (zones.isNotEmpty() && zones.all { it.plantingDensity != null }) {
-            plantingDensity =
+          val plantingDensity =
+              if (zones.isNotEmpty() && zones.all { it.plantingDensity != null }) {
                 zones
                     .flatMap { zone ->
                       zone.plantingSubzones.flatMap { subzone ->
@@ -546,21 +532,27 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     }
                     .average()
                     .roundToInt()
-          }
+              } else {
+                null
+              }
 
-          if (zones.isNotEmpty() && zones.all { it.estimatedPlants != null }) {
-            estimatedPlants = zones.mapNotNull { it.estimatedPlants }.sum()
-          }
+          val estimatedPlants =
+              if (zones.isNotEmpty() && zones.all { it.estimatedPlants != null }) {
+                zones.mapNotNull { it.estimatedPlants }.sum()
+              } else {
+                null
+              }
 
           val totalSpecies = liveSpecies.size
 
-          val mortalityRate = calculateMortalityRate(species)
+          val mortalityRate = species.calculateMortalityRate()
 
           ObservationResultsModel(
               completedTime = record[OBSERVATIONS.COMPLETED_TIME],
               estimatedPlants = estimatedPlants?.toInt(),
               mortalityRate = mortalityRate,
               observationId = record[OBSERVATIONS.ID.asNonNullable()],
+              plantingCompleted = plantingCompleted,
               plantingDensity = plantingDensity,
               plantingSiteId = record[OBSERVATIONS.PLANTING_SITE_ID.asNonNullable()],
               plantingZones = zones,
@@ -570,20 +562,5 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               totalSpecies = totalSpecies,
           )
         }
-  }
-
-  /**
-   * Calculates the mortality rate across all non-preexisting plants of all species in permanent
-   * monitoring plots.
-   */
-  private fun calculateMortalityRate(species: List<ObservationSpeciesResultsModel>): Int {
-    val numNonExistingPlants = species.sumOf { it.permanentLive + it.cumulativeDead }
-    val numDeadPlants = species.sumOf { it.cumulativeDead }
-
-    return if (numNonExistingPlants > 0) {
-      (numDeadPlants * 100.0 / numNonExistingPlants).roundToInt()
-    } else {
-      0
-    }
   }
 }

@@ -23,6 +23,7 @@ import com.terraformation.backend.tracking.db.InvalidObservationStartDateExcepti
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationHasNoPlotsException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
+import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
@@ -37,6 +38,8 @@ import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEven
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
+import com.terraformation.backend.tracking.model.ObservationPlantingZoneRollupResultsModel
+import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
@@ -59,6 +62,7 @@ class ObservationService(
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val observationPhotosDao: ObservationPhotosDao,
+    private val observationResultsStore: ObservationResultsStore,
     private val observationStore: ObservationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val parentStore: ParentStore,
@@ -391,6 +395,31 @@ class ObservationService(
 
       ReplacementResult(addedPlotIds, removedPlotIds)
     }
+  }
+
+  fun fetchRollupResultForPlantingSite(
+      plantingSiteId: PlantingSiteId,
+  ): ObservationRollupResultsModel? {
+    val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Subzone)
+    val observations = observationResultsStore.fetchByPlantingSiteId(plantingSiteId)
+    val subzoneCompletedObservations =
+        observations
+            .filter { it.completedTime != null }
+            .flatMap { observation -> observation.plantingZones.flatMap { it.plantingSubzones } }
+            .groupBy { it.plantingSubzoneId }
+
+    val latestPerSubzone =
+        subzoneCompletedObservations.mapValues { entry -> entry.value.maxBy { it.completedTime!! } }
+
+    val plantingZoneResults =
+        site.plantingZones.map { zone ->
+          val subzoneResults =
+              zone.plantingSubzones.mapNotNull { subzone -> latestPerSubzone[subzone.id] }
+
+          ObservationPlantingZoneRollupResultsModel.of(zone.areaHa, zone.id, subzoneResults)
+        }
+
+    return ObservationRollupResultsModel.of(plantingSiteId, plantingZoneResults)
   }
 
   @EventListener
