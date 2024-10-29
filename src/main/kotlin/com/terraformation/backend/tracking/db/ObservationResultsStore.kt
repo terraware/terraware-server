@@ -26,7 +26,9 @@ import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResult
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotStatus
 import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
+import com.terraformation.backend.tracking.model.ObservationPlantingZoneRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsModel
+import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.calculateMortalityRate
@@ -72,6 +74,45 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     requirePermissions { readOrganization(organizationId) }
 
     return fetchByCondition(OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId), limit)
+  }
+
+  fun fetchRollupResultForPlantingSite(
+      plantingSiteId: PlantingSiteId,
+  ): ObservationRollupResultsModel? {
+    val allSubzoneIdsByZoneIds =
+        DSL.select(PLANTING_SUBZONES.ID, PLANTING_SUBZONES.PLANTING_ZONE_ID)
+            .from(PLANTING_SUBZONES)
+            .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+            .groupBy({ it[PLANTING_SUBZONES.PLANTING_ZONE_ID]!! }, { it[PLANTING_SUBZONES.ID]!! })
+
+    val zoneAreasById =
+        DSL.select(PLANTING_ZONES.ID, PLANTING_ZONES.AREA_HA)
+            .from(PLANTING_ZONES)
+            .where(PLANTING_ZONES.ID.`in`(allSubzoneIdsByZoneIds.keys))
+            .associate { it[PLANTING_ZONES.ID]!! to it[PLANTING_ZONES.AREA_HA]!! }
+
+    val observations = fetchByPlantingSiteId(plantingSiteId)
+    val subzoneCompletedObservations =
+        observations
+            .filter { it.completedTime != null }
+            .flatMap { observation -> observation.plantingZones.flatMap { it.plantingSubzones } }
+            .groupBy { it.plantingSubzoneId }
+
+    val latestPerSubzone =
+        subzoneCompletedObservations.mapValues { entry -> entry.value.maxBy { it.completedTime!! } }
+
+    val plantingZoneResults =
+        allSubzoneIdsByZoneIds.map {
+          val zoneId = it.key
+
+          val areaHa = zoneAreasById[zoneId]!!
+          val subzoneIds = it.value
+          val subzoneResults = subzoneIds.mapNotNull { subzoneId -> latestPerSubzone[subzoneId] }
+
+          ObservationPlantingZoneRollupResultsModel.of(areaHa, zoneId, subzoneResults)
+        }
+
+    return ObservationRollupResultsModel.of(plantingSiteId, plantingZoneResults)
   }
 
   private val coordinatesGpsField = OBSERVED_PLOT_COORDINATES.GPS_COORDINATES.forMultiset()

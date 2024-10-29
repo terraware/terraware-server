@@ -177,7 +177,7 @@ class ObservationsController(
   fun getPlantingSiteObservationSummary(
       @RequestParam plantingSiteId: PlantingSiteId,
   ): GetPlantingSiteObservationSummaryPayload {
-    val model = observationService.fetchRollupResultForPlantingSite(plantingSiteId)
+    val model = observationResultsStore.fetchRollupResultForPlantingSite(plantingSiteId)
     return GetPlantingSiteObservationSummaryPayload(
         model?.let { PlantingSiteObservationSummaryPayload(model) })
   }
