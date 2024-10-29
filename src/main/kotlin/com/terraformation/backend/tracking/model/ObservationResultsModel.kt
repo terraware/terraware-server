@@ -155,6 +155,11 @@ data class ObservationPlantingSubzoneResultsModel(
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int?,
     val plantingSubzoneId: PlantingSubzoneId,
+    /**
+     * Total number of plants recorded. Includes all plants, regardless of live/dead status or
+     * species.
+     */
+    val totalPlants: Int,
 ) : BaseMonitoringResult
 
 data class ObservationPlantingZoneResultsModel(

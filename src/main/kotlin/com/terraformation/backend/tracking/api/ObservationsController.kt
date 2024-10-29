@@ -49,8 +49,10 @@ import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResult
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotStatus
 import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
+import com.terraformation.backend.tracking.model.ObservationPlantingZoneRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlotCounts
 import com.terraformation.backend.tracking.model.ObservationResultsModel
+import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -170,17 +172,14 @@ class ObservationsController(
     return ListObservationResultsResponsePayload(results.map { ObservationResultsPayload(it) })
   }
 
-  @GetMapping("/results/latestBySubzones")
-  @Operation(
-      summary =
-          "Gets a list of the latest results of observations for a planting site by subzones.")
-  fun listLatestSubzoneObservationResultsResponsePayload(
+  @GetMapping("/results/summary")
+  @Operation(summary = "Gets the rollup observation summary of a planting site")
+  fun getPlantingSiteObservationSummary(
       @RequestParam plantingSiteId: PlantingSiteId,
-  ): ListLatestSubzoneObservationResultsResponsePayload {
-    val results = observationResultsStore.fetchLatestPerSubzone(plantingSiteId)
-
-    return ListLatestSubzoneObservationResultsResponsePayload(
-        results.values.map { ObservationPlantingSubzoneResultsPayload(it) })
+  ): GetPlantingSiteObservationSummaryPayload {
+    val model = observationService.fetchRollupResultForPlantingSite(plantingSiteId)
+    return GetPlantingSiteObservationSummaryPayload(
+        model?.let { PlantingSiteObservationSummaryPayload(model) })
   }
 
   @GetMapping("/{observationId}")
@@ -699,8 +698,7 @@ data class ObservationPlantingSubzoneResultsPayload(
 }
 
 data class ObservationPlantingZoneResultsPayload(
-    @Schema(description = "Area of this planting zone in hectares.") //
-    val areaHa: BigDecimal,
+    @Schema(description = "Area of this planting zone in hectares.") val areaHa: BigDecimal,
     val completedTime: Instant?,
     @Schema(
         description =
@@ -801,6 +799,88 @@ data class ObservationResultsPayload(
   )
 }
 
+data class PlantingZoneObservationSummaryPayload(
+    @Schema(description = "Area of this planting zone in hectares.") val areaHa: BigDecimal,
+    @Schema(description = "The earliest time of the observations used in this summary.")
+    val earliestObservationTime: Instant,
+    @Schema(
+        description =
+            "Estimated number of plants in planting zone based on estimated planting density and " +
+                "planting zone area. Only present if all the subzones in the zone have been " +
+                "marked as having completed planting.")
+    val estimatedPlants: Int?,
+    @Schema(description = "The latest time of the observations used in this summary.")
+    val latestObservationTime: Instant,
+    @Schema(
+        description =
+            "Percentage of plants of all species that were dead in this zone's permanent " +
+                "monitoring plots.")
+    val mortalityRate: Int,
+    @Schema(
+        description =
+            "Estimated planting density for the zone based on the observed planting densities " +
+                "of monitoring plots. Only present if all the subzones in the zone have been " +
+                "marked as having completed planting.")
+    val plantingDensity: Int?,
+    @Schema(description = "List of subzone observations used in this summary. ")
+    val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
+    val plantingZoneId: PlantingZoneId,
+) {
+  constructor(
+      model: ObservationPlantingZoneRollupResultsModel
+  ) : this(
+      areaHa = model.areaHa,
+      earliestObservationTime = model.completedTimeRange.first,
+      estimatedPlants = model.estimatedPlants,
+      latestObservationTime = model.completedTimeRange.second,
+      mortalityRate = model.mortalityRate,
+      plantingDensity = model.plantingDensity,
+      plantingSubzones =
+          model.plantingSubzones.mapNotNull { subzone ->
+            subzone?.let { ObservationPlantingSubzoneResultsPayload(it) }
+          },
+      plantingZoneId = model.plantingZoneId,
+  )
+}
+
+data class PlantingSiteObservationSummaryPayload(
+    @Schema(description = "The earliest time of the observations used in this summary.")
+    val earliestObservationTime: Instant,
+    @Schema(
+        description =
+            "Estimated total number of live plants at the site, based on the estimated planting " +
+                "density and site size. Only present if all the subzones in the site have been " +
+                "marked as having completed planting.")
+    val estimatedPlants: Int?,
+    @Schema(description = "The latest time of the observations used in this summary.")
+    val latestObservationTime: Instant,
+    @Schema(
+        description =
+            "Percentage of plants of all species that were dead in this site's permanent " +
+                "monitoring plots.")
+    val mortalityRate: Int?,
+    @Schema(
+        description =
+            "Estimated planting density for the site, based on the observed planting densities " +
+                "of monitoring plots. Only present if all the subzones in the site have been " +
+                "marked as having completed planting.")
+    val plantingDensity: Int?,
+    val plantingZones: List<PlantingZoneObservationSummaryPayload>
+) {
+  constructor(
+      model: ObservationRollupResultsModel
+  ) : this(
+      earliestObservationTime = model.completedTimeRange.first,
+      estimatedPlants = model.estimatedPlants,
+      latestObservationTime = model.completedTimeRange.second,
+      mortalityRate = model.mortalityRate,
+      plantingDensity = model.plantingDensity,
+      plantingZones =
+          model.plantingZones.mapNotNull { zone ->
+            zone?.let { PlantingZoneObservationSummaryPayload(it) }
+          })
+}
+
 data class CompletePlotObservationRequestPayload(
     val conditions: Set<ObservableCondition>,
     val notes: String?,
@@ -853,8 +933,11 @@ data class ListObservationResultsResponsePayload(
     val observations: List<ObservationResultsPayload>
 ) : SuccessResponsePayload
 
-data class ListLatestSubzoneObservationResultsResponsePayload(
-    val subzones: List<ObservationPlantingSubzoneResultsPayload>
+data class GetPlantingSiteObservationSummaryPayload(
+    @Schema(
+        description =
+            "Rollup summary of the planting site observations. Null if no observation has been made. ")
+    val summary: PlantingSiteObservationSummaryPayload?,
 ) : SuccessResponsePayload
 
 data class ScheduleObservationRequestPayload(

@@ -321,6 +321,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               val areaHa = record[PLANTING_SUBZONES.AREA_HA.asNonNullable()]
 
               val species = monitoringPlots.flatMap { it.species }
+              species.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
+              val totalPlants = species.sumOf { it.totalLive + it.totalExisting + it.totalDead }
 
               val isCompleted =
                   monitoringPlots.isNotEmpty() && monitoringPlots.all { it.completedTime != null }
@@ -361,6 +363,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   plantingCompleted = plantingCompleted,
                   plantingDensity = plantingDensity?.roundToInt(),
                   plantingSubzoneId = record[PLANTING_SUBZONES.ID.asNonNullable()],
+                  totalPlants = totalPlants,
               )
             }
           }
