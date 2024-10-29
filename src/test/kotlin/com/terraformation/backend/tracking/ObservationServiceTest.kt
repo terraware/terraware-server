@@ -47,6 +47,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
+import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
@@ -58,6 +59,7 @@ import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
+import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -138,6 +140,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
         dslContext,
         eventPublisher,
         fileService,
+        monitoringPlotsDao,
         observationPhotosDao,
         observationStore,
         plantingSiteStore,
@@ -1779,6 +1782,17 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       assertThrows<PlotNotInObservationException> {
         service.replaceMonitoringPlot(
             observationId, otherPlotId, "justification", ReplacementDuration.LongTerm)
+      }
+    }
+
+    @Test
+    fun `throws exception if plot size is different from the size of newly-created plots`() {
+      val monitoringPlotId = insertMonitoringPlot(sizeMeters = MONITORING_PLOT_SIZE_INT - 1)
+      insertObservationPlot()
+
+      assertThrows<PlotSizeNotReplaceableException> {
+        service.replaceMonitoringPlot(
+            observationId, monitoringPlotId, "justification", ReplacementDuration.LongTerm)
       }
     }
 
