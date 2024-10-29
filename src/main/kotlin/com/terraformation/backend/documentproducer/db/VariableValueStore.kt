@@ -64,7 +64,6 @@ import com.terraformation.backend.documentproducer.model.NewValue
 import com.terraformation.backend.documentproducer.model.NumberValue
 import com.terraformation.backend.documentproducer.model.ReplaceValuesOperation
 import com.terraformation.backend.documentproducer.model.SectionValue
-import com.terraformation.backend.documentproducer.model.SectionValueFragment
 import com.terraformation.backend.documentproducer.model.SectionValueText
 import com.terraformation.backend.documentproducer.model.SectionValueVariable
 import com.terraformation.backend.documentproducer.model.SelectValue
@@ -226,13 +225,21 @@ class VariableValueStore(
   }
 
   // Get the VariableValue for the injected variable within a section variable
-  fun fetchSectionValueVariable(
-      variableId: VariableId
-  ): List<VariableValue<VariableValueId, SectionValueVariable>> {
-    val conditions = listOf(VARIABLE_SECTION_VALUES.USED_VARIABLE_ID.eq(variableId))
+  private fun fetchSectionValuesUsingVariable(variableId: VariableId): List<ExistingSectionValue> {
+    val variableValues2 = VARIABLE_VALUES.`as`("variable_values_2")
+    val conditions =
+        listOf(
+            VARIABLE_SECTION_VALUES.USED_VARIABLE_ID.eq(variableId),
+            // Don't return values that were later superseded by other values
+            DSL.notExists(
+                DSL.selectOne()
+                    .from(variableValues2)
+                    .where(variableValues2.VARIABLE_ID.eq(VARIABLE_VALUES.VARIABLE_ID))
+                    .and(variableValues2.PROJECT_ID.eq(VARIABLE_VALUES.PROJECT_ID))
+                    .and(variableValues2.LIST_POSITION.eq(VARIABLE_VALUES.LIST_POSITION))
+                    .and(variableValues2.ID.gt(VARIABLE_VALUES.ID))))
 
-    return fetchByConditions(conditions, false)
-        .filterIsInstance<VariableValue<VariableValueId, SectionValueVariable>>()
+    return fetchByConditions(conditions, false).filterIsInstance<ExistingSectionValue>()
     //        .filterIsInstance<SectionValue<VariableValueId>>()
   }
 
@@ -451,66 +458,24 @@ class VariableValueStore(
   }
 
   fun upgradeSectionValueVariables(replacements: Map<VariableId, VariableId>) {
-    // Since a variable can be injected into a section as a value, we also need to update the
-    // corresponding section values. But only if the section doesn't have the reference to the new
-    // variable
     val sectionOperations =
-        replacements.keys.flatMap { oldVariableId ->
-          val newVariableId = replacements[oldVariableId]!!
-
-          // Find old injections / references
-          fetchSectionValueVariable(oldVariableId).map { sectionValueVariable ->
-            // This is returning all the old values, so we need to filter out the old values
-            val allValues =
-                listValues(
-                    projectId = sectionValueVariable.projectId,
-                    variableIds = listOf(sectionValueVariable.variableId))
-            val currentValues = mutableMapOf<VariableId, ExistingValue>()
-
-            allValues.forEach {
-              val value = it.value
-              if (value !is SectionValueVariable || value.usedVariableId != oldVariableId) {
-                return@forEach
-              }
-
-              val rowValueId = currentValues[it.variableId]?.rowValueId ?: VariableValueId(0)
-              if (it.id.value > rowValueId.value) {
-                currentValues[it.variableId] = it
-              }
+        replacements.flatMap { (oldVariableId, newVariableId) ->
+          fetchSectionValuesUsingVariable(oldVariableId).mapNotNull { sectionValue ->
+            val valueVariable = sectionValue.value as? SectionValueVariable
+            valueVariable?.let { sectionValueVariable ->
+              UpdateValueOperation(
+                  ExistingSectionValue(
+                      BaseVariableValueProperties(
+                          sectionValue.id,
+                          sectionValue.projectId,
+                          sectionValue.listPosition,
+                          sectionValue.variableId,
+                          sectionValue.citation),
+                      SectionValueVariable(
+                          newVariableId,
+                          sectionValueVariable.usageType,
+                          sectionValueVariable.displayStyle)))
             }
-
-            val withUpdatedSectionValueVariable =
-                allValues.map {
-                  val currentValue = currentValues[sectionValueVariable.variableId] ?: return@map it
-
-                  val currentValueValue = currentValue.value
-                  if (currentValue.id == it.id && currentValueValue is SectionValueVariable) {
-                    val existingBase = fetchBaseProperties(listOf(it.id))
-
-                    val fragment =
-                        SectionValueVariable(
-                            usedVariableId = newVariableId,
-                            usageType = currentValueValue.usageType,
-                            displayStyle = currentValueValue.displayStyle)
-                    val base = existingBase[it.id]!!
-
-                    SectionValue(base, fragment)
-                  } else {
-                    it
-                  }
-                }
-
-            ReplaceValuesOperation(
-                projectId = sectionValueVariable.projectId,
-                variableId = sectionValueVariable.variableId,
-                rowValueId = sectionValueVariable.id,
-                values =
-                    withUpdatedSectionValueVariable.map {
-                      NewSectionValue(
-                          BaseVariableValueProperties(
-                              null, it.projectId, it.listPosition, it.variableId, it.citation),
-                          it.value as SectionValueFragment)
-                    })
           }
         }
 

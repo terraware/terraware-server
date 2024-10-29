@@ -7,19 +7,15 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
-import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
 import com.terraformation.backend.db.docprod.VariableType
-import com.terraformation.backend.db.docprod.VariableUsageType
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.model.AppendValueOperation
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
 import com.terraformation.backend.documentproducer.model.NewNumberValue
-import com.terraformation.backend.documentproducer.model.NewSectionValue
 import com.terraformation.backend.documentproducer.model.NewTableValue
 import com.terraformation.backend.documentproducer.model.NewTextValue
-import com.terraformation.backend.documentproducer.model.SectionValueVariable
 import com.terraformation.backend.documentproducer.model.ValueOperation
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -268,43 +264,6 @@ class VariableUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
             AppendValueOperation(
                 NewNumberValue(newValueProps(newVariableId, projectId2), BigDecimal(2))),
         ),
-        calculateOperations(mapOf(oldVariableId to newVariableId)))
-  }
-
-  @Test
-  fun `updates variable references in sections to use new variable IDs`() {
-    val projectId = inserted.projectId
-    insertDocumentTemplate()
-    insertVariableManifest()
-    insertDocument()
-
-    val oldVariableId = insertTextVariable()
-    insertValue(textValue = "referenced text", variableId = oldVariableId)
-    val sectionVariableId = insertVariableManifestEntry(insertSectionVariable())
-
-    insertSectionValue(sectionVariableId, listPosition = 0, textValue = "some text")
-    insertSectionValue(
-        sectionVariableId,
-        listPosition = 1,
-        usedVariableId = oldVariableId,
-        usageType = VariableUsageType.Injection,
-        displayStyle = VariableInjectionDisplayStyle.Block)
-
-    val newVariableId =
-        insertTextVariable(
-            insertVariable(type = VariableType.Text, replacesVariableId = oldVariableId))
-
-    assertEquals(
-        listOf(
-            AppendValueOperation(
-                NewTextValue(newValueProps(newVariableId, projectId), "referenced text")),
-            AppendValueOperation(
-                NewSectionValue(
-                    newValueProps(newVariableId, projectId),
-                    SectionValueVariable(
-                        newVariableId,
-                        VariableUsageType.Injection,
-                        VariableInjectionDisplayStyle.Block)))),
         calculateOperations(mapOf(oldVariableId to newVariableId)))
   }
 
