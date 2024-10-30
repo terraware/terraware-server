@@ -1,9 +1,9 @@
 package com.terraformation.backend.gis
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
-import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.toMultiPolygon
 import org.geotools.util.ContentFormatException
 import org.junit.jupiter.api.Assertions.*
@@ -80,9 +80,7 @@ class GeometryFileParserTest {
 
       val geometry = parser.parse(bytes, resourcePath)
 
-      if (!triangle.equalsOrBothNull(geometry.toMultiPolygon().norm())) {
-        assertEquals(triangle, geometry.toMultiPolygon())
-      }
+      assertGeometryEquals(triangle, geometry.toMultiPolygon().norm())
     }
   }
 }

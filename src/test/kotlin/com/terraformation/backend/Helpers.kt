@@ -9,11 +9,13 @@ import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.seedbank.db.AccessionImporterTest
 import com.terraformation.backend.util.Turtle
+import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.CoordinateXY
+import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
@@ -45,6 +47,17 @@ fun assertJsonEquals(expected: Any, actual: Any, message: String? = null) {
         prettyPrintingObjectMapper.writeValueAsString(expected),
         prettyPrintingObjectMapper.writeValueAsString(actual),
         message)
+  }
+}
+
+/**
+ * Asserts that two Geometry objects are approximately equal. The regular assertEquals function can
+ * fail due to loss of precision when geometries are stored in the database.
+ */
+fun assertGeometryEquals(expected: Geometry?, actual: Geometry?, message: String? = null) {
+  if (!expected.equalsOrBothNull(actual)) {
+    // Let the regular assertEquals output the failure message.
+    assertEquals(expected, actual, message)
   }
 }
 
