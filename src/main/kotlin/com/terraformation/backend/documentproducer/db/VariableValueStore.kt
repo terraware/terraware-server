@@ -240,7 +240,6 @@ class VariableValueStore(
                     .and(variableValues2.ID.gt(VARIABLE_VALUES.ID))))
 
     return fetchByConditions(conditions, false).filterIsInstance<ExistingSectionValue>()
-    //        .filterIsInstance<SectionValue<VariableValueId>>()
   }
 
   private fun fetchByConditions(
