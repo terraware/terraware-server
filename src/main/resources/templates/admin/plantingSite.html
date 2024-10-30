@@ -42,10 +42,9 @@
                 const errorMarginField = document.getElementById(`errorMargin-${zoneId}`);
                 const extraPermanentField = document.getElementById(`extraPermanent-${zoneId}`);
                 const permanentClustersField = document.getElementById(`numPermanent-${zoneId}`);
-                const permanentPlotsField = document.getElementById(`numPermanent25-${zoneId}`);
                 const studentsTField = document.getElementById(`studentsT-${zoneId}`);
                 const temporaryPlotsField = document.getElementById(`numTemporary-${zoneId}`);
-                const totalPlotsField = document.getElementById(`total25-${zoneId}`);
+                const totalPlotsField = document.getElementById(`total-${zoneId}`);
                 const varianceField = document.getElementById(`variance-${zoneId}`);
 
                 const recalculateTotalPlots = () => {
@@ -58,20 +57,11 @@
 
                 const recalculateTemporaryPlots = () => {
                     const permanentClusters = Number.parseFloat(permanentClustersField.value);
-                    const temporaryPlots = Math.floor(permanentClusters * 4 / 3);
+                    const temporaryPlots = Math.max(1, Math.floor(permanentClusters / 3));
 
                     temporaryPlotsField.value = `${temporaryPlots}`;
 
                     recalculateTotalPlots();
-                };
-
-                const recalculatePermanentPlots = () => {
-                    const permanentClusters = Number.parseFloat(permanentClustersField.value);
-                    const permanentPlots = permanentClusters * 4;
-
-                    permanentPlotsField.innerText = `${permanentPlots}`;
-
-                    recalculateTemporaryPlots();
                 };
 
                 const recalculatePermanentClusters = () => {
@@ -84,14 +74,14 @@
 
                     permanentClustersField.value = `${permanentClusters}`;
 
-                    recalculatePermanentPlots();
+                    recalculateTemporaryPlots();
                 };
 
                 errorMarginField.addEventListener('change', recalculatePermanentClusters);
                 extraPermanentField.addEventListener('change', recalculatePermanentClusters);
                 studentsTField.addEventListener('change', recalculatePermanentClusters);
                 varianceField.addEventListener('change', recalculatePermanentClusters);
-                permanentClustersField.addEventListener('change', recalculatePermanentPlots);
+                permanentClustersField.addEventListener('change', recalculateTemporaryPlots);
                 temporaryPlotsField.addEventListener('change', recalculateTotalPlots);
             }
 
@@ -244,10 +234,9 @@
                 <th>Error</th>
                 <th>Student's t</th>
                 <th>Extra<br/>Permanent</th>
-                <th>Permanent<br/>(50x50)</th>
-                <th>Temporary<br/>(25x25)</th>
-                <th>Permanent<br/>(25x25)</th>
-                <th>Total<br/>(25x25)</th>
+                <th>Permanent</th>
+                <th>Temporary</th>
+                <th>Total</th>
                 <th></th>
             </tr>
 
@@ -283,13 +272,7 @@
                            th:value="${zone.numTemporaryPlots}" th:form="|zone-${zone.id}|"/>
                 </td>
                 <td>
-                    <span th:id="|numPermanent25-${zone.id}|"
-                          th:text="${zone.numPermanentClusters != null ? zone.numPermanentClusters * 4 : ''}">
-                        123
-                    </span>
-                </td>
-                <td>
-                    <span th:id="|total25-${zone.id}|"
+                    <span th:id="|total-${zone.id}|"
                           th:text="${zone.numPermanentClusters != null || zone.numTemporaryPlots != null ? (zone.numPermanentClusters ?: 0) * 4 + (zone.numTemporaryPlots ?: 0) : ''}">
                         123
                     </span>

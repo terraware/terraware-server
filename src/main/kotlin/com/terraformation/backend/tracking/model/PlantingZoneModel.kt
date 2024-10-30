@@ -450,7 +450,7 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
     val DEFAULT_STUDENTS_T = BigDecimal("1.645")
     val DEFAULT_VARIANCE = BigDecimal(40000)
     const val DEFAULT_NUM_PERMANENT_CLUSTERS = 11
-    const val DEFAULT_NUM_TEMPORARY_PLOTS = 14
+    const val DEFAULT_NUM_TEMPORARY_PLOTS = 3
 
     /** Target planting density to use if not included in zone properties. */
     val DEFAULT_TARGET_PLANTING_DENSITY = BigDecimal(1500)
