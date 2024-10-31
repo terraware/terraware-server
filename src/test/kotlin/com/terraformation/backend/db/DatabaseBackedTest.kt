@@ -276,6 +276,7 @@ import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservedPlotCoordinatesId
 import com.terraformation.backend.db.tracking.PlantingId
@@ -2111,6 +2112,7 @@ abstract class DatabaseBackedTest {
       isPermanent: Boolean = row.isPermanent ?: false,
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       observationId: ObservationId = row.observationId ?: inserted.observationId,
+      statusId: ObservationPlotStatus = row.statusId ?: ObservationPlotStatus.Unclaimed,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -2125,6 +2127,7 @@ abstract class DatabaseBackedTest {
             modifiedBy = createdBy,
             modifiedTime = createdTime,
             monitoringPlotId = monitoringPlotId,
+            statusId = statusId,
         )
 
     observationPlotsDao.insert(rowWithDefaults)

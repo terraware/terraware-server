@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationIdConverter
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -535,6 +536,7 @@ class ObservationStore(
               isPermanent = isPermanent,
               modifiedBy = createdBy,
               modifiedTime = createdTime,
+              statusId = ObservationPlotStatus.Unclaimed,
           ))
     }
   }
