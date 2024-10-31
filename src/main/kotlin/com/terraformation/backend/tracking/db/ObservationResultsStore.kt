@@ -8,7 +8,6 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
@@ -271,6 +270,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       OBSERVATION_PLOTS.COMPLETED_TIME,
                       OBSERVATION_PLOTS.IS_PERMANENT,
                       OBSERVATION_PLOTS.NOTES,
+                      OBSERVATION_PLOTS.STATUS_ID,
                       monitoringPlotsBoundaryField,
                       MONITORING_PLOTS.ID,
                       MONITORING_PLOTS.FULL_NAME,
@@ -309,12 +309,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               val plantingDensity =
                   (totalLive * SQUARE_METERS_PER_HECTARE / areaSquareMeters).roundToInt()
 
-              val status =
-                  when {
-                    completedTime != null -> ObservationPlotStatus.Completed
-                    claimedBy != null -> ObservationPlotStatus.Claimed
-                    else -> ObservationPlotStatus.Unclaimed
-                  }
+              val status = record[OBSERVATION_PLOTS.STATUS_ID]!!
 
               ObservationMonitoringPlotResultsModel(
                   boundary = record[monitoringPlotsBoundaryField] as Polygon,
