@@ -720,6 +720,20 @@ class AdminPlantingSitesController(
     return redirectToPlantingSite(plantingSiteId)
   }
 
+  @PostMapping("/plantingSite/populateCountries")
+  fun populatePlantingSiteCountries(redirectAttributes: RedirectAttributes): String {
+    try {
+      plantingSiteStore.populateExistingSiteCountries()
+      redirectAttributes.successMessage = "Populated countries of existing planting sites"
+    } catch (e: Exception) {
+      redirectAttributes.failureMessage = "Failed to populate planting site countries: $e"
+    }
+
+    return redirectToAdminHome()
+  }
+
+  private fun redirectToAdminHome() = "redirect:/admin/"
+
   private fun redirectToOrganization(organizationId: OrganizationId) =
       "redirect:/admin/organization/$organizationId"
 

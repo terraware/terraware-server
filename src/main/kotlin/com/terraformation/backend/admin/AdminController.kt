@@ -62,6 +62,8 @@ class AdminController(
         currentUser().canManageModules() || currentUser().canManageDeliverables())
     model.addAttribute("canManageInternalTags", currentUser().canManageInternalTags())
     model.addAttribute("canManageParticipants", currentUser().canCreateParticipant())
+    model.addAttribute(
+        "canPopulatePlantingSiteCountries", currentUser().canPopulatePlantingSiteCountries())
     model.addAttribute("canReadCohorts", currentUser().canReadCohorts())
     model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())
     model.addAttribute("canUpdateAppVersions", currentUser().canUpdateAppVersions())
