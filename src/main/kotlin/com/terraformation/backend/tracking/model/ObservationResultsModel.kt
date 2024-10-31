@@ -209,22 +209,27 @@ data class ObservationPlantingZoneRollupResultsModel(
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int?,
     /** List of subzone observation results used for this rollup */
-    val plantingSubzones: List<ObservationPlantingSubzoneResultsModel?>,
+    val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
     val plantingZoneId: PlantingZoneId,
+    /**
+     * Total number of plants recorded. Includes all plants, regardless of live/dead status or
+     * species in this observation summary.
+     */
+    val totalPlants: Int,
 ) : BaseMonitoringResult {
   companion object {
     fun of(
         areaHa: BigDecimal,
         plantingZoneId: PlantingZoneId,
-        subzoneResults: List<ObservationPlantingSubzoneResultsModel?>
+        /** Must include every subzone in the planting zone */
+        subzoneResults: Map<PlantingSubzoneId, ObservationPlantingSubzoneResultsModel?>
     ): ObservationPlantingZoneRollupResultsModel? {
-      if (subzoneResults.isEmpty()) {
+      val nonNullSubzoneResults = subzoneResults.values.filterNotNull()
+      if (nonNullSubzoneResults.isEmpty()) {
         return null
       }
 
-      val plantingCompleted = subzoneResults.none { it == null || !it.plantingCompleted }
-
-      val nonNullSubzoneResults = subzoneResults.filterNotNull()
+      val plantingCompleted = subzoneResults.values.none { it == null || !it.plantingCompleted }
 
       val monitoringPlots = nonNullSubzoneResults.flatMap { it.monitoringPlots }
       val monitoringPlotsSpecies = monitoringPlots.flatMap { it.species }
@@ -254,8 +259,10 @@ data class ObservationPlantingZoneRollupResultsModel(
           mortalityRate = mortalityRate,
           plantingCompleted = plantingCompleted,
           plantingDensity = plantingDensity,
-          plantingSubzones = subzoneResults,
-          plantingZoneId = plantingZoneId)
+          plantingSubzones = nonNullSubzoneResults,
+          plantingZoneId = plantingZoneId,
+          totalPlants = monitoringPlotsSpecies.sumOf { it.totalLive + it.totalDead },
+      )
     }
   }
 }
@@ -269,19 +276,20 @@ data class ObservationRollupResultsModel(
     override val plantingDensity: Int?,
     val plantingSiteId: PlantingSiteId,
     /** List of subzone observation results used for this rollup */
-    val plantingZones: List<ObservationPlantingZoneRollupResultsModel?>,
+    val plantingZones: List<ObservationPlantingZoneRollupResultsModel>,
 ) : BaseMonitoringResult {
   companion object {
     fun of(
         plantingSiteId: PlantingSiteId,
-        zoneResults: List<ObservationPlantingZoneRollupResultsModel?>
+        /** Must include every zone in the planting site */
+        zoneResults: Map<PlantingZoneId, ObservationPlantingZoneRollupResultsModel?>
     ): ObservationRollupResultsModel? {
-      if (zoneResults.isEmpty()) {
+      val nonNullZoneResults = zoneResults.values.filterNotNull()
+      if (nonNullZoneResults.isEmpty()) {
         return null
       }
 
-      val plantingCompleted = zoneResults.none { it == null || !it.plantingCompleted }
-      val nonNullZoneResults = zoneResults.filterNotNull()
+      val plantingCompleted = zoneResults.values.none { it == null || !it.plantingCompleted }
 
       val monitoringPlots =
           nonNullZoneResults.flatMap { zone ->
@@ -314,7 +322,7 @@ data class ObservationRollupResultsModel(
           plantingCompleted = plantingCompleted,
           plantingDensity = plantingDensity,
           plantingSiteId = plantingSiteId,
-          plantingZones = zoneResults,
+          plantingZones = nonNullZoneResults,
       )
     }
   }

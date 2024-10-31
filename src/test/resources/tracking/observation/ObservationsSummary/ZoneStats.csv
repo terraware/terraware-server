@@ -1,0 +1,5 @@
+Observation ->,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3
+Zone,# Plants (excluding existing),Planting Density,# Live Species,Mortality Rate,Est Plants,# Plants (excluding existing),Planting Density,# Live Species,Mortality Rate,Est Plants,# Plants (excluding existing),Planting Density,# Live Species,Mortality Rate,Est Plants
+Alpha,189,741,4,26%,741000,189,741,4,26%,741000,534,2331,4,25%,2331000
+Beta,444,770,4,24%,770000,444,770,4,24%,770000,828,1531,4,23%,1531000
+Charlie,,,,,,891,1418,4,20%,709000,891,1418,4,20%,709000

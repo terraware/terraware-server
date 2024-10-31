@@ -20,6 +20,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
 import com.terraformation.backend.tracking.model.ObservationResultsModel
+import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import io.ktor.utils.io.core.use
@@ -29,6 +30,7 @@ import java.math.BigDecimal
 import java.nio.file.NoSuchFileException
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -237,11 +239,45 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           "/tracking/observation/PermanentPlotChanges", numObservations = 3, sizeMeters = 25)
     }
 
+    @Test
+    fun `fetch observation summary`() {
+      runSummaryScenario(
+          "/tracking/observation/ObservationsSummary",
+          numObservations = 3,
+          numSpecies = 3,
+          sizeMeters = 25)
+    }
+
     private fun runScenario(prefix: String, numObservations: Int, sizeMeters: Int) {
       importFromCsvFiles(prefix, numObservations, sizeMeters)
       val allResults =
           resultsStore.fetchByPlantingSiteId(plantingSiteId).sortedBy { it.observationId }
       assertResults(prefix, allResults)
+    }
+
+    private fun runSummaryScenario(
+        prefix: String,
+        numObservations: Int,
+        numSpecies: Int,
+        sizeMeters: Int,
+    ) {
+      importSiteFromCsvFile(prefix, sizeMeters)
+      val summary0 = resultsStore.fetchSummaryForPlantingSite(plantingSiteId)
+      val summaries =
+          List(numObservations) {
+            importObservationsCsv(prefix, numSpecies, it)
+            resultsStore.fetchSummaryForPlantingSite(plantingSiteId)!!
+          }
+      assertNull(summary0, "No observations made yet.")
+      assertSummary(prefix, summaries)
+    }
+
+    private fun assertSummary(prefix: String, results: List<ObservationRollupResultsModel>) {
+      assertAll(
+          { assertSiteSummary(prefix, results) },
+          { assertZoneSummary(prefix, results) },
+          { assertPlotSummary(prefix, results) },
+      )
     }
 
     private fun assertResults(prefix: String, allResults: List<ObservationResultsModel>) {
@@ -269,6 +305,25 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertResultsMatchCsv("$prefix/SiteStats.csv", actual)
     }
 
+    private fun assertSiteSummary(prefix: String, allResults: List<ObservationRollupResultsModel>) {
+      val actual =
+          makeActualCsv(allResults, listOf(emptyList())) { _, results ->
+            listOf(
+                results.plantingDensity.toStringOrBlank(),
+                results.estimatedPlants.toStringOrBlank(),
+                results.mortalityRate.toStringOrBlank("%"),
+            )
+          }
+
+      assertResultsMatchCsv("$prefix/SiteStats.csv", actual) { row ->
+        row.filterIndexed { index, _ ->
+          val positionInColumnGroup = index % 4
+          // Filtered out total number of species until that is computed and added to summaries
+          positionInColumnGroup != 2
+        }
+      }
+    }
+
     private fun assertZoneResults(prefix: String, allResults: List<ObservationResultsModel>) {
       val rowKeys = zoneIds.keys.map { listOf(it) }
 
@@ -285,6 +340,30 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           }
 
       assertResultsMatchCsv("$prefix/ZoneStats.csv", actual)
+    }
+
+    private fun assertZoneSummary(prefix: String, allResults: List<ObservationRollupResultsModel>) {
+      val rowKeys = zoneIds.keys.map { listOf(it) }
+
+      val actual =
+          makeActualCsv(allResults, rowKeys) { (zoneName), results ->
+            val zone =
+                results.plantingZones.firstOrNull() { it.plantingZoneId == zoneIds[zoneName] }
+            listOf(
+                zone?.totalPlants.toStringOrBlank(),
+                zone?.plantingDensity.toStringOrBlank(),
+                zone?.mortalityRate.toStringOrBlank("%"),
+                zone?.estimatedPlants.toStringOrBlank(),
+            )
+          }
+
+      assertResultsMatchCsv("$prefix/ZoneStats.csv", actual) { row ->
+        row.filterIndexed { index, _ ->
+          val positionInColumnGroup = (index - 1) % 5
+          // Filtered out total number of species until that is computed and added to summaries
+          positionInColumnGroup != 2
+        }
+      }
     }
 
     private fun assertPlotResults(prefix: String, allResults: List<ObservationResultsModel>) {
@@ -313,6 +392,36 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
         row.filterIndexed { index, _ ->
           val positionInColumnGroup = (index - 1) % 6
           positionInColumnGroup != 3 && positionInColumnGroup != 4
+        }
+      }
+    }
+
+    private fun assertPlotSummary(prefix: String, allResults: List<ObservationRollupResultsModel>) {
+      val rowKeys = plotIds.keys.map { listOf(it) }
+
+      val actual =
+          makeActualCsv(allResults, rowKeys) { (plotName), results ->
+            results.plantingZones
+                .flatMap { zone -> zone.plantingSubzones }
+                .flatMap { subzone -> subzone.monitoringPlots }
+                .firstOrNull { it.monitoringPlotName == plotName }
+                ?.let { plot ->
+                  listOf(
+                      plot.totalPlants.toStringOrBlank(),
+                      plot.totalSpecies.toStringOrBlank(),
+                      plot.mortalityRate.toStringOrBlank("%"),
+                      // Live and existing plants columns are in spreadsheet but not included in
+                      // calculated
+                      // results; it will be removed by the filter function below.
+                      plot.plantingDensity.toStringOrBlank(),
+                  )
+                } ?: listOf("", "", "", "")
+          }
+
+      assertResultsMatchCsv("$prefix/PlotStats.csv", actual) { row ->
+        row.filterIndexed { index, _ ->
+          val positionInColumnGroup = (index - 1) % 7
+          positionInColumnGroup != 3 && positionInColumnGroup != 4 && positionInColumnGroup != 5
         }
       }
     }
@@ -393,10 +502,14 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     private fun importFromCsvFiles(prefix: String, numObservations: Int, sizeMeters: Int) {
+      importSiteFromCsvFile(prefix, sizeMeters)
+      importPlantsCsv(prefix, numObservations)
+    }
+
+    private fun importSiteFromCsvFile(prefix: String, sizeMeters: Int) {
       zoneIds = importZonesCsv(prefix)
       subzoneIds = importSubzonesCsv(prefix)
       plotIds = importPlotsCsv(prefix, sizeMeters)
-      importPlantsCsv(prefix, numObservations)
     }
 
     private fun importZonesCsv(prefix: String): Map<String, PlantingZoneId> {
@@ -524,6 +637,175 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       }
     }
 
+    /** Function that imports plants based on bulk observation numbers */
+    private fun importObservationsCsv(prefix: String, numSpecies: Int, observationNum: Int) {
+      clock.instant = Instant.ofEpochSecond(observationNum.toLong())
+
+      val observationId = insertObservation()
+      val observedPlotNames = mutableSetOf<String>()
+
+      val speciesIds =
+          List(numSpecies) {
+            speciesIds.computeIfAbsent("Species $it") { _ ->
+              insertSpecies(scientificName = "Species $it")
+            }
+          }
+
+      val plantsRows =
+          mapCsv("$prefix/Observation-${observationNum+1}.csv", 2) { cols ->
+                val plotName = cols[0]
+                val plotId = plotIds[plotName]!!
+
+                val knownPlantsRows =
+                    (0..<numSpecies)
+                        .map { speciesNum ->
+                          val existingNum = cols[1 + 3 * speciesNum].toIntOrNull()
+                          val liveNum = cols[2 + 3 * speciesNum].toIntOrNull()
+                          val deadNum = cols[3 + 3 * speciesNum].toIntOrNull()
+
+                          if (existingNum == null || liveNum == null || deadNum == null) {
+                            // No observation made for this plot if any grid is empty
+                            return@mapCsv emptyList<RecordedPlantsRow>()
+                          }
+
+                          val existingRows =
+                              List(existingNum) { _ ->
+                                RecordedPlantsRow(
+                                    certaintyId = RecordedSpeciesCertainty.Known,
+                                    gpsCoordinates = point(1),
+                                    observationId = observationId,
+                                    monitoringPlotId = plotId,
+                                    speciesId = speciesIds[speciesNum],
+                                    speciesName = null,
+                                    statusId = RecordedPlantStatus.Existing,
+                                )
+                              }
+
+                          val liveRows =
+                              List(liveNum) { _ ->
+                                RecordedPlantsRow(
+                                    certaintyId = RecordedSpeciesCertainty.Known,
+                                    gpsCoordinates = point(1),
+                                    observationId = observationId,
+                                    monitoringPlotId = plotId,
+                                    speciesId = speciesIds[speciesNum],
+                                    speciesName = null,
+                                    statusId = RecordedPlantStatus.Live,
+                                )
+                              }
+
+                          val deadRows =
+                              List(deadNum) {
+                                RecordedPlantsRow(
+                                    certaintyId = RecordedSpeciesCertainty.Known,
+                                    gpsCoordinates = point(1),
+                                    observationId = observationId,
+                                    monitoringPlotId = plotId,
+                                    speciesId = speciesIds[speciesNum],
+                                    speciesName = null,
+                                    statusId = RecordedPlantStatus.Dead,
+                                )
+                              }
+
+                          listOf(existingRows, liveRows, deadRows).flatten()
+                        }
+                        .flatten()
+
+                val unknownLiveNum = cols[1 + 3 * numSpecies].toIntOrNull() ?: 0
+                val unknownDeadNum = cols[2 + 3 * numSpecies].toIntOrNull() ?: 0
+
+                val otherLiveNum = cols[3 + 3 * numSpecies].toIntOrNull() ?: 0
+                val otherDeadNum = cols[4 + 3 * numSpecies].toIntOrNull() ?: 0
+
+                if (otherLiveNum + otherDeadNum > 0 && !allSpeciesNames.contains("Other")) {
+                  allSpeciesNames.add("Other")
+                }
+
+                val unknownLivePlantsRows =
+                    List(unknownLiveNum) {
+                      RecordedPlantsRow(
+                          certaintyId = RecordedSpeciesCertainty.Unknown,
+                          gpsCoordinates = point(1),
+                          observationId = observationId,
+                          monitoringPlotId = plotId,
+                          speciesId = null,
+                          speciesName = null,
+                          statusId = RecordedPlantStatus.Live,
+                      )
+                    }
+                val unknownDeadPlantsRows =
+                    List(unknownDeadNum) {
+                      RecordedPlantsRow(
+                          certaintyId = RecordedSpeciesCertainty.Unknown,
+                          gpsCoordinates = point(1),
+                          observationId = observationId,
+                          monitoringPlotId = plotId,
+                          speciesId = null,
+                          speciesName = null,
+                          statusId = RecordedPlantStatus.Dead,
+                      )
+                    }
+
+                val otherLivePlantsRows =
+                    List(otherLiveNum) {
+                      RecordedPlantsRow(
+                          certaintyId = RecordedSpeciesCertainty.Other,
+                          gpsCoordinates = point(1),
+                          observationId = observationId,
+                          monitoringPlotId = plotId,
+                          speciesId = null,
+                          speciesName = "Other",
+                          statusId = RecordedPlantStatus.Live,
+                      )
+                    }
+                val otherDeadPlantsRows =
+                    List(otherDeadNum) {
+                      RecordedPlantsRow(
+                          certaintyId = RecordedSpeciesCertainty.Other,
+                          gpsCoordinates = point(1),
+                          observationId = observationId,
+                          monitoringPlotId = plotId,
+                          speciesId = null,
+                          speciesName = "Other",
+                          statusId = RecordedPlantStatus.Dead,
+                      )
+                    }
+
+                if (plotName !in observedPlotNames) {
+                  insertObservationPlot(
+                      claimedBy = user.userId,
+                      claimedTime = Instant.EPOCH,
+                      isPermanent = plotName in permanentPlotNames,
+                      observationId = observationId,
+                      monitoringPlotId = plotId,
+                  )
+
+                  observedPlotNames.add(plotName)
+                }
+
+                listOf(
+                        knownPlantsRows,
+                        unknownLivePlantsRows,
+                        unknownDeadPlantsRows,
+                        otherLivePlantsRows,
+                        otherDeadPlantsRows,
+                    )
+                    .flatten()
+              }
+              .flatten()
+
+      // This would normally happen in ObservationService.startObservation after plot selection;
+      // do it explicitly since we're specifying our own plots in the test data.
+      observationStore.populateCumulativeDead(observationId)
+
+      plantsRows
+          .groupBy { it.monitoringPlotId!! }
+          .forEach { (plotId, plants) ->
+            observationStore.completePlot(
+                observationId, plotId, emptySet(), "Notes", Instant.EPOCH, plants)
+          }
+    }
+
     /** Maps each data row of a CSV to a value. */
     private fun <T> mapCsv(path: String, skipRows: Int = 1, func: (Array<String>) -> T): List<T> {
       val stream = javaClass.getResourceAsStream(path) ?: throw NoSuchFileException(path)
@@ -561,10 +843,10 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
      *   e.g., it's a "per zone per species" CSV and a particular species wasn't present in a
      *   particular zone, the row is not included in the generated CSV.
      */
-    private fun makeActualCsv(
-        allResults: List<ObservationResultsModel>,
+    private fun <T> makeActualCsv(
+        allResults: List<T>,
         rowKeys: List<List<String>>,
-        columnsFromResult: (List<String>, ObservationResultsModel) -> List<String>
+        columnsFromResult: (List<String>, T) -> List<String>
     ): List<List<String>> {
       return rowKeys.mapNotNull { initialRow ->
         val dataColumns = allResults.flatMap { results -> columnsFromResult(initialRow, results) }

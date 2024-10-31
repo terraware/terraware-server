@@ -76,17 +76,19 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     return fetchByCondition(OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId), limit)
   }
 
-  fun fetchRollupResultForPlantingSite(
+  fun fetchSummaryForPlantingSite(
       plantingSiteId: PlantingSiteId,
   ): ObservationRollupResultsModel? {
     val allSubzoneIdsByZoneIds =
-        DSL.select(PLANTING_SUBZONES.ID, PLANTING_SUBZONES.PLANTING_ZONE_ID)
+        dslContext
+            .select(PLANTING_SUBZONES.ID, PLANTING_SUBZONES.PLANTING_ZONE_ID)
             .from(PLANTING_SUBZONES)
             .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
             .groupBy({ it[PLANTING_SUBZONES.PLANTING_ZONE_ID]!! }, { it[PLANTING_SUBZONES.ID]!! })
 
     val zoneAreasById =
-        DSL.select(PLANTING_ZONES.ID, PLANTING_ZONES.AREA_HA)
+        dslContext
+            .select(PLANTING_ZONES.ID, PLANTING_ZONES.AREA_HA)
             .from(PLANTING_ZONES)
             .where(PLANTING_ZONES.ID.`in`(allSubzoneIdsByZoneIds.keys))
             .associate { it[PLANTING_ZONES.ID]!! to it[PLANTING_ZONES.AREA_HA]!! }
@@ -102,15 +104,18 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         subzoneCompletedObservations.mapValues { entry -> entry.value.maxBy { it.completedTime!! } }
 
     val plantingZoneResults =
-        allSubzoneIdsByZoneIds.map {
-          val zoneId = it.key
+        allSubzoneIdsByZoneIds
+            .map {
+              val zoneId = it.key
 
-          val areaHa = zoneAreasById[zoneId]!!
-          val subzoneIds = it.value
-          val subzoneResults = subzoneIds.mapNotNull { subzoneId -> latestPerSubzone[subzoneId] }
+              val areaHa = zoneAreasById[zoneId]!!
+              val subzoneIds = it.value
+              val subzoneResults =
+                  subzoneIds.associateWith { subzoneId -> latestPerSubzone[subzoneId] }
 
-          ObservationPlantingZoneRollupResultsModel.of(areaHa, zoneId, subzoneResults)
-        }
+              zoneId to ObservationPlantingZoneRollupResultsModel.of(areaHa, zoneId, subzoneResults)
+            }
+            .toMap()
 
     return ObservationRollupResultsModel.of(plantingSiteId, plantingZoneResults)
   }
@@ -362,7 +367,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               val areaHa = record[PLANTING_SUBZONES.AREA_HA.asNonNullable()]
 
               val species = monitoringPlots.flatMap { it.species }
-              val totalPlants = species.sumOf { it.totalLive + it.totalExisting + it.totalDead }
+              val totalPlants = species.sumOf { it.totalLive + it.totalDead }
 
               val isCompleted =
                   monitoringPlots.isNotEmpty() && monitoringPlots.all { it.completedTime != null }
