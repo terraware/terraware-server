@@ -33,6 +33,9 @@ data class ObservationModel<ID : ObservationId?>(
             ObservationState.InProgress to ObservationState.Completed,
             ObservationState.InProgress to ObservationState.Overdue,
             ObservationState.Overdue to ObservationState.Completed,
+            ObservationState.Upcoming to ObservationState.Abandoned,
+            ObservationState.InProgress to ObservationState.Abandoned,
+            ObservationState.Overdue to ObservationState.Abandoned,
         )
 
     fun of(

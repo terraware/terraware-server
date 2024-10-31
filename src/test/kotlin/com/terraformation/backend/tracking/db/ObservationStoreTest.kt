@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -20,6 +21,7 @@ import com.terraformation.backend.db.tracking.RecordedPlantStatus.Live
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Other
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Unknown
+import com.terraformation.backend.db.tracking.embeddables.pojos.ObservationPlotId
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
@@ -755,6 +757,117 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<IllegalArgumentException> {
         store.updateObservationState(observationId, ObservationState.Upcoming)
       }
+    }
+  }
+
+  @Nested
+  inner class AbandonObservation {
+    @Test
+    fun `deletes an observation if no plot has been completed`() {
+      val observationId = insertObservation()
+      assertNotNull(observationsDao.fetchOneById(observationId), "Before abandon")
+      store.abandonObservation(observationId)
+      assertNull(observationsDao.fetchOneById(observationId), "After abandon")
+    }
+
+    @Test
+    fun `sets an observation to Abandoned and incomplete plots to Not Observed and unclaims`() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val completedPlotId = insertMonitoringPlot()
+      val unclaimedPlotId = insertMonitoringPlot()
+      val claimedPlotId = insertMonitoringPlot()
+
+      val observationId = insertObservation()
+
+      insertObservationPlot(
+          ObservationPlotsRow(
+              observationId,
+              completedPlotId,
+              claimedBy = currentUser().userId,
+              claimedTime = Instant.EPOCH,
+              completedBy = currentUser().userId,
+              completedTime = Instant.EPOCH,
+              statusId = ObservationPlotStatus.Completed))
+
+      insertObservationPlot(
+          ObservationPlotsRow(
+              observationId, unclaimedPlotId, statusId = ObservationPlotStatus.Unclaimed))
+
+      insertObservationPlot(
+          ObservationPlotsRow(
+              observationId,
+              claimedPlotId,
+              claimedBy = currentUser().userId,
+              claimedTime = Instant.EPOCH,
+              statusId = ObservationPlotStatus.Claimed))
+
+      val existing = observationsDao.fetchOneById(observationId)!!
+
+      val completedRow =
+          observationPlotsDao
+              .fetchByObservationPlotId(ObservationPlotId(observationId, completedPlotId))
+              .single()
+      val unclaimedRow =
+          observationPlotsDao
+              .fetchByObservationPlotId(ObservationPlotId(observationId, unclaimedPlotId))
+              .single()
+      val claimedRow =
+          observationPlotsDao
+              .fetchByObservationPlotId(ObservationPlotId(observationId, claimedPlotId))
+              .single()
+
+      clock.instant = Instant.ofEpochSecond(500)
+
+      store.abandonObservation(observationId)
+
+      assertEquals(
+          setOf(
+              completedRow,
+              unclaimedRow.copy(statusId = ObservationPlotStatus.NotObserved),
+              claimedRow.copy(
+                  claimedBy = null,
+                  claimedTime = null,
+                  statusId = ObservationPlotStatus.NotObserved,
+              ),
+          ),
+          observationPlotsDao.fetchByObservationId(observationId).toSet(),
+          "Observation plots after abandoning")
+
+      assertEquals(
+          existing.copy(completedTime = clock.instant, stateId = ObservationState.Abandoned),
+          observationsDao.fetchOneById(observationId),
+          "Observation after abandon")
+    }
+
+    @Test
+    fun `throws exception if no permission to update to update observation`() {
+      val observationId = insertObservation()
+
+      every { user.canUpdateObservation(observationId) } returns false
+
+      assertThrows<AccessDeniedException> { store.abandonObservation(observationId) }
+    }
+
+    @Test
+    fun `throws exception when abandoning an already completed observation`() {
+      val observationId =
+          insertObservation(completedTime = Instant.EPOCH, state = ObservationState.Completed)
+
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val completedPlot = insertMonitoringPlot()
+
+      insertObservationPlot(
+          ObservationPlotsRow(
+              observationId,
+              completedPlot,
+              claimedBy = currentUser().userId,
+              claimedTime = Instant.EPOCH,
+              completedBy = currentUser().userId,
+              completedTime = Instant.EPOCH,
+              statusId = ObservationPlotStatus.Completed))
+      assertThrows<IllegalArgumentException> { store.abandonObservation(observationId) }
     }
   }
 

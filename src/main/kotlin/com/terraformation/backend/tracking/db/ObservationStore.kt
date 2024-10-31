@@ -913,10 +913,6 @@ class ObservationStore(
   fun abandonObservation(observationId: ObservationId) {
     requirePermissions { updateObservation(observationId) }
     val observation = fetchObservationById(observationId)
-    if (observation.state == ObservationState.Abandoned ||
-        observation.state == ObservationState.Completed) {
-      throw ObservationAlreadyCompletedException(observationId)
-    }
 
     val noPlotCompleted =
         dslContext
@@ -1009,7 +1005,8 @@ class ObservationStore(
         dslContext
             .select(OBSERVATIONS.ID)
             .from(OBSERVATIONS)
-            .where(OBSERVATIONS.STATE_ID.eq(ObservationState.Completed))
+            .where(
+                OBSERVATIONS.STATE_ID.`in`(ObservationState.Completed, ObservationState.Abandoned))
             .and(OBSERVATIONS.PLANTING_SITE_ID.eq(observation.plantingSiteId))
             .and(OBSERVATIONS.ID.ne(observationId))
             .orderBy(OBSERVATIONS.COMPLETED_TIME.desc())
