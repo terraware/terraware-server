@@ -23,6 +23,7 @@ import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -46,20 +47,21 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
       val (edited, existing) =
           runScenario(
               initial =
-                  newSite {
+                  newSite(y = 800000, width = 100500) {
                     exclusion = rectangle(10)
                     gridOrigin = point(1)
                   },
               desired =
-                  newSite(x = 10) {
+                  newSite(y = 800000) {
                     exclusion = rectangle(20)
                     gridOrigin = point(10, 0)
                   },
               expected =
-                  newSite(x = 10) {
+                  newSite(y = 800000, countryCode = "TG") {
                     exclusion = rectangle(20)
                     gridOrigin = point(1)
-                  })
+                  },
+          )
 
       fun ExistingPlantingSiteModel.allZoneIds(): Set<PlantingZoneId> =
           plantingZones.map { it.id }.toSet()
@@ -67,6 +69,8 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
       fun ExistingPlantingSiteModel.allSubzoneIds(): Set<PlantingSubzoneId> =
           plantingZones.flatMap { zone -> zone.plantingSubzones.map { it.id } }.toSet()
 
+      assertNull(
+          existing.countryCode, "Initial boundary spans 2 countries so country code should be null")
       assertEquals(existing.allZoneIds(), edited.allZoneIds(), "Planting zone IDs")
       assertEquals(existing.allSubzoneIds(), edited.allSubzoneIds(), "Planting subzone IDs")
     }

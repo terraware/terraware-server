@@ -3,6 +3,7 @@ package com.terraformation.backend.customer
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -71,6 +72,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
         dslContext,
         PlantingSiteStore(
             clock,
+            TestSingletons.countryDetector,
             dslContext,
             publisher,
             monitoringPlotsDao,

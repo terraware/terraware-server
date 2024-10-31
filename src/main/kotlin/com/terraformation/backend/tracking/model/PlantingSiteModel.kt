@@ -32,6 +32,7 @@ data class PlantingSiteModel<
 >(
     val areaHa: BigDecimal? = null,
     val boundary: MultiPolygon?,
+    val countryCode: String? = null,
     val description: String? = null,
     val exclusion: MultiPolygon? = null,
     val gridOrigin: Point? = null,
@@ -126,6 +127,7 @@ data class PlantingSiteModel<
 
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is PlantingSiteModel<*, *, *> &&
+        countryCode == other.countryCode &&
         description == other.description &&
         id == other.id &&
         name == other.name &&
@@ -143,6 +145,7 @@ data class PlantingSiteModel<
       NewPlantingSiteModel(
           areaHa = areaHa,
           boundary = boundary,
+          countryCode = countryCode,
           description = description,
           exclusion = exclusion,
           gridOrigin = gridOrigin,
@@ -171,6 +174,7 @@ data class PlantingSiteModel<
         ExistingPlantingSiteModel(
             areaHa = record[PLANTING_SITES.AREA_HA],
             boundary = record[PLANTING_SITES.BOUNDARY] as? MultiPolygon,
+            countryCode = record[PLANTING_SITES.COUNTRY_CODE],
             description = record[PLANTING_SITES.DESCRIPTION],
             exclusion = record[PLANTING_SITES.EXCLUSION] as? MultiPolygon,
             gridOrigin = record[PLANTING_SITES.GRID_ORIGIN] as? Point,

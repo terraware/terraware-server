@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.customer.db.FacilityStore
@@ -133,6 +134,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
         OrganizationStore(clock, dslContext, organizationsDao, publisher),
         PlantingSiteStore(
             clock,
+            TestSingletons.countryDetector,
             dslContext,
             publisher,
             monitoringPlotsDao,

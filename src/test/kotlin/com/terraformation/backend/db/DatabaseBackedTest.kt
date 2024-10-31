@@ -1524,6 +1524,7 @@ abstract class DatabaseBackedTest {
       name: String = row.name ?: "Site ${nextPlantingSiteNumber++}",
       timeZone: ZoneId? = row.timeZone,
       projectId: ProjectId? = row.projectId,
+      countryCode: String? = row.countryCode,
   ): PlantingSiteId {
     val effectiveBoundary =
         when {
@@ -1541,6 +1542,7 @@ abstract class DatabaseBackedTest {
         row.copy(
             areaHa = areaHa,
             boundary = effectiveBoundary,
+            countryCode = countryCode,
             createdBy = createdBy,
             createdTime = createdTime,
             exclusion = exclusion,

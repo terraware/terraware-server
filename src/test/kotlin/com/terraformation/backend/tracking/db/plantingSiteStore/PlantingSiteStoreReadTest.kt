@@ -274,6 +274,7 @@ internal class PlantingSiteStoreReadTest : PlantingSiteStoreTest() {
       val plantingSiteId =
           insertPlantingSite(
               boundary = multiPolygon(3.0),
+              countryCode = "MX",
               exclusion = multiPolygon(1.5),
               gridOrigin = point(9, 10),
               timeZone = timeZone,
@@ -294,6 +295,7 @@ internal class PlantingSiteStoreReadTest : PlantingSiteStoreTest() {
       val expectedWithSite =
           ExistingPlantingSiteModel(
               boundary = multiPolygon(3),
+              countryCode = "MX",
               description = null,
               exclusion = multiPolygon(1.5),
               gridOrigin = point(9, 10),

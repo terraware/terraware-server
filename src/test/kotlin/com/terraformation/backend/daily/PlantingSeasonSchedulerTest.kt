@@ -3,6 +3,7 @@ package com.terraformation.backend.daily
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.InternalTagIds
@@ -35,6 +36,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
         eventPublisher,
         PlantingSiteStore(
             clock,
+            TestSingletons.countryDetector,
             dslContext,
             eventPublisher,
             monitoringPlotsDao,
