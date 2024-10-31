@@ -25,6 +25,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -46,7 +47,6 @@ import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
-import com.terraformation.backend.tracking.model.ObservationMonitoringPlotStatus
 import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlotCounts
@@ -607,7 +607,7 @@ data class ObservationMonitoringPlotResultsPayload(
     @Schema(description = "Length of each edge of the monitoring plot in meters.")
     val sizeMeters: Int,
     val species: List<ObservationSpeciesResultsPayload>,
-    val status: ObservationMonitoringPlotStatus,
+    val status: ObservationPlotStatus,
     @Schema(
         description =
             "Total number of plants recorded. Includes all plants, regardless of live/dead " +

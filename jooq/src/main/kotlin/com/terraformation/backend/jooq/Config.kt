@@ -166,6 +166,10 @@ val ENUM_TABLES =
                         "observed_plot_coordinates\\.position_id"),
                     isLocalizable = false),
                 EnumTable(
+                    "observation_plot_statuses",
+                    listOf("observation_plots\\.status_id"),
+                    isLocalizable = false),
+                EnumTable(
                     "observation_states", listOf("observations\\.state_id"), isLocalizable = false),
                 EnumTable("planting_types"),
                 EnumTable(

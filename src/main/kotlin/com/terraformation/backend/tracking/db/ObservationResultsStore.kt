@@ -8,6 +8,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
@@ -23,7 +24,6 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
-import com.terraformation.backend.tracking.model.ObservationMonitoringPlotStatus
 import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsModel
@@ -264,9 +264,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
               val status =
                   when {
-                    completedTime != null -> ObservationMonitoringPlotStatus.Completed
-                    claimedBy != null -> ObservationMonitoringPlotStatus.InProgress
-                    else -> ObservationMonitoringPlotStatus.Outstanding
+                    completedTime != null -> ObservationPlotStatus.Completed
+                    claimedBy != null -> ObservationPlotStatus.Claimed
+                    else -> ObservationPlotStatus.Unclaimed
                   }
 
               ObservationMonitoringPlotResultsModel(
