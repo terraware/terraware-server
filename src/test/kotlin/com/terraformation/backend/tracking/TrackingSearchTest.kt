@@ -55,7 +55,10 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val monitoringPlotGeometry8 = polygon(8, 9, 10, BigDecimal("11.0123456789"))
     val plantingSiteId =
         insertPlantingSite(
-            boundary = plantingSiteGeometry, exclusion = exclusionGeometry, projectId = projectId)
+            boundary = plantingSiteGeometry,
+            countryCode = "CI",
+            exclusion = exclusionGeometry,
+            projectId = projectId)
 
     val plantingSeasonId1 =
         insertPlantingSeason(
@@ -151,6 +154,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
             listOf(
                 mapOf(
                     "boundary" to postgisRenderGeoJson(plantingSiteGeometry),
+                    "country_code" to "CI",
                     "createdTime" to "1970-01-01T00:00:00Z",
                     "deliveries" to
                         listOf(
@@ -413,6 +417,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val fields =
         listOf(
                 "boundary",
+                "country_code",
                 "createdTime",
                 "deliveries.createdTime",
                 "deliveries.id",
