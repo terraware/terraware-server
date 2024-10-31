@@ -194,6 +194,18 @@ class ObservationsController(
         ObservationPayload(observation, plotCounts, platingSite.name))
   }
 
+  @ApiResponse409("Observation is already completed or abandoned.")
+  @ApiResponseSimpleSuccess
+  @Operation(summary = "Abandon the observation.")
+  @PostMapping("/{observationId}/abandon")
+  fun abandonObservation(
+      @PathVariable observationId: ObservationId,
+  ): SimpleSuccessResponsePayload {
+    observationStore.abandonObservation(observationId)
+
+    return SimpleSuccessResponsePayload()
+  }
+
   @GetMapping("/{observationId}/plots")
   @Operation(summary = "Gets a list of monitoring plots assigned to an observation.")
   fun listAssignedPlots(

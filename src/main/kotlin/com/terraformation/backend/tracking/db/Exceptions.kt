@@ -54,6 +54,9 @@ class InvalidObservationEndDateException(val startDate: LocalDate, val endDate: 
 class ObservationAlreadyStartedException(val observationId: ObservationId) :
     MismatchedStateException("Observation $observationId is already started")
 
+class ObservationAlreadyCompletedException(val observationId: ObservationId) :
+    MismatchedStateException("Observation $observationId has already completed")
+
 class ObservationHasNoPlotsException(val observationId: ObservationId) :
     MismatchedStateException("No plots are eligible for observation $observationId")
 

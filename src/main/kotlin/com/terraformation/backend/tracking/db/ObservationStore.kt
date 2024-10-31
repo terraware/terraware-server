@@ -474,7 +474,7 @@ class ObservationStore(
 
   fun updateObservationState(observationId: ObservationId, newState: ObservationState) {
     requirePermissions {
-      if (newState == ObservationState.Completed) {
+      if (newState == ObservationState.Completed || newState == ObservationState.Abandoned) {
         updateObservation(observationId)
       } else {
         manageObservation(observationId)
@@ -487,7 +487,7 @@ class ObservationStore(
       dslContext
           .update(OBSERVATIONS)
           .apply {
-            if (newState == ObservationState.Completed)
+            if (newState == ObservationState.Completed || newState == ObservationState.Abandoned)
                 set(OBSERVATIONS.COMPLETED_TIME, clock.instant())
           }
           .set(OBSERVATIONS.STATE_ID, newState)
@@ -906,9 +906,52 @@ class ObservationStore(
     return dslContext.fetchExists(OBSERVATIONS, OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
   }
 
+  /**
+   * Deletes the observation if no plot has been observed, or mark the observation status to
+   * "Abandon", and sets all unobserved plot as "Not Observed".
+   */
+  fun abandonObservation(observationId: ObservationId) {
+    requirePermissions { updateObservation(observationId) }
+    val observation = fetchObservationById(observationId)
+    if (observation.state == ObservationState.Abandoned ||
+        observation.state == ObservationState.Completed) {
+      throw ObservationAlreadyCompletedException(observationId)
+    }
+
+    val noPlotCompleted =
+        dslContext
+            .selectOne()
+            .from(OBSERVATION_PLOTS)
+            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+            .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
+            .limit(1)
+            .fetch()
+            .isEmpty()
+
+    if (noPlotCompleted) {
+      deleteObservation(observationId)
+    } else {
+      abandonPlots(observationId)
+      updateObservationState(observationId, ObservationState.Abandoned)
+      resetPlantPopulationSinceLastObservation(observation.plantingSiteId)
+    }
+  }
+
   private fun completeObservation(observationId: ObservationId, plantingSiteId: PlantingSiteId) {
     updateObservationState(observationId, ObservationState.Completed)
+    resetPlantPopulationSinceLastObservation(plantingSiteId)
+  }
 
+  private fun deleteObservation(observationId: ObservationId) {
+    dslContext
+        .deleteFrom(OBSERVATION_PLOTS)
+        .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+        .execute()
+
+    dslContext.deleteFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(observationId)).execute()
+  }
+
+  private fun resetPlantPopulationSinceLastObservation(plantingSiteId: PlantingSiteId) {
     dslContext
         .update(PLANTING_SITE_POPULATIONS)
         .set(PLANTING_SITE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION, 0)
@@ -1072,6 +1115,18 @@ class ObservationStore(
             .execute()
       }
     }
+  }
+
+  /** Sets the statuses of the incomplete observation plots to be "Not Observed" */
+  private fun abandonPlots(observationId: ObservationId) {
+    dslContext
+        .update(OBSERVATION_PLOTS)
+        .set(OBSERVATION_PLOTS.STATUS_ID, ObservationPlotStatus.NotObserved)
+        .setNull(OBSERVATION_PLOTS.CLAIMED_BY)
+        .setNull(OBSERVATION_PLOTS.CLAIMED_TIME)
+        .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+        .and(OBSERVATION_PLOTS.STATUS_ID.notEqual(ObservationPlotStatus.Completed))
+        .execute()
   }
 
   /** Updates the tables that hold the aggregated per-species plant totals from observations. */
