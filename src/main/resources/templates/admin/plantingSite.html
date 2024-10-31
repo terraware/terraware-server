@@ -144,6 +144,8 @@
 
 <h2 th:text="|Planting Site ${site.name} (${site.id})|">Planting Site Name (123)</h2>
 
+<p th:if="${country} != null" th:text="|Country: ${country.name} (${country.code})|"/>
+
 <p>
     Outplantings reported:
     <th:block th:text="${reportedPlants.totalPlants}">123</th:block>
