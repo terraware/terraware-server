@@ -582,6 +582,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun populatePlantingSiteCountries() {
+    if (!user.canPopulatePlantingSiteCountries()) {
+      throw AccessDeniedException("No permission to populate planting site countries")
+    }
+  }
+
   fun readAccession(accessionId: AccessionId) {
     if (!user.canReadAccession(accessionId)) {
       throw AccessionNotFoundException(accessionId)
