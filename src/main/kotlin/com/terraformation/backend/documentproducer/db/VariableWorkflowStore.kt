@@ -18,6 +18,7 @@ import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.Field
 import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
 
@@ -59,12 +60,19 @@ class VariableWorkflowStore(
               PROJECT_ID,
               VARIABLE_ID,
               VARIABLE_WORKFLOW_STATUS_ID,
+              currentVariableIdField,
           )
           .from(VARIABLE_WORKFLOW_HISTORY)
+          .join(VARIABLES)
+          .on(VARIABLE_WORKFLOW_HISTORY.VARIABLE_ID.eq(VARIABLES.ID))
           .where(PROJECT_ID.eq(projectId))
-          .and(VARIABLE_ID.eq(variableId))
-          .orderBy(CREATED_TIME.desc())
-          .fetch { ExistingVariableWorkflowHistoryModel(it) }
+          .and(
+              VARIABLES.STABLE_ID.eq(
+                  DSL.select(VARIABLES.STABLE_ID)
+                      .from(VARIABLES)
+                      .where(VARIABLES.ID.eq(variableId))))
+          .orderBy(CREATED_TIME.desc(), ID.desc())
+          .fetch { ExistingVariableWorkflowHistoryModel.of(it, currentVariableIdField) }
     }
   }
 
@@ -90,7 +98,10 @@ class VariableWorkflowStore(
           fetchCurrentByCondition(
                   DSL.and(
                       PROJECT_ID.eq(projectId),
-                      VARIABLE_ID.eq(variableId),
+                      VARIABLES.STABLE_ID.eq(
+                          DSL.select(VARIABLES.STABLE_ID)
+                              .from(VARIABLES)
+                              .where(VARIABLES.ID.eq(variableId))),
                   ))
               .firstOrNull()
 
@@ -108,7 +119,7 @@ class VariableWorkflowStore(
               .set(VARIABLE_ID, variableId)
               .set(VARIABLE_WORKFLOW_STATUS_ID, status)
               .returningResult()
-              .fetchOne { ExistingVariableWorkflowHistoryModel(it) }
+              .fetchOne { ExistingVariableWorkflowHistoryModel.of(it) }
 
       if (existing == null || status != existing.status || feedback != existing.feedback) {
         // Notify a reviewable event, if changed
@@ -130,6 +141,23 @@ class VariableWorkflowStore(
     }
   }
 
+  /**
+   * Subquery field for the ID of the most recent variable that has the same stable ID as the
+   * variable referenced by [VARIABLE_WORKFLOW_HISTORY]. This is needed because old history entries
+   * might refer to variables that have subsequently been replaced, and we want to include them in
+   * the history of the latest version of the variable.
+   */
+  private val currentVariableIdField: Field<VariableId?> by lazy {
+    DSL.field(
+        DSL.select(DSL.max(VARIABLES.ID))
+            .from(VARIABLES)
+            .where(
+                VARIABLES.STABLE_ID.eq(
+                    DSL.select(VARIABLES.STABLE_ID)
+                        .from(VARIABLES)
+                        .where(VARIABLES.ID.eq(VARIABLE_WORKFLOW_HISTORY.VARIABLE_ID)))))
+  }
+
   private fun fetchCurrentByCondition(
       condition: Condition
   ): List<ExistingVariableWorkflowHistoryModel> {
@@ -145,20 +173,15 @@ class VariableWorkflowStore(
               PROJECT_ID,
               VARIABLE_ID,
               VARIABLE_WORKFLOW_STATUS_ID,
+              currentVariableIdField,
           )
-          .distinctOn(PROJECT_ID, VARIABLE_ID)
+          .distinctOn(PROJECT_ID, VARIABLES.STABLE_ID)
           .from(VARIABLE_WORKFLOW_HISTORY)
+          .join(VARIABLES)
+          .on(VARIABLE_WORKFLOW_HISTORY.VARIABLE_ID.eq(VARIABLES.ID))
           .where(condition)
-          .orderBy(PROJECT_ID, VARIABLE_ID, ID.desc())
-          .fetch { record ->
-            val model = ExistingVariableWorkflowHistoryModel(record)
-
-            if (currentUser().canReadInternalVariableWorkflowDetails(model.projectId)) {
-              model
-            } else {
-              model.copy(internalComment = null)
-            }
-          }
+          .orderBy(PROJECT_ID, VARIABLES.STABLE_ID, ID.desc())
+          .fetch { ExistingVariableWorkflowHistoryModel.of(it, currentVariableIdField) }
     }
   }
 }
