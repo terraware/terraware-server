@@ -45,7 +45,7 @@
 <!-- planting_sites -->
 <g id="node2" class="node"><title>planting_sites</title>
 <g id="a_node2"><a xlink:href="../../tables/planting_sites.html" xlink:title="planting_sites" target="_top">
-<polygon fill="#ffffff" stroke="none" points="8,-104.062 8,-456.062 255,-456.062 255,-104.062 8,-104.062"/>
+<polygon fill="#ffffff" stroke="none" points="8,-82.0623 8,-456.062 255,-456.062 255,-82.0623 8,-82.0623"/>
 <polygon fill="#f5f5f5" stroke="none" points="10.5,-432.062 10.5,-454.062 253.5,-454.062 253.5,-432.062 10.5,-432.062"/>
 <polygon fill="none" stroke="black" points="10.5,-432.062 10.5,-454.062 253.5,-454.062 253.5,-432.062 10.5,-432.062"/>
 <text text-anchor="start" x="15.5" y="-441.262" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">planting_sites</text>
@@ -110,16 +110,20 @@
 <text text-anchor="start" x="30.5" y="-132.262" font-family="Helvetica,sans-Serif" font-size="11.00">grid_origin</text>
 <polygon fill="none" stroke="black" points="122.5,-124.062 122.5,-146.062 253.5,-146.062 253.5,-124.062 122.5,-124.062"/>
 <text text-anchor="start" x="125.5" y="-132.262" font-family="Helvetica,sans-Serif" font-size="11.00">geometry[2147483647]</text>
-<polygon fill="#ffffff" stroke="none" points="10.5,-106.062 10.5,-124.062 56.5,-124.062 56.5,-106.062 10.5,-106.062"/>
-<polygon fill="none" stroke="black" points="10.5,-106.062 10.5,-124.062 56.5,-124.062 56.5,-106.062 10.5,-106.062"/>
-<text text-anchor="start" x="13.5" y="-112.262" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 0</text>
-<polygon fill="#ffffff" stroke="none" points="56.5,-106.062 56.5,-124.062 122.5,-124.062 122.5,-106.062 56.5,-106.062"/>
-<polygon fill="none" stroke="black" points="56.5,-106.062 56.5,-124.062 122.5,-124.062 122.5,-106.062 56.5,-106.062"/>
-<text text-anchor="start" x="83.5" y="-112.262" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="122.5,-106.062 122.5,-124.062 253.5,-124.062 253.5,-106.062 122.5,-106.062"/>
-<polygon fill="none" stroke="black" points="122.5,-106.062 122.5,-124.062 253.5,-124.062 253.5,-106.062 122.5,-106.062"/>
-<text text-anchor="start" x="226.5" y="-112.262" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="9,-105.062 9,-455.062 254,-455.062 254,-105.062 9,-105.062"/>
+<polygon fill="none" stroke="black" points="10.5,-102.062 10.5,-124.062 122.5,-124.062 122.5,-102.062 10.5,-102.062"/>
+<text text-anchor="start" x="30.5" y="-110.262" font-family="Helvetica,sans-Serif" font-size="11.00">country_code</text>
+<polygon fill="none" stroke="black" points="122.5,-102.062 122.5,-124.062 253.5,-124.062 253.5,-102.062 122.5,-102.062"/>
+<text text-anchor="start" x="125.5" y="-110.262" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
+<polygon fill="#ffffff" stroke="none" points="10.5,-84.0623 10.5,-102.062 56.5,-102.062 56.5,-84.0623 10.5,-84.0623"/>
+<polygon fill="none" stroke="black" points="10.5,-84.0623 10.5,-102.062 56.5,-102.062 56.5,-84.0623 10.5,-84.0623"/>
+<text text-anchor="start" x="13.5" y="-90.2623" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 0</text>
+<polygon fill="#ffffff" stroke="none" points="56.5,-84.0623 56.5,-102.062 122.5,-102.062 122.5,-84.0623 56.5,-84.0623"/>
+<polygon fill="none" stroke="black" points="56.5,-84.0623 56.5,-102.062 122.5,-102.062 122.5,-84.0623 56.5,-84.0623"/>
+<text text-anchor="start" x="83.5" y="-90.2623" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="122.5,-84.0623 122.5,-102.062 253.5,-102.062 253.5,-84.0623 122.5,-84.0623"/>
+<polygon fill="none" stroke="black" points="122.5,-84.0623 122.5,-102.062 253.5,-102.062 253.5,-84.0623 122.5,-84.0623"/>
+<text text-anchor="start" x="226.5" y="-90.2623" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="9,-83.0623 9,-455.062 254,-455.062 254,-83.0623 9,-83.0623"/>
 </a>
 </g>
 </g>

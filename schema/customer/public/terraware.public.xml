@@ -21,6 +21,7 @@
             <child column="country_code" foreignKey="projects_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="country_code" foreignKey="users_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
             <child column="collection_site_country_code" foreignKey="accessions_collection_site_country_code_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
+            <child column="country_code" foreignKey="planting_sites_country_code_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="Name of country in US English." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="region_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
