@@ -9,6 +9,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.ShapefileGenerator
+import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.tracking.model.Shapefile
 import io.mockk.every
@@ -84,7 +85,8 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `validates site map`() {
       val gen = ShapefileGenerator()
-      val siteBoundary = gen.multiRectangle(0 to 0, 200 to 30)
+      val siteBoundary =
+          gen.multiRectangle(0 to 0, MONITORING_PLOT_SIZE_INT - 1 to MONITORING_PLOT_SIZE_INT)
       val subzoneFeature = gen.subzoneFeature(siteBoundary)
 
       val expected = PlantingSiteValidationFailure.zoneTooSmall("Z1")
@@ -94,7 +96,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             name = "Test Site",
             organizationId = organizationId,
             shapefiles = listOf(Shapefile(listOf(subzoneFeature))))
-        fail("Should have throw exception for validation failure")
+        fail("Should have thrown exception for validation failure")
       } catch (e: PlantingSiteMapInvalidException) {
         if (e.problems.none { it == expected }) {
           // Assertion failure message will include the list of problems we actually got back.
@@ -105,22 +107,20 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `validates site map with overriden grid origin`() {
+    fun `validates site map with overridden grid origin`() {
       val gen = ShapefileGenerator()
 
-      // a 2x3 rows of 30m squares, with the top left one missing. This geometry has 5 valid plots
-      // and 1 valid cluster, but will fail with a grid origin at the SW corne.
-      //
-      // Note: A perfect 25m by 25m leads to  99.46147461447877 percent of coverage, which is below
-      // our tolerance
+      // A rectangle with a 2m square notch missing in the southwest corner. This geometry has room
+      // for 2 valid plots, but will fail with a grid origin at the SW corner.
       val siteBoundary =
           gen.multiPolygon(
-              0 to 0,
-              30 to 0,
-              30 to 30,
-              60 to 30,
-              60 to 90,
-              0 to 90,
+              2 to 0,
+              MONITORING_PLOT_SIZE_INT * 2 + 5 to 0,
+              MONITORING_PLOT_SIZE_INT * 2 + 5 to MONITORING_PLOT_SIZE_INT + 1,
+              0 to MONITORING_PLOT_SIZE_INT + 1,
+              0 to 2,
+              2 to 2,
+              2 to 0,
           )
 
       val subzoneFeature = gen.subzoneFeature(siteBoundary)
@@ -133,7 +133,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             name = "Test Site",
             organizationId = organizationId,
             shapefiles = listOf(Shapefile(listOf(subzoneFeature))))
-        fail("Should have throw exception for validation failure")
+        fail("Should have thrown exception for validation failure")
       } catch (e: PlantingSiteMapInvalidException) {
         if (e.problems.none { it == expected }) {
           // Assertion failure message will include the list of problems we actually got back.
@@ -142,13 +142,13 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
         }
       }
 
-      // With grid origin
+      // With grid origin 2 meters east, which avoids the notch
       try {
         importer.import(
             name = "Test Site",
             organizationId = organizationId,
             shapefiles = listOf(Shapefile(listOf(subzoneFeature))),
-            gridOrigin = gen.point(3 to 33))
+            gridOrigin = gen.point(2 to 0))
       } catch (e: PlantingSiteMapInvalidException) {
         // Display meaningful assertion message for a test failure
         assertEquals(

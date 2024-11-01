@@ -55,10 +55,10 @@ class PlantingSiteModelTest {
     }
 
     @Test
-    fun `checks that zones are big enough for observations`() {
-      val site = newSite(width = 50, height = 50)
+    fun `allows zone that is only big enough for two plots`() {
+      val site = newSite(width = MONITORING_PLOT_SIZE_INT, height = MONITORING_PLOT_SIZE_INT * 2)
 
-      assertHasProblem(site, PlantingSiteValidationFailure.zoneTooSmall("Z1"))
+      assertHasNoProblems(site)
     }
 
     @Test
@@ -96,16 +96,11 @@ class PlantingSiteModelTest {
     }
 
     @Test
-    fun `checks that zone is big enough for a permanent cluster and a temporary plot`() {
+    fun `checks that zone is big enough for a permanent plot and a temporary plot`() {
       assertHasProblem(
-          newSite(width = 51, height = 50),
+          newSite(width = MONITORING_PLOT_SIZE_INT * 2 - 1, height = MONITORING_PLOT_SIZE_INT),
           PlantingSiteValidationFailure.zoneTooSmall("Z1"),
-          "Site is big enough for permanent cluster but not also for temporary plot")
-
-      assertHasProblem(
-          newSite(width = 500, height = 30),
-          PlantingSiteValidationFailure.zoneTooSmall("Z1"),
-          "Site is big enough for 5 plots but not a permanent cluster")
+          "Site is big enough for permanent plot but not also for temporary plot")
     }
 
     @Test
@@ -132,6 +127,12 @@ class PlantingSiteModelTest {
       if (problems!!.none { it == problem }) {
         assertEquals(listOf(problem), problems, message)
       }
+    }
+
+    private fun assertHasNoProblems(site: PlantingSiteModel<*, *, *>) {
+      val problems = site.validate()
+
+      assertNull(problems, "Validation returned problems")
     }
   }
 }
