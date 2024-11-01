@@ -1,6 +1,7 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -26,6 +27,8 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
+          countries.asSingleValueSublist(
+              "country", PLANTING_SITE_SUMMARIES.COUNTRY_CODE.eq(COUNTRIES.CODE)),
           deliveries.asMultiValueSublist(
               "deliveries", PLANTING_SITE_SUMMARIES.ID.eq(DELIVERIES.PLANTING_SITE_ID)),
           observations.asMultiValueSublist(

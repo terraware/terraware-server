@@ -221,6 +221,7 @@ data class PlantingSitePayload(
             "Area of planting site in hectares. Only present if the site has planting zones.")
     val areaHa: BigDecimal?,
     val boundary: MultiPolygon?,
+    val countryCode: String?,
     val description: String?,
     val exclusion: MultiPolygon?,
     val id: PlantingSiteId,
@@ -236,6 +237,7 @@ data class PlantingSitePayload(
   ) : this(
       areaHa = model.areaHa,
       boundary = model.boundary,
+      countryCode = model.countryCode,
       description = model.description,
       exclusion = model.exclusion,
       id = model.id,
