@@ -376,7 +376,7 @@ internal class PlantingSiteStoreReadTest : PlantingSiteStoreTest() {
                                                       isAvailable = true,
                                                       name = "1",
                                                       fullName = "Z1-1-1",
-                                                      sizeMeters = 25)),
+                                                      sizeMeters = 30)),
                                       )))))
 
       val allExpected =
@@ -459,7 +459,7 @@ internal class PlantingSiteStoreReadTest : PlantingSiteStoreTest() {
                                                   isAvailable = true,
                                                   name = "1",
                                                   fullName = "Z1-1-1",
-                                                  sizeMeters = 25)),
+                                                  sizeMeters = 30)),
                                   )))))
 
       val actual = store.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)

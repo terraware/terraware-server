@@ -9,7 +9,7 @@ const val HECTARES_SCALE = 1
 val MAX_SITE_ENVELOPE_AREA_HA = BigDecimal(20000)
 
 /** Monitoring plot width and height in meters. */
-const val MONITORING_PLOT_SIZE: Double = 25.0
+const val MONITORING_PLOT_SIZE: Double = 30.0
 
 /** Monitoring plot width and height in meters. */
 const val MONITORING_PLOT_SIZE_INT = MONITORING_PLOT_SIZE.toInt()
