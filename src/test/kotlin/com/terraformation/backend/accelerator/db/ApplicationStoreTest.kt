@@ -11,6 +11,7 @@ import com.terraformation.backend.accelerator.model.ApplicationVariableValues
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.model.PreScreenProjectType
+import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -38,7 +39,6 @@ import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.calculateAreaHectares
-import com.terraformation.backend.util.equalsOrBothNull
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
@@ -1614,11 +1614,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           ),
           applicationRow.copy(boundary = null))
 
-      // Produce a meaningful assertion failure message if the boundary isn't as expected within
-      // the default floating-point inaccuracy tolerance.
-      if (!boundary.equalsOrBothNull(applicationRow.boundary)) {
-        assertEquals(boundary, applicationRow.boundary, "Boundary in applications row")
-      }
+      assertGeometryEquals(boundary, applicationRow.boundary, "Boundary in applications row")
 
       assertEquals(
           listOf(
