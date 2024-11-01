@@ -27,8 +27,6 @@ import com.terraformation.backend.documentproducer.model.NewTextValue
 import com.terraformation.backend.documentproducer.model.SectionValueVariable
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import io.mockk.spyk
-import io.mockk.verify
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -42,18 +40,17 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val store by lazy {
-    spyk(
-        VariableValueStore(
-            clock,
-            dslContext,
-            eventPublisher,
-            variableImageValuesDao,
-            variableLinkValuesDao,
-            variablesDao,
-            variableSectionValuesDao,
-            variableSelectOptionValuesDao,
-            variableValuesDao,
-            variableValueTableRowsDao))
+    VariableValueStore(
+        clock,
+        dslContext,
+        eventPublisher,
+        variableImageValuesDao,
+        variableLinkValuesDao,
+        variablesDao,
+        variableSectionValuesDao,
+        variableSelectOptionValuesDao,
+        variableValuesDao,
+        variableValueTableRowsDao)
   }
 
   @BeforeEach
@@ -662,11 +659,20 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
 
       every { user.canUpdateInternalVariableWorkflowDetails(projectId) } returns true
 
+      val oldValues =
+          store.listValues(projectId = projectId, variableIds = listOf(sectionVariableId))
+      val oldReferringSectionValue = oldValues.single { it.listPosition == 1 }
+
       store.upgradeSectionValueVariables(mapOf(oldVariableId to newVariableId))
 
-      // There should not be any values updated since the up-to-date version of the section value
-      // is already referencing the upgraded variable
-      verify(exactly = 1) { store.updateValues(emptyList(), false) }
+      val newValues =
+          store.listValues(projectId = projectId, variableIds = listOf(sectionVariableId))
+      val newReferringSectionValue = newValues.single { it.listPosition == 1 }
+
+      assertEquals(
+          oldReferringSectionValue.id,
+          newReferringSectionValue.id,
+          "Value with variable reference should not have been replaced")
     }
   }
 
