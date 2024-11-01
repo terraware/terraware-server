@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -66,6 +67,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @Validated
 class AdminPlantingSitesController(
     private val clock: DatabaseBackedClock,
+    private val countriesDao: CountriesDao,
     private val mapboxService: MapboxService,
     private val objectMapper: ObjectMapper,
     private val observationService: ObservationService,
@@ -80,6 +82,7 @@ class AdminPlantingSitesController(
   @GetMapping("/plantingSite/{plantingSiteId}")
   fun getPlantingSite(@PathVariable plantingSiteId: PlantingSiteId, model: Model): String {
     val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Subzone)
+    val country = plantingSite.countryCode?.let { countriesDao.fetchOneByCode(it) }
     val plotCounts = plantingSiteStore.countMonitoringPlots(plantingSiteId)
     val plantCounts = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId)
     val organization = organizationStore.fetchOneById(plantingSite.organizationId)
@@ -144,6 +147,7 @@ class AdminPlantingSitesController(
         currentUser().canMovePlantingSiteToAnyOrg(plantingSiteId),
     )
     model.addAttribute("canUpdatePlantingSite", currentUser().canUpdatePlantingSite(plantingSiteId))
+    model.addAttribute("country", country)
     model.addAttribute("futurePlantingSeasons", futurePlantingSeasons)
     model.addAttribute("months", months)
     model.addAttribute("nextObservationEnd", nextObservationEnd)
