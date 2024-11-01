@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -20,6 +21,7 @@ internal abstract class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   protected val store: PlantingSiteStore by lazy {
     PlantingSiteStore(
         clock,
+        TestSingletons.countryDetector,
         dslContext,
         eventPublisher,
         monitoringPlotsDao,

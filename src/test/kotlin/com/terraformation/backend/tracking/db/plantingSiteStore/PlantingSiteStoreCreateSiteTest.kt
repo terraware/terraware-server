@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
+import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
@@ -121,7 +122,7 @@ internal class PlantingSiteStoreCreateSiteTest : PlantingSiteStoreTest() {
 
     @Test
     fun `inserts detailed planting site`() {
-      val gridOrigin = point(1)
+      val gridOrigin = point(0.0, 51.0) // Southeastern Great Britain
       val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(200, 150) }
       val zone1Boundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(100, 150) }
       val subzone11Boundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(100, 75) }
@@ -193,22 +194,24 @@ internal class PlantingSiteStoreCreateSiteTest : PlantingSiteStoreTest() {
 
       val model = store.createPlantingSite(newModel)
 
+      val plantingSitesRow = plantingSitesDao.findAll().single()
+
+      assertGeometryEquals(siteBoundary, plantingSitesRow.boundary, "Planting site boundary")
+      assertGeometryEquals(gridOrigin, plantingSitesRow.gridOrigin, "Planting site grid origin")
       assertEquals(
-          listOf(
-              PlantingSitesRow(
-                  areaHa = BigDecimal("3.0"),
-                  boundary = siteBoundary,
-                  createdBy = user.userId,
-                  createdTime = Instant.EPOCH,
-                  gridOrigin = gridOrigin,
-                  id = model.id,
-                  modifiedBy = user.userId,
-                  modifiedTime = Instant.EPOCH,
-                  name = "name",
-                  organizationId = organizationId,
-              )),
-          plantingSitesDao.findAll(),
-          "Planting sites")
+          PlantingSitesRow(
+              areaHa = BigDecimal("3.0"),
+              countryCode = "GB",
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              id = model.id,
+              modifiedBy = user.userId,
+              modifiedTime = Instant.EPOCH,
+              name = "name",
+              organizationId = organizationId,
+          ),
+          plantingSitesRow.copy(boundary = null, gridOrigin = null),
+          "Planting site")
 
       val commonZonesRow =
           PlantingZonesRow(
@@ -222,10 +225,11 @@ internal class PlantingSiteStoreCreateSiteTest : PlantingSiteStoreTest() {
 
       val actualZones = plantingZonesDao.findAll().associateBy { it.name!! }
 
+      assertGeometryEquals(zone1Boundary, actualZones["Zone 1"]?.boundary, "Zone 1 boundary")
+      assertGeometryEquals(zone2Boundary, actualZones["Zone 2"]?.boundary, "Zone 2 boundary")
       assertEquals(
           setOf(
               commonZonesRow.copy(
-                  boundary = zone1Boundary,
                   errorMargin = BigDecimal(1),
                   extraPermanentClusters = 2,
                   id = actualZones["Zone 1"]?.id,
@@ -237,7 +241,6 @@ internal class PlantingSiteStoreCreateSiteTest : PlantingSiteStoreTest() {
                   variance = BigDecimal(7),
               ),
               commonZonesRow.copy(
-                  boundary = zone2Boundary,
                   errorMargin = PlantingZoneModel.DEFAULT_ERROR_MARGIN,
                   extraPermanentClusters = 0,
                   id = actualZones["Zone 2"]?.id,
@@ -249,7 +252,7 @@ internal class PlantingSiteStoreCreateSiteTest : PlantingSiteStoreTest() {
                   variance = PlantingZoneModel.DEFAULT_VARIANCE,
               ),
           ),
-          actualZones.values.toSet(),
+          actualZones.values.map { it.copy(boundary = null) }.toSet(),
           "Planting zones")
 
       val commonSubzonesRow =
@@ -262,34 +265,48 @@ internal class PlantingSiteStoreCreateSiteTest : PlantingSiteStoreTest() {
               plantingSiteId = model.id,
           )
 
+      val actualSubzones = plantingSubzonesDao.findAll().map { it.copy(id = null) }
+
+      assertGeometryEquals(
+          subzone11Boundary,
+          actualSubzones.single { it.fullName == "Zone 1-Subzone 1" }.boundary,
+          "Z1S1 boundary")
+      assertGeometryEquals(
+          subzone12Boundary,
+          actualSubzones.single { it.fullName == "Zone 1-Subzone 2" }.boundary,
+          "Z1S2 boundary")
+      assertGeometryEquals(
+          subzone21Boundary,
+          actualSubzones.single { it.fullName == "Zone 2-Subzone 1" }.boundary,
+          "Z2S1 boundary")
+      assertGeometryEquals(
+          subzone22Boundary,
+          actualSubzones.single { it.fullName == "Zone 2-Subzone 2" }.boundary,
+          "Z2S2 boundary")
       assertEquals(
           setOf(
               commonSubzonesRow.copy(
-                  boundary = subzone11Boundary,
                   fullName = "Zone 1-Subzone 1",
                   name = "Subzone 1",
                   plantingZoneId = actualZones["Zone 1"]?.id,
               ),
               commonSubzonesRow.copy(
-                  boundary = subzone12Boundary,
                   fullName = "Zone 1-Subzone 2",
                   name = "Subzone 2",
                   plantingZoneId = actualZones["Zone 1"]?.id,
               ),
               commonSubzonesRow.copy(
-                  boundary = subzone21Boundary,
                   fullName = "Zone 2-Subzone 1",
                   name = "Subzone 1",
                   plantingZoneId = actualZones["Zone 2"]?.id,
               ),
               commonSubzonesRow.copy(
-                  boundary = subzone22Boundary,
                   fullName = "Zone 2-Subzone 2",
                   name = "Subzone 2",
                   plantingZoneId = actualZones["Zone 2"]?.id,
               ),
           ),
-          plantingSubzonesDao.findAll().map { it.copy(id = null) }.toSet(),
+          actualSubzones.map { it.copy(boundary = null) }.toSet(),
           "Planting subzones")
     }
 

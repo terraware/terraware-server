@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
@@ -186,6 +187,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     plantingSiteStore =
         PlantingSiteStore(
             clock,
+            TestSingletons.countryDetector,
             dslContext,
             publisher,
             monitoringPlotsDao,

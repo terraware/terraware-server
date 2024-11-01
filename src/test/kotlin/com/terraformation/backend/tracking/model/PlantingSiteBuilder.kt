@@ -70,6 +70,7 @@ private constructor(
     private val y: Int,
     private val width: Int,
     private val height: Int,
+    private val countryCode: String?,
 ) {
   companion object {
     /**
@@ -81,9 +82,10 @@ private constructor(
         y: Int = 0,
         width: Int = 500,
         height: Int = 500,
+        countryCode: String? = null,
         func: PlantingSiteBuilder.() -> Unit = {},
     ): ExistingPlantingSiteModel {
-      val builder = PlantingSiteBuilder(x, y, width, height)
+      val builder = PlantingSiteBuilder(x, y, width, height, countryCode)
       builder.func()
       return builder.build()
     }
@@ -97,8 +99,9 @@ private constructor(
         y: Int = 0,
         width: Int = 500,
         height: Int = 500,
+        countryCode: String? = null,
         func: PlantingSiteBuilder.() -> Unit = {}
-    ): NewPlantingSiteModel = existingSite(x, y, width, height, func).toNew()
+    ): NewPlantingSiteModel = existingSite(x, y, width, height, countryCode, func).toNew()
   }
 
   private val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
@@ -119,6 +122,7 @@ private constructor(
     return ExistingPlantingSiteModel(
         areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
         boundary = boundary,
+        countryCode = countryCode,
         exclusion = exclusion,
         gridOrigin = gridOrigin,
         id = PlantingSiteId(1),
@@ -130,7 +134,7 @@ private constructor(
 
   fun zone(
       x: Int = nextZoneX,
-      y: Int = 0,
+      y: Int = this.y,
       width: Int = this.width - (x - this.x),
       height: Int = this.height - (y - this.y),
       name: String? = null,
@@ -179,7 +183,7 @@ private constructor(
 
     fun subzone(
         x: Int = nextSubzoneX,
-        y: Int = 0,
+        y: Int = this.y,
         width: Int = this.width - (x - this.x),
         height: Int = this.height - (y - this.y),
         name: String? = null,

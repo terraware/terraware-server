@@ -45,6 +45,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
+import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingSubzoneEdit
@@ -98,6 +99,7 @@ import org.springframework.context.ApplicationEventPublisher
 @Named
 class PlantingSiteStore(
     private val clock: InstantSource,
+    private val countryDetector: CountryDetector,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val monitoringPlotsDao: MonitoringPlotsDao,
@@ -324,10 +326,14 @@ class PlantingSiteStore(
       throw PlantingSiteMapInvalidException(problems)
     }
 
+    val countryCode =
+        newModel.boundary?.let { boundary -> countryDetector.getCountries(boundary).singleOrNull() }
+
     val plantingSitesRow =
         PlantingSitesRow(
             areaHa = newModel.areaHa,
             boundary = newModel.boundary,
+            countryCode = countryCode,
             createdBy = currentUser().userId,
             createdTime = now,
             description = newModel.description,
@@ -461,6 +467,11 @@ class PlantingSiteStore(
 
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
+    val countryCode =
+        plantingSiteEdit.desiredModel.boundary?.let {
+          countryDetector.getCountries(it).singleOrNull()
+        }
+
     return withLockedPlantingSite(plantingSiteId) {
       val existing = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
       val now = clock.instant()
@@ -479,6 +490,7 @@ class PlantingSiteStore(
             .update(PLANTING_SITES)
             .set(AREA_HA, plantingSiteEdit.desiredModel.areaHa)
             .set(BOUNDARY, plantingSiteEdit.desiredModel.boundary)
+            .set(COUNTRY_CODE, countryCode)
             .set(EXCLUSION, plantingSiteEdit.desiredModel.exclusion)
             .set(MODIFIED_BY, userId)
             .set(MODIFIED_TIME, now)
