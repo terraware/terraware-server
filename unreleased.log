@@ -1,1 +1,8 @@
+53b63ca98fe SW-6191 Reduce number of temporary plots (#2554)
+58e3143b354 SW-6204 Disallow replacement of 25m plots (#2552)
+e9e48318c37 SW-6190 Upgrade 25m permanent plots to 30m (#2551)
+1467c662cf4 SW-6192 Admin UI minimal planting sites for 30m plots (#2550)
+8d2784338c3 SW-6191 Change monitoring plot size to 30 meters (#2549)
+12f1a3982c5 SW-6193 Validate that zones can fit 1-plot clusters (#2548)
+6673e84e128 SW-6191 Create 1-plot permanent clusters (#2547)
 f849a388efd When variables are upgraded, also replace injections/references to the old variable within section text for documents (#2546)
