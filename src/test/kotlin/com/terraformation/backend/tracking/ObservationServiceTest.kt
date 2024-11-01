@@ -63,6 +63,7 @@ import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
+import com.terraformation.backend.util.Turtle
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -532,6 +533,71 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
           emptyMap<PlantingSubzoneId, Int>(),
           numPermanentPlotsBySubzone,
           "Number of permanent plots by subzone")
+    }
+
+    // Cluster-to-plot conversion is mostly tested in PlantingSiteStoreReplaceOldClustersTest; the
+    // test here is to make sure the conversion happens automatically at observation start time.
+    @Test
+    fun `converts 4-plot 25x25m clusters to 1-plot 30x30m`() {
+      val gridOrigin = point(0)
+      val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(101, 101) }
+      plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+
+      insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 1, numTemporaryPlots = 1)
+      insertPlantingSubzone(boundary = siteBoundary)
+      listOf(
+              // ((cluster, subplot), (east, north))
+              (1 to 1) to (0 to 0),
+              (1 to 2) to (25 to 0),
+              (1 to 3) to (25 to 25),
+              (1 to 4) to (0 to 25),
+          )
+          .forEachIndexed { index, (clusterAndSubplot, eastAndNorth) ->
+            val (cluster, subplot) = clusterAndSubplot
+            val (eastMeters, northMeters) = eastAndNorth
+            insertMonitoringPlot(
+                name = "$index",
+                permanentCluster = cluster,
+                permanentClusterSubplot = subplot,
+                sizeMeters = 25,
+                boundary =
+                    Turtle(gridOrigin).makePolygon {
+                      north(northMeters)
+                      east(eastMeters)
+                      square(25)
+                    })
+          }
+
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting()
+
+      val oldPlots = monitoringPlotsDao.findAll().sortedBy { it.id }
+
+      service.startObservation(observationId)
+
+      val newPlots = monitoringPlotsDao.findAll().sortedBy { it.id }
+
+      assertEquals(2, newPlots.size - oldPlots.size, "Number of new plots created")
+      assertEquals(
+          oldPlots.map { it.copy(permanentCluster = null, permanentClusterSubplot = null) },
+          newPlots.filter { it.sizeMeters == 25 },
+          "Should have cleared permanent cluster numbers of 25m plots")
+
+      val newCluster1Plot =
+          newPlots.singleOrNull { it.permanentCluster == 1 }
+              ?: fail("No new plot created for cluster 1")
+      val newTemporaryPlot =
+          newPlots.singleOrNull { it.permanentCluster == null && it.sizeMeters == 30 }
+              ?: fail("No new temporary plot created")
+
+      assertEquals(
+          setOf(newCluster1Plot.id to true, newTemporaryPlot.id to false),
+          observationPlotsDao.findAll().map { it.monitoringPlotId to it.isPermanent }.toSet(),
+          "Monitoring plots in observation with isPermanent flags")
     }
 
     @Test
