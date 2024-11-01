@@ -10,6 +10,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
@@ -28,6 +29,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
 import com.terraformation.backend.tracking.db.PlotNotFoundException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
+import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
@@ -35,6 +37,7 @@ import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -58,6 +61,7 @@ class ObservationService(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
+    private val monitoringPlotsDao: MonitoringPlotsDao,
     private val observationPhotosDao: ObservationPhotosDao,
     private val observationStore: ObservationStore,
     private val plantingSiteStore: PlantingSiteStore,
@@ -287,6 +291,12 @@ class ObservationService(
               ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
       val plantedSubzoneIds =
           plantingSiteStore.countReportedPlantsInSubzones(observation.plantingSiteId).keys
+      val monitoringPlotsRow =
+          monitoringPlotsDao.fetchOneById(observationPlot.model.monitoringPlotId)
+
+      if (monitoringPlotsRow?.sizeMeters != MONITORING_PLOT_SIZE_INT) {
+        throw PlotSizeNotReplaceableException(observationId, monitoringPlotId)
+      }
 
       if (!allowCompleted && observationPlot.model.completedTime != null) {
         throw PlotAlreadyCompletedException(monitoringPlotId)

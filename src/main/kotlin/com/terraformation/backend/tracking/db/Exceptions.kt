@@ -98,6 +98,13 @@ class PlotNotInObservationException(
     EntityNotFoundException(
         "Monitoring plot $monitoringPlotId is not assigned to observation $observationId")
 
+class PlotSizeNotReplaceableException(
+    val observationId: ObservationId,
+    val monitoringPlotId: MonitoringPlotId
+) :
+    MismatchedStateException(
+        "Monitoring plot $monitoringPlotId has old size; can't replace it in observation $observationId")
+
 class ReassignmentExistsException(val plantingId: PlantingId) :
     MismatchedStateException(
         "Cannot reassign from planting $plantingId because it already has a reassignment")
