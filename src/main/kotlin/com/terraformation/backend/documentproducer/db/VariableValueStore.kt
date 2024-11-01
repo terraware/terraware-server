@@ -224,6 +224,24 @@ class VariableValueStore(
         ?.value1() ?: 0
   }
 
+  // Get the VariableValue for the injected variable within a section variable
+  private fun fetchSectionValuesUsingVariable(variableId: VariableId): List<ExistingSectionValue> {
+    val variableValues2 = VARIABLE_VALUES.`as`("variable_values_2")
+    val conditions =
+        listOf(
+            VARIABLE_SECTION_VALUES.USED_VARIABLE_ID.eq(variableId),
+            // Don't return values that were later superseded by other values
+            DSL.notExists(
+                DSL.selectOne()
+                    .from(variableValues2)
+                    .where(variableValues2.VARIABLE_ID.eq(VARIABLE_VALUES.VARIABLE_ID))
+                    .and(variableValues2.PROJECT_ID.eq(VARIABLE_VALUES.PROJECT_ID))
+                    .and(variableValues2.LIST_POSITION.eq(VARIABLE_VALUES.LIST_POSITION))
+                    .and(variableValues2.ID.gt(VARIABLE_VALUES.ID))))
+
+    return fetchByConditions(conditions, false).filterIsInstance<ExistingSectionValue>()
+  }
+
   private fun fetchByConditions(
       conditions: List<Condition>,
       includeDeletedValues: Boolean
@@ -436,6 +454,31 @@ class VariableValueStore(
         }
       }
     }
+  }
+
+  fun upgradeSectionValueVariables(replacements: Map<VariableId, VariableId>) {
+    val sectionOperations =
+        replacements.flatMap { (oldVariableId, newVariableId) ->
+          fetchSectionValuesUsingVariable(oldVariableId).mapNotNull { sectionValue ->
+            val valueVariable = sectionValue.value as? SectionValueVariable
+            valueVariable?.let { sectionValueVariable ->
+              UpdateValueOperation(
+                  ExistingSectionValue(
+                      BaseVariableValueProperties(
+                          sectionValue.id,
+                          sectionValue.projectId,
+                          sectionValue.listPosition,
+                          sectionValue.variableId,
+                          sectionValue.citation),
+                      SectionValueVariable(
+                          newVariableId,
+                          sectionValueVariable.usageType,
+                          sectionValueVariable.displayStyle)))
+            }
+          }
+        }
+
+    updateValues(sectionOperations, triggerWorkflows = false)
   }
 
   /**

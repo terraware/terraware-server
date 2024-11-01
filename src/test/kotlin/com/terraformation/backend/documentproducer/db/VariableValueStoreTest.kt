@@ -7,7 +7,9 @@ import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
+import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
 import com.terraformation.backend.db.docprod.VariableType
+import com.terraformation.backend.db.docprod.VariableUsageType
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.documentproducer.event.CompletedSectionVariableUpdatedEvent
@@ -22,6 +24,7 @@ import com.terraformation.backend.documentproducer.model.ImageValueDetails
 import com.terraformation.backend.documentproducer.model.NewImageValue
 import com.terraformation.backend.documentproducer.model.NewTableValue
 import com.terraformation.backend.documentproducer.model.NewTextValue
+import com.terraformation.backend.documentproducer.model.SectionValueVariable
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.*
@@ -561,6 +564,115 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
           variableId = variableId, listPosition = 1, textValue = "deleted", isDeleted = true)
 
       assertEquals(1, store.fetchNextListPosition(inserted.projectId, variableId))
+    }
+  }
+
+  @Nested
+  inner class UpgradeSectionValueVariables {
+    @Test
+    fun `updates variable references in sections to use new variable IDs`() {
+      val projectId = inserted.projectId
+      insertDocumentTemplate()
+      insertVariableManifest()
+      insertDocument()
+
+      val oldVariableId = insertTextVariable()
+      insertValue(textValue = "referenced text", variableId = oldVariableId)
+      val sectionVariableId = insertVariableManifestEntry(insertSectionVariable())
+
+      insertSectionValue(listPosition = 0, textValue = "some text", variableId = sectionVariableId)
+      val oldReferringSectionValueId =
+          insertSectionValue(
+              displayStyle = VariableInjectionDisplayStyle.Block,
+              listPosition = 1,
+              usageType = VariableUsageType.Injection,
+              usedVariableId = oldVariableId,
+              variableId = sectionVariableId)
+
+      val newVariableId =
+          insertTextVariable(
+              insertVariable(replacesVariableId = oldVariableId, type = VariableType.Text))
+
+      every { user.canUpdateInternalVariableWorkflowDetails(projectId) } returns true
+
+      val oldValues =
+          store.listValues(projectId = projectId, variableIds = listOf(sectionVariableId))
+      val oldTextSectionValue = oldValues.single { it.listPosition == 0 }
+
+      store.upgradeSectionValueVariables(mapOf(oldVariableId to newVariableId))
+
+      val newValues =
+          store.listValues(projectId = projectId, variableIds = listOf(sectionVariableId))
+      val newTextSectionValue = newValues.single { it.listPosition == 0 }
+      val newReferringSectionValue = newValues.single { it.listPosition == 1 }
+
+      assertEquals(
+          oldTextSectionValue, newTextSectionValue, "Text value should not have been modified")
+      assertNotEquals(
+          oldReferringSectionValueId,
+          newReferringSectionValue.id,
+          "Value with variable reference should have been replaced")
+      assertEquals(
+          SectionValueVariable(
+              newVariableId, VariableUsageType.Injection, VariableInjectionDisplayStyle.Block),
+          newReferringSectionValue.value,
+          "Section should refer to new variable")
+    }
+
+    @Test
+    fun `does not modify sections with up-to-date variable references`() {
+      val projectId = inserted.projectId
+      insertDocumentTemplate()
+      insertVariableManifest()
+      insertDocument()
+      val sectionVariableId = insertVariableManifestEntry(insertSectionVariable())
+
+      val oldVariableId = insertTextVariable()
+
+      // The first version of the section references the outdated variable, there is no project
+      // value for this variable yet
+      insertSectionValue(listPosition = 0, textValue = "some text", variableId = sectionVariableId)
+      insertSectionValue(
+          displayStyle = VariableInjectionDisplayStyle.Block,
+          listPosition = 1,
+          usageType = VariableUsageType.Injection,
+          usedVariableId = oldVariableId,
+          variableId = sectionVariableId)
+
+      // The variable is upgraded at some point
+      val newVariableId =
+          insertTextVariable(
+              insertVariable(replacesVariableId = oldVariableId, type = VariableType.Text))
+
+      // The section has already been updated to use the new variable ID
+      insertSectionValue(
+          listPosition = 0, textValue = "some updated text", variableId = sectionVariableId)
+      insertSectionValue(
+          displayStyle = VariableInjectionDisplayStyle.Block,
+          listPosition = 1,
+          usageType = VariableUsageType.Injection,
+          usedVariableId = newVariableId,
+          variableId = sectionVariableId)
+
+      // A project value is added to the new variable
+      insertValue(textValue = "referenced text", variableId = newVariableId)
+
+      every { user.canUpdateInternalVariableWorkflowDetails(projectId) } returns true
+
+      val oldValues =
+          store.listValues(projectId = projectId, variableIds = listOf(sectionVariableId))
+      val oldReferringSectionValue = oldValues.single { it.listPosition == 1 }
+
+      store.upgradeSectionValueVariables(mapOf(oldVariableId to newVariableId))
+
+      val newValues =
+          store.listValues(projectId = projectId, variableIds = listOf(sectionVariableId))
+      val newReferringSectionValue = newValues.single { it.listPosition == 1 }
+
+      assertEquals(
+          oldReferringSectionValue.id,
+          newReferringSectionValue.id,
+          "Value with variable reference should not have been replaced")
     }
   }
 
