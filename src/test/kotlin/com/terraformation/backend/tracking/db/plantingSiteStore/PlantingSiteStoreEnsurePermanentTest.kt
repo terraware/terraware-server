@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.point
+import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.util.Turtle
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
@@ -21,16 +22,19 @@ internal class PlantingSiteStoreEnsurePermanentTest : PlantingSiteStoreTest() {
 
       val plots = monitoringPlotsDao.findAll()
 
-      assertEquals(16, plots.size, "Number of monitoring plots created")
+      assertEquals(4, plots.size, "Number of monitoring plots created")
       assertEquals(
           setOf(1, 2, 3, 4), plots.map { it.permanentCluster }.toSet(), "Permanent cluster numbers")
       assertEquals(1, plots.minOf { it.name!!.toInt() }, "Smallest plot number")
-      assertEquals(16, plots.maxOf { it.name!!.toInt() }, "Largest plot number")
+      assertEquals(4, plots.maxOf { it.name!!.toInt() }, "Largest plot number")
     }
 
     @Test
     fun `creates as many clusters as there is room for`() {
-      val siteBoundary = Turtle(point(0)).makeMultiPolygon { rectangle(101, 51) }
+      val siteBoundary =
+          Turtle(point(0)).makeMultiPolygon {
+            rectangle(MONITORING_PLOT_SIZE * 2 + 1, MONITORING_PLOT_SIZE + 1)
+          }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0))
       insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 4)
@@ -41,11 +45,11 @@ internal class PlantingSiteStoreEnsurePermanentTest : PlantingSiteStoreTest() {
 
       val plots = monitoringPlotsDao.findAll()
 
-      assertEquals(8, plots.size, "Number of monitoring plots created")
+      assertEquals(2, plots.size, "Number of monitoring plots created")
       assertEquals(
           setOf(1, 2), plots.map { it.permanentCluster }.toSet(), "Permanent cluster numbers")
       assertEquals(1, plots.minOf { it.name!!.toInt() }, "Smallest plot number")
-      assertEquals(8, plots.maxOf { it.name!!.toInt() }, "Largest plot number")
+      assertEquals(2, plots.maxOf { it.name!!.toInt() }, "Largest plot number")
     }
 
     @Test
@@ -63,19 +67,18 @@ internal class PlantingSiteStoreEnsurePermanentTest : PlantingSiteStoreTest() {
       store.ensurePermanentClustersExist(plantingSiteId)
 
       val plots = monitoringPlotsDao.findAll()
-      val plotsPerCluster = plots.groupBy { it.permanentCluster }.mapValues { it.value.size }
 
-      assertEquals(9, plots.size, "Number of monitoring plots including existing one")
+      assertEquals(3, plots.size, "Number of monitoring plots including existing one")
       assertEquals(
-          mapOf(1 to 4, 2 to 1, 3 to 4), plotsPerCluster, "Number of plots in each cluster")
+          setOf(1, 2, 3), plots.map { it.permanentCluster }.toSet(), "Permanent cluster numbers")
     }
 
     @Test
-    fun `can use temporary plot from previous observation as part of cluster`() {
+    fun `can use temporary plot from previous observation as permanent plot`() {
       val gridOrigin = point(0)
-      val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { square(51) }
+      val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(51, 26) }
 
-      // Temporary plot is in the southeast corner of the cluster.
+      // Temporary plot is in the east half of the site.
       val existingPlotBoundary =
           Turtle(gridOrigin).makePolygon {
             east(25)
@@ -83,7 +86,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : PlantingSiteStoreTest() {
           }
 
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
-      insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 1)
+      insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 2)
       insertPlantingSubzone(boundary = siteBoundary)
       val existingPlotId = insertMonitoringPlot(boundary = existingPlotBoundary)
 
@@ -92,13 +95,8 @@ internal class PlantingSiteStoreEnsurePermanentTest : PlantingSiteStoreTest() {
       val plots = monitoringPlotsDao.findAll()
       val existingPlot = plots.first { it.id == existingPlotId }
 
-      // Subplots are numbered counterclockwise starting from the southwest.
-      val southeastSubplot = 2
-
-      assertEquals(4, plots.size, "Number of monitoring plots including existing one")
-      assertEquals(1, existingPlot.permanentCluster, "Permanent cluster of existing plot")
-      assertEquals(
-          southeastSubplot, existingPlot.permanentClusterSubplot, "Subplot number of existing plot")
+      assertEquals(2, plots.size, "Number of monitoring plots including existing one")
+      assertNotNull(existingPlot.permanentCluster, "Cluster number of existing plot")
     }
 
     @Test
@@ -139,8 +137,8 @@ internal class PlantingSiteStoreEnsurePermanentTest : PlantingSiteStoreTest() {
 
       val plots = monitoringPlotsDao.findAll()
       assertEquals(
-          listOf(123, 124, 125, 126, 127),
-          plots.map { it.name!!.toInt() }.sorted(),
+          setOf("123", "124"),
+          plots.map { it.name }.toSet(),
           "Plot numbers including existing plot")
     }
   }

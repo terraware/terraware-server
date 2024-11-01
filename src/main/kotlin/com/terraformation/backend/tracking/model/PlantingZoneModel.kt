@@ -113,7 +113,10 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
       exclusion: MultiPolygon? = null,
       requestedSubzoneIds: Set<PlantingSubzoneId> = emptySet(),
   ): Collection<Polygon> {
-    val permanentPlotIds = choosePermanentPlots(plantedSubzoneIds, requestedSubzoneIds)
+    if (plantingSubzones.isEmpty()) {
+      throw IllegalArgumentException("No subzones found for planting zone $id (wrong fetch depth?)")
+    }
+
     val eligibleSubzoneIds = getEligibleSubzoneIds(plantedSubzoneIds, requestedSubzoneIds)
 
     // We will assign as many plots as possible evenly across all subzones, eligible or not.
@@ -129,7 +132,9 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
     return plantingSubzones
         .sortedWith(
             compareBy { subzone: PlantingSubzoneModel<PSZID> ->
-                  subzone.monitoringPlots.count { it.id in permanentPlotIds }
+                  subzone.monitoringPlots.count { plot ->
+                    plot.permanentCluster != null && plot.permanentCluster <= numPermanentClusters
+                  }
                 }
                 .thenBy { if (it.id != null && it.id in eligibleSubzoneIds) 0 else 1 }
                 .thenBy { it.id?.value ?: 0L })

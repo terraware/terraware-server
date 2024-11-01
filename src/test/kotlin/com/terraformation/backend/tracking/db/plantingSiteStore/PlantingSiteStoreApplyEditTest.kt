@@ -158,8 +158,8 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
               },
           expectedPlotCounts =
               listOf(
-                  rectangle(x = 0, width = 500, height = 500) to 7 * 4,
-                  rectangle(x = 500, width = 250, height = 500) to 3 * 4,
+                  rectangle(x = 0, width = 500, height = 500) to 7,
+                  rectangle(x = 500, width = 250, height = 500) to 3,
               ))
     }
 
@@ -230,8 +230,8 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
                     },
                 expectedPlotCounts =
                     listOf(
-                        initialArea to 8,
-                        addedArea to 8,
+                        initialArea to 2,
+                        addedArea to 2,
                     ))
 
         val monitoringPlots = edited.plantingZones[0].plantingSubzones[0].monitoringPlots
@@ -250,7 +250,7 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
             monitoringPlots.groupBy { it.permanentCluster }.mapValues { (_, plots) -> plots.size }
 
         assertEquals(
-            mapOf(1 to 4, 2 to 4, 3 to 4, 4 to 4),
+            mapOf(1 to 1, 2 to 1, 3 to 1, 4 to 1),
             plotCountsByClusterNumber,
             "Number of plots with each cluster number after edit")
       }
@@ -291,7 +291,7 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
     }
 
     @Test
-    fun `destroys permanent cluster if one plot is no longer in plantable area`() {
+    fun `destroys permanent plot if no longer in plantable area`() {
       val (edited) =
           runScenario(
               newSite {
@@ -308,29 +308,13 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
               })
 
       assertEquals(
-          mapOf(
-              "1" to null,
-              "2" to null,
-              "3" to null,
-              "4" to null,
-              "5" to 2,
-              "6" to 2,
-              "7" to 2,
-              "8" to 2),
+          mapOf("1" to null, "2" to 2),
           edited.plantingZones[0].plantingSubzones[0].monitoringPlots.associate {
             it.name to it.permanentCluster
           },
           "Cluster numbers of monitoring plots")
       assertEquals(
-          mapOf(
-              "1" to false,
-              "2" to true,
-              "3" to true,
-              "4" to true,
-              "5" to true,
-              "6" to true,
-              "7" to true,
-              "8" to true),
+          mapOf("1" to false, "2" to true),
           edited.plantingZones[0].plantingSubzones[0].monitoringPlots.associate {
             it.name to it.isAvailable
           },
