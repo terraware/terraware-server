@@ -1,3 +1,4 @@
+29ae944ce33 SW-6205 Make workflow history follow variable replacements (#2564)
 d2cfe32ed10 SW-6182 Populate countries of existing planting sites (#2559)
 44f4de85a5c SW-6182 Show planting site country in admin UI (#2558)
 c8fd05fa1a6 SW-6182 Add planting site country to API (#2557)
