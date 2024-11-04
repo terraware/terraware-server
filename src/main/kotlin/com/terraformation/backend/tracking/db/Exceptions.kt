@@ -51,6 +51,9 @@ class InvalidObservationEndDateException(val startDate: LocalDate, val endDate: 
     IllegalArgumentException(
         "Observation end date $endDate should be after and within two months of the start date $startDate")
 
+class ObservationAlreadyEndedException(val observationId: ObservationId) :
+    MismatchedStateException("Observation $observationId has already ended")
+
 class ObservationAlreadyStartedException(val observationId: ObservationId) :
     MismatchedStateException("Observation $observationId is already started")
 

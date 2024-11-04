@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -56,6 +57,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
@@ -755,6 +758,108 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<IllegalArgumentException> {
         store.updateObservationState(observationId, ObservationState.Upcoming)
       }
+    }
+  }
+
+  @Nested
+  inner class AbandonObservation {
+    @Test
+    fun `deletes an observation if no plot has been completed`() {
+      val observationId = insertObservation()
+      assertNotNull(observationsDao.fetchOneById(observationId), "Before abandon")
+      store.abandonObservation(observationId)
+      assertNull(observationsDao.fetchOneById(observationId), "After abandon")
+    }
+
+    @Test
+    fun `sets an observation to Abandoned and incomplete plots to Not Observed and unclaims`() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val completedPlotId = insertMonitoringPlot()
+      val unclaimedPlotId = insertMonitoringPlot()
+      val claimedPlotId = insertMonitoringPlot()
+
+      val observationId = insertObservation()
+
+      insertObservationPlot(
+          observationId = observationId,
+          monitoringPlotId = completedPlotId,
+          claimedBy = currentUser().userId,
+          claimedTime = Instant.EPOCH,
+          completedBy = currentUser().userId,
+          completedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.Completed)
+
+      insertObservationPlot(
+          observationId = observationId,
+          monitoringPlotId = unclaimedPlotId,
+          statusId = ObservationPlotStatus.Unclaimed)
+
+      insertObservationPlot(
+          observationId = observationId,
+          monitoringPlotId = claimedPlotId,
+          claimedBy = currentUser().userId,
+          claimedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.Claimed)
+
+      val existing = observationsDao.fetchOneById(observationId)!!
+
+      val plotsRows = observationPlotsDao.findAll().associateBy { it.monitoringPlotId }
+      val completedRow = plotsRows[completedPlotId]!!
+      val unclaimedRow = plotsRows[unclaimedPlotId]!!
+      val claimedRow = plotsRows[claimedPlotId]!!
+
+      clock.instant = Instant.ofEpochSecond(500)
+
+      store.abandonObservation(observationId)
+
+      assertEquals(
+          setOf(
+              completedRow,
+              unclaimedRow.copy(statusId = ObservationPlotStatus.NotObserved),
+              claimedRow.copy(
+                  claimedBy = null,
+                  claimedTime = null,
+                  statusId = ObservationPlotStatus.NotObserved,
+              ),
+          ),
+          observationPlotsDao.fetchByObservationId(observationId).toSet(),
+          "Observation plots after abandoning")
+
+      assertEquals(
+          existing.copy(completedTime = clock.instant, stateId = ObservationState.Abandoned),
+          observationsDao.fetchOneById(observationId),
+          "Observation after abandoning")
+    }
+
+    @Test
+    fun `throws exception if no permission to update observation`() {
+      val observationId = insertObservation()
+
+      every { user.canUpdateObservation(observationId) } returns false
+
+      assertThrows<AccessDeniedException> { store.abandonObservation(observationId) }
+    }
+
+    @EnumSource(names = ["Abandoned", "Completed"])
+    @ParameterizedTest
+    fun `throws exception when abandoning an already ended observation`(state: ObservationState) {
+      val observationId = insertObservation(completedTime = Instant.EPOCH, state = state)
+
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val completedPlot = insertMonitoringPlot()
+
+      insertObservationPlot(
+          observationId = observationId,
+          monitoringPlotId = completedPlot,
+          claimedBy = currentUser().userId,
+          claimedTime = Instant.EPOCH,
+          completedBy = currentUser().userId,
+          completedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.Completed)
+
+      assertThrows<ObservationAlreadyEndedException> { store.abandonObservation(observationId) }
     }
   }
 
