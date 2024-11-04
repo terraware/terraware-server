@@ -1,3 +1,6 @@
+7f37bc975d1 SW-6125 Added observation plot status to data table, and updated model types (#2560)
+ee4774e1a7a Update dependency software.amazon.awssdk:bom to v2.29.5 (#2563)
+a39c5fa5784 SW-5880 Added observation aggregates to subzones (#2538)
 a5f41cc1bf6 Update ktor monorepo to v3.0.1 (#2566)
 53b63ca98fe SW-6191 Reduce number of temporary plots (#2554)
 58e3143b354 SW-6204 Disallow replacement of 25m plots (#2552)
