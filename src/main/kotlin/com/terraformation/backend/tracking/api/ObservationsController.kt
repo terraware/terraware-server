@@ -49,8 +49,10 @@ import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResult
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotStatus
 import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
+import com.terraformation.backend.tracking.model.ObservationPlantingZoneRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlotCounts
 import com.terraformation.backend.tracking.model.ObservationResultsModel
+import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -168,6 +170,16 @@ class ObservationsController(
         }
 
     return ListObservationResultsResponsePayload(results.map { ObservationResultsPayload(it) })
+  }
+
+  @GetMapping("/results/summary")
+  @Operation(summary = "Gets the rollup observation summary of a planting site")
+  fun getPlantingSiteObservationSummary(
+      @RequestParam plantingSiteId: PlantingSiteId,
+  ): GetPlantingSiteObservationSummaryPayload {
+    val model = observationResultsStore.fetchSummaryForPlantingSite(plantingSiteId)
+    return GetPlantingSiteObservationSummaryPayload(
+        model?.let { PlantingSiteObservationSummaryPayload(model) })
   }
 
   @GetMapping("/{observationId}")
@@ -649,14 +661,39 @@ data class ObservationMonitoringPlotResultsPayload(
 }
 
 data class ObservationPlantingSubzoneResultsPayload(
+    @Schema(description = "Area of this planting subzone in hectares.") //
+    val areaHa: BigDecimal,
+    val completedTime: Instant?,
+    @Schema(
+        description =
+            "Estimated number of plants in planting subzone based on estimated planting density " +
+                "and subzone area. Only present if the subzone has completed planting.")
+    val estimatedPlants: Int?,
+    @Schema(
+        description =
+            "Percentage of plants of all species that were dead in this subzone's permanent " +
+                "monitoring plots.")
     val monitoringPlots: List<ObservationMonitoringPlotResultsPayload>,
+    val mortalityRate: Int,
+    @Schema(
+        description =
+            "Estimated planting density for the subzone based on the observed planting densities " +
+                "of monitoring plots. Only present if the subzone has completed planting.")
+    val plantingDensity: Int?,
     val plantingSubzoneId: PlantingSubzoneId,
+    val totalPlants: Int,
 ) {
   constructor(
       model: ObservationPlantingSubzoneResultsModel
   ) : this(
+      areaHa = model.areaHa,
+      completedTime = model.completedTime,
+      estimatedPlants = model.estimatedPlants,
       monitoringPlots = model.monitoringPlots.map { ObservationMonitoringPlotResultsPayload(it) },
+      mortalityRate = model.mortalityRate,
+      plantingDensity = model.plantingDensity,
       plantingSubzoneId = model.plantingSubzoneId,
+      totalPlants = model.totalPlants,
   )
 }
 
@@ -763,6 +800,84 @@ data class ObservationResultsPayload(
   )
 }
 
+data class PlantingZoneObservationSummaryPayload(
+    @Schema(description = "Area of this planting zone in hectares.") //
+    val areaHa: BigDecimal,
+    @Schema(description = "The earliest time of the observations used in this summary.")
+    val earliestObservationTime: Instant,
+    @Schema(
+        description =
+            "Estimated number of plants in planting zone based on estimated planting density and " +
+                "planting zone area. Only present if all the subzones in the zone have been " +
+                "marked as having completed planting.")
+    val estimatedPlants: Int?,
+    @Schema(description = "The latest time of the observations used in this summary.")
+    val latestObservationTime: Instant,
+    @Schema(
+        description =
+            "Percentage of plants of all species that were dead in this zone's permanent " +
+                "monitoring plots.")
+    val mortalityRate: Int,
+    @Schema(
+        description =
+            "Estimated planting density for the zone based on the observed planting densities " +
+                "of monitoring plots. Only present if all the subzones in the zone have been " +
+                "marked as having completed planting.")
+    val plantingDensity: Int?,
+    @Schema(description = "List of subzone observations used in this summary.")
+    val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
+    val plantingZoneId: PlantingZoneId,
+) {
+  constructor(
+      model: ObservationPlantingZoneRollupResultsModel
+  ) : this(
+      areaHa = model.areaHa,
+      earliestObservationTime = model.earliestCompletedTime,
+      estimatedPlants = model.estimatedPlants,
+      latestObservationTime = model.latestCompletedTime,
+      mortalityRate = model.mortalityRate,
+      plantingDensity = model.plantingDensity,
+      plantingSubzones =
+          model.plantingSubzones.map { ObservationPlantingSubzoneResultsPayload(it) },
+      plantingZoneId = model.plantingZoneId,
+  )
+}
+
+data class PlantingSiteObservationSummaryPayload(
+    @Schema(description = "The earliest time of the observations used in this summary.")
+    val earliestObservationTime: Instant,
+    @Schema(
+        description =
+            "Estimated total number of live plants at the site, based on the estimated planting " +
+                "density and site size. Only present if all the subzones in the site have been " +
+                "marked as having completed planting.")
+    val estimatedPlants: Int?,
+    @Schema(description = "The latest time of the observations used in this summary.")
+    val latestObservationTime: Instant,
+    @Schema(
+        description =
+            "Percentage of plants of all species that were dead in this site's permanent " +
+                "monitoring plots.")
+    val mortalityRate: Int?,
+    @Schema(
+        description =
+            "Estimated planting density for the site, based on the observed planting densities " +
+                "of monitoring plots. Only present if all the subzones in the site have been " +
+                "marked as having completed planting.")
+    val plantingDensity: Int?,
+    val plantingZones: List<PlantingZoneObservationSummaryPayload>
+) {
+  constructor(
+      model: ObservationRollupResultsModel
+  ) : this(
+      earliestObservationTime = model.earliestCompletedTime,
+      estimatedPlants = model.estimatedPlants,
+      latestObservationTime = model.latestCompletedTime,
+      mortalityRate = model.mortalityRate,
+      plantingDensity = model.plantingDensity,
+      plantingZones = model.plantingZones.map { PlantingZoneObservationSummaryPayload(it) })
+}
+
 data class CompletePlotObservationRequestPayload(
     val conditions: Set<ObservableCondition>,
     val notes: String?,
@@ -813,6 +928,13 @@ data class GetObservationResultsResponsePayload(val observation: ObservationResu
 
 data class ListObservationResultsResponsePayload(
     val observations: List<ObservationResultsPayload>
+) : SuccessResponsePayload
+
+data class GetPlantingSiteObservationSummaryPayload(
+    @Schema(
+        description =
+            "Rollup summary of planting site observations. Null if no observation has been made.")
+    val summary: PlantingSiteObservationSummaryPayload?,
 ) : SuccessResponsePayload
 
 data class ScheduleObservationRequestPayload(
