@@ -907,29 +907,27 @@ class ObservationStore(
   }
 
   /**
-   * Deletes the observation if no plot has been observed, or mark the observation status to
-   * "Abandon", and sets all unobserved plot as "Not Observed".
+   * Deletes the observation if no plot has been observed, or sets the observation status to
+   * "Abandoned" and all unobserved plots' statuses to "Not Observed".
    */
   fun abandonObservation(observationId: ObservationId) {
     requirePermissions { updateObservation(observationId) }
     val observation = fetchObservationById(observationId)
 
-    val noPlotCompleted =
-        dslContext
-            .selectOne()
-            .from(OBSERVATION_PLOTS)
-            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
-            .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
-            .limit(1)
-            .fetch()
-            .isEmpty()
+    val hasCompletedPlots =
+        dslContext.fetchExists(
+            OBSERVATION_PLOTS,
+            OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId),
+            OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
 
-    if (noPlotCompleted) {
-      deleteObservation(observationId)
+    if (hasCompletedPlots) {
+      dslContext.transaction { _ ->
+        abandonPlots(observationId)
+        updateObservationState(observationId, ObservationState.Abandoned)
+        resetPlantPopulationSinceLastObservation(observation.plantingSiteId)
+      }
     } else {
-      abandonPlots(observationId)
-      updateObservationState(observationId, ObservationState.Abandoned)
-      resetPlantPopulationSinceLastObservation(observation.plantingSiteId)
+      deleteObservation(observationId)
     }
   }
 
@@ -939,12 +937,14 @@ class ObservationStore(
   }
 
   private fun deleteObservation(observationId: ObservationId) {
-    dslContext
-        .deleteFrom(OBSERVATION_PLOTS)
-        .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
-        .execute()
+    dslContext.transaction { _ ->
+      dslContext
+          .deleteFrom(OBSERVATION_PLOTS)
+          .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+          .execute()
 
-    dslContext.deleteFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(observationId)).execute()
+      dslContext.deleteFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(observationId)).execute()
+    }
   }
 
   private fun resetPlantPopulationSinceLastObservation(plantingSiteId: PlantingSiteId) {

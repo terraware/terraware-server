@@ -21,7 +21,6 @@ import com.terraformation.backend.db.tracking.RecordedPlantStatus.Live
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Other
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Unknown
-import com.terraformation.backend.db.tracking.embeddables.pojos.ObservationPlotId
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
@@ -781,41 +780,32 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val observationId = insertObservation()
 
       insertObservationPlot(
-          ObservationPlotsRow(
-              observationId,
-              completedPlotId,
-              claimedBy = currentUser().userId,
-              claimedTime = Instant.EPOCH,
-              completedBy = currentUser().userId,
-              completedTime = Instant.EPOCH,
-              statusId = ObservationPlotStatus.Completed))
+          observationId = observationId,
+          monitoringPlotId = completedPlotId,
+          claimedBy = currentUser().userId,
+          claimedTime = Instant.EPOCH,
+          completedBy = currentUser().userId,
+          completedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.Completed)
 
       insertObservationPlot(
-          ObservationPlotsRow(
-              observationId, unclaimedPlotId, statusId = ObservationPlotStatus.Unclaimed))
+          observationId = observationId,
+          monitoringPlotId = unclaimedPlotId,
+          statusId = ObservationPlotStatus.Unclaimed)
 
       insertObservationPlot(
-          ObservationPlotsRow(
-              observationId,
-              claimedPlotId,
-              claimedBy = currentUser().userId,
-              claimedTime = Instant.EPOCH,
-              statusId = ObservationPlotStatus.Claimed))
+          observationId = observationId,
+          monitoringPlotId = claimedPlotId,
+          claimedBy = currentUser().userId,
+          claimedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.Claimed)
 
       val existing = observationsDao.fetchOneById(observationId)!!
 
-      val completedRow =
-          observationPlotsDao
-              .fetchByObservationPlotId(ObservationPlotId(observationId, completedPlotId))
-              .single()
-      val unclaimedRow =
-          observationPlotsDao
-              .fetchByObservationPlotId(ObservationPlotId(observationId, unclaimedPlotId))
-              .single()
-      val claimedRow =
-          observationPlotsDao
-              .fetchByObservationPlotId(ObservationPlotId(observationId, claimedPlotId))
-              .single()
+      val plotsRows = observationPlotsDao.findAll().associateBy { it.monitoringPlotId }
+      val completedRow = plotsRows[completedPlotId]!!
+      val unclaimedRow = plotsRows[unclaimedPlotId]!!
+      val claimedRow = plotsRows[claimedPlotId]!!
 
       clock.instant = Instant.ofEpochSecond(500)
 
@@ -837,7 +827,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           existing.copy(completedTime = clock.instant, stateId = ObservationState.Abandoned),
           observationsDao.fetchOneById(observationId),
-          "Observation after abandon")
+          "Observation after abandoning")
     }
 
     @Test
@@ -859,14 +849,14 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val completedPlot = insertMonitoringPlot()
 
       insertObservationPlot(
-          ObservationPlotsRow(
-              observationId,
-              completedPlot,
-              claimedBy = currentUser().userId,
-              claimedTime = Instant.EPOCH,
-              completedBy = currentUser().userId,
-              completedTime = Instant.EPOCH,
-              statusId = ObservationPlotStatus.Completed))
+          observationId = observationId,
+          monitoringPlotId = completedPlot,
+          claimedBy = currentUser().userId,
+          claimedTime = Instant.EPOCH,
+          completedBy = currentUser().userId,
+          completedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.Completed)
+
       assertThrows<IllegalArgumentException> { store.abandonObservation(observationId) }
     }
   }

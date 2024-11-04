@@ -30,11 +30,11 @@ data class ObservationModel<ID : ObservationId?>(
     private val validStateTransitions =
         setOf(
             ObservationState.Upcoming to ObservationState.InProgress,
+            ObservationState.Upcoming to ObservationState.Abandoned,
             ObservationState.InProgress to ObservationState.Completed,
             ObservationState.InProgress to ObservationState.Overdue,
-            ObservationState.Overdue to ObservationState.Completed,
-            ObservationState.Upcoming to ObservationState.Abandoned,
             ObservationState.InProgress to ObservationState.Abandoned,
+            ObservationState.Overdue to ObservationState.Completed,
             ObservationState.Overdue to ObservationState.Abandoned,
         )
 
