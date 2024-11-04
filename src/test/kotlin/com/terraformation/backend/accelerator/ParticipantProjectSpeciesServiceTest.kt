@@ -121,8 +121,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
               modifiedBy = userId,
               modifiedTime = now,
               projectId = projectId,
-              submissionStatusId = SubmissionStatus.NotSubmitted),
-          includePrimaryKeys = false)
+              submissionStatusId = SubmissionStatus.NotSubmitted))
 
       assertTableEquals(
           ParticipantProjectSpeciesRecord(
@@ -134,8 +133,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               rationale = "rationale",
               speciesId = speciesId,
-              submissionStatusId = SubmissionStatus.NotSubmitted),
-          includePrimaryKeys = false)
+              submissionStatusId = SubmissionStatus.NotSubmitted))
 
       eventPublisher.assertEventPublished(
           ParticipantProjectSpeciesAddedEvent(

@@ -301,9 +301,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
             position = 2,
             typeId = UploadProblemType.MalformedValue,
             uploadId = uploadId,
-            value = "ShortName",
-        ),
-        includePrimaryKeys = false)
+            value = "ShortName"))
 
     assertStatus(UploadStatus.Invalid)
   }
