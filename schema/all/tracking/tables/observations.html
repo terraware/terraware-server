@@ -355,7 +355,7 @@
                                 <tbody>
                                 <tr>
                                     <td>completed_time_and_state</td>
-                                    <td>((((completed_time IS NULL) AND (state_id &lt;&gt; 3)) OR ((completed_time IS NOT NULL) AND (state_id = 3))))</td>
+                                    <td>((((completed_time IS NULL) AND (state_id &lt;&gt; ALL (ARRAY[3, 5]))) OR ((completed_time IS NOT NULL) AND (state_id = ANY (ARRAY[3, 5])))))</td>
                                 </tr>
                                 <tr>
                                     <td>end_after_start</td>

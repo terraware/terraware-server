@@ -1,3 +1,4 @@
+6221bde556d SW-6218 Implemented feature to abandon an observation (#2562)
 731d09c771b Updated observation store to change stauts on claim/release/complete (#2561)
 a86e686f0be Improve assertTableEquals usability (#2567)
 7f37bc975d1 SW-6125 Added observation plot status to data table, and updated model types (#2560)
