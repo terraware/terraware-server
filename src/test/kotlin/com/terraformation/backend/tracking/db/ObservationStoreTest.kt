@@ -57,6 +57,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
@@ -839,10 +841,10 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<AccessDeniedException> { store.abandonObservation(observationId) }
     }
 
-    @Test
-    fun `throws exception when abandoning an already completed observation`() {
-      val observationId =
-          insertObservation(completedTime = Instant.EPOCH, state = ObservationState.Completed)
+    @EnumSource(names = ["Abandoned", "Completed"])
+    @ParameterizedTest
+    fun `throws exception when abandoning an already ended observation`(state: ObservationState) {
+      val observationId = insertObservation(completedTime = Instant.EPOCH, state = state)
 
       insertPlantingZone()
       insertPlantingSubzone()
@@ -857,7 +859,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           completedTime = Instant.EPOCH,
           statusId = ObservationPlotStatus.Completed)
 
-      assertThrows<IllegalArgumentException> { store.abandonObservation(observationId) }
+      assertThrows<ObservationAlreadyEndedException> { store.abandonObservation(observationId) }
     }
   }
 

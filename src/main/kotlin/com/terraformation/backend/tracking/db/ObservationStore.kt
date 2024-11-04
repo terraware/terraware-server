@@ -912,7 +912,13 @@ class ObservationStore(
    */
   fun abandonObservation(observationId: ObservationId) {
     requirePermissions { updateObservation(observationId) }
+
     val observation = fetchObservationById(observationId)
+
+    if (observation.state == ObservationState.Completed ||
+        observation.state == ObservationState.Abandoned) {
+      throw ObservationAlreadyEndedException(observationId)
+    }
 
     val hasCompletedPlots =
         dslContext.fetchExists(
