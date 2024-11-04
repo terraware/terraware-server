@@ -262,13 +262,13 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
         sizeMeters: Int,
     ) {
       importSiteFromCsvFile(prefix, sizeMeters)
-      val summary0 = resultsStore.fetchSummaryForPlantingSite(plantingSiteId)
+      val summaryBeforeObservations = resultsStore.fetchSummaryForPlantingSite(plantingSiteId)
       val summaries =
           List(numObservations) {
             importObservationsCsv(prefix, numSpecies, it)
             resultsStore.fetchSummaryForPlantingSite(plantingSiteId)!!
           }
-      assertNull(summary0, "No observations made yet.")
+      assertNull(summaryBeforeObservations, "No observations made yet.")
       assertSummary(prefix, summaries)
     }
 
@@ -637,7 +637,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       }
     }
 
-    /** Function that imports plants based on bulk observation numbers */
+    /** Imports plants based on bulk observation numbers. */
     private fun importObservationsCsv(prefix: String, numSpecies: Int, observationNum: Int) {
       clock.instant = Instant.ofEpochSecond(observationNum.toLong())
 

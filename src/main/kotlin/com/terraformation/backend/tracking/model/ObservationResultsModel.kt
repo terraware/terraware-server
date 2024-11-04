@@ -118,15 +118,19 @@ data class ObservationMonitoringPlotResultsModel(
     val totalSpecies: Int,
 )
 
+/**
+ * Common values for monitoring results for different kinds of regions (subzones, planting zones,
+ * planting sites).
+ */
 interface BaseMonitoringResult {
   /**
-   * Estimated number of plants in planting zone based on estimated planting density and planting
-   * zone area. Only present if planting is completed.
+   * Estimated number of plants in the region based on estimated planting density and area. Only
+   * present if all observed subzones in the region have completed planting.
    */
   val estimatedPlants: Int?
 
   /**
-   * Percentage of plants of all species that were dead in this zone's permanent monitoring plots.
+   * Percentage of plants of all species that were dead in the region's permanent monitoring plots.
    * Dead plants from previous observations are counted in this percentage, but only live plants
    * from the current observation are counted. Existing plants are not counted because the intent is
    * to track the health of plants that were introduced to the site.
@@ -134,14 +138,14 @@ interface BaseMonitoringResult {
   val mortalityRate: Int
 
   /**
-   * Whether planting has completed. Planting is considered completed if all containing subzones has
-   * completed planting.
+   * Whether planting has completed. Planting is considered completed if all subzones in the region
+   * have completed planting.
    */
   val plantingCompleted: Boolean
 
   /**
-   * Estimated planting density for the zone based on the observed planting densities of monitoring
-   * plots. Only present if planting is completed.
+   * Estimated planting density for the region based on the observed planting densities of
+   * monitoring plots. Only present if planting is completed.
    */
   val plantingDensity: Int?
 }
@@ -202,9 +206,11 @@ data class ObservationResultsModel(
 
 data class ObservationPlantingZoneRollupResultsModel(
     val areaHa: BigDecimal,
-    /** Earliest and latest completed times of the observations used in this rollup. */
-    val completedTimeRange: Pair<Instant, Instant>,
+    /** Time when the earliest observation in this rollup was completed. */
+    val earliestCompletedTime: Instant,
     override val estimatedPlants: Int?,
+    /** Time when the latest observation in this rollup was completed. */
+    val latestCompletedTime: Instant,
     override val mortalityRate: Int,
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int?,
@@ -252,10 +258,9 @@ data class ObservationPlantingZoneRollupResultsModel(
 
       return ObservationPlantingZoneRollupResultsModel(
           areaHa = areaHa,
-          completedTimeRange =
-              nonNullSubzoneResults.minOf { it.completedTime!! } to
-                  nonNullSubzoneResults.maxOf { it.completedTime!! },
+          earliestCompletedTime = nonNullSubzoneResults.minOf { it.completedTime!! },
           estimatedPlants = estimatedPlants?.roundToInt(),
+          latestCompletedTime = nonNullSubzoneResults.maxOf { it.completedTime!! },
           mortalityRate = mortalityRate,
           plantingCompleted = plantingCompleted,
           plantingDensity = plantingDensity,
@@ -268,9 +273,11 @@ data class ObservationPlantingZoneRollupResultsModel(
 }
 
 data class ObservationRollupResultsModel(
-    /** Earliest and latest completed times of the observations used in this rollup. */
-    val completedTimeRange: Pair<Instant, Instant>,
+    /** Time when the earliest observation in this rollup was completed. */
+    val earliestCompletedTime: Instant,
     override val estimatedPlants: Int?,
+    /** Time when the latest observation in this rollup was completed. */
+    val latestCompletedTime: Instant,
     override val mortalityRate: Int,
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int?,
@@ -314,10 +321,9 @@ data class ObservationRollupResultsModel(
       val mortalityRate = monitoringPlotsSpecies.calculateMortalityRate()
 
       return ObservationRollupResultsModel(
-          completedTimeRange =
-              nonNullZoneResults.minOf { it.completedTimeRange.first } to
-                  nonNullZoneResults.maxOf { it.completedTimeRange.second },
+          earliestCompletedTime = nonNullZoneResults.minOf { it.earliestCompletedTime },
           estimatedPlants = estimatedPlants,
+          latestCompletedTime = nonNullZoneResults.maxOf { it.latestCompletedTime },
           mortalityRate = mortalityRate,
           plantingCompleted = plantingCompleted,
           plantingDensity = plantingDensity,

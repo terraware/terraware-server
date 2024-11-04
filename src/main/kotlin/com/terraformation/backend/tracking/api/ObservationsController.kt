@@ -666,8 +666,8 @@ data class ObservationPlantingSubzoneResultsPayload(
     val completedTime: Instant?,
     @Schema(
         description =
-            "Estimated number of plants in planting zone based on estimated planting density and " +
-                "planting zone area. Only present if the subzone has completed planting.")
+            "Estimated number of plants in planting subzone based on estimated planting density " +
+                "and subzone area. Only present if the subzone has completed planting.")
     val estimatedPlants: Int?,
     @Schema(
         description =
@@ -698,7 +698,8 @@ data class ObservationPlantingSubzoneResultsPayload(
 }
 
 data class ObservationPlantingZoneResultsPayload(
-    @Schema(description = "Area of this planting zone in hectares.") val areaHa: BigDecimal,
+    @Schema(description = "Area of this planting zone in hectares.") //
+    val areaHa: BigDecimal,
     val completedTime: Instant?,
     @Schema(
         description =
@@ -800,7 +801,8 @@ data class ObservationResultsPayload(
 }
 
 data class PlantingZoneObservationSummaryPayload(
-    @Schema(description = "Area of this planting zone in hectares.") val areaHa: BigDecimal,
+    @Schema(description = "Area of this planting zone in hectares.") //
+    val areaHa: BigDecimal,
     @Schema(description = "The earliest time of the observations used in this summary.")
     val earliestObservationTime: Instant,
     @Schema(
@@ -822,7 +824,7 @@ data class PlantingZoneObservationSummaryPayload(
                 "of monitoring plots. Only present if all the subzones in the zone have been " +
                 "marked as having completed planting.")
     val plantingDensity: Int?,
-    @Schema(description = "List of subzone observations used in this summary. ")
+    @Schema(description = "List of subzone observations used in this summary.")
     val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
     val plantingZoneId: PlantingZoneId,
 ) {
@@ -830,15 +832,13 @@ data class PlantingZoneObservationSummaryPayload(
       model: ObservationPlantingZoneRollupResultsModel
   ) : this(
       areaHa = model.areaHa,
-      earliestObservationTime = model.completedTimeRange.first,
+      earliestObservationTime = model.earliestCompletedTime,
       estimatedPlants = model.estimatedPlants,
-      latestObservationTime = model.completedTimeRange.second,
+      latestObservationTime = model.latestCompletedTime,
       mortalityRate = model.mortalityRate,
       plantingDensity = model.plantingDensity,
       plantingSubzones =
-          model.plantingSubzones.mapNotNull { subzone ->
-            subzone?.let { ObservationPlantingSubzoneResultsPayload(it) }
-          },
+          model.plantingSubzones.map { ObservationPlantingSubzoneResultsPayload(it) },
       plantingZoneId = model.plantingZoneId,
   )
 }
@@ -870,15 +870,12 @@ data class PlantingSiteObservationSummaryPayload(
   constructor(
       model: ObservationRollupResultsModel
   ) : this(
-      earliestObservationTime = model.completedTimeRange.first,
+      earliestObservationTime = model.earliestCompletedTime,
       estimatedPlants = model.estimatedPlants,
-      latestObservationTime = model.completedTimeRange.second,
+      latestObservationTime = model.latestCompletedTime,
       mortalityRate = model.mortalityRate,
       plantingDensity = model.plantingDensity,
-      plantingZones =
-          model.plantingZones.mapNotNull { zone ->
-            zone?.let { PlantingZoneObservationSummaryPayload(it) }
-          })
+      plantingZones = model.plantingZones.map { PlantingZoneObservationSummaryPayload(it) })
 }
 
 data class CompletePlotObservationRequestPayload(
@@ -936,7 +933,7 @@ data class ListObservationResultsResponsePayload(
 data class GetPlantingSiteObservationSummaryPayload(
     @Schema(
         description =
-            "Rollup summary of the planting site observations. Null if no observation has been made. ")
+            "Rollup summary of planting site observations. Null if no observation has been made.")
     val summary: PlantingSiteObservationSummaryPayload?,
 ) : SuccessResponsePayload
 
