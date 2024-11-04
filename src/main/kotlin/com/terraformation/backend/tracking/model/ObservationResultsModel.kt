@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservedPlotCoordinatesId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -66,12 +67,6 @@ data class ObservationSpeciesResultsModel(
     val totalPlants: Int,
 )
 
-enum class ObservationMonitoringPlotStatus {
-  Outstanding,
-  InProgress,
-  Completed
-}
-
 data class ObservationMonitoringPlotResultsModel(
     val boundary: Polygon,
     val claimedByName: String?,
@@ -104,7 +99,7 @@ data class ObservationMonitoringPlotResultsModel(
     val plantingDensity: Int,
     val sizeMeters: Int,
     val species: List<ObservationSpeciesResultsModel>,
-    val status: ObservationMonitoringPlotStatus,
+    val status: ObservationPlotStatus,
     /**
      * Total number of plants recorded. Includes all plants, regardless of live/dead status or
      * species.

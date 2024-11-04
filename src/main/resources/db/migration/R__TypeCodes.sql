@@ -332,11 +332,19 @@ VALUES (1, 'SouthwestCorner'),
        (4, 'NorthwestCorner')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO tracking.observation_plot_statuses (id, name)
+VALUES (1, 'Unclaimed'),
+       (2, 'Claimed'),
+       (3, 'Completed'),
+       (4, 'Not Observed')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO tracking.observation_states (id, name)
 VALUES (1, 'Upcoming'),
        (2, 'InProgress'),
        (3, 'Completed'),
-       (4, 'Overdue')
+       (4, 'Overdue'),
+       (5, 'Abandoned')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO organization_types (id, name)
