@@ -3102,25 +3102,29 @@ abstract class DatabaseBackedTest {
    * You will usually want one of the other variants of this that require fewer parameters.
    *
    * @param table The table whose contents should be examined.
-   * @param expected The set of records the table should contain.
+   * @param expected The records the table should contain. If the records' primary key fields are
+   *   null, the primary keys of the table records will be ignored.
    * @param message Assertion failure message; defaults to the table name.
    * @param where Optional query condition to assert on a subset of a table's contents. Only rows
    *   matching the condition will be considered.
-   * @param includePrimaryKeys If false, the primary key field(s) of the records from the database
-   *   will be cleared before comparing against [expected]. This can be used to ignore
-   *   database-generated IDs.
    * @param transform Function to apply to records from the database before comparing them to
    *   [expected]. Can be used to clear or hardwire specific fields that aren't relevant to the
    *   behavior being tested.
    */
   protected fun <R : UpdatableRecord<R>> assertTableEquals(
       table: Table<R>,
-      expected: Set<R>,
+      expected: Collection<R>,
       message: String = table.name,
       where: Condition? = null,
-      includePrimaryKeys: Boolean = true,
       transform: ((R) -> R)? = null,
   ) {
+    val sampleExpected = expected.firstOrNull()
+
+    // If the expected records have primary key values, then include primary keys in the records
+    // that get pulled from the database. This is not the Kotlin data class copy(), but the one from
+    // UpdatableRecord, which clears primary key fields.
+    val includePrimaryKeys = sampleExpected != sampleExpected?.copy()
+
     val actual =
         dslContext
             .selectFrom(table)
@@ -3131,36 +3135,32 @@ abstract class DatabaseBackedTest {
               if (includePrimaryKeys) {
                 transformed
               } else {
-                // This is not the Kotlin data class copy(), but the one from UpdatableRecord, which
-                // clears primary key fields.
+                // This is UpdatableRecord.copy(). which clears primary key fields.
                 transformed.copy()
               }
             }
-            .toSet()
+            .sorted()
 
-    assertEquals(expected, actual, message)
+    assertEquals(expected.sorted(), actual, message)
   }
 
   /**
    * Asserts that a table (or a filtered subset of it) contains an expected set of records and
    * nothing else.
    *
-   * @param expected The set of records the table should contain. Must be non-empty.
+   * @param expected The records the table should contain. Must be non-empty. If the records'
+   *   primary key fields are null, the primary keys of the table records will be ignored.
    * @param message Assertion failure message; defaults to the table name.
    * @param where Optional query condition to assert on a subset of a table's contents. Only rows
    *   matching the condition will be considered.
-   * @param includePrimaryKeys If false, the primary key field(s) of the records from the database
-   *   will be cleared before comparing against [expected]. This can be used to ignore
-   *   database-generated IDs.
    * @param transform Function to apply to records from the database before comparing them to
    *   [expected]. Can be used to clear or hardwire specific fields that aren't relevant to the
    *   behavior being tested.
    */
   protected fun <R : UpdatableRecord<R>> assertTableEquals(
-      expected: Set<R>,
+      expected: Collection<R>,
       message: String? = null,
       where: Condition? = null,
-      includePrimaryKeys: Boolean = true,
       transform: ((R) -> R)? = null,
   ) {
     val table =
@@ -3172,7 +3172,6 @@ abstract class DatabaseBackedTest {
         expected = expected,
         message = message ?: table.name,
         where = where,
-        includePrimaryKeys = includePrimaryKeys,
         transform = transform,
     )
   }
@@ -3180,13 +3179,11 @@ abstract class DatabaseBackedTest {
   /**
    * Asserts that a table (or a filtered subset of it) contains exactly one row.
    *
-   * @param expected The single row that the table should contain.
+   * @param expected The single record that the table should contain. If its primary key field(s)
+   *   are null, the primary keys of the table records will be ignored.
    * @param message Assertion failure message; defaults to the table name.
    * @param where Optional query condition to assert on a subset of a table's contents. Only rows
    *   matching the condition will be considered.
-   * @param includePrimaryKeys If false, the primary key field(s) of the records from the database
-   *   will be cleared before comparing against [expected]. This can be used to ignore
-   *   database-generated IDs.
    * @param transform Function to apply to records from the database before comparing them to
    *   [expected]. Can be used to clear or hardwire specific fields that aren't relevant to the
    *   behavior being tested.
@@ -3195,15 +3192,10 @@ abstract class DatabaseBackedTest {
       expected: R,
       message: String? = null,
       where: Condition? = null,
-      includePrimaryKeys: Boolean = true,
       transform: ((R) -> R)? = null,
   ) {
     assertTableEquals(
-        expected = setOf(expected),
-        message = message,
-        where = where,
-        includePrimaryKeys = includePrimaryKeys,
-        transform = transform)
+        expected = listOf(expected), message = message, where = where, transform = transform)
   }
 
   /**
