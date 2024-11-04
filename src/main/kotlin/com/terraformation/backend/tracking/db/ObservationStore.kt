@@ -583,27 +583,33 @@ class ObservationStore(
     val rowsUpdated =
         dslContext
             .update(OBSERVATION_PLOTS)
+            .set(OBSERVATION_PLOTS.STATUS_ID, ObservationPlotStatus.Claimed)
             .set(OBSERVATION_PLOTS.CLAIMED_BY, currentUser().userId)
             .set(OBSERVATION_PLOTS.CLAIMED_TIME, clock.instant())
             .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
             .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
             .and(
-                OBSERVATION_PLOTS.CLAIMED_BY.isNull.or(
-                    OBSERVATION_PLOTS.CLAIMED_BY.eq(currentUser().userId)))
+                OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Unclaimed)
+                    .or(
+                        OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Claimed)
+                            .and(OBSERVATION_PLOTS.CLAIMED_BY.eq(currentUser().userId))))
             .execute()
 
     if (rowsUpdated == 0) {
-      val plotAssignment =
+      val plotStatus =
           dslContext
-              .selectOne()
+              .select(OBSERVATION_PLOTS.STATUS_ID)
               .from(OBSERVATION_PLOTS)
               .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
               .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
-              .fetch()
-      if (plotAssignment.isEmpty()) {
+              .fetch { it[OBSERVATION_PLOTS.STATUS_ID]!! }
+      if (plotStatus.isEmpty()) {
         throw PlotNotInObservationException(observationId, monitoringPlotId)
       } else {
-        throw PlotAlreadyClaimedException(monitoringPlotId)
+        when (plotStatus.first()) {
+          ObservationPlotStatus.Claimed -> throw PlotAlreadyClaimedException(monitoringPlotId)
+          else -> throw PlotAlreadyCompletedException(monitoringPlotId)
+        }
       }
     }
   }
@@ -614,27 +620,31 @@ class ObservationStore(
     val rowsUpdated =
         dslContext
             .update(OBSERVATION_PLOTS)
+            .set(OBSERVATION_PLOTS.STATUS_ID, ObservationPlotStatus.Unclaimed)
             .setNull(OBSERVATION_PLOTS.CLAIMED_BY)
             .setNull(OBSERVATION_PLOTS.CLAIMED_TIME)
             .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
             .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+            .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Claimed))
             .and(OBSERVATION_PLOTS.CLAIMED_BY.eq(currentUser().userId))
             .execute()
 
     if (rowsUpdated == 0) {
-      val plotClaim =
+      val plotStatus =
           dslContext
-              .select(OBSERVATION_PLOTS.CLAIMED_BY)
+              .select(OBSERVATION_PLOTS.STATUS_ID)
               .from(OBSERVATION_PLOTS)
               .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
               .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
-              .fetch(OBSERVATION_PLOTS.CLAIMED_BY)
-      if (plotClaim.isEmpty()) {
+              .fetch { it[OBSERVATION_PLOTS.STATUS_ID]!! }
+      if (plotStatus.isEmpty()) {
         throw PlotNotInObservationException(observationId, monitoringPlotId)
-      } else if (plotClaim.first() == null) {
-        throw PlotNotClaimedException(monitoringPlotId)
       } else {
-        throw PlotAlreadyClaimedException(monitoringPlotId)
+        when (plotStatus.first()) {
+          ObservationPlotStatus.Unclaimed -> throw PlotNotClaimedException(monitoringPlotId)
+          ObservationPlotStatus.Claimed -> throw PlotAlreadyClaimedException(monitoringPlotId)
+          else -> throw PlotAlreadyCompletedException(monitoringPlotId)
+        }
       }
     }
   }
@@ -676,7 +686,8 @@ class ObservationStore(
               .fetchOneInto(ObservationPlotsRow::class.java)
               ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
 
-      if (observationPlotsRow.completedTime != null) {
+      if (observationPlotsRow.statusId == ObservationPlotStatus.Completed ||
+          observationPlotsRow.statusId == ObservationPlotStatus.NotObserved) {
         throw PlotAlreadyCompletedException(monitoringPlotId)
       }
 
@@ -710,7 +721,9 @@ class ObservationStore(
               completedBy = currentUser().userId,
               completedTime = clock.instant(),
               notes = notes,
-              observedTime = observedTime))
+              observedTime = observedTime,
+              statusId = ObservationPlotStatus.Completed,
+          ))
 
       val allPlotsCompleted =
           dslContext

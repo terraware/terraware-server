@@ -11,6 +11,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus.Dead
@@ -172,7 +173,11 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val monitoringPlotId12 =
           insertMonitoringPlot(boundary = polygon(2), fullName = "Z1-S1-2", name = "2")
       val claimedTime12 = Instant.ofEpochSecond(12)
-      insertObservationPlot(ObservationPlotsRow(claimedBy = userId1, claimedTime = claimedTime12))
+      insertObservationPlot(
+          ObservationPlotsRow(
+              claimedBy = userId1,
+              claimedTime = claimedTime12,
+              statusId = ObservationPlotStatus.Claimed))
 
       val plantingSubzoneId2 = insertPlantingSubzone(fullName = "Z1-S2", name = "S2")
 
@@ -189,7 +194,9 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               completedBy = userId1,
               completedTime = completedTime21,
               notes = "Some notes",
-              observedTime = observedTime21))
+              observedTime = observedTime21,
+              statusId = ObservationPlotStatus.Completed,
+          ))
 
       val expected =
           listOf(
@@ -854,13 +861,17 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       val row = observationPlotsDao.findAll().first()
 
+      assertEquals(ObservationPlotStatus.Claimed, row.statusId, "Plot status")
       assertEquals(user.userId, row.claimedBy, "Claimed by")
       assertEquals(clock.instant, row.claimedTime, "Claimed time")
     }
 
     @Test
     fun `updates claim time if plot is reclaimed by current claimant`() {
-      insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.Claimed)
 
       clock.instant = Instant.ofEpochSecond(2)
 
@@ -868,6 +879,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       val plotsRow = observationPlotsDao.findAll().first()
 
+      assertEquals(ObservationPlotStatus.Claimed, plotsRow.statusId, "Plot status is unchanged")
       assertEquals(user.userId, plotsRow.claimedBy, "Should remain claimed by user")
       assertEquals(clock.instant, plotsRow.claimedTime, "Claim time should be updated")
     }
@@ -876,9 +888,32 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if plot is claimed by someone else`() {
       val otherUserId = insertUser()
 
-      insertObservationPlot(claimedBy = otherUserId, claimedTime = Instant.EPOCH)
+      insertObservationPlot(
+          claimedBy = otherUserId,
+          claimedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.Claimed)
 
       assertThrows<PlotAlreadyClaimedException> { store.claimPlot(observationId, plotId) }
+    }
+
+    @Test
+    fun `throws exception if plot observation status is completed`() {
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.Completed)
+
+      assertThrows<PlotAlreadyCompletedException> { store.claimPlot(observationId, plotId) }
+    }
+
+    @Test
+    fun `throws exception if plot observation status is not observed`() {
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.NotObserved)
+
+      assertThrows<PlotAlreadyCompletedException> { store.claimPlot(observationId, plotId) }
     }
 
     @Test
@@ -911,12 +946,16 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `releases claim on plot`() {
-      insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.Claimed)
 
       store.releasePlot(observationId, plotId)
 
       val row = observationPlotsDao.findAll().first()
 
+      assertEquals(ObservationPlotStatus.Unclaimed, row.statusId, "Plot status")
       assertNull(row.claimedBy, "Claimed by")
       assertNull(row.claimedTime, "Claimed time")
     }
@@ -932,9 +971,32 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if plot is claimed by someone else`() {
       val otherUserId = insertUser()
 
-      insertObservationPlot(claimedBy = otherUserId, claimedTime = Instant.EPOCH)
+      insertObservationPlot(
+          claimedBy = otherUserId,
+          claimedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.Claimed)
 
       assertThrows<PlotAlreadyClaimedException> { store.releasePlot(observationId, plotId) }
+    }
+
+    @Test
+    fun `throws exception if plot observation status is completed`() {
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.Completed)
+
+      assertThrows<PlotAlreadyCompletedException> { store.releasePlot(observationId, plotId) }
+    }
+
+    @Test
+    fun `throws exception if plot observation status is not observed`() {
+      insertObservationPlot(
+          claimedBy = user.userId,
+          claimedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.NotObserved)
+
+      assertThrows<PlotAlreadyCompletedException> { store.releasePlot(observationId, plotId) }
     }
 
     @Test
@@ -1029,7 +1091,9 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                       completedBy = user.userId,
                       completedTime = clock.instant,
                       notes = "Notes",
-                      observedTime = observedTime)
+                      observedTime = observedTime,
+                      statusId = ObservationPlotStatus.Completed,
+                  )
                 } else {
                   row
                 }
@@ -1478,7 +1542,9 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               claimedTime = Instant.EPOCH,
               completedBy = user.userId,
               completedTime = Instant.EPOCH,
-              observedTime = Instant.EPOCH))
+              observedTime = Instant.EPOCH,
+              statusId = ObservationPlotStatus.Completed,
+          ))
 
       assertThrows<PlotAlreadyCompletedException> {
         store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, emptyList())
