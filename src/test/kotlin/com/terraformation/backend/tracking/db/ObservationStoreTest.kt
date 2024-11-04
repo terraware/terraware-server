@@ -833,7 +833,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception if no permission to update to update observation`() {
+    fun `throws exception if no permission to update observation`() {
       val observationId = insertObservation()
 
       every { user.canUpdateObservation(observationId) } returns false
