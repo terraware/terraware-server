@@ -23,6 +23,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
@@ -1080,8 +1081,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
           ObservationState.Upcoming, updatedObservation.state, "State should show as Upcoming")
       assertEquals(startDate, updatedObservation.startDate, "Start date should be updated")
       assertEquals(endDate, updatedObservation.endDate, "End date should be updated")
-      assertEquals(
-          emptyList<Any>(), observationPlotsDao.findAll(), "Observation plots should be removed")
+      assertTableEmpty(OBSERVATION_PLOTS, "Observation plots should be removed")
 
       eventPublisher.assertExactEventsPublished(
           setOf(ObservationRescheduledEvent(originalObservation, updatedObservation)))
@@ -1551,8 +1551,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(ReplacementResult(emptySet(), setOf(monitoringPlotId)), result)
 
-      assertEquals(
-          emptyList<Any>(), observationPlotsDao.findAll(), "Observation should not have any plots")
+      assertTableEmpty(OBSERVATION_PLOTS, "Observation should not have any plots")
     }
 
     @Test

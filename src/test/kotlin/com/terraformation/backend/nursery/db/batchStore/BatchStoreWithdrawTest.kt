@@ -9,6 +9,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRo
 import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
+import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
 import com.terraformation.backend.nursery.db.BatchInventoryInsufficientException
 import com.terraformation.backend.nursery.db.CrossOrganizationNurseryTransferNotAllowedException
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
@@ -217,10 +218,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
               "Should not have deducted withdrawn quantities from batch")
         },
         {
-          assertEquals(
-              emptyList<BatchQuantityHistoryRow>(),
-              batchQuantityHistoryDao.findAll(),
-              "Should not have inserted quantity history row")
+          assertTableEmpty(BATCH_QUANTITY_HISTORY, "Should not have inserted quantity history row")
         },
         {
           assertEquals(

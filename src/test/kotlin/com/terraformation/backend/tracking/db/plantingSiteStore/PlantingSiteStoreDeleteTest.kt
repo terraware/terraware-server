@@ -1,11 +1,19 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
+import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import io.mockk.every
 import java.time.Instant
-import org.jooq.DAO
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -34,20 +42,16 @@ internal class PlantingSiteStoreDeleteTest : PlantingSiteStoreTest() {
 
       store.deletePlantingSite(plantingSiteId)
 
-      fun assertAllDeleted(dao: DAO<*, *, *>) {
-        assertEquals(emptyList<Any>(), dao.findAll())
-      }
-
-      assertAllDeleted(plantingSitesDao)
-      assertAllDeleted(plantingZonesDao)
-      assertAllDeleted(plantingSubzonesDao)
-      assertAllDeleted(monitoringPlotsDao)
-      assertAllDeleted(deliveriesDao)
-      assertAllDeleted(plantingsDao)
-      assertAllDeleted(observationsDao)
-      assertAllDeleted(observationPlotsDao)
-      assertAllDeleted(observedPlotCoordinatesDao)
-      assertAllDeleted(recordedPlantsDao)
+      assertTableEmpty(PLANTING_SITES)
+      assertTableEmpty(PLANTING_ZONES)
+      assertTableEmpty(PLANTING_SUBZONES)
+      assertTableEmpty(MONITORING_PLOTS)
+      assertTableEmpty(DELIVERIES)
+      assertTableEmpty(PLANTINGS)
+      assertTableEmpty(OBSERVATIONS)
+      assertTableEmpty(OBSERVATION_PLOTS)
+      assertTableEmpty(OBSERVED_PLOT_COORDINATES)
+      assertTableEmpty(RECORDED_PLANTS)
 
       eventPublisher.assertEventPublished(PlantingSiteDeletionStartedEvent(plantingSiteId))
     }

@@ -6,6 +6,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
+import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.LocalDate
@@ -307,7 +308,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsUser {
 
       store.remove(inserted.cohortId, inserted.moduleId)
 
-      assertEquals(emptyList<CohortModulesRow>(), cohortModulesDao.findAll())
+      assertTableEmpty(COHORT_MODULES)
     }
   }
 }

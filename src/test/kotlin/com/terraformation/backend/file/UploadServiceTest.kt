@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadsRow
+import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.use
 import com.terraformation.backend.mockUser
@@ -94,7 +95,7 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
       service.receive(ByteArrayInputStream(ByteArray(1)), "test", "text/csv", UploadType.SpeciesCSV)
     }
 
-    assertEquals(emptyList<UploadsRow>(), uploadsDao.findAll())
+    assertTableEmpty(UPLOADS)
     verify { fileStore.delete(storageUrl) }
   }
 
@@ -106,7 +107,7 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
 
     service.delete(uploadId)
 
-    assertEquals(emptyList<UploadsRow>(), uploadsDao.findAll())
+    assertTableEmpty(UPLOADS)
     verifySequence { fileStore.delete(storageUrl) }
   }
 
@@ -118,7 +119,7 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
 
     service.delete(uploadId)
 
-    assertEquals(emptyList<UploadsRow>(), uploadsDao.findAll())
+    assertTableEmpty(UPLOADS)
   }
 
   @Test
@@ -162,7 +163,7 @@ internal class UploadServiceTest : DatabaseTest(), RunsAsUser {
 
     service.expireOldUploads(DailyTaskTimeArrivedEvent())
 
-    assertEquals(emptyList<UploadsRow>(), uploadsDao.findAll())
+    assertTableEmpty(UPLOADS)
   }
 
   @Test

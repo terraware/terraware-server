@@ -11,6 +11,7 @@ import com.terraformation.backend.db.docprod.VariableUsageType
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionDefaultValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_MANIFEST_ENTRIES
 import com.terraformation.backend.documentproducer.db.manifest.ManifestImporter
 import com.terraformation.backend.documentproducer.db.variable.VariableImporter
 import com.terraformation.backend.file.SizedInputStream
@@ -432,10 +433,7 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
                   "variable stable ID: 1001"),
           importResult.errors,
           "Import errors")
-      assertEquals(
-          emptyList<Any>(),
-          variableManifestEntriesDao.findAll(),
-          "Should not have imported bad manifest")
+      assertTableEmpty(VARIABLE_MANIFEST_ENTRIES, "Should not have imported bad manifest")
     }
 
     @Test

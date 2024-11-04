@@ -15,6 +15,7 @@ import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.pojos.EventProjectsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
+import com.terraformation.backend.db.accelerator.tables.references.EVENTS
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.net.URI
@@ -630,23 +631,14 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       val event1 = insertEvent()
       val event2 = insertEvent()
 
-      assertNotEquals(
-          emptyList<EventsRow>(),
-          eventsDao.findAll().isNotEmpty(),
-          "Events before deletion",
-      )
+      assertNotEquals(emptyList<EventsRow>(), eventsDao.findAll(), "Events before deletion")
       store.delete(event1)
       assertEquals(
           event2,
           eventsDao.findAll().firstOrNull()?.id,
-          "Events contain $event2 after one deletion",
-      )
+          "Events contain $event2 after one deletion")
       store.delete(event2)
-      assertEquals(
-          emptyList<EventsRow>(),
-          eventsDao.findAll(),
-          "Events after all deletions",
-      )
+      assertTableEmpty(EVENTS, "Events after all deletions")
     }
   }
 }

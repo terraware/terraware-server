@@ -9,6 +9,8 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzoneHistor
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZoneHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.model.CannotCreatePastPlantingSeasonException
@@ -68,11 +70,8 @@ internal class PlantingSiteStoreCreateSiteTest : PlantingSiteStoreTest() {
           plantingSitesDao.findAll(),
           "Planting sites")
 
-      assertEquals(
-          emptyList<PlantingSiteHistoriesRow>(),
-          plantingSiteHistoriesDao.findAll(),
-          "Planting site histories")
-      assertEquals(emptyList<PlantingZonesRow>(), plantingZonesDao.findAll(), "Planting zones")
+      assertTableEmpty(PLANTING_SITE_HISTORIES)
+      assertTableEmpty(PLANTING_ZONES)
     }
 
     @Test
@@ -105,7 +104,7 @@ internal class PlantingSiteStoreCreateSiteTest : PlantingSiteStoreTest() {
           plantingSitesDao.findAll(),
           "Planting sites")
 
-      assertEquals(emptyList<PlantingZonesRow>(), plantingZonesDao.findAll(), "Planting zones")
+      assertTableEmpty(PLANTING_ZONES)
     }
 
     @Test

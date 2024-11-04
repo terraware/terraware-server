@@ -25,6 +25,7 @@ import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
 import com.terraformation.backend.db.default_schema.tables.records.UserGlobalRolesRecord
 import com.terraformation.backend.db.default_schema.tables.records.UserPreferencesRecord
+import com.terraformation.backend.db.default_schema.tables.references.USER_GLOBAL_ROLES
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.i18n.Locales
@@ -881,7 +882,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       userStore.updateGlobalRoles(setOf(userId1, userId2), emptySet())
 
-      assertEquals(emptyList<Any>(), userGlobalRolesDao.findAll())
+      assertTableEmpty(USER_GLOBAL_ROLES)
     }
 
     @Test

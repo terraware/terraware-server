@@ -16,7 +16,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.UserType
-import com.terraformation.backend.db.default_schema.tables.pojos.NotificationsRow
+import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.time.ClockAdvancedEvent
@@ -87,10 +87,7 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
             .copy(nextNotificationTime = Instant.EPOCH + increment))
 
     scanner.sendNotifications()
-    assertEquals(
-        emptyList<NotificationsRow>(),
-        notificationsDao.findAll(),
-        "Should not have inserted notification before clock advanced")
+    assertTableEmpty(NOTIFICATIONS, "Should not have inserted notification before clock advanced")
 
     clock.instant = Instant.EPOCH + increment
 
@@ -135,7 +132,7 @@ class NotificationScannerTest : DatabaseTest(), RunsAsUser {
 
     scanner.sendNotifications()
 
-    assertEquals(emptyList<NotificationsRow>(), notificationsDao.findAll())
+    assertTableEmpty(NOTIFICATIONS)
   }
 
   @Test

@@ -9,14 +9,15 @@ import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
-import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
-import com.terraformation.backend.db.seedbank.tables.pojos.BagsRow
-import com.terraformation.backend.db.seedbank.tables.pojos.GeolocationsRow
-import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestResultsRow
-import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
-import com.terraformation.backend.db.seedbank.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.seedbank.tables.records.AccessionStateHistoryRecord
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_COLLECTORS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
+import com.terraformation.backend.db.seedbank.tables.references.BAGS
+import com.terraformation.backend.db.seedbank.tables.references.GEOLOCATIONS
+import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TESTS
+import com.terraformation.backend.db.seedbank.tables.references.VIABILITY_TEST_RESULTS
+import com.terraformation.backend.db.seedbank.tables.references.WITHDRAWALS
 import com.terraformation.backend.seedbank.api.AccessionStateV2
 import com.terraformation.backend.seedbank.api.CreateViabilityTestRequestPayload
 import com.terraformation.backend.seedbank.api.CreateWithdrawalRequestPayload
@@ -252,21 +253,19 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
 
     store.delete(accessionId)
 
-    assertEquals(
-        emptyList<AccessionCollectorsRow>(), accessionCollectorsDao.findAll(), "Collectors")
-    assertEquals(emptyList<AccessionsRow>(), accessionsDao.findAll(), "Accessions")
+    assertTableEmpty(ACCESSION_COLLECTORS)
+    assertTableEmpty(ACCESSIONS)
+    assertTableEmpty(BAGS)
+    assertTableEmpty(GEOLOCATIONS)
+    assertTableEmpty(VIABILITY_TESTS)
+    assertTableEmpty(VIABILITY_TEST_RESULTS)
+    assertTableEmpty(WITHDRAWALS)
+
+    // This table has no primary key, so can't use assertTableEmpty
     assertEquals(
         emptyList<AccessionStateHistoryRecord>(),
         dslContext.selectFrom(ACCESSION_STATE_HISTORY).fetch(),
         "Accession State History")
-    assertEquals(emptyList<BagsRow>(), bagsDao.findAll(), "Bags")
-    assertEquals(emptyList<GeolocationsRow>(), geolocationsDao.findAll(), "Geolocations")
-    assertEquals(emptyList<ViabilityTestsRow>(), viabilityTestsDao.findAll(), "Viability Tests")
-    assertEquals(
-        emptyList<ViabilityTestResultsRow>(),
-        viabilityTestResultsDao.findAll(),
-        "Viability test results")
-    assertEquals(emptyList<WithdrawalsRow>(), withdrawalsDao.findAll(), "Withdrawals")
   }
 
   @Test

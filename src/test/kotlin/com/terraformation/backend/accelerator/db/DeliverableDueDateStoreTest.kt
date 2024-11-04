@@ -5,6 +5,8 @@ import com.terraformation.backend.accelerator.model.DeliverableDueDateModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableCohortDueDatesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableProjectDueDatesRow
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_COHORT_DUE_DATES
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_PROJECT_DUE_DATES
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.LocalDate
@@ -306,10 +308,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
 
       store.deleteDeliverableCohortDueDate(inserted.deliverableId, inserted.cohortId)
 
-      assertEquals(
-          emptyList<DeliverableCohortDueDatesRow>(),
-          deliverableCohortDueDatesDao.findAll(),
-          "Row no longer exists after deletion")
+      assertTableEmpty(DELIVERABLE_COHORT_DUE_DATES, "Row no longer exists after deletion")
     }
 
     @Test
@@ -353,10 +352,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
 
       store.deleteDeliverableProjectDueDate(inserted.deliverableId, projectId)
 
-      assertEquals(
-          emptyList<DeliverableProjectDueDatesRow>(),
-          deliverableProjectDueDatesDao.findAll(),
-          "Row no longer exists after deletion")
+      assertTableEmpty(DELIVERABLE_PROJECT_DUE_DATES, "Row no longer exists after deletion")
     }
 
     @Test

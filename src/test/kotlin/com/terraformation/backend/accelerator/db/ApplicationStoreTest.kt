@@ -32,6 +32,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
 import com.terraformation.backend.db.accelerator.tables.records.ApplicationHistoriesRecord
 import com.terraformation.backend.db.accelerator.tables.records.ApplicationModulesRecord
 import com.terraformation.backend.db.accelerator.tables.records.ApplicationsRecord
+import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_HISTORIES
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -1025,10 +1026,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(initial, applicationsDao.findAll())
 
-      assertEquals(
-          emptyList<ApplicationHistoriesRow>(),
-          applicationHistoriesDao.findAll(),
-          "Should not have inserted any history rows")
+      assertTableEmpty(APPLICATION_HISTORIES, "Should not have inserted any history rows")
     }
 
     @Test
@@ -1506,10 +1504,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       val result = store.submit(applicationId)
       assertEquals(listOf(messages.applicationModulesIncomplete()), result.problems)
       assertEquals(initial, applicationsDao.findAll())
-      assertEquals(
-          emptyList<ApplicationHistoriesRow>(),
-          applicationHistoriesDao.findAll(),
-          "Should not have inserted any history rows")
+      assertTableEmpty(APPLICATION_HISTORIES, "Should not have inserted any history rows")
     }
 
     @Test
@@ -1550,10 +1545,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(initial, applicationsDao.findAll())
 
-      assertEquals(
-          emptyList<ApplicationHistoriesRow>(),
-          applicationHistoriesDao.findAll(),
-          "Should not have inserted any history rows")
+      assertTableEmpty(APPLICATION_HISTORIES, "Should not have inserted any history rows")
     }
 
     @Test

@@ -6,6 +6,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
+import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.util.ImageUtils
 import io.mockk.CapturingSlot
@@ -323,7 +324,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
     verify { fileStore.delete(rows[0].storageUrl!!) }
     verify { fileStore.delete(rows[1].storageUrl!!) }
 
-    assertEquals(emptyList<ThumbnailsRow>(), thumbnailsDao.findAll())
+    assertTableEmpty(THUMBNAILS)
   }
 
   @Test
@@ -350,7 +351,7 @@ internal class ThumbnailStoreTest : DatabaseTest(), RunsAsUser {
 
     verify { fileStore.delete(row.storageUrl!!) }
 
-    assertEquals(emptyList<ThumbnailsRow>(), thumbnailsDao.findAll())
+    assertTableEmpty(THUMBNAILS)
   }
 
   @Test
