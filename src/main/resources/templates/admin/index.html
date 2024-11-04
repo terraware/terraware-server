@@ -1,47 +1,207 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{/admin/header :: head}"/>
+<head th:replace="~{/admin/header :: head}">
+    <script th:fragment="additionalScript">
+        function rememberSectionExpansions() {
+            const detailsElements = document.querySelectorAll('details.section');
+            const detailsState = JSON.parse(localStorage.getItem('adminSectionsExpanded')) || {};
+
+            detailsElements.forEach(details => {
+                // Expand previously-expanded sections on initial load.
+                if (details.id in detailsState) {
+                    details.open = detailsState[details.id];
+                }
+
+                // As sections are toggled, update local storage to reflect their states.
+                details.addEventListener('toggle', () => {
+                    detailsState[details.id] = details.open;
+                    localStorage.setItem('adminSectionsExpanded', JSON.stringify(detailsState));
+                });
+            });
+        }
+
+        // Expand previously-opened sections on page load.
+        document.addEventListener('DOMContentLoaded', rememberSectionExpansions);
+    </script>
+
+    <style th:fragment="additionalStyle">
+        details.section {
+            margin-left: 32px;
+        }
+
+        details.section summary {
+            margin-top: 16px;
+            margin-left: -32px;
+            font-size: 18pt;
+            font-weight: bold;
+        }
+    </style>
+</head>
 <body>
 
 <span th:replace="~{/admin/header :: top}"/>
 
-<h2>Organizations</h2>
+<details id="organizations" class="section">
+    <summary>My Organizations</summary>
 
-<ul>
-    <li th:each="organization : ${organizations}">
-        <a th:href="|/admin/organization/${organization.id}|" th:text="${organization.name}">
-            Org name
-        </a>
-        <span th:text="|(${organization.id})|">(15)</span>
-    </li>
-</ul>
+    <ul>
+        <li th:each="organization : ${organizations}">
+            <a th:href="|/admin/organization/${organization.id}|" th:text="${organization.name}">
+                Org name
+            </a>
+            <span th:text="|(${organization.id})|">(15)</span>
+        </li>
+    </ul>
+</details>
 
-<div th:if="${canUpdateGlobalRoles}">
-    <h2>Global Roles</h2>
+<details id="accelerator" class="section">
+    <summary>Accelerator</summary>
+
+    <h3>Projects, Participants, Cohorts</h3>
+
+        <p th:if="${canManageParticipants}">
+            <a href="/admin/participants">Manage participants</a>
+        </p>
+        <p th:if="${canReadCohorts}">
+            <a href="/admin/cohorts">Manage cohorts</a>
+        </p>
+        <p th:if="${canManageDefaultProjectLeads}">
+            <a href="/admin/defaultProjectLeads">Manage default project leads for regions</a>
+        </p>
+        <p th:if="${canUpdateDefaultVoters}">
+            <a href="/admin/voters">Manage project voters</a>
+        </p>
+        <p th:if="${canImportGlobalSpeciesData}">
+            <a href="/admin/pdh">Import PDH data into Terraware</a>
+        </p>
+
+    <th:block th:if="${canManageModules}">
+        <h3>Modules and Deliverables</h3>
+
+        <p>
+            <a href="/admin/modules">Manage modules and deliverables</a>
+        </p>
+    </th:block>
+
+    <th:block th:if="${canManageDocumentProducer}">
+        <h3>Document Producer</h3>
+
+        <p>
+            <a href="/admin/document-producer">Manage Document Templates and Variables</a>
+        </p>
+    </th:block>
+</details>
+
+<details id="configuration" class="section">
+    <summary>
+        Configuration
+    </summary>
+
+    <th:block th:if="${canUpdateAppVersions}">
+        <h3>App Versions</h3>
+
+        <p>
+            <a href="/admin/appVersions">Update app versions</a>
+        </p>
+    </th:block>
+
+    <th:block th:if="${canUpdateGlobalRoles}">
+        <h3>Global Roles</h3>
+
+        <a href="/admin/globalRoles">Manage Global Roles</a>
+    </th:block>
+
+    <div th:if="${canImportGlobalSpeciesData}">
+        <h3>Import GBIF species data</h3>
+
+        <p>You can download the data
+            <a href="https://hosted-datasets.gbif.org/datasets/backbone/current/backbone.zip">here</a>.
+            Use a <code>file://</code> URL to load the data from a file on the server's local filesystem.
+        </p>
+
+        <form method="POST" enctype="multipart/form-data" action="importGbif">
+            <label for="gbifUrl">URL of backbone.zip</label>
+            <input id="gbifUrl" type="url" name="url" required />
+            <input type="submit" value="Import" />
+            (can take several minutes)
+        </form>
+    </div>
+
+    <th:block th:if="${canManageHubSpot}">
+        <h3>HubSpot Integration</h3>
+
+        <p>
+            <a href="/admin/hubSpot">Manage HubSpot integration</a>
+        </p>
+    </th:block>
+</details>
+
+<details id="testing" class="section" th:if="${canSetTestClock}">
+    <summary>Test Utilities</summary>
 
     <p>
-        <a href="/admin/globalRoles">Manage Global Roles</a>
+        <a href="/admin/testClock">Test clock adjustment</a>
     </p>
-</div>
+</details>
 
-<div th:if="${canImportGlobalSpeciesData}">
-    <h2>Import GBIF species data</h2>
+<details id="organizationManagement" class="section">
+    <summary>Organization Management</summary>
 
-    <p>You can download the data
-        <a href="https://hosted-datasets.gbif.org/datasets/backbone/current/backbone.zip">here</a>.
-        Use a <code>file://</code> URL to load the data from a file on the server's local filesystem.
-    </p>
+    <th:block th:if="${canManageInternalTags}">
+        <h2>Internal Tags</h2>
 
-    <form method="POST" enctype="multipart/form-data" action="importGbif">
-        <label for="gbifUrl">URL of backbone.zip</label>
-        <input id="gbifUrl" type="url" name="url" required />
-        <input type="submit" value="Import" />
-        (can take several minutes)
-    </form>
-</div>
+        <p>
+            <a href="/admin/internalTags">Manage internal tags</a>
+        </p>
+    </th:block>
 
-<th:block th:if="${canCreateDeviceManager}">
-    <h2>Device manager configuration</h2>
+    <th:block th:if="${canAddAnyOrganizationUser}">
+        <h2>Add Organization User</h2>
+
+        <p>
+            If the role is "Terraformation Contact" and the organization already has a Terraformation
+            contact, the existing contact will be replaced by the new one.
+        </p>
+
+        <form method="POST" action="/admin/addOrganizationUser">
+            <label for="addUserEmail">Email (user must already exist)</label>
+            <input id="addUserEmail" type="email" name="email" required />
+            <label for="addUserOrganizationId">Organization</label>
+            <select id="addUserOrganizationId" name="organizationId">
+                <option th:each="organization : ${allOrganizations}" th:value="${organization.id}"
+                        th:text="|${organization.name} (${organization.id})|">
+                    My Org (123)
+                </option>
+            </select>
+            <label for="addUserRole">Role</label>
+            <select id="addUserRole" name="role">
+                <option th:each="role : ${roles}"
+                        th:value="${role.first}"
+                        th:text="${role.second}"
+                        th:selected="${role.second} == 'Admin'">
+                    Some Role
+                </option>
+            </select>
+            <input type="submit" value="Add User"/>
+        </form>
+    </th:block>
+
+
+    <th:block th:if="${canDeleteUsers}">
+        <h2>Delete User</h2>
+
+        <form method="POST" action="/admin/users/delete">
+            <label for="deleteUserEmail">Email (user must already exist)</label>
+            <input id="deleteUserEmail" type="email" name="email" required />
+            <label for="deleteUserConfirm">Confirm for deleting user (This is irreversible)</label>
+            <input id="deleteUserConfirm" type="checkbox" name="confirm" />
+            <input type="submit" value="Delete User"/>
+        </form>
+    </th:block>
+</details>
+
+<details id="deviceManager" class="section" th:if="${canCreateDeviceManager}">
+    <summary>Device Manager</summary>
 
     <p>
         <a href="/admin/deviceManagers">Device Managers</a>
@@ -50,180 +210,52 @@
     <p th:if="${canUpdateDeviceTemplates}">
         <a href="/admin/deviceTemplates">Device Templates</a>
     </p>
-</th:block>
+</details>
 
-<th:block th:if="${canUpdateAppVersions}">
-    <h2>App Versions</h2>
+<details id="migrations" class="section">
+    <summary>Migrations</summary>
 
-    <p>
-        <a href="/admin/appVersions">Update app versions</a>
-    </p>
-</th:block>
+    <th:block th:if="${canCleanupApplicationDrive}">
+        <h3>Clean Up Application Google Drive</h3>
 
-<th:block th:if="${canSetTestClock}">
-    <h2>Test Utilities</h2>
+        <p>
+            This is a one-time operation to clean up any uploaded application project deliverable
+            submissions. This will ensure that each application has a Google drive folder with the
+            proper naming configuration, move every uploaded file to that folder, and rename each file
+            according to the naming convention.
+        </p>
 
-    <p>
-        <a href="/admin/testClock">Test clock adjustment</a>
-    </p>
-</th:block>
+        <form method="POST" action="/admin/applications/cleanUpDrive">
+            <input type="submit" value="Clean up Google drive"/>
+        </form>
+    </th:block>
 
-<th:block th:if="${canManageInternalTags}">
-    <h2>Internal Tags</h2>
+    <th:block th:if="${canMigrateAcceleratorProjectDetails}">
+        <h3>Migrate accelerator project details to variables</h3>
 
-    <p>
-        <a href="/admin/internalTags">Manage internal tags</a>
-    </p>
-</th:block>
+        <p>
+            This is a one-time operation to migrate existing project details from the table to
+            variables. This is necessary before deprecating those columns.
+        </p>
 
-<th:block th:if="${canAddAnyOrganizationUser}">
-    <h2>Add Organization User</h2>
+        <form method="POST" action="/admin/acceleratorProjects/migrateVariables">
+            <input type="submit" value="Migrate"/>
+        </form>
+    </th:block>
 
-    <p>
-        If the role is "Terraformation Contact" and the organization already has a Terraformation
-        contact, the existing contact will be replaced by the new one.
-    </p>
+    <th:block th:if="${canPopulatePlantingSiteCountries}">
+        <h3>Populate Planting Site Countries</h3>
 
-    <form method="POST" action="/admin/addOrganizationUser">
-        <label for="addUserEmail">Email (user must already exist)</label>
-        <input id="addUserEmail" type="email" name="email" required />
-        <label for="addUserOrganizationId">Organization</label>
-        <select id="addUserOrganizationId" name="organizationId">
-            <option th:each="organization : ${allOrganizations}" th:value="${organization.id}"
-                    th:text="|${organization.name} (${organization.id})|">
-                My Org (123)
-            </option>
-        </select>
-        <label for="addUserRole">Role</label>
-        <select id="addUserRole" name="role">
-            <option th:each="role : ${roles}"
-                    th:value="${role.first}"
-                    th:text="${role.second}"
-                    th:selected="${role.second} == 'Admin'">
-                Some Role
-            </option>
-        </select>
-        <input type="submit" value="Add User"/>
-    </form>
-</th:block>
+        <p>
+            This is a one-time operation to calculate the country codes of existing planting sites
+            based on their site boundaries.
+        </p>
 
-
-<th:block th:if="${canDeleteUsers}">
-    <h2>Delete User</h2>
-
-    <form method="POST" action="/admin/users/delete">
-        <label for="deleteUserEmail">Email (user must already exist)</label>
-        <input id="deleteUserEmail" type="email" name="email" required />
-        <label for="deleteUserConfirm">Confirm for deleting user (This is irreversible)</label>
-        <input id="deleteUserConfirm" type="checkbox" name="confirm" />
-        <input type="submit" value="Delete User"/>
-    </form>
-</th:block>
-
-<th:block th:if="${canManageParticipants}">
-    <h2>Participants</h2>
-
-    <p>
-        <a href="/admin/participants">Manage participants</a>
-    </p>
-</th:block>
-
-<th:block th:if="${canReadCohorts}">
-    <h2>Cohorts</h2>
-
-    <p>
-        <a href="/admin/cohorts">Manage cohorts</a>
-    </p>
-</th:block>
-
-<th:block th:if="${canManageModules}">
-    <h2>Modules and Deliverables</h2>
-
-    <p>
-        <a href="/admin/modules">Manage modules and deliverables</a>
-    </p>
-</th:block>
-
-<th:block th:if="${canUpdateDefaultVoters}">
-    <h2>Voters</h2>
-
-    <p>
-        <a href="/admin/voters">Manage Project Voters</a>
-    </p>
-</th:block>
-
-<th:block th:if="${canManageDocumentProducer}">
-    <h2>Document Producer</h2>
-
-    <p>
-        <a href="/admin/document-producer">Manage Document Templates and Variables</a>
-    </p>
-</th:block>
-
-<th:block th:if="${canManageDefaultProjectLeads}">
-    <h2>Default Project Leads</h2>
-
-    <p>
-        <a href="/admin/defaultProjectLeads">Manage default project leads for regions</a>
-    </p>
-</th:block>
-
-<th:block th:if="${canCleanupApplicationDrive}">
-    <h2>Clean Up Application Google Drive</h2>
-
-    <p>
-        This is a one-time operation to clean up any uploaded application project deliverable
-        submissions. This will ensure that each application has a Google drive folder with the
-        proper naming configuration, move every uploaded file to that folder, and rename each file
-        according to the naming convention.
-    </p>
-
-    <form method="POST" action="/admin/applications/cleanUpDrive">
-        <input type="submit" value="Clean up Google drive"/>
-    </form>
-</th:block>
-
-<th:block th:if="${canMigrateAcceleratorProjectDetails}">
-    <h2>Migrate accelerator project details to variables</h2>
-
-    <p>
-        This is a one-time operation to migrate existing project details from the table to
-        variables. This is necessary before deprecating those columns.
-    </p>
-
-    <form method="POST" action="/admin/acceleratorProjects/migrateVariables">
-        <input type="submit" value="Migrate"/>
-    </form>
-</th:block>
-
-<th:block th:if="${canPopulatePlantingSiteCountries}">
-    <h2>Populate Planting Site Countries</h2>
-
-    <p>
-        This is a one-time operation to calculate the country codes of existing planting sites
-        based on their site boundaries.
-    </p>
-
-    <form method="POST" action="/admin/plantingSite/populateCountries">
-        <input type="submit" value="Populate Countries"/>
-    </form>
-</th:block>
-
-<th:block th:if="${canImportGlobalSpeciesData}">
-    <h2>PDH Migration</h2>
-
-    <p>
-        <a href="/admin/pdh">Import PDH data into Terraware</a>
-    </p>
-</th:block>
-
-<th:block th:if="${canManageHubSpot}">
-    <h2>HubSpot Integration</h2>
-
-    <p>
-        <a href="/admin/hubSpot">Manage HubSpot integration</a>
-    </p>
-</th:block>
+        <form method="POST" action="/admin/plantingSite/populateCountries">
+            <input type="submit" value="Populate Countries"/>
+        </form>
+    </th:block>
+</details>
 
 </body>
 </html>
