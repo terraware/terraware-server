@@ -213,19 +213,6 @@
 <details id="migrations" class="section">
     <summary>Migrations</summary>
 
-    <th:block th:if="${canMigrateAcceleratorProjectDetails}">
-        <h3>Migrate accelerator project details to variables</h3>
-
-        <p>
-            This is a one-time operation to migrate existing project details from the table to
-            variables. This is necessary before deprecating those columns.
-        </p>
-
-        <form method="POST" action="/admin/acceleratorProjects/migrateVariables">
-            <input type="submit" value="Migrate"/>
-        </form>
-    </th:block>
-
     <th:block th:if="${canPopulatePlantingSiteCountries}">
         <h3>Populate Planting Site Countries</h3>
 
