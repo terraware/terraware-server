@@ -16,6 +16,7 @@ import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
+import com.terraformation.backend.db.accelerator.tables.records.ParticipantProjectSpeciesRecord
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.model.ExistingSpeciesModel
@@ -597,9 +598,9 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val userId = user.userId
       val now = Instant.EPOCH
 
-      assertEquals(
+      assertTableEquals(
           listOf(
-              ParticipantProjectSpeciesRow(
+              ParticipantProjectSpeciesRecord(
                   createdBy = userId,
                   createdTime = now,
                   feedback = null,
@@ -609,7 +610,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   rationale = null,
                   speciesId = speciesId1,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
-              ParticipantProjectSpeciesRow(
+              ParticipantProjectSpeciesRecord(
                   createdBy = userId,
                   createdTime = now,
                   feedback = null,
@@ -619,7 +620,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   rationale = null,
                   speciesId = speciesId2,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
-              ParticipantProjectSpeciesRow(
+              ParticipantProjectSpeciesRecord(
                   createdBy = userId,
                   createdTime = now,
                   feedback = null,
@@ -629,7 +630,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   rationale = null,
                   speciesId = speciesId1,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
-              ParticipantProjectSpeciesRow(
+              ParticipantProjectSpeciesRecord(
                   createdBy = userId,
                   createdTime = now,
                   feedback = null,
@@ -638,8 +639,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId2,
                   rationale = null,
                   speciesId = speciesId2,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)),
-          participantProjectSpeciesDao.findAll().map { it.copy(id = null) })
+                  submissionStatusId = SubmissionStatus.NotSubmitted)))
     }
   }
 
@@ -796,9 +796,9 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       // If the current user does not have permission to delete any entity in the list,
       // the entire delete fails and there are no changes
-      assertEquals(
+      assertTableEquals(
           listOf(
-              ParticipantProjectSpeciesRow(
+              ParticipantProjectSpeciesRecord(
                   createdBy = userId,
                   createdTime = now,
                   feedback = null,
@@ -811,7 +811,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   speciesId = speciesId1,
                   speciesNativeCategoryId = null,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
-              ParticipantProjectSpeciesRow(
+              ParticipantProjectSpeciesRecord(
                   createdBy = userId,
                   createdTime = now,
                   feedback = null,
@@ -823,8 +823,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   rationale = null,
                   speciesId = speciesId2,
                   speciesNativeCategoryId = null,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)),
-          participantProjectSpeciesDao.findAll())
+                  submissionStatusId = SubmissionStatus.NotSubmitted)))
     }
   }
 }

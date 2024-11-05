@@ -13,7 +13,6 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
-import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.db.accelerator.tables.records.ParticipantProjectSpeciesRecord
 import com.terraformation.backend.db.accelerator.tables.records.SubmissionsRecord
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
@@ -199,9 +198,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       val userId = currentUser().userId
       val now = clock.instant
 
-      assertEquals(
+      assertTableEquals(
           listOf(
-              SubmissionsRow(
+              SubmissionsRecord(
                   createdBy = userId,
                   createdTime = now,
                   deliverableId = deliverableId,
@@ -209,15 +208,14 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                   modifiedTime = now,
                   projectId = projectId1,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
-              SubmissionsRow(
+              SubmissionsRecord(
                   createdBy = userId,
                   createdTime = now,
                   deliverableId = deliverableId,
                   modifiedBy = userId,
                   modifiedTime = now,
                   projectId = projectId2,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)),
-          submissionsDao.fetchByDeliverableId(deliverableId).map { it.copy(id = null) })
+                  submissionStatusId = SubmissionStatus.NotSubmitted)))
 
       eventPublisher.assertEventsPublished(
           existingModels.toSet().map {
@@ -276,9 +274,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       val userId = currentUser().userId
       val now = clock.instant
 
-      assertEquals(
+      assertTableEquals(
           listOf(
-              SubmissionsRow(
+              SubmissionsRecord(
                   createdBy = userId,
                   createdTime = now,
                   deliverableId = deliverableIdMostRecent,
@@ -286,15 +284,14 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
                   modifiedTime = now,
                   projectId = projectId1,
                   submissionStatusId = SubmissionStatus.NotSubmitted),
-              SubmissionsRow(
+              SubmissionsRecord(
                   createdBy = userId,
                   createdTime = now,
                   deliverableId = deliverableIdMostRecent,
                   modifiedBy = userId,
                   modifiedTime = now,
                   projectId = projectId2,
-                  submissionStatusId = SubmissionStatus.NotSubmitted)),
-          submissionsDao.fetchByDeliverableId(deliverableIdMostRecent).map { it.copy(id = null) })
+                  submissionStatusId = SubmissionStatus.NotSubmitted)))
 
       eventPublisher.assertEventsPublished(
           existingModels.toSet().map {

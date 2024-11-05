@@ -23,6 +23,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
+import com.terraformation.backend.db.default_schema.tables.records.UserGlobalRolesRecord
 import com.terraformation.backend.db.default_schema.tables.records.UserPreferencesRecord
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.dummyKeycloakInfo
@@ -865,11 +866,10 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       userStore.updateGlobalRoles(setOf(userId1, userId2), setOf(GlobalRole.SuperAdmin))
 
-      assertEquals(
+      assertTableEquals(
           listOf(
-              UserGlobalRolesRow(userId = userId1, globalRoleId = GlobalRole.SuperAdmin),
-              UserGlobalRolesRow(userId = userId2, globalRoleId = GlobalRole.SuperAdmin)),
-          userGlobalRolesDao.findAll())
+              UserGlobalRolesRecord(userId = userId1, globalRoleId = GlobalRole.SuperAdmin),
+              UserGlobalRolesRecord(userId = userId2, globalRoleId = GlobalRole.SuperAdmin)))
     }
 
     @Test
