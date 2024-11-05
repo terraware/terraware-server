@@ -7,6 +7,8 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
+import com.terraformation.backend.db.docprod.tables.records.VariableWorkflowHistoryRecord
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_WORKFLOW_HISTORY
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableReviewedEvent
 import com.terraformation.backend.documentproducer.model.ExistingVariableWorkflowHistoryModel
 import com.terraformation.backend.mockUser
@@ -18,6 +20,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.security.access.AccessDeniedException
 
 class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
@@ -279,7 +283,7 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class PublishEvent {
+  inner class Update {
     @Test
     fun `publishes event for the first workflow action`() {
       store.update(
@@ -358,6 +362,64 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
       )
 
       eventPublisher.assertEventNotPublished<QuestionsDeliverableReviewedEvent>()
+    }
+
+    @Test
+    fun `allows non-admin to set status to In Review`() {
+      val variableId = inserted.variableId
+      val variableValueId = insertValue(variableId = variableId)
+      val existingHistoryId =
+          insertVariableWorkflowHistory(
+              feedback = "Lazy answer! Do better next time",
+              status = VariableWorkflowStatus.Rejected)
+
+      every { user.canUpdateInternalVariableWorkflowDetails(inserted.projectId) } returns false
+      every { user.canUpdateProject(inserted.projectId) } returns true
+
+      store.update(
+          projectId = inserted.projectId,
+          variableId = variableId,
+          status = VariableWorkflowStatus.InReview,
+          feedback = null,
+          internalComment = null,
+      )
+
+      val expected =
+          listOf(
+              VariableWorkflowHistoryRecord(
+                  createdBy = user.userId,
+                  createdTime = clock.instant,
+                  feedback = null,
+                  internalComment = null,
+                  maxVariableValueId = variableValueId,
+                  projectId = inserted.projectId,
+                  variableWorkflowStatusId = VariableWorkflowStatus.InReview,
+                  variableId = variableId,
+              ))
+
+      assertTableEquals(expected, where = VARIABLE_WORKFLOW_HISTORY.ID.ne(existingHistoryId))
+    }
+
+    @EnumSource(mode = EnumSource.Mode.EXCLUDE, names = ["InReview"])
+    @ParameterizedTest
+    fun `throws exception if non-admin tries to set status to something other than In Review`(
+        status: VariableWorkflowStatus
+    ) {
+      val variableId = inserted.variableId
+      insertVariableWorkflowHistory(status = VariableWorkflowStatus.InReview)
+
+      every { user.canUpdateInternalVariableWorkflowDetails(inserted.projectId) } returns false
+      every { user.canUpdateProject(inserted.projectId) } returns true
+
+      assertThrows<AccessDeniedException> {
+        store.update(
+            projectId = inserted.projectId,
+            variableId = variableId,
+            status = status,
+            feedback = null,
+            internalComment = null,
+        )
+      }
     }
   }
 }

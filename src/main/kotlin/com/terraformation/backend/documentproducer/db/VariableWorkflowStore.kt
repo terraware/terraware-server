@@ -83,7 +83,15 @@ class VariableWorkflowStore(
       feedback: String?,
       internalComment: String?,
   ): ExistingVariableWorkflowHistoryModel {
-    requirePermissions { updateInternalVariableWorkflowDetails(projectId) }
+    requirePermissions {
+      if (status == VariableWorkflowStatus.InReview) {
+        // Non-admins editing a variable causes its status to reset to In Review.
+        updateProject(projectId)
+      } else {
+        // Other statuses can only be set by admins.
+        updateInternalVariableWorkflowDetails(projectId)
+      }
+    }
 
     if (!dslContext.fetchExists(PROJECTS, PROJECTS.ID.eq(projectId))) {
       throw ProjectNotFoundException(projectId)
