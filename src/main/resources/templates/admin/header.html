@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:fragment="head">
     <title>
-        Terraware Server Placeholder Admin UI
+        Terraware Administration
     </title>
 
     <th:block th:replace="~{::additionalScript} ?: ~{}"/>
@@ -28,7 +28,7 @@
 
 <span th:fragment="top">
 
-<h1>Placeholder Admin UI</h1>
+<h1>Terraware Administration</h1>
 
 <div style="background-color: lightgreen;" th:if="${!#strings.isEmpty(successMessage)}">
     <th:block th:text="${successMessage}"/>
