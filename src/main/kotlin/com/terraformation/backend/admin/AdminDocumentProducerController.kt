@@ -27,13 +27,7 @@ class AdminDocumentProducerController(
     private val manifestImporter: ManifestImporter,
     private val variableService: VariableService,
 ) {
-  /** Redirects /admin to /admin/ so relative URLs in the UI will work. */
   @GetMapping
-  fun redirectToTrailingSlash(): String {
-    return documentProducerAdminHome()
-  }
-
-  @GetMapping("/")
   fun getIndex(model: Model): String {
     model.addAttribute("documentTemplates", documentTemplatesDao.findAll().sortedBy { it.id })
 
@@ -55,7 +49,7 @@ class AdminDocumentProducerController(
       redirectAttributes.failureMessage = "Failed to add document template: ${e.message}"
     }
 
-    return documentProducerAdminHome()
+    return redirectToDocumentProducer()
   }
 
   @PostMapping("/upgradeAllVariables")
@@ -67,7 +61,7 @@ class AdminDocumentProducerController(
       redirectAttributes.failureMessage = "Failed to upgrade: ${e.message}"
     }
 
-    return documentProducerAdminHome()
+    return redirectToDocumentProducer()
   }
 
   @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], path = ["/uploadAllVariables"])
@@ -89,7 +83,7 @@ class AdminDocumentProducerController(
       redirectAttributes.failureMessage = "Error attempting to import variables: $e"
     }
 
-    return documentProducerAdminHome()
+    return redirectToDocumentProducer()
   }
 
   @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE], path = ["/uploadManifest"])
@@ -103,7 +97,6 @@ class AdminDocumentProducerController(
       documentTemplateIdString: String,
       redirectAttributes: RedirectAttributes,
   ): String {
-    val fileName = file.originalFilename ?: "manifest.csv"
     val documentTemplateId = DocumentTemplateId(documentTemplateIdString.toLong())
 
     try {
@@ -120,38 +113,8 @@ class AdminDocumentProducerController(
       redirectAttributes.failureMessage = "Error attempting to import manifest: $e"
     }
 
-    return documentProducerAdminHome()
+    return redirectToDocumentProducer()
   }
 
-  private var RedirectAttributes.failureMessage: String?
-    get() = flashAttributes["failureMessage"]?.toString()
-    set(value) {
-      addFlashAttribute("failureMessage", value)
-    }
-
-  private var RedirectAttributes.failureDetails: List<String>?
-    get() {
-      val attribute = flashAttributes["failureDetails"]
-      return if (attribute is List<*>) {
-        attribute.map { "$it" }
-      } else {
-        null
-      }
-    }
-    set(value) {
-      addFlashAttribute("failureDetails", value)
-    }
-
-  private var RedirectAttributes.successMessage: String?
-    get() = flashAttributes["successMessage"]?.toString()
-    set(value) {
-      addFlashAttribute("successMessage", value)
-    }
-
-  /** Returns a redirect view name for an admin endpoint. */
-  private fun redirect(endpoint: String) = "redirect:/admin$endpoint"
-
-  // Convenience methods to redirect to the GET endpoint for each kind of thing.
-
-  private fun documentProducerAdminHome() = redirect("/document-producer/")
+  private fun redirectToDocumentProducer() = "redirect:/admin/document-producer"
 }
