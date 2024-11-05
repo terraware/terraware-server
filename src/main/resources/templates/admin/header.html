@@ -5,22 +5,10 @@
         Terraware Administration
     </title>
 
+    <script src="/admin/admin.js" type="application/javascript"></script>
+    <link href="/admin/admin.css" rel="stylesheet" />
+
     <th:block th:replace="~{::additionalScript} ?: ~{}"/>
-
-    <style>
-        input {
-            margin-top: 4px;
-        }
-
-        select {
-            margin-top: 4px;
-        }
-
-        tr.striped:nth-child(even) {
-            background-color: lightgray;
-        }
-    </style>
-
     <th:block th:replace="~{::additionalStyle} ?: ~{}"/>
 </head>
 

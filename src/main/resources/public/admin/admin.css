@@ -1,0 +1,22 @@
+details.section {
+    margin-left: 32px;
+}
+
+details.section summary {
+    margin-top: 16px;
+    margin-left: -32px;
+    font-size: 18pt;
+    font-weight: bold;
+}
+
+input {
+    margin-top: 4px;
+}
+
+select {
+    margin-top: 4px;
+}
+
+tr.striped:nth-child(even) {
+    background-color: lightgray;
+}
