@@ -49,7 +49,7 @@ class DeliverableFilesRenamer(
     }
   }
 
-  fun createOrUpdateGoogleDriveFolder(projectId: ProjectId, fileNaming: String) {
+  private fun createOrUpdateGoogleDriveFolder(projectId: ProjectId, fileNaming: String) {
     val projectDetails = projectAcceleratorDetailsStore.fetchOneById(projectId)
     val folderUrl =
         if (projectDetails.googleFolderUrl != null) {
