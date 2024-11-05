@@ -1,3 +1,4 @@
+c3b5abbb4be SW-6182 Populate planting site countries as system user (#2565)
 6221bde556d SW-6218 Implemented feature to abandon an observation (#2562)
 731d09c771b Updated observation store to change stauts on claim/release/complete (#2561)
 a86e686f0be Improve assertTableEquals usability (#2567)
