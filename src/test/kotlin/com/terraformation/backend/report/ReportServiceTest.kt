@@ -30,6 +30,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
@@ -577,7 +578,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       service.createMissingReports(DailyTaskTimeArrivedEvent())
 
-      assertEquals(emptyList<Any>(), reportsDao.findAll())
+      assertTableEmpty(REPORTS)
     }
   }
 

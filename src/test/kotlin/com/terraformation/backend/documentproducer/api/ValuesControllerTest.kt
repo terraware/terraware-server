@@ -9,7 +9,7 @@ import com.terraformation.backend.db.default_schema.tables.references.USER_GLOBA
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.db.docprod.tables.pojos.VariableImageValuesRow
-import com.terraformation.backend.db.docprod.tables.pojos.VariableValuesRow
+import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.UUID
@@ -674,10 +674,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
 
       mockMvc.post(path()) { content = payload }.andExpect { status { isBadRequest() } }
 
-      assertEquals(
-          emptyList<VariableValuesRow>(),
-          variableValuesDao.findAll(),
-          "Should not have stored invalid value")
+      assertTableEmpty(VARIABLE_VALUES, "Should not have stored invalid value")
     }
 
     @Test

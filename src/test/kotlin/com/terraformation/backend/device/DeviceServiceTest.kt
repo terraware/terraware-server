@@ -17,6 +17,8 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.tables.pojos.AutomationsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceTemplatesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
+import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
+import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.i18n.Messages
@@ -150,7 +152,7 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
             deviceType = "random",
             make = "company",
             model = "product"))
-    assertEquals(emptyList<AutomationsRow>(), automationsDao.findAll())
+    assertTableEmpty(AUTOMATIONS)
   }
 
   @Test
@@ -225,7 +227,7 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
 
     assertThrows<AccessDeniedException> { service.create(omniSenseRow.copy(name = "Fridge 1")) }
 
-    assertEquals(emptyList<DevicesRow>(), devicesDao.findAll())
+    assertTableEmpty(DEVICES)
     assertAutomationConfigsEqual(emptySet())
   }
 
@@ -297,7 +299,7 @@ internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
 
     service.createDefaultDevices(desalFacilityId)
 
-    assertEquals(emptyList<DevicesRow>(), devicesDao.findAll())
+    assertTableEmpty(DEVICES)
   }
 
   @Test

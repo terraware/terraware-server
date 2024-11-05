@@ -4,7 +4,8 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
-import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
+import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
 import com.terraformation.backend.nursery.event.WithdrawalDeletionStartedEvent
 import com.terraformation.backend.nursery.model.SpeciesSummary
@@ -37,8 +38,8 @@ internal class BatchStoreDeleteBatchTest : BatchStoreTest() {
 
     store.delete(batchId)
 
-    assertEquals(emptyList<BatchesRow>(), batchesDao.findAll(), "Batches")
-    assertEquals(emptyList<BatchQuantityHistoryRow>(), batchQuantityHistoryDao.findAll(), "History")
+    assertTableEmpty(BATCHES)
+    assertTableEmpty(BATCH_QUANTITY_HISTORY)
   }
 
   @Test

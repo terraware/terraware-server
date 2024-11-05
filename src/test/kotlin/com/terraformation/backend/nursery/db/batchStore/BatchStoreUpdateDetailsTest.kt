@@ -9,6 +9,8 @@ import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistoryRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchDetailsHistorySubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
+import com.terraformation.backend.db.nursery.tables.references.BATCH_DETAILS_HISTORY
+import com.terraformation.backend.db.nursery.tables.references.BATCH_SUB_LOCATIONS
 import com.terraformation.backend.nursery.db.BatchStaleException
 import java.time.Instant
 import java.time.LocalDate
@@ -120,7 +122,7 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
   fun `does not insert details history entry if nothing was edited`() {
     store.updateDetails(batchId, 1) { it }
 
-    assertEquals(emptyList<Any>(), batchDetailsHistoryDao.findAll())
+    assertTableEmpty(BATCH_DETAILS_HISTORY)
   }
 
   @Test
@@ -141,8 +143,7 @@ internal class BatchStoreUpdateDetailsTest : BatchStoreTest() {
             readyByDate = null,
             version = 2),
         after)
-    assertEquals(
-        emptyList<Any>(), batchSubLocationsDao.findAll(), "Should have removed sub-locations")
+    assertTableEmpty(BATCH_SUB_LOCATIONS, "Should have removed sub-locations")
   }
 
   @Test

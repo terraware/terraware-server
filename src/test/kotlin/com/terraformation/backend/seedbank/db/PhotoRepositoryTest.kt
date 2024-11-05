@@ -10,8 +10,10 @@ import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
+import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionPhotosRow
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.PathGenerator
@@ -264,8 +266,8 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
       assertThrows<NoSuchFileException>("$url should be deleted") { fileStore.size(url) }
     }
 
-    assertEquals(emptyList<AccessionPhotosRow>(), accessionPhotosDao.findAll(), "Accession photos")
-    assertEquals(emptyList<FilesRow>(), filesDao.findAll(), "Photos")
+    assertTableEmpty(ACCESSION_PHOTOS)
+    assertTableEmpty(FILES)
   }
 
   @Test

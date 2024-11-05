@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.tables.pojos.DefaultVotersRow
 import com.terraformation.backend.db.accelerator.tables.records.DefaultVotersRecord
+import com.terraformation.backend.db.accelerator.tables.references.DEFAULT_VOTERS
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -120,7 +121,7 @@ class DefaultVoterStoreTest : DatabaseTest(), RunsAsUser {
       insertDefaultVoter(userId)
       store.delete(userId)
 
-      assertEquals(emptyList<DefaultVotersRow>(), defaultVotersDao.findAll())
+      assertTableEmpty(DEFAULT_VOTERS)
     }
 
     @Test

@@ -14,6 +14,7 @@ import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionQuantityHistoryRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_QUANTITY_HISTORY
 import com.terraformation.backend.seedbank.api.AccessionStateV2
 import com.terraformation.backend.seedbank.api.CreateAccessionRequestPayloadV2
 import com.terraformation.backend.seedbank.model.AccessionModel
@@ -153,7 +154,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
   fun `create does not insert quantity history row if quantity is not specified`() {
     store.create(accessionModel())
 
-    assertEquals(emptyList<AccessionQuantityHistoryRow>(), accessionQuantityHistoryDao.findAll())
+    assertTableEmpty(ACCESSION_QUANTITY_HISTORY)
   }
 
   @Test

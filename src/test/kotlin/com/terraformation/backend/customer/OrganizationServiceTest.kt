@@ -26,6 +26,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationUsersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
 import com.terraformation.backend.db.default_schema.tables.records.OrganizationUsersRecord
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.mockUser
@@ -227,10 +228,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
     // Now run the job that was just enqueued.
     slot.captured.accept(service)
 
-    assertEquals(
-        emptyList<OrganizationsRow>(),
-        organizationsDao.findAll(),
-        "Scheduled job should have deleted organization")
+    assertTableEmpty(ORGANIZATIONS, "Scheduled job should have deleted organization")
 
     publisher.assertEventPublished(OrganizationDeletionStartedEvent(organizationId))
   }

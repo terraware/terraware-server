@@ -13,6 +13,8 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportFilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ReportPhotosRow
+import com.terraformation.backend.db.default_schema.tables.references.REPORT_FILES
+import com.terraformation.backend.db.default_schema.tables.references.REPORT_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
@@ -99,8 +101,8 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       service.on(ReportDeletionStartedEvent(reportId))
 
-      assertEquals(emptyList<ReportPhotosRow>(), reportPhotosDao.findAll(), "Report photos")
-      assertEquals(emptyList<ReportFilesRow>(), reportFilesDao.findAll(), "Report files")
+      assertTableEmpty(REPORT_PHOTOS)
+      assertTableEmpty(REPORT_FILES)
 
       storageUrls.forEach { verify { fileStore.delete(it) } }
       confirmVerified(fileStore)

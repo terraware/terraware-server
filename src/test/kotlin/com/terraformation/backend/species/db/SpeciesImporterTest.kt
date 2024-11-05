@@ -21,6 +21,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesGrowthFo
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UploadProblemsRow
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
+import com.terraformation.backend.db.default_schema.tables.references.UPLOAD_PROBLEMS
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.UploadService
@@ -138,7 +139,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.validateCsv(uploadId)
 
-      assertEquals(emptyList<UploadProblemsRow>(), uploadProblemsDao.findAll())
+      assertTableEmpty(UPLOAD_PROBLEMS)
     }
   }
 
@@ -256,7 +257,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     importer.validateCsv(uploadId)
 
-    assertEquals(emptyList<UploadProblemsRow>(), uploadProblemsDao.findAll(), "Upload problems")
+    assertTableEmpty(UPLOAD_PROBLEMS)
     assertStatus(UploadStatus.AwaitingProcessing)
   }
 
@@ -295,7 +296,7 @@ internal class SpeciesImporterTest : DatabaseTest(), RunsAsUser {
 
     importer.validateCsv(uploadId)
 
-    assertEquals(emptyList<UploadProblemsRow>(), uploadProblemsDao.findAll(), "Upload problems")
+    assertTableEmpty(UPLOAD_PROBLEMS)
     assertStatus(UploadStatus.AwaitingProcessing)
     verify { scheduler.enqueue<SpeciesImporter>(any()) }
   }

@@ -9,6 +9,7 @@ import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchPhotosRow
 import com.terraformation.backend.file.FileService
@@ -182,7 +183,7 @@ internal class BatchPhotoServiceTest : DatabaseTest(), RunsAsUser {
       clock.instant = deletedTime
       service.deletePhoto(batchId, fileId)
 
-      assertEquals(emptyList<Any>(), filesDao.findAll())
+      assertTableEmpty(FILES)
       assertEquals(
           listOf(
               BatchPhotosRow(

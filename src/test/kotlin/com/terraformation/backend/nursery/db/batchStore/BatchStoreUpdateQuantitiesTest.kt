@@ -3,6 +3,7 @@ package com.terraformation.backend.nursery.db.batchStore
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
+import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
 import com.terraformation.backend.nursery.db.BatchStaleException
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -121,7 +122,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
         historyType = BatchQuantityHistoryType.Observed)
 
     assertEquals(before, batchesDao.fetchOneById(batchId))
-    assertEquals(emptyList<Any>(), batchQuantityHistoryDao.findAll(), "Quantity history")
+    assertTableEmpty(BATCH_QUANTITY_HISTORY)
   }
 
   @Test

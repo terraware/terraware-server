@@ -30,6 +30,7 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionQuantityHist
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionStateHistoryRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.GeolocationsRow
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
@@ -1041,7 +1042,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.importCsv(uploadId, true)
 
-      assertEquals(emptyList<AccessionsRow>(), accessionsDao.findAll())
+      assertTableEmpty(ACCESSIONS)
     }
 
     @Test
