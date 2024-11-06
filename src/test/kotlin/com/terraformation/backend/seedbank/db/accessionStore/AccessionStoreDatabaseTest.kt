@@ -9,7 +9,6 @@ import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionCollectorsRow
-import com.terraformation.backend.db.seedbank.tables.records.AccessionStateHistoryRecord
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_COLLECTORS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
@@ -254,18 +253,13 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     store.delete(accessionId)
 
     assertTableEmpty(ACCESSION_COLLECTORS)
+    assertTableEmpty(ACCESSION_STATE_HISTORY)
     assertTableEmpty(ACCESSIONS)
     assertTableEmpty(BAGS)
     assertTableEmpty(GEOLOCATIONS)
     assertTableEmpty(VIABILITY_TESTS)
     assertTableEmpty(VIABILITY_TEST_RESULTS)
     assertTableEmpty(WITHDRAWALS)
-
-    // This table has no primary key, so can't use assertTableEmpty
-    assertEquals(
-        emptyList<AccessionStateHistoryRecord>(),
-        dslContext.selectFrom(ACCESSION_STATE_HISTORY).fetch(),
-        "Accession State History")
   }
 
   @Test
