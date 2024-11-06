@@ -8,12 +8,10 @@ import com.terraformation.backend.accelerator.model.toModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortId
-import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
-import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.asNonNullable
 import jakarta.inject.Named
@@ -54,22 +52,6 @@ class CohortStore(
     }
 
     return cohort
-  }
-
-  fun findByModule(
-      moduleId: ModuleId,
-      cohortDepth: CohortDepth = CohortDepth.Cohort,
-  ): List<ExistingCohortModel> {
-    if (cohortDepth == CohortDepth.Participant) {
-      requirePermissions { manageModules() }
-    }
-    return fetch(
-        DSL.exists(
-            DSL.selectOne()
-                .from(COHORT_MODULES)
-                .where(COHORT_MODULES.COHORT_ID.eq(COHORTS.ID))
-                .and(COHORT_MODULES.MODULE_ID.eq(moduleId))),
-        cohortDepth)
   }
 
   fun findAll(

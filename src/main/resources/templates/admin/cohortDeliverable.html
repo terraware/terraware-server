@@ -11,23 +11,17 @@
 -
 <a th:href="|/admin/cohorts/${cohort.id}|" th:text="${cohort.name}">Cohort Name</a>
 
-<h2 th:text="|(${deliverable.id}) ${deliverable.name}|">Deliverable Title</h2>
+<h2 th:text="|Deliverable ${deliverable.id}: ${deliverable.name}|">Deliverable Title</h2>
 
-<h3> Details </h3>
-<div th:if="${deliverable.descriptionHtml}" th:utext="${deliverable.descriptionHtml}"> html </div>
-<p th:text="|Category: ${deliverable.category.getDisplayName(#locale.default)}|">Deliverable Category</p>
-<p th:text="|Type: ${deliverable.type.getDisplayName(#locale.default)}|">Deliverable Type</p>
-<p th:text="|Required: ${deliverable.required}|">sensitive</p>
-<p th:text="|Sensitive: ${deliverable.sensitive}|">sensitive</p>
+<p>
+    <a th:href="|/accelerator/modules/${cohortModule.id}|">Module Details</a>
+    (in accelerator console)
+</p>
 
-<h3> Cohort Details </h3>
-<p th:text="|Name: (${cohort.id}) ${cohort.name}|">Cohort Name</p>
-
-<h3> Module Details </h3>
-<p th:text="|Name: ${cohortModule.title}: (${cohortModule.id}) ${cohortModule.name}|">Module Name</p>
 <p th:text="|Dates: ${cohortModule.startDate} - ${cohortModule.endDate}|">Module Dates</p>
 
-<h3> Due Dates </h3>
+<h2> Due Dates </h2>
+
 <p> Deliverable due dates are project-specific, and follows the following order: </p>
 <ol>
     <li>The project due date, if set. </li>
@@ -35,7 +29,8 @@
     <li>The module end date for the cohort. </li>
 </ol>
 
-<h2>Cohort Due Date </h2>
+<h3>Cohort Due Date </h3>
+
 <p th:text="|Current override: ${dueDates.cohortDueDate}|"></p>
 <form method="POST"
       th:action="|/admin/cohorts/${cohort.id}/deliverables/${deliverable.id}|">
@@ -63,7 +58,8 @@
            value="Remove" />
 </form>
 
-<h2>Project Due Dates </h2>
+<h3>Project Due Dates </h3>
+
 <table>
     <thead>
     <tr>
