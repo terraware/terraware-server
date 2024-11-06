@@ -57,6 +57,11 @@
 <details id="accelerator" class="section">
     <summary>Accelerator</summary>
 
+    <p>
+        Module and deliverable management has moved to the
+        <a href="/accelerator/modules">accelerator console</a>.
+    </p>
+
     <h3>Projects, Participants, Cohorts</h3>
 
         <p th:if="${canManageParticipants}">
@@ -75,13 +80,13 @@
             <a href="/admin/pdh">Import PDH data into Terraware</a>
         </p>
 
-    <th:block th:if="${canManageDocumentProducer}">
-        <h3>Document Producer</h3>
+        <th:block th:if="${canManageDocumentProducer}">
+            <h3>Document Producer</h3>
 
-        <p>
-            <a href="/admin/document-producer">Manage Document Templates and Variables</a>
-        </p>
-    </th:block>
+            <p>
+                <a href="/admin/document-producer">Manage Document Templates and Variables</a>
+            </p>
+        </th:block>
 </details>
 
 <details id="configuration" class="section">

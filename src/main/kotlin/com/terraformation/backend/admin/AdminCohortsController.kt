@@ -14,12 +14,10 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
-import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.log.perClassLogger
 import java.time.LocalDate
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.validation.annotation.Validated
@@ -90,77 +88,6 @@ class AdminCohortsController(
     model.addAttribute("canUpdateCohort", currentUser().canUpdateCohort(cohortId))
 
     return "/admin/cohortView"
-  }
-
-  @PostMapping("/cohorts/{cohortId}/addModule")
-  fun addModule(
-      model: Model,
-      @PathVariable cohortId: CohortId,
-      @RequestParam moduleId: ModuleId,
-      @RequestParam title: String,
-      @RequestParam startDate: LocalDate,
-      @RequestParam endDate: LocalDate,
-      redirectAttributes: RedirectAttributes
-  ): String {
-    requirePermissions { updateCohort(cohortId) }
-    try {
-      cohortModuleStore.assign(cohortId, moduleId, title, startDate, endDate)
-      redirectAttributes.successMessage = "Cohort module added."
-    } catch (e: Exception) {
-      log.warn("Add cohort module failed")
-      redirectAttributes.failureMessage =
-          when (e) {
-            is DataIntegrityViolationException -> "Add module failed. Dates are invalid."
-            else -> "Add module failed: ${e.message}"
-          }
-    }
-
-    return redirectToCohort(cohortId)
-  }
-
-  @PostMapping("/cohorts/{cohortId}/updateModule")
-  fun updateModule(
-      model: Model,
-      @PathVariable cohortId: CohortId,
-      @RequestParam moduleId: ModuleId,
-      @RequestParam title: String,
-      @RequestParam startDate: LocalDate,
-      @RequestParam endDate: LocalDate,
-      redirectAttributes: RedirectAttributes
-  ): String {
-    requirePermissions { updateCohort(cohortId) }
-    try {
-      cohortModuleStore.assign(cohortId, moduleId, title, startDate, endDate)
-      redirectAttributes.successMessage = "Cohort module updated."
-    } catch (e: Exception) {
-      log.warn("Update cohort module failed")
-      redirectAttributes.failureMessage =
-          when (e) {
-            is DataIntegrityViolationException -> "Update module failed. Dates are invalid."
-            else -> "Update module failed: ${e.message}"
-          }
-    }
-
-    return redirectToCohort(cohortId)
-  }
-
-  @PostMapping("/cohorts/{cohortId}/removeModule")
-  fun removeModule(
-      model: Model,
-      @PathVariable cohortId: CohortId,
-      @RequestParam moduleId: ModuleId,
-      redirectAttributes: RedirectAttributes
-  ): String {
-    requirePermissions { updateCohort(cohortId) }
-    try {
-      cohortModuleStore.remove(cohortId, moduleId)
-      redirectAttributes.successMessage = "Module removed from cohort."
-    } catch (e: Exception) {
-      log.warn("Delete module failed")
-      redirectAttributes.failureMessage = "Remove module failed: ${e.message}"
-    }
-
-    return redirectToCohort(cohortId)
   }
 
   @PostMapping("/cohorts/{cohortId}/deliverables")
