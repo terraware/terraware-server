@@ -360,6 +360,7 @@ import org.jooq.Configuration
 import org.jooq.DSLContext
 import org.jooq.JSONB
 import org.jooq.Table
+import org.jooq.TableRecord
 import org.jooq.UpdatableRecord
 import org.jooq.impl.DAOImpl
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -3111,7 +3112,7 @@ abstract class DatabaseBackedTest {
    *   [expected]. Can be used to clear or hardwire specific fields that aren't relevant to the
    *   behavior being tested.
    */
-  protected fun <R : UpdatableRecord<R>> assertTableEquals(
+  protected fun <R : TableRecord<R>> assertTableEquals(
       table: Table<R>,
       expected: Collection<R>,
       message: String = table.name,
@@ -3120,28 +3121,36 @@ abstract class DatabaseBackedTest {
   ) {
     val sampleExpected = expected.firstOrNull()
 
+    // Wrap the expected and actual records in a jOOQ Result, which formats them in a nicer-looking
+    // style than the default Collection.toString() formatting. This makes the assertion failure
+    // messages easier to read.
+    val expectedResult = dslContext.newResult(table)
+    expectedResult.addAll(expected.sorted())
+
     // If the expected records have primary key values, then include primary keys in the records
     // that get pulled from the database. This is not the Kotlin data class copy(), but the one from
     // UpdatableRecord, which clears primary key fields.
-    val includePrimaryKeys = sampleExpected != sampleExpected?.copy()
+    val includePrimaryKeys = sampleExpected != (sampleExpected as? UpdatableRecord<*>)?.copy()
 
-    val actual =
+    val actualResult = dslContext.newResult(table)
+    actualResult.addAll(
         dslContext
             .selectFrom(table)
             .where(where)
             .fetch()
             .map { record: R ->
               val transformed = transform?.invoke(record) ?: record
-              if (includePrimaryKeys) {
+              if (includePrimaryKeys || transformed !is UpdatableRecord<*>) {
                 transformed
               } else {
                 // This is UpdatableRecord.copy(). which clears primary key fields.
-                transformed.copy()
+                @Suppress("UNCHECKED_CAST")
+                transformed.copy() as R
               }
             }
-            .sorted()
+            .sorted())
 
-    assertEquals(expected.sorted(), actual, message)
+    assertEquals(expectedResult, actualResult, message)
   }
 
   /**
@@ -3157,7 +3166,7 @@ abstract class DatabaseBackedTest {
    *   [expected]. Can be used to clear or hardwire specific fields that aren't relevant to the
    *   behavior being tested.
    */
-  protected fun <R : UpdatableRecord<R>> assertTableEquals(
+  protected fun <R : TableRecord<R>> assertTableEquals(
       expected: Collection<R>,
       message: String? = null,
       where: Condition? = null,
@@ -3188,7 +3197,7 @@ abstract class DatabaseBackedTest {
    *   [expected]. Can be used to clear or hardwire specific fields that aren't relevant to the
    *   behavior being tested.
    */
-  protected fun <R : UpdatableRecord<R>> assertTableEquals(
+  protected fun <R : TableRecord<R>> assertTableEquals(
       expected: R,
       message: String? = null,
       where: Condition? = null,
@@ -3206,7 +3215,7 @@ abstract class DatabaseBackedTest {
    * @param where Optional query condition to assert on a subset of a table's contents. Only rows
    *   matching the condition will be considered.
    */
-  protected fun <R : UpdatableRecord<R>> assertTableEmpty(
+  protected fun <R : TableRecord<R>> assertTableEmpty(
       table: Table<R>,
       message: String = table.name,
       where: Condition? = null,
