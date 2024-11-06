@@ -674,6 +674,45 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
           newReferringSectionValue.id,
           "Value with variable reference should not have been replaced")
     }
+
+    @Test
+    fun `does not throw an error if there are updates to multiple projects with values for an updated variable`() {
+      val projectId = inserted.projectId
+      insertDocumentTemplate()
+      insertVariableManifest()
+      insertDocument(projectId = projectId)
+
+      val oldVariableId = insertTextVariable()
+      insertValue(textValue = "referenced text", variableId = oldVariableId)
+      val sectionVariableId = insertVariableManifestEntry(insertSectionVariable())
+
+      insertSectionValue(
+          displayStyle = VariableInjectionDisplayStyle.Block,
+          listPosition = 1,
+          usageType = VariableUsageType.Injection,
+          usedVariableId = oldVariableId,
+          variableId = sectionVariableId)
+
+      val newVariableId =
+          insertTextVariable(
+              insertVariable(replacesVariableId = oldVariableId, type = VariableType.Text))
+
+      val otherProjectId = insertProject()
+      insertValue(textValue = "other project referenced text", variableId = oldVariableId)
+      insertSectionValue(
+          displayStyle = VariableInjectionDisplayStyle.Block,
+          listPosition = 1,
+          usageType = VariableUsageType.Injection,
+          usedVariableId = oldVariableId,
+          variableId = sectionVariableId)
+
+      every { user.canUpdateInternalVariableWorkflowDetails(projectId) } returns true
+      every { user.canUpdateInternalVariableWorkflowDetails(otherProjectId) } returns true
+
+      assertDoesNotThrow {
+        store.upgradeSectionValueVariables(mapOf(oldVariableId to newVariableId))
+      }
+    }
   }
 
   private fun existingValueProps(

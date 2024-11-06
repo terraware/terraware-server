@@ -478,7 +478,9 @@ class VariableValueStore(
           }
         }
 
-    updateValues(sectionOperations, triggerWorkflows = false)
+    sectionOperations
+        .groupBy { it.projectId }
+        .forEach { updateValues(it.value, triggerWorkflows = false) }
   }
 
   /**
