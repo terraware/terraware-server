@@ -1,3 +1,4 @@
+d6d4e22637e SW-6223 Fix permission error on variable value update (#2574)
 87266d1c97e SW-6222 Add observed species to subzone species list (#2573)
 c50d5faa604 Remove project accelerator details migration from admin UI (#2572)
 6808aafabe2 Use assertTableEmpty instead of empty list comparison (#2569)
