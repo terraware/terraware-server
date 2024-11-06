@@ -26,6 +26,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     every { user.canReadModule(any()) } returns true
     every { user.canReadCohort(any()) } returns true
+    every { user.canReadCohorts() } returns true
     every { user.canReadParticipant(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canReadProjectModules(any()) } returns true
@@ -46,7 +47,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsUser {
       insertParticipant(cohortId = inserted.cohortId)
       insertProject(participantId = inserted.participantId)
 
-      every { user.canManageModules() } returns false
+      every { user.canReadCohorts() } returns false
       assertThrows<AccessDeniedException> { store.fetch() }
 
       every { user.canReadProjectModules(any()) } returns false

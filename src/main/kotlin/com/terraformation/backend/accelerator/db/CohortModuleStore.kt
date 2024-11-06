@@ -34,7 +34,7 @@ class CohortModuleStore(
         projectId != null -> readProjectModules(projectId)
         participantId != null -> readParticipant(participantId)
         cohortId != null -> readCohort(cohortId)
-        else -> manageModules()
+        else -> readCohorts()
       }
 
       moduleId?.let { readModule(it) }
