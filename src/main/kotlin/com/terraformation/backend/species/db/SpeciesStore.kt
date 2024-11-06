@@ -35,7 +35,9 @@ import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.model.ExistingSpeciesModel
@@ -182,7 +184,16 @@ class SpeciesStore(
             SPECIES.ID.`in`(
                 DSL.select(PLANTINGS.SPECIES_ID)
                     .from(PLANTINGS)
-                    .where(PLANTINGS.PLANTING_SUBZONE_ID.eq(plantingSubzoneId))))
+                    .where(PLANTINGS.PLANTING_SUBZONE_ID.eq(plantingSubzoneId))
+                    .union(
+                        DSL.select(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID)
+                            .from(OBSERVED_SITE_SPECIES_TOTALS)
+                            .join(PLANTING_SUBZONES)
+                            .on(
+                                OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID.eq(
+                                    PLANTING_SUBZONES.PLANTING_SITE_ID))
+                            .where(PLANTING_SUBZONES.ID.eq(plantingSubzoneId))
+                            .and(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID.isNotNull))))
         .and(SPECIES.DELETED_TIME.isNull)
         .orderBy(SPECIES.ID)
         .fetch {

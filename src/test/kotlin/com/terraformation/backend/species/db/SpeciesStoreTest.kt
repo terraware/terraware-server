@@ -7,6 +7,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.SpeciesNotFoundException
+import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -26,6 +27,8 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblems
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesSuccessionalGroupsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.tables.records.ObservedSiteSpeciesTotalsRecord
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.NewSpeciesModel
@@ -537,6 +540,75 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
                   modifiedTime = Instant.EPOCH,
                   organizationId = organizationId,
                   scientificName = "Species 2",
+              ),
+          )
+
+      val actual = store.fetchSpeciesByPlantingSubzoneId(subzoneId)
+
+      assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `includes species from observations`() {
+      val speciesId1 = insertSpecies(scientificName = "Species 1")
+      val speciesId2 = insertSpecies(scientificName = "Species 2")
+      val speciesId3 = insertSpecies(scientificName = "Species 3")
+      insertSpecies(scientificName = "Unused species")
+
+      insertFacility(type = FacilityType.Nursery)
+      insertPlantingSite()
+      insertPlantingZone()
+      val subzoneId = insertPlantingSubzone()
+      insertMonitoringPlot()
+
+      insertWithdrawal()
+      insertDelivery()
+      insertPlanting(speciesId = speciesId1)
+      insertPlanting(speciesId = speciesId2)
+
+      insertObservation()
+      insertObservationPlot()
+
+      // Species 2 is both planted and observed; it shouldn't show up twice in the list.
+
+      listOf(speciesId2, speciesId3).forEach { observedSpeciesId ->
+        ObservedSiteSpeciesTotalsRecord(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                observationId = inserted.observationId,
+                plantingSiteId = inserted.plantingSiteId,
+                speciesId = observedSpeciesId,
+                totalLive = 1)
+            .attach(dslContext)
+            .insert()
+      }
+
+      every { user.canReadPlantingSubzone(subzoneId) } returns true
+
+      val expected =
+          listOf(
+              ExistingSpeciesModel(
+                  createdTime = Instant.EPOCH,
+                  id = speciesId1,
+                  initialScientificName = "Species 1",
+                  modifiedTime = Instant.EPOCH,
+                  organizationId = organizationId,
+                  scientificName = "Species 1",
+              ),
+              ExistingSpeciesModel(
+                  createdTime = Instant.EPOCH,
+                  id = speciesId2,
+                  initialScientificName = "Species 2",
+                  modifiedTime = Instant.EPOCH,
+                  organizationId = organizationId,
+                  scientificName = "Species 2",
+              ),
+              ExistingSpeciesModel(
+                  createdTime = Instant.EPOCH,
+                  id = speciesId3,
+                  initialScientificName = "Species 3",
+                  modifiedTime = Instant.EPOCH,
+                  organizationId = organizationId,
+                  scientificName = "Species 3",
               ),
           )
 
