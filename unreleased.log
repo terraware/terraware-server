@@ -1,3 +1,4 @@
+87266d1c97e SW-6222 Add observed species to subzone species list (#2573)
 c50d5faa604 Remove project accelerator details migration from admin UI (#2572)
 6808aafabe2 Use assertTableEmpty instead of empty list comparison (#2569)
 7765d0c53a6 Remove Google Drive migration from admin UI (#2571)
