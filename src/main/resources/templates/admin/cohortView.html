@@ -22,8 +22,6 @@
         <th>Module</th>
         <th>Start Date</th>
         <th>End Date</th>
-        <th></th>
-        <th></th>
         <th>Deliverables</th>
         <th></th>
     </tr>
@@ -31,51 +29,15 @@
 
     <tbody>
     <tr th:each="module : ${cohortModules}" class="striped">
+        <td th:text="${module.title}">Module Title</td>
         <td>
-            <input type="text"
-                   name="title"
-                   required
-                   th:disabled="${!canUpdateCohort}"
-                   th:form="|update-${module.id}|"
-                   th:value="${module.title}" />
+            <a th:href="|/accelerator/modules/${module.id}|"
+               th:text="${moduleNames.get(module.id)}">
+                Module ID and Name
+            </a>
         </td>
-        <td th:text="${moduleNames.get(module.id)}">Module ID and Name</td>
-        <td>
-            <input type="date"
-                   name="startDate"
-                   required
-                   th:disabled="${!canUpdateCohort}"
-                   th:form="|update-${module.id}|"
-                   th:value="${module.startDate}" />
-        </td>
-        <td>
-            <input type="date"
-                   name="endDate"
-                   required
-                   th:disabled="${!canUpdateCohort}"
-                   th:form="|update-${module.id}|"
-                   th:value="${module.endDate}" />
-        </td>
-        <td>
-            <form method="POST"
-                  th:id="|update-${module.id}|"
-                  th:action="|/admin/cohorts/${cohort.id}/updateModule|">
-                <input type="hidden" name="moduleId" th:value="${module.id}"/>
-                <input type="submit"
-                       th:disabled="${!canUpdateCohort}"
-                       value="Update" />
-            </form>
-        </td>
-        <td>
-            <form method="POST"
-                  th:id="|delete-${module.id}|"
-                  th:action="|/admin/cohorts/${cohort.id}/removeModule|">
-                <input type="hidden" name="moduleId" th:value="${module.id}"/>
-                <input type="submit"
-                       th:disabled="${!canUpdateCohort}"
-                       value="Delete" />
-            </form>
-        </td>
+        <td th:text="${module.startDate}">2000-11-22</td>
+        <td th:text="${module.endDate}">2000-11-29</td>
         <td>
             <select name="deliverableId" th:form="|deliverables-${module.id}|">
                 <option th:each="deliverable : ${moduleDeliverables.get(module.id)}"
@@ -93,52 +55,6 @@
                        value="View" />
             </form>
         </td>
-    </tr>
-    <tr>
-        <td>
-            <input type="text"
-                   name="title"
-                   required
-                   form="add-module"
-                   th:disabled="${!canUpdateCohort}" />
-        </td>
-        <td>
-            <select name="moduleId"
-                    form="add-module">
-                <option th:each="module : ${unassignedModules}"
-                        th:text="${moduleNames.get(module.id)}"
-                        th:disabled="${!canUpdateCohort}"
-                        th:value="${module.id}">
-                    Module Name
-                </option>
-            </select>
-        </td>
-        <td>
-            <input type="date"
-                   name="startDate"
-                   required
-                   th:disabled="${!canUpdateCohort}"
-                   form="add-module" />
-        </td>
-        <td>
-            <input type="date"
-                   name="endDate"
-                   required
-                   th:disabled="${!canUpdateCohort}"
-                   form="add-module" />
-        </td>
-        <td> </td>
-        <td>
-            <form method="POST"
-                  id="add-module"
-                  th:action="|/admin/cohorts/${cohort.id}/addModule|">
-                <input type="submit"
-                       th:disabled="${!canUpdateCohort}"
-                       value="Add" />
-            </form>
-        </td>
-        <td></td>
-        <td></td>
     </tr>
     </tbody>
 </table>
