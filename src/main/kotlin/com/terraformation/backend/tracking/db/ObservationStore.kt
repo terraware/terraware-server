@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
@@ -30,6 +31,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
@@ -77,6 +79,7 @@ class ObservationStore(
     private val observationPlotConditionsDao: ObservationPlotConditionsDao,
     private val observationPlotsDao: ObservationPlotsDao,
     private val observationRequestedSubzonesDao: ObservationRequestedSubzonesDao,
+    private val parentStore: ParentStore,
     private val recordedPlantsDao: RecordedPlantsDao,
 ) {
   private val requestedSubzoneIdsField: Field<Set<PlantingSubzoneId>> =
@@ -833,6 +836,143 @@ class ObservationStore(
   }
 
   /**
+   * Merges observation data for a species with a user-entered name into the data for one of the
+   * organization's species. This causes the observation to appear as if the users in the field had
+   * recorded seeing the target species instead of selecting "Other" and entering a species name
+   * manually.
+   */
+  fun mergeOtherSpecies(
+      observationId: ObservationId,
+      otherSpeciesName: String,
+      speciesId: SpeciesId
+  ) {
+    requirePermissions {
+      updateObservation(observationId)
+      updateSpecies(speciesId)
+    }
+
+    if (parentStore.getOrganizationId(observationId) != parentStore.getOrganizationId(speciesId)) {
+      throw SpeciesInWrongOrganizationException(speciesId)
+    }
+
+    withLockedObservation(observationId) { observation ->
+      val observationPlotDetails =
+          fetchObservationPlotDetails(observationId).associateBy { it.model.monitoringPlotId }
+      val plantingZoneIds: Map<MonitoringPlotId, PlantingZoneId> =
+          dslContext
+              .select(MONITORING_PLOTS.ID, PLANTING_SUBZONES.PLANTING_ZONE_ID)
+              .from(PLANTING_SUBZONES)
+              .join(MONITORING_PLOTS)
+              .on(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
+              .where(
+                  MONITORING_PLOTS.ID.`in`(
+                      observationPlotDetails.values.map { it.model.monitoringPlotId }))
+              .fetchMap(
+                  MONITORING_PLOTS.ID.asNonNullable(),
+                  PLANTING_SUBZONES.PLANTING_ZONE_ID.asNonNullable())
+
+      // Make the raw data (individual recorded plants) refer to the target species. This has no
+      // impact on statistics; those are adjusted later.
+      with(RECORDED_PLANTS) {
+        dslContext
+            .update(RECORDED_PLANTS)
+            .set(CERTAINTY_ID, RecordedSpeciesCertainty.Known)
+            .set(SPECIES_ID, speciesId)
+            .setNull(SPECIES_NAME)
+            .where(OBSERVATION_ID.eq(observationId))
+            .and(SPECIES_NAME.eq(otherSpeciesName))
+            .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
+            .execute()
+      }
+
+      // We need to adjust the plot-level summary statistics for all the sightings of the Other
+      // species in this observation. Updating the plot-level statistics will automatically also
+      // update the site- and zone-level ones.
+      val plotTotals: List<ObservedPlotSpeciesTotalsRecord> =
+          with(OBSERVED_PLOT_SPECIES_TOTALS) {
+            dslContext
+                .selectFrom(OBSERVED_PLOT_SPECIES_TOTALS)
+                .where(OBSERVATION_ID.eq(observationId))
+                .and(SPECIES_NAME.eq(otherSpeciesName))
+                .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
+                .fetch()
+          }
+
+      plotTotals.forEach { plotTotal ->
+        val monitoringPlotId = plotTotal.monitoringPlotId
+        val plotDetails =
+            observationPlotDetails[monitoringPlotId]
+                ?: throw IllegalStateException(
+                    "Monitoring plot $monitoringPlotId has species totals for $otherSpeciesName " +
+                        "in observation $observationId but is not in observation")
+        val plantingZoneId =
+            plantingZoneIds[monitoringPlotId]
+                ?: throw IllegalStateException(
+                    "Unable to look up planting zone for monitoring plot $monitoringPlotId")
+
+        // Subtract the plot-level live/dead/existing counts from the Other species and add them
+        // to the target species. This propagates the changes up to the zone and site totals.
+        // Once this has been done for all the plot-level totals, the end result will be that the
+        // plot, zone, and site totals for the Other species will all be zero.
+        //
+        // We have to cancel out the Other totals rather than just deleting them because the same
+        // Other species might appear in later observations, in which case the cumulative dead and
+        // mortality rate in those observations will need to change to the values they would have
+        // had if the Other species hadn't been recorded in this observation.
+        updateSpeciesTotals(
+            observationId,
+            observation.plantingSiteId,
+            plantingZoneId,
+            monitoringPlotId,
+            plotDetails.model.isPermanent,
+            mapOf(
+                RecordedSpeciesKey(RecordedSpeciesCertainty.Other, null, otherSpeciesName) to
+                    mapOf(
+                        RecordedPlantStatus.Live to -(plotTotal.totalLive ?: 0),
+                        RecordedPlantStatus.Dead to -(plotTotal.totalDead ?: 0),
+                        RecordedPlantStatus.Existing to -(plotTotal.totalExisting ?: 0),
+                    ),
+                RecordedSpeciesKey(RecordedSpeciesCertainty.Known, speciesId, null) to
+                    mapOf(
+                        RecordedPlantStatus.Live to (plotTotal.totalLive ?: 0),
+                        RecordedPlantStatus.Dead to (plotTotal.totalDead ?: 0),
+                        RecordedPlantStatus.Existing to (plotTotal.totalExisting ?: 0))))
+      }
+
+      // The plant counts for the Other species have been emptied out for this observation. We want
+      // the end result to be as if people had never recorded the Other species in the first place,
+      // so we need to delete its statistics or else the Other species will still be included by
+      // queries that list all the recorded species in an observation.
+      with(OBSERVED_PLOT_SPECIES_TOTALS) {
+        dslContext
+            .deleteFrom(OBSERVED_PLOT_SPECIES_TOTALS)
+            .where(OBSERVATION_ID.eq(observationId))
+            .and(SPECIES_NAME.eq(otherSpeciesName))
+            .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
+            .execute()
+      }
+
+      with(OBSERVED_ZONE_SPECIES_TOTALS) {
+        dslContext
+            .deleteFrom(OBSERVED_ZONE_SPECIES_TOTALS)
+            .where(OBSERVATION_ID.eq(observationId))
+            .and(SPECIES_NAME.eq(otherSpeciesName))
+            .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
+            .execute()
+      }
+
+      with(OBSERVED_SITE_SPECIES_TOTALS) {
+        dslContext
+            .deleteFrom(OBSERVED_SITE_SPECIES_TOTALS)
+            .where(OBSERVATION_ID.eq(observationId))
+            .and(SPECIES_NAME.eq(otherSpeciesName))
+            .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
+            .execute()
+      }
+    }
+  }
+
+  /**
    * Fetches last completed observation for a planting site if there are no other upcoming or in
    * progress observations, otherwise returns most recently updated observation.
    */
@@ -1294,7 +1434,14 @@ class ObservationStore(
           // need to be updated, as do their mortality rates.
           if (permanentLive != 0 || permanentDead != 0) {
             val mortalityRateDenominatorField =
-                permanentLiveField.plus(cumulativeDeadField).plus(permanentDead + permanentLive)
+                permanentLiveField
+                    .plus(cumulativeDeadField)
+                    .plus(permanentDead)
+                    .plus(
+                        // For this observation, the adjustment to the live plants count needs to be
+                        // included in the mortality rate denominator. But the live plant counts
+                        // in subsequent observations are already correct.
+                        DSL.case_(observationIdField).`when`(observationId, permanentLive).else_(0))
 
             dslContext
                 .update(table)

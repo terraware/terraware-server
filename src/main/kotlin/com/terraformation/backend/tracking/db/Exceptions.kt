@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
@@ -142,6 +143,9 @@ class ShapefilesInvalidException(val problems: List<String>) :
     RuntimeException("Found problems in planting site map data") {
   constructor(problem: String) : this(listOf(problem))
 }
+
+class SpeciesInWrongOrganizationException(val speciesId: SpeciesId) :
+    MismatchedStateException("Species $speciesId is in the wrong organization")
 
 class WithdrawalNotUndoException(val withdrawalId: WithdrawalId) :
     MismatchedStateException("Withdrawal $withdrawalId is not an undo withdrawal")
