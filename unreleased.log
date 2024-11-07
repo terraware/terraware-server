@@ -1,3 +1,5 @@
+c83c9a5bedd SW-6228 Allow TF Expert users to set TF contacts (#2579)
+30106b0d829 SW-6227 Allow Read Only users to list cohort modules (#2578)
 9da50789015 SW-6031 Remove modules/deliverables from admin UI (#2575)
 08c70db26be Expand assertTableEquals table support; improve assertion (#2577)
 ef5be86e295 Fix issue with section variable upgrade due to multiple projects existing with values to upgraded variables (#2576)
