@@ -14,7 +14,6 @@ import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.EventNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
-import com.terraformation.backend.db.InvalidRoleUpdateException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -310,13 +309,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { removeTerraformationContact(organizationId) } ifUser
           {
             canRemoveTerraformationContact(organizationId)
-          }
-
-  @Test
-  fun setTerraformationContact() =
-      allow { setTerraformationContact(organizationId) } ifUser
-          {
-            canSetTerraformationContact(organizationId)
           }
 
   @Test fun manageInternalTags() = allow { manageInternalTags() } ifUser { canManageInternalTags() }
@@ -1016,21 +1008,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
           {
             canUpdateSubmissionStatus(deliverableId, projectId)
           }
-
-  @Test
-  fun updateTerraformationContact() {
-    assertThrows<OrganizationNotFoundException> {
-      requirements.updateTerraformationContact(organizationId)
-    }
-
-    grant { user.canReadOrganization(organizationId) }
-    assertThrows<InvalidRoleUpdateException> {
-      requirements.updateTerraformationContact(organizationId)
-    }
-
-    grant { user.canUpdateTerraformationContact(organizationId) }
-    requirements.updateTerraformationContact(organizationId)
-  }
 
   @Test fun updateUpload() = allow { updateUpload(uploadId) } ifUser { canUpdateUpload(uploadId) }
 

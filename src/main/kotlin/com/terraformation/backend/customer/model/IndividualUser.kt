@@ -177,7 +177,7 @@ data class IndividualUser(
   override fun canAddParticipantProject(participantId: ParticipantId, projectId: ProjectId) =
       isAcceleratorAdmin()
 
-  override fun canAddTerraformationContact(organizationId: OrganizationId) = isSuperAdmin()
+  override fun canAddTerraformationContact(organizationId: OrganizationId) = isTFExpertOrHigher()
 
   // all users can count their unread notifications
   override fun canCountNotifications() = true
@@ -519,7 +519,7 @@ data class IndividualUser(
     return isMember(organizationId) && (userId == this.userId || isAdminOrHigher(organizationId))
   }
 
-  override fun canRemoveTerraformationContact(organizationId: OrganizationId) = isSuperAdmin()
+  override fun canRemoveTerraformationContact(organizationId: OrganizationId) = isTFExpertOrHigher()
 
   override fun canReplaceObservationPlot(observationId: ObservationId) =
       isAdminOrHigher(parentStore.getOrganizationId(observationId))
@@ -533,8 +533,6 @@ data class IndividualUser(
 
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role) =
       isSuperAdmin() || isAdminOrHigher(organizationId)
-
-  override fun canSetTerraformationContact(organizationId: OrganizationId) = isSuperAdmin()
 
   override fun canSetTestClock() = isSuperAdmin()
 
@@ -670,8 +668,6 @@ data class IndividualUser(
 
   override fun canUpdateSubmissionStatus(deliverableId: DeliverableId, projectId: ProjectId) =
       isTFExpertOrHigher()
-
-  override fun canUpdateTerraformationContact(organizationId: OrganizationId) = isSuperAdmin()
 
   override fun canUpdateTimeseries(deviceId: DeviceId) =
       isAdminOrHigher(parentStore.getFacilityId(deviceId))

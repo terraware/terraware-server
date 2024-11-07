@@ -13,7 +13,6 @@ import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.InvalidRoleUpdateException
 import com.terraformation.backend.db.InvalidTerraformationContactEmail
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserNotFoundException
@@ -107,8 +106,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.canAddTerraformationContact(any()) } returns false
     every { user.canRemoveTerraformationContact(any()) } returns false
-    every { user.canSetTerraformationContact(any()) } returns false
-    every { user.canUpdateTerraformationContact(any()) } returns false
 
     every { user.facilityRoles } returns mapOf(facilityId to Role.Owner)
     every { user.organizationRoles } returns mapOf(organizationId to Role.Owner)
@@ -723,7 +720,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         configureUser(
             organizationUserModel(email = "user@nonterraformation.com", role = Role.Owner))
 
-    every { user.canSetTerraformationContact(organizationId) } returns true
+    every { user.canAddTerraformationContact(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, any()) } returns false
 
     assertThrows<InvalidTerraformationContactEmail> {
@@ -735,7 +732,9 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `setUserRole throws exception when updating a Terraformation Contact user when not permitted`() {
     val tfContact = configureUser(organizationUserModel(role = Role.TerraformationContact))
 
-    assertThrows<InvalidRoleUpdateException> {
+    every { user.canRemoveTerraformationContact(organizationId) } returns false
+
+    assertThrows<AccessDeniedException> {
       store.setUserRole(organizationId, tfContact.userId, Role.Admin)
     }
   }
@@ -744,7 +743,8 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   fun `setUserRole allows updating a Terraformation Contact user role when permitted`() {
     val tfContact = configureUser(organizationUserModel(role = Role.TerraformationContact))
 
-    every { user.canUpdateTerraformationContact(organizationId) } returns true
+    every { user.canAddTerraformationContact(organizationId) } returns true
+    every { user.canRemoveTerraformationContact(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, any()) } returns false
 
     store.setUserRole(organizationId, tfContact.userId, Role.Admin)
@@ -760,7 +760,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     val admin =
         configureUser(organizationUserModel(email = "admin@terraformation.com", role = Role.Admin))
 
-    every { user.canSetTerraformationContact(organizationId) } returns true
+    every { user.canAddTerraformationContact(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, any()) } returns false
 
     store.setUserRole(organizationId, admin.userId, Role.TerraformationContact)
@@ -772,7 +772,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `countRoleUsers includes counts for roles with no users`() {
-    listOf(Role.Owner, Role.Owner, Role.Contributor).forEachIndexed { index, role ->
+    listOf(Role.Owner, Role.Owner, Role.Contributor).forEach { role ->
       configureUser(organizationUserModel(role = role))
     }
 

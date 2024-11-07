@@ -14,7 +14,6 @@ import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.EventNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
-import com.terraformation.backend.db.InvalidRoleUpdateException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -978,14 +977,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun setTerraformationContact(organizationId: OrganizationId) {
-    if (!user.canSetTerraformationContact(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to grant Terraformation Contact to users in organization $organizationId")
-    }
-  }
-
   fun setTestClock() {
     if (!user.canSetTestClock()) {
       throw AccessDeniedException("No permission to set test clock")
@@ -1292,13 +1283,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
     if (!user.canUpdateSubmissionStatus(deliverableId, projectId)) {
       readProject(projectId)
       throw AccessDeniedException("No permission to update submission status")
-    }
-  }
-
-  fun updateTerraformationContact(organizationId: OrganizationId) {
-    if (!user.canUpdateTerraformationContact(organizationId)) {
-      readOrganization(organizationId)
-      throw InvalidRoleUpdateException(Role.TerraformationContact)
     }
   }
 

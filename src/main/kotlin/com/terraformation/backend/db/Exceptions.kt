@@ -12,7 +12,6 @@ import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SubLocationId
@@ -112,9 +111,6 @@ class InternalTagIsSystemDefinedException(val internalTagId: InternalTagId) :
 
 class InternalTagNotFoundException(val internalTagId: InternalTagId) :
     EntityNotFoundException("Tag $internalTagId not found")
-
-class InvalidRoleUpdateException(val role: Role) :
-    RuntimeException("Cannot set role $role on user")
 
 class InvalidTerraformationContactEmail(val email: String) :
     RuntimeException("Invalid Terraformation Contact email $email")
