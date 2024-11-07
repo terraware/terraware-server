@@ -398,8 +398,6 @@ interface TerrawareUser : Principal {
   fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
       defaultPermission
 
-  fun canSetTerraformationContact(organizationId: OrganizationId): Boolean = defaultPermission
-
   fun canSetTestClock(): Boolean = defaultPermission
 
   fun canSetWithdrawalUser(accessionId: AccessionId): Boolean = defaultPermission
@@ -492,8 +490,6 @@ interface TerrawareUser : Principal {
 
   fun canUpdateSubmissionStatus(deliverableId: DeliverableId, projectId: ProjectId): Boolean =
       defaultPermission
-
-  fun canUpdateTerraformationContact(organizationId: OrganizationId): Boolean = defaultPermission
 
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean = defaultPermission
 

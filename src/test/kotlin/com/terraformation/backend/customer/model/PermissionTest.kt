@@ -1268,6 +1268,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *organizationIds.toTypedArray(),
         addOrganizationUser = true,
+        addTerraformationContact = true,
         createDraftPlantingSite = true,
         createFacility = true,
         createPlantingSite = true,
@@ -1284,6 +1285,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationUser = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
+        removeTerraformationContact = true,
         updateOrganization = true,
     )
 
@@ -1559,6 +1561,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *organizationIds.forOrg1(),
         addOrganizationUser = true,
+        addTerraformationContact = true,
         createDraftPlantingSite = true,
         createFacility = true,
         createPlantingSite = true,
@@ -1574,6 +1577,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationUser = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
+        removeTerraformationContact = true,
         updateOrganization = true,
     )
 
@@ -1633,11 +1637,13 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *organizationIds.filterNot { it == org1Id }.toTypedArray(),
         addOrganizationUser = true,
+        addTerraformationContact = true,
         createReport = true,
         listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationUser = true,
+        removeTerraformationContact = true,
     )
 
     // Can access accelerator-related functions on all ogs.
@@ -1768,6 +1774,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         org1Id,
         addOrganizationUser = true,
+        addTerraformationContact = true,
         createDraftPlantingSite = true,
         createFacility = true,
         createPlantingSite = true,
@@ -1782,6 +1789,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationUser = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
+        removeTerraformationContact = true,
         updateOrganization = true,
     )
 
@@ -1839,19 +1847,23 @@ internal class PermissionTest : DatabaseTest() {
     // Not an admin of this org but can still access it because it has an application.
     permissions.expect(
         OrganizationId(3),
+        addTerraformationContact = true,
         listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationUser = true,
         readOrganizationDeliverables = true,
+        removeTerraformationContact = true,
     )
 
     // Can read and perform certain operations on orgs with Accelerator internal tag.
     permissions.expect(
         OrganizationId(4),
+        addTerraformationContact = true,
         listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationUser = true,
+        removeTerraformationContact = true,
     )
 
     // Can access this project because it has an application.
@@ -1976,6 +1988,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         org1Id,
         addOrganizationUser = true,
+        addTerraformationContact = true,
         createDraftPlantingSite = true,
         createFacility = true,
         createPlantingSite = true,
@@ -1990,6 +2003,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationUser = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
+        removeTerraformationContact = true,
         updateOrganization = true,
     )
 
@@ -2046,10 +2060,12 @@ internal class PermissionTest : DatabaseTest() {
     // Not an admin of this org but can still access accelerator-related functions.
     permissions.expect(
         OrganizationId(4),
+        addTerraformationContact = true,
         listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationUser = true,
+        removeTerraformationContact = true,
     )
 
     permissions.expect(
@@ -2429,6 +2445,7 @@ internal class PermissionTest : DatabaseTest() {
     fun expect(
         vararg organizations: OrganizationId,
         addOrganizationUser: Boolean = false,
+        addTerraformationContact: Boolean = false,
         createDraftPlantingSite: Boolean = false,
         createFacility: Boolean = false,
         createPlantingSite: Boolean = false,
@@ -2445,6 +2462,7 @@ internal class PermissionTest : DatabaseTest() {
         readOrganizationUser: Boolean = false,
         removeOrganizationSelf: Boolean = false,
         removeOrganizationUser: Boolean = false,
+        removeTerraformationContact: Boolean = false,
         updateOrganization: Boolean = false,
     ) {
       organizations.forEach { organizationId ->
@@ -2453,6 +2471,10 @@ internal class PermissionTest : DatabaseTest() {
             addOrganizationUser,
             user.canAddOrganizationUser(idInDatabase),
             "Can add organization $organizationId user")
+        assertEquals(
+            addTerraformationContact,
+            user.canAddTerraformationContact(idInDatabase),
+            "Can add TF contact for organization $organizationId")
         assertEquals(
             createDraftPlantingSite,
             user.canCreateDraftPlantingSite(idInDatabase),
@@ -2517,6 +2539,10 @@ internal class PermissionTest : DatabaseTest() {
             removeOrganizationUser,
             user.canRemoveOrganizationUser(idInDatabase, otherUserIds[organizationId]!!),
             "Can remove user from organization $organizationId")
+        assertEquals(
+            removeTerraformationContact,
+            user.canRemoveTerraformationContact(idInDatabase),
+            "Can remove TF contact from organization $organizationId")
         assertEquals(
             updateOrganization,
             user.canUpdateOrganization(idInDatabase),

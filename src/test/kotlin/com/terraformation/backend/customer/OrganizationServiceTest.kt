@@ -349,7 +349,6 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
     every { user.canAddTerraformationContact(organizationId) } returns true
     every { user.canRemoveTerraformationContact(organizationId) } returns true
-    every { user.canSetTerraformationContact(organizationId) } returns true
     every { user.canAddOrganizationUser(organizationId) } returns true
     every { user.canSetOrganizationUserRole(organizationId, Role.Admin) } returns true
 

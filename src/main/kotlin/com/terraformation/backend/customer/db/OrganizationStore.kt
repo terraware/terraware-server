@@ -473,10 +473,11 @@ class OrganizationStore(
     val isTerraformationContact = role == Role.TerraformationContact
 
     requirePermissions {
-      if (getUserRole(organizationId, userId) == Role.TerraformationContact) {
-        updateTerraformationContact(organizationId)
+      if (getUserRole(organizationId, userId) == Role.TerraformationContact &&
+          !isTerraformationContact) {
+        removeTerraformationContact(organizationId)
       } else if (isTerraformationContact) {
-        setTerraformationContact(organizationId)
+        addTerraformationContact(organizationId)
       } else {
         setOrganizationUserRole(organizationId, role)
       }
