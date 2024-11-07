@@ -101,6 +101,8 @@ class RequestResponseLoggingFilter(
         } else {
           chain.doFilter(request, response)
         }
+      } else {
+        chain.doFilter(request, response)
       }
     } finally {
       oldMdc?.let { MDC.setContextMap(it) } ?: MDC.clear()
