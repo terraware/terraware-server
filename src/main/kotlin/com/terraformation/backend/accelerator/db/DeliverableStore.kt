@@ -120,6 +120,18 @@ class DeliverableStore(
     val deliverableIdField = DELIVERABLES.ID.`as`("deliverable_id")
     val projectIdField = PROJECTS.ID.`as`("project_id")
 
+    val nonCohortConditions =
+        DSL.and(
+            listOfNotNull(
+                COHORT_MODULES.COHORT_ID.isNull,
+                // Exclude pre-screen and application deliverables unless the caller is asking for
+                // specific deliverables.
+                if (deliverableId == null) {
+                  MODULES.PHASE_ID.notIn(CohortPhase.PreScreen, CohortPhase.Application)
+                } else {
+                  null
+                }))
+
     return dslContext
         .select(
             DELIVERABLE_DOCUMENTS.TEMPLATE_URL,
@@ -218,8 +230,7 @@ class DeliverableStore(
                 .on(DELIVERABLES.ID.eq(DELIVERABLE_DOCUMENTS.DELIVERABLE_ID))
                 .and(DELIVERABLES.ID.eq(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID))
                 .where(conditions)
-                .and(COHORT_MODULES.COHORT_ID.isNull)
-                .and(MODULES.PHASE_ID.notIn(CohortPhase.PreScreen, CohortPhase.Application)))
+                .and(nonCohortConditions))
         .orderBy(deliverableIdField, projectIdField)
         .fetch { record ->
           DeliverableSubmissionModel(

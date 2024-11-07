@@ -464,6 +464,57 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `returns application submissions for non-participant projects if deliverable ID is specified`() {
+      val organizationId = insertOrganization()
+      val projectId = insertProject()
+      val moduleId = insertModule(phase = CohortPhase.PreScreen)
+      val deliverableId = insertDeliverable()
+      val submissionId = insertSubmission(submissionStatus = SubmissionStatus.Approved)
+      val documentId = insertSubmissionDocument()
+
+      assertEquals(
+          listOf(
+              DeliverableSubmissionModel(
+                  category = DeliverableCategory.FinancialViability,
+                  deliverableId = deliverableId,
+                  descriptionHtml = "Description 1",
+                  documents =
+                      listOf(
+                          SubmissionDocumentModel(
+                              Instant.EPOCH,
+                              null,
+                              DocumentStore.Google,
+                              documentId,
+                              "Submission Document 1",
+                              "Original Name 1",
+                          ),
+                      ),
+                  dueDate = null,
+                  feedback = null,
+                  internalComment = null,
+                  modifiedTime = Instant.EPOCH,
+                  moduleId = moduleId,
+                  moduleName = "Module 1",
+                  moduleTitle = null,
+                  name = "Deliverable 1",
+                  organizationId = organizationId,
+                  organizationName = "Organization 1",
+                  participantId = null,
+                  participantName = null,
+                  position = 1,
+                  projectId = projectId,
+                  projectName = "Project 1",
+                  required = false,
+                  sensitive = false,
+                  status = SubmissionStatus.Approved,
+                  submissionId = submissionId,
+                  templateUrl = null,
+                  type = DeliverableType.Document,
+              )),
+          store.fetchDeliverableSubmissions(deliverableId = deliverableId))
+    }
+
+    @Test
     fun `returns due dates according to cohort or project overrides`() {
       val cohortWithDueDate = insertCohort()
       val cohortWithoutDueDate = insertCohort()
