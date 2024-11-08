@@ -61,13 +61,16 @@ class RequestResponseLoggingFilter(
   override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     val user = CurrentUserHolder.getCurrentUser()
     val oldMdc = MDC.getCopyOfContextMap()
+    val requestId = "${requestIdPrefix}_${request.requestId}"
 
     try {
       mdcPut("authId", user?.authId)
-      mdcPut("requestId", "${requestIdPrefix}_${request.requestId}")
+      mdcPut("requestId", requestId)
+      request.setAttribute("terrawareRequestId", requestId)
 
       if (user is IndividualUser) {
         mdcPut("email", user.email)
+        request.setAttribute("terrawareEmail", user.email)
 
         if (log.isDebugEnabled &&
             requestLogConfig.emailRegex != null &&

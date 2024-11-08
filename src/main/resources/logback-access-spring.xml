@@ -1,0 +1,59 @@
+<configuration>
+  <springProfile name="jsonlog">
+    <appender name="JSONFILE" class="ch.qos.logback.core.FileAppender">
+      <encoder class="net.logstash.logback.encoder.AccessEventCompositeJsonEncoder">
+        <providers>
+          <timestamp/>
+          <version/>
+
+          <!-- Standard access log fields -->
+          <contentLength/>
+          <elapsedTime/>
+          <method/>
+          <protocol/>
+          <remoteHost/>
+          <remoteUser/>
+          <requestedUri/>
+          <requestedUrl/>
+          <statusCode/>
+
+          <requestHeaders>
+            <fieldName>headers</fieldName>
+            <lowerCaseHeaderNames>true</lowerCaseHeaderNames>
+            <filter>
+              <include>Referer</include>
+              <include>User-Agent</include>
+            </filter>
+          </requestHeaders>
+
+          <pattern>
+            <omitEmptyFields>true</omitEmptyFields>
+            <pattern>
+              {
+                "authId": "#nullNA{%u}",
+                "email": "#nullNA{%reqAttribute{terrawareEmail}}",
+                "message": "%h - %u [%t] \"%r\" %s %b \"%i{Referer}\" \"%i{User-Agent}\"",
+                "requestId": "#nullNA{%reqAttribute{terrawareRequestId}}"
+              }
+            </pattern>
+          </pattern>
+        </providers>
+      </encoder>
+
+      <!-- This log file is automatically rolled over by the configuration in logback-spring.xml;
+           we don't configure rollover here because we don't want the main log appender and this
+           one to both try to roll at the same time. -->
+      <file>${LOG_FILE}</file>
+    </appender>
+    <appender-ref ref="JSONFILE"/>
+  </springProfile>
+
+  <springProfile name="!jsonlog">
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder>
+        <pattern>combined</pattern>
+      </encoder>
+    </appender>
+    <appender-ref ref="CONSOLE"/>
+  </springProfile>
+</configuration>
