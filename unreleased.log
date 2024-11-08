@@ -1,1 +1,2 @@
-f45ddf9e816 Fix request handling for unauthenticated users
+789b3e004b3 Use structured logging for access logs (#2582)
+a95ea469017 SW-6230 Allow fetching of application submissions (#2583)
