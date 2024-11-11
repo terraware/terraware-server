@@ -2113,7 +2113,13 @@ abstract class DatabaseBackedTest {
       isPermanent: Boolean = row.isPermanent ?: false,
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       observationId: ObservationId = row.observationId ?: inserted.observationId,
-      statusId: ObservationPlotStatus = row.statusId ?: ObservationPlotStatus.Unclaimed,
+      statusId: ObservationPlotStatus =
+          row.statusId
+              ?: when {
+                completedTime != null -> ObservationPlotStatus.Completed
+                claimedTime != null -> ObservationPlotStatus.Claimed
+                else -> ObservationPlotStatus.Unclaimed
+              },
   ) {
     val rowWithDefaults =
         row.copy(

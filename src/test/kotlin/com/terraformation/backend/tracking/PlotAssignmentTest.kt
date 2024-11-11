@@ -30,6 +30,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
+  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
         clock,
@@ -38,9 +39,9 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubzonesDao,
+        parentStore,
         recordedPlantsDao)
   }
-  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val plantingSiteStore: PlantingSiteStore by lazy {
     PlantingSiteStore(
         clock,

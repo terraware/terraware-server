@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
@@ -15,6 +16,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus.Dead
 import com.terraformation.backend.db.tracking.RecordedPlantStatus.Existing
 import com.terraformation.backend.db.tracking.RecordedPlantStatus.Live
@@ -31,6 +33,10 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulatio
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservedSiteSpeciesTotalsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservedZoneSpeciesTotalsRecord
+import com.terraformation.backend.db.tracking.tables.records.RecordedPlantsRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
@@ -74,6 +80,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubzonesDao,
+        ParentStore(dslContext),
         recordedPlantsDao)
   }
   private val helper: ObservationTestHelper by lazy {
@@ -885,6 +892,282 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<AccessDeniedException> { store.markUpcomingNotificationComplete(observationId) }
     }
+  }
+
+  @Nested
+  inner class MergeOtherSpecies {
+    private lateinit var plantingZoneId: PlantingZoneId
+    private lateinit var monitoringPlotId: MonitoringPlotId
+
+    @BeforeEach
+    fun setUp() {
+      plantingZoneId = insertPlantingZone()
+      insertPlantingSubzone()
+      monitoringPlotId = insertMonitoringPlot()
+
+      every { user.canUpdateSpecies(any()) } returns true
+    }
+
+    @Test
+    fun `updates raw recorded plants data`() {
+      val gpsCoordinates = point(1)
+      val speciesId = insertSpecies()
+
+      val observationId1 = insertObservation()
+      insertObservationPlot()
+      insertRecordedPlant(speciesName = "Species to merge", gpsCoordinates = gpsCoordinates)
+      insertRecordedPlant(speciesName = "Other species", gpsCoordinates = gpsCoordinates)
+
+      val observationId2 = insertObservation()
+      insertObservationPlot()
+      insertRecordedPlant(speciesName = "Species to merge", gpsCoordinates = gpsCoordinates)
+
+      store.mergeOtherSpecies(observationId1, "Species to merge", speciesId)
+
+      assertTableEquals(
+          listOf(
+              RecordedPlantsRecord(
+                  certaintyId = Known,
+                  gpsCoordinates = gpsCoordinates,
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = observationId1,
+                  speciesId = speciesId,
+                  statusId = Live,
+              ),
+              RecordedPlantsRecord(
+                  certaintyId = Other,
+                  gpsCoordinates = gpsCoordinates,
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = observationId1,
+                  speciesName = "Other species",
+                  statusId = Live,
+              ),
+              RecordedPlantsRecord(
+                  certaintyId = Other,
+                  gpsCoordinates = gpsCoordinates,
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = observationId2,
+                  speciesName = "Species to merge",
+                  statusId = Live,
+              ),
+          ))
+    }
+
+    @Test
+    fun `updates observed species totals`() {
+      val gpsCoordinates = point(1)
+      val speciesId = insertSpecies()
+
+      val observationId1 = insertObservation()
+      insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+
+      store.completePlot(
+          observationId1,
+          monitoringPlotId,
+          emptySet(),
+          null,
+          Instant.EPOCH,
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = Known,
+                  gpsCoordinates = gpsCoordinates,
+                  speciesId = speciesId,
+                  statusId = Live),
+              RecordedPlantsRow(
+                  certaintyId = Other,
+                  gpsCoordinates = gpsCoordinates,
+                  speciesName = "Merge",
+                  statusId = Live),
+              RecordedPlantsRow(
+                  certaintyId = Other,
+                  gpsCoordinates = gpsCoordinates,
+                  speciesName = "Merge",
+                  statusId = Dead),
+          ))
+
+      clock.instant = Instant.ofEpochSecond(1)
+
+      val observationId2 = insertObservation()
+      insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+
+      store.completePlot(
+          observationId2,
+          monitoringPlotId,
+          emptySet(),
+          null,
+          Instant.EPOCH,
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = Known,
+                  gpsCoordinates = gpsCoordinates,
+                  speciesId = speciesId,
+                  statusId = Live),
+              RecordedPlantsRow(
+                  certaintyId = Other,
+                  gpsCoordinates = gpsCoordinates,
+                  speciesName = "Merge",
+                  statusId = Live),
+              RecordedPlantsRow(
+                  certaintyId = Other,
+                  gpsCoordinates = gpsCoordinates,
+                  speciesName = "Merge",
+                  statusId = Dead),
+          ))
+
+      val expectedPlotsBeforeMerge =
+          listOf(
+              ObservedPlotSpeciesTotalsRecord(
+                  observationId = observationId1,
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId,
+                  speciesName = null,
+                  certaintyId = Known,
+                  totalLive = 1,
+                  totalDead = 0,
+                  totalExisting = 0,
+                  mortalityRate = 0,
+                  cumulativeDead = 0,
+                  permanentLive = 1,
+              ),
+              ObservedPlotSpeciesTotalsRecord(
+                  observationId = observationId1,
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = null,
+                  speciesName = "Merge",
+                  certaintyId = Other,
+                  totalLive = 1,
+                  totalDead = 1,
+                  totalExisting = 0,
+                  mortalityRate = 50,
+                  cumulativeDead = 1,
+                  permanentLive = 1,
+              ),
+              ObservedPlotSpeciesTotalsRecord(
+                  observationId = observationId2,
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = speciesId,
+                  speciesName = null,
+                  certaintyId = Known,
+                  totalLive = 1,
+                  totalDead = 0,
+                  totalExisting = 0,
+                  mortalityRate = 0,
+                  cumulativeDead = 0,
+                  permanentLive = 1,
+              ),
+              ObservedPlotSpeciesTotalsRecord(
+                  observationId = observationId2,
+                  monitoringPlotId = monitoringPlotId,
+                  speciesId = null,
+                  speciesName = "Merge",
+                  certaintyId = Other,
+                  totalLive = 1,
+                  totalDead = 1,
+                  totalExisting = 0,
+                  mortalityRate = 67,
+                  cumulativeDead = 2,
+                  permanentLive = 1,
+              ),
+          )
+
+      assertTableEquals(expectedPlotsBeforeMerge, "Before merge")
+      assertTableEquals(expectedPlotsBeforeMerge.map { it.toZone() }, "Before merge")
+      assertTableEquals(expectedPlotsBeforeMerge.map { it.toSite() }, "Before merge")
+
+      store.mergeOtherSpecies(observationId1, "Merge", speciesId)
+
+      val expectedPlotsAfterMerge =
+          listOf(
+              expectedPlotsBeforeMerge[0].apply {
+                totalLive = 2
+                totalDead = 1
+                cumulativeDead = 1
+                permanentLive = 2
+                mortalityRate = 33
+              },
+              // expectedPlotsBeforeMerge[1] should be deleted
+              expectedPlotsBeforeMerge[2].apply {
+                cumulativeDead = 1
+                mortalityRate = 50
+              },
+              expectedPlotsBeforeMerge[3].apply {
+                cumulativeDead = 1
+                mortalityRate = 50
+              },
+          )
+
+      assertTableEquals(expectedPlotsAfterMerge, "After merge")
+      assertTableEquals(expectedPlotsAfterMerge.map { it.toZone() }, "After merge")
+      assertTableEquals(expectedPlotsAfterMerge.map { it.toSite() }, "After merge")
+    }
+
+    @Test
+    fun `throws exception if no permission to update observation`() {
+      val observationId = insertObservation()
+      val speciesId = insertSpecies()
+
+      every { user.canUpdateObservation(observationId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.mergeOtherSpecies(observationId, "Other", speciesId)
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to update species`() {
+      val observationId = insertObservation()
+      val speciesId = insertSpecies()
+
+      every { user.canReadSpecies(speciesId) } returns true
+      every { user.canUpdateSpecies(speciesId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.mergeOtherSpecies(observationId, "Other", speciesId)
+      }
+    }
+
+    @Test
+    fun `throws exception if species is from a different organization`() {
+      val observationId = insertObservation()
+      insertOrganization()
+      val speciesId = insertSpecies()
+
+      assertThrows<SpeciesInWrongOrganizationException> {
+        store.mergeOtherSpecies(observationId, "Other", speciesId)
+      }
+    }
+
+    private fun ObservedPlotSpeciesTotalsRecord.toZone(
+        plantingZoneId: PlantingZoneId = inserted.plantingZoneId
+    ) =
+        ObservedZoneSpeciesTotalsRecord(
+            observationId = observationId,
+            plantingZoneId = plantingZoneId,
+            speciesId = speciesId,
+            speciesName = speciesName,
+            certaintyId = certaintyId,
+            totalLive = totalLive,
+            totalDead = totalDead,
+            totalExisting = totalExisting,
+            mortalityRate = mortalityRate,
+            cumulativeDead = cumulativeDead,
+            permanentLive = permanentLive)
+
+    private fun ObservedPlotSpeciesTotalsRecord.toSite(
+        plantingSiteId: PlantingSiteId = inserted.plantingSiteId
+    ) =
+        ObservedSiteSpeciesTotalsRecord(
+            observationId = observationId,
+            plantingSiteId = plantingSiteId,
+            speciesId = speciesId,
+            speciesName = speciesName,
+            certaintyId = certaintyId,
+            totalLive = totalLive,
+            totalDead = totalDead,
+            totalExisting = totalExisting,
+            mortalityRate = mortalityRate,
+            cumulativeDead = cumulativeDead,
+            permanentLive = permanentLive)
   }
 
   @Nested

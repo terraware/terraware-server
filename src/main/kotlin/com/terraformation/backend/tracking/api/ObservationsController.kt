@@ -407,6 +407,20 @@ class ObservationsController(
 
     return SimpleSuccessResponsePayload()
   }
+
+  @Operation(
+      summary =
+          "Replaces a user-entered 'Other' species with one of the organization's species in " +
+              "an observation.")
+  @PostMapping("/{observationId}/mergeOtherSpecies")
+  fun mergeOtherSpecies(
+      @PathVariable observationId: ObservationId,
+      @RequestBody payload: MergeOtherSpeciesRequestPayload
+  ): SimpleSuccessResponsePayload {
+    observationStore.mergeOtherSpecies(observationId, payload.otherSpeciesName, payload.speciesId)
+
+    return SimpleSuccessResponsePayload()
+  }
 }
 
 data class ObservationPayload(
@@ -941,6 +955,19 @@ data class GetObservationResultsResponsePayload(val observation: ObservationResu
 data class ListObservationResultsResponsePayload(
     val observations: List<ObservationResultsPayload>
 ) : SuccessResponsePayload
+
+data class MergeOtherSpeciesRequestPayload(
+    @Schema(
+        description =
+            "Name of the species of certainty Other whose recorded plants should be updated to " +
+                "refer to the known species.")
+    val otherSpeciesName: String,
+    @Schema(
+        description =
+            "ID of the existing species that the Other species' recorded plants should be merged " +
+                "into.")
+    val speciesId: SpeciesId,
+)
 
 data class GetPlantingSiteObservationSummaryPayload(
     @Schema(
