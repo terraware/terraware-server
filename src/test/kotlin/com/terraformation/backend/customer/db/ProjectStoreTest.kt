@@ -1,6 +1,6 @@
 package com.terraformation.backend.customer.db
 
-import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.RunsAsIndividualUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
@@ -8,18 +8,17 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEve
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
+import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.NewProjectModel
-import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
-import com.terraformation.backend.mockUser
-import io.mockk.every
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -28,8 +27,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-class ProjectStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockUser()
+class ProjectStoreTest : DatabaseTest(), RunsAsIndividualUser {
+  override lateinit var user: IndividualUser
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
@@ -44,15 +43,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { user.canCreateProject(any()) } returns true
-    every { user.canDeleteProject(any()) } returns true
-    every { user.canReadCohort(any()) } returns true
-    every { user.canReadOrganization(any()) } returns true
-    every { user.canReadProject(any()) } returns true
-    every { user.canUpdateProject(any()) } returns true
-    every { user.canUpdateProjectDocumentSettings(any()) } returns true
-
     organizationId = insertOrganization()
+    insertOrganizationUser(role = Role.Admin)
   }
 
   @Nested
@@ -86,7 +78,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission`() {
-      every { user.canCreateProject(any()) } returns false
+      insertOrganizationUser(role = Role.Contributor)
 
       assertThrows<AccessDeniedException> {
         store.create(NewProjectModel(id = null, name = "Name", organizationId = organizationId))
@@ -128,7 +120,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission`() {
-      every { user.canReadProject(any()) } returns false
+      deleteOrganizationUser()
 
       assertThrows<ProjectNotFoundException> { store.fetchOneById(projectId) }
     }
@@ -174,7 +166,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission`() {
-      every { user.canReadOrganization(any()) } returns false
+      deleteOrganizationUser()
 
       assertThrows<OrganizationNotFoundException> { store.fetchByOrganizationId(organizationId) }
     }
@@ -188,10 +180,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
       val otherUserOrganizationId = insertOrganization()
       val nonMemberOrganizationId = insertOrganization()
 
-      insertOrganizationUser(organizationId = otherUserOrganizationId)
-
-      every { user.organizationRoles } returns
-          mapOf(organizationId to Role.Contributor, otherUserOrganizationId to Role.Contributor)
+      insertOrganizationUser(organizationId = organizationId, role = Role.Contributor)
+      insertOrganizationUser(organizationId = otherUserOrganizationId, role = Role.Contributor)
 
       val projectId1 = insertProject(name = "Project 1", organizationId = organizationId)
       val projectId2 = insertProject(name = "Project 2", organizationId = organizationId)
@@ -278,7 +268,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission`() {
-      every { user.canUpdateProject(any()) } returns false
+      insertOrganizationUser(role = Role.Contributor)
 
       assertThrows<AccessDeniedException> { store.update(projectId) { it } }
     }
@@ -296,16 +286,11 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class UpdateParticipant {
-    @BeforeEach
-    fun setUp() {
-      every { user.canReadParticipant(any()) } returns true
-    }
-
     @Test
     fun `sets participant`() {
       val participantId = insertParticipant()
 
-      every { user.canAddParticipantProject(any(), any()) } returns true
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
       store.updateParticipant(projectId, participantId)
 
@@ -320,7 +305,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
       val participantId = insertParticipant()
       val projectIdWithParticipant = insertProject(participantId = participantId)
 
-      every { user.canDeleteParticipantProject(any(), any()) } returns true
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
       store.updateParticipant(projectIdWithParticipant, null)
 
@@ -334,6 +319,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if no permission to set participant`() {
       val participantId = insertParticipant()
 
+      insertUserGlobalRole(role = GlobalRole.TFExpert)
+
       assertThrows<AccessDeniedException> { store.updateParticipant(projectId, participantId) }
     }
 
@@ -341,6 +328,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if no permission to clear participant`() {
       val participantId = insertParticipant()
       val projectIdWithParticipant = insertProject(participantId = participantId)
+
+      insertUserGlobalRole(role = GlobalRole.TFExpert)
 
       assertThrows<AccessDeniedException> {
         store.updateParticipant(projectIdWithParticipant, null)
