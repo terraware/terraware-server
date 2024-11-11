@@ -110,6 +110,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import freemarker.template.Configuration
+import io.mockk.CapturingSlot
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -438,6 +439,11 @@ internal class EmailNotificationServiceTest {
         { answer ->
           userForEmail(answer.invocation.args[0] as String)
         }
+
+    listOf(user, adminUser, sectionOwnerUser, tfContactUser).forEach { targetUser ->
+      val funcSlot = CapturingSlot<() -> Any>()
+      every { targetUser.recordPermissionChecks(capture(funcSlot)) } answers { funcSlot.captured() }
+    }
   }
 
   @Test

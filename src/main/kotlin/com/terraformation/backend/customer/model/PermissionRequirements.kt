@@ -124,138 +124,176 @@ import org.springframework.security.access.AccessDeniedException
  */
 class PermissionRequirements(private val user: TerrawareUser) {
   fun addCohortParticipant(cohortId: CohortId, participantId: ParticipantId) {
-    if (!user.canAddCohortParticipant(cohortId, participantId)) {
-      readCohort(cohortId)
-      readParticipant(participantId)
-      throw AccessDeniedException(
-          "No permission to add participant $participantId to cohort $cohortId")
+    user.recordPermissionChecks {
+      if (!user.canAddCohortParticipant(cohortId, participantId)) {
+        readCohort(cohortId)
+        readParticipant(participantId)
+        throw AccessDeniedException(
+            "No permission to add participant $participantId to cohort $cohortId")
+      }
     }
   }
 
   fun addOrganizationUser(organizationId: OrganizationId) {
-    if (!user.canAddOrganizationUser(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException("No permission to add users to organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canAddOrganizationUser(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException("No permission to add users to organization $organizationId")
+      }
     }
   }
 
   fun addParticipantProject(participantId: ParticipantId, projectId: ProjectId) {
-    if (!user.canAddParticipantProject(participantId, projectId)) {
-      readParticipant(participantId)
-      readProject(projectId)
-      throw AccessDeniedException("No permission to add project to participant $participantId")
+    user.recordPermissionChecks {
+      if (!user.canAddParticipantProject(participantId, projectId)) {
+        readParticipant(participantId)
+        readProject(projectId)
+        throw AccessDeniedException("No permission to add project to participant $participantId")
+      }
     }
   }
 
   fun addTerraformationContact(organizationId: OrganizationId) {
-    if (!user.canAddTerraformationContact(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to add terraformation contact to organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canAddTerraformationContact(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException(
+            "No permission to add terraformation contact to organization $organizationId")
+      }
     }
   }
 
   fun countNotifications() {
-    if (!user.canCountNotifications()) {
-      throw AccessDeniedException("No permission to count notifications")
+    user.recordPermissionChecks {
+      if (!user.canCountNotifications()) {
+        throw AccessDeniedException("No permission to count notifications")
+      }
     }
   }
 
   fun createAccession(facilityId: FacilityId) {
-    if (!user.canCreateAccession(facilityId)) {
-      readFacility(facilityId)
-      throw AccessDeniedException("No permission to create accessions in facility $facilityId")
+    user.recordPermissionChecks {
+      if (!user.canCreateAccession(facilityId)) {
+        readFacility(facilityId)
+        throw AccessDeniedException("No permission to create accessions in facility $facilityId")
+      }
     }
   }
 
   fun createApiKey(organizationId: OrganizationId) {
-    if (!user.canCreateApiKey(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to create API keys in organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canCreateApiKey(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException(
+            "No permission to create API keys in organization $organizationId")
+      }
     }
   }
 
   fun createApplication(projectId: ProjectId) {
-    if (!user.canCreateApplication(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to create application for project $projectId")
+    user.recordPermissionChecks {
+      if (!user.canCreateApplication(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to create application for project $projectId")
+      }
     }
   }
 
   fun createAutomation(facilityId: FacilityId) {
-    if (!user.canCreateAutomation(facilityId)) {
-      readFacility(facilityId)
-      throw AccessDeniedException("No permission to create automations in facility $facilityId")
+    user.recordPermissionChecks {
+      if (!user.canCreateAutomation(facilityId)) {
+        readFacility(facilityId)
+        throw AccessDeniedException("No permission to create automations in facility $facilityId")
+      }
     }
   }
 
   fun createBatch(facilityId: FacilityId) {
-    if (!user.canCreateBatch(facilityId)) {
-      readFacility(facilityId)
-      throw AccessDeniedException("No permission to create seedling batch")
+    user.recordPermissionChecks {
+      if (!user.canCreateBatch(facilityId)) {
+        readFacility(facilityId)
+        throw AccessDeniedException("No permission to create seedling batch")
+      }
     }
   }
 
   fun createCohort() {
-    if (!user.canCreateCohort()) {
-      throw AccessDeniedException("No permission to create cohort")
+    user.recordPermissionChecks {
+      if (!user.canCreateCohort()) {
+        throw AccessDeniedException("No permission to create cohort")
+      }
     }
   }
 
   fun createCohortModule() {
-    if (!user.canCreateCohortModule()) {
-      throw AccessDeniedException("No permission to create cohort module")
+    user.recordPermissionChecks {
+      if (!user.canCreateCohortModule()) {
+        throw AccessDeniedException("No permission to create cohort module")
+      }
     }
   }
 
   fun createDelivery(plantingSiteId: PlantingSiteId) {
-    if (!user.canCreateDelivery(plantingSiteId)) {
-      readPlantingSite(plantingSiteId)
-      throw AccessDeniedException(
-          "No permission to create delivery at planting site $plantingSiteId")
+    user.recordPermissionChecks {
+      if (!user.canCreateDelivery(plantingSiteId)) {
+        readPlantingSite(plantingSiteId)
+        throw AccessDeniedException(
+            "No permission to create delivery at planting site $plantingSiteId")
+      }
     }
   }
 
   fun createDevice(facilityId: FacilityId) {
-    if (!user.canCreateDevice(facilityId)) {
-      readFacility(facilityId)
-      throw AccessDeniedException("No permission to create device in facility $facilityId")
+    user.recordPermissionChecks {
+      if (!user.canCreateDevice(facilityId)) {
+        readFacility(facilityId)
+        throw AccessDeniedException("No permission to create device in facility $facilityId")
+      }
     }
   }
 
   fun createDeviceManager() {
-    if (!user.canCreateDeviceManager()) {
-      throw AccessDeniedException("No permission to create device manager")
+    user.recordPermissionChecks {
+      if (!user.canCreateDeviceManager()) {
+        throw AccessDeniedException("No permission to create device manager")
+      }
     }
   }
 
   fun createDocument() {
-    if (!user.canCreateDocument()) {
-      throw AccessDeniedException("No permission to create documents")
+    user.recordPermissionChecks {
+      if (!user.canCreateDocument()) {
+        throw AccessDeniedException("No permission to create documents")
+      }
     }
   }
 
   fun createDraftPlantingSite(organizationId: OrganizationId) {
-    if (!user.canCreateDraftPlantingSite(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to create draft planting site in organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canCreateDraftPlantingSite(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException(
+            "No permission to create draft planting site in organization $organizationId")
+      }
     }
   }
 
   fun createEntityWithOwner(userId: UserId) {
-    if (!user.canCreateEntityWithOwner(userId)) {
-      readUser(userId)
-      throw AccessDeniedException("No permission to create entity with owner $userId")
+    user.recordPermissionChecks {
+      if (!user.canCreateEntityWithOwner(userId)) {
+        readUser(userId)
+        throw AccessDeniedException("No permission to create entity with owner $userId")
+      }
     }
   }
 
   fun createFacility(organizationId: OrganizationId) {
-    if (!user.canCreateFacility(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to create facilities in organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canCreateFacility(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException(
+            "No permission to create facilities in organization $organizationId")
+      }
     }
   }
 
@@ -267,1050 +305,1367 @@ class PermissionRequirements(private val user: TerrawareUser) {
   }
 
   fun createObservation(plantingSiteId: PlantingSiteId) {
-    if (!user.canCreateObservation(plantingSiteId)) {
-      readPlantingSite(plantingSiteId)
-      throw AccessDeniedException("No permission to create observation")
+    user.recordPermissionChecks {
+      if (!user.canCreateObservation(plantingSiteId)) {
+        readPlantingSite(plantingSiteId)
+        throw AccessDeniedException("No permission to create observation")
+      }
     }
   }
 
   fun createParticipant() {
-    if (!user.canCreateParticipant()) {
-      throw AccessDeniedException("No permission to create participant")
+    user.recordPermissionChecks {
+      if (!user.canCreateParticipant()) {
+        throw AccessDeniedException("No permission to create participant")
+      }
     }
   }
 
   fun createParticipantProjectSpecies(projectId: ProjectId) {
-    if (!user.canCreateParticipantProjectSpecies(projectId)) {
-      throw AccessDeniedException("No permission to create participant project species")
+    user.recordPermissionChecks {
+      if (!user.canCreateParticipantProjectSpecies(projectId)) {
+        throw AccessDeniedException("No permission to create participant project species")
+      }
     }
   }
 
   fun createPlantingSite(organizationId: OrganizationId) {
-    if (!user.canCreatePlantingSite(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to create planting sites in organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canCreatePlantingSite(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException(
+            "No permission to create planting sites in organization $organizationId")
+      }
     }
   }
 
   fun createProject(organizationId: OrganizationId) {
-    if (!user.canCreateProject(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to create projects in organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canCreateProject(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException(
+            "No permission to create projects in organization $organizationId")
+      }
     }
   }
 
   fun createReport(organizationId: OrganizationId) {
-    if (!user.canCreateReport(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException("No permission to create reports in organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canCreateReport(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException(
+            "No permission to create reports in organization $organizationId")
+      }
     }
   }
 
   fun createSavedVersion(documentId: DocumentId) {
-    if (!user.canCreateSavedVersion(documentId)) {
-      throw AccessDeniedException("No permission to create saved versions")
+    user.recordPermissionChecks {
+      if (!user.canCreateSavedVersion(documentId)) {
+        throw AccessDeniedException("No permission to create saved versions")
+      }
     }
   }
 
   fun createSpecies(organizationId: OrganizationId) {
-    if (!user.canCreateSpecies(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException("No permission to create species")
+    user.recordPermissionChecks {
+      if (!user.canCreateSpecies(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException("No permission to create species")
+      }
     }
   }
 
   fun createSubLocation(facilityId: FacilityId) {
-    if (!user.canCreateSubLocation(facilityId)) {
-      readFacility(facilityId)
-      throw AccessDeniedException("No permission to create sub-location at facility $facilityId")
+    user.recordPermissionChecks {
+      if (!user.canCreateSubLocation(facilityId)) {
+        readFacility(facilityId)
+        throw AccessDeniedException("No permission to create sub-location at facility $facilityId")
+      }
     }
   }
 
   fun createSubmission(projectId: ProjectId) {
-    if (!user.canCreateSubmission(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to create submission for project $projectId")
+    user.recordPermissionChecks {
+      if (!user.canCreateSubmission(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to create submission for project $projectId")
+      }
     }
   }
 
   fun createTimeseries(deviceId: DeviceId) {
-    if (!user.canCreateTimeseries(deviceId)) {
-      readDevice(deviceId)
-      throw AccessDeniedException("No permission to create timeseries on device $deviceId")
+    user.recordPermissionChecks {
+      if (!user.canCreateTimeseries(deviceId)) {
+        readDevice(deviceId)
+        throw AccessDeniedException("No permission to create timeseries on device $deviceId")
+      }
     }
   }
 
   fun createVariableManifest() {
-    if (!user.canCreateVariableManifest()) {
-      throw AccessDeniedException("No permission to create Variable Manifests")
+    user.recordPermissionChecks {
+      if (!user.canCreateVariableManifest()) {
+        throw AccessDeniedException("No permission to create Variable Manifests")
+      }
     }
   }
 
   fun createWithdrawalPhoto(withdrawalId: WithdrawalId) {
-    if (!user.canCreateWithdrawalPhoto(withdrawalId)) {
-      readWithdrawal(withdrawalId)
-      throw AccessDeniedException("No permission to create photo on withdrawal $withdrawalId")
+    user.recordPermissionChecks {
+      if (!user.canCreateWithdrawalPhoto(withdrawalId)) {
+        readWithdrawal(withdrawalId)
+        throw AccessDeniedException("No permission to create photo on withdrawal $withdrawalId")
+      }
     }
   }
 
   fun deleteAccession(accessionId: AccessionId) {
-    if (!user.canDeleteAccession(accessionId)) {
-      readAccession(accessionId)
-      throw AccessDeniedException("No permission to delete accession $accessionId")
+    user.recordPermissionChecks {
+      if (!user.canDeleteAccession(accessionId)) {
+        readAccession(accessionId)
+        throw AccessDeniedException("No permission to delete accession $accessionId")
+      }
     }
   }
 
   fun deleteAutomation(automationId: AutomationId) {
-    if (!user.canDeleteAutomation(automationId)) {
-      readAutomation(automationId)
-      throw AccessDeniedException("No permission to delete automation $automationId")
+    user.recordPermissionChecks {
+      if (!user.canDeleteAutomation(automationId)) {
+        readAutomation(automationId)
+        throw AccessDeniedException("No permission to delete automation $automationId")
+      }
     }
   }
 
   fun deleteBatch(batchId: BatchId) {
-    if (!user.canDeleteBatch(batchId)) {
-      readBatch(batchId)
-      throw AccessDeniedException("No permission to delete seedling batch $batchId")
+    user.recordPermissionChecks {
+      if (!user.canDeleteBatch(batchId)) {
+        readBatch(batchId)
+        throw AccessDeniedException("No permission to delete seedling batch $batchId")
+      }
     }
   }
 
   fun deleteCohort(cohortId: CohortId) {
-    if (!user.canDeleteCohort(cohortId)) {
-      readCohort(cohortId)
-      throw AccessDeniedException("No permission to delete cohort $cohortId")
+    user.recordPermissionChecks {
+      if (!user.canDeleteCohort(cohortId)) {
+        readCohort(cohortId)
+        throw AccessDeniedException("No permission to delete cohort $cohortId")
+      }
     }
   }
 
   fun deleteCohortParticipant(cohortId: CohortId, participantId: ParticipantId) {
-    if (!user.canDeleteCohortParticipant(cohortId, participantId)) {
-      readCohort(cohortId)
-      readParticipant(participantId)
-      throw AccessDeniedException("No permission to delete cohort $cohortId")
+    user.recordPermissionChecks {
+      if (!user.canDeleteCohortParticipant(cohortId, participantId)) {
+        readCohort(cohortId)
+        readParticipant(participantId)
+        throw AccessDeniedException("No permission to delete cohort $cohortId")
+      }
     }
   }
 
   fun deleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) {
-    if (!user.canDeleteDraftPlantingSite(draftPlantingSiteId)) {
-      readDraftPlantingSite(draftPlantingSiteId)
-      throw AccessDeniedException(
-          "No permission to delete draft planting site $draftPlantingSiteId")
+    user.recordPermissionChecks {
+      if (!user.canDeleteDraftPlantingSite(draftPlantingSiteId)) {
+        readDraftPlantingSite(draftPlantingSiteId)
+        throw AccessDeniedException(
+            "No permission to delete draft planting site $draftPlantingSiteId")
+      }
     }
   }
 
   fun deleteOrganization(organizationId: OrganizationId) {
-    if (!user.canDeleteOrganization(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException("No permission to delete organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canDeleteOrganization(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException("No permission to delete organization $organizationId")
+      }
     }
   }
 
   fun deleteParticipant(participantId: ParticipantId) {
-    if (!user.canDeleteParticipant(participantId)) {
-      readParticipant(participantId)
-      throw AccessDeniedException("No permission to delete participant $participantId")
+    user.recordPermissionChecks {
+      if (!user.canDeleteParticipant(participantId)) {
+        readParticipant(participantId)
+        throw AccessDeniedException("No permission to delete participant $participantId")
+      }
     }
   }
 
   fun deleteParticipantProject(participantId: ParticipantId, projectId: ProjectId) {
-    if (!user.canDeleteParticipantProject(participantId, projectId)) {
-      readParticipant(participantId)
-      readProject(projectId)
-      throw AccessDeniedException("No permission to delete project from participant $participantId")
+    user.recordPermissionChecks {
+      if (!user.canDeleteParticipantProject(participantId, projectId)) {
+        readParticipant(participantId)
+        readProject(projectId)
+        throw AccessDeniedException(
+            "No permission to delete project from participant $participantId")
+      }
     }
   }
 
   fun deleteParticipantProjectSpecies(participantProjectSpeciesId: ParticipantProjectSpeciesId) {
-    if (!user.canDeleteParticipantProjectSpecies(participantProjectSpeciesId)) {
-      readParticipantProjectSpecies(participantProjectSpeciesId)
-      throw AccessDeniedException(
-          "No permission to delete participant project species $participantProjectSpeciesId")
+    user.recordPermissionChecks {
+      if (!user.canDeleteParticipantProjectSpecies(participantProjectSpeciesId)) {
+        readParticipantProjectSpecies(participantProjectSpeciesId)
+        throw AccessDeniedException(
+            "No permission to delete participant project species $participantProjectSpeciesId")
+      }
     }
   }
 
   fun deletePlantingSite(plantingSiteId: PlantingSiteId) {
-    if (!user.canDeletePlantingSite(plantingSiteId)) {
-      readPlantingSite(plantingSiteId)
-      throw AccessDeniedException("No permission to delete planting site $plantingSiteId")
+    user.recordPermissionChecks {
+      if (!user.canDeletePlantingSite(plantingSiteId)) {
+        readPlantingSite(plantingSiteId)
+        throw AccessDeniedException("No permission to delete planting site $plantingSiteId")
+      }
     }
   }
 
   fun deleteProject(projectId: ProjectId) {
-    if (!user.canDeleteProject(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to delete project $projectId")
+    user.recordPermissionChecks {
+      if (!user.canDeleteProject(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to delete project $projectId")
+      }
     }
   }
 
   fun deleteReport(reportId: ReportId) {
-    if (!user.canDeleteReport(reportId)) {
-      readReport(reportId)
-      throw AccessDeniedException("No permission to delete report $reportId")
+    user.recordPermissionChecks {
+      if (!user.canDeleteReport(reportId)) {
+        readReport(reportId)
+        throw AccessDeniedException("No permission to delete report $reportId")
+      }
     }
   }
 
   fun deleteSelf() {
-    if (!user.canDeleteSelf()) {
-      throw AccessDeniedException("No permission to delete self")
+    user.recordPermissionChecks {
+      if (!user.canDeleteSelf()) {
+        throw AccessDeniedException("No permission to delete self")
+      }
     }
   }
 
   fun deleteSpecies(speciesId: SpeciesId) {
-    if (!user.canDeleteSpecies(speciesId)) {
-      readSpecies(speciesId)
-      throw AccessDeniedException("No permission to delete species $speciesId")
+    user.recordPermissionChecks {
+      if (!user.canDeleteSpecies(speciesId)) {
+        readSpecies(speciesId)
+        throw AccessDeniedException("No permission to delete species $speciesId")
+      }
     }
   }
 
   fun deleteSubLocation(subLocationId: SubLocationId) {
-    if (!user.canDeleteSubLocation(subLocationId)) {
-      readSubLocation(subLocationId)
-      throw AccessDeniedException("No permission to delete sub-location")
+    user.recordPermissionChecks {
+      if (!user.canDeleteSubLocation(subLocationId)) {
+        readSubLocation(subLocationId)
+        throw AccessDeniedException("No permission to delete sub-location")
+      }
     }
   }
 
   fun deleteSupportIssue() {
-    if (!user.canDeleteSupportIssue()) {
-      throw AccessDeniedException("No permission to delete a support issue")
+    user.recordPermissionChecks {
+      if (!user.canDeleteSupportIssue()) {
+        throw AccessDeniedException("No permission to delete a support issue")
+      }
     }
   }
 
   fun deleteUpload(uploadId: UploadId) {
-    if (!user.canDeleteUpload(uploadId)) {
-      readUpload(uploadId)
-      throw AccessDeniedException("No permission to delete upload")
+    user.recordPermissionChecks {
+      if (!user.canDeleteUpload(uploadId)) {
+        readUpload(uploadId)
+        throw AccessDeniedException("No permission to delete upload")
+      }
     }
   }
 
   fun deleteUsers() {
-    if (!user.canDeleteUsers()) {
-      throw AccessDeniedException("No permission to delete users")
+    user.recordPermissionChecks {
+      if (!user.canDeleteUsers()) {
+        throw AccessDeniedException("No permission to delete users")
+      }
     }
   }
 
   fun importGlobalSpeciesData() {
-    if (!user.canImportGlobalSpeciesData()) {
-      throw AccessDeniedException("No permission to import global species data")
+    user.recordPermissionChecks {
+      if (!user.canImportGlobalSpeciesData()) {
+        throw AccessDeniedException("No permission to import global species data")
+      }
     }
   }
 
   fun listAutomations(facilityId: FacilityId) {
-    if (!user.canListAutomations(facilityId)) {
-      readFacility(facilityId)
-      throw AccessDeniedException("No permission to list automations in facility $facilityId")
+    user.recordPermissionChecks {
+      if (!user.canListAutomations(facilityId)) {
+        readFacility(facilityId)
+        throw AccessDeniedException("No permission to list automations in facility $facilityId")
+      }
     }
   }
 
   fun listNotifications(organizationId: OrganizationId?) {
-    if (!user.canListNotifications(organizationId)) {
-      if (organizationId != null) {
-        readOrganization(organizationId)
+    user.recordPermissionChecks {
+      if (!user.canListNotifications(organizationId)) {
+        if (organizationId != null) {
+          readOrganization(organizationId)
+        }
+        throw AccessDeniedException("No permission to list notifications")
       }
-      throw AccessDeniedException("No permission to list notifications")
     }
   }
 
   fun listOrganizationUsers(organizationId: OrganizationId) {
-    if (!user.canListOrganizationUsers(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException("No permission to list users in organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canListOrganizationUsers(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException("No permission to list users in organization $organizationId")
+      }
     }
   }
 
   fun listReports(organizationId: OrganizationId) {
-    if (!user.canListReports(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException("No permission to list reports in organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canListReports(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException("No permission to list reports in organization $organizationId")
+      }
     }
   }
 
   fun manageDefaultProjectLeads() {
-    if (!user.canManageDefaultProjectLeads()) {
-      throw AccessDeniedException("No permission to manage default project leads")
+    user.recordPermissionChecks {
+      if (!user.canManageDefaultProjectLeads()) {
+        throw AccessDeniedException("No permission to manage default project leads")
+      }
     }
   }
 
   fun manageDeliverables() {
-    if (!user.canManageDeliverables()) {
-      throw AccessDeniedException("No permission to manage deliverables")
+    user.recordPermissionChecks {
+      if (!user.canManageDeliverables()) {
+        throw AccessDeniedException("No permission to manage deliverables")
+      }
     }
   }
 
   fun manageInternalTags() {
-    if (!user.canManageInternalTags()) {
-      throw AccessDeniedException("No permission to manage internal tags")
+    user.recordPermissionChecks {
+      if (!user.canManageInternalTags()) {
+        throw AccessDeniedException("No permission to manage internal tags")
+      }
     }
   }
 
   fun manageModuleEvents() {
-    if (!user.canManageModuleEvents()) {
-      throw AccessDeniedException("No permission to manage module events")
+    user.recordPermissionChecks {
+      if (!user.canManageModuleEvents()) {
+        throw AccessDeniedException("No permission to manage module events")
+      }
     }
   }
 
   fun manageModuleEventStatuses() {
-    if (!user.canManageModuleEventStatuses()) {
-      throw AccessDeniedException("No permission to manage module event statuses")
+    user.recordPermissionChecks {
+      if (!user.canManageModuleEventStatuses()) {
+        throw AccessDeniedException("No permission to manage module event statuses")
+      }
     }
   }
 
   fun manageModules() {
-    if (!user.canManageModules()) {
-      throw AccessDeniedException("No permission to manage modules")
+    user.recordPermissionChecks {
+      if (!user.canManageModules()) {
+        throw AccessDeniedException("No permission to manage modules")
+      }
     }
   }
 
   fun manageNotifications() {
-    if (!user.canManageNotifications()) {
-      throw AccessDeniedException("No permissions to manage notifications")
+    user.recordPermissionChecks {
+      if (!user.canManageNotifications()) {
+        throw AccessDeniedException("No permissions to manage notifications")
+      }
     }
   }
 
   fun manageObservation(observationId: ObservationId) {
-    if (!user.canManageObservation(observationId)) {
-      readObservation(observationId)
-      throw AccessDeniedException("No permission to manage observation $observationId")
+    user.recordPermissionChecks {
+      if (!user.canManageObservation(observationId)) {
+        readObservation(observationId)
+        throw AccessDeniedException("No permission to manage observation $observationId")
+      }
     }
   }
 
   fun movePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId) {
-    if (!user.canMovePlantingSiteToAnyOrg(plantingSiteId)) {
-      readPlantingSite(plantingSiteId)
-      throw AccessDeniedException("No permission to move planting site $plantingSiteId")
+    user.recordPermissionChecks {
+      if (!user.canMovePlantingSiteToAnyOrg(plantingSiteId)) {
+        readPlantingSite(plantingSiteId)
+        throw AccessDeniedException("No permission to move planting site $plantingSiteId")
+      }
     }
   }
 
   fun populatePlantingSiteCountries() {
-    if (!user.canPopulatePlantingSiteCountries()) {
-      throw AccessDeniedException("No permission to populate planting site countries")
+    user.recordPermissionChecks {
+      if (!user.canPopulatePlantingSiteCountries()) {
+        throw AccessDeniedException("No permission to populate planting site countries")
+      }
     }
   }
 
   fun readAccession(accessionId: AccessionId) {
-    if (!user.canReadAccession(accessionId)) {
-      throw AccessionNotFoundException(accessionId)
+    user.recordPermissionChecks {
+      if (!user.canReadAccession(accessionId)) {
+        throw AccessionNotFoundException(accessionId)
+      }
     }
   }
 
   fun readAllAcceleratorDetails() {
-    if (!user.canReadAllAcceleratorDetails()) {
-      throw AccessDeniedException("No permission to read accelerator details")
+    user.recordPermissionChecks {
+      if (!user.canReadAllAcceleratorDetails()) {
+        throw AccessDeniedException("No permission to read accelerator details")
+      }
     }
   }
 
   fun readAllDeliverables() {
-    if (!user.canReadAllDeliverables()) {
-      throw AccessDeniedException("No permission to read all deliverables")
+    user.recordPermissionChecks {
+      if (!user.canReadAllDeliverables()) {
+        throw AccessDeniedException("No permission to read all deliverables")
+      }
     }
   }
 
   fun readApplication(applicationId: ApplicationId) {
-    if (!user.canReadApplication(applicationId)) {
-      throw ApplicationNotFoundException(applicationId)
+    user.recordPermissionChecks {
+      if (!user.canReadApplication(applicationId)) {
+        throw ApplicationNotFoundException(applicationId)
+      }
     }
   }
 
   fun readAutomation(automationId: AutomationId) {
-    if (!user.canReadAutomation(automationId)) {
-      throw AutomationNotFoundException(automationId)
+    user.recordPermissionChecks {
+      if (!user.canReadAutomation(automationId)) {
+        throw AutomationNotFoundException(automationId)
+      }
     }
   }
 
   fun readBatch(batchId: BatchId) {
-    if (!user.canReadBatch(batchId)) {
-      throw BatchNotFoundException(batchId)
+    user.recordPermissionChecks {
+      if (!user.canReadBatch(batchId)) {
+        throw BatchNotFoundException(batchId)
+      }
     }
   }
 
   fun readCohort(cohortId: CohortId) {
-    if (!user.canReadCohort(cohortId)) {
-      throw CohortNotFoundException(cohortId)
+    user.recordPermissionChecks {
+      if (!user.canReadCohort(cohortId)) {
+        throw CohortNotFoundException(cohortId)
+      }
     }
   }
 
   fun readCohortParticipants(cohortId: CohortId) {
-    if (!user.canReadCohortParticipants(cohortId)) {
-      readCohort(cohortId)
-      throw AccessDeniedException("No permission to read participants for cohort $cohortId")
+    user.recordPermissionChecks {
+      if (!user.canReadCohortParticipants(cohortId)) {
+        readCohort(cohortId)
+        throw AccessDeniedException("No permission to read participants for cohort $cohortId")
+      }
     }
   }
 
   fun readCohorts() {
-    if (!user.canReadCohorts()) {
-      throw AccessDeniedException("No permission to read cohorts")
+    user.recordPermissionChecks {
+      if (!user.canReadCohorts()) {
+        throw AccessDeniedException("No permission to read cohorts")
+      }
     }
   }
 
   fun readDefaultVoters() {
-    if (!user.canReadDefaultVoters()) {
-      throw AccessDeniedException("No permission to read default voters")
+    user.recordPermissionChecks {
+      if (!user.canReadDefaultVoters()) {
+        throw AccessDeniedException("No permission to read default voters")
+      }
     }
   }
 
   fun readDelivery(deliveryId: DeliveryId) {
-    if (!user.canReadDelivery(deliveryId)) {
-      throw DeliveryNotFoundException(deliveryId)
+    user.recordPermissionChecks {
+      if (!user.canReadDelivery(deliveryId)) {
+        throw DeliveryNotFoundException(deliveryId)
+      }
     }
   }
 
   fun readDevice(deviceId: DeviceId) {
-    if (!user.canReadDevice(deviceId)) {
-      throw DeviceNotFoundException(deviceId)
+    user.recordPermissionChecks {
+      if (!user.canReadDevice(deviceId)) {
+        throw DeviceNotFoundException(deviceId)
+      }
     }
   }
 
   fun readDeviceManager(deviceManagerId: DeviceManagerId) {
-    if (!user.canReadDeviceManager(deviceManagerId)) {
-      throw DeviceManagerNotFoundException(deviceManagerId)
+    user.recordPermissionChecks {
+      if (!user.canReadDeviceManager(deviceManagerId)) {
+        throw DeviceManagerNotFoundException(deviceManagerId)
+      }
     }
   }
 
   fun readDocument(documentId: DocumentId) {
-    if (!user.canReadDocument(documentId)) {
-      throw DocumentNotFoundException(documentId)
+    user.recordPermissionChecks {
+      if (!user.canReadDocument(documentId)) {
+        throw DocumentNotFoundException(documentId)
+      }
     }
   }
 
   fun readDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) {
-    if (!user.canReadDraftPlantingSite(draftPlantingSiteId)) {
-      throw DraftPlantingSiteNotFoundException(draftPlantingSiteId)
+    user.recordPermissionChecks {
+      if (!user.canReadDraftPlantingSite(draftPlantingSiteId)) {
+        throw DraftPlantingSiteNotFoundException(draftPlantingSiteId)
+      }
     }
   }
 
   fun readFacility(facilityId: FacilityId) {
-    if (!user.canReadFacility(facilityId)) {
-      throw FacilityNotFoundException(facilityId)
+    user.recordPermissionChecks {
+      if (!user.canReadFacility(facilityId)) {
+        throw FacilityNotFoundException(facilityId)
+      }
     }
   }
 
   fun readGlobalRoles() {
-    if (!user.canReadGlobalRoles()) {
-      throw AccessDeniedException("No permission to read global roles")
+    user.recordPermissionChecks {
+      if (!user.canReadGlobalRoles()) {
+        throw AccessDeniedException("No permission to read global roles")
+      }
     }
   }
 
   fun readInternalOnlyVariables() {
-    if (!user.canReadInternalOnlyVariables()) {
-      throw AccessDeniedException("No permission to read internal variables")
+    user.recordPermissionChecks {
+      if (!user.canReadInternalOnlyVariables()) {
+        throw AccessDeniedException("No permission to read internal variables")
+      }
     }
   }
 
   fun readInternalTags() {
-    if (!user.canReadInternalTags()) {
-      throw AccessDeniedException("No permission to read internal tags")
+    user.recordPermissionChecks {
+      if (!user.canReadInternalTags()) {
+        throw AccessDeniedException("No permission to read internal tags")
+      }
     }
   }
 
   fun readModule(moduleId: ModuleId) {
-    if (!user.canReadModule(moduleId)) {
-      throw ModuleNotFoundException(moduleId)
+    user.recordPermissionChecks {
+      if (!user.canReadModule(moduleId)) {
+        throw ModuleNotFoundException(moduleId)
+      }
     }
   }
 
   fun readModuleDetails(moduleId: ModuleId) {
-    if (!user.canReadModuleDetails(moduleId)) {
-      readModule(moduleId)
-      throw AccessDeniedException("No permission to read module details")
+    user.recordPermissionChecks {
+      if (!user.canReadModuleDetails(moduleId)) {
+        readModule(moduleId)
+        throw AccessDeniedException("No permission to read module details")
+      }
     }
   }
 
   fun readModuleEvent(eventId: EventId) {
-    if (!user.canReadModuleEvent(eventId)) {
-      throw EventNotFoundException(eventId)
+    user.recordPermissionChecks {
+      if (!user.canReadModuleEvent(eventId)) {
+        throw EventNotFoundException(eventId)
+      }
     }
   }
 
   fun readModuleEventParticipants() {
-    if (!user.canReadModuleEventParticipants()) {
-      throw AccessDeniedException("No permission to view event participants")
+    user.recordPermissionChecks {
+      if (!user.canReadModuleEventParticipants()) {
+        throw AccessDeniedException("No permission to view event participants")
+      }
     }
   }
 
   fun readMonitoringPlot(monitoringPlotId: MonitoringPlotId) {
-    if (!user.canReadMonitoringPlot(monitoringPlotId)) {
-      throw PlotNotFoundException(monitoringPlotId)
+    user.recordPermissionChecks {
+      if (!user.canReadMonitoringPlot(monitoringPlotId)) {
+        throw PlotNotFoundException(monitoringPlotId)
+      }
     }
   }
 
   fun readNotification(notificationId: NotificationId) {
-    if (!user.canReadNotification(notificationId)) {
-      throw NotificationNotFoundException(notificationId)
+    user.recordPermissionChecks {
+      if (!user.canReadNotification(notificationId)) {
+        throw NotificationNotFoundException(notificationId)
+      }
     }
   }
 
   fun readObservation(observationId: ObservationId) {
-    if (!user.canReadObservation(observationId)) {
-      throw ObservationNotFoundException(observationId)
+    user.recordPermissionChecks {
+      if (!user.canReadObservation(observationId)) {
+        throw ObservationNotFoundException(observationId)
+      }
     }
   }
 
   fun readOrganization(organizationId: OrganizationId) {
-    if (!user.canReadOrganization(organizationId)) {
-      throw OrganizationNotFoundException(organizationId)
+    user.recordPermissionChecks {
+      if (!user.canReadOrganization(organizationId)) {
+        throw OrganizationNotFoundException(organizationId)
+      }
     }
   }
 
   fun readOrganizationDeliverables(organizationId: OrganizationId) {
-    if (!user.canReadOrganizationDeliverables(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to read deliverables for organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canReadOrganizationDeliverables(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException(
+            "No permission to read deliverables for organization $organizationId")
+      }
     }
   }
 
   fun readOrganizationUser(organizationId: OrganizationId, userId: UserId) {
-    if (!user.canReadOrganizationUser(organizationId, userId)) {
-      readOrganization(organizationId)
-      throw UserNotFoundException(userId)
+    user.recordPermissionChecks {
+      if (!user.canReadOrganizationUser(organizationId, userId)) {
+        readOrganization(organizationId)
+        throw UserNotFoundException(userId)
+      }
     }
   }
 
   fun readParticipant(participantId: ParticipantId) {
-    if (!user.canReadParticipant(participantId)) {
-      throw ParticipantNotFoundException(participantId)
+    user.recordPermissionChecks {
+      if (!user.canReadParticipant(participantId)) {
+        throw ParticipantNotFoundException(participantId)
+      }
     }
   }
 
   fun readParticipantProjectSpecies(participantProjectSpeciesId: ParticipantProjectSpeciesId) {
-    if (!user.canReadParticipantProjectSpecies(participantProjectSpeciesId)) {
-      throw ParticipantProjectSpeciesNotFoundException(participantProjectSpeciesId)
+    user.recordPermissionChecks {
+      if (!user.canReadParticipantProjectSpecies(participantProjectSpeciesId)) {
+        throw ParticipantProjectSpeciesNotFoundException(participantProjectSpeciesId)
+      }
     }
   }
 
   fun readPlanting(plantingId: PlantingId) {
-    if (!user.canReadPlanting(plantingId)) {
-      throw PlantingNotFoundException(plantingId)
+    user.recordPermissionChecks {
+      if (!user.canReadPlanting(plantingId)) {
+        throw PlantingNotFoundException(plantingId)
+      }
     }
   }
 
   fun readPlantingSite(plantingSiteId: PlantingSiteId) {
-    if (!user.canReadPlantingSite(plantingSiteId)) {
-      throw PlantingSiteNotFoundException(plantingSiteId)
+    user.recordPermissionChecks {
+      if (!user.canReadPlantingSite(plantingSiteId)) {
+        throw PlantingSiteNotFoundException(plantingSiteId)
+      }
     }
   }
 
   fun readPlantingSubzone(plantingSubzoneId: PlantingSubzoneId) {
-    if (!user.canReadPlantingSubzone(plantingSubzoneId)) {
-      throw PlantingSubzoneNotFoundException(plantingSubzoneId)
+    user.recordPermissionChecks {
+      if (!user.canReadPlantingSubzone(plantingSubzoneId)) {
+        throw PlantingSubzoneNotFoundException(plantingSubzoneId)
+      }
     }
   }
 
   fun readPlantingZone(plantingZoneId: PlantingZoneId) {
-    if (!user.canReadPlantingZone(plantingZoneId)) {
-      throw PlantingZoneNotFoundException(plantingZoneId)
+    user.recordPermissionChecks {
+      if (!user.canReadPlantingZone(plantingZoneId)) {
+        throw PlantingZoneNotFoundException(plantingZoneId)
+      }
     }
   }
 
   fun readProject(projectId: ProjectId) {
-    if (!user.canReadProject(projectId)) {
-      throw ProjectNotFoundException(projectId)
+    user.recordPermissionChecks {
+      if (!user.canReadProject(projectId)) {
+        throw ProjectNotFoundException(projectId)
+      }
     }
   }
 
   fun readProjectAcceleratorDetails(projectId: ProjectId) {
-    if (!user.canReadProjectAcceleratorDetails(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException(
-          "No permission to read accelerator details for project $projectId")
+    user.recordPermissionChecks {
+      if (!user.canReadProjectAcceleratorDetails(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException(
+            "No permission to read accelerator details for project $projectId")
+      }
     }
   }
 
   fun readProjectDeliverables(projectId: ProjectId) {
-    if (!user.canReadProjectDeliverables(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to read deliverables for project $projectId")
+    user.recordPermissionChecks {
+      if (!user.canReadProjectDeliverables(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to read deliverables for project $projectId")
+      }
     }
   }
 
   fun readProjectModules(projectId: ProjectId) {
-    if (!user.canReadProjectModules(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to read project modules")
+    user.recordPermissionChecks {
+      if (!user.canReadProjectModules(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to read project modules")
+      }
     }
   }
 
   fun readProjectScores(projectId: ProjectId) {
-    if (!user.canReadProjectScores(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to view scores for project $projectId")
+    user.recordPermissionChecks {
+      if (!user.canReadProjectScores(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to view scores for project $projectId")
+      }
     }
   }
 
   fun readInternalVariableWorkflowDetails(projectId: ProjectId) {
-    if (!user.canReadInternalVariableWorkflowDetails(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException(
-          "No permission to read variable workflow details for project $projectId")
+    user.recordPermissionChecks {
+      if (!user.canReadInternalVariableWorkflowDetails(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException(
+            "No permission to read variable workflow details for project $projectId")
+      }
     }
   }
 
   fun readProjectVotes(projectId: ProjectId) {
-    if (!user.canReadProjectVotes(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to view votes for project $projectId")
+    user.recordPermissionChecks {
+      if (!user.canReadProjectVotes(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to view votes for project $projectId")
+      }
     }
   }
 
   fun readReport(reportId: ReportId) {
-    if (!user.canReadReport(reportId)) {
-      throw ReportNotFoundException(reportId)
+    user.recordPermissionChecks {
+      if (!user.canReadReport(reportId)) {
+        throw ReportNotFoundException(reportId)
+      }
     }
   }
 
   fun readSpecies(speciesId: SpeciesId) {
-    if (!user.canReadSpecies(speciesId)) {
-      throw SpeciesNotFoundException(speciesId)
+    user.recordPermissionChecks {
+      if (!user.canReadSpecies(speciesId)) {
+        throw SpeciesNotFoundException(speciesId)
+      }
     }
   }
 
   fun readSubLocation(subLocationId: SubLocationId) {
-    if (!user.canReadSubLocation(subLocationId)) {
-      throw SubLocationNotFoundException(subLocationId)
+    user.recordPermissionChecks {
+      if (!user.canReadSubLocation(subLocationId)) {
+        throw SubLocationNotFoundException(subLocationId)
+      }
     }
   }
 
   fun readSubmission(submissionId: SubmissionId) {
-    if (!user.canReadSubmission(submissionId)) {
-      throw SubmissionNotFoundException(submissionId)
+    user.recordPermissionChecks {
+      if (!user.canReadSubmission(submissionId)) {
+        throw SubmissionNotFoundException(submissionId)
+      }
     }
   }
 
   fun readTimeseries(deviceId: DeviceId) {
-    if (!user.canReadTimeseries(deviceId)) {
-      throw TimeseriesNotFoundException(deviceId)
+    user.recordPermissionChecks {
+      if (!user.canReadTimeseries(deviceId)) {
+        throw TimeseriesNotFoundException(deviceId)
+      }
     }
   }
 
   fun readUpload(uploadId: UploadId) {
-    if (!user.canReadUpload(uploadId)) {
-      throw UploadNotFoundException(uploadId)
+    user.recordPermissionChecks {
+      if (!user.canReadUpload(uploadId)) {
+        throw UploadNotFoundException(uploadId)
+      }
     }
   }
 
   fun readSubmissionDocument(documentId: SubmissionDocumentId) {
-    if (!user.canReadSubmissionDocument(documentId)) {
-      throw SubmissionDocumentNotFoundException(documentId)
+    user.recordPermissionChecks {
+      if (!user.canReadSubmissionDocument(documentId)) {
+        throw SubmissionDocumentNotFoundException(documentId)
+      }
     }
   }
 
   fun readUser(userId: UserId) {
-    if (!user.canReadUser(userId)) {
-      throw UserNotFoundException(userId)
+    user.recordPermissionChecks {
+      if (!user.canReadUser(userId)) {
+        throw UserNotFoundException(userId)
+      }
     }
   }
 
   fun readUserDeliverableInternalInterests(userId: UserId) {
-    if (!user.canReadUserInternalInterests(userId)) {
-      readUser(userId)
-      throw AccessDeniedException("No permission to read internal interests for user $userId")
+    user.recordPermissionChecks {
+      if (!user.canReadUserInternalInterests(userId)) {
+        readUser(userId)
+        throw AccessDeniedException("No permission to read internal interests for user $userId")
+      }
     }
   }
 
   fun readViabilityTest(viabilityTestId: ViabilityTestId) {
-    if (!user.canReadViabilityTest(viabilityTestId)) {
-      throw ViabilityTestNotFoundException(viabilityTestId)
+    user.recordPermissionChecks {
+      if (!user.canReadViabilityTest(viabilityTestId)) {
+        throw ViabilityTestNotFoundException(viabilityTestId)
+      }
     }
   }
 
   fun readWithdrawal(withdrawalId: WithdrawalId) {
-    if (!user.canReadWithdrawal(withdrawalId)) {
-      throw WithdrawalNotFoundException(withdrawalId)
+    user.recordPermissionChecks {
+      if (!user.canReadWithdrawal(withdrawalId)) {
+        throw WithdrawalNotFoundException(withdrawalId)
+      }
     }
   }
 
   fun regenerateAllDeviceManagerTokens() {
-    if (!user.canRegenerateAllDeviceManagerTokens()) {
-      throw AccessDeniedException("No permission to regenerate all device manager tokens")
+    user.recordPermissionChecks {
+      if (!user.canRegenerateAllDeviceManagerTokens()) {
+        throw AccessDeniedException("No permission to regenerate all device manager tokens")
+      }
     }
   }
 
   fun removeOrganizationUser(organizationId: OrganizationId, userId: UserId) {
-    if (!user.canRemoveOrganizationUser(organizationId, userId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to remove user $userId from organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canRemoveOrganizationUser(organizationId, userId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException(
+            "No permission to remove user $userId from organization $organizationId")
+      }
     }
   }
 
   fun removeTerraformationContact(organizationId: OrganizationId) {
-    if (!user.canRemoveTerraformationContact(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to remove Terraformation Contact from organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canRemoveTerraformationContact(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException(
+            "No permission to remove Terraformation Contact from organization $organizationId")
+      }
     }
   }
 
   fun replaceObservationPlot(observationId: ObservationId) {
-    if (!user.canReplaceObservationPlot(observationId)) {
-      readObservation(observationId)
-      throw AccessDeniedException("No permission to replace plot in observation $observationId")
+    user.recordPermissionChecks {
+      if (!user.canReplaceObservationPlot(observationId)) {
+        readObservation(observationId)
+        throw AccessDeniedException("No permission to replace plot in observation $observationId")
+      }
     }
   }
 
   fun rescheduleObservation(observationId: ObservationId) {
-    if (!user.canRescheduleObservation(observationId)) {
-      readObservation(observationId)
-      throw AccessDeniedException("No permission to reschedule observation $observationId")
+    user.recordPermissionChecks {
+      if (!user.canRescheduleObservation(observationId)) {
+        readObservation(observationId)
+        throw AccessDeniedException("No permission to reschedule observation $observationId")
+      }
     }
   }
 
   fun reviewApplication(applicationId: ApplicationId) {
-    if (!user.canReviewApplication(applicationId)) {
-      readApplication(applicationId)
-      throw AccessDeniedException("No permission to review application $applicationId")
+    user.recordPermissionChecks {
+      if (!user.canReviewApplication(applicationId)) {
+        readApplication(applicationId)
+        throw AccessDeniedException("No permission to review application $applicationId")
+      }
     }
   }
 
   fun sendAlert(facilityId: FacilityId) {
-    if (!user.canSendAlert(facilityId)) {
-      readFacility(facilityId)
-      throw AccessDeniedException("No permission to send alerts for facility $facilityId")
+    user.recordPermissionChecks {
+      if (!user.canSendAlert(facilityId)) {
+        readFacility(facilityId)
+        throw AccessDeniedException("No permission to send alerts for facility $facilityId")
+      }
     }
   }
 
   fun setOrganizationUserRole(organizationId: OrganizationId, role: Role) {
-    if (!user.canSetOrganizationUserRole(organizationId, role)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException(
-          "No permission to grant role to users in organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canSetOrganizationUserRole(organizationId, role)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException(
+            "No permission to grant role to users in organization $organizationId")
+      }
     }
   }
 
   fun setTestClock() {
-    if (!user.canSetTestClock()) {
-      throw AccessDeniedException("No permission to set test clock")
+    user.recordPermissionChecks {
+      if (!user.canSetTestClock()) {
+        throw AccessDeniedException("No permission to set test clock")
+      }
     }
   }
 
   fun setWithdrawalUser(accessionId: AccessionId) {
-    if (!user.canSetWithdrawalUser(accessionId)) {
-      readAccession(accessionId)
-      throw AccessDeniedException("No permission to set withdrawal user for accession $accessionId")
+    user.recordPermissionChecks {
+      if (!user.canSetWithdrawalUser(accessionId)) {
+        readAccession(accessionId)
+        throw AccessDeniedException(
+            "No permission to set withdrawal user for accession $accessionId")
+      }
     }
   }
 
   fun scheduleObservation(plantingSiteId: PlantingSiteId) {
-    if (!user.canScheduleObservation(plantingSiteId)) {
-      readPlantingSite(plantingSiteId)
-      throw AccessDeniedException(
-          "No permission to schedule observation for planting site $plantingSiteId")
+    user.recordPermissionChecks {
+      if (!user.canScheduleObservation(plantingSiteId)) {
+        readPlantingSite(plantingSiteId)
+        throw AccessDeniedException(
+            "No permission to schedule observation for planting site $plantingSiteId")
+      }
     }
   }
 
   fun triggerAutomation(automationId: AutomationId) {
-    if (!user.canTriggerAutomation(automationId)) {
-      readAutomation(automationId)
-      throw AccessDeniedException("No permission to trigger automation $automationId")
+    user.recordPermissionChecks {
+      if (!user.canTriggerAutomation(automationId)) {
+        readAutomation(automationId)
+        throw AccessDeniedException("No permission to trigger automation $automationId")
+      }
     }
   }
 
   fun updateAccession(accessionId: AccessionId) {
-    if (!user.canUpdateAccession(accessionId)) {
-      readAccession(accessionId)
-      throw AccessDeniedException("No permission to update accession $accessionId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateAccession(accessionId)) {
+        readAccession(accessionId)
+        throw AccessDeniedException("No permission to update accession $accessionId")
+      }
     }
   }
 
   fun updateAccessionProject(accessionId: AccessionId) {
-    if (!user.canUpdateAccessionProject(accessionId)) {
-      readAccession(accessionId)
-      throw AccessDeniedException("No permission to assign project to accession $accessionId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateAccessionProject(accessionId)) {
+        readAccession(accessionId)
+        throw AccessDeniedException("No permission to assign project to accession $accessionId")
+      }
     }
   }
 
   fun updateApplicationBoundary(applicationId: ApplicationId) {
-    if (!user.canUpdateApplicationBoundary(applicationId)) {
-      readApplication(applicationId)
-      throw AccessDeniedException("No permission to update boundary for application $applicationId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateApplicationBoundary(applicationId)) {
+        readApplication(applicationId)
+        throw AccessDeniedException(
+            "No permission to update boundary for application $applicationId")
+      }
     }
   }
 
   fun updateApplicationCountry(applicationId: ApplicationId) {
-    if (!user.canUpdateApplicationCountry(applicationId)) {
-      readApplication(applicationId)
-      throw AccessDeniedException("No permission to update country for application $applicationId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateApplicationCountry(applicationId)) {
+        readApplication(applicationId)
+        throw AccessDeniedException(
+            "No permission to update country for application $applicationId")
+      }
     }
   }
 
   fun updateApplicationSubmissionStatus(applicationId: ApplicationId) {
-    if (!user.canUpdateApplicationSubmissionStatus(applicationId)) {
-      readApplication(applicationId)
-      throw AccessDeniedException(
-          "No permission to update submission status for application $applicationId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateApplicationSubmissionStatus(applicationId)) {
+        readApplication(applicationId)
+        throw AccessDeniedException(
+            "No permission to update submission status for application $applicationId")
+      }
     }
   }
 
   fun updateAppVersions() {
-    if (!user.canUpdateAppVersions()) {
-      throw AccessDeniedException("No permission to update app versions")
+    user.recordPermissionChecks {
+      if (!user.canUpdateAppVersions()) {
+        throw AccessDeniedException("No permission to update app versions")
+      }
     }
   }
 
   fun updateAutomation(automationId: AutomationId) {
-    if (!user.canUpdateAutomation(automationId)) {
-      readAutomation(automationId)
-      throw AccessDeniedException("No permission to update automation $automationId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateAutomation(automationId)) {
+        readAutomation(automationId)
+        throw AccessDeniedException("No permission to update automation $automationId")
+      }
     }
   }
 
   fun updateBatch(batchId: BatchId) {
-    if (!user.canUpdateBatch(batchId)) {
-      readBatch(batchId)
-      throw AccessDeniedException("No permission to update seedling batch $batchId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateBatch(batchId)) {
+        readBatch(batchId)
+        throw AccessDeniedException("No permission to update seedling batch $batchId")
+      }
     }
   }
 
   fun updateCohort(cohortId: CohortId) {
-    if (!user.canUpdateCohort(cohortId)) {
-      readCohort(cohortId)
-      throw AccessDeniedException("No permission to update cohort $cohortId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateCohort(cohortId)) {
+        readCohort(cohortId)
+        throw AccessDeniedException("No permission to update cohort $cohortId")
+      }
     }
   }
 
   fun updateDefaultVoters() {
-    if (!user.canUpdateDefaultVoters()) {
-      throw AccessDeniedException("No permission to update default voters")
+    user.recordPermissionChecks {
+      if (!user.canUpdateDefaultVoters()) {
+        throw AccessDeniedException("No permission to update default voters")
+      }
     }
   }
 
   fun updateDelivery(deliveryId: DeliveryId) {
-    if (!user.canUpdateDelivery(deliveryId)) {
-      readDelivery(deliveryId)
-      throw AccessDeniedException("No permission to update delivery $deliveryId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateDelivery(deliveryId)) {
+        readDelivery(deliveryId)
+        throw AccessDeniedException("No permission to update delivery $deliveryId")
+      }
     }
   }
 
   fun updateDevice(deviceId: DeviceId) {
-    if (!user.canUpdateDevice(deviceId)) {
-      readDevice(deviceId)
-      throw AccessDeniedException("No permission to update device $deviceId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateDevice(deviceId)) {
+        readDevice(deviceId)
+        throw AccessDeniedException("No permission to update device $deviceId")
+      }
     }
   }
 
   fun updateDeviceManager(deviceManagerId: DeviceManagerId) {
-    if (!user.canUpdateDeviceManager(deviceManagerId)) {
-      readDeviceManager(deviceManagerId)
-      throw AccessDeniedException("No permission to update device manager")
+    user.recordPermissionChecks {
+      if (!user.canUpdateDeviceManager(deviceManagerId)) {
+        readDeviceManager(deviceManagerId)
+        throw AccessDeniedException("No permission to update device manager")
+      }
     }
   }
 
   fun updateDeviceTemplates() {
-    if (!user.canUpdateDeviceTemplates()) {
-      throw AccessDeniedException("No permission to update device templates")
+    user.recordPermissionChecks {
+      if (!user.canUpdateDeviceTemplates()) {
+        throw AccessDeniedException("No permission to update device templates")
+      }
     }
   }
 
   fun updateDocument(documentId: DocumentId) {
-    if (!user.canUpdateDocument(documentId)) {
-      throw AccessDeniedException("No permission to update document")
+    user.recordPermissionChecks {
+      if (!user.canUpdateDocument(documentId)) {
+        throw AccessDeniedException("No permission to update document")
+      }
     }
   }
 
   fun updateDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) {
-    if (!user.canUpdateDraftPlantingSite(draftPlantingSiteId)) {
-      readDraftPlantingSite(draftPlantingSiteId)
-      throw AccessDeniedException(
-          "No permission to update draft planting site $draftPlantingSiteId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateDraftPlantingSite(draftPlantingSiteId)) {
+        readDraftPlantingSite(draftPlantingSiteId)
+        throw AccessDeniedException(
+            "No permission to update draft planting site $draftPlantingSiteId")
+      }
     }
   }
 
   fun updateFacility(facilityId: FacilityId) {
-    if (!user.canUpdateFacility(facilityId)) {
-      readFacility(facilityId)
-      throw AccessDeniedException("No permission to update facility $facilityId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateFacility(facilityId)) {
+        readFacility(facilityId)
+        throw AccessDeniedException("No permission to update facility $facilityId")
+      }
     }
   }
 
   fun updateGlobalRoles() {
-    if (!user.canUpdateGlobalRoles()) {
-      throw AccessDeniedException("No permission to update global roles")
+    user.recordPermissionChecks {
+      if (!user.canUpdateGlobalRoles()) {
+        throw AccessDeniedException("No permission to update global roles")
+      }
     }
   }
 
   fun updateNotification(notificationId: NotificationId) {
-    if (!user.canUpdateNotification(notificationId)) {
-      readNotification(notificationId)
-      throw AccessDeniedException("No permission to update notification")
+    user.recordPermissionChecks {
+      if (!user.canUpdateNotification(notificationId)) {
+        readNotification(notificationId)
+        throw AccessDeniedException("No permission to update notification")
+      }
     }
   }
 
   fun updateNotifications(organizationId: OrganizationId?) {
-    if (!user.canUpdateNotifications(organizationId)) {
-      if (organizationId != null) {
-        readOrganization(organizationId)
+    user.recordPermissionChecks {
+      if (!user.canUpdateNotifications(organizationId)) {
+        if (organizationId != null) {
+          readOrganization(organizationId)
+        }
+        throw AccessDeniedException("No permission to update notifications")
       }
-      throw AccessDeniedException("No permission to update notifications")
     }
   }
 
   fun updateObservation(observationId: ObservationId) {
-    if (!user.canUpdateObservation(observationId)) {
-      readObservation(observationId)
-      throw AccessDeniedException("No permission to update observation $observationId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateObservation(observationId)) {
+        readObservation(observationId)
+        throw AccessDeniedException("No permission to update observation $observationId")
+      }
     }
   }
 
   fun updateOrganization(organizationId: OrganizationId) {
-    if (!user.canUpdateOrganization(organizationId)) {
-      readOrganization(organizationId)
-      throw AccessDeniedException("No permission to update organization $organizationId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateOrganization(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException("No permission to update organization $organizationId")
+      }
     }
   }
 
   fun updateParticipant(participantId: ParticipantId) {
-    if (!user.canUpdateParticipant(participantId)) {
-      readParticipant(participantId)
-      throw AccessDeniedException("No permission to update participant $participantId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateParticipant(participantId)) {
+        readParticipant(participantId)
+        throw AccessDeniedException("No permission to update participant $participantId")
+      }
     }
   }
 
   fun updateParticipantProjectSpecies(participantProjectSpeciesId: ParticipantProjectSpeciesId) {
-    if (!user.canUpdateParticipantProjectSpecies(participantProjectSpeciesId)) {
-      readParticipantProjectSpecies(participantProjectSpeciesId)
-      throw AccessDeniedException(
-          "No permission to update participant project species $participantProjectSpeciesId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateParticipantProjectSpecies(participantProjectSpeciesId)) {
+        readParticipantProjectSpecies(participantProjectSpeciesId)
+        throw AccessDeniedException(
+            "No permission to update participant project species $participantProjectSpeciesId")
+      }
     }
   }
 
   fun updatePlantingSite(plantingSiteId: PlantingSiteId) {
-    if (!user.canUpdatePlantingSite(plantingSiteId)) {
-      readPlantingSite(plantingSiteId)
-      throw AccessDeniedException("No permission to update planting site $plantingSiteId")
+    user.recordPermissionChecks {
+      if (!user.canUpdatePlantingSite(plantingSiteId)) {
+        readPlantingSite(plantingSiteId)
+        throw AccessDeniedException("No permission to update planting site $plantingSiteId")
+      }
     }
   }
 
   fun updatePlantingSiteProject(plantingSiteId: PlantingSiteId) {
-    if (!user.canUpdatePlantingSiteProject(plantingSiteId)) {
-      readPlantingSite(plantingSiteId)
-      throw AccessDeniedException(
-          "No permission to assign project to planting site $plantingSiteId")
+    user.recordPermissionChecks {
+      if (!user.canUpdatePlantingSiteProject(plantingSiteId)) {
+        readPlantingSite(plantingSiteId)
+        throw AccessDeniedException(
+            "No permission to assign project to planting site $plantingSiteId")
+      }
     }
   }
 
   fun updatePlantingSubzone(plantingSubzoneId: PlantingSubzoneId) {
-    if (!user.canUpdatePlantingSubzone(plantingSubzoneId)) {
-      readPlantingSubzone(plantingSubzoneId)
-      throw AccessDeniedException("No permission to update planting subzone $plantingSubzoneId")
+    user.recordPermissionChecks {
+      if (!user.canUpdatePlantingSubzone(plantingSubzoneId)) {
+        readPlantingSubzone(plantingSubzoneId)
+        throw AccessDeniedException("No permission to update planting subzone $plantingSubzoneId")
+      }
     }
   }
 
   fun updatePlantingZone(plantingZoneId: PlantingZoneId) {
-    if (!user.canUpdatePlantingZone(plantingZoneId)) {
-      readPlantingZone(plantingZoneId)
-      throw AccessDeniedException("No permission to update planting zone $plantingZoneId")
+    user.recordPermissionChecks {
+      if (!user.canUpdatePlantingZone(plantingZoneId)) {
+        readPlantingZone(plantingZoneId)
+        throw AccessDeniedException("No permission to update planting zone $plantingZoneId")
+      }
     }
   }
 
   fun updateProject(projectId: ProjectId) {
-    if (!user.canUpdateProject(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to update project $projectId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateProject(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to update project $projectId")
+      }
     }
   }
 
   fun updateProjectAcceleratorDetails(projectId: ProjectId) {
-    if (!user.canUpdateProjectAcceleratorDetails(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException(
-          "No permission to update accelerator details for project $projectId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateProjectAcceleratorDetails(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException(
+            "No permission to update accelerator details for project $projectId")
+      }
     }
   }
 
   fun updateProjectDocumentSettings(projectId: ProjectId) {
-    if (!user.canUpdateProjectDocumentSettings(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to update project document settings $projectId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateProjectDocumentSettings(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to update project document settings $projectId")
+      }
     }
   }
 
   fun updateProjectScores(projectId: ProjectId) {
-    if (!user.canUpdateProjectScores(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to update scores for project $projectId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateProjectScores(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to update scores for project $projectId")
+      }
     }
   }
 
   fun updateInternalOnlyVariables() {
-    if (!user.canUpdateInternalOnlyVariables()) {
-      throw AccessDeniedException("No permission to update internal variables")
+    user.recordPermissionChecks {
+      if (!user.canUpdateInternalOnlyVariables()) {
+        throw AccessDeniedException("No permission to update internal variables")
+      }
     }
   }
 
   fun updateInternalVariableWorkflowDetails(projectId: ProjectId) {
-    if (!user.canUpdateInternalVariableWorkflowDetails(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException(
-          "No permission to update variable workflow details for project $projectId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateInternalVariableWorkflowDetails(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException(
+            "No permission to update variable workflow details for project $projectId")
+      }
     }
   }
 
   fun updateProjectVotes(projectId: ProjectId) {
-    if (!user.canUpdateProjectVotes(projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to update votes for project $projectId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateProjectVotes(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to update votes for project $projectId")
+      }
     }
   }
 
   fun updateReport(reportId: ReportId) {
-    if (!user.canUpdateReport(reportId)) {
-      readReport(reportId)
-      throw AccessDeniedException("No permission to update report $reportId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateReport(reportId)) {
+        readReport(reportId)
+        throw AccessDeniedException("No permission to update report $reportId")
+      }
     }
   }
 
   fun updateSpecies(speciesId: SpeciesId) {
-    if (!user.canUpdateSpecies(speciesId)) {
-      readSpecies(speciesId)
-      throw AccessDeniedException("No permission to update species $speciesId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateSpecies(speciesId)) {
+        readSpecies(speciesId)
+        throw AccessDeniedException("No permission to update species $speciesId")
+      }
     }
   }
 
   fun updateSpecificGlobalRoles(globalRoles: Set<GlobalRole>) {
-    if (!user.canUpdateSpecificGlobalRoles(globalRoles)) {
-      throw AccessDeniedException("No permission to update the provided global roles")
+    user.recordPermissionChecks {
+      if (!user.canUpdateSpecificGlobalRoles(globalRoles)) {
+        throw AccessDeniedException("No permission to update the provided global roles")
+      }
     }
   }
 
   fun updateSubLocation(subLocationId: SubLocationId) {
-    if (!user.canUpdateSubLocation(subLocationId)) {
-      readSubLocation(subLocationId)
-      throw AccessDeniedException("No permission to update sub-location")
+    user.recordPermissionChecks {
+      if (!user.canUpdateSubLocation(subLocationId)) {
+        readSubLocation(subLocationId)
+        throw AccessDeniedException("No permission to update sub-location")
+      }
     }
   }
 
   fun updateSubmissionStatus(deliverableId: DeliverableId, projectId: ProjectId) {
-    if (!user.canUpdateSubmissionStatus(deliverableId, projectId)) {
-      readProject(projectId)
-      throw AccessDeniedException("No permission to update submission status")
+    user.recordPermissionChecks {
+      if (!user.canUpdateSubmissionStatus(deliverableId, projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to update submission status")
+      }
     }
   }
 
   fun updateTimeseries(deviceId: DeviceId) {
-    if (!user.canUpdateTimeseries(deviceId)) {
-      readTimeseries(deviceId)
-      throw AccessDeniedException("No permission to update timeseries on device $deviceId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateTimeseries(deviceId)) {
+        readTimeseries(deviceId)
+        throw AccessDeniedException("No permission to update timeseries on device $deviceId")
+      }
     }
   }
 
   fun updateUpload(uploadId: UploadId) {
-    if (!user.canUpdateUpload(uploadId)) {
-      readUpload(uploadId)
-      throw AccessDeniedException("No permission to update upload")
+    user.recordPermissionChecks {
+      if (!user.canUpdateUpload(uploadId)) {
+        readUpload(uploadId)
+        throw AccessDeniedException("No permission to update upload")
+      }
     }
   }
 
   fun updateUserInternalInterests(userId: UserId) {
-    if (!user.canUpdateUserInternalInterests(userId)) {
-      readUser(userId)
-      throw AccessDeniedException("No permission to update internal interests for user $userId")
+    user.recordPermissionChecks {
+      if (!user.canUpdateUserInternalInterests(userId)) {
+        readUser(userId)
+        throw AccessDeniedException("No permission to update internal interests for user $userId")
+      }
     }
   }
 
   fun uploadPhoto(accessionId: AccessionId) {
-    if (!user.canUploadPhoto(accessionId)) {
-      readAccession(accessionId)
-      throw AccessDeniedException("No permission to upload photo for accession $accessionId")
+    user.recordPermissionChecks {
+      if (!user.canUploadPhoto(accessionId)) {
+        readAccession(accessionId)
+        throw AccessDeniedException("No permission to upload photo for accession $accessionId")
+      }
     }
   }
 }

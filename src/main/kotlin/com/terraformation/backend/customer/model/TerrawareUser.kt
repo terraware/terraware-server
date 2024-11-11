@@ -126,6 +126,10 @@ interface TerrawareUser : Principal {
    */
   fun clearCachedPermissions() {}
 
+  fun <T> recordPermissionChecks(func: () -> T): T {
+    return func()
+  }
+
   /*
    * Permission checks. Each of these returns true if the user has permission to perform the action.
    */

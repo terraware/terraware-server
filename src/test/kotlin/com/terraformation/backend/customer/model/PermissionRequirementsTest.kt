@@ -66,12 +66,14 @@ import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSubzoneNotFoundException
 import com.terraformation.backend.tracking.db.PlantingZoneNotFoundException
 import com.terraformation.backend.tracking.db.PlotNotFoundException
+import io.mockk.CapturingSlot
 import io.mockk.MockKMatcherScope
 import io.mockk.every
 import io.mockk.mockk
 import kotlin.reflect.KClass
 import kotlin.reflect.typeOf
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -248,6 +250,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
     readChecks.forEach { check -> check(funcWithReceiver) }
 
     assertDoesNotThrow(funcWithReceiver)
+  }
+
+  @BeforeEach
+  fun setUp() {
+    val funcSlot = CapturingSlot<() -> Any>()
+
+    every { user.recordPermissionChecks(capture(funcSlot)) } answers { funcSlot.captured() }
   }
 
   @Test

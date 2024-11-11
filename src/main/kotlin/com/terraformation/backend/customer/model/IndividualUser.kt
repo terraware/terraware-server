@@ -128,6 +128,9 @@ data class IndividualUser(
   private val _globalRoles = ResettableLazy { permissionStore.fetchGlobalRoles(userId) }
   override val globalRoles: Set<GlobalRole> by _globalRoles
 
+  /** History of permission checks performed in the current request or job. */
+  val permissionChecks: MutableList<PermissionCheck> = mutableListOf()
+
   override fun clearCachedPermissions() {
     _organizationRoles.reset()
     _facilityRoles.reset()
@@ -146,6 +149,18 @@ data class IndividualUser(
       organizationRoles.values.any {
         it == Role.Owner || it == Role.Admin || it == Role.TerraformationContact
       }
+
+  override fun isAdminOrHigher(organizationId: OrganizationId?): Boolean {
+    return organizationId?.let {
+      recordPermissionCheck(RolePermissionCheck(Role.Admin, organizationId))
+      when (organizationRoles[organizationId]) {
+        Role.Admin,
+        Role.Owner,
+        Role.TerraformationContact -> true
+        else -> false
+      }
+    } ?: false
+  }
 
   override fun getAuthorities(): MutableCollection<out GrantedAuthority> {
     return if (isSuperAdmin()) {
@@ -353,7 +368,9 @@ data class IndividualUser(
 
   override fun canManageNotifications() = false
 
-  override fun canManageObservation(observationId: ObservationId) = isSuperAdmin()
+  override fun canManageObservation(observationId: ObservationId) =
+      isSuperAdmin() &&
+          parentStore.getPlantingSiteId(observationId)?.let { canUpdatePlantingSite(it) } == true
 
   override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId) =
       canUpdatePlantingSite(plantingSiteId) && isSuperAdmin()
@@ -684,64 +701,141 @@ data class IndividualUser(
 
   override fun canUploadPhoto(accessionId: AccessionId) = canReadAccession(accessionId)
 
-  private fun isAcceleratorAdmin() = GlobalRole.AcceleratorAdmin in globalRoles || isSuperAdmin()
+  private fun isAcceleratorAdmin(): Boolean {
+    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.AcceleratorAdmin))
+    return setOf(GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin).any { it in globalRoles }
+  }
 
-  private fun isTFExpert() = GlobalRole.TFExpert in globalRoles || isSuperAdmin()
+  private fun isTFExpertOrHigher(): Boolean {
+    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.TFExpert))
+    return setOf(GlobalRole.TFExpert, GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin).any {
+      it in globalRoles
+    }
+  }
 
-  private fun isTFExpertOrHigher() = isTFExpert() || isAcceleratorAdmin()
+  private fun isReadOnlyOrHigher(): Boolean {
+    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.ReadOnly))
+    return setOf(
+            GlobalRole.ReadOnly,
+            GlobalRole.TFExpert,
+            GlobalRole.AcceleratorAdmin,
+            GlobalRole.SuperAdmin)
+        .any { it in globalRoles }
+  }
 
-  private fun isReadOnly() = GlobalRole.ReadOnly in globalRoles || isSuperAdmin()
-
-  private fun isReadOnlyOrHigher() = isReadOnly() || isTFExpertOrHigher()
-
-  private fun isSuperAdmin() = GlobalRole.SuperAdmin in globalRoles
+  private fun isSuperAdmin(): Boolean {
+    recordPermissionCheck(GlobalRolePermissionCheck(GlobalRole.SuperAdmin))
+    return GlobalRole.SuperAdmin in globalRoles
+  }
 
   private fun isOwner(organizationId: OrganizationId?) =
-      organizationId != null && organizationRoles[organizationId] == Role.Owner
+      organizationId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Owner, organizationId))
+        organizationRoles[organizationId] == Role.Owner
+      } ?: false
 
   private fun isAdminOrHigher(facilityId: FacilityId?) =
-      facilityId != null &&
-          when (facilityRoles[facilityId]) {
-            Role.Admin,
-            Role.Owner,
-            Role.TerraformationContact -> true
-            else -> false
-          }
+      facilityId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Admin, facilityId))
+        when (facilityRoles[facilityId]) {
+          Role.Admin,
+          Role.Owner,
+          Role.TerraformationContact -> true
+          else -> false
+        }
+      } ?: false
 
   private fun isManagerOrHigher(organizationId: OrganizationId?) =
-      organizationId != null &&
-          when (organizationRoles[organizationId]) {
-            Role.Admin,
-            Role.Manager,
-            Role.Owner,
-            Role.TerraformationContact -> true
-            else -> false
-          }
+      organizationId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Manager, organizationId))
+        when (organizationRoles[organizationId]) {
+          Role.Admin,
+          Role.Manager,
+          Role.Owner,
+          Role.TerraformationContact -> true
+          else -> false
+        }
+      } ?: false
 
   private fun isManagerOrHigher(facilityId: FacilityId?) =
-      facilityId != null &&
-          when (facilityRoles[facilityId]) {
-            Role.Admin,
-            Role.Manager,
-            Role.Owner,
-            Role.TerraformationContact -> true
-            else -> false
-          }
+      facilityId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Manager, facilityId))
+        when (facilityRoles[facilityId]) {
+          Role.Admin,
+          Role.Manager,
+          Role.Owner,
+          Role.TerraformationContact -> true
+          else -> false
+        }
+      } ?: false
 
   private fun isManagerOrHigher(plantingSiteId: PlantingSiteId?) =
-      plantingSiteId != null && isManagerOrHigher(parentStore.getOrganizationId(plantingSiteId))
+      plantingSiteId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Manager, plantingSiteId))
+        isManagerOrHigher(parentStore.getOrganizationId(plantingSiteId))
+      } ?: false
 
-  private fun isMember(facilityId: FacilityId?) = facilityId != null && facilityId in facilityRoles
+  private fun isMember(facilityId: FacilityId?) =
+      facilityId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Contributor, facilityId))
+        facilityId in facilityRoles
+      } ?: false
 
   private fun isMember(organizationId: OrganizationId?) =
-      organizationId != null && organizationId in organizationRoles
+      organizationId?.let {
+        recordPermissionCheck(RolePermissionCheck(Role.Contributor, organizationId))
+        organizationId in organizationRoles
+      } ?: false
 
   /** Returns true if one of the user's global roles allows them to read an organization. */
   private fun isGlobalReader(organizationId: OrganizationId) =
-      isSuperAdmin() ||
+      GlobalRole.SuperAdmin in globalRoles ||
           (isReadOnlyOrHigher() &&
               (parentStore.hasInternalTag(organizationId, InternalTagIds.Accelerator) ||
                   parentStore.hasApplications(organizationId)))
+
+  private var isRecordingChecks: Boolean = false
+
+  private fun recordPermissionCheck(check: PermissionCheck) {
+    if (isRecordingChecks) {
+      var checkIsAlreadyImplied = false
+
+      check.populateCallStack()
+
+      permissionChecks
+          .filter { check.isGuardedBy(it) }
+          .forEach { previousCheck ->
+            if (check.isStricterThan(previousCheck)) {
+              log.warn(
+                  "Permission check $check guarded by $previousCheck" +
+                      "\nPrevious:" +
+                      "\n${previousCheck.prettyPrintStack()}" +
+                      "\nCurrent:" +
+                      "\n${check.prettyPrintStack()}")
+            } else if (check.isImpliedBy(previousCheck)) {
+              checkIsAlreadyImplied = true
+            }
+          }
+
+      // If a check is already implied by another check that guards it, don't record it; if, later,
+      // there is a stricter check, we don't want to erroneously flag it as guarded by this
+      // less-strict one.
+      if (!checkIsAlreadyImplied) {
+        permissionChecks.add(check)
+      }
+    }
+  }
+
+  override fun <T> recordPermissionChecks(func: () -> T): T {
+    val oldHardPermission = isRecordingChecks
+    isRecordingChecks = true
+
+    return try {
+      func()
+    } finally {
+      isRecordingChecks = oldHardPermission
+    }
+  }
 
   // When adding new permissions, put them in alphabetical order.
 }

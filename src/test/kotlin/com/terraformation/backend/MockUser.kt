@@ -26,5 +26,10 @@ fun mockUser(): IndividualUser {
         CurrentUserHolder.runAs(user, funcSlot.captured, emptyList())
       }
 
+  every { user.recordPermissionChecks(capture(funcSlot)) } answers
+      {
+        CurrentUserHolder.runAs(user, funcSlot.captured, emptyList())
+      }
+
   return user
 }
