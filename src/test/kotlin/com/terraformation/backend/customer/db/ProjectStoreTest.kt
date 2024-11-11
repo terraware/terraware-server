@@ -1,6 +1,6 @@
 package com.terraformation.backend.customer.db
 
-import com.terraformation.backend.RunsAsIndividualUser
+import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
@@ -8,8 +8,8 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEve
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.model.ExistingProjectModel
-import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.NewProjectModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNameInUseException
@@ -27,8 +27,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-class ProjectStoreTest : DatabaseTest(), RunsAsIndividualUser {
-  override lateinit var user: IndividualUser
+class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
+  override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()

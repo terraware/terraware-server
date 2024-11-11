@@ -128,7 +128,7 @@ data class IndividualUser(
   private val _globalRoles = ResettableLazy { permissionStore.fetchGlobalRoles(userId) }
   override val globalRoles: Set<GlobalRole> by _globalRoles
 
-  fun clearCachedPermissions() {
+  override fun clearCachedPermissions() {
     _organizationRoles.reset()
     _facilityRoles.reset()
     _globalRoles.reset()

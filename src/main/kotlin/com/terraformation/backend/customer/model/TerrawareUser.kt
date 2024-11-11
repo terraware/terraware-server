@@ -118,6 +118,8 @@ interface TerrawareUser : Principal {
     return organizationRoles.keys.filter { isAdminOrHigher(it) }.toSet()
   }
 
+  fun clearCachedPermissions()
+
   /*
    * Permission checks. Each of these returns true if the user has permission to perform the action.
    */
