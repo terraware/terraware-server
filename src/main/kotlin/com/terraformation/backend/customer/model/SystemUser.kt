@@ -99,8 +99,6 @@ class SystemUser(
 
   override fun getName(): String = USERNAME
 
-  override fun clearCachedPermissions() {}
-
   /*
    * All permission checks always succeed (thanks to defaultPermission) except for operations that
    * should only be performed manually by a system administrator.
