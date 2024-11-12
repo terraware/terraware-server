@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.terraformation.backend.accelerator.api.TerraformationContactUserPayload
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
@@ -10,6 +11,8 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.OrganizationService
 import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
@@ -51,6 +54,7 @@ import org.springframework.web.bind.annotation.RestController
 class OrganizationsController(
     private val organizationService: OrganizationService,
     private val organizationStore: OrganizationStore,
+    private val userStore: UserStore,
 ) {
   private val emailValidator = EmailValidator.getInstance()
 
@@ -66,8 +70,10 @@ class OrganizationsController(
   ): ListOrganizationsResponsePayload {
     val elements =
         organizationStore.fetchAll(depth).map { model ->
-          OrganizationPayload(model, getRole(model))
+          OrganizationPayload(
+              model, getRole(model), userStore.getTerraformationContactUser(model.id))
         }
+
     return ListOrganizationsResponsePayload(elements)
   }
 
@@ -357,6 +363,7 @@ data class OrganizationPayload(
             "The current user's role in the organization. Absent if the current user is not a " +
                 "member of the organization but is able to read it thanks to a global role.")
     val role: Role?,
+    val tfContactUser: TerraformationContactUserPayload?,
     val timeZone: ZoneId?,
     @Schema(
         description = "The total number of users in the organization, including the current user.")
@@ -366,6 +373,7 @@ data class OrganizationPayload(
   constructor(
       model: OrganizationModel,
       role: Role?,
+      tfContactUser: IndividualUser? = null,
   ) : this(
       canSubmitReports = InternalTagIds.Reporter in model.internalTags,
       model.countryCode,
@@ -378,6 +386,7 @@ data class OrganizationPayload(
       model.organizationType,
       model.organizationTypeDetails,
       role,
+      tfContactUser = tfContactUser?.let { TerraformationContactUserPayload(it) },
       model.timeZone,
       model.totalUsers,
       model.website,
