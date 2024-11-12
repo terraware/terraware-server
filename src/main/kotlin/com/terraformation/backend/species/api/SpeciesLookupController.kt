@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.ws.rs.BadRequestException
+import jakarta.ws.rs.NotFoundException
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -78,7 +79,9 @@ class SpeciesLookupController(private val gbifStore: GbifStore) {
           example = "en")
       language: String? = null,
   ): SpeciesLookupDetailsResponsePayload {
-    val model = gbifStore.fetchOneByScientificName(scientificName, language)
+    val model =
+        gbifStore.fetchOneByScientificName(scientificName, language)
+            ?: throw NotFoundException("$scientificName not found")
     val problem = gbifStore.checkScientificName(scientificName)
     return SpeciesLookupDetailsResponsePayload(model, problem)
   }

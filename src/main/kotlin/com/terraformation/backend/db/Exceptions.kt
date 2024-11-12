@@ -173,9 +173,6 @@ class SpeciesInUseException(val speciesId: SpeciesId) :
 class ScientificNameExistsException(val name: String?) :
     DuplicateEntityException("Scientific name $name already exists")
 
-class ScientificNameNotFoundException(val name: String) :
-    EntityNotFoundException("Scientific name $name not found")
-
 class SpeciesNotFoundException(val speciesId: SpeciesId) :
     EntityNotFoundException("Species $speciesId not found")
 
