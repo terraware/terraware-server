@@ -68,10 +68,18 @@ class OrganizationsController(
       @Schema(description = "Return this level of information about the organization's contents.")
       depth: OrganizationStore.FetchDepth,
   ): ListOrganizationsResponsePayload {
+    val currentUser = currentUser()
     val elements =
         organizationStore.fetchAll(depth).map { model ->
           OrganizationPayload(
-              model, getRole(model), userStore.getTerraformationContactUser(model.id))
+              model = model,
+              role = getRole(model),
+              tfContactUser =
+                  if (currentUser.canListOrganizationUsers(model.id)) {
+                    userStore.getTerraformationContactUser(model.id)
+                  } else {
+                    null
+                  })
         }
 
     return ListOrganizationsResponsePayload(elements)
