@@ -1,3 +1,5 @@
+450920d35f8 Update dependency org.hsqldb:hsqldb to v2.7.4 (#2587)
+8415b9cc71b Update database dependencies (#2585)
 51d449dcf4a SW-6221 Merge "Other" species into known ones (#2584)
 789b3e004b3 Use structured logging for access logs (#2582)
 a95ea469017 SW-6230 Allow fetching of application submissions (#2583)
