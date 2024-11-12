@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseBackedTest
+import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
@@ -16,13 +17,26 @@ import com.terraformation.backend.db.default_schema.tables.references.USERS
 /**
  * Indicates that a test should be run with the current user set to an instance of [TerrawareUser]
  * backed by the database rather than a test double.
+ *
+ * If the test class is a subclass of [DatabaseTest], a user will be inserted automatically and used
+ * by default. Tests may insert additional users and switch to them by calling [switchToUser].
  */
 interface RunsAsDatabaseUser : RunsAsUser {
-  // This overrides the "val" in RunsAsUser with a "var" so that the setup method in DatabaseTest
-  // can populate it after inserting the user into the database.
+  /**
+   * User to masquerade as while running tests. You'll almost always want to implement this as
+   *
+   *     override lateinit var user: TerrawareUser
+   *
+   * This overrides the `val` version of the property in [RunsAsUser] with a `var` version so that
+   * it can be populated after the user is inserted into the database.
+   */
   override var user: TerrawareUser
 
-  fun runTestAs(userId: UserId) {
+  /**
+   * Reads a user from the database and uses it as the currently-active user. Remains in effect
+   * until the end of the test method or until this method is called again.
+   */
+  fun switchToUser(userId: UserId) {
     if (this is DatabaseBackedTest) {
       val record = dslContext.selectFrom(USERS).where(USERS.ID.eq(userId)).fetchSingle()
 

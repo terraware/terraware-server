@@ -1110,12 +1110,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @BeforeEach
     fun setUp() {
-      runTestAs(insertUser(type = UserType.System))
+      switchToUser(insertUser(type = UserType.System))
     }
 
     @Test
     fun `throws exception when no permission to manage notifications`() {
-      runTestAs(insertUser())
+      switchToUser(insertUser())
       insertUserGlobalRole(role = GlobalRole.SuperAdmin)
 
       assertThrows<AccessDeniedException> {
@@ -1195,7 +1195,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @BeforeEach
     fun setUp() {
-      runTestAs(insertUser(type = UserType.System))
+      switchToUser(insertUser(type = UserType.System))
     }
 
     @Test
@@ -1282,7 +1282,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @BeforeEach
     fun setUp() {
-      runTestAs(insertUser(type = UserType.System))
+      switchToUser(insertUser(type = UserType.System))
     }
 
     @Test
@@ -1371,7 +1371,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @BeforeEach
     fun setUp() {
-      runTestAs(insertUser(type = UserType.System))
+      switchToUser(insertUser(type = UserType.System))
     }
 
     @Test

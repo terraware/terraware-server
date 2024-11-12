@@ -10,12 +10,12 @@ import org.springframework.boot.test.autoconfigure.jooq.JooqTest
 @JooqTest
 abstract class DatabaseTest : DatabaseBackedTest() {
   @BeforeEach
-  fun insertMockUser() {
+  fun insertDefaultUser() {
     if (this is RunsAsUser) {
       val userId = insertUser()
 
       if (this is RunsAsDatabaseUser) {
-        runTestAs(userId)
+        switchToUser(userId)
       } else {
         every { user.userId } returns userId
       }
