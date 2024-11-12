@@ -1,5 +1,6 @@
 package com.terraformation.backend.db
 
+import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.RunsAsUser
 import io.mockk.every
 import org.junit.jupiter.api.BeforeEach
@@ -9,10 +10,15 @@ import org.springframework.boot.test.autoconfigure.jooq.JooqTest
 @JooqTest
 abstract class DatabaseTest : DatabaseBackedTest() {
   @BeforeEach
-  fun insertMockUser() {
+  fun insertDefaultUser() {
     if (this is RunsAsUser) {
       val userId = insertUser()
-      every { user.userId } returns userId
+
+      if (this is RunsAsDatabaseUser) {
+        switchToUser(userId)
+      } else {
+        every { user.userId } returns userId
+      }
     }
   }
 }

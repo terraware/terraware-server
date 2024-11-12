@@ -9,20 +9,27 @@ import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 
 /**
- * Convenience interface to run test methods with the current user set to a test double. Typically
- * the double will be a mock or a stub created by MockK. This interface just saves you the trouble
- * of having to explicitly set up the security context for each test method.
+ * Convenience interface to run tests that need to control the identity of the current user.
+ *
+ * The user can be a mock or a stub created by MockK, or it can be a concrete [TerrawareUser] backed
+ * by the database. In the latter case, you probably want [RunsAsDatabaseUser] instead of this
+ * interface.
  *
  * This is a more lightweight alternative to the Spring Security `@WithUserDetails` annotation,
  * which requires setting up a full Spring application context on the test.
  */
 interface RunsAsUser {
   /**
-   * User to masquerade as while running tests. Typically, you'll want to define this as
+   * User to masquerade as while running tests.
    *
-   * ```
-   * override val user: TerrawareUser = mockUser()
-   * ```
+   * For tests that implement [RunsAsDatabaseUser] you'll want to implement this as
+   *
+   *     override lateinit var user: TerrawareUser
+   *
+   * and it will be initialized automatically. For tests where you want to use a MockK test double
+   * instead of a database-backed user, you'll want to implement this as
+   *
+   *     override val user: TerrawareUser = mockUser()
    *
    * and then use the MockK API to control the behavior of the stubbed-out user.
    */

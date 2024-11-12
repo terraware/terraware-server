@@ -105,7 +105,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   private lateinit var organizationId: OrganizationId
 
   // Don't insert the mock user by default.
-  override fun insertMockUser() {}
+  override fun insertDefaultUser() {}
 
   @BeforeEach
   fun setUp() {

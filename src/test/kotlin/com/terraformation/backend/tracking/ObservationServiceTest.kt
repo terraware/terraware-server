@@ -1,6 +1,6 @@
 package com.terraformation.backend.tracking
 
-import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
@@ -10,7 +10,10 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationType
+import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
@@ -29,7 +32,6 @@ import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.FileMetadata
-import com.terraformation.backend.mockUser
 import com.terraformation.backend.onePixelPng
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
@@ -94,8 +96,8 @@ import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
-class ObservationServiceTest : DatabaseTest(), RunsAsUser {
-  override val user: TerrawareUser = mockUser()
+class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
+  override lateinit var user: TerrawareUser
 
   private val clock = spyk(TestClock())
   private val eventPublisher = TestEventPublisher()
@@ -157,22 +159,17 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
+    insertOrganizationUser(role = Role.Admin)
     plantingSiteId = insertPlantingSite(x = 0, width = 11, gridOrigin = point(1))
-
-    every { user.canCreateObservation(any()) } returns true
-    every { user.canManageObservation(any()) } returns true
-    every { user.canReadMonitoringPlot(any()) } returns true
-    every { user.canReadObservation(any()) } returns true
-    every { user.canReadPlantingSite(any()) } returns true
-    every { user.canReadPlantingZone(any()) } returns true
-    every { user.canRescheduleObservation(any()) } returns true
-    every { user.canScheduleObservation(any()) } returns true
-    every { user.canUpdateObservation(any()) } returns true
-    every { user.canUpdatePlantingSite(any()) } returns true
   }
 
   @Nested
   inner class StartObservation {
+    @BeforeEach
+    fun setUp() {
+      insertUserGlobalRole(role = GlobalRole.SuperAdmin)
+    }
+
     @Test
     fun `assigns correct plots to planting zones`() {
       // Given a planting site with this structure:
@@ -638,7 +635,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if no permission to manage observation`() {
       val observationId = insertObservation(state = ObservationState.Upcoming)
 
-      every { user.canManageObservation(observationId) } returns false
+      deleteUserGlobalRole(role = GlobalRole.SuperAdmin)
 
       assertThrows<AccessDeniedException> { service.startObservation(observationId) }
     }
@@ -719,7 +716,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       @Test
       fun `throws exception if no permission to read observation`() {
-        every { user.canReadObservation(observationId) } returns false
+        deleteOrganizationUser()
 
         assertThrows<ObservationNotFoundException> {
           service.readPhoto(observationId, plotId, fileId)
@@ -755,9 +752,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
       @Test
       fun `throws exception if no permission to update observation`() {
-        every { user.canUpdateObservation(observationId) } returns false
+        deleteOrganizationUser()
 
-        assertThrows<AccessDeniedException> {
+        assertThrows<ObservationNotFoundException> {
           service.storePhoto(
               observationId,
               plotId,
@@ -817,7 +814,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
   inner class ScheduleObservation {
     @Test
     fun `throws access denied exception scheduling an observation if no permission to schedule observation`() {
-      every { user.canScheduleObservation(plantingSiteId) } returns false
+      insertOrganizationUser(role = Role.Manager)
 
       assertThrows<AccessDeniedException> {
         service.scheduleObservation(newObservationModel(plantingSiteId = plantingSiteId))
@@ -826,8 +823,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws planting site not found exception scheduling an observation if no permission to schedule observation or read the planting site`() {
-      every { user.canReadPlantingSite(plantingSiteId) } returns false
-      every { user.canScheduleObservation(plantingSiteId) } returns false
+      deleteOrganizationUser()
 
       assertThrows<PlantingSiteNotFoundException> {
         service.scheduleObservation(newObservationModel(plantingSiteId = plantingSiteId))
@@ -949,7 +945,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws access denied exception rescheduling an observation if no permission to reschedule observation`() {
-      every { user.canRescheduleObservation(observationId) } returns false
+      insertOrganizationUser(role = Role.Manager)
 
       val startDate = LocalDate.EPOCH
       val endDate = startDate.plusDays(1)
@@ -961,8 +957,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws observation not found exception rescheduling an observation if no permission to reschedule or read observation`() {
-      every { user.canRescheduleObservation(observationId) } returns false
-      every { user.canReadObservation(observationId) } returns false
+      deleteOrganizationUser()
 
       val startDate = LocalDate.EPOCH
       val endDate = startDate.plusDays(1)
@@ -1115,12 +1110,13 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @BeforeEach
     fun setUp() {
-      every { user.canManageNotifications() } returns true
+      switchToUser(insertUser(type = UserType.System))
     }
 
     @Test
     fun `throws exception when no permission to manage notifications`() {
-      every { user.canManageNotifications() } returns false
+      switchToUser(insertUser())
+      insertUserGlobalRole(role = GlobalRole.SuperAdmin)
 
       assertThrows<AccessDeniedException> {
         service.fetchNonNotifiedSitesToNotifySchedulingObservations(criteria)
@@ -1199,7 +1195,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @BeforeEach
     fun setUp() {
-      every { user.canManageNotifications() } returns true
+      switchToUser(insertUser(type = UserType.System))
     }
 
     @Test
@@ -1286,7 +1282,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @BeforeEach
     fun setUp() {
-      every { user.canManageNotifications() } returns true
+      switchToUser(insertUser(type = UserType.System))
     }
 
     @Test
@@ -1375,7 +1371,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
 
     @BeforeEach
     fun setUp() {
-      every { user.canManageNotifications() } returns true
+      switchToUser(insertUser(type = UserType.System))
     }
 
     @Test
@@ -1478,10 +1474,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
     fun setUp() {
       helper.insertPlantedSite(width = 2, height = 7, subzoneCompletedTime = Instant.EPOCH)
       observationId = insertObservation()
-
-      every { user.canManageObservation(observationId) } returns false
-      every { user.canReplaceObservationPlot(any()) } returns true
-      every { user.canUpdatePlantingSite(any()) } returns true
     }
 
     @Test
@@ -1801,7 +1793,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       val monitoringPlotId = insertMonitoringPlot()
       insertObservationPlot()
 
-      every { user.canReplaceObservationPlot(observationId) } returns false
+      insertOrganizationUser(role = Role.Manager)
 
       assertThrows<AccessDeniedException> {
         service.replaceMonitoringPlot(
@@ -1824,9 +1816,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsUser {
       insertDelivery()
 
       insertPlantingZone(numPermanentClusters = 1, numTemporaryPlots = 1, width = 2, height = 7)
-
-      every { user.canReplaceObservationPlot(any()) } returns true
-      every { user.canUpdatePlantingSite(any()) } returns true
     }
 
     @Test

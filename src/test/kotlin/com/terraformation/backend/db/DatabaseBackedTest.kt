@@ -1,7 +1,9 @@
 package com.terraformation.backend.db
 
+import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.api.ArbitraryJsonObject
 import com.terraformation.backend.api.ControllerIntegrationTest
+import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
@@ -177,6 +179,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_SU
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
+import com.terraformation.backend.db.default_schema.tables.references.USER_GLOBAL_ROLES
 import com.terraformation.backend.db.docprod.DependencyCondition
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentSavedVersionId
@@ -1178,6 +1181,22 @@ abstract class DatabaseBackedTest {
       role: GlobalRole,
   ) {
     userGlobalRolesDao.insert(UserGlobalRolesRow(globalRoleId = role, userId = userId))
+    clearCachedPermissions(userId)
+  }
+
+  fun deleteUserGlobalRole(
+      userId: UserId = currentUser().userId,
+      role: GlobalRole,
+  ) {
+    with(USER_GLOBAL_ROLES) {
+      dslContext
+          .deleteFrom(USER_GLOBAL_ROLES)
+          .where(USER_ID.eq(userId))
+          .and(GLOBAL_ROLE_ID.eq(role))
+          .execute()
+    }
+
+    clearCachedPermissions(userId)
   }
 
   /** Adds a user to an organization. */
@@ -1198,8 +1217,29 @@ abstract class DatabaseBackedTest {
           .set(ORGANIZATION_ID, organizationId)
           .set(ROLE_ID, role)
           .set(USER_ID, userId)
+          .onConflict(ORGANIZATION_ID, USER_ID)
+          .doUpdate()
+          .set(ROLE_ID, role)
           .execute()
     }
+
+    clearCachedPermissions(userId)
+  }
+
+  /** Removes a user from an organization. */
+  fun deleteOrganizationUser(
+      userId: UserId = currentUser().userId,
+      organizationId: OrganizationId = inserted.organizationId,
+  ) {
+    with(ORGANIZATION_USERS) {
+      dslContext
+          .deleteFrom(ORGANIZATION_USERS)
+          .where(ORGANIZATION_ID.eq(organizationId))
+          .and(USER_ID.eq(userId))
+          .execute()
+    }
+
+    clearCachedPermissions(userId)
   }
 
   private var nextSubLocationNumber = 1
@@ -3100,6 +3140,12 @@ abstract class DatabaseBackedTest {
     variableWorkflowHistoryDao.insert(row)
 
     return row.id!!.also { inserted.variableWorkflowHistoryIds.add(it) }
+  }
+
+  protected fun clearCachedPermissions(updatedUserId: UserId = currentUser().userId) {
+    if (updatedUserId == CurrentUserHolder.getCurrentUser()?.userId && this is RunsAsDatabaseUser) {
+      user.clearCachedPermissions()
+    }
   }
 
   /**

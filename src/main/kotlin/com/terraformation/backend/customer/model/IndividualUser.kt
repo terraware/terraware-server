@@ -43,6 +43,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.util.ResettableLazy
 import java.time.Instant
 import java.time.ZoneId
 import java.util.Locale
@@ -118,15 +119,20 @@ data class IndividualUser(
         }
   }
 
-  override val organizationRoles: Map<OrganizationId, Role> by lazy {
-    permissionStore.fetchOrganizationRoles(userId)
-  }
+  private val _organizationRoles = ResettableLazy { permissionStore.fetchOrganizationRoles(userId) }
+  override val organizationRoles: Map<OrganizationId, Role> by _organizationRoles
 
-  override val facilityRoles: Map<FacilityId, Role> by lazy {
-    permissionStore.fetchFacilityRoles(userId)
-  }
+  private val _facilityRoles = ResettableLazy { permissionStore.fetchFacilityRoles(userId) }
+  override val facilityRoles: Map<FacilityId, Role> by _facilityRoles
 
-  override val globalRoles: Set<GlobalRole> by lazy { permissionStore.fetchGlobalRoles(userId) }
+  private val _globalRoles = ResettableLazy { permissionStore.fetchGlobalRoles(userId) }
+  override val globalRoles: Set<GlobalRole> by _globalRoles
+
+  override fun clearCachedPermissions() {
+    _organizationRoles.reset()
+    _facilityRoles.reset()
+    _globalRoles.reset()
+  }
 
   val fullName: String?
     get() = makeFullName(firstName, lastName)

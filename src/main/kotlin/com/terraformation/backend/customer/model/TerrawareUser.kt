@@ -118,6 +118,14 @@ interface TerrawareUser : Principal {
     return organizationRoles.keys.filter { isAdminOrHigher(it) }.toSet()
   }
 
+  /**
+   * Clears any cached information about what the user has permission to do.
+   *
+   * This is primarily for tests, but can also be called from any application code that makes
+   * changes to the current user's permission-related data, e.g., joining a new organization.
+   */
+  fun clearCachedPermissions() {}
+
   /*
    * Permission checks. Each of these returns true if the user has permission to perform the action.
    */
