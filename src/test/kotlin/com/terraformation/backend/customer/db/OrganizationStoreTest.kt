@@ -196,6 +196,39 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `fetchAll includes organizations that have applications when requested by read-only or higher accelerator admins`() {
+    every { user.facilityRoles } returns emptyMap()
+    every { user.canReadAllAcceleratorDetails() } returns true
+
+    // Another org with a project, not associated to the user through org roles
+    val otherNonAssociatedOrgId = insertOrganization(name = "OtherNonAssociatedOrg")
+    insertProject(organizationId = otherNonAssociatedOrgId)
+
+    // Another org with a project with an application, not associated to user through org roles
+    val otherOrgIdWithApplication = insertOrganization(name = "OtherOrgWithApplication")
+    val otherOrgWithApplicationProjectId = insertProject(organizationId = otherOrgIdWithApplication)
+    insertApplication(projectId = otherOrgWithApplicationProjectId)
+
+    val expected =
+        listOf(
+            organizationModel.copy(facilities = emptyList()),
+            OrganizationModel(
+                id = otherOrgIdWithApplication,
+                name = "OtherOrgWithApplication",
+                countryCode = null,
+                countrySubdivisionCode = null,
+                createdTime = Instant.EPOCH,
+                facilities = emptyList(),
+                internalTags = emptySet(),
+                timeZone = null,
+                totalUsers = 0,
+            ))
+
+    val actual = store.fetchAll(OrganizationStore.FetchDepth.Facility)
+    assertEquals(expected, actual)
+  }
+
+  @Test
   fun `createWithAdmin populates organization details`() {
     val row =
         OrganizationsRow(

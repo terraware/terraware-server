@@ -14,6 +14,7 @@ import com.terraformation.backend.db.InvalidTerraformationContactEmail
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserAlreadyInOrganizationException
 import com.terraformation.backend.db.UserNotFoundException
+import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ManagedLocationType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -30,6 +31,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_MANAGED_LOCATION_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.log.perClassLogger
@@ -74,6 +76,18 @@ class OrganizationStore(
   private fun selectForDepth(depth: FetchDepth, condition: Condition): List<OrganizationModel> {
     val user = currentUser()
 
+    val applicationsCondition =
+        if (user.canReadAllAcceleratorDetails()) {
+          DSL.exists(
+              DSL.selectOne()
+                  .from(APPLICATIONS)
+                  .join(PROJECTS)
+                  .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
+                  .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
+        } else {
+          null
+        }
+
     val internalTagsMultiset =
         DSL.multiset(
                 DSL.select(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID)
@@ -115,7 +129,7 @@ class OrganizationStore(
         .select(
             ORGANIZATIONS.asterisk(), facilitiesMultiset, internalTagsMultiset, totalUsersSubquery)
         .from(ORGANIZATIONS)
-        .where(listOfNotNull(condition))
+        .where(DSL.or(listOfNotNull(applicationsCondition, condition)))
         .orderBy(ORGANIZATIONS.ID)
         .fetch {
           OrganizationModel(it, facilitiesMultiset, internalTagsMultiset, totalUsersSubquery)
