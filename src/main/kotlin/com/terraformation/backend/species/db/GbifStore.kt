@@ -1,6 +1,5 @@
 package com.terraformation.backend.species.db
 
-import com.terraformation.backend.db.ScientificNameNotFoundException
 import com.terraformation.backend.db.default_schema.SpeciesProblemField
 import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.tables.pojos.GbifNamesRow
@@ -114,7 +113,7 @@ class GbifStore(private val dslContext: DSLContext) {
   fun fetchOneByScientificName(
       scientificName: String,
       vernacularNameLanguage: String? = null
-  ): GbifTaxonModel {
+  ): GbifTaxonModel? {
     val languageCondition =
         if (vernacularNameLanguage != null) {
           GBIF_VERNACULAR_NAMES.LANGUAGE.isNull.or(
@@ -169,7 +168,7 @@ class GbifStore(private val dslContext: DSLContext) {
               vernacularNames = record[vernacularNamesMultiset] ?: emptyList(),
               threatStatus = record[GBIF_DISTRIBUTIONS.THREAT_STATUS],
           )
-        } ?: throw ScientificNameNotFoundException(scientificName)
+        }
   }
 
   /**

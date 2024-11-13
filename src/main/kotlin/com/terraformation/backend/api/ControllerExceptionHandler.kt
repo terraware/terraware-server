@@ -113,7 +113,6 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       ex: WebApplicationException,
       request: WebRequest
   ): ResponseEntity<*> {
-    logError(ex, request)
     return simpleErrorResponse(
         ex.message ?: "An internal error has occurred.",
         HttpStatus.valueOf(ex.response.status),
