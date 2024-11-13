@@ -92,6 +92,10 @@ class OrganizationStore(
       depth: FetchDepth,
       condition: List<Condition>
   ): List<OrganizationModel> {
+    if (condition.isEmpty()) {
+      return emptyList()
+    }
+
     val user = currentUser()
 
     val internalTagsMultiset =

@@ -285,6 +285,16 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `fetchAll does not return any orgs if the user does not have any relevant permissions`() {
+    every { user.facilityRoles } returns emptyMap()
+    every { user.organizationRoles } returns emptyMap()
+    every { user.canReadAllAcceleratorDetails() } returns false
+
+    assertEquals(
+        emptyList<OrganizationModel>(), store.fetchAll(OrganizationStore.FetchDepth.Facility))
+  }
+
+  @Test
   fun `createWithAdmin populates organization details`() {
     val row =
         OrganizationsRow(
