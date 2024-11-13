@@ -611,8 +611,7 @@ class EmailNotificationService(
     systemUser.run {
       val project = projectStore.fetchOneById(event.projectId)
       if (project.participantId == null) {
-        log.error(
-            "Got deliverable ready notification for non-participant project ${event.projectId}")
+        // We don't send notifications about individual deliverables in applications.
         return@run
       }
 
