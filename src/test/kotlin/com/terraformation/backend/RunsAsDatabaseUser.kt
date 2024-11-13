@@ -13,6 +13,8 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
 import com.terraformation.backend.db.default_schema.tables.references.USERS
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.fail
 
 /**
  * Indicates that a test should be run with the current user set to an instance of [TerrawareUser]
@@ -71,6 +73,27 @@ interface RunsAsDatabaseUser : RunsAsUser {
       CurrentUserHolder.setCurrentUser(user)
     } else {
       throw UnsupportedOperationException("Cannot run non-database test as a database user")
+    }
+  }
+
+  @AfterEach
+  fun verifyNoPermissionInversions() {
+    val testUser = user
+    if (testUser is IndividualUser) {
+      val permissionChecks = testUser.permissionChecks
+
+      permissionChecks.forEachIndexed { earlierIndex, earlierCheck ->
+        permissionChecks.drop(earlierIndex + 1).forEach { laterCheck ->
+          if (laterCheck.isGuardedBy(earlierCheck) && laterCheck.isStricterThan(earlierCheck)) {
+            fail(
+                "$laterCheck guarded by $earlierCheck" +
+                    "\nEarlier:" +
+                    "\n${earlierCheck.prettyPrintStack()}" +
+                    "\nLater:" +
+                    "\n${laterCheck.prettyPrintStack()}")
+          }
+        }
+      }
     }
   }
 }
