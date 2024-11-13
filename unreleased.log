@@ -1,3 +1,5 @@
+7a72182f58d SW-6246 Don't flag application deliverables as errors (#2592)
+9bba314a5e3 Detect permission inversions (#2589)
 0b2a4e6d2fb Update dependency com.google.apis:google-api-services-drive to v3-rev20241027-2.0.0 (#2586)
 e0eac57514b SW-6244 Don't log error if GBIF species not found (#2591)
 e934a65e96d Add TF Contact info to organization list API (#2590)
