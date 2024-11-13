@@ -54,26 +54,6 @@ class OrganizationStore(
 
   /** Returns all the organizations the user is a member of. */
   fun fetchAll(depth: FetchDepth = FetchDepth.Organization): List<OrganizationModel> {
-    val organizationIds = currentUser().organizationRoles.keys
-
-    if (organizationIds.isEmpty()) {
-      return emptyList()
-    }
-
-    return selectForDepth(depth, ORGANIZATIONS.ID.`in`(organizationIds))
-  }
-
-  fun fetchOneById(
-      organizationId: OrganizationId,
-      depth: FetchDepth = FetchDepth.Organization
-  ): OrganizationModel {
-    requirePermissions { readOrganization(organizationId) }
-
-    return selectForDepth(depth, ORGANIZATIONS.ID.eq(organizationId)).firstOrNull()
-        ?: throw OrganizationNotFoundException(organizationId)
-  }
-
-  private fun selectForDepth(depth: FetchDepth, condition: Condition): List<OrganizationModel> {
     val user = currentUser()
 
     val applicationsCondition =
@@ -87,6 +67,32 @@ class OrganizationStore(
         } else {
           null
         }
+
+    val organizationsCondition =
+        if (user.organizationRoles.keys.isNotEmpty()) {
+          ORGANIZATIONS.ID.`in`(user.organizationRoles.keys)
+        } else {
+          null
+        }
+
+    return selectForDepth(depth, listOfNotNull(organizationsCondition, applicationsCondition))
+  }
+
+  fun fetchOneById(
+      organizationId: OrganizationId,
+      depth: FetchDepth = FetchDepth.Organization
+  ): OrganizationModel {
+    requirePermissions { readOrganization(organizationId) }
+
+    return selectForDepth(depth, listOf(ORGANIZATIONS.ID.eq(organizationId))).firstOrNull()
+        ?: throw OrganizationNotFoundException(organizationId)
+  }
+
+  private fun selectForDepth(
+      depth: FetchDepth,
+      condition: List<Condition>
+  ): List<OrganizationModel> {
+    val user = currentUser()
 
     val internalTagsMultiset =
         DSL.multiset(
@@ -129,7 +135,7 @@ class OrganizationStore(
         .select(
             ORGANIZATIONS.asterisk(), facilitiesMultiset, internalTagsMultiset, totalUsersSubquery)
         .from(ORGANIZATIONS)
-        .where(DSL.or(listOfNotNull(applicationsCondition, condition)))
+        .where(DSL.or(condition))
         .orderBy(ORGANIZATIONS.ID)
         .fetch {
           OrganizationModel(it, facilitiesMultiset, internalTagsMultiset, totalUsersSubquery)
