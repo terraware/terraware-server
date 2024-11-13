@@ -1,3 +1,5 @@
+e0eac57514b SW-6244 Don't log error if GBIF species not found (#2591)
+e934a65e96d Add TF Contact info to organization list API (#2590)
 137c89a22ce Support running tests as concrete users (#2588)
 450920d35f8 Update dependency org.hsqldb:hsqldb to v2.7.4 (#2587)
 8415b9cc71b Update database dependencies (#2585)
