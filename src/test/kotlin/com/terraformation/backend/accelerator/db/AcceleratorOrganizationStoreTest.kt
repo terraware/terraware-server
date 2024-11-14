@@ -197,7 +197,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class FindAllWithProjectApplication {
     @Test
-    fun `returns both all organizations with a project that has an application`() {
+    fun `returns all organizations with a project that has an application`() {
       every { user.canReadAllAcceleratorDetails() } returns true
 
       val projectApplicationOrg1Id = insertOrganization(name = "ProjectApplicationOrg1")
