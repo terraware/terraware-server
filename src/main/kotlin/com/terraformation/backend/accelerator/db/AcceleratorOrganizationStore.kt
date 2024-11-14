@@ -23,60 +23,44 @@ class AcceleratorOrganizationStore(private val dslContext: DSLContext) {
   fun fetchWithUnassignedProjects(): Map<OrganizationModel, List<ExistingProjectModel>> {
     requirePermissions { readInternalTags() }
 
-    val projectsMultiset =
-        DSL.multiset(
-                DSL.selectFrom(PROJECTS)
-                    .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                    .and(PROJECTS.PARTICIPANT_ID.isNull)
-                    .orderBy(PROJECTS.NAME))
-            .convertFrom { result -> result.map { ProjectModel.of(it) } }
-
-    return dslContext
-        .select(ORGANIZATIONS.asterisk(), projectsMultiset)
-        .from(ORGANIZATIONS)
-        .whereExists(
+    val hasAcceleratorInternalTag =
+        DSL.exists(
             DSL.selectOne()
                 .from(ORGANIZATION_INTERNAL_TAGS)
                 .where(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
                 .and(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Accelerator)))
-        .andExists(
+
+    val hasParticipantProject =
+        DSL.exists(
             DSL.selectOne()
                 .from(PROJECTS)
                 .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
                 .and(PROJECTS.PARTICIPANT_ID.isNull))
-        .orderBy(ORGANIZATIONS.NAME)
-        .fetch { OrganizationModel(it) to it[projectsMultiset] }
-        .toMap()
+
+    val isUnassigned = PROJECTS.PARTICIPANT_ID.isNull
+
+    return fetchWithProjects(
+        listOf(hasAcceleratorInternalTag, hasParticipantProject), listOf(isUnassigned))
   }
 
   /** Returns all the projects in organizations with the Accelerator internal tag. */
   fun findAll(): Map<OrganizationModel, List<ExistingProjectModel>> {
     requirePermissions { readInternalTags() }
 
-    val projectsMultiset =
-        DSL.multiset(
-                DSL.selectFrom(PROJECTS)
-                    .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                    .orderBy(PROJECTS.NAME))
-            .convertFrom { result -> result.map { ProjectModel.of(it) } }
-
-    return dslContext
-        .select(ORGANIZATIONS.asterisk(), projectsMultiset)
-        .from(ORGANIZATIONS)
-        .whereExists(
+    val hasAcceleratorInternalTag =
+        DSL.exists(
             DSL.selectOne()
                 .from(ORGANIZATION_INTERNAL_TAGS)
                 .where(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
                 .and(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Accelerator)))
-        .orderBy(ORGANIZATIONS.NAME)
-        .fetch { OrganizationModel(it) to it[projectsMultiset] }
-        .toMap()
+
+    return fetchWithProjects(listOf(hasAcceleratorInternalTag))
   }
 
   fun findAllWithProjectApplication(): Map<OrganizationModel, List<ExistingProjectModel>> {
     requirePermissions { readAllAcceleratorDetails() }
 
-    val hasProjectApplicationCondition =
+    val hasProjectApplication =
         DSL.exists(
             DSL.selectOne()
                 .from(APPLICATIONS)
@@ -84,7 +68,7 @@ class AcceleratorOrganizationStore(private val dslContext: DSLContext) {
                 .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
                 .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
 
-    return fetchWithProjects(listOf(hasProjectApplicationCondition))
+    return fetchWithProjects(listOf(hasProjectApplication))
   }
 
   private fun fetchWithProjects(
