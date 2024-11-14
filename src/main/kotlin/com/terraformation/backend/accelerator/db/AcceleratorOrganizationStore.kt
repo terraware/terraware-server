@@ -84,28 +84,28 @@ class AcceleratorOrganizationStore(private val dslContext: DSLContext) {
                 .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
                 .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
 
-    return fetchWithProjects(listOf(hasProjectApplicationCondition))
+    return fetchWithProjects(orgConditions = listOf(hasProjectApplicationCondition))
   }
 
   private fun fetchWithProjects(
-      conditions: List<Condition>
+      projectConditions: List<Condition> = emptyList(),
+      orgConditions: List<Condition>
   ): Map<OrganizationModel, List<ExistingProjectModel>> {
-    if (conditions.isEmpty()) {
+    if (orgConditions.isEmpty()) {
       return emptyMap()
     }
 
     val projectsMultiset =
         DSL.multiset(
                 DSL.selectFrom(PROJECTS)
-                    .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                    .and(PROJECTS.PARTICIPANT_ID.isNull)
+                    .where(projectConditions + PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
                     .orderBy(PROJECTS.NAME))
             .convertFrom { result -> result.map { ProjectModel.of(it) } }
 
     return dslContext
         .select(ORGANIZATIONS.asterisk(), projectsMultiset)
         .from(ORGANIZATIONS)
-        .where(conditions)
+        .where(orgConditions)
         .orderBy(ORGANIZATIONS.NAME)
         .fetch { OrganizationModel(it) to it[projectsMultiset] }
         .toMap()
