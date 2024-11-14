@@ -90,6 +90,10 @@ class AcceleratorOrganizationStore(private val dslContext: DSLContext) {
   private fun fetchWithProjects(
       conditions: List<Condition>
   ): Map<OrganizationModel, List<ExistingProjectModel>> {
+    if (conditions.isEmpty()) {
+      return emptyMap()
+    }
+
     val projectsMultiset =
         DSL.multiset(
                 DSL.selectFrom(PROJECTS)
