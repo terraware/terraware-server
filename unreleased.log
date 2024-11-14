@@ -1,1 +1,2 @@
+532366ecdc2 Use the configurable fetchWithProjects function in both findAll and fetchWithUnassignedProjects (#2595)
 5ed1f9c48d2 SW-6165 Add query param for getting organizations that contain a project with an application (#2593)
