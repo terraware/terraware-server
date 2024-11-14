@@ -34,7 +34,7 @@ class AcceleratorOrganizationsController(
 ) {
   @GetMapping
   @Operation(
-      summary = "Lists organizations with the Accelerator internal tag and their projects.",
+      summary = "Lists accelerator related organizations and their projects.",
       description =
           "By default, only lists tagged organizations that have projects that have not been " +
               "assigned to participants yet.")
@@ -43,10 +43,16 @@ class AcceleratorOrganizationsController(
           description = "Whether to also include projects that have been assigned to participants.")
       @RequestParam
       includeParticipants: Boolean?,
+      @Parameter(
+          description = "Whether to load all organizations with a project with an application.")
+      @RequestParam
+      hasProjectApplication: Boolean?,
   ): ListAcceleratorOrganizationsResponsePayload {
     val organizations =
         if (includeParticipants == true) {
           acceleratorOrganizationStore.findAll()
+        } else if (hasProjectApplication == true) {
+          acceleratorOrganizationStore.findAllWithProjectApplication()
         } else {
           acceleratorOrganizationStore.fetchWithUnassignedProjects()
         }

@@ -193,4 +193,76 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<AccessDeniedException> { store.fetchWithUnassignedProjects() }
     }
   }
+
+  @Nested
+  inner class FindAllWithProjectApplication {
+    @Test
+    fun `returns all organizations with a project that has an application`() {
+      every { user.canReadAllAcceleratorDetails() } returns true
+
+      val projectApplicationOrg1Id = insertOrganization(name = "ProjectApplicationOrg1")
+      val projectApplicationOrg1ProjectId = insertProject(organizationId = projectApplicationOrg1Id)
+      insertApplication(
+          internalName = "Org1ProjectApplication", projectId = projectApplicationOrg1ProjectId)
+
+      val projectApplicationOrg2Id = insertOrganization(name = "ProjectApplicationOrg2")
+      val projectApplicationOrg2ProjectId = insertProject(organizationId = projectApplicationOrg2Id)
+      insertApplication(
+          internalName = "Org2ProjectApplication", projectId = projectApplicationOrg2ProjectId)
+
+      val otherOrgIdWithoutProjectApplication =
+          insertOrganization(name = "OtherOrgWithoutProjectApplication")
+      insertProject(organizationId = otherOrgIdWithoutProjectApplication)
+
+      insertOrganization(name = "OtherOrgWithoutProjects")
+
+      val currentUserId = user.userId
+
+      assertEquals(
+          mapOf(
+              OrganizationModel(
+                  createdTime = Instant.EPOCH,
+                  id = projectApplicationOrg1Id,
+                  name = "ProjectApplicationOrg1",
+                  totalUsers = 0,
+              ) to
+                  listOf(
+                      ExistingProjectModel(
+                          createdBy = currentUserId,
+                          createdTime = Instant.EPOCH,
+                          id = projectApplicationOrg1ProjectId,
+                          modifiedBy = currentUserId,
+                          modifiedTime = Instant.EPOCH,
+                          name = "Project 1",
+                          organizationId = projectApplicationOrg1Id,
+                      ),
+                  ),
+              OrganizationModel(
+                  createdTime = Instant.EPOCH,
+                  id = projectApplicationOrg2Id,
+                  name = "ProjectApplicationOrg2",
+                  totalUsers = 0,
+              ) to
+                  listOf(
+                      ExistingProjectModel(
+                          createdBy = currentUserId,
+                          createdTime = Instant.EPOCH,
+                          id = projectApplicationOrg2ProjectId,
+                          modifiedBy = currentUserId,
+                          modifiedTime = Instant.EPOCH,
+                          name = "Project 2",
+                          organizationId = projectApplicationOrg2Id,
+                      ),
+                  ),
+          ),
+          store.findAllWithProjectApplication())
+    }
+
+    @Test
+    fun `throws exception if no permission to read all accelerator details (read only and higher)`() {
+      every { user.canReadAllAcceleratorDetails() } returns false
+
+      assertThrows<AccessDeniedException> { store.findAllWithProjectApplication() }
+    }
+  }
 }
