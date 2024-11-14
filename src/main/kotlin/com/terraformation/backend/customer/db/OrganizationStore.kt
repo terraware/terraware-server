@@ -14,7 +14,6 @@ import com.terraformation.backend.db.InvalidTerraformationContactEmail
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.UserAlreadyInOrganizationException
 import com.terraformation.backend.db.UserNotFoundException
-import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ManagedLocationType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -31,7 +30,6 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_MANAGED_LOCATION_TYPES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
-import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.log.perClassLogger
@@ -54,28 +52,13 @@ class OrganizationStore(
 
   /** Returns all the organizations the user is a member of. */
   fun fetchAll(depth: FetchDepth = FetchDepth.Organization): List<OrganizationModel> {
-    val user = currentUser()
+    val organizationIds = currentUser().organizationRoles.keys
 
-    val applicationsCondition =
-        if (user.canReadAllAcceleratorDetails()) {
-          DSL.exists(
-              DSL.selectOne()
-                  .from(APPLICATIONS)
-                  .join(PROJECTS)
-                  .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
-                  .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
-        } else {
-          null
-        }
+    if (organizationIds.isEmpty()) {
+      return emptyList()
+    }
 
-    val organizationsCondition =
-        if (user.organizationRoles.keys.isNotEmpty()) {
-          ORGANIZATIONS.ID.`in`(user.organizationRoles.keys)
-        } else {
-          null
-        }
-
-    return selectForDepth(depth, listOfNotNull(organizationsCondition, applicationsCondition))
+    return selectForDepth(depth, ORGANIZATIONS.ID.`in`(organizationIds))
   }
 
   fun fetchOneById(
@@ -84,18 +67,11 @@ class OrganizationStore(
   ): OrganizationModel {
     requirePermissions { readOrganization(organizationId) }
 
-    return selectForDepth(depth, listOf(ORGANIZATIONS.ID.eq(organizationId))).firstOrNull()
+    return selectForDepth(depth, ORGANIZATIONS.ID.eq(organizationId)).firstOrNull()
         ?: throw OrganizationNotFoundException(organizationId)
   }
 
-  private fun selectForDepth(
-      depth: FetchDepth,
-      condition: List<Condition>
-  ): List<OrganizationModel> {
-    if (condition.isEmpty()) {
-      return emptyList()
-    }
-
+  private fun selectForDepth(depth: FetchDepth, condition: Condition): List<OrganizationModel> {
     val user = currentUser()
 
     val internalTagsMultiset =
@@ -139,7 +115,7 @@ class OrganizationStore(
         .select(
             ORGANIZATIONS.asterisk(), facilitiesMultiset, internalTagsMultiset, totalUsersSubquery)
         .from(ORGANIZATIONS)
-        .where(DSL.or(condition))
+        .where(listOfNotNull(condition))
         .orderBy(ORGANIZATIONS.ID)
         .fetch {
           OrganizationModel(it, facilitiesMultiset, internalTagsMultiset, totalUsersSubquery)

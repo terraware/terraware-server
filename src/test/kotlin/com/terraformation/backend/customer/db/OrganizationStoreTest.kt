@@ -169,33 +169,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchById fetches the expected organization if the user is an accelerator admin`() {
-    every { user.canReadAllAcceleratorDetails() } returns true
-
-    // Another org with a project with an application, not associated to user through org roles
-    val orgIdWithApplication = insertOrganization(name = "OrgWithApplication")
-    val orgWithApplicationProjectId = insertProject(organizationId = orgIdWithApplication)
-    insertApplication(projectId = orgWithApplicationProjectId)
-
-    val orgId = insertOrganization(name = "NewOrganization")
-    every { user.canReadOrganization(orgId) } returns true
-
-    assertEquals(
-        OrganizationModel(
-            id = orgId,
-            name = "NewOrganization",
-            countryCode = null,
-            countrySubdivisionCode = null,
-            createdTime = Instant.EPOCH,
-            facilities = emptyList(),
-            internalTags = emptySet(),
-            timeZone = null,
-            totalUsers = 0,
-        ),
-        store.fetchOneById(orgId, OrganizationStore.FetchDepth.Facility))
-  }
-
-  @Test
   fun `fetchAll excludes organizations the user is not in`() {
     every { user.organizationRoles } returns emptyMap()
 
@@ -220,78 +193,6 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     val actual = store.fetchAll(OrganizationStore.FetchDepth.Facility)
     assertEquals(expected, actual)
-  }
-
-  @Test
-  fun `fetchAll includes organizations that have applications when requested by read-only or higher accelerator admins`() {
-    every { user.facilityRoles } returns emptyMap()
-    every { user.canReadAllAcceleratorDetails() } returns true
-
-    // Another org with a project, not associated to the user through org roles
-    val otherNonAssociatedOrgId = insertOrganization(name = "OtherNonAssociatedOrg")
-    insertProject(organizationId = otherNonAssociatedOrgId)
-
-    // Another org with a project with an application, not associated to user through org roles
-    val otherOrgIdWithApplication = insertOrganization(name = "OtherOrgWithApplication")
-    val otherOrgWithApplicationProjectId = insertProject(organizationId = otherOrgIdWithApplication)
-    insertApplication(projectId = otherOrgWithApplicationProjectId)
-
-    val expected =
-        listOf(
-            organizationModel.copy(facilities = emptyList()),
-            OrganizationModel(
-                id = otherOrgIdWithApplication,
-                name = "OtherOrgWithApplication",
-                countryCode = null,
-                countrySubdivisionCode = null,
-                createdTime = Instant.EPOCH,
-                facilities = emptyList(),
-                internalTags = emptySet(),
-                timeZone = null,
-                totalUsers = 0,
-            ))
-
-    val actual = store.fetchAll(OrganizationStore.FetchDepth.Facility)
-    assertEquals(expected, actual)
-  }
-
-  @Test
-  fun `fetchAll includes organizations that have applications when requested by read-only or higher accelerator admins that have no relationship to any organization`() {
-    every { user.facilityRoles } returns emptyMap()
-    every { user.organizationRoles } returns emptyMap()
-    every { user.canReadAllAcceleratorDetails() } returns true
-
-    // Another org with a project with an application, not associated to user through org roles
-    val orgIdWithApplication = insertOrganization(name = "OrgWithApplication")
-    val otherOrgWithApplicationProjectId = insertProject(organizationId = orgIdWithApplication)
-    insertApplication(projectId = otherOrgWithApplicationProjectId)
-
-    val expected =
-        listOf(
-            OrganizationModel(
-                id = orgIdWithApplication,
-                name = "OrgWithApplication",
-                countryCode = null,
-                countrySubdivisionCode = null,
-                createdTime = Instant.EPOCH,
-                facilities = emptyList(),
-                internalTags = emptySet(),
-                timeZone = null,
-                totalUsers = 0,
-            ))
-
-    val actual = store.fetchAll(OrganizationStore.FetchDepth.Facility)
-    assertEquals(expected, actual)
-  }
-
-  @Test
-  fun `fetchAll does not return any orgs if the user does not have any relevant permissions`() {
-    every { user.facilityRoles } returns emptyMap()
-    every { user.organizationRoles } returns emptyMap()
-    every { user.canReadAllAcceleratorDetails() } returns false
-
-    assertEquals(
-        emptyList<OrganizationModel>(), store.fetchAll(OrganizationStore.FetchDepth.Facility))
   }
 
   @Test
