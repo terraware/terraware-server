@@ -84,12 +84,12 @@ class AcceleratorOrganizationStore(private val dslContext: DSLContext) {
                 .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
                 .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID)))
 
-    return fetchWithProjects(orgConditions = listOf(hasProjectApplicationCondition))
+    return fetchWithProjects(listOf(hasProjectApplicationCondition))
   }
 
   private fun fetchWithProjects(
-      projectConditions: List<Condition> = emptyList(),
-      orgConditions: List<Condition>
+      orgConditions: List<Condition>,
+      projectConditions: List<Condition> = emptyList()
   ): Map<OrganizationModel, List<ExistingProjectModel>> {
     if (orgConditions.isEmpty()) {
       return emptyMap()
