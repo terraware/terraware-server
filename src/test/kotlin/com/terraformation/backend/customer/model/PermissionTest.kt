@@ -1646,7 +1646,7 @@ internal class PermissionTest : DatabaseTest() {
         removeTerraformationContact = true,
     )
 
-    // Can access accelerator-related functions on all ogs.
+    // Can access accelerator-related functions on all orgs.
     permissions.expect(
         ProjectId(3000),
         ProjectId(4000),
@@ -1662,6 +1662,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectVotes = true,
         updateDefaultVoters = true,
         updateInternalVariableWorkflowDetails = true,
+        updateProject = true,
         updateProjectAcceleratorDetails = true,
         updateProjectDocumentSettings = true,
         updateProjectScores = true,
@@ -1880,6 +1881,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectScores = true,
         readProjectVotes = true,
         updateInternalVariableWorkflowDetails = true,
+        updateProject = true,
         updateProjectAcceleratorDetails = true,
         updateProjectDocumentSettings = true,
         updateProjectScores = true,
@@ -2081,6 +2083,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectScores = true,
         readProjectVotes = true,
         updateInternalVariableWorkflowDetails = true,
+        updateProject = true,
         updateProjectAcceleratorDetails = true,
         updateProjectScores = true,
         updateProjectVotes = true,

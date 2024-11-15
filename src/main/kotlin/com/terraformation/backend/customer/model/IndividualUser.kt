@@ -668,8 +668,10 @@ data class IndividualUser(
   override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId) =
       isAdminOrHigher(parentStore.getOrganizationId(plantingZoneId))
 
-  override fun canUpdateProject(projectId: ProjectId) =
-      isAdminOrHigher(parentStore.getOrganizationId(projectId))
+  override fun canUpdateProject(projectId: ProjectId): Boolean {
+    val organizationId = parentStore.getOrganizationId(projectId) ?: return false
+    return isAdminOrHigher(organizationId) || isGlobalWriter(organizationId)
+  }
 
   override fun canUpdateProjectAcceleratorDetails(projectId: ProjectId): Boolean =
       isTFExpertOrHigher()
@@ -789,8 +791,15 @@ data class IndividualUser(
 
   /** Returns true if one of the user's global roles allows them to read an organization. */
   private fun isGlobalReader(organizationId: OrganizationId) =
-      GlobalRole.SuperAdmin in globalRoles ||
+      isSuperAdmin() ||
           (isReadOnlyOrHigher() &&
+              (parentStore.hasInternalTag(organizationId, InternalTagIds.Accelerator) ||
+                  parentStore.hasApplications(organizationId)))
+
+  /** Returns true if one of the user's global roles allows them to write to an organization. */
+  private fun isGlobalWriter(organizationId: OrganizationId) =
+      isSuperAdmin() ||
+          (isTFExpertOrHigher() &&
               (parentStore.hasInternalTag(organizationId, InternalTagIds.Accelerator) ||
                   parentStore.hasApplications(organizationId)))
 

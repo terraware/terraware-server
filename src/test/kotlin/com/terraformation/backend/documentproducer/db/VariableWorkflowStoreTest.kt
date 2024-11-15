@@ -1,18 +1,19 @@
 package com.terraformation.backend.documentproducer.db
 
-import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.default_schema.GlobalRole
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.db.docprod.tables.records.VariableWorkflowHistoryRecord
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_WORKFLOW_HISTORY
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableReviewedEvent
 import com.terraformation.backend.documentproducer.model.ExistingVariableWorkflowHistoryModel
-import com.terraformation.backend.mockUser
-import io.mockk.every
 import java.time.Instant
 import java.util.UUID
 import org.junit.jupiter.api.Assertions.*
@@ -24,8 +25,8 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.springframework.security.access.AccessDeniedException
 
-class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
-  override val user = mockUser()
+class VariableWorkflowStoreTest : DatabaseTest(), RunsAsDatabaseUser {
+  override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
@@ -37,6 +38,7 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
     insertProject()
+    insertApplication()
     insertDocumentTemplate()
     insertVariableManifest()
     insertDocument()
@@ -47,9 +49,7 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
 
     insertValue(variableId = inserted.variableId)
 
-    every { user.canReadProject(any()) } returns true
-    every { user.canReadInternalVariableWorkflowDetails(any()) } returns true
-    every { user.canUpdateInternalVariableWorkflowDetails(any()) } returns true
+    insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
   }
 
   @Nested
@@ -160,7 +160,8 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not populate internal comment if user lacks permission to see it`() {
-      every { user.canReadInternalVariableWorkflowDetails(inserted.projectId) } returns false
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertOrganizationUser(role = Role.Manager)
 
       val historyId =
           insertVariableWorkflowHistory(
@@ -189,7 +190,7 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to read project`() {
-      every { user.canReadProject(inserted.projectId) } returns false
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
       assertThrows<ProjectNotFoundException> { store.fetchCurrentForProject(inserted.projectId) }
     }
@@ -275,7 +276,9 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to read internal workflow details`() {
-      every { user.canReadInternalVariableWorkflowDetails(any()) } returns false
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertOrganizationUser(role = Role.Admin)
+
       assertThrows<AccessDeniedException> {
         store.fetchProjectVariableHistory(inserted.projectId, inserted.variableId)
       }
@@ -365,16 +368,25 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `allows non-admin to set status to In Review`() {
+    fun `allows organization admin to set status to In Review`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertOrganizationUser(role = Role.Admin)
+
+      testSetStatusToInReview()
+    }
+
+    @Test
+    fun `allows accelerator admin to set status to In Review`() {
+      testSetStatusToInReview()
+    }
+
+    private fun testSetStatusToInReview() {
       val variableId = inserted.variableId
       val variableValueId = insertValue(variableId = variableId)
       val existingHistoryId =
           insertVariableWorkflowHistory(
               feedback = "Lazy answer! Do better next time",
               status = VariableWorkflowStatus.Rejected)
-
-      every { user.canUpdateInternalVariableWorkflowDetails(inserted.projectId) } returns false
-      every { user.canUpdateProject(inserted.projectId) } returns true
 
       store.update(
           projectId = inserted.projectId,
@@ -408,8 +420,8 @@ class VariableWorkflowStoreTest : DatabaseTest(), RunsAsUser {
       val variableId = inserted.variableId
       insertVariableWorkflowHistory(status = VariableWorkflowStatus.InReview)
 
-      every { user.canUpdateInternalVariableWorkflowDetails(inserted.projectId) } returns false
-      every { user.canUpdateProject(inserted.projectId) } returns true
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertOrganizationUser(role = Role.Admin)
 
       assertThrows<AccessDeniedException> {
         store.update(
