@@ -217,6 +217,13 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                     "exclusion" to postgisRenderGeoJson(exclusionGeometry),
                     "id" to "$plantingSiteId",
                     "modifiedTime" to "1970-01-01T00:00:00Z",
+                    "monitoringPlots" to
+                        listOf(
+                            mapOf("id" to "$monitoringPlotId5"),
+                            mapOf("id" to "$monitoringPlotId6"),
+                            mapOf("id" to "$monitoringPlotId7"),
+                            mapOf("id" to "$monitoringPlotId8"),
+                        ),
                     "name" to "Site 1",
                     "numPlantingZones" to "1",
                     "numPlantingSubzones" to "2",
@@ -434,6 +441,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "exclusion",
                 "id",
                 "modifiedTime",
+                "monitoringPlots.id",
                 "name",
                 "numPlantingZones",
                 "numPlantingSubzones",

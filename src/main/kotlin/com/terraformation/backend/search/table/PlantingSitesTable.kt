@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
@@ -31,6 +32,8 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
               "country", PLANTING_SITE_SUMMARIES.COUNTRY_CODE.eq(COUNTRIES.CODE)),
           deliveries.asMultiValueSublist(
               "deliveries", PLANTING_SITE_SUMMARIES.ID.eq(DELIVERIES.PLANTING_SITE_ID)),
+          monitoringPlots.asMultiValueSublist(
+              "monitoringPlots", PLANTING_SITE_SUMMARIES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)),
           observations.asMultiValueSublist(
               "observations", PLANTING_SITE_SUMMARIES.ID.eq(OBSERVATIONS.PLANTING_SITE_ID)),
           organizations.asSingleValueSublist(

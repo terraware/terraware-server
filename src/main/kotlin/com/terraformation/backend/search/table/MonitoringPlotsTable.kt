@@ -2,6 +2,7 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -19,6 +20,8 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
+          plantingSites.asSingleValueSublist(
+              "plantingSite", MONITORING_PLOTS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID)),
           plantingSubzones.asSingleValueSublist(
               "plantingSubzone", MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)),
       )
@@ -44,12 +47,12 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
           coordinateField("southwestLongitude", MONITORING_PLOTS.BOUNDARY, SOUTHWEST, LONGITUDE),
       )
 
-  override val inheritsVisibilityFrom: SearchTable = tables.plantingSubzones
+  override val inheritsVisibilityFrom: SearchTable = tables.plantingSites
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query
         .join(PLANTING_SUBZONES)
-        .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+        .on(MONITORING_PLOTS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID))
   }
 
   companion object {
