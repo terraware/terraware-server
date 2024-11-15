@@ -51,7 +51,7 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query
-        .join(PLANTING_SUBZONES)
+        .join(PLANTING_SITE_SUMMARIES)
         .on(MONITORING_PLOTS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID))
   }
 
