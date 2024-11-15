@@ -1,5 +1,1 @@
-d644b8a8be7 SW-6257 Allow internal users to update projects (#2599)
-cd06a2c0cf8 SW-6256 Fix permission inversions in AccessionStore (#2598)
-e233520c94e Check for permission inversions in controller tests (#2597)
-532366ecdc2 Use the configurable fetchWithProjects function in both findAll and fetchWithUnassignedProjects (#2595)
-5ed1f9c48d2 SW-6165 Add query param for getting organizations that contain a project with an application (#2593)
+e2113a8af33 Update dependency gradle to v8.11 (#2594)
