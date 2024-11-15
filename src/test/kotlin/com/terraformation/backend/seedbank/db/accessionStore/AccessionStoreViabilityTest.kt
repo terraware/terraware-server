@@ -254,7 +254,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
                 purpose = WithdrawalPurpose.ViabilityTesting,
                 viabilityTestId = test.id,
                 withdrawn = SeedQuantityModel(BigDecimal(5), SeedQuantityUnits.Seeds),
-                withdrawnByName = user.fullName,
+                withdrawnByName = "First Last",
                 withdrawnByUserId = user.userId,
             )),
         accession.withdrawals.map { it.copy(id = null) })
