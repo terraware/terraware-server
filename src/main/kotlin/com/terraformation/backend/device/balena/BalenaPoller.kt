@@ -98,7 +98,7 @@ class BalenaPoller(
         }
       }
     } catch (e: Exception) {
-      log.error("Unable to process Balena device updates", e)
+      log.warn("Unable to process Balena device updates", e)
     }
   }
 }
