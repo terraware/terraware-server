@@ -1500,6 +1500,7 @@ class PlantingSiteStore(
                 name = "$plotNumber",
                 permanentCluster = clusterNumber,
                 permanentClusterSubplot = 1,
+                plantingSiteId = plantingSite.id,
                 plantingSubzoneId = subzone.id,
                 sizeMeters = MONITORING_PLOT_SIZE_INT,
             )
@@ -1546,6 +1547,7 @@ class PlantingSiteStore(
                 modifiedBy = userId,
                 modifiedTime = now,
                 name = "$plotNumber",
+                plantingSiteId = plantingSiteId,
                 plantingSubzoneId = subzone.id,
                 sizeMeters = MONITORING_PLOT_SIZE_INT)
         monitoringPlotsDao.insert(monitoringPlotsRow)

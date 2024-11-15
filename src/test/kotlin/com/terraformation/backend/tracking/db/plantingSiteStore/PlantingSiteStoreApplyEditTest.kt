@@ -513,6 +513,7 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
                 name = initialPlot.name,
                 permanentCluster = initialPlot.permanentCluster,
                 permanentClusterSubplot = initialPlot.permanentClusterSubplot,
+                plantingSiteId = existingWithoutPlots.id,
                 plantingSubzoneId = existingSubzone.id,
             )
           }
