@@ -1810,6 +1810,7 @@ abstract class DatabaseBackedTest {
       permanentCluster: Int? = row.permanentCluster,
       permanentClusterSubplot: Int? =
           row.permanentClusterSubplot ?: if (permanentCluster != null) 1 else null,
+      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       plantingSubzoneId: PlantingSubzoneId = row.plantingSubzoneId ?: inserted.plantingSubzoneId,
   ): MonitoringPlotId {
     val rowWithDefaults =
@@ -1824,6 +1825,7 @@ abstract class DatabaseBackedTest {
             name = name,
             permanentCluster = permanentCluster,
             permanentClusterSubplot = permanentClusterSubplot,
+            plantingSiteId = plantingSiteId,
             plantingSubzoneId = plantingSubzoneId,
             sizeMeters = sizeMeters,
         )

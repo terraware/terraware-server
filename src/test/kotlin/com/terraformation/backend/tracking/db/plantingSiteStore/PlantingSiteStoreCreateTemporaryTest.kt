@@ -42,6 +42,7 @@ internal class PlantingSiteStoreCreateTemporaryTest : PlantingSiteStoreTest() {
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               name = "18",
+              plantingSiteId = plantingSiteId,
               plantingSubzoneId = plantingSubzoneId,
               sizeMeters = MONITORING_PLOT_SIZE_INT,
           )
