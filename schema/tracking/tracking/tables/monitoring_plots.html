@@ -372,6 +372,27 @@
                                     </td>
                                     <td><p>Length in meters of one side of the monitoring plot. Plots are always squares, so for a 30x30m plot, this would be 30.</p></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="planting_site_id">planting_site_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="monitoring_plots.planting_site_id references planting_sites.id via monitoring_plots_planting_site_id_fkey"><a href='planting_sites.html'>planting_sites</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">monitoring_plots_planting_site_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -403,6 +424,12 @@
                                     <td>id</td>
                                 </tr>
                                 <tr>
+                                    <td title='Indexed'>monitoring_plots_planting_site_id_idx</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>planting_site_id</td>
+                                </tr>
+                                <tr>
                                     <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> monitoring_plots_planting_subzone_id_name_key</td>
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
@@ -431,12 +458,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>subplot_is_valid</td>
-                                    <td>(((permanent_cluster_subplot &gt;= 1) AND (permanent_cluster_subplot &lt;= 4)))</td>
-                                </tr>
-                                <tr>
                                     <td>cluster_has_subplot</td>
                                     <td>((((permanent_cluster IS NOT NULL) AND (permanent_cluster_subplot IS NOT NULL)) OR ((permanent_cluster IS NULL) AND (permanent_cluster_subplot IS NULL))))</td>
+                                </tr>
+                                <tr>
+                                    <td>subplot_is_valid</td>
+                                    <td>(((permanent_cluster_subplot &gt;= 1) AND (permanent_cluster_subplot &lt;= 4)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -461,41 +488,48 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/monitoring_plot_overlaps.html" target="_top" title="monitoring_plot_overlaps" alt="" coords="803,5,1082,128">
-<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="300,305,747,756">
-<area shape="rect" id="node3" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="5,337,256,543">
-<area shape="rect" id="node4" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="1166,47,1401,252">
-<area shape="rect" id="node5" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="832,181,1053,357">
-<area shape="rect" id="node6" href="../../tables/observation_plot_conditions.html" target="_top" title="observation_plot_conditions" alt="" coords="793,375,1093,527">
-<area shape="rect" id="node7" href="../../tables/observed_plot_coordinates.html" target="_top" title="observed_plot_coordinates" alt="" coords="1139,269,1428,475">
-<area shape="rect" id="node8" href="../../tables/observed_plot_species_totals.html" target="_top" title="observed_plot_species_totals" alt="" coords="791,580,1095,815">
-<area shape="rect" id="node9" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1179,492,1388,756">
+<area shape="rect" id="node1" href="../../tables/monitoring_plot_overlaps.html" target="_top" title="monitoring_plot_overlaps" alt="" coords="1038,5,1317,128">
+<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="535,304,981,784">
+<area shape="rect" id="node3" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,536,196,741">
+<area shape="rect" id="node4" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="240,379,491,584">
+<area shape="rect" id="node5" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="1401,47,1635,252">
+<area shape="rect" id="node6" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="1067,181,1288,357">
+<area shape="rect" id="node7" href="../../tables/observation_plot_conditions.html" target="_top" title="observation_plot_conditions" alt="" coords="1027,375,1327,527">
+<area shape="rect" id="node8" href="../../tables/observed_plot_coordinates.html" target="_top" title="observed_plot_coordinates" alt="" coords="1373,269,1663,475">
+<area shape="rect" id="node9" href="../../tables/observed_plot_species_totals.html" target="_top" title="observed_plot_species_totals" alt="" coords="1025,580,1329,815">
+<area shape="rect" id="node10" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1413,492,1623,756">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/monitoring_plots.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/monitoring_plot_overlaps.html" target="_top" title="monitoring_plot_overlaps" alt="" coords="1297,1029,1575,1152">
-<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="777,709,1224,1160">
-<area shape="rect" id="node3" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="483,959,733,1164">
-<area shape="rect" id="node12" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,1025,196,1113">
-<area shape="rect" id="node18" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="240,991,439,1079">
-<area shape="rect" id="node4" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="1675,313,1910,519">
-<area shape="rect" id="node5" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="1325,343,1547,519">
-<area shape="rect" id="node6" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="909,288,1093,376">
-<area shape="rect" id="node7" href="../../tables/observation_plot_positions.html" target="_top" title="observation_plot_positions" alt="" coords="1291,96,1581,184">
-<area shape="rect" id="node10" href="../../tables/observation_plot_statuses.html" target="_top" title="observation_plot_statuses" alt="" coords="859,393,1142,481">
-<area shape="rect" id="node8" href="../../tables/observation_plot_conditions.html" target="_top" title="observation_plot_conditions" alt="" coords="1286,572,1586,724">
-<area shape="rect" id="node9" href="../../tables/observable_conditions.html" target="_top" title="observable_conditions" alt="" coords="873,499,1129,587">
-<area shape="rect" id="node11" href="../../tables/observation_requested_subzones.html" target="_top" title="observation_requested_subzones" alt="" coords="1268,201,1604,289">
-<area shape="rect" id="node13" href="../../tables/observed_plot_coordinates.html" target="_top" title="observed_plot_coordinates" alt="" coords="1648,5,1937,211">
-<area shape="rect" id="node14" href="../../tables/observed_plot_species_totals.html" target="_top" title="observed_plot_species_totals" alt="" coords="1284,777,1588,1012">
-<area shape="rect" id="node15" href="../../tables/recorded_species_certainties.html" target="_top" title="recorded_species_certainties" alt="" coords="848,1283,1153,1371">
-<area shape="rect" id="node16" href="../../tables/planting_subzone_histories.html" target="_top" title="planting_subzone_histories" alt="" coords="855,604,1146,692">
-<area shape="rect" id="node17" href="../../tables/planting_subzone_populations.html" target="_top" title="planting_subzone_populations" alt="" coords="843,1177,1158,1265">
-<area shape="rect" id="node19" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="922,1388,1079,1476">
-<area shape="rect" id="node20" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1688,804,1897,1068">
-<area shape="rect" id="node21" href="../../tables/recorded_plant_statuses.html" target="_top" title="recorded_plant_statuses" alt="" coords="1301,1241,1571,1329">
+<area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="615,1459,777,1547">
+<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,1448,196,1653">
+<area shape="rect" id="node3" href="../../tables/monitoring_plot_overlaps.html" target="_top" title="monitoring_plot_overlaps" alt="" coords="1385,416,1663,539">
+<area shape="rect" id="node4" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="865,375,1312,855">
+<area shape="rect" id="node5" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="571,1236,821,1441">
+<area shape="rect" id="node24" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="284,1327,483,1415">
+<area shape="rect" id="node6" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="1763,5,1998,211">
+<area shape="rect" id="node7" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="1413,223,1635,399">
+<area shape="rect" id="node8" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="997,872,1181,960">
+<area shape="rect" id="node9" href="../../tables/observation_plot_positions.html" target="_top" title="observation_plot_positions" alt="" coords="1379,117,1669,205">
+<area shape="rect" id="node12" href="../../tables/observation_plot_statuses.html" target="_top" title="observation_plot_statuses" alt="" coords="947,269,1230,357">
+<area shape="rect" id="node10" href="../../tables/observation_plot_conditions.html" target="_top" title="observation_plot_conditions" alt="" coords="1374,700,1674,852">
+<area shape="rect" id="node11" href="../../tables/observable_conditions.html" target="_top" title="observable_conditions" alt="" coords="961,977,1217,1065">
+<area shape="rect" id="node13" href="../../tables/observation_requested_subzones.html" target="_top" title="observation_requested_subzones" alt="" coords="1356,1227,1692,1315">
+<area shape="rect" id="node14" href="../../tables/observed_plot_coordinates.html" target="_top" title="observed_plot_coordinates" alt="" coords="1736,228,2025,433">
+<area shape="rect" id="node15" href="../../tables/observed_plot_species_totals.html" target="_top" title="observed_plot_species_totals" alt="" coords="1372,869,1676,1104">
+<area shape="rect" id="node16" href="../../tables/recorded_species_certainties.html" target="_top" title="recorded_species_certainties" alt="" coords="936,1083,1241,1171">
+<area shape="rect" id="node17" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="1373,1121,1675,1209">
+<area shape="rect" id="node18" href="../../tables/planting_seasons.html" target="_top" title="planting_seasons" alt="" coords="276,1560,491,1648">
+<area shape="rect" id="node19" href="../../tables/planting_site_histories.html" target="_top" title="planting_site_histories" alt="" coords="255,1665,511,1753">
+<area shape="rect" id="node20" href="../../tables/planting_site_notifications.html" target="_top" title="planting_site_notifications" alt="" coords="240,1771,527,1859">
+<area shape="rect" id="node21" href="../../tables/planting_site_populations.html" target="_top" title="planting_site_populations" alt="" coords="243,1876,524,1964">
+<area shape="rect" id="node22" href="../../tables/planting_subzone_histories.html" target="_top" title="planting_subzone_histories" alt="" coords="943,1224,1234,1312">
+<area shape="rect" id="node23" href="../../tables/planting_subzone_populations.html" target="_top" title="planting_subzone_populations" alt="" coords="931,1365,1246,1453">
+<area shape="rect" id="node25" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1010,1471,1167,1559">
+<area shape="rect" id="node26" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1776,563,1985,827">
+<area shape="rect" id="node27" href="../../tables/recorded_plant_statuses.html" target="_top" title="recorded_plant_statuses" alt="" coords="1389,1368,1659,1456">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/monitoring_plots.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

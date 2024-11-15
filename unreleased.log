@@ -1,1 +1,3 @@
+75e2b85199a SW-6251 Associate monitoring plots with sites (#2601)
+b42d1f53639 Reduce level of Balena update failure log message (#2600)
 e2113a8af33 Update dependency gradle to v8.11 (#2594)
