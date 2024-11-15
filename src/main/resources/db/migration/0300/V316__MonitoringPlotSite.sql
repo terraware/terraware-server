@@ -11,3 +11,5 @@ SET planting_site_id = (
 
 ALTER TABLE tracking.monitoring_plots
     ALTER COLUMN planting_site_id SET NOT NULL;
+
+CREATE INDEX ON tracking.monitoring_plots (planting_site_id);
