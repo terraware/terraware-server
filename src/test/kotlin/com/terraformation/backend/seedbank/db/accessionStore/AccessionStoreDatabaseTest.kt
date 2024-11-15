@@ -179,7 +179,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     val speciesId2 = insertSpecies()
     val initial = store.create(accessionModel(speciesId = speciesId1))
 
-    val nurseryFacilityId = insertFacility(type = FacilityType.Nursery)
+    insertFacility(type = FacilityType.Nursery)
     insertBatch(BatchesRow(accessionId = initial.id!!))
     insertWithdrawal()
     insertBatchWithdrawal()
@@ -195,6 +195,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
   fun `update throws exception if project is in a different organization`() {
     val projectId = insertProject()
     insertOrganization()
+    insertOrganizationUser()
     val otherOrgProjectId = insertProject()
 
     val initial = store.create(accessionModel(projectId = projectId))
@@ -294,7 +295,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     insertPlantingSite()
     insertDelivery()
 
-    val withDelivery = store.fetchOneById(initial.id!!)
+    val withDelivery = store.fetchOneById(initial.id)
     assertTrue(withDelivery.hasDeliveries, "Delivery should be indicated in accession")
 
     val otherAccession =

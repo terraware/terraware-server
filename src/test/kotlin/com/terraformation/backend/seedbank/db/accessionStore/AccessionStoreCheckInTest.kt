@@ -1,11 +1,14 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionStateHistoryRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSION_STATE_HISTORY
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.springframework.security.access.AccessDeniedException
 
 internal class AccessionStoreCheckInTest : AccessionStoreTest() {
   @Test
@@ -47,5 +50,14 @@ internal class AccessionStoreCheckInTest : AccessionStoreTest() {
 
     val updatedRow = accessionsDao.fetchOneById(accessionId)
     assertEquals(checkInTime, updatedRow?.modifiedTime, "Modified time")
+  }
+
+  @Test
+  fun `throws exception if no permission to check in`() {
+    insertOrganizationUser(role = Role.Contributor)
+
+    val accessionId = create().id!!
+
+    assertThrows<AccessDeniedException> { store.checkIn(accessionId) }
   }
 }

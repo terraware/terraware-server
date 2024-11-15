@@ -1,10 +1,9 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
+import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.FacilityTypeMismatchException
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
-import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.IDENTIFIER_SEQUENCES
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -20,7 +19,6 @@ import com.terraformation.backend.seedbank.api.CreateAccessionRequestPayloadV2
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.Geolocation
 import com.terraformation.backend.seedbank.seeds
-import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -31,7 +29,6 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DuplicateKeyException
-import org.springframework.security.access.AccessDeniedException
 
 internal class AccessionStoreCreateTest : AccessionStoreTest() {
   @Test
@@ -232,27 +229,19 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
   @Test
   fun `create does not write to database if user does not have permission`() {
-    every { user.canCreateAccession(facilityId) } returns false
-    every { user.canReadFacility(facilityId) } returns true
+    deleteOrganizationUser()
 
-    assertThrows<AccessDeniedException> { store.create(accessionModel()) }
+    assertThrows<FacilityNotFoundException> { store.create(accessionModel()) }
   }
 
   @Test
   fun `throws exception if project is in different organization than facility`() {
     insertOrganization()
+    insertOrganizationUser()
     val projectId = insertProject()
 
     assertThrows<ProjectInDifferentOrganizationException> {
       store.create(accessionModel(projectId = projectId))
     }
-  }
-
-  @Test
-  fun `throws exception if no permission to read project`() {
-    val projectId = ProjectId(1000)
-    every { user.canReadProject(projectId) } returns false
-
-    assertThrows<ProjectNotFoundException> { store.create(accessionModel(projectId = projectId)) }
   }
 }

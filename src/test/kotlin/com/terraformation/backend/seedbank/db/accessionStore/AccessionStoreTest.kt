@@ -1,21 +1,21 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
-import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
-import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.i18n.Messages
-import com.terraformation.backend.mockUser
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.BagStore
 import com.terraformation.backend.seedbank.db.GeolocationStore
@@ -28,14 +28,13 @@ import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
 import com.terraformation.backend.species.db.SpeciesStore
-import io.mockk.every
 import java.time.Clock
 import java.time.Duration
 import java.time.LocalDate
 import org.junit.jupiter.api.BeforeEach
 
-internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
-  override val user: IndividualUser = mockUser()
+internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsDatabaseUser {
+  override lateinit var user: TerrawareUser
 
   protected val clock = TestClock()
   protected val publisher = TestEventPublisher()
@@ -51,22 +50,9 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsUser {
   protected fun init() {
     organizationId = insertOrganization()
     facilityId = insertFacility()
+    insertOrganizationUser(role = Role.Admin)
 
     parentStore = ParentStore(dslContext)
-
-    every { user.canCreateAccession(any()) } returns true
-    every { user.canCreateSpecies(organizationId) } returns true
-    every { user.canDeleteAccession(any()) } returns true
-    every { user.canDeleteSpecies(any()) } returns true
-    every { user.canReadAccession(any()) } returns true
-    every { user.canReadFacility(any()) } returns true
-    every { user.canReadOrganization(any()) } returns true
-    every { user.canReadOrganizationUser(organizationId, any()) } returns true
-    every { user.canReadProject(any()) } returns true
-    every { user.canReadSpecies(any()) } returns true
-    every { user.canSetWithdrawalUser(any()) } returns true
-    every { user.canUpdateAccession(any()) } returns true
-    every { user.canUpdateSpecies(any()) } returns true
 
     val messages = Messages()
 

@@ -355,6 +355,9 @@ class AccessionStore(
 
   fun update(updated: AccessionModel, updateContext: AccessionUpdateContext? = null) {
     val accessionId = updated.id ?: throw IllegalArgumentException("No accession ID specified")
+
+    requirePermissions { updateAccession(accessionId) }
+
     val existing = fetchOneById(accessionId)
     val existingFacilityId =
         existing.facilityId ?: throw IllegalStateException("Accession has no facility ID")
@@ -677,9 +680,9 @@ class AccessionStore(
    *   current user.
    */
   fun checkIn(accessionId: AccessionId): AccessionModel {
-    val accession = fetchOneById(accessionId)
-
     requirePermissions { updateAccession(accessionId) }
+
+    val accession = fetchOneById(accessionId)
 
     if (accession.state != AccessionState.AwaitingCheckIn) {
       log.info("Accession $accessionId is already checked in; ignoring request to check in again")

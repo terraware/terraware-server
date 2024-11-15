@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.db.accessionStore
 
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.seedbank.AccessionQuantityHistoryType
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
@@ -14,7 +15,6 @@ import com.terraformation.backend.seedbank.model.AccessionUpdateContext
 import com.terraformation.backend.seedbank.model.ViabilityTestModel
 import com.terraformation.backend.seedbank.model.WithdrawalModel
 import com.terraformation.backend.seedbank.seeds
-import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -118,18 +118,24 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
     val firstWithdrawerUserId = insertUser(firstName = "First", lastName = "Withdrawer")
     val viabilityTesterUserId = insertUser(firstName = "Viability", lastName = "Tester")
 
+    insertOrganizationUser(userId = createUserId)
+    insertOrganizationUser(userId = checkInUserId, role = Role.Manager)
+    insertOrganizationUser(userId = processUserId, role = Role.Manager)
+    insertOrganizationUser(userId = firstWithdrawerUserId, role = Role.Manager)
+    insertOrganizationUser(userId = viabilityTesterUserId, role = Role.Manager)
+
     clock.instant = createTime
-    every { user.userId } returns createUserId
+    switchToUser(createUserId)
 
     val initial = store.create(accessionModel())
 
     clock.instant = checkInTime
-    every { user.userId } returns checkInUserId
+    switchToUser(checkInUserId)
 
     store.checkIn(initial.id!!)
 
     clock.instant = processTime
-    every { user.userId } returns processUserId
+    switchToUser(processUserId)
 
     val withSeedQuantity =
         store.updateAndFetch(

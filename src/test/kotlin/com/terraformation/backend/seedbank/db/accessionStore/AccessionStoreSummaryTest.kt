@@ -5,7 +5,6 @@ import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
-import io.mockk.every
 import java.math.BigDecimal
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -560,8 +559,6 @@ internal class AccessionStoreSummaryTest : AccessionStoreTest() {
 
   @Test
   fun `countActiveInSubLocation only counts active accessions in location`() {
-    every { user.canReadSubLocation(any()) } returns true
-
     val subLocationId = insertSubLocation()
     val otherSubLocationId = insertSubLocation()
 
