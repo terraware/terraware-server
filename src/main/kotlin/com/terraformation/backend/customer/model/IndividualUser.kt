@@ -526,7 +526,7 @@ data class IndividualUser(
 
   override fun canReadUpload(uploadId: UploadId) = userId == parentStore.getUserId(uploadId)
 
-  override fun canReadUser(userId: UserId) = isAcceleratorAdmin()
+  override fun canReadUser(userId: UserId) = isReadOnlyOrHigher()
 
   override fun canReadUserInternalInterests(userId: UserId) = isAcceleratorAdmin()
 
