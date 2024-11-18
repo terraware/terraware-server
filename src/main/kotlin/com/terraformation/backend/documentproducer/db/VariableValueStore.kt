@@ -623,6 +623,13 @@ class VariableValueStore(
     val containingRowId = fetchContainingRowId(valueId)
     val listPosition = valuesRow.listPosition!!
     val projectId = operation.projectId
+
+    val currentValues = listValues(projectId, variableIds = listOf(variableId))
+    if (currentValues.none { it.id == valueId }) {
+      logVariableOperation("Ignoring deletion of outdated value", projectId, variablesRow, valueId)
+      return
+    }
+
     val maxListPosition =
         fetchMaxListPosition(projectId, variableId, containingRowId)
             ?: throw IllegalStateException(

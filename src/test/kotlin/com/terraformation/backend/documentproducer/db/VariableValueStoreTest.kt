@@ -350,6 +350,26 @@ class VariableValueStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       @Test
+      fun `deleting an already-deleted value does nothing`() {
+        val variableId = insertTextVariable(insertVariable(type = VariableType.Text))
+
+        val append1Result =
+            store.updateValues(
+                listOf(AppendValueOperation(NewTextValue(newValueProps(variableId), "1"))))
+
+        store.updateValues(
+            listOf(DeleteValueOperation(inserted.projectId, append1Result.first().id)))
+        val round1Values = store.listValues(inserted.documentId)
+
+        store.updateValues(
+            listOf(DeleteValueOperation(inserted.projectId, append1Result.first().id)))
+        val round2Values = store.listValues(inserted.documentId)
+
+        assertEquals(
+            round1Values, round2Values, "Should not have made any additional changes to values")
+      }
+
+      @Test
       fun `can delete a table row whose values are all deleted`() {
         val tableVariableId = insertTableVariable()
         val columnVariableId = insertTextVariable()
