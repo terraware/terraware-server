@@ -1,3 +1,5 @@
+549101d2a06 Update JamesIves/github-pages-deploy-action action to v4.6.9 (#2604)
+659935f8cca SW-6259 Allow all internal users to read user details (#2605)
 e188ec061fa Update dependency com.google.auth:google-auth-library-oauth2-http to v1.30.0 (#2603)
 d2a28570447 SW-6251 Add monitoring plot/site link to search API (#2602)
 75e2b85199a SW-6251 Associate monitoring plots with sites (#2601)
