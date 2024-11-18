@@ -624,8 +624,26 @@ class VariableValueStore(
     val listPosition = valuesRow.listPosition!!
     val projectId = operation.projectId
 
-    val currentValues = listValues(projectId, variableIds = listOf(variableId))
-    if (currentValues.none { it.id == valueId }) {
+    val isOutdated =
+        dslContext
+            .selectOne()
+            .from(VARIABLE_VALUES)
+            .leftJoin(VARIABLE_VALUE_TABLE_ROWS)
+            .on(VARIABLE_VALUES.ID.eq(VARIABLE_VALUE_TABLE_ROWS.VARIABLE_VALUE_ID))
+            .where(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
+            .and(VARIABLE_VALUES.VARIABLE_ID.eq(variableId))
+            .and(VARIABLE_VALUES.LIST_POSITION.eq(listPosition))
+            .and(
+                if (containingRowId != null) {
+                  VARIABLE_VALUE_TABLE_ROWS.TABLE_ROW_VALUE_ID.eq(containingRowId)
+                } else {
+                  VARIABLE_VALUE_TABLE_ROWS.TABLE_ROW_VALUE_ID.isNull
+                })
+            .and(VARIABLE_VALUES.ID.gt(valueId))
+            .fetch()
+            .isNotEmpty
+
+    if (isOutdated) {
       logVariableOperation("Ignoring deletion of outdated value", projectId, variablesRow, valueId)
       return
     }
