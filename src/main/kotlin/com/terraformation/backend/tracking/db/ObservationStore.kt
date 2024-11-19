@@ -33,6 +33,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBZONES
@@ -530,17 +531,24 @@ class ObservationStore(
     val createdTime = clock.instant()
 
     plotIds.forEach { plotId ->
-      observationPlotsDao.insert(
-          ObservationPlotsRow(
-              observationId = observationId,
-              monitoringPlotId = plotId,
-              createdBy = createdBy,
-              createdTime = createdTime,
-              isPermanent = isPermanent,
-              modifiedBy = createdBy,
-              modifiedTime = createdTime,
-              statusId = ObservationPlotStatus.Unclaimed,
-          ))
+      with(OBSERVATION_PLOTS) {
+        dslContext
+            .insertInto(OBSERVATION_PLOTS)
+            .set(CREATED_BY, createdBy)
+            .set(CREATED_TIME, createdTime)
+            .set(IS_PERMANENT, isPermanent)
+            .set(MODIFIED_BY, createdBy)
+            .set(MODIFIED_TIME, createdTime)
+            .set(
+                MONITORING_PLOT_HISTORY_ID,
+                DSL.select(DSL.max(MONITORING_PLOT_HISTORIES.ID))
+                    .from(MONITORING_PLOT_HISTORIES)
+                    .where(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(plotId)))
+            .set(MONITORING_PLOT_ID, plotId)
+            .set(OBSERVATION_ID, observationId)
+            .set(STATUS_ID, ObservationPlotStatus.Unclaimed)
+            .execute()
+      }
     }
   }
 

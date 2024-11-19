@@ -93,7 +93,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     organizationId = insertOrganization()
-    plantingSiteId = insertPlantingSite()
+    plantingSiteId = insertPlantingSite(x = 0)
 
     every { user.canCreateObservation(any()) } returns true
     every { user.canManageObservation(any()) } returns true
@@ -1971,7 +1971,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not insert anything if this is the first observation of a site`() {
-      insertPlantingSite()
+      insertPlantingSite(x = 0)
       insertPlantingZone()
       insertPlantingSubzone()
       insertMonitoringPlot()
@@ -1993,7 +1993,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       val totalsForOtherSite = helper.fetchAllTotals()
 
-      insertPlantingSite()
+      insertPlantingSite(x = 0)
       insertPlantingZone()
       insertPlantingSubzone()
       insertMonitoringPlot()
@@ -2014,7 +2014,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               speciesName = "Species name",
               statusId = Dead)
 
-      insertPlantingSite()
+      insertPlantingSite(x = 0)
       insertPlantingZone()
       insertPlantingSubzone()
       val plotId1 = insertMonitoringPlot()
@@ -2099,7 +2099,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               speciesName = "Species name",
               statusId = Live)
 
-      insertPlantingSite()
+      insertPlantingSite(x = 0)
       insertPlantingZone()
       insertPlantingSubzone()
       insertMonitoringPlot()
@@ -2142,7 +2142,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
     @BeforeEach
     fun setUp() {
-      plantingSiteId = insertPlantingSite()
+      plantingSiteId = insertPlantingSite(x = 0)
       insertPlantingZone()
       insertPlantingSubzone()
     }

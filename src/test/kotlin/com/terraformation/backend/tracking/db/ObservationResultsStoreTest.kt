@@ -75,7 +75,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     organizationId = insertOrganization()
-    plantingSiteId = insertPlantingSite(areaHa = BigDecimal(2500))
+    plantingSiteId = insertPlantingSite(x = 0, areaHa = BigDecimal(2500))
 
     every { user.canReadObservation(any()) } returns true
     every { user.canReadOrganization(organizationId) } returns true
