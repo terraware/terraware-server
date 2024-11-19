@@ -276,6 +276,7 @@ import com.terraformation.backend.db.seedbank.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
+import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
@@ -284,10 +285,13 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservedPlotCoordinatesId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSiteNotificationId
+import com.terraformation.backend.db.tracking.PlantingSubzoneHistoryId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingType
+import com.terraformation.backend.db.tracking.PlantingZoneHistoryId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
@@ -295,6 +299,7 @@ import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.keys.PLANTING_SITES_PKEY
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
 import com.terraformation.backend.db.tracking.tables.daos.DraftPlantingSitesDao
+import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotOverlapsDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
@@ -318,6 +323,7 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.DraftPlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotOverlapsRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
@@ -326,11 +332,14 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedS
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotCoordinatesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteNotificationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzoneHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingZoneHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
@@ -488,6 +497,7 @@ abstract class DatabaseBackedTest {
   protected val internalTagsDao: InternalTagsDao by lazyDao()
   protected val documentTemplatesDao: DocumentTemplatesDao by lazyDao()
   protected val modulesDao: ModulesDao by lazyDao()
+  protected val monitoringPlotHistoriesDao: MonitoringPlotHistoriesDao by lazyDao()
   protected val monitoringPlotOverlapsDao: MonitoringPlotOverlapsDao by lazyDao()
   protected val monitoringPlotsDao: MonitoringPlotsDao by lazyDao()
   protected val notificationsDao: NotificationsDao by lazyDao()
@@ -1547,12 +1557,13 @@ abstract class DatabaseBackedTest {
   }
 
   var nextPlantingSiteNumber: Int = 1
+  private lateinit var lastPlantingSitesRow: PlantingSitesRow
 
   fun insertPlantingSite(
       row: PlantingSitesRow = PlantingSitesRow(),
       areaHa: BigDecimal? = row.areaHa,
       x: Number? = null,
-      y: Number? = null,
+      y: Number? = if (x != null) 0 else null,
       width: Number = 3,
       height: Number = 2,
       boundary: Geometry? = row.boundary,
@@ -1567,6 +1578,7 @@ abstract class DatabaseBackedTest {
       timeZone: ZoneId? = row.timeZone,
       projectId: ProjectId? = row.projectId,
       countryCode: String? = row.countryCode,
+      insertHistory: Boolean = true,
   ): PlantingSiteId {
     val effectiveBoundary =
         when {
@@ -1598,8 +1610,39 @@ abstract class DatabaseBackedTest {
         )
 
     plantingSitesDao.insert(rowWithDefaults)
+    lastPlantingSitesRow = rowWithDefaults
 
-    return rowWithDefaults.id!!.also { inserted.plantingSiteIds.add(it) }
+    val plantingSiteId = rowWithDefaults.id!!
+    inserted.plantingSiteIds.add(plantingSiteId)
+
+    if (insertHistory && effectiveBoundary != null) {
+      insertPlantingSiteHistory()
+    }
+
+    return plantingSiteId
+  }
+
+  fun insertPlantingSiteHistory(
+      boundary: Geometry? = null,
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+      exclusion: Geometry? = null,
+      gridOrigin: Geometry? = null,
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
+  ): PlantingSiteHistoryId {
+    val row =
+        PlantingSiteHistoriesRow(
+            boundary = boundary ?: lastPlantingSitesRow.boundary,
+            createdBy = createdBy,
+            createdTime = createdTime,
+            exclusion = exclusion ?: lastPlantingSitesRow.exclusion,
+            gridOrigin = gridOrigin ?: lastPlantingSitesRow.gridOrigin,
+            plantingSiteId = plantingSiteId,
+        )
+
+    plantingSiteHistoriesDao.insert(row)
+
+    return row.id!!.also { inserted.plantingSiteHistoryIds.add(it) }
   }
 
   fun insertPlantingSeason(
@@ -1647,6 +1690,7 @@ abstract class DatabaseBackedTest {
   }
 
   private var nextPlantingZoneNumber: Int = 1
+  private lateinit var lastPlantingZonesRow: PlantingZonesRow
 
   fun insertPlantingZone(
       row: PlantingZonesRow = PlantingZonesRow(),
@@ -1677,6 +1721,7 @@ abstract class DatabaseBackedTest {
       studentsT: BigDecimal = row.studentsT ?: PlantingZoneModel.DEFAULT_STUDENTS_T,
       targetPlantingDensity: BigDecimal? = row.targetPlantingDensity,
       variance: BigDecimal = row.variance ?: PlantingZoneModel.DEFAULT_VARIANCE,
+      insertHistory: Boolean = true,
   ): PlantingZoneId {
     val rowWithDefaults =
         row.copy(
@@ -1698,12 +1743,40 @@ abstract class DatabaseBackedTest {
         )
 
     plantingZonesDao.insert(rowWithDefaults)
+    lastPlantingZonesRow = rowWithDefaults
 
-    return rowWithDefaults.id!!.also { inserted.plantingZoneIds.add(it) }
+    val plantingZoneId = rowWithDefaults.id!!
+    inserted.plantingZoneIds.add(plantingZoneId)
+
+    if (insertHistory && inserted.plantingSiteHistoryIds.isNotEmpty()) {
+      insertPlantingZoneHistory()
+    }
+
+    return plantingZoneId
+  }
+
+  fun insertPlantingZoneHistory(
+      boundary: Geometry? = null,
+      name: String? = null,
+      plantingSiteHistoryId: PlantingSiteHistoryId = inserted.plantingSiteHistoryId,
+      plantingZoneId: PlantingZoneId = inserted.plantingZoneId,
+  ): PlantingZoneHistoryId {
+    val row =
+        PlantingZoneHistoriesRow(
+            boundary = boundary ?: lastPlantingZonesRow.boundary,
+            name = name ?: lastPlantingZonesRow.name,
+            plantingSiteHistoryId = plantingSiteHistoryId,
+            plantingZoneId = plantingZoneId,
+        )
+
+    plantingZoneHistoriesDao.insert(row)
+
+    return row.id!!.also { inserted.plantingZoneHistoryIds.add(it) }
   }
 
   private var nextPlantingSubzoneNumber: Int = 1
   private var nextMonitoringPlotNumber: Int = 1
+  private lateinit var lastPlantingSubzonesRow: PlantingSubzonesRow
 
   fun insertPlantingSubzone(
       row: PlantingSubzonesRow = PlantingSubzonesRow(),
@@ -1728,6 +1801,7 @@ abstract class DatabaseBackedTest {
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: "${nextPlantingSubzoneNumber++}",
       fullName: String = "Z1-$name",
+      insertHistory: Boolean = true,
   ): PlantingSubzoneId {
     val rowWithDefaults =
         row.copy(
@@ -1745,8 +1819,37 @@ abstract class DatabaseBackedTest {
         )
 
     plantingSubzonesDao.insert(rowWithDefaults)
+    lastPlantingSubzonesRow = rowWithDefaults
 
-    return rowWithDefaults.id!!.also { inserted.plantingSubzoneIds.add(it) }
+    val plantingSubzoneId = rowWithDefaults.id!!
+    inserted.plantingSubzoneIds.add(plantingSubzoneId)
+
+    if (insertHistory && inserted.plantingZoneHistoryIds.isNotEmpty()) {
+      insertPlantingSubzoneHistory()
+    }
+
+    return plantingSubzoneId
+  }
+
+  fun insertPlantingSubzoneHistory(
+      boundary: Geometry? = null,
+      fullName: String? = null,
+      name: String? = null,
+      plantingSubzoneId: PlantingSubzoneId = inserted.plantingSubzoneId,
+      plantingZoneHistoryId: PlantingZoneHistoryId = inserted.plantingZoneHistoryId,
+  ): PlantingSubzoneHistoryId {
+    val row =
+        PlantingSubzoneHistoriesRow(
+            boundary = boundary ?: lastPlantingSubzonesRow.boundary,
+            fullName = fullName ?: lastPlantingSubzonesRow.fullName,
+            name = name ?: lastPlantingSubzonesRow.name,
+            plantingZoneHistoryId = plantingZoneHistoryId,
+            plantingSubzoneId = plantingSubzoneId,
+        )
+
+    plantingSubzoneHistoriesDao.insert(row)
+
+    return row.id!!.also { inserted.plantingSubzoneHistoryIds.add(it) }
   }
 
   private var nextModuleNumber: Int = 1
@@ -1812,6 +1915,7 @@ abstract class DatabaseBackedTest {
           row.permanentClusterSubplot ?: if (permanentCluster != null) 1 else null,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       plantingSubzoneId: PlantingSubzoneId = row.plantingSubzoneId ?: inserted.plantingSubzoneId,
+      insertHistory: Boolean = true,
   ): MonitoringPlotId {
     val rowWithDefaults =
         row.copy(
@@ -1832,7 +1936,45 @@ abstract class DatabaseBackedTest {
 
     monitoringPlotsDao.insert(rowWithDefaults)
 
-    return rowWithDefaults.id!!.also { inserted.monitoringPlotIds.add(it) }
+    val monitoringPlotId = rowWithDefaults.id!!
+    inserted.monitoringPlotIds.add(monitoringPlotId)
+
+    if (insertHistory && inserted.plantingSiteHistoryIds.isNotEmpty()) {
+      insertMonitoringPlotHistory()
+    }
+
+    return monitoringPlotId
+  }
+
+  fun insertMonitoringPlotHistory(
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+      fullName: String? = null,
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+      name: String? = null,
+      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
+      plantingSiteHistoryId: PlantingSiteHistoryId = inserted.plantingSiteHistoryId,
+      plantingSubzoneId: PlantingSubzoneId? =
+          if (inserted.plantingSubzoneIds.isNotEmpty()) inserted.plantingSubzoneId else null,
+      plantingSubzoneHistoryId: PlantingSubzoneHistoryId? =
+          if (plantingSubzoneId != null) inserted.plantingSubzoneHistoryId else null,
+  ): MonitoringPlotHistoryId {
+    val row =
+        MonitoringPlotHistoriesRow(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            fullName = fullName ?: lastPlantingSubzonesRow.fullName,
+            monitoringPlotId = monitoringPlotId,
+            name = name ?: lastPlantingSubzonesRow.name,
+            plantingSiteHistoryId = plantingSiteHistoryId,
+            plantingSiteId = plantingSiteId,
+            plantingSubzoneHistoryId = plantingSubzoneHistoryId,
+            plantingSubzoneId = plantingSubzoneId,
+        )
+
+    monitoringPlotHistoriesDao.insert(row)
+
+    return row.id!!.also { inserted.monitoringPlotHistoryIds.add(it) }
   }
 
   fun insertMonitoringPlotOverlap(
@@ -3296,6 +3438,7 @@ abstract class DatabaseBackedTest {
     val fileIds = mutableListOf<FileId>()
     val internalTagIds = mutableListOf<InternalTagId>()
     val moduleIds = mutableListOf<ModuleId>()
+    val monitoringPlotHistoryIds = mutableListOf<MonitoringPlotHistoryId>()
     val monitoringPlotIds = mutableListOf<MonitoringPlotId>()
     val notificationIds = mutableListOf<NotificationId>()
     val observationIds = mutableListOf<ObservationId>()
@@ -3304,9 +3447,12 @@ abstract class DatabaseBackedTest {
     val participantProjectSpeciesIds = mutableListOf<ParticipantProjectSpeciesId>()
     val plantingIds = mutableListOf<PlantingId>()
     val plantingSeasonIds = mutableListOf<PlantingSeasonId>()
+    val plantingSiteHistoryIds = mutableListOf<PlantingSiteHistoryId>()
     val plantingSiteIds = mutableListOf<PlantingSiteId>()
     val plantingSiteNotificationIds = mutableListOf<PlantingSiteNotificationId>()
+    val plantingSubzoneHistoryIds = mutableListOf<PlantingSubzoneHistoryId>()
     val plantingSubzoneIds = mutableListOf<PlantingSubzoneId>()
+    val plantingZoneHistoryIds = mutableListOf<PlantingZoneHistoryId>()
     val plantingZoneIds = mutableListOf<PlantingZoneId>()
     val projectIds = mutableListOf<ProjectId>()
     val reportIds = mutableListOf<ReportId>()
@@ -3374,6 +3520,9 @@ abstract class DatabaseBackedTest {
     val moduleId
       get() = moduleIds.last()
 
+    val monitoringPlotHistoryId
+      get() = monitoringPlotHistoryIds.last()
+
     val monitoringPlotId
       get() = monitoringPlotIds.last()
 
@@ -3398,14 +3547,23 @@ abstract class DatabaseBackedTest {
     val plantingSeasonId
       get() = plantingSeasonIds.last()
 
+    val plantingSiteHistoryId
+      get() = plantingSiteHistoryIds.last()
+
     val plantingSiteId
       get() = plantingSiteIds.last()
 
     val plantingSiteNotificationId
       get() = plantingSiteNotificationIds.last()
 
+    val plantingSubzoneHistoryId
+      get() = plantingSubzoneHistoryIds.last()
+
     val plantingSubzoneId
       get() = plantingSubzoneIds.last()
+
+    val plantingZoneHistoryId
+      get() = plantingZoneHistoryIds.last()
 
     val plantingZoneId
       get() = plantingZoneIds.last()
