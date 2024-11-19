@@ -26,7 +26,7 @@ internal class PlantingSiteStoreDeleteTest : PlantingSiteStoreTest() {
     fun `deletes detailed map data and observations`() {
       every { user.canDeletePlantingSite(any()) } returns true
 
-      val plantingSiteId = insertPlantingSite()
+      val plantingSiteId = insertPlantingSite(x = 0)
       insertPlantingZone()
       insertPlantingSubzone()
       insertMonitoringPlot()
