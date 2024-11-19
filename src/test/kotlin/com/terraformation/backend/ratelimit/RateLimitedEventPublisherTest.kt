@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -25,6 +26,7 @@ class RateLimitedEventPublisherTest : DatabaseTest(), RunsAsUser {
         dslContext,
         eventPublisher,
         jacksonObjectMapper(),
+        SystemUser(usersDao),
     )
   }
 
