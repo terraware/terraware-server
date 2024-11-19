@@ -159,33 +159,30 @@ class DocumentUpgradeCalculator(
       // any references to old variables.
       val sectionValues = existingValues[variable.id]!!.filterIsInstance<ExistingSectionValue>()
 
-      val updateOperations =
-          sectionValues.mapNotNull { sectionValue ->
-            if (sectionValue.value is SectionValueVariable) {
-              val sectionValueVariable = sectionValue.value
-              val usedVariableId = sectionValueVariable.usedVariableId
-              if (usedVariableId in replacementVariableIds) {
-                UpdateValueOperation(
-                    ExistingSectionValue(
-                        BaseVariableValueProperties(
-                            sectionValue.id,
-                            projectId,
-                            sectionValue.listPosition,
-                            variable.id,
-                            sectionValue.citation),
-                        SectionValueVariable(
-                            replacementVariableIds[usedVariableId]!!,
-                            sectionValueVariable.usageType,
-                            sectionValueVariable.displayStyle)))
-              } else {
-                null
-              }
-            } else {
-              null
-            }
+      sectionValues.mapNotNull { sectionValue ->
+        if (sectionValue.value is SectionValueVariable) {
+          val sectionValueVariable = sectionValue.value
+          val usedVariableId = sectionValueVariable.usedVariableId
+          if (usedVariableId in replacementVariableIds) {
+            UpdateValueOperation(
+                ExistingSectionValue(
+                    BaseVariableValueProperties(
+                        sectionValue.id,
+                        projectId,
+                        sectionValue.listPosition,
+                        variable.id,
+                        sectionValue.citation),
+                    SectionValueVariable(
+                        replacementVariableIds[usedVariableId]!!,
+                        sectionValueVariable.usageType,
+                        sectionValueVariable.displayStyle)))
+          } else {
+            null
           }
-
-      updateOperations
+        } else {
+          null
+        }
+      }
     } else {
       val sectionValues =
           previousVariableIds[variable.id]

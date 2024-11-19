@@ -224,7 +224,7 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `updates variable references in sections to use new variable IDs`() {
+  fun `updates section values to point to new section variables for the same stable ID`() {
     // A few variables are uploaded to the system
     val outdatedVariableId = insertTextVariable(textType = VariableTextType.SingleLine)
     val unmodifiedVariableId = insertNumberVariable()
@@ -238,17 +238,14 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
     val documentId = insertDocument(variableManifestId = firstManifestId)
 
     // Some project values are added to the document section
-    val variableValueId1 =
-        insertSectionValue(
-            firstSectionVariableId,
-            listPosition = 0,
-            textValue = "We must consider the value of this variable: ")
-    val variableValueId2 =
-        insertSectionValue(
-            firstSectionVariableId, listPosition = 1, usedVariableId = unmodifiedVariableId)
-    val variableValueId3 =
-        insertSectionValue(
-            firstSectionVariableId, listPosition = 2, textValue = ", additionally, this variable: ")
+    insertSectionValue(
+        firstSectionVariableId,
+        listPosition = 0,
+        textValue = "We must consider the value of this variable: ")
+    insertSectionValue(
+        firstSectionVariableId, listPosition = 1, usedVariableId = unmodifiedVariableId)
+    insertSectionValue(
+        firstSectionVariableId, listPosition = 2, textValue = ", additionally, this variable: ")
     val outdatedVariableValueId =
         insertSectionValue(
             firstSectionVariableId, listPosition = 3, usedVariableId = outdatedVariableId)
