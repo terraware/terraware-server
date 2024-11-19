@@ -98,6 +98,7 @@ VALUES (1, 'Compliance'),
        (6, 'Proposed Restoration Activities'),
        (7, 'Verra Non-Permanence Risk Tool (NPRT)'),
        (8, 'Supplemental Files'),
+       (100, 'None'),
        (101, 'Sourcing')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
