@@ -31,15 +31,15 @@
 <text text-anchor="start" x="609" y="-197.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_subzone_id</text>
 <polygon fill="none" stroke="black" points="579,-171 579,-189 781,-189 781,-171 579,-171"/>
 <text text-anchor="start" x="582" y="-177.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="579,-153 579,-171 664,-171 664,-153 579,-153"/>
-<polygon fill="none" stroke="black" points="579,-153 579,-171 664,-171 664,-153 579,-153"/>
+<polygon fill="#ffffff" stroke="none" points="579,-153 579,-171 659,-171 659,-153 579,-153"/>
+<polygon fill="none" stroke="black" points="579,-153 579,-171 659,-171 659,-153 579,-153"/>
 <text text-anchor="start" x="582" y="-159.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="none" points="664,-153 664,-171 737,-171 737,-153 664,-153"/>
-<polygon fill="none" stroke="black" points="664,-153 664,-171 737,-171 737,-153 664,-153"/>
-<text text-anchor="start" x="698" y="-159.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="737,-153 737,-171 781,-171 781,-153 737,-153"/>
-<polygon fill="none" stroke="black" points="737,-153 737,-171 781,-171 781,-153 737,-153"/>
-<text text-anchor="start" x="771" y="-159.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="659,-153 659,-171 729,-171 729,-153 659,-153"/>
+<polygon fill="none" stroke="black" points="659,-153 659,-171 729,-171 729,-153 659,-153"/>
+<text text-anchor="start" x="690" y="-159.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="729,-153 729,-171 781,-171 781,-153 729,-153"/>
+<polygon fill="none" stroke="black" points="729,-153 729,-171 781,-171 781,-153 729,-153"/>
+<text text-anchor="start" x="761" y="-159.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
 </g>
@@ -120,7 +120,7 @@
 <text text-anchor="start" x="100.5" y="-188.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
 <polygon fill="#ffffff" stroke="none" points="139.5,-182 139.5,-200 184.5,-200 184.5,-182 139.5,-182"/>
 <polygon fill="none" stroke="black" points="139.5,-182 139.5,-200 184.5,-200 184.5,-182 139.5,-182"/>
-<text text-anchor="start" x="164.5" y="-188.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<text text-anchor="start" x="164.5" y="-188.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
 </a>
 </g>
 </g>

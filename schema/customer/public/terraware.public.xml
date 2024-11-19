@@ -881,6 +881,7 @@
             <child column="reassigned_by" foreignKey="deliveries_reassigned_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
             <child column="created_by" foreignKey="draft_planting_sites_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="draft_planting_sites"/>
             <child column="modified_by" foreignKey="draft_planting_sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="draft_planting_sites"/>
+            <child column="created_by" foreignKey="monitoring_plot_histories_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plot_histories"/>
             <child column="created_by" foreignKey="monitoring_plots_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plots"/>
             <child column="modified_by" foreignKey="monitoring_plots_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plots"/>
             <child column="claimed_by" foreignKey="observation_plots_claimed_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
