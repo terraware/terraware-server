@@ -26,6 +26,7 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionValuesR
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSelectOptionValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableValueTableRowsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableValuesRow
+import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
 import com.terraformation.backend.db.docprod.tables.references.DOCUMENTS
 import com.terraformation.backend.db.docprod.tables.references.VARIABLES
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_IMAGE_VALUES
@@ -73,6 +74,7 @@ import com.terraformation.backend.documentproducer.model.UpdateValueOperation
 import com.terraformation.backend.documentproducer.model.ValueOperation
 import com.terraformation.backend.documentproducer.model.VariableValue
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
 import jakarta.inject.Named
 import java.net.URI
@@ -603,8 +605,7 @@ class VariableValueStore(
       latestRowIds[variableId] = valueId
     }
 
-    log.debug(
-        "Inserted value $valueId for variable $variableId type ${variablesRow.variableTypeId}")
+    logVariableOperation("Appended value", projectId, variablesRow, newValueId = valueId)
 
     return valueId
   }
@@ -621,10 +622,11 @@ class VariableValueStore(
         variablesDao.fetchOneById(variableId) ?: throw VariableNotFoundException(variableId)
     val containingRowId = fetchContainingRowId(valueId)
     val listPosition = valuesRow.listPosition!!
+    val projectId = operation.projectId
     val maxListPosition =
-        fetchMaxListPosition(operation.projectId, variableId, containingRowId)
+        fetchMaxListPosition(projectId, variableId, containingRowId)
             ?: throw IllegalStateException(
-                "Variable $variableId has values but no max list position")
+                "Project $projectId variable $variableId has values but no max list position")
 
     val deletedValue =
         DeletedValue(
@@ -632,7 +634,7 @@ class VariableValueStore(
                 citation = null,
                 id = null,
                 listPosition = listPosition,
-                projectId = operation.projectId,
+                projectId = projectId,
                 rowValueId = containingRowId,
                 variableId = variableId,
             ),
@@ -643,7 +645,7 @@ class VariableValueStore(
     val valuesToRenumber =
         fetchByConditions(
             listOfNotNull(
-                VARIABLE_VALUES.PROJECT_ID.eq(operation.projectId),
+                VARIABLE_VALUES.PROJECT_ID.eq(projectId),
                 VARIABLE_VALUES.VARIABLE_ID.eq(variableId),
                 containingRowId?.let { VARIABLE_VALUE_TABLE_ROWS.TABLE_ROW_VALUE_ID.eq(it) },
                 VARIABLE_VALUES.LIST_POSITION.gt(listPosition),
@@ -652,11 +654,7 @@ class VariableValueStore(
 
     valuesToRenumber.forEach { valueToRenumber ->
       val newValueId =
-          insertValue(
-              operation.projectId,
-              valueToRenumber.listPosition - 1,
-              containingRowId,
-              valueToRenumber)
+          insertValue(projectId, valueToRenumber.listPosition - 1, containingRowId, valueToRenumber)
 
       // If we're deleting a table row, need to associate the existing cell values with the newly-
       // renumbered rows.
@@ -674,8 +672,7 @@ class VariableValueStore(
     }
 
     val deletedId =
-        insertValue(
-            operation.projectId, maxListPosition, targetRowValueId ?: containingRowId, deletedValue)
+        insertValue(projectId, maxListPosition, targetRowValueId ?: containingRowId, deletedValue)
 
     // If this was a table row, recursively delete all its column values.
     if (variablesRow.variableTypeId == VariableType.Table) {
@@ -705,9 +702,11 @@ class VariableValueStore(
               .fetch(VARIABLE_VALUE_TABLE_ROWS.VARIABLE_VALUE_ID.asNonNullable())
 
       cellValueIds.forEach { cellValueId ->
-        deleteValue(DeleteValueOperation(operation.projectId, cellValueId), deletedId)
+        deleteValue(DeleteValueOperation(projectId, cellValueId), deletedId)
       }
     }
+
+    logVariableOperation("Deleted value", projectId, variablesRow, valueId, deletedId)
   }
 
   private fun listValues(
@@ -717,6 +716,7 @@ class VariableValueStore(
   ): List<ExistingValue> = listValues(projectId, null, minValueId, maxValueId)
 
   private fun replaceValues(operation: ReplaceValuesOperation) {
+    val projectId = operation.projectId
     val variableId = operation.variableId
     val variablesRow =
         variablesDao.fetchOneById(variableId) ?: throw VariableNotFoundException(variableId)
@@ -729,8 +729,7 @@ class VariableValueStore(
       // If the replacement list has fewer items than the existing value, delete the items whose
       // list positions no longer exist.
 
-      val maxListPosition =
-          fetchMaxListPosition(operation.projectId, variableId, operation.rowValueId)
+      val maxListPosition = fetchMaxListPosition(projectId, variableId, operation.rowValueId)
       if (maxListPosition != null) {
         (operation.values.size..maxListPosition).forEach { listPosition ->
           val deletedValue =
@@ -739,38 +738,45 @@ class VariableValueStore(
                       citation = null,
                       id = null,
                       listPosition = listPosition,
-                      projectId = operation.projectId,
+                      projectId = projectId,
                       rowValueId = operation.rowValueId,
                       variableId = operation.variableId,
                   ),
                   variablesRow.variableTypeId!!)
 
-          insertValue(operation.projectId, listPosition, operation.rowValueId, deletedValue)
+          insertValue(projectId, listPosition, operation.rowValueId, deletedValue)
         }
       }
     }
 
     operation.values.forEachIndexed { listPosition, value ->
-      insertValue(operation.projectId, listPosition, operation.rowValueId, value)
+      insertValue(projectId, listPosition, operation.rowValueId, value)
     }
+
+    logVariableOperation("Replaced values", projectId, variablesRow)
   }
 
   private fun updateValue(operation: UpdateValueOperation) {
-    val rowValueId = fetchContainingRowId(operation.value.id)
+    val projectId = operation.projectId
+    val variableId = operation.value.variableId
+    val variablesRow =
+        variablesDao.fetchOneById(variableId) ?: throw VariableNotFoundException(variableId)
+    val valueId = operation.value.id
+    val rowValueId = fetchContainingRowId(valueId)
 
     // Updating images is a special case, because we need to carry the file ID over from the
     // existing value.
     val effectiveValue =
         if (operation.value is ImageValue<*>) {
           val existingImageValue =
-              variableImageValuesDao.fetchOneByVariableValueId(operation.value.id)
-                  ?: throw VariableValueIncompleteException(operation.value.id)
+              variableImageValuesDao.fetchOneByVariableValueId(valueId)
+                  ?: throw VariableValueIncompleteException(valueId)
           ExistingImageValue(
               BaseVariableValueProperties(
                   citation = operation.value.citation,
-                  id = operation.value.id,
+                  id = valueId,
                   listPosition = operation.value.listPosition,
-                  projectId = operation.projectId,
+                  projectId = projectId,
                   rowValueId = operation.value.rowValueId,
                   variableId = operation.value.variableId,
               ),
@@ -779,7 +785,10 @@ class VariableValueStore(
           operation.value
         }
 
-    insertValue(operation.projectId, operation.value.listPosition, rowValueId, effectiveValue)
+    val newValueId =
+        insertValue(projectId, operation.value.listPosition, rowValueId, effectiveValue)
+
+    logVariableOperation("Updated value", projectId, variablesRow, valueId, newValueId)
   }
 
   private fun insertValue(
@@ -1088,5 +1097,26 @@ class VariableValueStore(
     valuesByVariables.keys.forEach { variableId ->
       eventPublisher.publishEvent(VariableValueUpdatedEvent(projectId, variableId))
     }
+  }
+
+  private fun logVariableOperation(
+      message: String,
+      projectId: ProjectId,
+      variablesRow: VariablesRow,
+      oldValueId: VariableValueId? = null,
+      newValueId: VariableValueId? = null,
+  ) {
+    val attributes =
+        listOfNotNull(
+                "projectId" to projectId,
+                "variableId" to variablesRow.id,
+                "variableName" to variablesRow.name,
+                "variableType" to variablesRow.variableTypeId,
+                oldValueId?.let { "oldValueId" to it },
+                newValueId?.let { "newValueId" to it },
+            )
+            .toTypedArray()
+
+    log.withMDC(*attributes) { log.debug(message) }
   }
 }

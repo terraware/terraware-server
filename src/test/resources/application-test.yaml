@@ -38,3 +38,15 @@ logging:
   level:
     com.terraformation: DEBUG
     org.springframework: WARN
+  pattern:
+    # This is the default Spring Boot console log format, but with the MDC values (%X) in between
+    # the log message and the exception stacktrace.
+    console: >-
+      %clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint}
+      %clr(%5p)
+      %clr(${PID:- }){magenta}
+      %clr(---){faint}
+      %clr([%15.15t]){faint}
+      %clr(%-40.40logger{39}){cyan}
+      %clr(:){faint}
+      %m%clr(%replace( %X){'^ $',''}){cyan}%n%wEx
