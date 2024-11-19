@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.model.ModuleModel
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -14,13 +15,10 @@ class ModuleStore(
     private val dslContext: DSLContext,
 ) {
   fun fetchOneById(moduleId: ModuleId): ModuleModel {
-    requirePermissions { readModule(moduleId) }
-
     return fetch(MODULES.ID.eq(moduleId)).firstOrNull() ?: throw ModuleNotFoundException(moduleId)
   }
 
   fun fetchAllModules(): List<ModuleModel> {
-    requirePermissions { manageModules() }
     return fetch()
   }
 
@@ -42,6 +40,7 @@ class ModuleStore(
           .apply { condition?.let { where(it) } }
           .orderBy(ID)
           .fetch { ModuleModel.of(it) }
+          .filter { currentUser().canReadModule(it.id) }
     }
   }
 }

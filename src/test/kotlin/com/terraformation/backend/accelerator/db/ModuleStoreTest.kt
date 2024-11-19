@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DataIntegrityViolationException
-import org.springframework.security.access.AccessDeniedException
 
 class ModuleStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -119,14 +118,13 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception if no permission to manage modules`() {
-      every { user.canManageModules() } returns false
-
-      assertThrows<AccessDeniedException> { store.fetchAllModules() }
+    fun `returns empty list of module if no permission to read any module`() {
+      every { user.canReadModule(any()) } returns false
+      assertEquals(emptyList<ModuleModel>(), store.fetchAllModules())
     }
 
     @Test
-    fun `returns list of modules with details`() {
+    fun `returns list of visible modules with details`() {
       val moduleId =
           insertModule(
               additionalResources = "<b> Additional Resources </b>",
@@ -138,6 +136,15 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
               phase = CohortPhase.Phase1FeasibilityStudy,
               workshopDescription = "Workshop ideas",
           )
+
+      val invisibleModuleId =
+          insertModule(
+              additionalResources = "<b> Invisible Additional Resources </b>",
+              liveSessionDescription = "Invisible Live session lectures",
+              name = "Invisible Module",
+          )
+
+      every { user.canReadModule(invisibleModuleId) } returns false
 
       assertEquals(
           listOf(
