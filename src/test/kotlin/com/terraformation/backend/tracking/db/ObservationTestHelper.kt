@@ -128,6 +128,7 @@ class ObservationTestHelper(
             height = height,
             timeZone = timeZone,
             width = width,
+            x = 0,
         )
     test.insertPlantingZone(
         height = height,
