@@ -1,8 +1,10 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
+import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotHistoriesRecord
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.util.Turtle
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -14,9 +16,12 @@ internal class PlantingSiteStoreEnsurePermanentTest : PlantingSiteStoreTest() {
     fun `creates all clusters in empty planting site`() {
       val siteBoundary = Turtle(point(0)).makeMultiPolygon { square(101) }
 
-      val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0))
+      val plantingSiteId =
+          insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0), insertHistory = false)
+      val plantingSiteHistoryId = insertPlantingSiteHistory()
       insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 4)
-      insertPlantingSubzone(boundary = siteBoundary)
+      val plantingSubzoneId = insertPlantingSubzone(boundary = siteBoundary, insertHistory = false)
+      val plantingSubzoneHistoryId = insertPlantingSubzoneHistory()
 
       store.ensurePermanentClustersExist(plantingSiteId)
 
@@ -27,6 +32,21 @@ internal class PlantingSiteStoreEnsurePermanentTest : PlantingSiteStoreTest() {
           setOf(1, 2, 3, 4), plots.map { it.permanentCluster }.toSet(), "Permanent cluster numbers")
       assertEquals(1, plots.minOf { it.name!!.toInt() }, "Smallest plot number")
       assertEquals(4, plots.maxOf { it.name!!.toInt() }, "Largest plot number")
+
+      assertTableEquals(
+          plots.map { plot ->
+            MonitoringPlotHistoriesRecord(
+                createdBy = user.userId,
+                createdTime = Instant.EPOCH,
+                fullName = plot.fullName,
+                monitoringPlotId = plot.id,
+                name = plot.name,
+                plantingSiteHistoryId = plantingSiteHistoryId,
+                plantingSiteId = plantingSiteId,
+                plantingSubzoneHistoryId = plantingSubzoneHistoryId,
+                plantingSubzoneId = plantingSubzoneId,
+            )
+          })
     }
 
     @Test
@@ -58,11 +78,18 @@ internal class PlantingSiteStoreEnsurePermanentTest : PlantingSiteStoreTest() {
       val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { square(201) }
       val existingPlotBoundary = Turtle(gridOrigin).makePolygon { square(25) }
 
-      val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
+      val plantingSiteId =
+          insertPlantingSite(
+              boundary = siteBoundary, gridOrigin = gridOrigin, insertHistory = false)
+      val plantingSiteHistoryId = insertPlantingSiteHistory()
       insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 3)
-      insertPlantingSubzone(boundary = siteBoundary)
+      val plantingSubzoneId = insertPlantingSubzone(boundary = siteBoundary, insertHistory = false)
+      val plantingSubzoneHistoryId = insertPlantingSubzoneHistory()
       insertMonitoringPlot(
-          boundary = existingPlotBoundary, permanentCluster = 2, permanentClusterSubplot = 1)
+          boundary = existingPlotBoundary,
+          permanentCluster = 2,
+          permanentClusterSubplot = 1,
+          insertHistory = false)
 
       store.ensurePermanentClustersExist(plantingSiteId)
 
@@ -71,6 +98,23 @@ internal class PlantingSiteStoreEnsurePermanentTest : PlantingSiteStoreTest() {
       assertEquals(3, plots.size, "Number of monitoring plots including existing one")
       assertEquals(
           setOf(1, 2, 3), plots.map { it.permanentCluster }.toSet(), "Permanent cluster numbers")
+
+      assertTableEquals(
+          plots
+              .filter { it.permanentCluster != 2 }
+              .map { plot ->
+                MonitoringPlotHistoriesRecord(
+                    createdBy = user.userId,
+                    createdTime = Instant.EPOCH,
+                    fullName = plot.fullName,
+                    monitoringPlotId = plot.id,
+                    name = plot.name,
+                    plantingSiteHistoryId = plantingSiteHistoryId,
+                    plantingSiteId = plantingSiteId,
+                    plantingSubzoneHistoryId = plantingSubzoneHistoryId,
+                    plantingSubzoneId = plantingSubzoneId,
+                )
+              })
     }
 
     @Test

@@ -3,8 +3,11 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzoneHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZoneHistoriesRow
+import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotHistoriesRecord
+import com.terraformation.backend.db.tracking.tables.records.PlantingSubzoneHistoriesRecord
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
@@ -640,27 +643,52 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
           plantingSubzoneHistoriesDao.fetchByPlantingZoneHistoryId(
               *editedZoneHistories.map { it.id!! }.toTypedArray())
 
-      assertEquals(
-          edited.plantingZones.sumOf { it.plantingSubzones.size },
-          editedSubzoneHistories.size,
-          "Number of planting subzone histories from edit")
-      assertEquals(
-          edited.plantingZones
-              .flatMap { zone ->
-                zone.plantingSubzones.map { subzone ->
-                  PlantingSubzoneHistoriesRow(
-                      plantingZoneHistoryId =
-                          editedZoneHistories.first { it.plantingZoneId == zone.id }.id,
-                      plantingSubzoneId = subzone.id,
-                      name = subzone.name,
-                      fullName = subzone.fullName,
-                      boundary = subzone.boundary,
-                  )
-                }
+      assertTableEquals(
+          edited.plantingZones.flatMap { zone ->
+            val plantingZoneHistoryId =
+                editedZoneHistories.first { it.plantingZoneId == zone.id }.id
+            zone.plantingSubzones.map { subzone ->
+              PlantingSubzoneHistoriesRecord(
+                  plantingZoneHistoryId = plantingZoneHistoryId,
+                  plantingSubzoneId = subzone.id,
+                  name = subzone.name,
+                  fullName = subzone.fullName,
+                  boundary = subzone.boundary,
+              )
+            }
+          },
+          "Planting subzone histories from edit",
+          where =
+              PLANTING_SUBZONE_HISTORIES.plantingZoneHistories.PLANTING_SITE_HISTORY_ID.eq(
+                  editedSiteHistory.id))
+
+      val expectedPlotHistories =
+          edited.plantingZones.flatMap { zone ->
+            zone.plantingSubzones.flatMap { subzone ->
+              val plantingSubzoneHistoryId =
+                  editedSubzoneHistories.first { it.plantingSubzoneId == subzone.id }.id
+              subzone.monitoringPlots.map { plot ->
+                MonitoringPlotHistoriesRecord(
+                    createdBy = user.userId,
+                    createdTime = editTime,
+                    fullName = plot.fullName,
+                    monitoringPlotId = plot.id,
+                    name = plot.name,
+                    plantingSiteHistoryId = editedSiteHistory.id,
+                    plantingSiteId = edited.id,
+                    plantingSubzoneHistoryId = plantingSubzoneHistoryId,
+                    plantingSubzoneId = subzone.id,
+                )
               }
-              .toSet(),
-          editedSubzoneHistories.map { it.copy(id = null) }.toSet(),
-          "Planting subzone histories from edit")
+            }
+          }
+
+      if (expectedPlotHistories.isNotEmpty()) {
+        assertTableEquals(
+            expectedPlotHistories,
+            "Monitoring plot histories from edit",
+            where = MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(editedSiteHistory.id))
+      }
     }
   }
 

@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.forMultiset
+import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
@@ -35,6 +36,7 @@ import com.terraformation.backend.db.tracking.tables.records.PlantingSiteHistori
 import com.terraformation.backend.db.tracking.tables.records.PlantingSubzoneHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingZoneHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
@@ -43,6 +45,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HI
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_NOTIFICATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
@@ -711,13 +714,18 @@ class PlantingSiteStore(
           }
         }
 
+        insertPlantingSubzoneHistory(edit.desiredModel, plantingZoneHistoryId, plantingSubzoneId)
+
         edit.existingModel.monitoringPlots.forEach { plot ->
           if (plot.boundary.intersects(edit.removedRegion)) {
             replacementResults.add(makePlotUnavailable(plot.id))
           }
-        }
 
-        insertPlantingSubzoneHistory(edit.desiredModel, plantingZoneHistoryId, plantingSubzoneId)
+          // For now, plots can't move between subzones, so we can add history for all the existing
+          // plots with the new site and subzone history IDs.
+          insertMonitoringPlotHistory(
+              plot.id, plantingSiteId, plantingSubzoneId, plot.name, plot.fullName)
+        }
       }
     }
 
@@ -1507,6 +1515,8 @@ class PlantingSiteStore(
 
         monitoringPlotsDao.insert(monitoringPlotsRow)
 
+        insertMonitoringPlotHistory(monitoringPlotsRow)
+
         monitoringPlotsRow.id!!
       }
     }
@@ -1551,6 +1561,8 @@ class PlantingSiteStore(
                 plantingSubzoneId = subzone.id,
                 sizeMeters = MONITORING_PLOT_SIZE_INT)
         monitoringPlotsDao.insert(monitoringPlotsRow)
+
+        insertMonitoringPlotHistory(monitoringPlotsRow)
 
         monitoringPlotsRow.id!!
       }
@@ -1977,5 +1989,49 @@ class PlantingSiteStore(
     historiesRecord.insert()
 
     return historiesRecord.id!!
+  }
+
+  private fun insertMonitoringPlotHistory(
+      monitoringPlotsRow: MonitoringPlotsRow
+  ): MonitoringPlotHistoryId {
+    return with(monitoringPlotsRow) {
+      insertMonitoringPlotHistory(id!!, plantingSiteId!!, plantingSubzoneId, name!!, fullName!!)
+    }
+  }
+
+  private fun insertMonitoringPlotHistory(
+      monitoringPlotId: MonitoringPlotId,
+      plantingSiteId: PlantingSiteId,
+      plantingSubzoneId: PlantingSubzoneId?,
+      name: String,
+      fullName: String,
+  ): MonitoringPlotHistoryId {
+    return with(MONITORING_PLOT_HISTORIES) {
+      dslContext
+          .insertInto(MONITORING_PLOT_HISTORIES)
+          .set(CREATED_BY, currentUser().userId)
+          .set(CREATED_TIME, clock.instant())
+          .set(FULL_NAME, fullName)
+          .set(MONITORING_PLOT_ID, monitoringPlotId)
+          .set(NAME, name)
+          .set(
+              PLANTING_SITE_HISTORY_ID,
+              DSL.select(DSL.max(PLANTING_SITE_HISTORIES.ID))
+                  .from(PLANTING_SITE_HISTORIES)
+                  .where(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId)))
+          .set(PLANTING_SITE_ID, plantingSiteId)
+          .set(
+              PLANTING_SUBZONE_HISTORY_ID,
+              if (plantingSubzoneId != null) {
+                DSL.select(DSL.max(PLANTING_SUBZONE_HISTORIES.ID))
+                    .from(PLANTING_SUBZONE_HISTORIES)
+                    .where(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.eq(plantingSubzoneId))
+              } else {
+                null
+              })
+          .set(PLANTING_SUBZONE_ID, plantingSubzoneId)
+          .returning(ID)
+          .fetchOne(ID)!!
+    }
   }
 }
