@@ -1,3 +1,4 @@
+6f46a897419 SW-6260 Ignore deletion of outdated variable values (#2607)
 0db73a7d425 SW-6260 Add more detail to variable value logs (#2606)
 549101d2a06 Update JamesIves/github-pages-deploy-action action to v4.6.9 (#2604)
 659935f8cca SW-6259 Allow all internal users to read user details (#2605)
