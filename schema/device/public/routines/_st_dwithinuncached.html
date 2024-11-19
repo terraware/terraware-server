@@ -145,7 +145,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">geography_dwithin_uncached</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT $1 OPERATOR(public.&amp;&amp;) public._ST_Expand($2,$3) AND $2 OPERATOR(public.&amp;&amp;) public._ST_Expand($1,$3) AND public._ST_DWithinUnCached($1, $2, $3, true)</textarea>
                         </div>
                     </div>
                 </section>
