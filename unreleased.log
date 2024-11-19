@@ -1,3 +1,4 @@
+0db73a7d425 SW-6260 Add more detail to variable value logs (#2606)
 549101d2a06 Update JamesIves/github-pages-deploy-action action to v4.6.9 (#2604)
 659935f8cca SW-6259 Allow all internal users to read user details (#2605)
 e188ec061fa Update dependency com.google.auth:google-auth-library-oauth2-http to v1.30.0 (#2603)
