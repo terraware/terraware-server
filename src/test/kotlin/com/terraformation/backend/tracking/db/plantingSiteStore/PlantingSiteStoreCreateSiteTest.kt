@@ -9,6 +9,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzoneHistor
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZoneHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.point
@@ -411,6 +412,8 @@ internal class PlantingSiteStoreCreateSiteTest : PlantingSiteStoreTest() {
           ),
           plantingSubzoneHistoriesDao.findAll().map { it.copy(id = null) },
           "Planting subzone histories")
+
+      assertTableEmpty(MONITORING_PLOT_HISTORIES)
     }
 
     @Test

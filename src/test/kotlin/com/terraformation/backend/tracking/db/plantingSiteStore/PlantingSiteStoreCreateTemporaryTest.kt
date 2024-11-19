@@ -1,10 +1,12 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
+import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotHistoriesRecord
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.util.Turtle
 import io.mockk.every
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -17,9 +19,12 @@ internal class PlantingSiteStoreCreateTemporaryTest : PlantingSiteStoreTest() {
     @Test
     fun `creates new plot with correct details`() {
       val siteBoundary = Turtle(point(0)).makeMultiPolygon { square(51) }
-      val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0))
+      val plantingSiteId =
+          insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0), insertHistory = false)
+      val plantingSiteHistoryId = insertPlantingSiteHistory()
       val plantingZoneId = insertPlantingZone(boundary = siteBoundary)
-      val plantingSubzoneId = insertPlantingSubzone(boundary = siteBoundary)
+      val plantingSubzoneId = insertPlantingSubzone(boundary = siteBoundary, insertHistory = false)
+      val plantingSubzoneHistoryId = insertPlantingSubzoneHistory()
 
       insertMonitoringPlot(
           boundary =
@@ -27,7 +32,8 @@ internal class PlantingSiteStoreCreateTemporaryTest : PlantingSiteStoreTest() {
                 north(25)
                 square(25)
               },
-          name = "17")
+          name = "17",
+          insertHistory = false)
 
       val plotBoundary = Turtle(point(0)).makePolygon { square(25) }
       val newPlotId = store.createTemporaryPlot(plantingSiteId, plantingZoneId, plotBoundary)
@@ -56,6 +62,20 @@ internal class PlantingSiteStoreCreateTemporaryTest : PlantingSiteStoreTest() {
       if (!plotBoundary.equalsExact(actual.boundary!!, 0.00000000001)) {
         assertEquals(plotBoundary, actual.boundary!!, "Plot boundary")
       }
+
+      assertTableEquals(
+          listOf(
+              MonitoringPlotHistoriesRecord(
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  fullName = "Z1-1-18",
+                  monitoringPlotId = newPlotId,
+                  name = "18",
+                  plantingSiteHistoryId = plantingSiteHistoryId,
+                  plantingSiteId = plantingSiteId,
+                  plantingSubzoneHistoryId = plantingSubzoneHistoryId,
+                  plantingSubzoneId = plantingSubzoneId,
+              )))
     }
 
     @Test
