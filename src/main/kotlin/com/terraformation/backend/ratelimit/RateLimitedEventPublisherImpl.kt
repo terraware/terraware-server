@@ -2,6 +2,7 @@ package com.terraformation.backend.ratelimit
 
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.tables.references.RATE_LIMITED_EVENTS
 import com.terraformation.backend.log.perClassLogger
@@ -29,6 +30,7 @@ class RateLimitedEventPublisherImpl(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val objectMapper: ObjectMapper,
+    private val systemUser: SystemUser,
 ) : RateLimitedEventPublisher {
   private val log = perClassLogger()
 
@@ -111,7 +113,7 @@ class RateLimitedEventPublisherImpl(
     }
 
     if (canPublishEventNow) {
-      eventPublisher.publishEvent(event)
+      systemUser.run { eventPublisher.publishEvent(event) }
     } else if (eventRecordVanished) {
       if (canRetry) {
         publishOrDefer(event, false)
@@ -190,7 +192,7 @@ class RateLimitedEventPublisherImpl(
 
     eventsToPublish.forEach { event ->
       try {
-        eventPublisher.publishEvent(event)
+        systemUser.run { eventPublisher.publishEvent(event) }
       } catch (e: Exception) {
         log.error("Error publishing pending event $event", e)
       }
