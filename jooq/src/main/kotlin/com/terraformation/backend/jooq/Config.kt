@@ -312,6 +312,9 @@ val ID_WRAPPERS =
             listOf(
                 IdWrapper("DeliveryId", listOf("deliveries\\.id", ".*\\.delivery_id")),
                 IdWrapper("DraftPlantingSiteId", listOf("draft_planting_sites\\.id")),
+                IdWrapper(
+                    "MonitoringPlotHistoryId",
+                    listOf("monitoring_plot_histories\\.id", ".*\\.monitoring_plot_history_id")),
                 IdWrapper("MonitoringPlotId", listOf("monitoring_plots\\.id", ".*\\..*_plot_id")),
                 IdWrapper("ObservationId", listOf("observations\\.id", ".*\\.observation_id")),
                 IdWrapper("ObservedPlotCoordinatesId", listOf("observed_plot_coordinates\\.id")),
@@ -327,7 +330,9 @@ val ID_WRAPPERS =
                         "planting_site_summaries\\.id",
                         ".*\\.planting_site_id")),
                 IdWrapper("PlantingSiteNotificationId", listOf("planting_site_notifications\\.id")),
-                IdWrapper("PlantingSubzoneHistoryId", listOf("planting_subzone_histories\\.id")),
+                IdWrapper(
+                    "PlantingSubzoneHistoryId",
+                    listOf("planting_subzone_histories\\.id", ".*\\.planting_subzone_history_id")),
                 IdWrapper(
                     "PlantingSubzoneId",
                     listOf("planting_subzones\\.id", ".*\\.planting_subzone_id")),
