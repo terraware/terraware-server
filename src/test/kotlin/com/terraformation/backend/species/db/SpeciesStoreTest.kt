@@ -556,7 +556,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       insertSpecies(scientificName = "Unused species")
 
       insertFacility(type = FacilityType.Nursery)
-      insertPlantingSite()
+      insertPlantingSite(x = 0)
       insertPlantingZone()
       val subzoneId = insertPlantingSubzone()
       insertMonitoringPlot()
