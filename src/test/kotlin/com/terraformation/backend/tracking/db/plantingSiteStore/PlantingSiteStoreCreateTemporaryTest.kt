@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
+import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotHistoriesRecord
 import com.terraformation.backend.point
@@ -56,12 +57,7 @@ internal class PlantingSiteStoreCreateTemporaryTest : PlantingSiteStoreTest() {
       val actual = monitoringPlotsDao.fetchOneById(newPlotId)!!
 
       assertEquals(expected, actual.copy(boundary = null))
-
-      // PostGIS geometry representation isn't identical to GeoTools in-memory representation; do a
-      // fuzzy comparison with a very small tolerance.
-      if (!plotBoundary.equalsExact(actual.boundary!!, 0.00000000001)) {
-        assertEquals(plotBoundary, actual.boundary!!, "Plot boundary")
-      }
+      assertGeometryEquals(plotBoundary, actual.boundary, "Plot boundary")
 
       assertTableEquals(
           listOf(
