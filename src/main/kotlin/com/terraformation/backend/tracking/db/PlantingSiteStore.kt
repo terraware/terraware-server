@@ -1008,8 +1008,16 @@ class PlantingSiteStore(
     // partially deleted.
     eventPublisher.publishEvent(PlantingSiteDeletionStartedEvent(plantingSiteId))
 
-    // Deleting the planting site will trigger cascading deletes of all the dependent data.
-    plantingSitesDao.deleteById(plantingSiteId)
+    // Deleting the planting site will trigger cascading deletes of all the dependent data. Since
+    // there are some foreign-key constraints in the dependent tables that use ON DELETE SET NULL,
+    // it's possible for PostgreSQL to apply updates in the wrong order and end up with a dangling
+    // foreign-key reference while it's in the middle of deleting everything. To prevent that
+    // from causing the delete operation to fail, we need to tell it to defer checking some of the
+    // foreign-key constraints until the deletion is completely done.
+    dslContext.transaction { _ ->
+      dslContext.execute("SET CONSTRAINTS ALL DEFERRED")
+      plantingSitesDao.deleteById(plantingSiteId)
+    }
   }
 
   fun assignProject(projectId: ProjectId, plantingSiteIds: Collection<PlantingSiteId>) {
