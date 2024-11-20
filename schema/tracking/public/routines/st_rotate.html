@@ -85,7 +85,7 @@
                         </div>
                         <!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p><p>args: geomA, rotRadians, pointOrigin - Rotates a geometry about an origin point.</p></p>
+                            <p><p>args: geomA, rotRadians, x0, y0 - Rotates a geometry about an origin point.</p></p>
                         </div>
                         <!-- /.box-body -->
                     </div>
@@ -170,7 +170,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT public.ST_Affine($1,  cos($2), -sin($2), 0,  sin($2), cos($2), 0,  0, 0, 1,  0, 0, 0)</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">SELECT public.ST_Affine($1,  cos($2), -sin($2), 0,  sin($2),  cos($2), 0, 0, 0, 1, public.ST_X($3) - cos($2) * public.ST_X($3) + sin($2) * public.ST_Y($3), public.ST_Y($3) - sin($2) * public.ST_X($3) - cos($2) * public.ST_Y($3), 0)</textarea>
                         </div>
                     </div>
                 </section>
