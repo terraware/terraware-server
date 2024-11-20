@@ -1,3 +1,4 @@
+14e54019d16 SW-6162 Fix issue with disappearing variable value references / injections when a document is updated to a new variable manifest version (#2612)
 0e6f4b22e54 SW-6251 Add history IDs to observation plots (#2614)
 d9f8a569bcf Fix planting site deletion failure (#2613)
 afda7b34c99 SW-6251 Populate monitoring plot histories table (#2611)
