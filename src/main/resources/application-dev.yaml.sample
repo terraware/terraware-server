@@ -16,3 +16,11 @@ spring:
   datasource:
     username:
     password:
+
+  web:
+    resources:
+      # Don't cache static resources. Local edits to admin UI static files are immediately visible.
+      cache:
+        period: 0
+      chain:
+        cache: false
