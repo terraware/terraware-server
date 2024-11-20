@@ -46,15 +46,15 @@
 <text text-anchor="start" x="546" y="-226.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="523,-200 523,-218 717,-218 717,-200 523,-200"/>
 <text text-anchor="start" x="526" y="-206.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="523,-182 523,-200 604,-200 604,-182 523,-182"/>
-<polygon fill="none" stroke="black" points="523,-182 523,-200 604,-200 604,-182 523,-182"/>
+<polygon fill="#ffffff" stroke="none" points="523,-182 523,-200 599,-200 599,-182 523,-182"/>
+<polygon fill="none" stroke="black" points="523,-182 523,-200 599,-200 599,-182 523,-182"/>
 <text text-anchor="start" x="526" y="-188.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
-<polygon fill="#ffffff" stroke="none" points="604,-182 604,-200 675,-200 675,-182 604,-182"/>
-<polygon fill="none" stroke="black" points="604,-182 604,-200 675,-200 675,-182 604,-182"/>
-<text text-anchor="start" x="636" y="-188.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="675,-182 675,-200 717,-200 717,-182 675,-182"/>
-<polygon fill="none" stroke="black" points="675,-182 675,-200 717,-200 717,-182 675,-182"/>
-<text text-anchor="start" x="707" y="-188.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="599,-182 599,-200 667,-200 667,-182 599,-182"/>
+<polygon fill="none" stroke="black" points="599,-182 599,-200 667,-200 667,-182 599,-182"/>
+<text text-anchor="start" x="628" y="-188.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="667,-182 667,-200 717,-200 717,-182 667,-182"/>
+<polygon fill="none" stroke="black" points="667,-182 667,-200 717,-200 717,-182 667,-182"/>
+<text text-anchor="start" x="697" y="-188.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
 </g>

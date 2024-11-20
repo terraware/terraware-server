@@ -10,11 +10,12 @@ observations
 planting_zones
 planting_site_histories
 planting_subzones
-monitoring_plots
 planting_zone_histories
+monitoring_plots
+planting_subzone_histories
+monitoring_plot_histories
 observation_plots
 deliveries
-planting_subzone_histories
 planting_seasons
 planting_site_notifications
 planting_site_populations
@@ -26,7 +27,6 @@ observation_plot_conditions
 observed_plot_species_totals
 observed_site_species_totals
 observed_zone_species_totals
-monitoring_plot_histories
 observation_photos
 observed_plot_coordinates
 recorded_plants

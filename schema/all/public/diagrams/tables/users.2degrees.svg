@@ -4008,16 +4008,16 @@
 <text text-anchor="start" x="842" y="-5414.07" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="681,-5383.87 681,-5405.87 881,-5405.87 881,-5383.87 681,-5383.87"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="686" y="-5400.87"/>
-<text text-anchor="start" x="735" y="-5392.07" font-family="Helvetica,sans-Serif" font-size="11.00">claimed_by</text>
+<text text-anchor="start" x="711" y="-5392.07" font-family="Helvetica,sans-Serif" font-size="11.00">claimed_by</text>
 <polygon fill="none" stroke="black" points="681,-5361.87 681,-5383.87 881,-5383.87 881,-5361.87 681,-5361.87"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="686" y="-5378.87"/>
-<text text-anchor="start" x="735" y="-5370.07" font-family="Helvetica,sans-Serif" font-size="11.00">completed_by</text>
+<text text-anchor="start" x="711" y="-5370.07" font-family="Helvetica,sans-Serif" font-size="11.00">completed_by</text>
 <polygon fill="none" stroke="black" points="681,-5339.87 681,-5361.87 881,-5361.87 881,-5339.87 681,-5339.87"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="686" y="-5356.87"/>
-<text text-anchor="start" x="735" y="-5348.07" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="711" y="-5348.07" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="681,-5317.87 681,-5339.87 881,-5339.87 881,-5317.87 681,-5317.87"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="686" y="-5334.87"/>
-<text text-anchor="start" x="735" y="-5326.07" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="711" y="-5326.07" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="681,-5299.87 681,-5317.87 881,-5317.87 881,-5299.87 681,-5299.87"/>
 <text text-anchor="start" x="684" y="-5306.07" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="681,-5281.87 681,-5299.87 765,-5299.87 765,-5281.87 681,-5281.87"/>

@@ -2,7 +2,6 @@ plantings
 recorded_plants
 draft_planting_sites
 observation_photos
-monitoring_plot_histories
 observed_plot_coordinates
 observed_zone_species_totals
 observed_site_species_totals
@@ -15,14 +14,15 @@ planting_site_notifications
 observation_requested_subzones
 monitoring_plot_overlaps
 planting_seasons
-planting_subzone_histories
 deliveries
 observation_plots
-planting_zone_histories
-monitoring_plots
+monitoring_plot_histories
 observations
-planting_site_histories
+planting_subzone_histories
+monitoring_plots
+planting_zone_histories
 planting_subzones
+planting_site_histories
 planting_zones
 planting_sites
 recorded_plant_statuses

@@ -260,15 +260,15 @@
 <text text-anchor="start" x="1310" y="-799.587" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="1155,-773.387 1155,-791.387 1349,-791.387 1349,-773.387 1155,-773.387"/>
 <text text-anchor="start" x="1158" y="-779.587" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="1155,-755.387 1155,-773.387 1236,-773.387 1236,-755.387 1155,-755.387"/>
-<polygon fill="none" stroke="black" points="1155,-755.387 1155,-773.387 1236,-773.387 1236,-755.387 1155,-755.387"/>
+<polygon fill="#ffffff" stroke="none" points="1155,-755.387 1155,-773.387 1231,-773.387 1231,-755.387 1155,-755.387"/>
+<polygon fill="none" stroke="black" points="1155,-755.387 1155,-773.387 1231,-773.387 1231,-755.387 1155,-755.387"/>
 <text text-anchor="start" x="1158" y="-761.587" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 6</text>
-<polygon fill="#ffffff" stroke="none" points="1236,-755.387 1236,-773.387 1307,-773.387 1307,-755.387 1236,-755.387"/>
-<polygon fill="none" stroke="black" points="1236,-755.387 1236,-773.387 1307,-773.387 1307,-755.387 1236,-755.387"/>
-<text text-anchor="start" x="1268" y="-761.587" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="1307,-755.387 1307,-773.387 1349,-773.387 1349,-755.387 1307,-755.387"/>
-<polygon fill="none" stroke="black" points="1307,-755.387 1307,-773.387 1349,-773.387 1349,-755.387 1307,-755.387"/>
-<text text-anchor="start" x="1339" y="-761.587" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="none" points="1231,-755.387 1231,-773.387 1299,-773.387 1299,-755.387 1231,-755.387"/>
+<polygon fill="none" stroke="black" points="1231,-755.387 1231,-773.387 1299,-773.387 1299,-755.387 1231,-755.387"/>
+<text text-anchor="start" x="1260" y="-761.587" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="1299,-755.387 1299,-773.387 1349,-773.387 1349,-755.387 1299,-755.387"/>
+<polygon fill="none" stroke="black" points="1299,-755.387 1299,-773.387 1349,-773.387 1349,-755.387 1299,-755.387"/>
+<text text-anchor="start" x="1329" y="-761.587" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
 </g>
