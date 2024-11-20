@@ -1,3 +1,4 @@
+bea4b250323 SW-6281 Log bodies of failed requests (#2622)
 20b0130a219 SW-6179 Removed notifying for all categories if none is selected  (#2615)
 1c60b7b05a8 Modernize VoteServiceTest (#2621)
 968edc23f76 Separated cohortModules and modules endpoints (#2617)
