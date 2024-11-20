@@ -24,8 +24,8 @@ import org.springframework.web.util.ContentCachingResponseWrapper
 
 /**
  * Logs request and response bodies from users whose lowercase email addresses match a regular
- * expression. This filter should come after [TerrawareUserFilter] so that [CurrentUserHolder] is
- * initialized.
+ * expression, as well as request bodies for requests that fail. This filter should come after
+ * [TerrawareUserFilter] so that [CurrentUserHolder] is initialized.
  *
  * Only JSON and HTML form payloads are logged, and only the first 10000 bytes of long payloads are
  * logged. Requests from device manager users are never logged.
@@ -73,32 +73,46 @@ class RequestResponseLoggingFilter(
         request.setAttribute("terrawareEmail", user.email)
 
         if (log.isDebugEnabled &&
-            requestLogConfig.emailRegex != null &&
-            user.email.lowercase().matches(requestLogConfig.emailRegex) &&
             request is HttpServletRequest &&
             response is HttpServletResponse &&
             request.dispatcherType != DispatcherType.ASYNC &&
             (requestLogConfig.excludeRegex == null ||
                 !request.requestURI.matches(requestLogConfig.excludeRegex))) {
+          // Log all requests and responses for some users. For other users, be prepared to log
+          // requests if we end up returning an error response, but don't log responses.
+          val logRequestAndResponse =
+              requestLogConfig.emailRegex != null &&
+                  user.email.lowercase().matches(requestLogConfig.emailRegex)
           val wrappedRequest = ContentCachingRequestWrapper(request, maxPayloadSize)
-          val wrappedResponse = ContentCachingResponseWrapper(response)
+          val wrappedResponse =
+              if (logRequestAndResponse) {
+                ContentCachingResponseWrapper(response)
+              } else {
+                null
+              }
 
           try {
-            chain.doFilter(wrappedRequest, wrappedResponse)
+            chain.doFilter(wrappedRequest, wrappedResponse ?: response)
           } finally {
             try {
-              mdcPut(
-                  "request", payload(wrappedRequest.contentType, wrappedRequest.contentAsByteArray))
-              mdcPut(
-                  "response",
-                  payload(wrappedResponse.contentType, wrappedResponse.contentAsByteArray))
-              mdcPut("method", wrappedRequest.method)
-              mdcPut("queryString", wrappedRequest.queryString)
-              mdcPut("uri", wrappedRequest.requestURI)
+              // If we're returning an error response, log the request body for troubleshooting
+              // whether or not we're logging all of this user's requests and responses.
+              if (logRequestAndResponse || response.status >= 400) {
+                mdcPut(
+                    "request",
+                    payload(wrappedRequest.contentType, wrappedRequest.contentAsByteArray))
+                mdcPut("method", wrappedRequest.method)
+                mdcPut("queryString", wrappedRequest.queryString)
+                mdcPut("uri", wrappedRequest.requestURI)
 
-              log.debug("Request ${request.method} ${request.requestURI} ${user.email}")
+                wrappedResponse?.let {
+                  mdcPut("response", payload(it.contentType, it.contentAsByteArray))
+                }
+
+                log.debug("Request ${request.method} ${request.requestURI} ${user.email}")
+              }
             } finally {
-              wrappedResponse.copyBodyToResponse()
+              wrappedResponse?.copyBodyToResponse()
             }
           }
         } else {
