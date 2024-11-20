@@ -1,6 +1,6 @@
 package com.terraformation.backend.accelerator
 
-import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.CohortStore
@@ -12,22 +12,20 @@ import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.model.SystemUser
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.VoteOption
-import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
+import com.terraformation.backend.db.accelerator.tables.records.ProjectVotesRecord
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.mockUser
-import io.mockk.every
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class VoteServiceTest : DatabaseTest(), RunsAsUser {
-  override val user = mockUser()
+class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
+  override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
@@ -53,11 +51,6 @@ class VoteServiceTest : DatabaseTest(), RunsAsUser {
     voter2 = insertUser()
     insertDefaultVoter(voter1)
     insertDefaultVoter(voter2)
-
-    every { user.canReadCohort(any()) } returns true
-    every { user.canReadCohortParticipants(any()) } returns true
-    every { user.canReadParticipant(any()) } returns true
-    every { user.canUpdateProjectVotes(any()) } returns true
   }
 
   @Nested
@@ -71,7 +64,7 @@ class VoteServiceTest : DatabaseTest(), RunsAsUser {
 
       service.on(ParticipantProjectAddedEvent(user.userId, participantId, projectId))
 
-      assertEquals(setOf(votesRow(voter1), votesRow(voter2)), projectVotesDao.findAll().toSet())
+      assertTableEquals(setOf(votesRecord(voter1), votesRecord(voter2)))
     }
 
     @Test
@@ -86,16 +79,15 @@ class VoteServiceTest : DatabaseTest(), RunsAsUser {
 
       service.on(ParticipantProjectAddedEvent(user.userId, participantId, projectId))
 
-      assertEquals(
+      assertTableEquals(
           setOf(
-              votesRow(
+              votesRecord(
                   userId = voter1,
                   createdTime = Instant.EPOCH,
                   voteOption = VoteOption.No,
                   conditionalInfo = "cond",
                   createdBySystemUser = false),
-              votesRow(voter2)),
-          projectVotesDao.findAll().toSet())
+              votesRecord(voter2)))
     }
 
     @Test
@@ -122,14 +114,12 @@ class VoteServiceTest : DatabaseTest(), RunsAsUser {
 
       service.on(CohortParticipantAddedEvent(cohortId1, participantId1))
 
-      assertEquals(
+      assertTableEquals(
           setOf(
-              votesRow(userId = voter1, projectId = projectId1),
-              votesRow(userId = voter2, projectId = projectId1),
-              votesRow(userId = voter1, projectId = projectId2),
-              votesRow(userId = voter2, projectId = projectId2),
-          ),
-          projectVotesDao.findAll().toSet())
+              votesRecord(userId = voter1, projectId = projectId1),
+              votesRecord(userId = voter2, projectId = projectId1),
+              votesRecord(userId = voter1, projectId = projectId2),
+              votesRecord(userId = voter2, projectId = projectId2)))
     }
 
     @Test
@@ -157,20 +147,18 @@ class VoteServiceTest : DatabaseTest(), RunsAsUser {
 
       service.on(CohortPhaseUpdatedEvent(cohortId1, phase))
 
-      assertEquals(
+      assertTableEquals(
           setOf(
               // First row is inserted by test, not by service
-              votesRow(
+              votesRecord(
                   userId = voter1,
                   projectId = projectId1,
                   phase = CohortPhase.Phase0DueDiligence,
                   createdBySystemUser = false),
-              votesRow(userId = voter1, projectId = projectId1, phase = phase),
-              votesRow(userId = voter2, projectId = projectId1, phase = phase),
-              votesRow(userId = voter1, projectId = projectId2, phase = phase),
-              votesRow(userId = voter2, projectId = projectId2, phase = phase),
-          ),
-          projectVotesDao.findAll().toSet())
+              votesRecord(userId = voter1, projectId = projectId1, phase = phase),
+              votesRecord(userId = voter2, projectId = projectId1, phase = phase),
+              votesRecord(userId = voter1, projectId = projectId2, phase = phase),
+              votesRecord(userId = voter2, projectId = projectId2, phase = phase)))
     }
 
     @Test
@@ -179,7 +167,7 @@ class VoteServiceTest : DatabaseTest(), RunsAsUser {
     }
   }
 
-  private fun votesRow(
+  private fun votesRecord(
       userId: UserId,
       projectId: ProjectId = inserted.projectId,
       phase: CohortPhase = CohortPhase.Phase0DueDiligence,
@@ -187,8 +175,8 @@ class VoteServiceTest : DatabaseTest(), RunsAsUser {
       voteOption: VoteOption? = null,
       conditionalInfo: String? = null,
       createdBySystemUser: Boolean = true,
-  ): ProjectVotesRow {
-    return ProjectVotesRow(
+  ): ProjectVotesRecord {
+    return ProjectVotesRecord(
         conditionalInfo = conditionalInfo,
         createdBy = if (createdBySystemUser) systemUser.userId else user.userId,
         createdTime = createdTime,
