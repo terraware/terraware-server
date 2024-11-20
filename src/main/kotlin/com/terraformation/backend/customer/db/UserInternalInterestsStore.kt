@@ -36,13 +36,11 @@ class UserInternalInterestsStore(
    */
   fun conditionForUsers(internalInterest: InternalInterest): Condition {
     return with(USER_INTERNAL_INTERESTS) {
-      DSL.or(
-          DSL.exists(
-              DSL.selectOne()
-                  .from(this)
-                  .where(INTERNAL_INTEREST_ID.eq(internalInterest))
-                  .and(USER_ID.eq(USERS.ID))),
-          DSL.notExists(DSL.selectOne().from(this).where(USER_ID.eq(USERS.ID))))
+      DSL.exists(
+          DSL.selectOne()
+              .from(this)
+              .where(INTERNAL_INTEREST_ID.eq(internalInterest))
+              .and(USER_ID.eq(USERS.ID)))
     }
   }
 
