@@ -1,3 +1,5 @@
+a7b37c1fb3d Clean up AdminDocumentProducerController (#2620)
+5585ec52c23 Move common admin UI CSS/JS to static files (#2619)
 089832164a1 Update dependency pyjwt to v2.10.0 (#2618)
 14e54019d16 SW-6162 Fix issue with disappearing variable value references / injections when a document is updated to a new variable manifest version (#2612)
 0e6f4b22e54 SW-6251 Add history IDs to observation plots (#2614)
