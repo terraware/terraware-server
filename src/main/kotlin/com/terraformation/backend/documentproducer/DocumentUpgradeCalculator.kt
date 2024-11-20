@@ -155,53 +155,34 @@ class DocumentUpgradeCalculator(
   private fun sectionOperations(variable: SectionVariable): List<ValueOperation> {
     return if (variable.id in existingValues) {
       // The section wasn't replaced, so existing text values are fine, as are existing
-      // references to variables that weren't replaced or removed; we just need to update or
-      // delete any references to old variables. We do this in reverse list position order
-      // since deleting will cause new value IDs to be generated for items with higher list
-      // positions (at which point our in-memory list of existing values wouldn't be usable).
-      val sectionValues =
-          existingValues[variable.id]!!
-              .filterIsInstance<ExistingSectionValue>()
-              .sortedByDescending { it.listPosition }
+      // references to variables that weren't replaced or removed; we just need to update
+      // any references to old variables.
+      val sectionValues = existingValues[variable.id]!!.filterIsInstance<ExistingSectionValue>()
 
-      val updateOperations =
-          sectionValues.mapNotNull { sectionValue ->
-            if (sectionValue.value is SectionValueVariable) {
-              val sectionValueVariable = sectionValue.value
-              val usedVariableId = sectionValueVariable.usedVariableId
-              if (usedVariableId in replacementVariableIds) {
-                UpdateValueOperation(
-                    ExistingSectionValue(
-                        BaseVariableValueProperties(
-                            sectionValue.id,
-                            projectId,
-                            sectionValue.listPosition,
-                            variable.id,
-                            sectionValue.citation),
-                        SectionValueVariable(
-                            replacementVariableIds[usedVariableId]!!,
-                            sectionValueVariable.usageType,
-                            sectionValueVariable.displayStyle)))
-              } else {
-                null
-              }
-            } else {
-              null
-            }
+      sectionValues.mapNotNull { sectionValue ->
+        if (sectionValue.value is SectionValueVariable) {
+          val sectionValueVariable = sectionValue.value
+          val usedVariableId = sectionValueVariable.usedVariableId
+          if (usedVariableId in replacementVariableIds) {
+            UpdateValueOperation(
+                ExistingSectionValue(
+                    BaseVariableValueProperties(
+                        sectionValue.id,
+                        projectId,
+                        sectionValue.listPosition,
+                        variable.id,
+                        sectionValue.citation),
+                    SectionValueVariable(
+                        replacementVariableIds[usedVariableId]!!,
+                        sectionValueVariable.usageType,
+                        sectionValueVariable.displayStyle)))
+          } else {
+            null
           }
-
-      val deleteOperations =
-          sectionValues.mapNotNull { sectionValue ->
-            if (sectionValue.value is SectionValueVariable &&
-                sectionValue.value.usedVariableId !in newManifestVariables &&
-                sectionValue.value.usedVariableId !in replacementVariableIds) {
-              DeleteValueOperation(projectId, sectionValue.id)
-            } else {
-              null
-            }
-          }
-
-      updateOperations + deleteOperations
+        } else {
+          null
+        }
+      }
     } else {
       val sectionValues =
           previousVariableIds[variable.id]

@@ -9,6 +9,7 @@ import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableInjectionDisplayStyle
 import com.terraformation.backend.db.docprod.VariableManifestId
+import com.terraformation.backend.db.docprod.VariableTextType
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.docprod.VariableUsageType
 import com.terraformation.backend.db.docprod.VariableValueId
@@ -223,45 +224,62 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `updates variable references in sections to use new variable IDs`() {
-    val oldManifestId = insertVariableManifest()
-    val outdatedVariableId =
-        insertVariableManifestEntry(insertTextVariable(), manifestId = oldManifestId)
-    val unmodifiedVariableId =
-        insertVariableManifestEntry(insertNumberVariable(), manifestId = oldManifestId)
-    val obsoleteVariableId =
-        insertVariableManifestEntry(insertTextVariable(), manifestId = oldManifestId)
-    val sectionVariableId = insertVariableManifestEntry(insertSectionVariable())
-    val newManifestId = insertVariableManifest()
+  fun `updates section values to point to new section variables for the same stable ID`() {
+    // A few variables are uploaded to the system
+    val outdatedVariableId = insertTextVariable(textType = VariableTextType.SingleLine)
+    val unmodifiedVariableId = insertNumberVariable()
+
+    // A manifest is created for the document template with a section
+    val firstManifestId = insertVariableManifest()
+    val firstSectionVariableId = insertVariableManifestEntry(insertSectionVariable())
+
+    // A project document is created for the manifest
+    insertProject()
+    val documentId = insertDocument(variableManifestId = firstManifestId)
+
+    // Some project values are added to the document section
+    insertSectionValue(
+        firstSectionVariableId,
+        listPosition = 0,
+        textValue = "We must consider the value of this variable: ")
+    insertSectionValue(
+        firstSectionVariableId, listPosition = 1, usedVariableId = unmodifiedVariableId)
+    insertSectionValue(
+        firstSectionVariableId, listPosition = 2, textValue = ", additionally, this variable: ")
+    val outdatedVariableValueId =
+        insertSectionValue(
+            firstSectionVariableId, listPosition = 3, usedVariableId = outdatedVariableId)
+
+    // The variable is updated to a new version in the all variables upload
     val updatedVariableId =
-        insertVariableManifestEntry(
-            insertTextVariable(
-                insertVariable(type = VariableType.Text, replacesVariableId = outdatedVariableId)),
-            manifestId = newManifestId)
-    insertVariableManifestEntry(unmodifiedVariableId, manifestId = newManifestId)
-    insertVariableManifestEntry(sectionVariableId, manifestId = newManifestId)
+        insertTextVariable(
+            id = insertVariable(type = VariableType.Text, replacesVariableId = outdatedVariableId),
+            textType = VariableTextType.MultiLine)
 
-    val documentId = insertDocument(variableManifestId = oldManifestId)
-    val outdatedValueId =
-        insertSectionValue(sectionVariableId, listPosition = 0, usedVariableId = outdatedVariableId)
-    val obsoleteValueId =
-        insertSectionValue(sectionVariableId, listPosition = 1, usedVariableId = obsoleteVariableId)
-    insertSectionValue(sectionVariableId, listPosition = 2, textValue = "some text")
-    insertSectionValue(sectionVariableId, listPosition = 3, usedVariableId = unmodifiedVariableId)
+    // A new manifest for the document template is uploaded
+    val secondManifestId = insertVariableManifest()
+    insertVariableManifestEntry(variableId = firstSectionVariableId)
 
-    assertEquals(
+    // The user upgrades their project document to the latest version of the document template's
+    // variable manifest
+    val actual = calculateOperations(secondManifestId, documentId)
+    val expected =
         listOf(
             UpdateValueOperation(
                 ExistingSectionValue(
                     BaseVariableValueProperties(
-                        outdatedValueId, inserted.projectId, 0, sectionVariableId, null),
+                        outdatedVariableValueId,
+                        inserted.projectId,
+                        3,
+                        firstSectionVariableId,
+                        null),
                     SectionValueVariable(
                         updatedVariableId,
                         VariableUsageType.Injection,
                         VariableInjectionDisplayStyle.Block))),
-            DeleteValueOperation(inserted.projectId, obsoleteValueId),
-        ),
-        calculateOperations(newManifestId, documentId))
+        )
+
+    assertEquals(expected, actual)
   }
 
   @Test
