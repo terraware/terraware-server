@@ -144,7 +144,8 @@ data class ImportModuleResponsePayload(
     val message: String? = null,
 ) : ResponsePayload
 
-data class ListModuleDeliverablesResponsePayload(val deliverables: List<ModuleDeliverablePayload>)
+data class ListModuleDeliverablesResponsePayload(val deliverables: List<ModuleDeliverablePayload>) :
+    SuccessResponsePayload
 
 data class GetModuleResponsePayload(
     val module: ModulePayload,

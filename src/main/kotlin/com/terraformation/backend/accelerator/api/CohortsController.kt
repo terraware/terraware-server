@@ -109,8 +109,8 @@ class CohortsController(
   @ApiResponse200
   @ApiResponse404
   @GetMapping("/{cohortId}/modules")
-  @Operation(summary = "List modules.")
-  fun listModules(
+  @Operation(summary = "List cohort modules.")
+  fun listCohortModules(
       @PathVariable cohortId: CohortId?,
   ): ListCohortModulesResponsePayload {
     val models = cohortModuleStore.fetch(cohortId = cohortId)
@@ -122,8 +122,8 @@ class CohortsController(
   @ApiResponse200
   @ApiResponse404
   @GetMapping("/{cohortId}/modules/{moduleId}")
-  @Operation(summary = "Gets one module.")
-  fun getModule(
+  @Operation(summary = "Gets one cohort module.")
+  fun getCohortModule(
       @PathVariable cohortId: CohortId?,
       @PathVariable moduleId: ModuleId,
   ): GetCohortModuleResponsePayload {
