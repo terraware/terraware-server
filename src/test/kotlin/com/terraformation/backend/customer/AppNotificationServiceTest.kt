@@ -630,10 +630,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `should store application submitted notification for admin`() {
+  fun `should store application submitted notification for global users with sourcing`() {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
     val projectId = insertProject()
     val applicationId = insertApplication(projectId = projectId)
+    insertUserInternalInterest(InternalInterest.Sourcing, user.userId)
     every { messages.applicationSubmittedNotification(any()) } returns
         NotificationMessage("ready for review title", "ready for review body")
     service.on(ApplicationSubmittedEvent(applicationId))
@@ -642,29 +643,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "ready for review title",
         body = "ready for review body",
         localUrl = webAppUrls.acceleratorConsoleApplication(applicationId),
-        organizationId = null)
-  }
-
-  @Test
-  fun `should store deliverable ready for review notification for admin with no categories`() {
-    insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
-    val cohortId = insertCohort()
-    val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
-    val projectId = insertProject(participantId = participantId)
-    insertModule()
-    insertCohortModule()
-    val deliverableId = insertDeliverable()
-
-    every { messages.deliverableReadyForReview("participant1") } returns
-        NotificationMessage("ready for review title", "ready for review body")
-
-    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
-
-    assertNotification(
-        type = NotificationType.DeliverableReadyForReview,
-        title = "ready for review title",
-        body = "ready for review body",
-        localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
         organizationId = null)
   }
 
@@ -729,6 +707,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     // TF contact has the wrong deliverable category but we should notify them anyway because
     // being the contact overrides the category filtering.
     insertUserInternalInterest(InternalInterest.Compliance, tfContact)
+    insertUserInternalInterest(InternalInterest.GIS, user.userId)
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
 
     every { messages.deliverableReadyForReview("participant1") } returns
@@ -766,7 +745,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val projectId = insertProject(participantId = participantId)
     insertModule()
     insertCohortModule()
-    val deliverableId = insertDeliverable()
+    val deliverableId =
+        insertDeliverable(deliverableCategoryId = DeliverableCategory.CarbonEligibility)
+    insertUserInternalInterest(InternalInterest.CarbonEligibility, user.userId)
 
     every { messages.deliverableReadyForReview("participant1") } returns
         NotificationMessage("ready for review title", "ready for review body")
@@ -853,7 +834,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `should store species added to project notification`() {
+  fun `should store species added to project notification for global users with interest`() {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
     val participantName = "Participant ${UUID.randomUUID()}"
     val participantId = insertParticipant(name = participantName)
@@ -861,7 +842,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val speciesId = insertSpecies()
     insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
     insertModule()
-    val deliverableId = insertDeliverable()
+    val deliverableId =
+        insertDeliverable(deliverableCategoryId = DeliverableCategory.CarbonEligibility)
+    insertUserInternalInterest(InternalInterest.CarbonEligibility, user.userId)
 
     every {
       messages.participantProjectSpeciesAddedToProject(participantName, "Project 1", "Species 1")
@@ -889,7 +872,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val speciesId = insertSpecies()
     insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
     insertModule()
-    val deliverableId = insertDeliverable()
+    val deliverableId =
+        insertDeliverable(deliverableCategoryId = DeliverableCategory.CarbonEligibility)
+    insertUserInternalInterest(InternalInterest.CarbonEligibility, user.userId)
 
     every {
       messages.participantProjectSpeciesApprovedSpeciesEdited(participantName, "Species 1")
