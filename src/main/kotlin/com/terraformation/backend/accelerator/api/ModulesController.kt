@@ -43,8 +43,12 @@ class ModulesController(
   @GetMapping
   @Operation(summary = "List modules.")
   fun listModules(): ListModulesResponsePayload {
-    val models = moduleStore.fetchAllModules()
-    return ListModulesResponsePayload(models.map { ModulePayload(it) })
+    val modules = moduleStore.fetchAllModules()
+    return ListModulesResponsePayload(
+        modules.map { module ->
+          val deliverables = deliverableStore.fetchDeliverables(moduleId = module.id)
+          ModulePayload(module, deliverables.map { ModuleDeliverablePayload(it) })
+        })
   }
 
   @ApiResponse200
@@ -55,18 +59,9 @@ class ModulesController(
       @PathVariable moduleId: ModuleId,
   ): GetModuleResponsePayload {
     val model = moduleStore.fetchOneById(moduleId)
-    return GetModuleResponsePayload(ModulePayload(model))
-  }
-
-  @ApiResponse200
-  @ApiResponse404
-  @GetMapping("/{moduleId}/deliverables")
-  @Operation(summary = "List module deliverables.")
-  fun listModuleDeliverables(
-      @PathVariable moduleId: ModuleId,
-  ): ListModuleDeliverablesResponsePayload {
     val deliverables = deliverableStore.fetchDeliverables(moduleId = moduleId)
-    return ListModuleDeliverablesResponsePayload(deliverables.map { ModuleDeliverablePayload(it) })
+    return GetModuleResponsePayload(
+        ModulePayload(model, deliverables.map { ModuleDeliverablePayload(it) }))
   }
 
   @ApiResponse200
@@ -96,9 +91,11 @@ data class ModulePayload(
     val overview: String?,
     val preparationMaterials: String?,
     val eventDescriptions: Map<EventType, String>,
+    val deliverables: List<ModuleDeliverablePayload>,
 ) {
   constructor(
       model: ModuleModel,
+      deliverables: List<ModuleDeliverablePayload>,
   ) : this(
       id = model.id,
       name = model.name,
@@ -106,6 +103,7 @@ data class ModulePayload(
       overview = model.overview,
       preparationMaterials = model.preparationMaterials,
       eventDescriptions = model.eventDescriptions,
+      deliverables = deliverables,
   )
 }
 
@@ -143,9 +141,6 @@ data class ImportModuleResponsePayload(
     val problems: List<ImportModuleProblemElement> = emptyList(),
     val message: String? = null,
 ) : ResponsePayload
-
-data class ListModuleDeliverablesResponsePayload(val deliverables: List<ModuleDeliverablePayload>) :
-    SuccessResponsePayload
 
 data class GetModuleResponsePayload(
     val module: ModulePayload,
