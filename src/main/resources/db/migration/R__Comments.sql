@@ -329,6 +329,9 @@ COMMENT ON COLUMN nursery.withdrawals.withdrawn_date IS 'User-supplied date when
 
 COMMENT ON VIEW nursery.withdrawal_summaries IS 'Withdrawal information including aggregated and calculated values that need to be made available as filter and sort keys.';
 
+COMMENT ON TABLE tracking.ad_hoc_observation_types IS '(Enum) Type of ad hoc observation.';
+COMMENT ON TABLE tracking.ad_hoc_plot_observation_photos IS 'Photos associated to an ad hoc plot observation.';
+COMMENT ON TABLE tracking.ad_hoc_plot_observations IS 'Information about ad hoc plots and their associated observation data.';
 
 COMMENT ON TABLE tracking.deliveries IS 'Incoming deliveries of new seedlings to a planting site. Mostly exists to link plantings and nursery withdrawals.';
 COMMENT ON COLUMN tracking.deliveries.created_by IS 'Which user created the delivery.';

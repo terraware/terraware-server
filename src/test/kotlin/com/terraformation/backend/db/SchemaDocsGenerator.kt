@@ -320,6 +320,9 @@ class SchemaDocsGenerator : DatabaseTest() {
               ),
           "tracking" to
               mapOf(
+                  "ad_hoc_observation_types" to setOf(ALL, TRACKING),
+                  "ad_hoc_plot_observation_photos" to setOf(ALL, TRACKING),
+                  "ad_hoc_plot_observations" to setOf(ALL, TRACKING),
                   "deliveries" to setOf(ALL, TRACKING),
                   "draft_planting_sites" to setOf(ALL, TRACKING),
                   "monitoring_plot_histories" to setOf(ALL, TRACKING),
