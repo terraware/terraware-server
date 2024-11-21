@@ -4,6 +4,7 @@ CREATE TABLE tracking.ad_hoc_observation_types (
 );
 
 CREATE TABLE tracking.ad_hoc_plot_observations (
+    ad_hoc_observation_type_id INTEGER NOT NULL REFERENCES tracking.ad_hoc_observation_types,
     boundary GEOMETRY(MultiPolygon) NOT NULL,
     created_by BIGINT NOT NULL REFERENCES users,
     created_time TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -12,7 +13,6 @@ CREATE TABLE tracking.ad_hoc_plot_observations (
     modified_by BIGINT NOT NULL REFERENCES users,
     modified_time TIMESTAMP WITH TIME ZONE NOT NULL,
     name TEXT,
-    observation_type INTEGER NOT NULL REFERENCES tracking.ad_hoc_observation_types,
     size_hectares NUMERIC NOT NULL
 );
 
