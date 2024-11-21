@@ -1801,7 +1801,6 @@ abstract class DatabaseBackedTest {
   }
 
   private var nextPlantingSubzoneNumber: Int = 1
-  private var nextMonitoringPlotNumber: Int = 1
   private lateinit var lastPlantingSubzonesRow: PlantingSubzonesRow
 
   fun insertPlantingSubzone(
@@ -1861,7 +1860,7 @@ abstract class DatabaseBackedTest {
       boundary: Geometry? = null,
       fullName: String? = null,
       name: String? = null,
-      plantingSubzoneId: PlantingSubzoneId = inserted.plantingSubzoneId,
+      plantingSubzoneId: PlantingSubzoneId? = inserted.plantingSubzoneId,
       plantingZoneHistoryId: PlantingZoneHistoryId = inserted.plantingZoneHistoryId,
   ): PlantingSubzoneHistoryId {
     val row =
@@ -1917,6 +1916,7 @@ abstract class DatabaseBackedTest {
     return row.id!!.also { inserted.moduleIds.add(it) }
   }
 
+  private var nextMonitoringPlotNumber: Int = 1
   private lateinit var lastMonitoringPlotsRow: MonitoringPlotsRow
 
   fun insertMonitoringPlot(
