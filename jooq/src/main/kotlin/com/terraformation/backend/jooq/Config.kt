@@ -156,12 +156,17 @@ val ENUM_TABLES =
         "tracking" to
             listOf(
                 EnumTable(
+                    "ad_hoc_observation_types",
+                    listOf("ad_hoc_plot_observations\\.ad_hoc_observation_type_id"),
+                    isLocalizable = false),
+                EnumTable(
                     "observable_conditions",
                     listOf("observation_plot_conditions\\.condition_id"),
                     isLocalizable = false),
                 EnumTable(
                     "observation_plot_positions",
                     listOf(
+                        "ad_hoc_plot_observation_photos\\.position_id",
                         "observation_photos\\.position_id",
                         "observed_plot_coordinates\\.position_id"),
                     isLocalizable = false),
@@ -310,6 +315,9 @@ val ID_WRAPPERS =
             ),
         "tracking" to
             listOf(
+                IdWrapper(
+                    "AdHocPlotObservationId",
+                    listOf("ad_hoc_plot_observations\\.id", ".*\\.ad_hoc_plot_observation_id")),
                 IdWrapper("DeliveryId", listOf("deliveries\\.id", ".*\\.delivery_id")),
                 IdWrapper("DraftPlantingSiteId", listOf("draft_planting_sites\\.id")),
                 IdWrapper(

@@ -315,6 +315,11 @@ VALUES (1, 'Species'),
        (3, 'Family')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO tracking.ad_hoc_observation_types (id, name)
+VALUES (1, 'Biomass Measurement'),
+       (2, 'Monitoring')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO tracking.observable_conditions (id, name)
 VALUES (1, 'AnimalDamage'),
        (2, 'FastGrowth'),
