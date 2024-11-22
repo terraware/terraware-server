@@ -171,9 +171,7 @@ val ENUM_TABLES =
                     isLocalizable = false),
                 EnumTable(
                     "observation_states", listOf("observations\\.state_id"), isLocalizable = false),
-                EnumTable(
-                    "observation_types",
-                    listOf("observations\\.observation_type_id")),
+                EnumTable("observation_types", listOf("observations\\.observation_type_id")),
                 EnumTable("planting_types"),
                 EnumTable(
                     "recorded_plant_statuses",
