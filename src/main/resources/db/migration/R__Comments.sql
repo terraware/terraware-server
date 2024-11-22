@@ -381,6 +381,8 @@ COMMENT ON TABLE tracking.observation_requested_subzones IS 'If an observation s
 
 COMMENT ON TABLE tracking.observation_states IS '(Enum) Where in the observation lifecycle a particular observation is.';
 
+COMMENT ON TABLE tracking.observation_types IS '(Enum) Type of observation, currently only used for ad hoc observations.';
+
 COMMENT ON TABLE tracking.observations IS 'Scheduled observations of planting sites. This table may contain rows describing future observations as well as current and past ones.';
 COMMENT ON COLUMN tracking.observations.completed_time IS 'Server-generated date and time the final piece of data for the observation was received.';
 COMMENT ON COLUMN tracking.observations.end_date IS 'Last day of the observation. This is typically the last day of the same month as `start_date`.';

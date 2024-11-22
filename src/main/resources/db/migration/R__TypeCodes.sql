@@ -347,6 +347,11 @@ VALUES (1, 'Upcoming'),
        (5, 'Abandoned')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO tracking.observation_types (id, name)
+VALUES (1, 'Monitoring'),
+       (2, 'Biomass Measurements')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO organization_types (id, name)
 VALUES (1, 'Government'),
        (2, 'NGO'),

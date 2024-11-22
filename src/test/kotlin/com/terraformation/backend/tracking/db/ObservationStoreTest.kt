@@ -621,6 +621,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               createdTime = clock.instant(),
               endDate = LocalDate.of(2020, 1, 31),
               id = observationId,
+              isAdHoc = false,
               plantingSiteId = plantingSiteId,
               startDate = LocalDate.of(2020, 1, 1),
               stateId = ObservationState.Upcoming,
