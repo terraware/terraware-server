@@ -9,11 +9,9 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.tables.daos.DeviceManagersDao
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.default_schema.tables.references.DEVICE_MANAGERS
-import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.time.Clock
 import org.jooq.DSLContext
-import org.jooq.conf.ParamType
 import org.jooq.impl.DSL
 
 @Named
@@ -47,7 +45,6 @@ class DeviceManagerStore(
     return dslContext
         .selectFrom(DEVICE_MANAGERS)
         .where(condition)
-        .also { perClassLogger().info("Query = ${it.getSQL(ParamType.INLINED)}") }
         .fetchInto(DeviceManagersRow::class.java)
   }
 
