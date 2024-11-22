@@ -8,4 +8,4 @@ ALTER TABLE tracking.observations ADD COLUMN observation_type_id INTEGER REFEREN
 ALTER TABLE tracking.observations ADD CONSTRAINT ad_hoc_observation_type CHECK (
     (is_ad_hoc = FALSE AND observation_type_id IS NULL)
     OR (is_ad_hoc = TRUE AND observation_type_id IS NOT NULL)
-)
+);
