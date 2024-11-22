@@ -8,7 +8,6 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.file.GoogleDriveWriter
-import com.terraformation.backend.log.perClassLogger
 import java.net.URI
 import java.util.Locale
 import org.springframework.stereotype.Controller
@@ -79,9 +78,7 @@ class AdminController(
   @PostMapping("/google")
   fun lookUpGoogleFile(@RequestParam url: URI, redirectAttributes: RedirectAttributes): String {
     val fileId = googleDriveWriter.getFileIdForFolderUrl(url)
-    perClassLogger().info("File ID is $fileId")
     val driveId = googleDriveWriter.getDriveIdForFile(fileId)
-    perClassLogger().info("Drive ID is $driveId")
 
     redirectAttributes.successMessage = "Drive ID is $driveId"
 

@@ -1,7 +1,6 @@
 package com.terraformation.backend.auth
 
 import com.terraformation.backend.config.TerrawareServerConfig
-import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -54,7 +53,6 @@ class KeycloakAdminClientImpl(
             .bodyToMono<List<UserRepresentation>>()
             .block()!!
 
-    perClassLogger().warn("Fetched ${users.size} users")
     return users
   }
 
