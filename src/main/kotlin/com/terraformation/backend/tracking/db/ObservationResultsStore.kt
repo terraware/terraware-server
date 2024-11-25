@@ -84,9 +84,12 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   }
 
   /**
-   * Retrieves summary for a planting site by aggregating latest observation data per subzone.
-   * Returns the latest value if a max observation time is not provided. Otherwise, return the
-   * summary before the provided time.
+   * Retrieves historical summaries for a planting site by aggregating most recent observation data
+   * per subzone, ordered chronologically, latest first. Each summary represents the summary data
+   * after an observation is completed.
+   *
+   * @param limit if provided, only return this number of historical summary.
+   * @param maxCompletionTime if provided, only observations completed before will be used.
    */
   fun fetchSummariesForPlantingSite(
       plantingSiteId: PlantingSiteId,

@@ -264,20 +264,20 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
         sizeMeters: Int,
     ) {
       importSiteFromCsvFile(prefix, sizeMeters)
-      val summaryBeforeObservations = resultsStore.fetchSummariesForPlantingSite(plantingSiteId)
-
       val observationTimes =
           List(numObservations) {
             val time = Instant.ofEpochSecond(it.toLong())
-            importObservationsCsv(prefix, numSpecies, it, time) to time
+            importObservationsCsv(prefix, numSpecies, it, time)
+            time
           }
 
+      val summariesBeforeObservations = resultsStore.fetchSummariesForPlantingSite(plantingSiteId)
       val summaries = resultsStore.fetchSummariesForPlantingSite(plantingSiteId)
       assertEquals(
           emptyList<ObservationRollupResultsModel>(),
-          summaryBeforeObservations,
+          summariesBeforeObservations,
           "No observations made yet.")
-      assertSummary(prefix, summaries.filterNotNull().reversed())
+      assertSummary(prefix, summaries.reversed())
 
       assertEquals(
           summaries.take(2),
@@ -287,13 +287,13 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           summaries.takeLast(2),
           resultsStore.fetchSummariesForPlantingSite(
-              plantingSiteId, maxCompletionTime = observationTimes[1].second),
+              plantingSiteId, maxCompletionTime = observationTimes[1]),
           "Partial summaries via completion time should omit the more recent observations.")
 
       assertEquals(
           listOf(summaries[1]),
           resultsStore.fetchSummariesForPlantingSite(
-              plantingSiteId, maxCompletionTime = observationTimes[1].second, limit = 1),
+              plantingSiteId, maxCompletionTime = observationTimes[1], limit = 1),
           "Partial summaries via limit and completion time.")
     }
 
