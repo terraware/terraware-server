@@ -31,6 +31,7 @@ import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.calculateMortalityRate
+import com.terraformation.backend.tracking.model.unionSpecies
 import com.terraformation.backend.util.SQUARE_METERS_PER_HECTARE
 import jakarta.inject.Named
 import java.time.Instant
@@ -412,7 +413,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
               val areaHa = record[PLANTING_SUBZONES.AREA_HA.asNonNullable()]
 
-              val species = monitoringPlots.flatMap { it.species }
+              val species =
+                  monitoringPlots
+                      .map { it.species }
+                      .reduce { acc, species -> acc.unionSpecies(species) }
               val totalPlants = species.sumOf { it.totalLive + it.totalDead }
 
               val isCompleted =
@@ -445,6 +449,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   } else {
                     null
                   }
+
               ObservationPlantingSubzoneResultsModel(
                   areaHa = areaHa,
                   completedTime = completedTime,
@@ -454,6 +459,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   plantingCompleted = plantingCompleted,
                   plantingDensity = plantingDensity?.roundToInt(),
                   plantingSubzoneId = record[PLANTING_SUBZONES.ID.asNonNullable()],
+                  species = species,
                   totalPlants = totalPlants,
               )
             }
