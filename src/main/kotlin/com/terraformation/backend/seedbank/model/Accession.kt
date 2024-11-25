@@ -222,43 +222,35 @@ data class AccessionModel(
   }
 
   fun calculateRemaining(existing: AccessionModel = this): SeedQuantityModel? {
-    val newWithdrawals = calculateWithdrawals(existing)
     val newRemaining =
         if (latestObservedQuantity == null ||
             latestObservedTime == null ||
             remaining != existing.remaining) {
           remaining
         } else {
-          val withdrawalsAfterObservation =
-              newWithdrawals.filter { it.isAfter(latestObservedTime, clock.zone) }
-          val observedMinusWithdrawals =
-              withdrawalsAfterObservation.fold(latestObservedQuantity) {
-                  runningRemaining,
-                  withdrawal ->
-                val withdrawn = withdrawal.withdrawn
-                if (withdrawn != null) {
-                  runningRemaining -
-                      withdrawn.toUnits(runningRemaining.units, subsetWeightQuantity, subsetCount)
-                } else {
-                  runningRemaining
-                }
-              }
+          val newWithdrawals =
+              calculateWithdrawals(existing).filter { it.isAfter(latestObservedTime, clock.zone) }
+          val mostRecentWithdrawal = newWithdrawals.lastOrNull()
 
           // If the user withdrew all the seeds from a weight-based accession by entering the
           // estimated seed count (which will be the case in, e.g., a nursery transfer which is
-          // always measured in seeds) then the remaining weight might be slightly more or less than
-          // zero thanks to imprecision of the subset weight measurement. We will end up with an
-          // observedMinusWithdrawals value less than the weight of one seed. Treat the withdrawal
-          // as having emptied out the accession in that case.
-          if (observedMinusWithdrawals.units != SeedQuantityUnits.Seeds &&
-              withdrawalsAfterObservation.isNotEmpty() &&
-              withdrawalsAfterObservation.last().withdrawn?.units == SeedQuantityUnits.Seeds &&
-              subsetCount != null &&
-              subsetWeightQuantity != null &&
-              observedMinusWithdrawals.abs() * subsetCount < subsetWeightQuantity) {
-            SeedQuantityModel.of(BigDecimal.ZERO, observedMinusWithdrawals.units)
+          // always measured in seeds), we can't rely on the seeds-to-weight calculation precisely
+          // matching the remaining weight quantity because weights have limited precision. Force
+          // the remaining quantity to zero in that case.
+          if (latestObservedQuantity.units != SeedQuantityUnits.Seeds &&
+              mostRecentWithdrawal?.withdrawn?.units == SeedQuantityUnits.Seeds &&
+              mostRecentWithdrawal.withdrawn.quantity.toInt() == existing.estimatedSeedCount) {
+            SeedQuantityModel.of(BigDecimal.ZERO, latestObservedQuantity.units)
           } else {
-            observedMinusWithdrawals
+            newWithdrawals.fold(latestObservedQuantity) { runningRemaining, withdrawal ->
+              val withdrawn = withdrawal.withdrawn
+              if (withdrawn != null) {
+                runningRemaining -
+                    withdrawn.toUnits(runningRemaining.units, subsetWeightQuantity, subsetCount)
+              } else {
+                runningRemaining
+              }
+            }
           }
         }
 

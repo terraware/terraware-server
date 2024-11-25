@@ -4,6 +4,7 @@ import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.WithdrawalPurpose
 import com.terraformation.backend.seedbank.grams
+import com.terraformation.backend.seedbank.kilograms
 import com.terraformation.backend.seedbank.milligrams
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.SeedQuantityModel
@@ -104,29 +105,19 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
     }
 
     @Test
-    fun `withdrawal of estimated seed count rounds fractional remaining weight to zero`() {
+    fun `withdrawal of estimated seed count sets remaining quantity to zero`() {
       val accession =
-          accession(remaining = grams(11), subsetCount = 10000, subsetWeight = grams(3))
+          accession(
+                  remaining = kilograms(BigDecimal("0.005324")),
+                  subsetCount = 100,
+                  subsetWeight = kilograms(BigDecimal("0.000364")))
               .withCalculatedValues()
 
+      assertEquals(1463, accession.estimatedSeedCount)
       val afterWithdrawal =
           accession.addWithdrawal(withdrawal(seeds(accession.estimatedSeedCount!!), id = null))
 
-      assertEquals(grams(0), afterWithdrawal.remaining)
-      assertEquals(AccessionState.UsedUp, afterWithdrawal.state)
-    }
-
-    @Test
-    fun `withdrawal of estimated seed count rounds negative fractional remaining weight to zero`() {
-      val accession =
-          accession(remaining = grams(8), subsetCount = 1, subsetWeight = grams(3))
-              .withCalculatedValues()
-
-      assertEquals(3, accession.estimatedSeedCount)
-      val afterWithdrawal =
-          accession.addWithdrawal(withdrawal(seeds(accession.estimatedSeedCount!!), id = null))
-
-      assertEquals(grams(0), afterWithdrawal.remaining)
+      assertEquals(kilograms(0), afterWithdrawal.remaining)
       assertEquals(AccessionState.UsedUp, afterWithdrawal.state)
     }
 
