@@ -132,3 +132,8 @@ org:
     background-job-server:
       # All terraware-server instances can run scheduled jobs.
       enabled: true
+
+logging:
+  level:
+    # Suppress warning spew when CountryDetector loads country borders
+    org.geotools.feature: ERROR
