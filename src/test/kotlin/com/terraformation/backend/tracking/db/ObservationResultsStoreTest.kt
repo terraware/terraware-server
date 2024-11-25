@@ -264,6 +264,12 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
         sizeMeters: Int,
     ) {
       importSiteFromCsvFile(prefix, sizeMeters)
+
+      assertEquals(
+          emptyList<ObservationRollupResultsModel>(),
+          resultsStore.fetchSummariesForPlantingSite(plantingSiteId),
+          "No observations made yet.")
+
       val observationTimes =
           List(numObservations) {
             val time = Instant.ofEpochSecond(it.toLong())
@@ -271,12 +277,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
             time
           }
 
-      val summariesBeforeObservations = resultsStore.fetchSummariesForPlantingSite(plantingSiteId)
       val summaries = resultsStore.fetchSummariesForPlantingSite(plantingSiteId)
-      assertEquals(
-          emptyList<ObservationRollupResultsModel>(),
-          summariesBeforeObservations,
-          "No observations made yet.")
       assertSummary(prefix, summaries.reversed())
 
       assertEquals(
