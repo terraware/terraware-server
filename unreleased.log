@@ -1,3 +1,5 @@
+9cfc1b99b76 SW-6297 Don't notify contributors about events (#2637)
+6e662da4a1f Stop using soon-to-be-deprecated Spring Security API (#2634)
 ea89df1ade7 Suppress CountryDetector warning spew (#2626)
 52eb4ca7166 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.26 (#2631)
 c44a66508fd Update database dependencies (#2632)
