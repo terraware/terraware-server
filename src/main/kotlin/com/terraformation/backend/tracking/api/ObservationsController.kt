@@ -183,7 +183,7 @@ class ObservationsController(
                   "summaries including the most recently completed observation.")
       limit: Int? = null,
   ): GetPlantingSiteObservationSummariesPayload {
-    val results = observationResultsStore.fetchSummariesForPlantingSite(plantingSiteId)
+    val results = observationResultsStore.fetchSummariesForPlantingSite(plantingSiteId, limit)
     return GetPlantingSiteObservationSummariesPayload(
         results.map { PlantingSiteObservationSummaryPayload(it) })
   }
