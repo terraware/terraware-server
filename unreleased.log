@@ -1,2 +1,6 @@
+52eb4ca7166 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.26 (#2631)
+c44a66508fd Update database dependencies (#2632)
+ab63a2cd23d Update dependency com.squarespace.cldr-engine:cldr-engine to v1.8.3 (#2629)
+fffcfa8db4c Update dependency gradle to v8.11.1 (#2630)
 b44507476f0 Remove unnecessary log messages (#2625)
 4a8b4fd3490 Update geoToolsVersion to v32.1 (#2624)
