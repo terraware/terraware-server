@@ -2249,6 +2249,17 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       @Test
+      fun `returns plot counts of zero if no plots have been assigned to observation`() {
+        val observationId = insertObservation()
+
+        val expected = ObservationPlotCounts(0, 0, 0)
+
+        val actual = store.countPlots(observationId)
+
+        assertEquals(expected, actual)
+      }
+
+      @Test
       fun `throws exception if observation does not exist`() {
         assertThrows<ObservationNotFoundException> { store.countPlots(ObservationId(-1)) }
       }
