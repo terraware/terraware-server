@@ -9,6 +9,7 @@ import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -31,7 +32,6 @@ import java.math.BigDecimal
 import java.nio.file.NoSuchFileException
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -264,14 +264,37 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
         sizeMeters: Int,
     ) {
       importSiteFromCsvFile(prefix, sizeMeters)
-      val summaryBeforeObservations = resultsStore.fetchSummaryForPlantingSite(plantingSiteId)
-      val summaries =
+      val summaryBeforeObservations = resultsStore.fetchSummariesForPlantingSite(plantingSiteId)
+
+      val observationTimes =
           List(numObservations) {
-            importObservationsCsv(prefix, numSpecies, it)
-            resultsStore.fetchSummaryForPlantingSite(plantingSiteId)!!
+            val time = Instant.ofEpochSecond(it.toLong())
+            importObservationsCsv(prefix, numSpecies, it, time) to time
           }
-      assertNull(summaryBeforeObservations, "No observations made yet.")
-      assertSummary(prefix, summaries)
+
+      val summaries = resultsStore.fetchSummariesForPlantingSite(plantingSiteId)
+      assertEquals(
+          emptyList<ObservationRollupResultsModel>(),
+          summaryBeforeObservations,
+          "No observations made yet.")
+      assertSummary(prefix, summaries.filterNotNull().reversed())
+
+      assertEquals(
+          summaries.take(2),
+          resultsStore.fetchSummariesForPlantingSite(plantingSiteId, limit = 2),
+          "Partial summaries via limit should contain the latest observations.")
+
+      assertEquals(
+          summaries.takeLast(2),
+          resultsStore.fetchSummariesForPlantingSite(
+              plantingSiteId, maxCompletionTime = observationTimes[1].second),
+          "Partial summaries via completion time should omit the more recent observations.")
+
+      assertEquals(
+          listOf(summaries[1]),
+          resultsStore.fetchSummariesForPlantingSite(
+              plantingSiteId, maxCompletionTime = observationTimes[1].second, limit = 1),
+          "Partial summaries via limit and completion time.")
     }
 
     private fun assertSummary(prefix: String, results: List<ObservationRollupResultsModel>) {
@@ -640,8 +663,13 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     /** Imports plants based on bulk observation numbers. */
-    private fun importObservationsCsv(prefix: String, numSpecies: Int, observationNum: Int) {
-      clock.instant = Instant.ofEpochSecond(observationNum.toLong())
+    private fun importObservationsCsv(
+        prefix: String,
+        numSpecies: Int,
+        observationNum: Int,
+        observationTime: Instant
+    ): ObservationId {
+      clock.instant = observationTime
 
       val observationId = insertObservation()
       val observedPlotNames = mutableSetOf<String>()
@@ -806,6 +834,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
             observationStore.completePlot(
                 observationId, plotId, emptySet(), "Notes", Instant.EPOCH, plants)
           }
+
+      return observationId
     }
 
     /** Maps each data row of a CSV to a value. */

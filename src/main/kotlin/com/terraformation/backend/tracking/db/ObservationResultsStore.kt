@@ -33,6 +33,9 @@ import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.calculateMortalityRate
 import com.terraformation.backend.util.SQUARE_METERS_PER_HECTARE
 import jakarta.inject.Named
+import java.time.Instant
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -59,11 +62,16 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
   fun fetchByPlantingSiteId(
       plantingSiteId: PlantingSiteId,
-      limit: Int? = null
+      limit: Int? = null,
+      maxCompletionTime: Instant? = null,
   ): List<ObservationResultsModel> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    return fetchByCondition(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId), limit)
+    return fetchByCondition(
+        DSL.and(
+            OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId),
+            maxCompletionTime?.let { OBSERVATIONS.COMPLETED_TIME.lessOrEqual(it) }),
+        limit)
   }
 
   fun fetchByOrganizationId(
@@ -75,8 +83,35 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     return fetchByCondition(OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId), limit)
   }
 
-  fun fetchSummaryForPlantingSite(
+  /**
+   * Retrieves summary for a planting site by aggregating latest observation data per subzone.
+   * Returns the latest value if a max observation time is not provided. Otherwise, return the
+   * summary before the provided time.
+   */
+  fun fetchSummariesForPlantingSite(
       plantingSiteId: PlantingSiteId,
+      limit: Int? = null,
+      maxCompletionTime: Instant? = null,
+  ): List<ObservationRollupResultsModel> {
+    val completedObservations =
+        fetchByPlantingSiteId(plantingSiteId, maxCompletionTime = maxCompletionTime).filter {
+          it.completedTime != null
+        }
+
+    val numObservations = completedObservations.size
+    val depth = max(0, limit?.let { min(it, numObservations) } ?: numObservations)
+
+    // Remove observations one at a time, to build a historical summary
+    return List(depth) {
+          val observations = completedObservations.takeLast(numObservations - it)
+          plantingSiteSummary(plantingSiteId, observations)
+        }
+        .filterNotNull()
+  }
+
+  private fun plantingSiteSummary(
+      plantingSiteId: PlantingSiteId,
+      completedObservations: List<ObservationResultsModel>
   ): ObservationRollupResultsModel? {
     val allSubzoneIdsByZoneIds =
         dslContext
@@ -92,15 +127,13 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             .where(PLANTING_ZONES.ID.`in`(allSubzoneIdsByZoneIds.keys))
             .associate { it[PLANTING_ZONES.ID]!! to it[PLANTING_ZONES.AREA_HA]!! }
 
-    val observations = fetchByPlantingSiteId(plantingSiteId)
-    val subzoneCompletedObservations =
-        observations
-            .filter { it.completedTime != null }
+    val observationsBySubzone =
+        completedObservations
             .flatMap { observation -> observation.plantingZones.flatMap { it.plantingSubzones } }
             .groupBy { it.plantingSubzoneId }
 
     val latestPerSubzone =
-        subzoneCompletedObservations.mapValues { entry -> entry.value.maxBy { it.completedTime!! } }
+        observationsBySubzone.mapValues { entry -> entry.value.maxBy { it.completedTime!! } }
 
     val plantingZoneResults =
         allSubzoneIdsByZoneIds
