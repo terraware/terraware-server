@@ -931,16 +931,18 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun `should store module event starting notification for all projects`() {
     val moduleId = insertModule()
     val eventId = insertEvent(moduleId = moduleId)
+    val projectId = insertProject()
 
     insertOrganizationUser(role = Role.Admin)
-    // Other user in same project
-    insertOrganizationUser(otherUserId)
-    val projectId = insertProject()
+    // Other user in same org
+    insertOrganizationUser(otherUserId, role = Role.Manager)
+    // Contributor in same org; shouldn't be notified
+    insertOrganizationUser(insertUser(), role = Role.Contributor)
 
     // Other project in different org
     val thirdUserId = insertUser()
     val otherOrgId = insertOrganization()
-    insertOrganizationUser(thirdUserId, otherOrgId)
+    insertOrganizationUser(thirdUserId, otherOrgId, Role.Manager)
     val otherProjectId = insertProject(organizationId = otherOrgId)
 
     insertEventProject(eventId, projectId)

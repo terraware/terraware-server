@@ -454,7 +454,11 @@ class AppNotificationService(
         val eventUrl =
             webAppUrls.moduleEvent(moduleEvent.moduleId, moduleEvent.id, organizationId, projectId)
         insertOrganizationNotifications(
-            organizationId, NotificationType.EventReminder, renderMessage, eventUrl)
+            organizationId,
+            NotificationType.EventReminder,
+            renderMessage,
+            eventUrl,
+            setOf(Role.Owner, Role.Admin, Role.Manager))
       }
     }
   }
