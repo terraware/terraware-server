@@ -235,7 +235,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `UserAddedToOrganization event is published when existing user is added to an organization`() {
-    val otherUserId = insertUser(email = "existingUser@email.com")
+    val otherUserId = insertUser(email = "existinguser@email.com")
 
     val organizationId = insertOrganization()
 
