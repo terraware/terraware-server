@@ -330,25 +330,25 @@ class ObservationStore(
   fun countPlots(observationId: ObservationId): ObservationPlotCounts {
     requirePermissions { readObservation(observationId) }
 
-    val incompleteField = DSL.count().filterWhere(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
-    val totalField = DSL.count()
-    val unclaimedField = DSL.count().filterWhere(OBSERVATION_PLOTS.CLAIMED_TIME.isNull)
+    if (dslContext.fetchExists(OBSERVATIONS, OBSERVATIONS.ID.eq(observationId))) {
+      val incompleteField = DSL.count().filterWhere(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
+      val totalField = DSL.count()
+      val unclaimedField = DSL.count().filterWhere(OBSERVATION_PLOTS.CLAIMED_TIME.isNull)
 
-    // "Group by" here isn't for grouping (since we're only looking at one observation) but rather
-    // to make the query return 0 rows if the observation doesn't exist. This is usually caught by
-    // the permission check but in unit tests, the permission check is stubbed out.
-    return dslContext
-        .select(OBSERVATION_PLOTS.OBSERVATION_ID, incompleteField, totalField, unclaimedField)
-        .from(OBSERVATION_PLOTS)
-        .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
-        .groupBy(OBSERVATION_PLOTS.OBSERVATION_ID)
-        .fetchOne { record ->
-          ObservationPlotCounts(
-              totalIncomplete = record[incompleteField],
-              totalPlots = record[totalField],
-              totalUnclaimed = record[unclaimedField],
-          )
-        } ?: throw ObservationNotFoundException(observationId)
+      return dslContext
+          .select(incompleteField, totalField, unclaimedField)
+          .from(OBSERVATION_PLOTS)
+          .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+          .fetchSingle { record ->
+            ObservationPlotCounts(
+                totalIncomplete = record[incompleteField],
+                totalPlots = record[totalField],
+                totalUnclaimed = record[unclaimedField],
+            )
+          }
+    } else {
+      throw ObservationNotFoundException(observationId)
+    }
   }
 
   fun countPlots(organizationId: OrganizationId): Map<ObservationId, ObservationPlotCounts> {
