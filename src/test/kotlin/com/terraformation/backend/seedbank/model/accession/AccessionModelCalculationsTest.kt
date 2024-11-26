@@ -106,6 +106,8 @@ internal class AccessionModelCalculationsTest : AccessionModelTest() {
 
     @Test
     fun `withdrawal of estimated seed count sets remaining quantity to zero`() {
+      // Regression test: the values here are from an accession that couldn't be fully withdrawn
+      // due to the way we used to handle checking for withdrawal of the estimated seed count.
       val accession =
           accession(
                   remaining = kilograms(BigDecimal("0.005324")),
