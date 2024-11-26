@@ -1,3 +1,5 @@
+91c06d44e71 SW-5880 Added support for returning historical summary data (#2636)
+66028e1039b SW-6253 Implemented project overall scores table and endpoints (#2639)
 6e61c1883ec Update database dependencies to v11 (#2633)
 a60cf480821 SW-6293 Fix seed withdrawals of weight-based accessions (#2635)
 ef5d26604c1 SW-6296 Fix error counting plots of empty observation (#2638)

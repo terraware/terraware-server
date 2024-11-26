@@ -16,6 +16,7 @@ cohort_modules
 application_histories
 user_internal_interests
 submission_snapshots
+project_overall_scores
 deliverable_variables
 events
 deal_stages

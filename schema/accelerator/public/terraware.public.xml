@@ -35,6 +35,7 @@
             <child column="project_id" foreignKey="event_projects_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="event_projects"/>
             <child column="project_id" foreignKey="participant_project_species_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="participant_project_species"/>
             <child column="project_id" foreignKey="project_accelerator_details_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_accelerator_details"/>
+            <child column="project_id" foreignKey="project_overall_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_overall_scores"/>
             <child column="project_id" foreignKey="project_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_scores"/>
             <child column="project_id" foreignKey="project_vote_decisions_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_vote_decisions"/>
             <child column="project_id" foreignKey="project_votes_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_votes"/>

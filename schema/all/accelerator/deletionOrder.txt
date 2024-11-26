@@ -6,6 +6,7 @@ submission_documents
 deliverable_documents
 user_internal_interests
 project_vote_decisions
+project_overall_scores
 project_accelerator_details
 application_modules
 application_histories
