@@ -26,8 +26,10 @@ import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
+import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
@@ -186,7 +188,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertDelivery()
 
       val observedTime = Instant.ofEpochSecond(1)
-      clock.instant = Instant.ofEpochSecond(123)
+      val now = Instant.ofEpochSecond(123)
+      clock.instant = now
 
       val observedPlants =
           listOf(
@@ -211,52 +214,91 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val conditions = setOf(ObservableCondition.AnimalDamage, ObservableCondition.FastGrowth)
 
-      val adHocPlotBoundary =
-          polygon(MONITORING_PLOT_SIZE)
+      val adHocPlotBoundary = polygon(MONITORING_PLOT_SIZE)
 
-      val (observationId, plotId) = service.createAdHocPlotObservation(
-          adHocPlotBoundary,
-          conditions,
-          "Ad Hoc Plot",
-          "Notes about the observation",
-          ObservationType.Monitoring,
-          observedTime,
-          plantingSiteId,
-          observedPlants
-      )
+      val (monitoringPlotId, observationId) =
+          service.createAdHocPlotObservation(
+              adHocPlotBoundary,
+              conditions,
+              "Ad Hoc Plot",
+              "Notes about the observation",
+              ObservationType.Monitoring,
+              observedTime,
+              plantingSiteId,
+              observedPlants)
 
       val expectedConditions =
           setOf(
-              ObservationPlotConditionsRow(observationId, plotId, ObservableCondition.AnimalDamage),
-              ObservationPlotConditionsRow(observationId, plotId, ObservableCondition.FastGrowth),
+              ObservationPlotConditionsRow(
+                  observationId, monitoringPlotId, ObservableCondition.AnimalDamage),
+              ObservationPlotConditionsRow(
+                  observationId, monitoringPlotId, ObservableCondition.FastGrowth),
           )
 
+      val expectedMonitoringPlots =
+          setOf(
+              MonitoringPlotsRow(
+                  boundary = adHocPlotBoundary,
+                  createdBy = user.userId,
+                  createdTime = now,
+                  fullName = "Ad Hoc Plot",
+                  id = monitoringPlotId,
+                  isAvailable = false,
+                  modifiedBy = user.userId,
+                  modifiedTime = now,
+                  name = "Ad Hoc Plot",
+                  permanentCluster = null,
+                  permanentClusterSubplot = null,
+                  plantingSiteId = plantingSiteId,
+                  plantingSubzoneId = null,
+                  sizeMeters = MONITORING_PLOT_SIZE_INT,
+              ))
+
       val expectedPlants =
-          recordedPlants
-              .map { it.copy(monitoringPlotId = plotId, observationId = observationId) }
+          observedPlants
+              .map { it.copy(monitoringPlotId = monitoringPlotId, observationId = observationId) }
               .toSet()
 
-      // Verify that only the row for this plot in this observation was updated.
-      val expectedRows =
-          initialRows
-              .map { row ->
-                if (row.observationId == observationId && row.monitoringPlotId == plotId) {
-                  row.copy(
-                      completedBy = user.userId,
-                      completedTime = clock.instant,
-                      notes = "Notes",
-                      observedTime = observedTime,
-                      statusId = ObservationPlotStatus.Completed,
-                  )
-                } else {
-                  row
-                }
-              }
-              .toSet()
+      val expectedObservationPlots =
+          setOf(
+              ObservationPlotsRow(
+                  claimedBy = user.userId,
+                  claimedTime = now,
+                  completedBy = user.userId,
+                  completedTime = now,
+                  createdBy = user.userId,
+                  createdTime = now,
+                  isPermanent = false,
+                  modifiedBy = user.userId,
+                  modifiedTime = now,
+                  monitoringPlotId = monitoringPlotId,
+                  notes = "Notes about the observation",
+                  observationId = observationId,
+                  observedTime = observedTime,
+                  statusId = ObservationPlotStatus.Completed,
+              ))
+
+      val expectedDate = LocalDate.ofInstant(observedTime, ZoneOffset.UTC)
+
+      val expectedObservations =
+          setOf(
+              ObservationsRow(
+                  completedTime = now,
+                  createdTime = now,
+                  endDate = expectedDate,
+                  id = observationId,
+                  isAdHoc = true,
+                  observationTypeId = ObservationType.Monitoring,
+                  plantingSiteId = plantingSiteId,
+                  startDate = expectedDate,
+                  stateId = ObservationState.Completed,
+              ))
 
       assertEquals(expectedConditions, observationPlotConditionsDao.findAll().toSet())
+      assertEquals(expectedMonitoringPlots, monitoringPlotsDao.findAll().toSet())
+      assertEquals(expectedObservationPlots, observationPlotsDao.findAll().toSet())
+      assertEquals(expectedObservations, observationsDao.findAll().toSet())
       assertEquals(expectedPlants, recordedPlantsDao.findAll().map { it.copy(id = null) }.toSet())
-      assertEquals(expectedRows, observationPlotsDao.findAll().toSet())
     }
 
     @Test
