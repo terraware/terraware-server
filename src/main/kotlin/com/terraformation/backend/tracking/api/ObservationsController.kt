@@ -172,14 +172,20 @@ class ObservationsController(
     return ListObservationResultsResponsePayload(results.map { ObservationResultsPayload(it) })
   }
 
-  @GetMapping("/results/summary")
-  @Operation(summary = "Gets the rollup observation summary of a planting site")
-  fun getPlantingSiteObservationSummary(
+  @GetMapping("/results/summaries")
+  @Operation(summary = "Gets the rollup observation summaries of a planting site")
+  fun getPlantingSiteObservationSummaries(
       @RequestParam plantingSiteId: PlantingSiteId,
-  ): GetPlantingSiteObservationSummaryPayload {
-    val model = observationResultsStore.fetchSummaryForPlantingSite(plantingSiteId)
-    return GetPlantingSiteObservationSummaryPayload(
-        model?.let { PlantingSiteObservationSummaryPayload(model) })
+      @Parameter(
+          description =
+              "Maximum number of results to return. Results are always returned in order of " +
+                  "observations completion time, newest first, so setting this to 1 will return the " +
+                  "summaries including the most recently completed observation.")
+      limit: Int? = null,
+  ): GetPlantingSiteObservationSummariesPayload {
+    val results = observationResultsStore.fetchSummariesForPlantingSite(plantingSiteId, limit)
+    return GetPlantingSiteObservationSummariesPayload(
+        results.map { PlantingSiteObservationSummaryPayload(it) })
   }
 
   @GetMapping("/{observationId}")
@@ -969,11 +975,12 @@ data class MergeOtherSpeciesRequestPayload(
     val speciesId: SpeciesId,
 )
 
-data class GetPlantingSiteObservationSummaryPayload(
+data class GetPlantingSiteObservationSummariesPayload(
     @Schema(
         description =
-            "Rollup summary of planting site observations. Null if no observation has been made.")
-    val summary: PlantingSiteObservationSummaryPayload?,
+            "History of rollup summaries of planting site observations in order of observation " +
+                "time, latest first. ")
+    val summaries: List<PlantingSiteObservationSummaryPayload>,
 ) : SuccessResponsePayload
 
 data class ScheduleObservationRequestPayload(
