@@ -34,11 +34,7 @@ class ProjectScoresControllerV2(
       @PathVariable("projectId") projectId: ProjectId,
   ): GetProjectOverallScoreResponsePayload {
     val model = projectOverallScoreStore.fetch(projectId)
-    return GetProjectOverallScoreResponsePayload(
-        ProjectOverallScorePayload(model),
-        model.modifiedBy,
-        model.modifiedTime,
-    )
+    return GetProjectOverallScoreResponsePayload(ProjectOverallScorePayload(model))
   }
 
   @ApiResponse200
@@ -55,19 +51,11 @@ class ProjectScoresControllerV2(
   }
 }
 
-data class ProjectOverallScorePayload(
+data class UpdateProjectOverallScorePayload(
     val detailsUrl: URI?,
     val overallScore: Double?,
     val summary: String?,
 ) {
-  constructor(
-      model: ProjectOverallScoreModel
-  ) : this(
-      model.detailsUrl,
-      model.overallScore,
-      model.summary,
-  )
-
   fun toModel(projectId: ProjectId) =
       ProjectOverallScoreModel(
           detailsUrl,
@@ -77,12 +65,23 @@ data class ProjectOverallScorePayload(
       )
 }
 
+data class ProjectOverallScorePayload(
+    val detailsUrl: URI?,
+    val overallScore: Double?,
+    val summary: String?,
+    val modifiedBy: UserId?,
+    val modifiedTime: Instant?,
+) {
+  constructor(
+      model: ProjectOverallScoreModel
+  ) : this(
+      model.detailsUrl, model.overallScore, model.summary, model.modifiedBy, model.modifiedTime)
+}
+
 data class UpdateProjectOverallScoreRequestPayload(
-    val score: ProjectOverallScorePayload,
+    val score: UpdateProjectOverallScorePayload,
 )
 
 data class GetProjectOverallScoreResponsePayload(
     val score: ProjectOverallScorePayload,
-    val modifiedBy: UserId?,
-    val modifiedTime: Instant?,
 ) : SuccessResponsePayload

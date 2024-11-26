@@ -1,13 +1,13 @@
 package com.terraformation.backend.accelerator.db
 
-import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.model.ProjectOverallScoreModel
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.tables.records.ProjectOverallScoresRecord
+import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.mockUser
-import io.mockk.every
 import java.net.URI
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-class ProjectOverallScoreTest : DatabaseTest(), RunsAsUser {
-  override val user = mockUser()
+class ProjectOverallScoreTest : DatabaseTest(), RunsAsDatabaseUser {
+  override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
   private val store: ProjectOverallScoreStore by lazy {
@@ -29,11 +29,10 @@ class ProjectOverallScoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
+    insertOrganizationUser(user.userId)
     projectId = insertProject()
 
-    every { user.canReadProject(any()) } returns true
-    every { user.canReadProjectScores(any()) } returns true
-    every { user.canUpdateProjectScores(any()) } returns true
+    insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
   }
 
   @Nested
@@ -96,8 +95,11 @@ class ProjectOverallScoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to read scores`() {
-      every { user.canReadProjectScores(projectId) } returns false
+      deleteUserGlobalRole(user.userId, GlobalRole.TFExpert)
       assertThrows<AccessDeniedException> { store.fetch(projectId) }
+
+      insertUserGlobalRole(user.userId, GlobalRole.ReadOnly)
+      assertDoesNotThrow { store.fetch(projectId) }
     }
   }
 
@@ -165,8 +167,10 @@ class ProjectOverallScoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to update scores`() {
-      every { user.canUpdateProjectScores(projectId) } returns false
+      deleteUserGlobalRole(user.userId, GlobalRole.TFExpert)
+      assertThrows<AccessDeniedException> { store.update(projectId) { it } }
 
+      insertUserGlobalRole(user.userId, GlobalRole.ReadOnly)
       assertThrows<AccessDeniedException> { store.update(projectId) { it } }
     }
   }
