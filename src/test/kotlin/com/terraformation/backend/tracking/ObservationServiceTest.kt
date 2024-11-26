@@ -217,12 +217,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val adHocPlotBoundary = polygon(MONITORING_PLOT_SIZE)
 
       val (monitoringPlotId, observationId) =
-          service.createAdHocPlotObservation(
+          service.completeAdHocPlotMonitoringObservation(
               adHocPlotBoundary,
               conditions,
               "Ad Hoc Plot",
               "Notes about the observation",
-              ObservationType.Monitoring,
               observedTime,
               plantingSiteId,
               observedPlants)

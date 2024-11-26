@@ -76,55 +76,20 @@ class ObservationService(
 ) {
   private val log = perClassLogger()
 
-  fun createAdHocPlotObservation(
+  fun completeAdHocPlotMonitoringObservation(
       boundary: Polygon,
       conditions: Set<ObservableCondition>,
       name: String,
       notes: String?,
-      observationType: ObservationType,
       observedTime: Instant,
       plantingSiteId: PlantingSiteId,
       plants: Collection<RecordedPlantsRow>,
   ): Pair<MonitoringPlotId, ObservationId> {
-    // We need to create both the plot and the observation
-    val userId = currentUser().userId
-    val now = clock.instant()
-    val observedDate = LocalDate.ofInstant(observedTime, ZoneOffset.UTC)
-
     return dslContext.transactionResult { _ ->
-      val observationId =
-          observationStore.createObservation(
-              NewObservationModel(
-                  startDate = observedDate,
-                  endDate = observedDate,
-                  id = null,
-                  isAdHoc = true,
-                  observationType = observationType,
-                  plantingSiteId = plantingSiteId,
-                  state = ObservationState.InProgress,
-              ))
+      val (monitoringPlotId, observationId) =
+          createAdHocPlotObservation(
+              boundary, name, ObservationType.Monitoring, observedTime, plantingSiteId)
 
-      val monitoringPlotsRow =
-          MonitoringPlotsRow(
-              boundary = boundary,
-              createdBy = userId,
-              createdTime = now,
-              // Do we even need full name?
-              fullName = name,
-              isAvailable = false,
-              modifiedBy = userId,
-              modifiedTime = now,
-              name = name,
-              plantingSiteId = plantingSiteId,
-              sizeMeters = MONITORING_PLOT_SIZE_INT,
-          )
-
-      monitoringPlotsDao.insert(monitoringPlotsRow)
-
-      val monitoringPlotId = monitoringPlotsRow.id!!
-
-      observationStore.addPlotsToObservation(observationId, listOf(monitoringPlotId), false)
-      observationStore.claimPlot(observationId, monitoringPlotId)
       observationStore.completePlot(
           observationId, monitoringPlotId, conditions, notes, observedTime, plants)
 
@@ -546,6 +511,57 @@ class ObservationService(
         observationStore.addPlotsToObservation(
             observationId, newPermanentPlotsInClustersWithoutPlotsInUnplantedSubzones, true)
       }
+    }
+  }
+
+  /** Create monitoring plot, observation, and a claimed observation plot for the current user */
+  private fun createAdHocPlotObservation(
+      boundary: Polygon,
+      name: String,
+      observationType: ObservationType,
+      observedTime: Instant,
+      plantingSiteId: PlantingSiteId,
+  ): Pair<MonitoringPlotId, ObservationId> {
+    val userId = currentUser().userId
+    val now = clock.instant()
+    val observedDate = LocalDate.ofInstant(observedTime, ZoneOffset.UTC)
+
+    return dslContext.transactionResult { _ ->
+      val observationId =
+          observationStore.createObservation(
+              NewObservationModel(
+                  startDate = observedDate,
+                  endDate = observedDate,
+                  id = null,
+                  isAdHoc = true,
+                  observationType = observationType,
+                  plantingSiteId = plantingSiteId,
+                  state = ObservationState.InProgress,
+              ))
+
+      val monitoringPlotsRow =
+          MonitoringPlotsRow(
+              boundary = boundary,
+              createdBy = userId,
+              createdTime = now,
+              // Do we even need full name?
+              fullName = name,
+              isAvailable = false,
+              modifiedBy = userId,
+              modifiedTime = now,
+              name = name,
+              plantingSiteId = plantingSiteId,
+              sizeMeters = MONITORING_PLOT_SIZE_INT,
+          )
+
+      monitoringPlotsDao.insert(monitoringPlotsRow)
+
+      val monitoringPlotId = monitoringPlotsRow.id!!
+
+      observationStore.addPlotsToObservation(observationId, listOf(monitoringPlotId), false)
+      observationStore.claimPlot(observationId, monitoringPlotId)
+
+      monitoringPlotId to observationId
     }
   }
 
