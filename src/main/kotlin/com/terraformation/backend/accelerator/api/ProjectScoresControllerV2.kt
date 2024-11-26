@@ -87,6 +87,6 @@ data class UpdateProjectOverallScoreRequestPayload(
 
 data class GetProjectOverallScoreResponsePayload(
     val score: ProjectOverallScorePayload,
-    val lastModifiedBy: UserId?,
-    val lastModifiedTime: Instant?,
+    val modifiedBy: UserId?,
+    val modifiedTime: Instant?,
 ) : SuccessResponsePayload
