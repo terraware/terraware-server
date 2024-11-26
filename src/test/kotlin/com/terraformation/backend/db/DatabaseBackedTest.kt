@@ -52,6 +52,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectSpeciesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectAcceleratorDetailsDao
+import com.terraformation.backend.db.accelerator.tables.daos.ProjectOverallScoresDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectScoresDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVoteDecisionsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
@@ -77,6 +78,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectAcceleratorDetailsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ProjectOverallScoresRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectScoresRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVoteDecisionsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
@@ -532,6 +534,7 @@ abstract class DatabaseBackedTest {
   protected val plantingZonesDao: PlantingZonesDao by lazyDao()
   protected val projectAcceleratorDetailsDao: ProjectAcceleratorDetailsDao by lazyDao()
   protected val projectLandUseModelTypesDao: ProjectLandUseModelTypesDao by lazyDao()
+  protected val projectOverallScoresDao: ProjectOverallScoresDao by lazyDao()
   protected val projectReportSettingsDao: ProjectReportSettingsDao by lazyDao()
   protected val projectScoresDao: ProjectScoresDao by lazyDao()
   protected val projectsDao: ProjectsDao by lazyDao()
@@ -761,6 +764,29 @@ abstract class DatabaseBackedTest {
   ) {
     projectLandUseModelTypesDao.insert(
         ProjectLandUseModelTypesRow(landUseModelTypeId = landUseModelType, projectId = projectId))
+  }
+
+  protected fun insertProjectOverallScore(
+      projectId: ProjectId = inserted.projectId,
+      detailsUrl: URI? = null,
+      overallScore: Double? = null,
+      summary: String? = null,
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+  ) {
+    val row =
+        ProjectOverallScoresRow(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            modifiedBy = createdBy,
+            modifiedTime = createdTime,
+            detailsUrl = detailsUrl,
+            overallScore = overallScore,
+            projectId = projectId,
+            summary = summary,
+        )
+
+    projectOverallScoresDao.insert(row)
   }
 
   protected fun insertProjectScore(
