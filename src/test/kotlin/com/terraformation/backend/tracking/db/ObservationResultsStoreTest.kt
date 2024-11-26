@@ -286,7 +286,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           "Partial summaries via limit should contain the latest observations.")
 
       assertEquals(
-          summaries.takeLast(2),
+          summaries.drop(1),
           resultsStore.fetchSummariesForPlantingSite(
               plantingSiteId, maxCompletionTime = observationTimes[1]),
           "Partial summaries via completion time should omit the more recent observations.")
