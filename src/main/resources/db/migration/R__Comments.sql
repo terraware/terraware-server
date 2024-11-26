@@ -553,6 +553,8 @@ COMMENT ON COLUMN accelerator.project_accelerator_details.file_naming IS 'Identi
 
 COMMENT ON VIEW accelerator.project_deliverables IS 'Deliverable information for projects including submission status and due dates.';
 
+COMMENT ON TABLE accelerator.project_overall_scores IS 'Overall scores assigned to project by scorers.';
+
 COMMENT ON TABLE accelerator.project_scores IS 'Scores assigned to project by scorers.';
 COMMENT ON COLUMN accelerator.project_scores.score IS 'Integer score between -2 to 2. The score can be null to represent not yet scored. ';
 
