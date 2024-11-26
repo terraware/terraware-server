@@ -1,3 +1,4 @@
+6e61c1883ec Update database dependencies to v11 (#2633)
 a60cf480821 SW-6293 Fix seed withdrawals of weight-based accessions (#2635)
 ef5d26604c1 SW-6296 Fix error counting plots of empty observation (#2638)
 0ad28716e7c Revert "Stop using soon-to-be-deprecated Spring Security API (#2634)"
