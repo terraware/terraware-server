@@ -15,18 +15,24 @@ import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.RecordedPlantStatus
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
@@ -35,6 +41,7 @@ import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.onePixelPng
 import com.terraformation.backend.point
+import com.terraformation.backend.polygon
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
@@ -162,6 +169,104 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     insertOrganization()
     insertOrganizationUser(role = Role.Admin)
     plantingSiteId = insertPlantingSite(x = 0, width = 11, gridOrigin = point(1))
+  }
+
+  @Nested
+  inner class CreateAdHocPlotObservation {
+    @BeforeEach
+    fun setUp() {
+      insertUserGlobalRole(role = GlobalRole.SuperAdmin)
+    }
+
+    @Test
+    fun `creates the monitoring plot, ad hoc observation, observation plot, and completes the monitoring type observation`() {
+      insertFacility(type = FacilityType.Nursery)
+      val speciesId = insertSpecies()
+      insertWithdrawal()
+      insertDelivery()
+
+      val observedTime = Instant.ofEpochSecond(1)
+      clock.instant = Instant.ofEpochSecond(123)
+
+      val observedPlants =
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = Known,
+                  gpsCoordinates = point(1),
+                  speciesId = speciesId,
+                  statusId = RecordedPlantStatus.Live,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Unknown,
+                  gpsCoordinates = point(2),
+                  statusId = RecordedPlantStatus.Dead,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Other,
+                  gpsCoordinates = point(3),
+                  speciesName = "Who knows",
+                  statusId = RecordedPlantStatus.Existing,
+              ),
+          )
+
+      val conditions = setOf(ObservableCondition.AnimalDamage, ObservableCondition.FastGrowth)
+
+      val adHocPlotBoundary =
+          polygon(MONITORING_PLOT_SIZE)
+
+      val (observationId, plotId) = service.createAdHocPlotObservation(
+          adHocPlotBoundary,
+          conditions,
+          "Ad Hoc Plot",
+          "Notes about the observation",
+          ObservationType.Monitoring,
+          observedTime,
+          plantingSiteId,
+          observedPlants
+      )
+
+      val expectedConditions =
+          setOf(
+              ObservationPlotConditionsRow(observationId, plotId, ObservableCondition.AnimalDamage),
+              ObservationPlotConditionsRow(observationId, plotId, ObservableCondition.FastGrowth),
+          )
+
+      val expectedPlants =
+          recordedPlants
+              .map { it.copy(monitoringPlotId = plotId, observationId = observationId) }
+              .toSet()
+
+      // Verify that only the row for this plot in this observation was updated.
+      val expectedRows =
+          initialRows
+              .map { row ->
+                if (row.observationId == observationId && row.monitoringPlotId == plotId) {
+                  row.copy(
+                      completedBy = user.userId,
+                      completedTime = clock.instant,
+                      notes = "Notes",
+                      observedTime = observedTime,
+                      statusId = ObservationPlotStatus.Completed,
+                  )
+                } else {
+                  row
+                }
+              }
+              .toSet()
+
+      assertEquals(expectedConditions, observationPlotConditionsDao.findAll().toSet())
+      assertEquals(expectedPlants, recordedPlantsDao.findAll().map { it.copy(id = null) }.toSet())
+      assertEquals(expectedRows, observationPlotsDao.findAll().toSet())
+    }
+
+    @Test
+    fun `throws exception if no permission to manage observation`() {
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+
+      deleteUserGlobalRole(role = GlobalRole.SuperAdmin)
+
+      assertThrows<AccessDeniedException> { service.startObservation(observationId) }
+    }
   }
 
   @Nested

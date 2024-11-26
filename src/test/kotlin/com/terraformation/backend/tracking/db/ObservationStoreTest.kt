@@ -619,7 +619,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   plantingSiteId = plantingSiteId,
                   requestedSubzoneIds = setOf(subzoneId1, subzoneId2),
                   startDate = LocalDate.of(2020, 1, 1),
-                  state = ObservationState.Completed,
+                  state = ObservationState.Upcoming,
               ))
 
       val expected =
