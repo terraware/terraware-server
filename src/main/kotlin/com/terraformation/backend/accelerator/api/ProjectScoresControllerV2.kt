@@ -44,11 +44,7 @@ class ProjectScoresControllerV2(
   @ApiResponse200
   @ApiResponse404
   @PutMapping
-  @Operation(
-      summary = "Upserts score selections for a single project.",
-      description =
-          "Update the scores for the project phase. If the (project, phase, category) does not " +
-              "exist, a new entry is created. Setting a `score` to `null` removes the score.")
+  @Operation(summary = "Updates overall score for a single project.")
   fun upsertProjectScores(
       @PathVariable("projectId") projectId: ProjectId,
       @RequestBody @Valid payload: UpdateProjectOverallScoreRequestPayload,
