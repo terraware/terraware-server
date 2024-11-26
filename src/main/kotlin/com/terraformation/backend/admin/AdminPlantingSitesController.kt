@@ -15,6 +15,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -691,6 +692,8 @@ class AdminPlantingSitesController(
               NewObservationModel(
                   endDate = LocalDate.parse(endDate),
                   id = null,
+                  isAdHoc = false,
+                  observationType = ObservationType.Monitoring,
                   plantingSiteId = plantingSiteId,
                   requestedSubzoneIds = requestedSubzoneIds ?: emptySet(),
                   startDate = LocalDate.parse(startDate),
