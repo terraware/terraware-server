@@ -626,6 +626,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `keeps submitted project-level reports for deleted projects`() {
       val projectId = insertProject(name = "Test Project")
+      val orgLevelReportId = insertReport(year = 1990)
       val submittedReportId =
           insertReport(projectId = projectId, year = 1990, submittedBy = user.userId)
 
@@ -640,6 +641,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
           "Test Project",
           reportsRow?.projectName,
           "Should have kept project name on submitted report")
+      assertNotNull(
+          reportsDao.fetchOneById(orgLevelReportId), "Should not have deleted org-level report")
     }
 
     @Test
