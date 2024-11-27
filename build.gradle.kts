@@ -150,6 +150,11 @@ dependencies {
   developmentOnly("com.h2database:h2")
 }
 
+configurations.configureEach {
+  // Spring includes its own Commons Logging implementation which can conflict with the official one
+  exclude("commons-logging")
+}
+
 tasks.register("downloadDependencies") {
   fun ConfigurationContainer.resolveAll() =
       this.filter {
