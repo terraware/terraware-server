@@ -16,6 +16,18 @@
 
 <h2>Participants</h2>
 
+<th:block th:if="${isSuperAdmin}">
+    <h3>Update Deal Names</h3>
+
+    <p>
+        This is a one-time operation to set project deal names to participant name
+    </p>
+
+    <form method="POST" action="/admin/updateProjectDealNames">
+        <input type="submit" value="Update"/>
+    </form>
+</th:block>
+
 <table th:if="${!participants.isEmpty()}">
     <thead>
     <tr>
