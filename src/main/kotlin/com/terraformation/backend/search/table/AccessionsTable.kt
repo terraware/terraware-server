@@ -172,7 +172,7 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
     override val orderByField: Field<*>
       get() =
           DSL.case_(ACCESSIONS.STATE_ID)
-              .mapValues(AccessionState.entries.associateWith { "${it?.toActiveEnum()?.render()}" })
+              .mapValues(AccessionState.entries.associateWith { it?.toActiveEnum()?.render() })
 
     override fun raw(): SearchField? {
       return if (localize) {

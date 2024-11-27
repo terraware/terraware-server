@@ -628,7 +628,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
           ObservationResultsModel(
               completedTime = record[OBSERVATIONS.COMPLETED_TIME],
-              estimatedPlants = estimatedPlants?.toInt(),
+              estimatedPlants = estimatedPlants,
               mortalityRate = mortalityRate,
               observationId = record[OBSERVATIONS.ID.asNonNullable()],
               plantingCompleted = plantingCompleted,

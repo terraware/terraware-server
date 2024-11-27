@@ -53,18 +53,16 @@ class ImageUtils(private val fileStore: FileStore) {
    *   https://coobird.github.io/thumbnailator/javadoc/0.4.8/net/coobird/thumbnailator/util/exif/Orientation.html
    */
   fun rotate(image: BufferedImage, orientation: Int?): BufferedImage {
-    var rotated =
-        when (orientation) {
-          2 -> flipHorizontal(image)
-          3 -> rotateByDegree(image, 180.0)
-          4 -> flipVertical(image)
-          5 -> rotateByDegree(flipHorizontal(image), 270.0)
-          6 -> rotateByDegree(image, 90.0)
-          7 -> rotateByDegree(flipHorizontal(image), 90.0)
-          8 -> rotateByDegree(image, 270.0)
-          else -> image
-        }
-    return rotated
+    return when (orientation) {
+      2 -> flipHorizontal(image)
+      3 -> rotateByDegree(image, 180.0)
+      4 -> flipVertical(image)
+      5 -> rotateByDegree(flipHorizontal(image), 270.0)
+      6 -> rotateByDegree(image, 90.0)
+      7 -> rotateByDegree(flipHorizontal(image), 90.0)
+      8 -> rotateByDegree(image, 270.0)
+      else -> image
+    }
   }
 
   /**
