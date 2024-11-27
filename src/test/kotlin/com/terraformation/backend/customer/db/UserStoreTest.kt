@@ -25,6 +25,8 @@ import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
 import com.terraformation.backend.db.default_schema.tables.records.UserGlobalRolesRecord
 import com.terraformation.backend.db.default_schema.tables.records.UserPreferencesRecord
+import com.terraformation.backend.db.default_schema.tables.records.UsersRecord
+import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_GLOBAL_ROLES
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.dummyKeycloakInfo
@@ -94,7 +96,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   private val authId = "${UUID.randomUUID()}"
   private val userRepresentation =
       UserRepresentation(
-          attributes = mapOf("locale" to listOf("gx")),
+          attributes = mapOf("locale" to listOf("${Locales.GIBBERISH}")),
           email = "email",
           firstName = "firstName",
           id = authId,
@@ -213,10 +215,34 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchByEmail fetches user information from Keycloak if not found locally`() {
-    val actual = userStore.fetchByEmail(userRepresentation.email)
+  fun `fetchByEmail does case-insensitive search for email`() {
+    insertUser(email = userRepresentation.email)
+
+    val actual = userStore.fetchByEmail(userRepresentation.email.uppercase())
 
     assertEquals(userRepresentation.email, actual?.email)
+  }
+
+  @Test
+  fun `fetchByEmail creates user with information from Keycloak if not found locally`() {
+    val actual = userStore.fetchByEmail(userRepresentation.email.uppercase())
+
+    assertEquals(userRepresentation.email, actual?.email)
+
+    assertTableEquals(
+        listOf(
+            UsersRecord(
+                authId = userRepresentation.id,
+                createdTime = Instant.EPOCH,
+                email = userRepresentation.email,
+                emailNotificationsEnabled = false,
+                firstName = userRepresentation.firstName,
+                lastName = userRepresentation.lastName,
+                locale = Locales.GIBBERISH,
+                modifiedTime = Instant.EPOCH,
+                userTypeId = UserType.Individual,
+            )),
+        where = USERS.USER_TYPE_ID.ne(UserType.System))
   }
 
   @Test
@@ -235,7 +261,7 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchOrCreateByEmail returns existing user`() {
-    insertUser(email = userRepresentation.email)
+    insertUser(email = userRepresentation.email.uppercase())
 
     val actual = userStore.fetchOrCreateByEmail(userRepresentation.email)
 
@@ -244,10 +270,10 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchOrCreateByEmail creates new user with no authId if email not found`() {
-    val email = "nonexistent@example.org"
+    val email = "Nonexistent@example.org"
     val actual = userStore.fetchOrCreateByEmail(email)
 
-    assertEquals(email, actual.email)
+    assertEquals(email.lowercase(), actual.email)
     assertNull(actual.authId)
   }
 

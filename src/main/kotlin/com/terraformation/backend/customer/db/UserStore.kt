@@ -138,11 +138,17 @@ class UserStore(
    * Returns the details for the user with a given email address. Pulls the user's information from
    * Keycloak if they don't exist in our users table yet.
    *
+   * @param email Email address to search for. If the address has upper-case characters, they will
+   *   be folded to lower case.
    * @return null if no Keycloak user has the requested email address.
    * @throws KeycloakRequestFailedException Could not request user information from Keycloak.
    */
   fun fetchByEmail(email: String): IndividualUser? {
-    val existingUser = usersDao.fetchByEmail(email).firstOrNull()
+    // Keycloak folds email addresses to lower case, so we need to do the same or we'll end up
+    // with mismatched user data on the two sides.
+    val lowerCaseEmail = email.lowercase()
+
+    val existingUser = usersDao.fetchByEmail(lowerCaseEmail).firstOrNull()
 
     // Deleted users have invalid email addresses that should never match legitimate calls to this
     // method, but if a caller somehow passes in one of those values, we still don't want to treat
@@ -157,7 +163,7 @@ class UserStore(
         } else {
           val keycloakUsers =
               try {
-                keycloakAdminClient.searchByEmail(email, true)
+                keycloakAdminClient.searchByEmail(lowerCaseEmail, true)
               } catch (e: Exception) {
                 throw KeycloakRequestFailedException(
                     "Failed to search for user data in Keycloak", e)
@@ -274,7 +280,7 @@ class UserStore(
     val row =
         UsersRow(
             createdTime = clock.instant(),
-            email = email,
+            email = email.lowercase(),
             emailNotificationsEnabled = false,
             modifiedTime = clock.instant(),
             userTypeId = UserType.Individual)
