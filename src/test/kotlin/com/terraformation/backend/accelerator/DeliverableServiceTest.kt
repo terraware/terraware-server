@@ -35,13 +35,7 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
   private val service: DeliverableService by lazy {
     DeliverableService(
         ApplicationStore(
-            clock,
-            countriesDao,
-            CountryDetector(),
-            dslContext,
-            eventPublisher,
-            messages,
-            organizationsDao),
+            clock, countriesDao, CountryDetector(), dslContext, eventPublisher, messages),
         DeliverableStore(dslContext),
         eventPublisher,
         ModuleStore(dslContext),

@@ -67,13 +67,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
   private val messages = Messages()
   private val store: ApplicationStore by lazy {
     ApplicationStore(
-        clock,
-        countriesDao,
-        TestSingletons.countryDetector,
-        dslContext,
-        eventPublisher,
-        messages,
-        organizationsDao)
+        clock, countriesDao, TestSingletons.countryDetector, dslContext, eventPublisher, messages)
   }
 
   private lateinit var organizationId: OrganizationId

@@ -29,9 +29,7 @@ class PreScreenBoundarySubmissionFetcherTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val fetcher: PreScreenBoundarySubmissionFetcher by lazy {
     PreScreenBoundarySubmissionFetcher(
-        ApplicationStore(
-            clock, countriesDao, mockk(), dslContext, mockk(), mockk(), organizationsDao),
-        deliverableId)
+        ApplicationStore(clock, countriesDao, mockk(), dslContext, mockk(), mockk()), deliverableId)
   }
 
   private lateinit var deliverableId: DeliverableId

@@ -127,6 +127,8 @@ class ApplicationService(
     val region = countryCode?.let { countriesDao.fetchOneByCode(it) }?.regionId
     val projectLead = region?.let { defaultProjectLeadsDao.fetchOneByRegionId(it) }?.projectLead
 
+    val dealName = variableValues.dealName ?: application.internalName
+
     val boundaryAreaHectares = application.boundary?.calculateAreaHectares()
     val totalLandUseHectares = variableValues.landUseModelHectares.values.sumOf { it }
 
@@ -135,6 +137,7 @@ class ApplicationService(
         model.copy(
             applicationReforestableLand = boundaryAreaHectares ?: totalLandUseHectares,
             countryCode = countryCode,
+            dealName = dealName,
             fileNaming = application.internalName,
             landUseModelTypes = landUseModelTypes,
             numNativeSpecies = variableValues.numSpeciesToBePlanted,

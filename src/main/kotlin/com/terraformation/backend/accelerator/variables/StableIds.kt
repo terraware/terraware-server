@@ -31,6 +31,7 @@ object StableIds {
   val investmentThesis = StableId("437")
   val failureRisk = StableId("438")
   val whatNeedsToBeTrue = StableId("439")
+  val dealName = StableId("472")
 
   val landUseHectaresByLandUseModel =
       mapOf(

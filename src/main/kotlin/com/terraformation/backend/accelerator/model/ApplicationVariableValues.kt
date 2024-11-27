@@ -17,6 +17,7 @@ data class ApplicationVariableValues(
     val contactEmail: String? = null,
     val contactName: String? = null,
     val countryCode: String?,
+    val dealName: String? = null,
     val landUseModelHectares: Map<LandUseModelType, BigDecimal>,
     val numSpeciesToBePlanted: Int?,
     val projectType: PreScreenProjectType?,

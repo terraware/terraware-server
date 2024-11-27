@@ -273,6 +273,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
           ProjectAcceleratorVariableValuesModel(
               applicationReforestableLand = BigDecimal("100.0"),
               countryCode = "KE",
+              dealName = internalName,
               landUseModelTypes = setOf(LandUseModelType.Mangroves, LandUseModelType.NativeForest),
               numNativeSpecies = 50,
               projectId = projectId,
@@ -294,6 +295,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
           ProjectAcceleratorDetailsModel(
               applicationReforestableLand = BigDecimal("100.0"),
               countryCode = "KE",
+              dealName = internalName,
               fileNaming = internalName,
               landUseModelTypes = setOf(LandUseModelType.Mangroves, LandUseModelType.NativeForest),
               numNativeSpecies = 50,
@@ -363,6 +365,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
           ProjectAcceleratorVariableValuesModel(
               applicationReforestableLand = BigDecimal("101"),
               countryCode = "KE",
+              dealName = internalName,
               landUseModelTypes = setOf(LandUseModelType.Mangroves, LandUseModelType.NativeForest),
               numNativeSpecies = 50,
               projectId = projectId,
@@ -384,6 +387,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
           ProjectAcceleratorDetailsModel(
               applicationReforestableLand = BigDecimal("101"),
               countryCode = "KE",
+              dealName = internalName,
               fileNaming = internalName,
               landUseModelTypes = setOf(LandUseModelType.Mangroves, LandUseModelType.NativeForest),
               numNativeSpecies = 50,

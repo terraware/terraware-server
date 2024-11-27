@@ -31,7 +31,6 @@ import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
-import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.gis.CountryDetector
@@ -56,7 +55,6 @@ class ApplicationStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val messages: Messages,
-    private val organizationsDao: OrganizationsDao,
 ) {
   private val defaultMinimumHectares = 15000
   private val defaultMaximumHectares = 100000
