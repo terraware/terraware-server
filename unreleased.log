@@ -1,3 +1,4 @@
+9071d527961 SW-6287 Fold email addresses to lower case (#2640)
 91c06d44e71 SW-5880 Added support for returning historical summary data (#2636)
 66028e1039b SW-6253 Implemented project overall scores table and endpoints (#2639)
 6e61c1883ec Update database dependencies to v11 (#2633)
