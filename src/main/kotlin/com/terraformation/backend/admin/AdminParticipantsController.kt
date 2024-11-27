@@ -67,7 +67,6 @@ class AdminParticipantsController(
     val organizations = organizationsDao.fetchById(*organizationIds.toTypedArray())
     val organizationsById = organizations.associateBy { it.id!! }
 
-    model.addAttribute("isSuperAdmin", currentUser().globalRoles.contains(GlobalRole.SuperAdmin))
     model.addAttribute("canCreateParticipant", currentUser().canCreateParticipant())
     model.addAttribute("organizationsById", organizationsById)
     model.addAttribute("participants", participants)
@@ -255,10 +254,10 @@ class AdminParticipantsController(
     }
 
     val applications = applicationStore.fetchAll()
-    applications.forEach {
-      projectAcceleratorDetailsService.update(it.projectId) { existing ->
+    applications.forEach { application ->
+      projectAcceleratorDetailsService.update(application.projectId) {
         // Update only projects that did not have a deal name already.
-        existing.copy(dealName = existing.dealName ?: it.internalName)
+        it.copy(dealName = it.dealName ?: application.internalName)
       }
     }
 
