@@ -1,18 +1,23 @@
 package com.terraformation.backend.tracking
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
+import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
+import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
@@ -48,10 +53,12 @@ import java.io.InputStream
 import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
+import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.locationtech.jts.geom.Point
+import org.locationtech.jts.geom.Polygon
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
@@ -68,6 +75,27 @@ class ObservationService(
     private val parentStore: ParentStore,
 ) {
   private val log = perClassLogger()
+
+  fun completeAdHocPlotMonitoringObservation(
+      boundary: Polygon,
+      conditions: Set<ObservableCondition>,
+      name: String,
+      notes: String?,
+      observedTime: Instant,
+      plantingSiteId: PlantingSiteId,
+      plants: Collection<RecordedPlantsRow>,
+  ): Pair<MonitoringPlotId, ObservationId> {
+    return dslContext.transactionResult { _ ->
+      val (monitoringPlotId, observationId) =
+          createAdHocPlotObservation(
+              boundary, name, ObservationType.Monitoring, observedTime, plantingSiteId)
+
+      observationStore.completePlot(
+          observationId, monitoringPlotId, conditions, notes, observedTime, plants)
+
+      monitoringPlotId to observationId
+    }
+  }
 
   fun startObservation(observationId: ObservationId) {
     requirePermissions { manageObservation(observationId) }
@@ -483,6 +511,57 @@ class ObservationService(
         observationStore.addPlotsToObservation(
             observationId, newPermanentPlotsInClustersWithoutPlotsInUnplantedSubzones, true)
       }
+    }
+  }
+
+  /** Create monitoring plot, observation, and a claimed observation plot for the current user */
+  private fun createAdHocPlotObservation(
+      boundary: Polygon,
+      name: String,
+      observationType: ObservationType,
+      observedTime: Instant,
+      plantingSiteId: PlantingSiteId,
+  ): Pair<MonitoringPlotId, ObservationId> {
+    val userId = currentUser().userId
+    val now = clock.instant()
+    val observedDate = LocalDate.ofInstant(observedTime, ZoneOffset.UTC)
+
+    return dslContext.transactionResult { _ ->
+      val observationId =
+          observationStore.createObservation(
+              NewObservationModel(
+                  startDate = observedDate,
+                  endDate = observedDate,
+                  id = null,
+                  isAdHoc = true,
+                  observationType = observationType,
+                  plantingSiteId = plantingSiteId,
+                  state = ObservationState.InProgress,
+              ))
+
+      val monitoringPlotsRow =
+          MonitoringPlotsRow(
+              boundary = boundary,
+              createdBy = userId,
+              createdTime = now,
+              // Do we even need full name?
+              fullName = name,
+              isAvailable = false,
+              modifiedBy = userId,
+              modifiedTime = now,
+              name = name,
+              plantingSiteId = plantingSiteId,
+              sizeMeters = MONITORING_PLOT_SIZE_INT,
+          )
+
+      monitoringPlotsDao.insert(monitoringPlotsRow)
+
+      val monitoringPlotId = monitoringPlotsRow.id!!
+
+      observationStore.addPlotsToObservation(observationId, listOf(monitoringPlotId), false)
+      observationStore.claimPlot(observationId, monitoringPlotId)
+
+      monitoringPlotId to observationId
     }
   }
 

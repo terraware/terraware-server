@@ -434,7 +434,7 @@ class ObservationStore(
               observationTypeId = newModel.observationType,
               plantingSiteId = newModel.plantingSiteId,
               startDate = newModel.startDate,
-              stateId = ObservationState.Upcoming,
+              stateId = newModel.state,
           )
 
       observationsDao.insert(row)
@@ -677,7 +677,7 @@ class ObservationStore(
           dslContext
               .select(
                   MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID.asNonNullable(),
-                  MONITORING_PLOTS.plantingSubzones.PLANTING_SITE_ID.asNonNullable())
+                  MONITORING_PLOTS.PLANTING_SITE_ID.asNonNullable())
               .from(MONITORING_PLOTS)
               .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
               .fetchOne()!!
@@ -1286,7 +1286,7 @@ class ObservationStore(
   private fun updateSpeciesTotals(
       observationId: ObservationId,
       plantingSiteId: PlantingSiteId,
-      plantingZoneId: PlantingZoneId,
+      plantingZoneId: PlantingZoneId?,
       monitoringPlotId: MonitoringPlotId?,
       isPermanent: Boolean,
       plantCountsBySpecies: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>
@@ -1301,13 +1301,17 @@ class ObservationStore(
             plantCountsBySpecies,
         )
       }
-      updateSpeciesTotalsTable(
-          OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID,
-          observationId,
-          plantingZoneId,
-          isPermanent,
-          plantCountsBySpecies,
-      )
+
+      if (plantingZoneId != null) {
+        updateSpeciesTotalsTable(
+            OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID,
+            observationId,
+            plantingZoneId,
+            isPermanent,
+            plantCountsBySpecies,
+        )
+      }
+
       updateSpeciesTotalsTable(
           OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID,
           observationId,
