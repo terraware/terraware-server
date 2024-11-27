@@ -149,6 +149,25 @@ class ObservationsController(
     )
   }
 
+  @ApiResponseSimpleSuccess
+  @Operation(summary = "Stores the results of a completed observation of a plot.")
+  @PostMapping("/ad-hoc/monitoring")
+  fun completeAdHocPlotMonitoringObservation(
+      @RequestBody payload: CreateAdHocPlotMonitoringObservationRequestPayload,
+  ): CreateAdHocPlotObservationResponsePayload {
+    val (monitoringPlotId, observationId) =
+        observationService.completeAdHocPlotMonitoringObservation(
+            payload.base.boundary,
+            payload.conditions,
+            payload.base.name,
+            payload.base.notes,
+            payload.base.observedTime,
+            payload.base.plantingSiteId,
+            payload.plants.map { it.toRow() })
+
+    return CreateAdHocPlotObservationResponsePayload(monitoringPlotId, observationId)
+  }
+
   @GetMapping("/results")
   @Operation(summary = "Gets a list of the results of observations.")
   fun listObservationResults(
@@ -429,6 +448,27 @@ class ObservationsController(
     return SimpleSuccessResponsePayload()
   }
 }
+
+data class AdHocPlotObservationRequestPayload(
+    val boundary: Polygon,
+    val name: String,
+    val notes: String?,
+    @Schema(description = "Date and time the observation was performed in the field.")
+    val observedTime: Instant,
+    val observationType: ObservationType,
+    val plantingSiteId: PlantingSiteId,
+)
+
+data class CreateAdHocPlotMonitoringObservationRequestPayload(
+    val base: AdHocPlotObservationRequestPayload,
+    val conditions: Set<ObservableCondition>,
+    val plants: List<RecordedPlantPayload>,
+)
+
+data class CreateAdHocPlotObservationResponsePayload(
+    val monitoringPlotId: MonitoringPlotId,
+    val observationId: ObservationId,
+) : SuccessResponsePayload
 
 data class ObservationPayload(
     @Schema(description = "Date this observation is scheduled to end.") //
