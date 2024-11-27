@@ -64,6 +64,7 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var confirmedRestorableLandVariableId: VariableId
   private lateinit var countryVariableId: VariableId
   private lateinit var dealDescriptionVariableId: VariableId
+  private lateinit var dealNameVariableId: VariableId
   private lateinit var failureRiskVariableId: VariableId
   private lateinit var investmentThesisVariableId: VariableId
   private lateinit var landUseModelTypesVariableId: VariableId
@@ -112,6 +113,9 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     dealDescriptionVariableId =
         insertTextVariable(
             insertVariable(type = VariableType.Text, stableId = StableIds.dealDescription.value))
+    dealNameVariableId =
+        insertTextVariable(
+            insertVariable(type = VariableType.Text, stableId = StableIds.dealName.value))
     failureRiskVariableId =
         insertTextVariable(
             insertVariable(type = VariableType.Text, stableId = StableIds.failureRisk.value))

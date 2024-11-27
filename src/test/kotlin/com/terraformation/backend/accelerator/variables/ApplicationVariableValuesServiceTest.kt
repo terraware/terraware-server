@@ -64,6 +64,7 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
   private lateinit var contactEmailVariableId: VariableId
   private lateinit var contactNameVariableId: VariableId
+  private lateinit var dealNameVariableId: VariableId
   private lateinit var numSpeciesVariableId: VariableId
   private lateinit var projectTypeVariableId: VariableId
   private lateinit var totalExpansionPotentialVariableId: VariableId
@@ -98,6 +99,10 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     brazilOptionId = insertSelectOption(inserted.variableId, "Brazil")
     chileOptionId = insertSelectOption(inserted.variableId, "Chile")
     insertSelectOption(inserted.variableId, "Ghana")
+
+    dealNameVariableId =
+        insertTextVariable(
+            insertVariable(type = VariableType.Text, stableId = StableIds.dealName.value))
 
     numSpeciesVariableId =
         insertNumberVariable(
@@ -149,7 +154,7 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns null or empty values if variables not set`() {
       assertEquals(
-          ApplicationVariableValues(null, null, null, emptyMap(), null, null, null, null),
+          ApplicationVariableValues(null, null, null, null, emptyMap(), null, null, null, null),
           service.fetchValues(inserted.projectId))
     }
 

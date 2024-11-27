@@ -38,6 +38,7 @@ class AcceleratorProjectVariableValuesService(
             StableIds.carbonCapacity,
             StableIds.country,
             StableIds.dealDescription,
+            StableIds.dealName,
             StableIds.failureRisk,
             StableIds.investmentThesis,
             StableIds.landUseModelType,
@@ -97,6 +98,7 @@ class AcceleratorProjectVariableValuesService(
           countryRow
         }
     val dealDescription = getTextValue(valuesByStableId, StableIds.dealDescription)
+    val dealName = getTextValue(valuesByStableId, StableIds.dealName)
     val failureRisk = getTextValue(valuesByStableId, StableIds.failureRisk)
     val investmentThesis = getTextValue(valuesByStableId, StableIds.investmentThesis)
     val landUseModelTypes =
@@ -126,6 +128,7 @@ class AcceleratorProjectVariableValuesService(
         confirmedReforestableLand = confirmedReforestableLand,
         countryCode = countryRow?.code,
         dealDescription = dealDescription,
+        dealName = dealName,
         failureRisk = failureRisk,
         investmentThesis = investmentThesis,
         landUseModelTypes = landUseModelTypes,
@@ -224,6 +227,16 @@ class AcceleratorProjectVariableValuesService(
               getVariableByStableId(StableIds.dealDescription) as TextVariable,
               valuesByStableId[StableIds.dealDescription] as? ExistingTextValue,
               model.dealDescription,
+          )
+          ?.let { operations.add(it) }
+    }
+
+    if (existing.dealName != model.dealName) {
+      updateTextValueOperation(
+              projectId = projectId,
+              getVariableByStableId(StableIds.dealName) as TextVariable,
+              valuesByStableId[StableIds.dealName] as? ExistingTextValue,
+              model.dealName,
           )
           ?.let { operations.add(it) }
     }

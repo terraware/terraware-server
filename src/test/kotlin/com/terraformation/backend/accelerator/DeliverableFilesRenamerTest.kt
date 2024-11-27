@@ -54,7 +54,6 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
             dslContext,
             eventPublisher,
             Messages(),
-            organizationsDao,
         ),
         config,
         DeliverableStore(dslContext),

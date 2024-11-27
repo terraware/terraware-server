@@ -67,6 +67,7 @@ data class ProjectAcceleratorDetailsPayload(
     val confirmedReforestableLand: BigDecimal?,
     val countryCode: String?,
     val dealDescription: String?,
+    val dealName: String?,
     val dealStage: DealStage?,
     val dropboxFolderPath: String?,
     val failureRisk: String?,
@@ -97,6 +98,7 @@ data class ProjectAcceleratorDetailsPayload(
       confirmedReforestableLand = model.confirmedReforestableLand,
       countryCode = model.countryCode,
       dealDescription = model.dealDescription,
+      dealName = model.dealName,
       dealStage = model.dealStage,
       dropboxFolderPath = model.dropboxFolderPath,
       failureRisk = model.failureRisk,
@@ -131,6 +133,7 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
     val confirmedReforestableLand: BigDecimal?,
     val countryCode: String?,
     val dealDescription: String?,
+    val dealName: String?,
     val dealStage: DealStage?,
     @Schema(
         description =
@@ -166,6 +169,7 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
           confirmedReforestableLand = confirmedReforestableLand,
           countryCode = countryCode,
           dealDescription = dealDescription,
+          dealName = dealName ?: model.dealName,
           dealStage = dealStage,
           dropboxFolderPath = dropboxFolderPath,
           failureRisk = failureRisk,

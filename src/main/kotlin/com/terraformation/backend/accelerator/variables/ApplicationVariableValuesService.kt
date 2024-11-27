@@ -36,6 +36,7 @@ class ApplicationVariableValuesService(
             StableIds.contactEmail,
             StableIds.contactName,
             StableIds.country,
+            StableIds.dealName,
             StableIds.numSpecies,
             StableIds.projectType,
             StableIds.totalExpansionPotential,
@@ -105,6 +106,7 @@ class ApplicationVariableValuesService(
 
     val contactEmail = getTextValue(valuesByStableId, StableIds.contactEmail)
     val contactName = getTextValue(valuesByStableId, StableIds.contactName)
+    val dealName = getTextValue(valuesByStableId, StableIds.dealName)
     val totalExpansionPotential =
         getNumberValue(valuesByStableId, StableIds.totalExpansionPotential)
     val website = getTextValue(valuesByStableId, StableIds.website)
@@ -113,6 +115,7 @@ class ApplicationVariableValuesService(
         contactEmail = contactEmail,
         contactName = contactName,
         countryCode = countryCode,
+        dealName = dealName,
         landUseModelHectares = landUseHectares,
         numSpeciesToBePlanted = numSpeciesToBePlanted,
         projectType = projectType,
