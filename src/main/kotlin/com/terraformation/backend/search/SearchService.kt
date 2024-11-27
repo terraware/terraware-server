@@ -48,7 +48,8 @@ class SearchService(private val dslContext: DSLContext) {
     // the search code. (Try it if you're bored; you'll see it quickly spirals out of control!)
     // The tiny amount of extra type safety we'd gain isn't worth the amount of boilerplate it'd
     // require, especially since the primary key type isn't known at compile time anyway.
-    @Suppress("UNCHECKED_CAST") return primaryKey.`in`(subquery as Select<Nothing>)
+    @Suppress("UNCHECKED_CAST")
+    return primaryKey.`in`(subquery as Select<Nothing>)
   }
 
   /**

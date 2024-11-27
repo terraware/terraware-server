@@ -189,7 +189,8 @@ class KeycloakAdminClientImpl(
         principal: Authentication?,
         request: HttpServletRequest?
     ): T {
-      @Suppress("UNCHECKED_CAST") return clients[clientRegistrationId] as T
+      @Suppress("UNCHECKED_CAST")
+      return clients[clientRegistrationId] as T
     }
 
     override fun saveAuthorizedClient(
