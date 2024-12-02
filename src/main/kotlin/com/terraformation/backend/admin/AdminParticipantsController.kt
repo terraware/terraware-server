@@ -1,10 +1,11 @@
 package com.terraformation.backend.admin
 
+import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.accelerator.db.AcceleratorOrganizationStore
+import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.CohortStore
 import com.terraformation.backend.accelerator.db.ParticipantHasProjectsException
 import com.terraformation.backend.accelerator.db.ParticipantStore
-import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.model.ParticipantModel
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
@@ -41,11 +42,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @Validated
 class AdminParticipantsController(
     private val acceleratorOrganizationStore: AcceleratorOrganizationStore,
+    private val applicationStore: ApplicationStore,
     private val cohortStore: CohortStore,
     private val organizationsDao: OrganizationsDao,
     private val participantStore: ParticipantStore,
     private val projectAcceleratorDetailsDao: ProjectAcceleratorDetailsDao,
-    private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore,
+    private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
     private val projectsDao: ProjectsDao,
     private val projectStore: ProjectStore,
 ) {
@@ -167,7 +169,7 @@ class AdminParticipantsController(
   ): String {
     try {
       projectStore.updateParticipant(projectId, participantId)
-      projectAcceleratorDetailsStore.update(projectId) {
+      projectAcceleratorDetailsService.update(projectId) {
         it.copy(
             dropboxFolderPath = dropboxFolderPath,
             fileNaming = fileNaming,
@@ -211,7 +213,7 @@ class AdminParticipantsController(
       redirectAttributes: RedirectAttributes
   ): String {
     try {
-      projectAcceleratorDetailsStore.update(projectId) {
+      projectAcceleratorDetailsService.update(projectId) {
         it.copy(
             dropboxFolderPath = dropboxFolderPath,
             fileNaming = fileNaming,
@@ -227,6 +229,41 @@ class AdminParticipantsController(
     return redirectToParticipant(participantId)
   }
 
+  @PostMapping("/updateProjectDealNames")
+  fun updateProjectDealNames(): String {
+    val participants = participantStore.findAll()
+    participants.forEach { participant ->
+      val projectIds = participant.projectIds
+      if (projectIds.size == 1) {
+        projectAcceleratorDetailsService.update(projectIds.single()) {
+          it.copy(dealName = participant.name)
+        }
+      } else {
+        projectIds.forEachIndexed { index, projectId ->
+          if (index == 0) {
+            projectAcceleratorDetailsService.update(projectId) {
+              it.copy(dealName = participant.name)
+            }
+          } else {
+            projectAcceleratorDetailsService.update(projectId) {
+              it.copy(dealName = "${participant.name} ${index + 1}")
+            }
+          }
+        }
+      }
+    }
+
+    val applications = applicationStore.fetchAll()
+    applications.forEach { application ->
+      projectAcceleratorDetailsService.update(application.projectId) {
+        // Update only projects that did not have a deal name already.
+        it.copy(dealName = it.dealName ?: application.internalName)
+      }
+    }
+
+    return redirectToAdminHome()
+  }
+
   @InitBinder
   fun initBinder(binder: WebDataBinder) {
     binder.registerCustomEditor(String::class.java, StringTrimmerEditor(true))
@@ -235,6 +272,7 @@ class AdminParticipantsController(
   }
 
   // Convenience methods to redirect to the GET endpoint for each kind of thing.
+  private fun redirectToAdminHome() = "redirect:/admin/"
 
   private fun redirectToListParticipants() = "redirect:/admin/participants"
 
