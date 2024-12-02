@@ -1,3 +1,4 @@
+2d1b4b15a20 SW-6317 List accelerator project details endpoint (#2657)
 4988986a5e7 SW-6313 Allow TF Expert users to read global roles (#2655)
 c36c8cab2c2 Stop using soon-to-be-deprecated Spring Security API, try 2 (#2656)
 8524568231c Added admin UI to backfill deal names (#2647)
