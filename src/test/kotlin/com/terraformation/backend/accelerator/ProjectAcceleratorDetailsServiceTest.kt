@@ -45,8 +45,11 @@ class ProjectAcceleratorDetailsServiceTest : DatabaseTest(), RunsAsUser {
   fun setup() {
     every { updateFunc(existingDetails) } returns updatedDetails
 
-    every { projectAcceleratorDetailsStore.fetchOneById(projectId) } returns existingDetails
-    every { projectAcceleratorDetailsStore.update(projectId, any()) } returns Unit
+    every { projectAcceleratorDetailsStore.fetchOneById(projectId, existingValues) } returns
+        existingDetails
+    every { projectAcceleratorDetailsStore.fetchOneById(projectId, updatedValues) } returns
+        updatedDetails
+    every { projectAcceleratorDetailsStore.update(projectId, any(), any()) } returns Unit
 
     every { acceleratorProjectVariableValuesService.fetchValues(projectId) } returns existingValues
     every { acceleratorProjectVariableValuesService.writeValues(projectId, any()) } returns Unit
@@ -56,7 +59,9 @@ class ProjectAcceleratorDetailsServiceTest : DatabaseTest(), RunsAsUser {
   fun `updates both accelerator details and project variable values`() {
     service.update(projectId, updateFunc)
 
-    verify(exactly = 1) { projectAcceleratorDetailsStore.update(projectId, updateFunc) }
+    verify(exactly = 1) {
+      projectAcceleratorDetailsStore.update(projectId, existingValues, updateFunc)
+    }
     verify(exactly = 1) {
       acceleratorProjectVariableValuesService.writeValues(projectId, updatedValues)
     }

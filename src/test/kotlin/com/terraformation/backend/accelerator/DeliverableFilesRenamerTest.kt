@@ -6,8 +6,8 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
-import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
+import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -44,6 +44,7 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
   private val config: TerrawareServerConfig = mockk()
   private val eventPublisher = TestEventPublisher()
   private val googleDriveWriter: GoogleDriveWriter = mockk()
+  private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService = mockk()
 
   private val renamer: DeliverableFilesRenamer by lazy {
     DeliverableFilesRenamer(
@@ -59,7 +60,7 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
         DeliverableStore(dslContext),
         dslContext,
         googleDriveWriter,
-        ProjectAcceleratorDetailsStore(clock, dslContext, eventPublisher),
+        projectAcceleratorDetailsService,
         submissionDocumentsDao,
         SystemUser(usersDao))
   }
@@ -104,7 +105,8 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
   inner class ApplicationInternalNameUpdated {
     @Test
     fun `Updates Google folder name if drive url exists, but project file naming does not`() {
-      insertProjectAcceleratorDetails(projectId = projectId, googleFolderUrl = oldFolderUrl)
+      every { projectAcceleratorDetailsService.fetchOneById(projectId) } returns
+          ProjectAcceleratorDetailsModel(projectId = projectId, googleFolderUrl = oldFolderUrl)
 
       renamer.on(ApplicationInternalNameUpdatedEvent(applicationId))
 
@@ -116,6 +118,9 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `Creates Google folder name if drive url does not exist`() {
+      every { projectAcceleratorDetailsService.fetchOneById(projectId) } returns
+          ProjectAcceleratorDetailsModel(projectId = projectId, googleFolderUrl = null)
+
       renamer.on(ApplicationInternalNameUpdatedEvent(applicationId))
 
       verify(exactly = 1) {
@@ -212,7 +217,8 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
       val existingCorrectDocument = submissionDocumentsDao.fetchOneById(correctDocument)!!
       val existingMaxSuffixDocument = submissionDocumentsDao.fetchOneById(maxSuffixDocument)!!
 
-      insertProjectAcceleratorDetails(projectId = projectId, googleFolderUrl = oldFolderUrl)
+      every { projectAcceleratorDetailsService.fetchOneById(projectId) } returns
+          ProjectAcceleratorDetailsModel(projectId = projectId, googleFolderUrl = oldFolderUrl)
 
       renamer.on(ApplicationInternalNameUpdatedEvent(applicationId))
 
@@ -299,13 +305,18 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
     fun `Does not update Google folder name if application is not in Pre-screen`(
         status: ApplicationStatus
     ) {
+      every { projectAcceleratorDetailsService.fetchOneById(projectId) } returns
+          ProjectAcceleratorDetailsModel(projectId = projectId, googleFolderUrl = oldFolderUrl)
+
       val existing = applicationsDao.fetchOneById(applicationId)!!
       applicationsDao.update(existing.copy(applicationStatusId = status))
 
       renamer.on(ApplicationInternalNameUpdatedEvent(applicationId))
 
       if (status == ApplicationStatus.NotSubmitted || status == ApplicationStatus.FailedPreScreen) {
-        googleDriveWriter.renameFile("fileId", "XXX_Organization$INTERNAL_FOLDER_SUFFIX")
+        verify(exactly = 1) {
+          googleDriveWriter.renameFile(oldFolderId, "XXX_Organization$INTERNAL_FOLDER_SUFFIX")
+        }
       } else {
         verify(exactly = 0) { googleDriveWriter.renameFile(any(), any()) }
       }

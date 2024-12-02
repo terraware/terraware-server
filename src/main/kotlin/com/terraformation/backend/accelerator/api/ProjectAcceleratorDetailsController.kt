@@ -4,11 +4,15 @@ import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.ApiResponse400
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
+import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -25,19 +29,29 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
-@RequestMapping("/api/v1/accelerator/projects/{projectId}")
+@RequestMapping("/api/v1/accelerator/projects")
 @RestController
 class ProjectAcceleratorDetailsController(
     private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
 ) {
   @ApiResponse200
-  @ApiResponse404
+  @ApiResponse400
   @GetMapping
   @Operation(
+      summary = "List accelerator projects with accelerator-related details.",
+  )
+  fun listProjectAcceleratorDetails(): ListProjectAcceleratorDetailsResponsePayload {
+    val models = projectAcceleratorDetailsService.fetchParticipantProjectDetails()
+    return ListProjectAcceleratorDetailsResponsePayload(
+        models.map { ProjectAcceleratorDetailsPayload(it) })
+  }
+
+  @ApiResponse200
+  @ApiResponse404
+  @GetMapping("/{projectId}")
+  @Operation(
       summary = "Gets the accelerator-related details for a project.",
-      description =
-          "Does not include information such as project name that's available via the " +
-              "non-accelerator projects API.")
+  )
   fun getProjectAcceleratorDetails(
       @PathVariable projectId: ProjectId
   ): GetProjectAcceleratorDetailsResponsePayload {
@@ -49,7 +63,7 @@ class ProjectAcceleratorDetailsController(
   @ApiResponseSimpleSuccess
   @ApiResponse404
   @Operation(summary = "Updates the accelerator-related details for a project.")
-  @PutMapping
+  @PutMapping("/{projectId}")
   fun updateProjectAcceleratorDetails(
       @PathVariable projectId: ProjectId,
       @RequestBody payload: UpdateProjectAcceleratorDetailsRequestPayload
@@ -64,6 +78,9 @@ data class ProjectAcceleratorDetailsPayload(
     val annualCarbon: BigDecimal?,
     val applicationReforestableLand: BigDecimal?,
     val carbonCapacity: BigDecimal?,
+    val cohortId: CohortId?,
+    val cohortName: String?,
+    val cohortPhase: CohortPhase?,
     val confirmedReforestableLand: BigDecimal?,
     val countryCode: String?,
     val dealDescription: String?,
@@ -80,6 +97,8 @@ data class ProjectAcceleratorDetailsPayload(
     val minCarbonAccumulation: BigDecimal?,
     val numCommunities: Int?,
     val numNativeSpecies: Int?,
+    val participantId: ParticipantId?,
+    val participantName: String?,
     val perHectareBudget: BigDecimal?,
     val pipeline: Pipeline?,
     val projectId: ProjectId,
@@ -95,6 +114,9 @@ data class ProjectAcceleratorDetailsPayload(
       annualCarbon = model.annualCarbon,
       applicationReforestableLand = model.applicationReforestableLand,
       carbonCapacity = model.carbonCapacity,
+      cohortId = model.cohortId,
+      cohortName = model.cohortName,
+      cohortPhase = model.cohortPhase,
       confirmedReforestableLand = model.confirmedReforestableLand,
       countryCode = model.countryCode,
       dealDescription = model.dealDescription,
@@ -111,6 +133,8 @@ data class ProjectAcceleratorDetailsPayload(
       minCarbonAccumulation = model.minCarbonAccumulation,
       numCommunities = model.numCommunities,
       numNativeSpecies = model.numNativeSpecies,
+      participantId = model.participantId,
+      participantName = model.participantName,
       perHectareBudget = model.perHectareBudget,
       pipeline = model.pipeline,
       projectId = model.projectId,
@@ -121,6 +145,10 @@ data class ProjectAcceleratorDetailsPayload(
       whatNeedsToBeTrue = model.whatNeedsToBeTrue,
   )
 }
+
+data class ListProjectAcceleratorDetailsResponsePayload(
+    val details: List<ProjectAcceleratorDetailsPayload>,
+) : SuccessResponsePayload
 
 data class GetProjectAcceleratorDetailsResponsePayload(
     val details: ProjectAcceleratorDetailsPayload,
