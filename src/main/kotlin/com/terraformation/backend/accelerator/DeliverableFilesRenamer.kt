@@ -2,7 +2,6 @@ package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
-import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
@@ -31,7 +30,7 @@ class DeliverableFilesRenamer(
     private val deliverableStore: DeliverableStore,
     private val dslContext: DSLContext,
     private val googleDriveWriter: GoogleDriveWriter,
-    private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore,
+    private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
     private val submissionDocumentsDao: SubmissionDocumentsDao,
     private val systemUser: SystemUser,
 ) {
@@ -50,7 +49,7 @@ class DeliverableFilesRenamer(
   }
 
   private fun createOrUpdateGoogleDriveFolder(projectId: ProjectId, fileNaming: String) {
-    val projectDetails = projectAcceleratorDetailsStore.fetchOneById(projectId)
+    val projectDetails = projectAcceleratorDetailsService.fetchOneById(projectId)
     val folderUrl =
         if (projectDetails.googleFolderUrl != null) {
           try {

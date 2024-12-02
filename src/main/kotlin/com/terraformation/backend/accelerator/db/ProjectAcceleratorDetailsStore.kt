@@ -6,18 +6,18 @@ import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableVa
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.tables.references.COHORTS
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
-import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.records.ProjectLandUseModelTypesRecord
-import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_LAND_USE_MODEL_TYPES
 import jakarta.inject.Named
 import java.net.URI
 import java.time.InstantSource
+import org.jooq.Condition
 import org.jooq.DSLContext
-import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
@@ -30,12 +30,6 @@ class ProjectAcceleratorDetailsStore(
    * Returns the accelerator details for a project. If the project doesn't have any details yet,
    * returns a model with just the non-accelerator-specific fields populated.
    */
-  fun fetchOneById(projectId: ProjectId): ProjectAcceleratorDetailsModel {
-    requirePermissions { readProjectAcceleratorDetails(projectId) }
-
-    return fetchOneByIdOrNull(projectId) ?: throw ProjectNotFoundException(projectId)
-  }
-
   fun fetchOneById(
       projectId: ProjectId,
       variableValuesModel: ProjectAcceleratorVariableValuesModel
@@ -46,14 +40,44 @@ class ProjectAcceleratorDetailsStore(
         ?: throw ProjectNotFoundException(projectId)
   }
 
+  /**
+   * Returns the accelerator details for every project. If the project doesn't have any details yet,
+   * returns a model with just the non-accelerator-specific fields populated.
+   */
+  fun fetch(
+      condition: Condition,
+      projectVariableValues: (ProjectId) -> ProjectAcceleratorVariableValuesModel,
+  ): List<ProjectAcceleratorDetailsModel> {
+    return dslContext
+        .select(
+            PROJECT_ACCELERATOR_DETAILS.asterisk(),
+            PROJECTS.ID,
+            COHORTS.ID,
+            COHORTS.NAME,
+            COHORTS.PHASE_ID,
+            PARTICIPANTS.ID,
+            PARTICIPANTS.NAME,
+        )
+        .from(PROJECTS)
+        .leftJoin(PROJECT_ACCELERATOR_DETAILS)
+        .on(PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
+        .leftJoin(PARTICIPANTS)
+        .on(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID))
+        .leftJoin(COHORTS)
+        .on(COHORTS.ID.eq(PARTICIPANTS.COHORT_ID))
+        .where(condition)
+        .filter { currentUser().canReadProjectAcceleratorDetails(it[PROJECTS.ID]!!) }
+        .map { ProjectAcceleratorDetailsModel.of(it, projectVariableValues(it[PROJECTS.ID]!!)) }
+  }
+
   fun update(
       projectId: ProjectId,
+      variableValues: ProjectAcceleratorVariableValuesModel,
       applyFunc: (ProjectAcceleratorDetailsModel) -> ProjectAcceleratorDetailsModel
   ) {
     requirePermissions { updateProjectAcceleratorDetails(projectId) }
 
-    val existing =
-        fetchOneByIdOrNull(projectId) ?: ProjectAcceleratorDetailsModel(projectId = projectId)
+    val existing = fetchOneById(projectId, variableValues)
     val updated = applyFunc(existing)
 
     val dropboxFolderPath: String?
@@ -148,42 +172,10 @@ class ProjectAcceleratorDetailsStore(
     }
   }
 
-  private fun fetchOneByIdOrNull(projectId: ProjectId): ProjectAcceleratorDetailsModel? {
-    val landUseModelTypesMultiset =
-        DSL.multiset(
-                DSL.select(PROJECT_LAND_USE_MODEL_TYPES.LAND_USE_MODEL_TYPE_ID.asNonNullable())
-                    .from(PROJECT_LAND_USE_MODEL_TYPES)
-                    .where(PROJECT_LAND_USE_MODEL_TYPES.PROJECT_ID.eq(PROJECTS.ID)),
-            )
-            .convertFrom { result -> result.map { it.value1() }.toSet() }
-
-    return dslContext
-        .select(
-            COUNTRIES.REGION_ID,
-            landUseModelTypesMultiset,
-            PROJECT_ACCELERATOR_DETAILS.asterisk(),
-            PROJECTS.COUNTRY_CODE,
-            PROJECTS.ID,
-        )
-        .from(PROJECTS)
-        .leftJoin(PROJECT_ACCELERATOR_DETAILS)
-        .on(PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
-        .leftJoin(COUNTRIES)
-        .on(PROJECTS.COUNTRY_CODE.eq(COUNTRIES.CODE))
-        .where(PROJECTS.ID.eq(projectId))
-        .fetchOne { ProjectAcceleratorDetailsModel.of(it, landUseModelTypesMultiset) }
-  }
-
   private fun fetchOneByIdOrNull(
       projectId: ProjectId,
-      variableValues: ProjectAcceleratorVariableValuesModel
+      variableValues: ProjectAcceleratorVariableValuesModel,
   ): ProjectAcceleratorDetailsModel? {
-    return dslContext
-        .select(
-            PROJECT_ACCELERATOR_DETAILS.asterisk(),
-        )
-        .from(PROJECT_ACCELERATOR_DETAILS)
-        .where(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID.eq(projectId))
-        .fetchOne { ProjectAcceleratorDetailsModel.of(it, variableValues) }
+    return fetch(PROJECTS.ID.eq(projectId)) { variableValues }.firstOrNull()
   }
 }
