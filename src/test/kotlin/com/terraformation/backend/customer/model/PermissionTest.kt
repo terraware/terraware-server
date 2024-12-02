@@ -2132,6 +2132,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *otherUserIds.values.toTypedArray(),
         readUser = true,
+        readUserInternalInterests = true,
     )
 
     permissions.expect(
@@ -2154,7 +2155,7 @@ internal class PermissionTest : DatabaseTest() {
         readCohort = true,
         readCohortParticipants = true,
         readCohorts = true,
-        readGlobalRoles = false,
+        readGlobalRoles = true,
         readModuleEventParticipants = true,
         readInternalTags = true,
         readParticipant = true,

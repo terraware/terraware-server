@@ -422,7 +422,7 @@ data class IndividualUser(
 
   override fun canReadFacility(facilityId: FacilityId) = isMember(facilityId)
 
-  override fun canReadGlobalRoles() = isAcceleratorAdmin()
+  override fun canReadGlobalRoles() = isTFExpertOrHigher()
 
   override fun canReadInternalOnlyVariables(): Boolean = isReadOnlyOrHigher()
 
@@ -528,7 +528,7 @@ data class IndividualUser(
 
   override fun canReadUser(userId: UserId) = isReadOnlyOrHigher()
 
-  override fun canReadUserInternalInterests(userId: UserId) = isAcceleratorAdmin()
+  override fun canReadUserInternalInterests(userId: UserId) = isTFExpertOrHigher()
 
   override fun canReadViabilityTest(viabilityTestId: ViabilityTestId) =
       isMember(parentStore.getFacilityId(viabilityTestId))
