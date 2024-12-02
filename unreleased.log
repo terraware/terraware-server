@@ -1,3 +1,7 @@
+ca07c158989 Update dependency pyjwt to v2.10.1 (#2650)
+96c2eca989f Update plugin dev.monosoul.jooq-docker to v6.1.12 (#2651)
+cb9b87b390d Update dependency software.amazon.awssdk:bom to v2.29.23 (#2652)
+664b4118119 Update JamesIves/github-pages-deploy-action action to v4.7.1 (#2653)
 9455de7540b SW-6305 Added deal name to project accelerator details as a variable (#2646)
 9199724105f Remove Commons Logging from classpath (#2644)
 9071d527961 SW-6287 Fold email addresses to lower case (#2640)
