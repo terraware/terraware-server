@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.security.authorization.AuthenticatedAuthorizationManager
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.invoke
@@ -18,6 +19,7 @@ import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInit
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext
 import org.springframework.security.web.authentication.HttpStatusEntryPoint
 import org.springframework.security.web.header.writers.StaticHeadersWriter
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher
@@ -61,15 +63,27 @@ class SecurityConfig(
       http: HttpSecurity,
       clientRegistrationRepository: ClientRegistrationRepository
   ): SecurityFilterChain {
+    // https://github.com/spring-projects/spring-security/issues/16162
+    val fullyAuthenticated =
+        AuthenticatedAuthorizationManager.fullyAuthenticated<RequestAuthorizationContext>()
+
     http {
       cors {}
       csrf { disable() }
-      authorizeRequests {
+      authorizeHttpRequests {
         // Allow unauthenticated users to fetch localized strings.
         authorize("/api/v1/i18n/**", permitAll)
 
         // Allow unauthenticated users to check their app versions for compatibility.
         authorize("/api/v1/versions", permitAll)
+
+        // Allow unauthenticated users to fetch OpenAPI docs.
+        authorize("/v3/**", permitAll)
+        authorize("/swagger-ui/**", permitAll)
+        authorize("/swagger-ui.html", permitAll)
+
+        // Allow unauthenticated users (such as load balancers) to access health checks.
+        authorize("/actuator/health", permitAll)
 
         authorize("/api/**", fullyAuthenticated)
         authorize("/admin/**", fullyAuthenticated)
