@@ -35,6 +35,7 @@ data class PlantingSiteModel<
     val countryCode: String? = null,
     val description: String? = null,
     val exclusion: MultiPolygon? = null,
+    val exteriorPlots: List<MonitoringPlotModel> = emptyList(),
     val gridOrigin: Point? = null,
     /**
      * If this model is associated with a particular history entry, its ID. This property is not
@@ -135,10 +136,13 @@ data class PlantingSiteModel<
         plantingZones.size == other.plantingZones.size &&
         projectId == other.projectId &&
         areaHa.equalsIgnoreScale(other.areaHa) &&
-        plantingZones.zip(other.plantingZones).all { it.first.equals(it.second, tolerance) } &&
         boundary.equalsOrBothNull(other.boundary) &&
         exclusion.equalsOrBothNull(other.exclusion) &&
-        gridOrigin.equalsOrBothNull(other.gridOrigin)
+        gridOrigin.equalsOrBothNull(other.gridOrigin) &&
+        exteriorPlots.size == other.exteriorPlots.size &&
+        exteriorPlots.zip(other.exteriorPlots).all { it.first.equals(it.second, tolerance) } &&
+        plantingZones.size == other.plantingZones.size &&
+        plantingZones.zip(other.plantingZones).all { it.first.equals(it.second, tolerance) }
   }
 
   fun toNew(): NewPlantingSiteModel =
@@ -169,7 +173,8 @@ data class PlantingSiteModel<
     fun of(
         record: Record,
         plantingSeasonsMultiset: Field<List<ExistingPlantingSeasonModel>>?,
-        plantingZonesMultiset: Field<List<ExistingPlantingZoneModel>>? = null
+        plantingZonesMultiset: Field<List<ExistingPlantingZoneModel>>? = null,
+        exteriorPlotsMultiset: Field<List<MonitoringPlotModel>>? = null,
     ) =
         ExistingPlantingSiteModel(
             areaHa = record[PLANTING_SITES.AREA_HA],
@@ -177,6 +182,7 @@ data class PlantingSiteModel<
             countryCode = record[PLANTING_SITES.COUNTRY_CODE],
             description = record[PLANTING_SITES.DESCRIPTION],
             exclusion = record[PLANTING_SITES.EXCLUSION] as? MultiPolygon,
+            exteriorPlots = exteriorPlotsMultiset?.let { record[it] } ?: emptyList(),
             gridOrigin = record[PLANTING_SITES.GRID_ORIGIN] as? Point,
             id = record[PLANTING_SITES.ID]!!,
             name = record[PLANTING_SITES.NAME]!!,

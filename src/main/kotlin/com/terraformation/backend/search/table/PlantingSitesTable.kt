@@ -33,7 +33,13 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           deliveries.asMultiValueSublist(
               "deliveries", PLANTING_SITE_SUMMARIES.ID.eq(DELIVERIES.PLANTING_SITE_ID)),
           monitoringPlots.asMultiValueSublist(
-              "monitoringPlots", PLANTING_SITE_SUMMARIES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)),
+              "exteriorPlots",
+              PLANTING_SITE_SUMMARIES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)
+                  .and(MONITORING_PLOTS.PLANTING_SUBZONE_ID.isNull)),
+          monitoringPlots.asMultiValueSublist(
+              "monitoringPlots",
+              PLANTING_SITE_SUMMARIES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)
+                  .and(MONITORING_PLOTS.PLANTING_SUBZONE_ID.isNotNull)),
           observations.asMultiValueSublist(
               "observations", PLANTING_SITE_SUMMARIES.ID.eq(OBSERVATIONS.PLANTING_SITE_ID)),
           organizations.asSingleValueSublist(

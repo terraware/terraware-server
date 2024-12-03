@@ -158,13 +158,21 @@ class PlantingSiteStore(
         } else {
           null
         }
+    val exteriorPlotsField =
+        if (depth == PlantingSiteDepth.Plot) {
+          monitoringPlotsMultiset(
+              PLANTING_SITES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)
+                  .and(MONITORING_PLOTS.PLANTING_SUBZONE_ID.isNull))
+        } else {
+          null
+        }
 
     return dslContext
-        .select(PLANTING_SITES.asterisk(), plantingSeasonsMultiset, zonesField)
+        .select(PLANTING_SITES.asterisk(), plantingSeasonsMultiset, zonesField, exteriorPlotsField)
         .from(PLANTING_SITES)
         .where(condition)
         .orderBy(PLANTING_SITES.ID)
-        .fetch { PlantingSiteModel.of(it, plantingSeasonsMultiset, zonesField) }
+        .fetch { PlantingSiteModel.of(it, plantingSeasonsMultiset, zonesField, exteriorPlotsField) }
   }
 
   fun countMonitoringPlots(
@@ -1633,7 +1641,7 @@ class PlantingSiteStore(
             }
           }
 
-  private val monitoringPlotsMultiset =
+  private fun monitoringPlotsMultiset(condition: Condition) =
       DSL.multiset(
               DSL.select(
                       MONITORING_PLOTS.ID,
@@ -1645,7 +1653,7 @@ class PlantingSiteStore(
                       MONITORING_PLOTS.SIZE_METERS,
                       monitoringPlotBoundaryField)
                   .from(MONITORING_PLOTS)
-                  .where(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
+                  .where(condition)
                   .orderBy(MONITORING_PLOTS.FULL_NAME))
           .convertFrom { result ->
             result.map { record ->
@@ -1665,7 +1673,10 @@ class PlantingSiteStore(
   private fun plantingSubzonesMultiset(
       depth: PlantingSiteDepth
   ): Field<List<ExistingPlantingSubzoneModel>> {
-    val plotsField = if (depth == PlantingSiteDepth.Plot) monitoringPlotsMultiset else null
+    val plotsField =
+        if (depth == PlantingSiteDepth.Plot)
+            monitoringPlotsMultiset(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
+        else null
 
     return DSL.multiset(
             DSL.select(
