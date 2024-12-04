@@ -54,6 +54,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.NotificationsRo
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
@@ -509,6 +510,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             ExistingObservationModel(
                 endDate = endDate,
                 id = inserted.observationId,
+                isAdHoc = false,
+                observationType = ObservationType.Monitoring,
                 plantingSiteId = inserted.plantingSiteId,
                 startDate = startDate,
                 state = ObservationState.InProgress)))
@@ -540,6 +543,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             ExistingObservationModel(
                 endDate = endDate,
                 id = inserted.observationId,
+                isAdHoc = false,
+                observationType = ObservationType.Monitoring,
                 plantingSiteId = inserted.plantingSiteId,
                 startDate = startDate,
                 state = ObservationState.Upcoming)))

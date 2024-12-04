@@ -18,6 +18,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
@@ -928,6 +929,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         NewObservationModel(
             plantingSiteId = plantingSiteId,
             id = null,
+            isAdHoc = false,
+            observationType = ObservationType.Monitoring,
             startDate = startDate,
             endDate = endDate,
             state = ObservationState.Upcoming,
@@ -1740,6 +1743,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           ExistingObservationModel(
               endDate = LocalDate.of(2023, 1, 31),
               id = observationId,
+              isAdHoc = false,
+              observationType = ObservationType.Monitoring,
               plantingSiteId = inserted.plantingSiteId,
               startDate = LocalDate.of(2023, 1, 1),
               state = ObservationState.InProgress)

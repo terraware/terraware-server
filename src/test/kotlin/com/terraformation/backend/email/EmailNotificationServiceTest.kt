@@ -64,6 +64,7 @@ import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.device.db.DeviceStore
@@ -277,6 +278,8 @@ internal class EmailNotificationServiceTest {
       ExistingObservationModel(
           endDate = LocalDate.of(2023, 9, 30),
           id = ObservationId(1),
+          isAdHoc = false,
+          observationType = ObservationType.Monitoring,
           plantingSiteId = plantingSite.id,
           startDate = LocalDate.of(2023, 9, 1),
           state = ObservationState.Upcoming)
@@ -564,6 +567,8 @@ internal class EmailNotificationServiceTest {
             ExistingObservationModel(
                 endDate = LocalDate.of(2023, 9, 30),
                 id = ObservationId(1),
+                isAdHoc = false,
+                observationType = ObservationType.Monitoring,
                 plantingSiteId = plantingSite.id,
                 startDate = LocalDate.of(2023, 9, 1),
                 state = ObservationState.InProgress))
@@ -626,6 +631,8 @@ internal class EmailNotificationServiceTest {
             ExistingObservationModel(
                 endDate = LocalDate.of(2023, 10, 31),
                 id = ObservationId(1),
+                isAdHoc = false,
+                observationType = ObservationType.Monitoring,
                 plantingSiteId = plantingSite.id,
                 startDate = LocalDate.of(2023, 10, 1),
                 state = ObservationState.Upcoming))

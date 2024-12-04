@@ -430,6 +430,8 @@ class ObservationStore(
           ObservationsRow(
               createdTime = clock.instant(),
               endDate = newModel.endDate,
+              isAdHoc = newModel.isAdHoc,
+              observationTypeId = newModel.observationType,
               plantingSiteId = newModel.plantingSiteId,
               startDate = newModel.startDate,
               stateId = ObservationState.Upcoming,
