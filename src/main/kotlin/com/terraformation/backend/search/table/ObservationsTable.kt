@@ -1,6 +1,7 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
@@ -32,6 +33,9 @@ class ObservationsTable(private val tables: SearchTables) : SearchTable() {
           timestampField("createdTime", OBSERVATIONS.CREATED_TIME),
           dateField("endDate", OBSERVATIONS.END_DATE),
           idWrapperField("id", OBSERVATIONS.ID) { ObservationId(it) },
+          idWrapperField("plantingSiteHistoryId", OBSERVATIONS.PLANTING_SITE_HISTORY_ID) {
+            PlantingSiteHistoryId(it)
+          },
           dateField("startDate", OBSERVATIONS.START_DATE),
       )
 

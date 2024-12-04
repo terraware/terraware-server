@@ -60,6 +60,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
             countryCode = "CI",
             exclusion = exclusionGeometry,
             projectId = projectId)
+    val plantingSiteHistoryId = inserted.plantingSiteHistoryId
 
     val plantingSeasonId1 =
         insertPlantingSeason(
@@ -242,6 +243,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                 "createdTime" to "1970-01-01T00:00:01Z",
                                 "endDate" to "2023-01-30",
                                 "id" to "$observationId1",
+                                "plantingSiteHistoryId" to "$plantingSiteHistoryId",
                                 "startDate" to "2023-01-01",
                                 "observationPlots" to
                                     listOf(
@@ -268,6 +270,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                 "createdTime" to "1970-01-01T00:00:00Z",
                                 "endDate" to "2024-02-28",
                                 "id" to "$observationId2",
+                                "plantingSiteHistoryId" to "$plantingSiteHistoryId",
                                 "startDate" to "2024-02-02",
                                 "observationPlots" to
                                     listOf(
@@ -463,6 +466,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "observations.observationPlots.isPermanent",
                 "observations.observationPlots.monitoringPlot.id",
                 "observations.observationPlots.notes",
+                "observations.plantingSiteHistoryId",
                 "observations.startDate",
                 "plantingSeasons.endDate",
                 "plantingSeasons.id",
