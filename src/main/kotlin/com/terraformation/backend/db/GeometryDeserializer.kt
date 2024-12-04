@@ -57,7 +57,8 @@ class GeometryDeserializer : JsonDeserializer<Geometry>() {
       val geom = readGeometry(jp, jp.readValueAsTree(), expectedType)
 
       if (subclass.isInstance(geom)) {
-        @Suppress("UNCHECKED_CAST") return geom as T
+        @Suppress("UNCHECKED_CAST")
+        return geom as T
       } else {
         throw JsonParseException(
             jp,

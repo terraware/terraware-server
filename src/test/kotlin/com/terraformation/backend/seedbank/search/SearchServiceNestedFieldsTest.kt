@@ -793,7 +793,8 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
     // fields to their non-nested equivalents.
 
     fun Map<String, Any>.getListValue(name: String): List<Map<String, Any>>? {
-      @Suppress("UNCHECKED_CAST") return get(name) as List<Map<String, Any>>?
+      @Suppress("UNCHECKED_CAST")
+      return get(name) as List<Map<String, Any>>?
     }
 
     fun MutableMap<String, Any>.putIfNotNull(key: String, value: Any?) {
