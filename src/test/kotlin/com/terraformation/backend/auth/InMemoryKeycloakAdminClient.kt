@@ -36,7 +36,7 @@ class InMemoryKeycloakAdminClient : KeycloakAdminClient {
       return Response.status(Response.Status.CONFLICT).entity("Dupe!").build()
     }
 
-    representation.id = representation.id?.toString() ?: UUID.randomUUID().toString()
+    representation.id = representation.id ?: UUID.randomUUID().toString()
     users.add(representation)
 
     return Response.status(Response.Status.CREATED).build()

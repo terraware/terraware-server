@@ -161,7 +161,7 @@ internal class ImageUtilsTest {
       fail<String>("Should have thrown exception")
     } catch (e: UnsupportedMediaTypeException) {
       // We just care that the message says the detected content type, not about its exact wording
-      if ("text/html" !in "${e.message}") {
+      if (e.message?.contains("text/html") != true) {
         assertEquals("Expected exception message to include \"text/html\"", e.message)
       }
     }
