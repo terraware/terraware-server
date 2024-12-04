@@ -1,3 +1,4 @@
+d21282ff0ce Upgrade to ktfmt 0.53 (#2648)
 2e224d05e7b SW-6295 Fix deleting projects with submitted reports (#2645)
 857772d06f8 SW-6312 Use ASCII apostrophe in Côte d'Ivoire (#2654)
 2d1b4b15a20 SW-6317 List accelerator project details endpoint (#2657)

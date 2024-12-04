@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Wed Dec 04 21:30 GMT 2024</p>
+                                <p>Generated on Wed Dec 04 23:41 GMT 2024</p>
                             </div>
                         </div>
                     </div>
@@ -308,15 +308,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of text stored in a text variable field.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/variable_section_values.html">variable_section_values</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">12</td>
-                                        <td class="detail" align="right">8</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Fragments of the contents of document sections. Each fragment is either a block of text or a usage of a variable; they are assembled in order to render the contents of the section.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/variable_manifests.html">variable_manifests</a></td>
                                         <td class="detail" align="right">5</td>
                                         <td class="detail" align="right">2</td>
@@ -324,6 +315,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>A collection of the definitions of the variables for a document template. This is how we do versioning of variable definitions. Each revision of the variable definitions is represented as a new manifest.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/variable_section_values.html">variable_section_values</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">12</td>
+                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Fragments of the contents of document sections. Each fragment is either a block of text or a usage of a variable; they are assembled in order to render the contents of the section.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/variable_select_option_values.html">variable_select_option_values</a></td>
@@ -344,15 +344,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Linking table that defines which variables appear in which manifests and in what order.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/variable_table_styles.html">variable_table_styles</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) How a table should be rendered visually in the document.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/variable_table_columns.html">variable_table_columns</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">5</td>
@@ -360,6 +351,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>The order of the columns in a table. Each column must be a variable whose parent is the table.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/variable_table_styles.html">variable_table_styles</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) How a table should be rendered visually in the document.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/variable_selects.html">variable_selects</a></td>
@@ -371,15 +371,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Information about select variables that is not relevant for other variable types. This table only has information about the variable as a whole; the options are in <code>variable_select_options</code>.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/variable_value_table_rows.html">variable_value_table_rows</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Linking table that defines which variable values are in which rows of a table.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/variable_select_options.html">variable_select_options</a></td>
                                         <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">4</td>
@@ -387,6 +378,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Available options for select variables.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/variable_value_table_rows.html">variable_value_table_rows</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Linking table that defines which variable values are in which rows of a table.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/document_templates.html">document_templates</a></td>
