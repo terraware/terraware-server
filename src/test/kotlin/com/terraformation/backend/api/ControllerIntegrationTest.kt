@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers
+import org.springframework.test.json.JsonCompareMode
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.ResultActionsDsl
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -68,8 +69,10 @@ abstract class ControllerIntegrationTest :
       json: String,
       strict: Boolean = false
   ): ResultActionsDsl {
+    val compareMode = if (strict) JsonCompareMode.STRICT else JsonCompareMode.LENIENT
+
     return andExpect {
-      content { json(json, strict) }
+      content { json(json, compareMode) }
       status { isOk() }
     }
   }
