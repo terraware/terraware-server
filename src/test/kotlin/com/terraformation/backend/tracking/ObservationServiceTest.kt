@@ -603,6 +603,33 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `sets planting site history ID`() {
+      val boundary = rectangle(width = 4 * MONITORING_PLOT_SIZE, height = MONITORING_PLOT_SIZE)
+
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertWithdrawal()
+      insertDelivery()
+
+      insertPlantingZone(boundary = boundary, numPermanentClusters = 1, numTemporaryPlots = 1)
+      insertPlantingSubzone(boundary = boundary)
+      insertPlanting()
+
+      val observationId = insertObservation(state = ObservationState.Upcoming)
+
+      val updatedSiteHistoryId = insertPlantingSiteHistory()
+      insertPlantingZoneHistory()
+      insertPlantingSubzoneHistory()
+
+      service.startObservation(observationId)
+
+      assertEquals(
+          updatedSiteHistoryId,
+          observationsDao.fetchOneById(observationId)?.plantingSiteHistoryId,
+          "Planting site history ID")
+    }
+
+    @Test
     fun `throws exception if observation already started`() {
       insertPlantingZone()
       insertPlantingSubzone()
@@ -1058,7 +1085,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `reschedules an In-Progress or Overdue observation if there are no observed plots`(
         stateName: String
     ) {
-      insertPlantingSite()
+      insertPlantingSite(x = 0)
       insertPlantingZone(numPermanentClusters = 1, numTemporaryPlots = 1)
       insertPlantingSubzone()
       insertMonitoringPlot()
@@ -1740,6 +1767,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           ExistingObservationModel(
               endDate = LocalDate.of(2023, 1, 31),
               id = observationId,
+              plantingSiteHistoryId = inserted.plantingSiteHistoryId,
               plantingSiteId = inserted.plantingSiteId,
               startDate = LocalDate.of(2023, 1, 1),
               state = ObservationState.InProgress)

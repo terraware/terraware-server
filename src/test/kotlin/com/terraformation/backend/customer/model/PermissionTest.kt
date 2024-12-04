@@ -58,6 +58,7 @@ import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -350,7 +351,9 @@ internal class PermissionTest : DatabaseTest() {
     observationIds.forEach { observationId ->
       putDatabaseId(
           observationId,
-          insertObservation(plantingSiteId = getDatabaseId(PlantingSiteId(observationId.value))))
+          insertObservation(
+              plantingSiteId = getDatabaseId(PlantingSiteId(observationId.value)),
+              state = ObservationState.Upcoming))
     }
 
     cohortIds.forEach { cohortId -> putDatabaseId(cohortId, insertCohort(createdBy = userId)) }

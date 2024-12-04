@@ -106,6 +106,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchObservationsByPlantingSite {
     @Test
     fun `returns observations in date order`() {
+      val plantingSiteHistoryId = inserted.plantingSiteHistoryId
       val startDate1 = LocalDate.of(2021, 4, 1)
       val startDate2 = LocalDate.of(2022, 3, 1)
       val endDate1 = LocalDate.of(2021, 4, 30)
@@ -116,7 +117,11 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           insertObservation(
               endDate = endDate2, startDate = startDate2, state = ObservationState.Upcoming)
 
-      val observationId2 = insertObservation(endDate = endDate1, startDate = startDate1)
+      val observationId2 =
+          insertObservation(
+              endDate = endDate1,
+              plantingSiteHistoryId = plantingSiteHistoryId,
+              startDate = startDate1)
       insertPlantingZone()
       val subzoneId = insertPlantingSubzone()
       insertMonitoringPlot()
@@ -132,6 +137,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               ExistingObservationModel(
                   endDate = endDate1,
                   id = observationId2,
+                  plantingSiteHistoryId = plantingSiteHistoryId,
                   plantingSiteId = plantingSiteId,
                   requestedSubzoneIds = setOf(subzoneId),
                   startDate = startDate1,
@@ -724,18 +730,6 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `updates state from Upcoming to InProgress if user has manage permission`() {
-      val observationId = insertObservation(state = ObservationState.Upcoming)
-      val initial = store.fetchObservationById(observationId)
-
-      store.updateObservationState(observationId, ObservationState.InProgress)
-
-      assertEquals(
-          initial.copy(state = ObservationState.InProgress),
-          store.fetchObservationById(observationId))
-    }
-
-    @Test
     fun `throws exception if no permission to update to Completed`() {
       val observationId = insertObservation()
 
@@ -748,12 +742,10 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception if no permission to update to InProgress`() {
+    fun `throws exception if setting state to InProgress`() {
       val observationId = insertObservation(state = ObservationState.Upcoming)
 
-      every { user.canManageObservation(observationId) } returns false
-
-      assertThrows<AccessDeniedException> {
+      assertThrows<IllegalArgumentException> {
         store.updateObservationState(observationId, ObservationState.InProgress)
       }
     }
