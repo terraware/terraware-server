@@ -1,3 +1,4 @@
+636018de16a Upgrade to Spring Boot 3.4.0 (#2658)
 e5ff0acbd28 Upgrade to Kotlin 2.1 (#2649)
 d21282ff0ce Upgrade to ktfmt 0.53 (#2648)
 2e224d05e7b SW-6295 Fix deleting projects with submitted reports (#2645)
