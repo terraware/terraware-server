@@ -6,7 +6,6 @@ import com.terraformation.backend.accelerator.db.CohortStore
 import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
 import com.terraformation.backend.accelerator.model.ParticipantModel
-import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
@@ -18,6 +17,7 @@ import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import io.swagger.v3.oas.annotations.Operation
@@ -55,12 +55,8 @@ class ParticipantsController(
                 cohortId = payload.cohortId,
                 name = payload.name,
                 projectIds = payload.projectIds?.toSet() ?: emptySet()))
-    val details =
-        projectAcceleratorDetailsService.fetchParticipantProjectDetails().associateBy {
-          it.projectId
-        }
 
-    return GetParticipantResponsePayload(makeParticipantPayload(model, details))
+    return GetParticipantResponsePayload(makeParticipantPayload(model))
   }
 
   @ApiResponse200
@@ -78,14 +74,10 @@ class ParticipantsController(
   @ApiResponse404
   @GetMapping
   @Operation(summary = "List participants and their assigned projects.")
-  fun listParticipant(): ListParticipantResponsePayload {
+  fun listParticipants(): ListParticipantsResponsePayload {
     val models = participantStore.findAll()
-    val details =
-        projectAcceleratorDetailsService.fetchParticipantProjectDetails().associateBy {
-          it.projectId
-        }
 
-    return ListParticipantResponsePayload(models.map { makeParticipantPayload(it, details) })
+    return ListParticipantsResponsePayload(models.map { makeParticipantPayload(it) })
   }
 
   @ApiResponse200
@@ -94,12 +86,8 @@ class ParticipantsController(
   @Operation(summary = "Gets information about a participant and its assigned projects.")
   fun getParticipant(@PathVariable participantId: ParticipantId): GetParticipantResponsePayload {
     val model = participantStore.fetchOneById(participantId)
-    val details =
-        projectAcceleratorDetailsService.fetchParticipantProjectDetails().associateBy {
-          it.projectId
-        }
 
-    return GetParticipantResponsePayload(makeParticipantPayload(model, details))
+    return GetParticipantResponsePayload(makeParticipantPayload(model))
   }
 
   @ApiResponse200
@@ -115,10 +103,7 @@ class ParticipantsController(
     return SimpleSuccessResponsePayload()
   }
 
-  private fun makeParticipantPayload(
-      model: ExistingParticipantModel,
-      projectDetails: Map<ProjectId, ProjectAcceleratorDetailsModel>,
-  ): ParticipantPayload {
+  private fun makeParticipantPayload(model: ExistingParticipantModel): ParticipantPayload {
     // The number of projects per participant should never exceed low single digits and will usually
     // be 0 or 1, so fetching them one at a time shouldn't be a bottleneck. If we ever have hundreds
     // of projects per participant, we can add a custom query to fetch them all at once.
@@ -131,6 +116,10 @@ class ParticipantsController(
             .map { organizationStore.fetchOneById(it) }
             .associateBy { it.id }
 
+    val projectDetails =
+        projectAcceleratorDetailsService
+            .fetchDetailsByCondition(PARTICIPANTS.ID.eq(model.id))
+            .associateBy { detail -> detail.projectId }
     val projectPayloads =
         projects.map { project ->
           val organization = organizationsById[project.organizationId]!!
@@ -187,7 +176,7 @@ data class CreateParticipantRequestPayload(
     val projectIds: List<ProjectId>?,
 )
 
-data class ListParticipantResponsePayload(
+data class ListParticipantsResponsePayload(
     val participants: List<ParticipantPayload>,
 ) : SuccessResponsePayload
 
