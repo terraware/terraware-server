@@ -154,6 +154,49 @@ class DocumentUpgradeCalculatorTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `populates default values for new section variables`() {
+    // A manifest is created for the document template with a section
+    val firstManifestId = insertVariableManifest()
+    val firstSectionVariableId =
+        insertVariableManifestEntry(
+            insertSectionVariable(
+                insertVariable(name = "Title Section", type = VariableType.Section)))
+
+    // A project document is created for the manifest
+    insertProject()
+    val documentId = insertDocument(variableManifestId = firstManifestId)
+
+    // Some project values are added to the document section
+    insertSectionValue(
+        firstSectionVariableId, listPosition = 0, textValue = "This is the title section.")
+
+    // A new manifest for the document template is uploaded, and a new section has been added
+    val secondManifestId = insertVariableManifest()
+    insertVariableManifestEntry(variableId = firstSectionVariableId)
+
+    val secondSectionVariableId =
+        insertSectionVariable(
+            insertVariable(name = "Subtitle Section", type = VariableType.Section))
+    insertDefaultSectionValue(
+        textValue = "This new section has default text", variableId = secondSectionVariableId)
+    insertVariableManifestEntry(variableId = secondSectionVariableId)
+
+    // The user upgrades their project document to the latest version of the document template's
+    // variable manifest. The new "subtitle section" should be added and a default value added.
+    val actual = calculateOperations(secondManifestId, documentId)
+    val expected =
+        listOf(
+            AppendValueOperation(
+                NewSectionValue(
+                    BaseVariableValueProperties(
+                        null, inserted.projectId, 0, secondSectionVariableId, null),
+                    SectionValueText("This new section has default text"),
+                )))
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
   fun `populates new table rows with values from old columns`() {
     // Original table has one obsolete column that won't appear in the new table version, and one
     // outdated column that will appear, but with different settings (a minimum value).
