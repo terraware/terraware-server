@@ -32,6 +32,7 @@ import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.importer.CsvImportFailedException
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -104,9 +105,9 @@ class DeliverablesController(
         deliverableStore.fetchDeliverableSubmissions(
             organizationId, participantId, projectId, moduleId = moduleId)
     val details =
-        projectAcceleratorDetailsService.fetchParticipantProjectDetails().associateBy {
-          it.projectId
-        }
+        projectAcceleratorDetailsService
+            .fetchDetailsByCondition(PROJECTS.ID.`in`(models.map { it.projectId }))
+            .associateBy { it.projectId }
 
     return ListDeliverablesResponsePayload(
         models.map { ListDeliverablesElement(it, details[it.projectId]) })
@@ -127,8 +128,8 @@ class DeliverablesController(
             .firstOrNull() ?: throw DeliverableNotFoundException(deliverableId)
     val projectDealName =
         projectAcceleratorDetailsService
-            .fetchParticipantProjectDetails()
-            .firstOrNull { it.projectId == model.projectId }
+            .fetchDetailsByCondition(PROJECTS.ID.eq(model.projectId))
+            .firstOrNull()
             ?.dealName
     return GetDeliverableResponsePayload(DeliverablePayload(model, projectDealName))
   }
