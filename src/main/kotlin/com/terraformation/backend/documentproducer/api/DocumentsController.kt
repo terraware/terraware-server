@@ -1,5 +1,6 @@
 package com.terraformation.backend.documentproducer.api
 
+import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse409
@@ -14,6 +15,7 @@ import com.terraformation.backend.db.docprod.DocumentStatus
 import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableManifestId
 import com.terraformation.backend.db.docprod.VariableValueId
+import com.terraformation.backend.db.docprod.tables.daos.DocumentTemplatesDao
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentSavedVersionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.DocumentsRow
 import com.terraformation.backend.documentproducer.DocumentService
@@ -43,7 +45,9 @@ import org.springframework.web.bind.annotation.RestController
 class DocumentsController(
     private val documentService: DocumentService,
     private val documentStore: DocumentStore,
+    private val documentTemplatesDao: DocumentTemplatesDao,
     private val documentUpgradeService: DocumentUpgradeService,
+    private val projectAcceleratorDetailService: ProjectAcceleratorDetailsService,
 ) {
   @GetMapping
   @Operation(summary = "Gets a list of all the documents.")
@@ -59,7 +63,7 @@ class DocumentsController(
           documentStore.fetchAll()
         }
 
-    return ListDocumentsResponsePayload(models.map { DocumentPayload(it) })
+    return ListDocumentsResponsePayload(models.map { makeDocumentPayload(it) })
   }
 
   @Operation(summary = "Creates a new document.")
@@ -69,13 +73,13 @@ class DocumentsController(
   ): CreateDocumentResponsePayload {
     val model = documentService.create(payload.toModel())
 
-    return CreateDocumentResponsePayload(DocumentPayload(model))
+    return CreateDocumentResponsePayload(makeDocumentPayload(model))
   }
 
   @Operation(summary = "Gets a document.")
   @GetMapping("/{id}")
   fun getDocument(@PathVariable("id") id: DocumentId): GetDocumentResponsePayload {
-    return GetDocumentResponsePayload(DocumentPayload(documentStore.fetchOneById(id)))
+    return GetDocumentResponsePayload(makeDocumentPayload(documentStore.fetchOneById(id)))
   }
 
   @Operation(summary = "Updates a document.")
@@ -160,12 +164,40 @@ class DocumentsController(
 
     return SimpleSuccessResponsePayload()
   }
+
+  private fun makeDocumentPayload(model: ExistingDocumentModel): DocumentPayload {
+    val documentTemplateName = documentTemplatesDao.fetchOneById(model.documentTemplateId)!!.name!!
+    val projectDealName =
+        projectAcceleratorDetailService
+            .fetchParticipantProjectDetails()
+            .firstOrNull { it.projectId == model.projectId }
+            ?.dealName
+    return DocumentPayload(
+        createdBy = model.createdBy,
+        createdTime = model.createdTime,
+        documentTemplateId = model.documentTemplateId,
+        documentTemplateName = documentTemplateName,
+        id = model.id,
+        internalComment = model.internalComment,
+        lastSavedVersionId = model.lastSavedVersionId,
+        modifiedBy = model.modifiedBy,
+        modifiedTime = model.modifiedTime,
+        name = model.name,
+        ownedBy = model.ownedBy,
+        projectDealName = projectDealName,
+        projectId = model.projectId,
+        projectName = model.projectName,
+        status = model.status,
+        variableManifestId = model.variableManifestId,
+    )
+  }
 }
 
 data class DocumentPayload(
     val createdBy: UserId,
     val createdTime: Instant,
     val documentTemplateId: DocumentTemplateId,
+    val documentTemplateName: String,
     val id: DocumentId,
     val internalComment: String?,
     val lastSavedVersionId: DocumentSavedVersionId?,
@@ -173,30 +205,12 @@ data class DocumentPayload(
     val modifiedTime: Instant,
     val name: String,
     val ownedBy: UserId,
+    val projectDealName: String?,
     val projectId: ProjectId,
     val projectName: String,
     val status: DocumentStatus,
     val variableManifestId: VariableManifestId,
-) {
-  constructor(
-      model: ExistingDocumentModel
-  ) : this(
-      createdBy = model.createdBy,
-      createdTime = model.createdTime,
-      documentTemplateId = model.documentTemplateId,
-      id = model.id,
-      internalComment = model.internalComment,
-      lastSavedVersionId = model.lastSavedVersionId,
-      modifiedBy = model.modifiedBy,
-      modifiedTime = model.modifiedTime,
-      name = model.name,
-      ownedBy = model.ownedBy,
-      projectId = model.projectId,
-      projectName = model.projectName,
-      status = model.status,
-      variableManifestId = model.variableManifestId,
-  )
-}
+)
 
 @Schema(
     description =
