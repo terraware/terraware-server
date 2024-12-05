@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.DeliverableService
+import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.accelerator.SubmissionService
 import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.DeliverableStore
@@ -8,6 +9,7 @@ import com.terraformation.backend.accelerator.db.DeliverablesImporter
 import com.terraformation.backend.accelerator.db.ProjectDocumentStorageFailedException
 import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
+import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
@@ -63,6 +65,7 @@ class DeliverablesController(
     private val deliverablesImporter: DeliverablesImporter,
     private val deliverableService: DeliverableService,
     private val deliverableStore: DeliverableStore,
+    private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
     private val submissionService: SubmissionService,
     private val submissionStore: SubmissionStore,
 ) {
@@ -100,8 +103,13 @@ class DeliverablesController(
     val models =
         deliverableStore.fetchDeliverableSubmissions(
             organizationId, participantId, projectId, moduleId = moduleId)
+    val details =
+        projectAcceleratorDetailsService.fetchParticipantProjectDetails().associateBy {
+          it.projectId
+        }
 
-    return ListDeliverablesResponsePayload(models.map { ListDeliverablesElement(it) })
+    return ListDeliverablesResponsePayload(
+        models.map { ListDeliverablesElement(it, details[it.projectId]) })
   }
 
   @ApiResponse200
@@ -267,6 +275,7 @@ data class ListDeliverablesElement(
     val participantId: ParticipantId?,
     val participantName: String?,
     val position: Int,
+    val projectDealName: String?,
     val projectId: ProjectId,
     val projectName: String,
     val required: Boolean,
@@ -275,7 +284,8 @@ data class ListDeliverablesElement(
     val type: DeliverableType,
 ) {
   constructor(
-      model: DeliverableSubmissionModel
+      model: DeliverableSubmissionModel,
+      detail: ProjectAcceleratorDetailsModel?,
   ) : this(
       model.category,
       model.descriptionHtml,
@@ -291,6 +301,7 @@ data class ListDeliverablesElement(
       model.participantId,
       model.participantName,
       model.position,
+      detail?.dealName,
       model.projectId,
       model.projectName,
       model.required,
