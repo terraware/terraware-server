@@ -125,8 +125,12 @@ class DeliverablesController(
         deliverableStore
             .fetchDeliverableSubmissions(deliverableId = deliverableId, projectId = projectId)
             .firstOrNull() ?: throw DeliverableNotFoundException(deliverableId)
-
-    return GetDeliverableResponsePayload(DeliverablePayload(model))
+    val projectDealName =
+        projectAcceleratorDetailsService
+            .fetchParticipantProjectDetails()
+            .firstOrNull { it.projectId == model.projectId }
+            ?.dealName
+    return GetDeliverableResponsePayload(DeliverablePayload(model, projectDealName))
   }
 
   @ApiResponse(
@@ -352,6 +356,7 @@ data class DeliverablePayload(
     val participantId: ParticipantId?,
     val participantName: String?,
     val position: Int,
+    val projectDealName: String?,
     val projectId: ProjectId,
     val projectName: String,
     val required: Boolean,
@@ -361,7 +366,8 @@ data class DeliverablePayload(
     val type: DeliverableType,
 ) {
   constructor(
-      model: DeliverableSubmissionModel
+      model: DeliverableSubmissionModel,
+      projectDealName: String?,
   ) : this(
       model.category,
       model.descriptionHtml,
@@ -376,6 +382,7 @@ data class DeliverablePayload(
       model.participantId,
       model.participantName,
       model.position,
+      projectDealName,
       model.projectId,
       model.projectName,
       model.required,
