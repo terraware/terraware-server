@@ -9,6 +9,7 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentSavedVersionId
 import com.terraformation.backend.db.docprod.DocumentStatus
@@ -169,8 +170,8 @@ class DocumentsController(
     val documentTemplateName = documentTemplatesDao.fetchOneById(model.documentTemplateId)!!.name!!
     val projectDealName =
         projectAcceleratorDetailService
-            .fetchParticipantProjectDetails()
-            .firstOrNull { it.projectId == model.projectId }
+            .fetchDetailsByCondition(PROJECTS.ID.eq(model.projectId))
+            .firstOrNull()
             ?.dealName
     return DocumentPayload(
         createdBy = model.createdBy,
