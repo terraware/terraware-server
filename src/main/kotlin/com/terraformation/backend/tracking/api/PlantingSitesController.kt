@@ -9,8 +9,11 @@ import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.PlantingSubzoneHistoryId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.PlantingZoneHistoryId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.tracking.PlantingSiteService
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -22,11 +25,14 @@ import com.terraformation.backend.tracking.model.NewPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.NewPlantingZoneModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailureType
+import com.terraformation.backend.tracking.model.PlantingSubzoneHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
+import com.terraformation.backend.tracking.model.PlantingZoneHistoryModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.toMultiPolygon
@@ -86,6 +92,16 @@ class PlantingSitesController(
   ): GetPlantingSiteResponsePayload {
     val model = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Subzone)
     return GetPlantingSiteResponsePayload(PlantingSitePayload(model))
+  }
+
+  @GetMapping("/{id}/history/{historyId}")
+  @Operation(summary = "Gets information about an older version of a planting site.")
+  fun getPlantingSiteHistory(
+      @PathVariable("id") id: PlantingSiteId,
+      @PathVariable("historyId") historyId: PlantingSiteHistoryId,
+  ): GetPlantingSiteHistoryResponsePayload {
+    val model = plantingSiteStore.fetchSiteHistoryById(id, historyId, PlantingSiteDepth.Subzone)
+    return GetPlantingSiteHistoryResponsePayload(PlantingSiteHistoryPayload(model))
   }
 
   @GetMapping("/{id}/reportedPlants")
@@ -247,6 +263,62 @@ data class PlantingSitePayload(
       plantingZones = model.plantingZones.map { PlantingZonePayload(it) },
       projectId = model.projectId,
       timeZone = model.timeZone,
+  )
+}
+
+data class PlantingSubzoneHistoryPayload(
+    val boundary: MultiPolygon,
+    val fullName: String,
+    val id: PlantingSubzoneHistoryId,
+    val name: String,
+    @Schema(description = "ID of planting subzone if it exists in the current version of the site.")
+    val plantingSubzoneId: PlantingSubzoneId?,
+) {
+  constructor(
+      model: PlantingSubzoneHistoryModel
+  ) : this(
+      boundary = model.boundary,
+      fullName = model.fullName,
+      id = model.id,
+      name = model.name,
+      plantingSubzoneId = model.plantingSubzoneId,
+  )
+}
+
+data class PlantingZoneHistoryPayload(
+    val boundary: MultiPolygon,
+    val id: PlantingZoneHistoryId,
+    val name: String,
+    val plantingSubzones: List<PlantingSubzoneHistoryPayload>,
+    @Schema(description = "ID of planting zone if it exists in the current version of the site.")
+    val plantingZoneId: PlantingZoneId?,
+) {
+  constructor(
+      model: PlantingZoneHistoryModel
+  ) : this(
+      boundary = model.boundary,
+      id = model.id,
+      name = model.name,
+      plantingSubzones = model.plantingSubzones.map { PlantingSubzoneHistoryPayload(it) },
+      plantingZoneId = model.plantingZoneId,
+  )
+}
+
+data class PlantingSiteHistoryPayload(
+    val boundary: MultiPolygon,
+    val exclusion: MultiPolygon? = null,
+    val id: PlantingSiteHistoryId,
+    val plantingSiteId: PlantingSiteId,
+    val plantingZones: List<PlantingZoneHistoryPayload>,
+) {
+  constructor(
+      model: PlantingSiteHistoryModel
+  ) : this(
+      boundary = model.boundary,
+      exclusion = model.exclusion,
+      id = model.id,
+      plantingSiteId = model.plantingSiteId,
+      plantingZones = model.plantingZones.map { PlantingZoneHistoryPayload(it) },
   )
 }
 
@@ -445,6 +517,9 @@ data class CreatePlantingSiteRequestPayload(
 }
 
 data class CreatePlantingSiteResponsePayload(val id: PlantingSiteId) : SuccessResponsePayload
+
+data class GetPlantingSiteHistoryResponsePayload(val site: PlantingSiteHistoryPayload) :
+    SuccessResponsePayload
 
 data class GetPlantingSiteResponsePayload(val site: PlantingSitePayload) : SuccessResponsePayload
 

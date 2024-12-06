@@ -48,6 +48,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.log.perClassLogger
@@ -67,15 +68,19 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
+import com.terraformation.backend.tracking.model.MonitoringPlotHistoryModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewPlantingSubzoneModel
 import com.terraformation.backend.tracking.model.NewPlantingZoneModel
 import com.terraformation.backend.tracking.model.PlantingSeasonsOverlapException
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
+import com.terraformation.backend.tracking.model.PlantingSubzoneHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
+import com.terraformation.backend.tracking.model.PlantingZoneHistoryModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
@@ -148,9 +153,23 @@ class PlantingSiteStore(
     return fetchSitesByCondition(PLANTING_SITES.PROJECT_ID.eq(projectId), depth)
   }
 
+  fun fetchSiteHistoryById(
+      plantingSiteId: PlantingSiteId,
+      plantingSiteHistoryId: PlantingSiteHistoryId,
+      depth: PlantingSiteDepth,
+  ): PlantingSiteHistoryModel {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return fetchSiteHistoriesByCondition(
+            PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId)
+                .and(PLANTING_SITE_HISTORIES.ID.eq(plantingSiteHistoryId)),
+            depth)
+        .firstOrNull() ?: throw PlantingSiteHistoryNotFoundException(plantingSiteHistoryId)
+  }
+
   private fun fetchSitesByCondition(
       condition: Condition,
-      depth: PlantingSiteDepth,
+      depth: PlantingSiteDepth
   ): List<ExistingPlantingSiteModel> {
     val zonesField =
         if (depth != PlantingSiteDepth.Site) {
@@ -173,6 +192,44 @@ class PlantingSiteStore(
         .where(condition)
         .orderBy(PLANTING_SITES.ID)
         .fetch { PlantingSiteModel.of(it, plantingSeasonsMultiset, zonesField, exteriorPlotsField) }
+  }
+
+  private fun fetchSiteHistoriesByCondition(
+      condition: Condition,
+      depth: PlantingSiteDepth
+  ): List<PlantingSiteHistoryModel> {
+    val boundaryField = PLANTING_SITE_HISTORIES.BOUNDARY.forMultiset()
+    val exclusionField = PLANTING_SITE_HISTORIES.EXCLUSION.forMultiset()
+    val gridOriginField = PLANTING_SITE_HISTORIES.GRID_ORIGIN.forMultiset()
+
+    val zonesField =
+        if (depth != PlantingSiteDepth.Site) {
+          plantingZoneHistoriesMultiset(depth)
+        } else {
+          null
+        }
+
+    return dslContext
+        .select(
+            PLANTING_SITE_HISTORIES.ID,
+            PLANTING_SITE_HISTORIES.PLANTING_SITE_ID,
+            boundaryField,
+            exclusionField,
+            gridOriginField,
+            zonesField)
+        .from(PLANTING_SITE_HISTORIES)
+        .where(condition)
+        .orderBy(PLANTING_SITE_HISTORIES.ID)
+        .fetch { record ->
+          PlantingSiteHistoryModel(
+              record[boundaryField] as MultiPolygon,
+              record[exclusionField] as? MultiPolygon,
+              record[gridOriginField] as Point,
+              record[PLANTING_SITE_HISTORIES.ID]!!,
+              record[PLANTING_SITE_HISTORIES.PLANTING_SITE_ID]!!,
+              zonesField?.let { record[it] } ?: emptyList(),
+          )
+        }
   }
 
   fun countMonitoringPlots(
@@ -1670,6 +1727,39 @@ class PlantingSiteStore(
             }
           }
 
+  private val monitoringPlotHistoriesMultiset =
+      DSL.multiset(
+              DSL.select(
+                      MONITORING_PLOT_HISTORIES.CREATED_BY,
+                      MONITORING_PLOT_HISTORIES.CREATED_TIME,
+                      MONITORING_PLOT_HISTORIES.FULL_NAME,
+                      MONITORING_PLOT_HISTORIES.ID,
+                      MONITORING_PLOT_HISTORIES.NAME,
+                      MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID,
+                      MONITORING_PLOTS.SIZE_METERS,
+                      monitoringPlotBoundaryField)
+                  .from(MONITORING_PLOT_HISTORIES)
+                  .join(MONITORING_PLOTS)
+                  .on(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                  .where(
+                      PLANTING_SUBZONE_HISTORIES.ID.eq(
+                          MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID))
+                  .orderBy(MONITORING_PLOT_HISTORIES.FULL_NAME))
+          .convertFrom { result ->
+            result.map { record ->
+              MonitoringPlotHistoryModel(
+                  boundary = record[monitoringPlotBoundaryField]!! as Polygon,
+                  createdBy = record[MONITORING_PLOT_HISTORIES.CREATED_BY]!!,
+                  createdTime = record[MONITORING_PLOT_HISTORIES.CREATED_TIME]!!,
+                  fullName = record[MONITORING_PLOT_HISTORIES.FULL_NAME]!!,
+                  id = record[MONITORING_PLOT_HISTORIES.ID]!!,
+                  name = record[MONITORING_PLOT_HISTORIES.NAME]!!,
+                  monitoringPlotId = record[MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID]!!,
+                  sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!,
+              )
+            }
+          }
+
   private fun plantingSubzonesMultiset(
       depth: PlantingSiteDepth
   ): Field<List<ExistingPlantingSubzoneModel>> {
@@ -1700,6 +1790,39 @@ class PlantingSiteStore(
                 record[PLANTING_SUBZONES.NAME]!!,
                 record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME],
                 plotsField?.let { record[it] } ?: emptyList(),
+            )
+          }
+        }
+  }
+
+  private fun plantingSubzoneHistoriesMultiset(
+      depth: PlantingSiteDepth
+  ): Field<List<PlantingSubzoneHistoryModel>> {
+    val plotsField = if (depth == PlantingSiteDepth.Plot) monitoringPlotHistoriesMultiset else null
+    val boundaryField = PLANTING_SUBZONE_HISTORIES.BOUNDARY.forMultiset()
+
+    return DSL.multiset(
+            DSL.select(
+                    PLANTING_SUBZONE_HISTORIES.FULL_NAME,
+                    PLANTING_SUBZONE_HISTORIES.ID,
+                    PLANTING_SUBZONE_HISTORIES.NAME,
+                    PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID,
+                    boundaryField,
+                    plotsField)
+                .from(PLANTING_SUBZONE_HISTORIES)
+                .where(
+                    PLANTING_ZONE_HISTORIES.ID.eq(
+                        PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID))
+                .orderBy(PLANTING_SUBZONE_HISTORIES.FULL_NAME))
+        .convertFrom { result ->
+          result.map { record: Record ->
+            PlantingSubzoneHistoryModel(
+                record[boundaryField] as MultiPolygon,
+                record[PLANTING_SUBZONE_HISTORIES.FULL_NAME]!!,
+                record[PLANTING_SUBZONE_HISTORIES.ID]!!,
+                plotsField?.let { record[it] } ?: emptyList(),
+                record[PLANTING_SUBZONE_HISTORIES.NAME]!!,
+                record[PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID],
             )
           }
         }
@@ -1747,6 +1870,41 @@ class PlantingSiteStore(
                 record[PLANTING_ZONES.STUDENTS_T]!!,
                 record[PLANTING_ZONES.TARGET_PLANTING_DENSITY]!!,
                 record[PLANTING_ZONES.VARIANCE]!!,
+            )
+          }
+        }
+  }
+
+  private fun plantingZoneHistoriesMultiset(
+      depth: PlantingSiteDepth
+  ): Field<List<PlantingZoneHistoryModel>> {
+    val boundaryField = PLANTING_ZONE_HISTORIES.BOUNDARY.forMultiset()
+    val subzonesField =
+        if (depth == PlantingSiteDepth.Subzone || depth == PlantingSiteDepth.Plot) {
+          plantingSubzoneHistoriesMultiset(depth)
+        } else {
+          null
+        }
+
+    return DSL.multiset(
+            DSL.select(
+                    PLANTING_ZONE_HISTORIES.ID,
+                    PLANTING_ZONE_HISTORIES.NAME,
+                    PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID,
+                    boundaryField,
+                    subzonesField)
+                .from(PLANTING_ZONE_HISTORIES)
+                .where(
+                    PLANTING_SITE_HISTORIES.ID.eq(PLANTING_ZONE_HISTORIES.PLANTING_SITE_HISTORY_ID))
+                .orderBy(PLANTING_ZONE_HISTORIES.NAME))
+        .convertFrom { result ->
+          result.map { record: Record ->
+            PlantingZoneHistoryModel(
+                record[boundaryField] as MultiPolygon,
+                record[PLANTING_ZONE_HISTORIES.ID]!!,
+                record[PLANTING_ZONE_HISTORIES.NAME]!!,
+                subzonesField?.let { record[it]!! } ?: emptyList(),
+                record[PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID],
             )
           }
         }
