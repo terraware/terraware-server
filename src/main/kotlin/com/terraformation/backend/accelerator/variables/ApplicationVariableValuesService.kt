@@ -60,7 +60,7 @@ class ApplicationVariableValuesService(
         variableValueStore
             .listValues(projectId = projectId, variableIds = variablesById.keys)
             .mapNotNull { value ->
-              val stableId = variablesById[value.variableId]?.let { StableId(it.stableId) }
+              val stableId = variablesById[value.variableId]?.stableId?.let { StableId(it) }
               if (stableId != null) {
                 stableId to value
               } else {

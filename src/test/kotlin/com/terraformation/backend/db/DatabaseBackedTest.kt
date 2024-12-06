@@ -3329,8 +3329,8 @@ abstract class DatabaseBackedTest {
     return row.id!!.also { inserted.variableWorkflowHistoryIds.add(it) }
   }
 
-  private fun insertStableVariable(stableId: StableId, varirableType: VariableType): VariableId {
-    return when (varirableType) {
+  private fun insertStableVariable(stableId: StableId, type: VariableType): VariableId {
+    return when (type) {
       VariableType.Number ->
           insertNumberVariable(
               insertVariable(type = VariableType.Number, stableId = stableId.value))
@@ -3341,7 +3341,7 @@ abstract class DatabaseBackedTest {
               insertVariable(type = VariableType.Select, stableId = stableId.value))
       VariableType.Table ->
           insertTableVariable(insertVariable(type = VariableType.Table, stableId = stableId.value))
-      else -> insertVariable(type = varirableType, stableId = stableId.value)
+      else -> insertVariable(type = type, stableId = stableId.value)
     }
   }
 
