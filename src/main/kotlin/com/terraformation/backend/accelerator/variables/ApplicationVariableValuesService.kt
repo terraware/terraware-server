@@ -5,7 +5,6 @@ import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.CountryNotFoundException
-import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.docprod.VariableId
@@ -17,7 +16,6 @@ import com.terraformation.backend.documentproducer.model.SelectVariable
 import com.terraformation.backend.documentproducer.model.Variable
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
-import org.springframework.beans.factory.annotation.Value
 
 @Named
 class ApplicationVariableValuesService(
@@ -25,8 +23,6 @@ class ApplicationVariableValuesService(
     private val variableStore: VariableStore,
     private val variableValueStore: VariableValueStore,
     private val systemUser: SystemUser,
-    @Value("102") // From deliverables spreadsheet
-    val preScreenDeliverableId: DeliverableId,
 ) {
   companion object {
     private val log = perClassLogger()

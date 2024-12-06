@@ -12,7 +12,6 @@ import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableSelectOptionId
-import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.mockUser
@@ -58,24 +57,6 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     )
   }
 
-  private lateinit var annualCarbonVariableId: VariableId
-  private lateinit var applicationRestorableLandVariableId: VariableId
-  private lateinit var carbonCapacityVariableId: VariableId
-  private lateinit var confirmedRestorableLandVariableId: VariableId
-  private lateinit var countryVariableId: VariableId
-  private lateinit var dealDescriptionVariableId: VariableId
-  private lateinit var dealNameVariableId: VariableId
-  private lateinit var failureRiskVariableId: VariableId
-  private lateinit var investmentThesisVariableId: VariableId
-  private lateinit var landUseModelTypesVariableId: VariableId
-  private lateinit var maxCarbonAccumulationVariableId: VariableId
-  private lateinit var minCarbonAccumulationVariableId: VariableId
-  private lateinit var numNativeSpeciesVariableId: VariableId
-  private lateinit var perHectareBudgetVariableId: VariableId
-  private lateinit var totalCarbonVariableId: VariableId
-  private lateinit var totalExpansionPotentialVariableId: VariableId
-  private lateinit var whatNeedsToBeTrueVariableId: VariableId
-
   private lateinit var brazilOptionId: VariableSelectOptionId
   private lateinit var chileOptionId: VariableSelectOptionId
 
@@ -84,78 +65,28 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var nativeForestOptionId: VariableSelectOptionId
   private lateinit var sustainableTimberOptionId: VariableSelectOptionId
 
+  private lateinit var variableIdsByStableId: Map<StableId, VariableId>
+
   @BeforeEach
   fun setUp() {
     insertOrganization()
     insertProject()
 
-    annualCarbonVariableId =
-        insertNumberVariable(
-            insertVariable(type = VariableType.Number, stableId = StableIds.annualCarbon.value))
-    applicationRestorableLandVariableId =
-        insertNumberVariable(
-            insertVariable(
-                type = VariableType.Number, stableId = StableIds.applicationRestorableLand.value))
-    carbonCapacityVariableId =
-        insertNumberVariable(
-            insertVariable(type = VariableType.Number, stableId = StableIds.carbonCapacity.value))
-    confirmedRestorableLandVariableId =
-        insertNumberVariable(
-            insertVariable(type = VariableType.Number, stableId = StableIds.tfRestorableLand.value))
-    countryVariableId =
-        insertSelectVariable(
-            insertVariable(type = VariableType.Select, stableId = StableIds.country.value))
+    variableIdsByStableId = setupStableIdVariables()
 
-    brazilOptionId = insertSelectOption(inserted.variableId, "Brazil")
-    chileOptionId = insertSelectOption(inserted.variableId, "Chile")
-    insertSelectOption(inserted.variableId, "Ghana")
+    brazilOptionId = insertSelectOption(variableIdsByStableId[StableIds.country]!!, "Brazil")
+    chileOptionId = insertSelectOption(variableIdsByStableId[StableIds.country]!!, "Chile")
+    insertSelectOption(variableIdsByStableId[StableIds.country]!!, "Ghana")
 
-    dealDescriptionVariableId =
-        insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = StableIds.dealDescription.value))
-    dealNameVariableId =
-        insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = StableIds.dealName.value))
-    failureRiskVariableId =
-        insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = StableIds.failureRisk.value))
-    investmentThesisVariableId =
-        insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = StableIds.investmentThesis.value))
-
-    landUseModelTypesVariableId =
-        insertSelectVariable(
-            insertVariable(type = VariableType.Select, stableId = StableIds.landUseModelType.value))
-    agroforestryOptionId = insertSelectOption(inserted.variableId, "Agroforestry")
-    mangrovesOptionId = insertSelectOption(inserted.variableId, "Mangroves")
-    nativeForestOptionId = insertSelectOption(inserted.variableId, "Native Forest")
-    sustainableTimberOptionId = insertSelectOption(inserted.variableId, "Sustainable Timber")
-
-    maxCarbonAccumulationVariableId =
-        insertNumberVariable(
-            insertVariable(
-                type = VariableType.Number, stableId = StableIds.maxCarbonAccumulation.value))
-    minCarbonAccumulationVariableId =
-        insertNumberVariable(
-            insertVariable(
-                type = VariableType.Number, stableId = StableIds.minCarbonAccumulation.value))
-    numNativeSpeciesVariableId =
-        insertNumberVariable(
-            insertVariable(type = VariableType.Number, stableId = StableIds.numSpecies.value))
-    perHectareBudgetVariableId =
-        insertNumberVariable(
-            insertVariable(
-                type = VariableType.Number, stableId = StableIds.perHectareEstimatedBudget.value))
-    totalCarbonVariableId =
-        insertNumberVariable(
-            insertVariable(type = VariableType.Number, stableId = StableIds.totalCarbon.value))
-    totalExpansionPotentialVariableId =
-        insertNumberVariable(
-            insertVariable(
-                type = VariableType.Number, stableId = StableIds.totalExpansionPotential.value))
-    whatNeedsToBeTrueVariableId =
-        insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = StableIds.whatNeedsToBeTrue.value))
+    agroforestryOptionId =
+        insertSelectOption(variableIdsByStableId[StableIds.landUseModelType]!!, "Agroforestry")
+    mangrovesOptionId =
+        insertSelectOption(variableIdsByStableId[StableIds.landUseModelType]!!, "Mangroves")
+    nativeForestOptionId =
+        insertSelectOption(variableIdsByStableId[StableIds.landUseModelType]!!, "Native Forest")
+    sustainableTimberOptionId =
+        insertSelectOption(
+            variableIdsByStableId[StableIds.landUseModelType]!!, "Sustainable Timber")
 
     every { user.canReadProjectAcceleratorDetails(any()) } returns true
     every { user.canUpdateProjectAcceleratorDetails(any()) } returns true
@@ -173,24 +104,33 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns values for non-deleted variables`() {
       // Single-select, country code should populate region
-      insertSelectValue(countryVariableId, optionIds = setOf(brazilOptionId))
+      insertSelectValue(
+          variableIdsByStableId[StableIds.country]!!, optionIds = setOf(brazilOptionId))
 
       // Multi-select
       insertSelectValue(
-          landUseModelTypesVariableId, optionIds = setOf(agroforestryOptionId, mangrovesOptionId))
+          variableIdsByStableId[StableIds.landUseModelType]!!,
+          optionIds = setOf(agroforestryOptionId, mangrovesOptionId))
 
       // Number value
-      insertValue(minCarbonAccumulationVariableId, numberValue = BigDecimal.ONE)
+      insertValue(
+          variableIdsByStableId[StableIds.minCarbonAccumulation]!!, numberValue = BigDecimal.ONE)
 
       // Text value
-      insertValue(dealDescriptionVariableId, textValue = "Deal description")
+      insertValue(
+          variableIdsByStableId[StableIds.dealDescription]!!, textValue = "Deal description")
 
       // Second value should replace the first
-      insertValue(maxCarbonAccumulationVariableId, numberValue = BigDecimal.TWO)
-      insertValue(maxCarbonAccumulationVariableId, numberValue = BigDecimal.TEN)
+      insertValue(
+          variableIdsByStableId[StableIds.maxCarbonAccumulation]!!, numberValue = BigDecimal.TWO)
+      insertValue(
+          variableIdsByStableId[StableIds.maxCarbonAccumulation]!!, numberValue = BigDecimal.TEN)
 
       // Deleted values should appear as null
-      insertValue(whatNeedsToBeTrueVariableId, textValue = "DELETED", isDeleted = true)
+      insertValue(
+          variableIdsByStableId[StableIds.whatNeedsToBeTrue]!!,
+          textValue = "DELETED",
+          isDeleted = true)
 
       assertEquals(
           ProjectAcceleratorVariableValuesModel(
@@ -255,14 +195,20 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `can add, update and remove values`() {
-      insertSelectValue(countryVariableId, optionIds = setOf(brazilOptionId))
+      insertSelectValue(
+          variableIdsByStableId[StableIds.country]!!, optionIds = setOf(brazilOptionId))
 
-      insertValue(maxCarbonAccumulationVariableId, numberValue = BigDecimal.TWO)
-      insertValue(maxCarbonAccumulationVariableId, numberValue = BigDecimal.TEN)
+      insertValue(
+          variableIdsByStableId[StableIds.maxCarbonAccumulation]!!, numberValue = BigDecimal.TWO)
+      insertValue(
+          variableIdsByStableId[StableIds.maxCarbonAccumulation]!!, numberValue = BigDecimal.TEN)
 
-      insertValue(minCarbonAccumulationVariableId, numberValue = BigDecimal.ONE)
+      insertValue(
+          variableIdsByStableId[StableIds.minCarbonAccumulation]!!, numberValue = BigDecimal.ONE)
 
-      insertSelectValue(landUseModelTypesVariableId, optionIds = setOf(nativeForestOptionId))
+      insertSelectValue(
+          variableIdsByStableId[StableIds.landUseModelType]!!,
+          optionIds = setOf(nativeForestOptionId))
 
       val existing = service.fetchValues(inserted.projectId)
       service.writeValues(
@@ -289,8 +235,10 @@ class AcceleratorProjectVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `unchanged values will not write new records`() {
-      insertValue(maxCarbonAccumulationVariableId, numberValue = BigDecimal.TWO)
-      insertValue(minCarbonAccumulationVariableId, numberValue = BigDecimal.ONE)
+      insertValue(
+          variableIdsByStableId[StableIds.maxCarbonAccumulation]!!, numberValue = BigDecimal.TWO)
+      insertValue(
+          variableIdsByStableId[StableIds.minCarbonAccumulation]!!, numberValue = BigDecimal.ONE)
 
       val existing = variableValuesDao.findAll()
       val model = service.fetchValues(inserted.projectId)

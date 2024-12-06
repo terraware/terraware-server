@@ -32,6 +32,7 @@ class DocumentsControllerTest : ControllerIntegrationTest() {
     insertProject()
     insertDocumentTemplate()
     insertVariableManifest()
+    setupStableIdVariables()
   }
 
   @Nested

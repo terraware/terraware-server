@@ -1,6 +1,8 @@
 package com.terraformation.backend.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
+import com.terraformation.backend.accelerator.variables.StableId
+import com.terraformation.backend.accelerator.variables.StableIds
 import com.terraformation.backend.api.ArbitraryJsonObject
 import com.terraformation.backend.api.ControllerIntegrationTest
 import com.terraformation.backend.auth.CurrentUserHolder
@@ -3325,6 +3327,61 @@ abstract class DatabaseBackedTest {
     variableWorkflowHistoryDao.insert(row)
 
     return row.id!!.also { inserted.variableWorkflowHistoryIds.add(it) }
+  }
+
+  private fun insertStableVariable(stableId: StableId, type: VariableType): VariableId {
+    return when (type) {
+      VariableType.Number ->
+          insertNumberVariable(
+              insertVariable(type = VariableType.Number, stableId = stableId.value))
+      VariableType.Text ->
+          insertTextVariable(insertVariable(type = VariableType.Text, stableId = stableId.value))
+      VariableType.Select ->
+          insertSelectVariable(
+              insertVariable(type = VariableType.Select, stableId = stableId.value))
+      VariableType.Table ->
+          insertTableVariable(insertVariable(type = VariableType.Table, stableId = stableId.value))
+      else -> insertVariable(type = type, stableId = stableId.value)
+    }
+  }
+
+  protected fun setupStableIdVariables(): Map<StableId, VariableId> {
+    val stableIds: Map<StableId, VariableType> =
+        with(StableIds) {
+          mapOf(
+              country to VariableType.Select,
+              applicationRestorableLand to VariableType.Number,
+              projectType to VariableType.Select,
+              landUseModelType to VariableType.Select,
+              nativeForestLandUseHectare to VariableType.Number,
+              monocultureLandUseHectare to VariableType.Number,
+              sustainableTimberLandUseHectare to VariableType.Number,
+              otherTimberLandUseHectare to VariableType.Number,
+              mangrovesLandUseModelHectare to VariableType.Number,
+              agroforestryLandUseModelHectare to VariableType.Number,
+              silvopastureLandUseModelHectare to VariableType.Number,
+              otherLandUseModelHectare to VariableType.Number,
+              numSpecies to VariableType.Number,
+              totalExpansionPotential to VariableType.Number,
+              contactName to VariableType.Text,
+              contactEmail to VariableType.Text,
+              website to VariableType.Text,
+              tfRestorableLand to VariableType.Number,
+              perHectareEstimatedBudget to VariableType.Number,
+              minCarbonAccumulation to VariableType.Number,
+              maxCarbonAccumulation to VariableType.Number,
+              carbonCapacity to VariableType.Number,
+              annualCarbon to VariableType.Number,
+              totalCarbon to VariableType.Number,
+              dealDescription to VariableType.Text,
+              investmentThesis to VariableType.Text,
+              failureRisk to VariableType.Text,
+              whatNeedsToBeTrue to VariableType.Text,
+              dealName to VariableType.Text,
+          )
+        }
+
+    return stableIds.mapValues { (stableId, type) -> insertStableVariable(stableId, type) }
   }
 
   protected fun clearCachedPermissions(updatedUserId: UserId = currentUser().userId) {
