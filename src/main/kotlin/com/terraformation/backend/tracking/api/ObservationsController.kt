@@ -27,6 +27,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -442,6 +443,11 @@ data class ObservationPayload(
     val numPlots: Int,
     @Schema(description = "Total number of monitoring plots that haven't been claimed yet.")
     val numUnclaimedPlots: Int,
+    @Schema(
+        description =
+            "If this observation has already started, the version of the planting site that was " +
+                "used to place its monitoring plots.")
+    val plantingSiteHistoryId: PlantingSiteHistoryId?,
     val plantingSiteId: PlantingSiteId,
     val plantingSiteName: String,
     @ArraySchema(
@@ -464,6 +470,7 @@ data class ObservationPayload(
       numIncompletePlots = counts?.totalIncomplete ?: 0,
       numPlots = counts?.totalPlots ?: 0,
       numUnclaimedPlots = counts?.totalUnclaimed ?: 0,
+      plantingSiteHistoryId = model.plantingSiteHistoryId,
       plantingSiteId = model.plantingSiteId,
       plantingSiteName = plantingSiteName,
       requestedSubzoneIds = model.requestedSubzoneIds.ifEmpty { null },
