@@ -17,7 +17,6 @@ import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ParticipantId
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import io.swagger.v3.oas.annotations.Operation
@@ -117,9 +116,9 @@ class ParticipantsController(
             .associateBy { it.id }
 
     val projectDetails =
-        projectAcceleratorDetailsService
-            .fetchDetailsByCondition(PARTICIPANTS.ID.eq(model.id))
-            .associateBy { detail -> detail.projectId }
+        projectAcceleratorDetailsService.fetchForParticipant(model.id).associateBy { detail ->
+          detail.projectId
+        }
     val projectPayloads =
         projects.map { project ->
           val organization = organizationsById[project.organizationId]!!
