@@ -43,6 +43,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
@@ -455,6 +456,7 @@ class ObservationStore(
     withLockedObservation(observationId) { _ ->
       dslContext
           .update(OBSERVATIONS)
+          .setNull(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
           .set(OBSERVATIONS.STATE_ID, ObservationState.Upcoming)
           .set(OBSERVATIONS.START_DATE, startDate)
           .set(OBSERVATIONS.END_DATE, endDate)
@@ -477,6 +479,11 @@ class ObservationStore(
   }
 
   fun updateObservationState(observationId: ObservationId, newState: ObservationState) {
+    if (newState == ObservationState.InProgress) {
+      log.error("BUG! Should call recordObservationStart to set state to $newState")
+      throw IllegalArgumentException("Invalid state transition")
+    }
+
     requirePermissions {
       if (newState == ObservationState.Completed || newState == ObservationState.Abandoned) {
         updateObservation(observationId)
@@ -497,6 +504,30 @@ class ObservationStore(
           .set(OBSERVATIONS.STATE_ID, newState)
           .where(OBSERVATIONS.ID.eq(observationId))
           .execute()
+    }
+  }
+
+  fun recordObservationStart(observationId: ObservationId): ExistingObservationModel {
+    requirePermissions { manageObservation(observationId) }
+
+    return withLockedObservation(observationId) { observation ->
+      val plantingSiteHistoryId =
+          dslContext
+              .select(DSL.max(PLANTING_SITE_HISTORIES.ID))
+              .from(PLANTING_SITE_HISTORIES)
+              .where(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(observation.plantingSiteId))
+              .fetchOne()
+              ?.value1() ?: throw IllegalStateException("Planting site has no history")
+
+      dslContext
+          .update(OBSERVATIONS)
+          .set(OBSERVATIONS.PLANTING_SITE_HISTORY_ID, plantingSiteHistoryId)
+          .set(OBSERVATIONS.STATE_ID, ObservationState.InProgress)
+          .where(OBSERVATIONS.ID.eq(observationId))
+          .execute()
+
+      observation.copy(
+          plantingSiteHistoryId = plantingSiteHistoryId, state = ObservationState.InProgress)
     }
   }
 

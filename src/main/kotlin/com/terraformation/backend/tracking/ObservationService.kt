@@ -133,10 +133,9 @@ class ObservationService(
         }
 
         observationStore.populateCumulativeDead(observationId)
-        observationStore.updateObservationState(observationId, ObservationState.InProgress)
+        val startedObservation = observationStore.recordObservationStart(observationId)
 
-        eventPublisher.publishEvent(
-            ObservationStartedEvent(observation.copy(state = ObservationState.InProgress)))
+        eventPublisher.publishEvent(ObservationStartedEvent(startedObservation))
       }
     }
   }

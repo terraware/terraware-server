@@ -1649,20 +1649,20 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertPlantingSiteHistory(
-      boundary: Geometry? = null,
-      createdBy: UserId = currentUser().userId,
-      createdTime: Instant = Instant.EPOCH,
-      exclusion: Geometry? = null,
-      gridOrigin: Geometry? = null,
+      boundary: Geometry = lastPlantingSitesRow.boundary!!,
+      createdBy: UserId = lastPlantingSitesRow.createdBy!!,
+      createdTime: Instant = lastPlantingSitesRow.createdTime!!,
+      exclusion: Geometry? = lastPlantingSitesRow.exclusion,
+      gridOrigin: Geometry? = lastPlantingSitesRow.gridOrigin,
       plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
   ): PlantingSiteHistoryId {
     val row =
         PlantingSiteHistoriesRow(
-            boundary = boundary ?: lastPlantingSitesRow.boundary,
+            boundary = boundary,
             createdBy = createdBy,
             createdTime = createdTime,
-            exclusion = exclusion ?: lastPlantingSitesRow.exclusion,
-            gridOrigin = gridOrigin ?: lastPlantingSitesRow.gridOrigin,
+            exclusion = exclusion,
+            gridOrigin = gridOrigin,
             plantingSiteId = plantingSiteId,
         )
 
@@ -1917,6 +1917,8 @@ abstract class DatabaseBackedTest {
     return row.id!!.also { inserted.moduleIds.add(it) }
   }
 
+  private lateinit var lastMonitoringPlotsRow: MonitoringPlotsRow
+
   fun insertMonitoringPlot(
       row: MonitoringPlotsRow = MonitoringPlotsRow(),
       x: Number = 0,
@@ -1962,6 +1964,7 @@ abstract class DatabaseBackedTest {
         )
 
     monitoringPlotsDao.insert(rowWithDefaults)
+    lastMonitoringPlotsRow = rowWithDefaults
 
     val monitoringPlotId = rowWithDefaults.id!!
     inserted.monitoringPlotIds.add(monitoringPlotId)
@@ -1974,11 +1977,11 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertMonitoringPlotHistory(
-      createdBy: UserId = currentUser().userId,
-      createdTime: Instant = Instant.EPOCH,
-      fullName: String? = null,
+      createdBy: UserId = lastMonitoringPlotsRow.createdBy!!,
+      createdTime: Instant = lastMonitoringPlotsRow.createdTime!!,
+      fullName: String = lastMonitoringPlotsRow.fullName!!,
       monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
-      name: String? = null,
+      name: String = lastMonitoringPlotsRow.name!!,
       plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
       plantingSiteHistoryId: PlantingSiteHistoryId = inserted.plantingSiteHistoryId,
       plantingSubzoneId: PlantingSubzoneId? =
@@ -1990,9 +1993,9 @@ abstract class DatabaseBackedTest {
         MonitoringPlotHistoriesRow(
             createdBy = createdBy,
             createdTime = createdTime,
-            fullName = fullName ?: lastPlantingSubzonesRow.fullName,
+            fullName = fullName,
             monitoringPlotId = monitoringPlotId,
-            name = name ?: lastPlantingSubzonesRow.name,
+            name = name,
             plantingSiteHistoryId = plantingSiteHistoryId,
             plantingSiteId = plantingSiteId,
             plantingSubzoneHistoryId = plantingSubzoneHistoryId,
@@ -2274,6 +2277,13 @@ abstract class DatabaseBackedTest {
               } else {
                 ObservationState.InProgress
               },
+      plantingSiteHistoryId: PlantingSiteHistoryId? =
+          row.plantingSiteHistoryId
+              ?: if (state != ObservationState.Upcoming) {
+                inserted.plantingSiteHistoryId
+              } else {
+                null
+              },
       upcomingNotificationSentTime: Instant? = row.upcomingNotificationSentTime,
   ): ObservationId {
     val rowWithDefaults =
@@ -2281,6 +2291,7 @@ abstract class DatabaseBackedTest {
             completedTime = completedTime,
             createdTime = createdTime,
             endDate = endDate,
+            plantingSiteHistoryId = plantingSiteHistoryId,
             plantingSiteId = plantingSiteId,
             startDate = startDate,
             stateId = state,

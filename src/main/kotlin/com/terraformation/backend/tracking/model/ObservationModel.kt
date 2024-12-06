@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
@@ -14,6 +15,7 @@ data class ObservationModel<ID : ObservationId?>(
     val completedTime: Instant? = null,
     val endDate: LocalDate,
     val id: ID,
+    val plantingSiteHistoryId: PlantingSiteHistoryId? = null,
     val plantingSiteId: PlantingSiteId,
     val requestedSubzoneIds: Set<PlantingSubzoneId> = emptySet(),
     val startDate: LocalDate,
@@ -46,6 +48,7 @@ data class ObservationModel<ID : ObservationId?>(
           completedTime = record[OBSERVATIONS.COMPLETED_TIME],
           endDate = record[OBSERVATIONS.END_DATE]!!,
           id = record[OBSERVATIONS.ID]!!,
+          plantingSiteHistoryId = record[OBSERVATIONS.PLANTING_SITE_HISTORY_ID],
           plantingSiteId = record[OBSERVATIONS.PLANTING_SITE_ID]!!,
           requestedSubzoneIds = record[requestedSubzoneIdsField],
           startDate = record[OBSERVATIONS.START_DATE]!!,

@@ -384,6 +384,7 @@ COMMENT ON TABLE tracking.observation_states IS '(Enum) Where in the observation
 COMMENT ON TABLE tracking.observations IS 'Scheduled observations of planting sites. This table may contain rows describing future observations as well as current and past ones.';
 COMMENT ON COLUMN tracking.observations.completed_time IS 'Server-generated date and time the final piece of data for the observation was received.';
 COMMENT ON COLUMN tracking.observations.end_date IS 'Last day of the observation. This is typically the last day of the same month as `start_date`.';
+COMMENT ON COLUMN tracking.observations.planting_site_history_id IS 'Which version of the planting site map was used for the observation. Null for upcoming observations since monitoring plots are only placed on the map when an observation starts.';
 COMMENT ON COLUMN tracking.observations.start_date IS 'First day of the observation. This is either the first day of the month following the end of the planting season, or 6 months after that day.';
 COMMENT ON COLUMN tracking.observations.upcoming_notification_sent_time IS 'When the notification that the observation is starting in 1 month was sent. Null if the notification has not been sent yet.';
 
