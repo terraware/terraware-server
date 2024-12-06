@@ -24,7 +24,7 @@ class ApplicationCountryUpdater(
     systemUser.run {
       val variable = variableStore.fetchOneVariable(event.variableId)
 
-      if (StableId(variable.stableId, variable.type) == StableIds.country) {
+      if (StableId(variable.stableId) == StableIds.country) {
         val application = applicationStore.fetchByProjectId(event.projectId).singleOrNull()
         if (application != null) {
           val variableValues = applicationVariableValuesService.fetchValues(event.projectId)

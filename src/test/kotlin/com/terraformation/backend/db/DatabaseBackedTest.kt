@@ -3329,8 +3329,8 @@ abstract class DatabaseBackedTest {
     return row.id!!.also { inserted.variableWorkflowHistoryIds.add(it) }
   }
 
-  private fun insertStableVariable(stableId: StableId): VariableId {
-    return when (stableId.variableType) {
+  private fun insertStableVariable(stableId: StableId, varirableType: VariableType): VariableId {
+    return when (varirableType) {
       VariableType.Number ->
           insertNumberVariable(
               insertVariable(type = VariableType.Number, stableId = stableId.value))
@@ -3341,47 +3341,47 @@ abstract class DatabaseBackedTest {
               insertVariable(type = VariableType.Select, stableId = stableId.value))
       VariableType.Table ->
           insertTableVariable(insertVariable(type = VariableType.Table, stableId = stableId.value))
-      else -> insertVariable(type = stableId.variableType, stableId = stableId.value)
+      else -> insertVariable(type = varirableType, stableId = stableId.value)
     }
   }
 
   protected fun setupStableIdVariables(): Map<StableId, VariableId> {
-    val stableIds =
+    val stableIds: Map<StableId, VariableType> =
         with(StableIds) {
-          setOf(
-              country,
-              applicationRestorableLand,
-              projectType,
-              landUseModelType,
-              nativeForestLandUseHectare,
-              monocultureLandUseHectare,
-              sustainableTimberLandUseHectare,
-              otherTimberLandUseHectare,
-              mangrovesLandUseModelHectare,
-              agroforestryLandUseModelHectare,
-              silvopastureLandUseModelHectare,
-              otherLandUseModelHectare,
-              numSpecies,
-              totalExpansionPotential,
-              contactName,
-              contactEmail,
-              website,
-              tfRestorableLand,
-              perHectareEstimatedBudget,
-              minCarbonAccumulation,
-              maxCarbonAccumulation,
-              carbonCapacity,
-              annualCarbon,
-              totalCarbon,
-              dealDescription,
-              investmentThesis,
-              failureRisk,
-              whatNeedsToBeTrue,
-              dealName,
+          mapOf(
+              country to VariableType.Select,
+              applicationRestorableLand to VariableType.Number,
+              projectType to VariableType.Select,
+              landUseModelType to VariableType.Select,
+              nativeForestLandUseHectare to VariableType.Number,
+              monocultureLandUseHectare to VariableType.Number,
+              sustainableTimberLandUseHectare to VariableType.Number,
+              otherTimberLandUseHectare to VariableType.Number,
+              mangrovesLandUseModelHectare to VariableType.Number,
+              agroforestryLandUseModelHectare to VariableType.Number,
+              silvopastureLandUseModelHectare to VariableType.Number,
+              otherLandUseModelHectare to VariableType.Number,
+              numSpecies to VariableType.Number,
+              totalExpansionPotential to VariableType.Number,
+              contactName to VariableType.Text,
+              contactEmail to VariableType.Text,
+              website to VariableType.Text,
+              tfRestorableLand to VariableType.Number,
+              perHectareEstimatedBudget to VariableType.Number,
+              minCarbonAccumulation to VariableType.Number,
+              maxCarbonAccumulation to VariableType.Number,
+              carbonCapacity to VariableType.Number,
+              annualCarbon to VariableType.Number,
+              totalCarbon to VariableType.Number,
+              dealDescription to VariableType.Text,
+              investmentThesis to VariableType.Text,
+              failureRisk to VariableType.Text,
+              whatNeedsToBeTrue to VariableType.Text,
+              dealName to VariableType.Text,
           )
         }
 
-    return stableIds.associateWith { insertStableVariable(it) }
+    return stableIds.mapValues { (stableId, type) -> insertStableVariable(stableId, type) }
   }
 
   protected fun clearCachedPermissions(updatedUserId: UserId = currentUser().userId) {

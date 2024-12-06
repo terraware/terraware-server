@@ -63,7 +63,7 @@ class AcceleratorProjectVariableValuesService(
   }
 
   private val variablesByStableId: Map<StableId, Variable> by lazy {
-    variablesById.values.associateBy { StableId(it.stableId, it.type) }
+    variablesById.values.associateBy { StableId(it.stableId) }
   }
 
   fun fetchValues(projectId: ProjectId): ProjectAcceleratorVariableValuesModel {
@@ -73,7 +73,7 @@ class AcceleratorProjectVariableValuesService(
         variableValueStore
             .listValues(projectId = projectId, variableIds = variablesById.keys)
             .mapNotNull { value ->
-              val stableId = variablesById[value.variableId]?.let { StableId(it.stableId, it.type) }
+              val stableId = variablesById[value.variableId]?.let { StableId(it.stableId) }
               if (stableId != null) {
                 stableId to value
               } else {
@@ -155,7 +155,7 @@ class AcceleratorProjectVariableValuesService(
         variableValueStore
             .listValues(projectId = projectId, variableIds = variablesById.keys)
             .mapNotNull { value ->
-              val stableId = variablesById[value.variableId]?.let { StableId(it.stableId, it.type) }
+              val stableId = variablesById[value.variableId]?.let { StableId(it.stableId) }
               if (stableId != null) {
                 stableId to value
               } else {
