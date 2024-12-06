@@ -100,7 +100,7 @@
 <text text-anchor="start" x="274.5" y="-601.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="271.5,-577 271.5,-595 311.5,-595 311.5,-577 271.5,-577"/>
 <polygon fill="none" stroke="black" points="271.5,-577 271.5,-595 311.5,-595 311.5,-577 271.5,-577"/>
-<text text-anchor="start" x="274.5" y="-583.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<text text-anchor="start" x="274.5" y="-583.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
 <polygon fill="#ffffff" stroke="none" points="311.5,-577 311.5,-595 361.5,-595 361.5,-577 311.5,-577"/>
 <polygon fill="none" stroke="black" points="311.5,-577 311.5,-595 361.5,-595 361.5,-577 311.5,-577"/>
 <text text-anchor="start" x="322.5" y="-583.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>

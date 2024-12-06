@@ -17,13 +17,13 @@ planting_seasons
 deliveries
 observation_plots
 monitoring_plot_histories
+observations
 planting_subzone_histories
 monitoring_plots
 planting_zone_histories
 planting_subzones
 planting_site_histories
 planting_zones
-observations
 recorded_plant_statuses
 planting_types
 observation_states

@@ -24,7 +24,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "deliveries":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plot_histories":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plot_histories":"elipses":w -> "monitoring_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "monitoring_plot_histories":"elipses":w -> "planting_site_histories":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "monitoring_plot_histories":"elipses":w -> "planting_site_histories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plot_histories":"elipses":w -> "planting_sites":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plot_histories":"elipses":w -> "planting_subzones":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plots":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -50,6 +50,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "observation_plots":"status_id":w -> "observation_plot_statuses":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_requested_subzones":"observation_id":w -> "observations":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_requested_subzones":"planting_subzone_id":w -> "planting_subzones":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observations":"planting_site_history_id":w -> "planting_site_histories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observations":"planting_site_id":w -> "planting_sites":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observations":"state_id":w -> "observation_states":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_plot_coordinates":"monitoring_plot_id":w -> "monitoring_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -70,8 +71,8 @@ digraph "twoDegreesRelationshipsDiagram" {
   "observed_zone_species_totals":"planting_zone_id":w -> "planting_zones":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_zone_species_totals":"species_id":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_seasons":"elipses":w -> "planting_sites":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_site_histories":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_site_histories":"elipses":w -> "planting_sites":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "planting_site_histories":"created_by":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "planting_site_histories":"planting_site_id":w -> "planting_sites":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_site_notifications":"elipses":w -> "planting_sites":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_site_populations":"elipses":w -> "planting_sites":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_site_populations":"elipses":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -86,6 +87,8 @@ digraph "twoDegreesRelationshipsDiagram" {
   "planting_subzones":"elipses":w -> "planting_sites":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_subzones":"elipses":w -> "planting_zones":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_subzones":"elipses":w -> "planting_zones":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "planting_zone_histories":"elipses":w -> "planting_site_histories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "planting_zone_histories":"elipses":w -> "planting_zones":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_zones":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_zones":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_zones":"elipses":w -> "planting_sites":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -329,7 +332,8 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="completed_time" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="197" HEIGHT="16">completed_time</TD></TR></TABLE></TD><TD PORT="completed_time.type" ALIGN="LEFT">timestamptz[35,6]</TD></TR>
       <TR><TD PORT="state_id" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="197" HEIGHT="16">state_id</TD></TR></TABLE></TD><TD PORT="state_id.type" ALIGN="LEFT">int4[10]</TD></TR>
       <TR><TD PORT="upcoming_notification_sent_time" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="197" HEIGHT="16">upcoming_notification_sent_time</TD></TR></TABLE></TD><TD PORT="upcoming_notification_sent_time.type" ALIGN="LEFT">timestamptz[35,6]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">9 &gt;</TD></TR>
+      <TR><TD PORT="planting_site_history_id" COLSPAN="2" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="197" HEIGHT="16">planting_site_history_id</TD></TR></TABLE></TD><TD PORT="planting_site_history_id.type" ALIGN="LEFT">int8[19]</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">9 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/observations.html"
     target="_top"
@@ -413,8 +417,11 @@ digraph "twoDegreesRelationshipsDiagram" {
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>planting_site_histories</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="134" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="planting_site_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="134" HEIGHT="16">planting_site_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="134" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/planting_site_histories.html"
     target="_top"
@@ -471,6 +478,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/planting_subzones.html"
     target="_top"
     tooltip="planting_subzones"
+  ];
+  "planting_zone_histories" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT"><B>planting_zone_histories</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/planting_zone_histories.html"
+    target="_top"
+    tooltip="planting_zone_histories"
   ];
   "planting_zones" [
    label=<

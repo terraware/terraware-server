@@ -6,13 +6,13 @@ observation_plot_statuses
 observation_states
 planting_types
 recorded_plant_statuses
-observations
 planting_zones
 planting_site_histories
 planting_subzones
 planting_zone_histories
 monitoring_plots
 planting_subzone_histories
+observations
 monitoring_plot_histories
 observation_plots
 deliveries
