@@ -1935,12 +1935,13 @@ abstract class DatabaseBackedTest {
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: "${nextMonitoringPlotNumber++}",
-      fullName: String = "Z1-1-$name",
       permanentCluster: Int? = row.permanentCluster,
       permanentClusterSubplot: Int? =
           row.permanentClusterSubplot ?: if (permanentCluster != null) 1 else null,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
-      plantingSubzoneId: PlantingSubzoneId = row.plantingSubzoneId ?: inserted.plantingSubzoneId,
+      plantingSubzoneId: PlantingSubzoneId? =
+          row.plantingSubzoneId ?: inserted.plantingSubzoneIds.lastOrNull(),
+      fullName: String = if (plantingSubzoneId != null) "Z1-1-$name" else name,
       insertHistory: Boolean = true,
   ): MonitoringPlotId {
     val rowWithDefaults =

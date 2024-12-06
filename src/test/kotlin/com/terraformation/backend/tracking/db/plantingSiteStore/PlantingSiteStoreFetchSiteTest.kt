@@ -49,6 +49,8 @@ internal class PlantingSiteStoreFetchSiteTest : PlantingSiteStoreTest() {
       val plantingSeasonId2 =
           insertPlantingSeason(startDate = season2StartDate, endDate = season2EndDate)
 
+      val exteriorPlotId = insertMonitoringPlot(boundary = polygon(0.2), plantingSubzoneId = null)
+
       val expectedWithSite =
           ExistingPlantingSiteModel(
               boundary = multiPolygon(3),
@@ -117,6 +119,15 @@ internal class PlantingSiteStoreFetchSiteTest : PlantingSiteStoreTest() {
 
       val expectedWithPlot =
           expectedWithSubzone.copy(
+              exteriorPlots =
+                  listOf(
+                      MonitoringPlotModel(
+                          boundary = polygon(0.2),
+                          id = exteriorPlotId,
+                          isAvailable = true,
+                          name = "2",
+                          fullName = "2",
+                          sizeMeters = 30)),
               plantingZones =
                   listOf(
                       expectedWithSubzone.plantingZones[0].copy(

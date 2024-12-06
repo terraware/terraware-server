@@ -53,6 +53,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val monitoringPlotGeometry6 = polygon(6, 7, 8, 9)
     val monitoringPlotGeometry7 = polygon(7, 8, 9, 10)
     val monitoringPlotGeometry8 = polygon(8, 9, 10, BigDecimal("11.0123456789"))
+    val exteriorPlotGeometry9 = polygon(9, 10, 11, 12)
     val plantingSiteId =
         insertPlantingSite(
             boundary = plantingSiteGeometry,
@@ -83,6 +84,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val monitoringPlotId7 = insertMonitoringPlot(boundary = monitoringPlotGeometry7)
     val monitoringPlotId8 =
         insertMonitoringPlot(boundary = monitoringPlotGeometry8, sizeMeters = 25)
+
+    val exteriorPlotId9 =
+        insertMonitoringPlot(boundary = exteriorPlotGeometry9, plantingSubzoneId = null)
 
     val speciesId1 = insertSpecies()
     val speciesId2 = insertSpecies()
@@ -215,6 +219,10 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                             ),
                         ),
                     "exclusion" to postgisRenderGeoJson(exclusionGeometry),
+                    "exteriorPlots" to
+                        listOf(
+                            mapOf("id" to "$exteriorPlotId9"),
+                        ),
                     "id" to "$plantingSiteId",
                     "modifiedTime" to "1970-01-01T00:00:00Z",
                     "monitoringPlots" to
@@ -439,6 +447,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "deliveries.reassignedTime",
                 "deliveries.withdrawal_facility_name",
                 "exclusion",
+                "exteriorPlots.id",
                 "id",
                 "modifiedTime",
                 "monitoringPlots.id",
