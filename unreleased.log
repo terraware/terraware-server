@@ -1,3 +1,4 @@
+6c2cc5f96ec Added list participants API and added deal name to projects if visible (#2664)
 6fe6649ca49 SW-6280 Observation planting site history IDs in API (#2663)
 edcda3784cd SW-6280 API to request historical planting site maps (#2662)
 4e590d97905 SW-6280 Track observation site versions (#2661)
