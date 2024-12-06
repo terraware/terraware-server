@@ -1,3 +1,8 @@
 package com.terraformation.backend.accelerator.variables
 
-data class StableId(val value: String)
+import com.terraformation.backend.db.docprod.VariableType
+
+data class StableId(
+    val value: String,
+    val variableType: VariableType,
+)

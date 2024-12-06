@@ -1,6 +1,8 @@
 package com.terraformation.backend.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
+import com.terraformation.backend.accelerator.variables.StableId
+import com.terraformation.backend.accelerator.variables.StableIds
 import com.terraformation.backend.api.ArbitraryJsonObject
 import com.terraformation.backend.api.ControllerIntegrationTest
 import com.terraformation.backend.auth.CurrentUserHolder
@@ -3325,6 +3327,61 @@ abstract class DatabaseBackedTest {
     variableWorkflowHistoryDao.insert(row)
 
     return row.id!!.also { inserted.variableWorkflowHistoryIds.add(it) }
+  }
+
+  private fun insertStableVariable(stableId: StableId): VariableId {
+    return when (stableId.variableType) {
+      VariableType.Number ->
+          insertNumberVariable(
+              insertVariable(type = VariableType.Number, stableId = stableId.value))
+      VariableType.Text ->
+          insertTextVariable(insertVariable(type = VariableType.Text, stableId = stableId.value))
+      VariableType.Select ->
+          insertSelectVariable(
+              insertVariable(type = VariableType.Select, stableId = stableId.value))
+      VariableType.Table ->
+          insertTableVariable(insertVariable(type = VariableType.Table, stableId = stableId.value))
+      else -> insertVariable(type = stableId.variableType, stableId = stableId.value)
+    }
+  }
+
+  protected fun setupStableIdVariables(): Map<StableId, VariableId> {
+    val stableIds =
+        with(StableIds) {
+          setOf(
+              country,
+              applicationRestorableLand,
+              projectType,
+              landUseModelType,
+              nativeForestLandUseHectare,
+              monocultureLandUseHectare,
+              sustainableTimberLandUseHectare,
+              otherTimberLandUseHectare,
+              mangrovesLandUseModelHectare,
+              agroforestryLandUseModelHectare,
+              silvopastureLandUseModelHectare,
+              otherLandUseModelHectare,
+              numSpecies,
+              totalExpansionPotential,
+              contactName,
+              contactEmail,
+              website,
+              tfRestorableLand,
+              perHectareEstimatedBudget,
+              minCarbonAccumulation,
+              maxCarbonAccumulation,
+              carbonCapacity,
+              annualCarbon,
+              totalCarbon,
+              dealDescription,
+              investmentThesis,
+              failureRisk,
+              whatNeedsToBeTrue,
+              dealName,
+          )
+        }
+
+    return stableIds.associateWith { insertStableVariable(it) }
   }
 
   protected fun clearCachedPermissions(updatedUserId: UserId = currentUser().userId) {

@@ -9,11 +9,9 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
-import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableSelectOptionId
-import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.mockUser
@@ -55,96 +53,32 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
             variableSelectOptionValuesDao,
             variableValuesDao,
             variableValueTableRowsDao),
-        SystemUser(usersDao),
-        deliverableId)
+        SystemUser(usersDao))
   }
-
-  private lateinit var countryVariableId: VariableId
-  private lateinit var deliverableId: DeliverableId
-
-  private lateinit var contactEmailVariableId: VariableId
-  private lateinit var contactNameVariableId: VariableId
-  private lateinit var dealNameVariableId: VariableId
-  private lateinit var numSpeciesVariableId: VariableId
-  private lateinit var projectTypeVariableId: VariableId
-  private lateinit var totalExpansionPotentialVariableId: VariableId
-  private lateinit var websiteVariableId: VariableId
-  private lateinit var landUseHectaresVariableIds: Map<LandUseModelType, VariableId>
 
   private lateinit var brazilOptionId: VariableSelectOptionId
   private lateinit var chileOptionId: VariableSelectOptionId
+
   private lateinit var terrestrialOptionId: VariableSelectOptionId
+
+  private lateinit var variableIdsByStableId: Map<StableId, VariableId>
 
   @BeforeEach
   fun setUp() {
     insertOrganization()
     insertProject()
     insertModule(phase = CohortPhase.PreScreen)
-    deliverableId = insertDeliverable()
 
-    contactEmailVariableId =
-        insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = StableIds.contactEmail.value))
-    contactNameVariableId =
-        insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = StableIds.contactName.value))
-    countryVariableId =
-        insertSelectVariable(
-            insertVariable(
-                type = VariableType.Select,
-                deliverableId = inserted.deliverableId,
-                deliverablePosition = 1,
-                stableId = StableIds.country.value))
+    variableIdsByStableId = setupStableIdVariables()
 
-    brazilOptionId = insertSelectOption(inserted.variableId, "Brazil")
-    chileOptionId = insertSelectOption(inserted.variableId, "Chile")
-    insertSelectOption(inserted.variableId, "Ghana")
+    brazilOptionId = insertSelectOption(variableIdsByStableId[StableIds.country]!!, "Brazil")
+    chileOptionId = insertSelectOption(variableIdsByStableId[StableIds.country]!!, "Chile")
+    insertSelectOption(variableIdsByStableId[StableIds.country]!!, "Ghana")
 
-    dealNameVariableId =
-        insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = StableIds.dealName.value))
-
-    numSpeciesVariableId =
-        insertNumberVariable(
-            insertVariable(
-                type = VariableType.Number,
-                deliverableId = inserted.deliverableId,
-                deliverablePosition = 2,
-                stableId = StableIds.numSpecies.value))
-    totalExpansionPotentialVariableId =
-        insertNumberVariable(
-            insertVariable(
-                type = VariableType.Number,
-                deliverableId = inserted.deliverableId,
-                deliverablePosition = 3,
-                stableId = StableIds.totalExpansionPotential.value))
-    websiteVariableId =
-        insertTextVariable(
-            insertVariable(type = VariableType.Text, stableId = StableIds.website.value))
-
-    projectTypeVariableId =
-        insertSelectVariable(
-            insertVariable(
-                type = VariableType.Select,
-                deliverableId = inserted.deliverableId,
-                deliverablePosition = 4,
-                stableId = StableIds.projectType.value))
-    terrestrialOptionId = insertSelectOption(inserted.variableId, "Terrestrial")
-    insertSelectOption(inserted.variableId, "Mangrove")
-    insertSelectOption(inserted.variableId, "Mixed")
-
-    landUseHectaresVariableIds =
-        StableIds.landUseHectaresByLandUseModel.entries
-            .mapIndexed { index, (landUseType, stableId) ->
-              landUseType to
-                  insertNumberVariable(
-                      insertVariable(
-                          type = VariableType.Number,
-                          deliverableId = inserted.deliverableId,
-                          deliverablePosition = index + 4,
-                          stableId = stableId.value))
-            }
-            .toMap()
+    terrestrialOptionId =
+        insertSelectOption(variableIdsByStableId[StableIds.projectType]!!, "Terrestrial")
+    insertSelectOption(variableIdsByStableId[StableIds.projectType]!!, "Mangrove")
+    insertSelectOption(variableIdsByStableId[StableIds.projectType]!!, "Mixed")
 
     every { user.canReadProjectDeliverables(any()) } returns true
   }
@@ -160,16 +94,27 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches values for all variables`() {
-      insertValue(variableId = contactEmailVariableId, textValue = "a@b.com")
-      insertValue(variableId = contactNameVariableId, textValue = "John Smith")
-      insertSelectValue(variableId = countryVariableId, optionIds = setOf(brazilOptionId))
-      insertValue(variableId = numSpeciesVariableId, numberValue = BigDecimal(123))
-      insertValue(variableId = totalExpansionPotentialVariableId, numberValue = BigDecimal(5555))
-      insertValue(variableId = websiteVariableId, textValue = "https://example.com/")
-      insertSelectValue(variableId = projectTypeVariableId, optionIds = setOf(terrestrialOptionId))
-      LandUseModelType.entries.forEach { type ->
+      insertValue(
+          variableId = variableIdsByStableId[StableIds.contactEmail]!!, textValue = "a@b.com")
+      insertValue(
+          variableId = variableIdsByStableId[StableIds.contactName]!!, textValue = "John Smith")
+      insertSelectValue(
+          variableId = variableIdsByStableId[StableIds.country]!!,
+          optionIds = setOf(brazilOptionId))
+      insertValue(
+          variableId = variableIdsByStableId[StableIds.numSpecies]!!, numberValue = BigDecimal(123))
+      insertValue(
+          variableId = variableIdsByStableId[StableIds.totalExpansionPotential]!!,
+          numberValue = BigDecimal(5555))
+      insertValue(
+          variableId = variableIdsByStableId[StableIds.website]!!,
+          textValue = "https://example.com/")
+      insertSelectValue(
+          variableId = variableIdsByStableId[StableIds.projectType]!!,
+          optionIds = setOf(terrestrialOptionId))
+      StableIds.landUseHectaresByLandUseModel.forEach { (type, stableId) ->
         insertValue(
-            variableId = landUseHectaresVariableIds[type]!!, numberValue = BigDecimal(type.id))
+            variableId = variableIdsByStableId[stableId]!!, numberValue = BigDecimal(type.id))
       }
 
       assertEquals(
@@ -203,7 +148,7 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
       val lastValueRow =
           variableValuesDao
-              .fetchByVariableId(countryVariableId)
+              .fetchByVariableId(variableIdsByStableId[StableIds.country]!!)
               .filter { it.projectId!! == inserted.projectId }
               .maxBy { it.id!!.value }
 
@@ -217,12 +162,13 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `replaces existing country variable value`() {
-      insertSelectValue(variableId = countryVariableId, optionIds = setOf(chileOptionId))
+      insertSelectValue(
+          variableId = variableIdsByStableId[StableIds.country]!!, optionIds = setOf(chileOptionId))
       service.updateCountryVariable(inserted.projectId, "BR")
 
       val lastValueRow =
           variableValuesDao
-              .fetchByVariableId(countryVariableId)
+              .fetchByVariableId(variableIdsByStableId[StableIds.country]!!)
               .filter { it.projectId!! == inserted.projectId }
               .maxBy { it.id!!.value }
 
