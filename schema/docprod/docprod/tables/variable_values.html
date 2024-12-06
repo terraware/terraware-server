@@ -355,7 +355,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>For text or email variables, the variable&rsquo;s value. May contain newlines if the text variable is multi-line.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="date_value">date_value</span></td>
@@ -466,8 +466,8 @@
                                     <td>(((number_value IS NULL) OR (variable_type_id = 1)))</td>
                                 </tr>
                                 <tr>
-                                    <td>variable_values_check1</td>
-                                    <td>(((text_value IS NULL) OR (variable_type_id = 2)))</td>
+                                    <td>text_value_is_text_or_email</td>
+                                    <td>(((text_value IS NULL) OR (variable_type_id = ANY (ARRAY[2, 9]))))</td>
                                 </tr>
                                 </tbody>
                             </table>

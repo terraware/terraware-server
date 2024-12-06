@@ -1921,13 +1921,13 @@
                                     </tr>
                                     <tr>
                                         <td><a href='tables/variable_values.html'>variable_values</a></td>
-                                        <td>variable_values_check</td>
-                                        <td>(((number_value IS NULL) OR (variable_type_id = 1)))</td>
+                                        <td>text_value_is_text_or_email</td>
+                                        <td>(((text_value IS NULL) OR (variable_type_id = ANY (ARRAY[2, 9]))))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/variable_values.html'>variable_values</a></td>
-                                        <td>variable_values_check1</td>
-                                        <td>(((text_value IS NULL) OR (variable_type_id = 2)))</td>
+                                        <td>variable_values_check</td>
+                                        <td>(((number_value IS NULL) OR (variable_type_id = 1)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/variable_section_values.html'>variable_section_values</a></td>
