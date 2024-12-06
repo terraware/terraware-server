@@ -3,8 +3,9 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.variables.AcceleratorProjectVariableValuesService
-import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
+import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.default_schema.ProjectId
 import jakarta.inject.Named
 
@@ -19,10 +20,14 @@ class ProjectAcceleratorDetailsService(
   }
 
   /** Returns accelerator details for projects that are assigned to cohorts. */
-  fun fetchParticipantProjectDetails(): List<ProjectAcceleratorDetailsModel> {
-    requirePermissions { readAllAcceleratorDetails() }
-
+  fun fetchAllParticipantProjectDetails(): List<ProjectAcceleratorDetailsModel> {
     return projectAcceleratorDetailsStore.fetch(COHORTS.ID.isNotNull()) {
+      acceleratorProjectVariableValuesService.fetchValues(it)
+    }
+  }
+
+  fun fetchForParticipant(participantId: ParticipantId): List<ProjectAcceleratorDetailsModel> {
+    return projectAcceleratorDetailsStore.fetch(PARTICIPANTS.ID.eq(participantId)) {
       acceleratorProjectVariableValuesService.fetchValues(it)
     }
   }

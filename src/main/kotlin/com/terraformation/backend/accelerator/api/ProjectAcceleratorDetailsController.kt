@@ -41,7 +41,7 @@ class ProjectAcceleratorDetailsController(
       summary = "List accelerator projects with accelerator-related details.",
   )
   fun listProjectAcceleratorDetails(): ListProjectAcceleratorDetailsResponsePayload {
-    val models = projectAcceleratorDetailsService.fetchParticipantProjectDetails()
+    val models = projectAcceleratorDetailsService.fetchAllParticipantProjectDetails()
     return ListProjectAcceleratorDetailsResponsePayload(
         models.map { ProjectAcceleratorDetailsPayload(it) })
   }
