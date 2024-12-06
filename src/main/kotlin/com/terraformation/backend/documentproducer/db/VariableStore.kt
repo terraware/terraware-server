@@ -41,6 +41,7 @@ import com.terraformation.backend.db.docprod.tables.references.VARIABLE_TABLE_CO
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
 import com.terraformation.backend.documentproducer.model.BaseVariableProperties
 import com.terraformation.backend.documentproducer.model.DateVariable
+import com.terraformation.backend.documentproducer.model.EmailVariable
 import com.terraformation.backend.documentproducer.model.ImageVariable
 import com.terraformation.backend.documentproducer.model.LinkVariable
 import com.terraformation.backend.documentproducer.model.NumberVariable
@@ -435,6 +436,7 @@ class VariableStore(
         val variable =
             when (variablesRow.variableTypeId!!) {
               VariableType.Date -> DateVariable(base)
+              VariableType.Email -> EmailVariable(base)
               VariableType.Number -> fetchNumber(base)
               VariableType.Text -> fetchText(base)
               VariableType.Image -> ImageVariable(base)

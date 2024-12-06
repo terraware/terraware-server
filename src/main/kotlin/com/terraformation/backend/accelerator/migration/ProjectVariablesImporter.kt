@@ -10,6 +10,7 @@ import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
 import com.terraformation.backend.documentproducer.model.DateValue
 import com.terraformation.backend.documentproducer.model.DeleteValueOperation
+import com.terraformation.backend.documentproducer.model.EmailValue
 import com.terraformation.backend.documentproducer.model.LinkValue
 import com.terraformation.backend.documentproducer.model.LinkValueDetails
 import com.terraformation.backend.documentproducer.model.NumberValue
@@ -121,6 +122,14 @@ class ProjectVariablesImporter(
                             if ((currentValues[variable.id]?.value as? DateValue<*>)?.value !=
                                 localDate) {
                               DateValue(baseProperties, localDate)
+                            } else {
+                              null
+                            }
+                          }
+                          VariableType.Email -> {
+                            if ((currentValues[variable.id]?.value as? EmailValue<*>)?.value !=
+                                value) {
+                              EmailValue(baseProperties, value)
                             } else {
                               null
                             }

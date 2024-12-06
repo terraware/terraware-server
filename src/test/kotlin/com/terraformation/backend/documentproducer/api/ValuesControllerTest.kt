@@ -37,6 +37,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
     @Test
     fun `returns appropriate data structures for all value types`() {
       val dateVariableId = insertVariable(type = VariableType.Date)
+      val emailVariableId = insertVariable(type = VariableType.Email)
       val imageVariableId = insertVariable(type = VariableType.Image)
       val numberVariableId = insertNumberVariable()
       val textVariableId = insertTextVariable()
@@ -49,6 +50,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
 
       val dateValueId =
           insertValue(variableId = dateVariableId, dateValue = LocalDate.of(2023, 9, 25))
+      val emailValueId = insertValue(variableId = emailVariableId, textValue = "email@example.com")
       val imageValueId = insertImageValue(imageVariableId, insertFile(), caption = "Image caption")
       val numberValueId =
           insertValue(variableId = numberVariableId, numberValue = BigDecimal(12345))
@@ -82,6 +84,18 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                           "listPosition": 0,
                           "type": "Date",
                           "dateValue": "2023-09-25"
+                        }
+                      ]
+                    },
+                    {
+                      "variableId": $emailVariableId,
+                      "status": "Not Submitted",
+                      "values": [
+                        {
+                          "id": $emailValueId,
+                          "listPosition": 0,
+                          "type": "Email",
+                          "emailValue": "email@example.com"
                         }
                       ]
                     },
@@ -685,6 +699,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
       val numberVariableId = insertNumberVariable()
       val linkVariableId = insertVariable(type = VariableType.Link)
       val dateVariableId = insertVariable(type = VariableType.Date)
+      val emailVariableId = insertVariable(type = VariableType.Email)
       val selectVariableId = insertSelectVariable()
       val selectOptionId = insertSelectOption(selectVariableId, "Option")
 
@@ -754,6 +769,15 @@ class ValuesControllerTest : ControllerIntegrationTest() {
                     "type": "Date",
                     "citation": "Citation",
                     "dateValue": "2023-01-01T11:22:33Z"
+                  }
+                },
+                {
+                  "operation": "Append",
+                  "variableId": $emailVariableId,
+                  "value": {
+                    "type": "Email",
+                    "citation": "Citation",
+                    "emailValue": "append@example.com"
                   }
                 },
                 {
@@ -832,7 +856,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
     }
 
     @Test
-    fun `Returns not found error if user has no permission to read internal only variable`() {
+    fun `returns not found error if user has no permission to read internal only variable`() {
       val variableId =
           insertTextVariable(
               insertVariable(internalOnly = true, isList = true, type = VariableType.Text))
@@ -862,7 +886,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
     }
 
     @Test
-    fun `Returns unauthorized error if user has no permission to update internal only variable`() {
+    fun `returns unauthorized error if user has no permission to update internal only variable`() {
       val variableId =
           insertTextVariable(
               insertVariable(internalOnly = true, isList = true, type = VariableType.Text))

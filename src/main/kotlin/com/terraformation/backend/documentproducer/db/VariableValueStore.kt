@@ -46,8 +46,10 @@ import com.terraformation.backend.documentproducer.model.BaseVariableValueProper
 import com.terraformation.backend.documentproducer.model.DateValue
 import com.terraformation.backend.documentproducer.model.DeleteValueOperation
 import com.terraformation.backend.documentproducer.model.DeletedValue
+import com.terraformation.backend.documentproducer.model.EmailValue
 import com.terraformation.backend.documentproducer.model.ExistingDateValue
 import com.terraformation.backend.documentproducer.model.ExistingDeletedValue
+import com.terraformation.backend.documentproducer.model.ExistingEmailValue
 import com.terraformation.backend.documentproducer.model.ExistingImageValue
 import com.terraformation.backend.documentproducer.model.ExistingLinkValue
 import com.terraformation.backend.documentproducer.model.ExistingNumberValue
@@ -353,6 +355,8 @@ class VariableValueStore(
         when (variableType) {
           VariableType.Date ->
               record[VARIABLE_VALUES.DATE_VALUE]?.let { ExistingDateValue(base, it) }
+          VariableType.Email ->
+              record[VARIABLE_VALUES.TEXT_VALUE]?.let { ExistingEmailValue(base, it) }
           VariableType.Image ->
               record[VARIABLE_IMAGE_VALUES.FILE_ID]?.let { fileId ->
                 ExistingImageValue(
@@ -824,6 +828,13 @@ class VariableValueStore(
   ): VariableValueId {
     variablesDao.fetchOneById(value.variableId) ?: throw VariableNotFoundException(value.variableId)
 
+    val textValue =
+        when (value) {
+          is EmailValue -> value.value
+          is TextValue -> value.value
+          else -> null
+        }
+
     val valuesRow =
         VariableValuesRow(
             citation = value.citation,
@@ -834,7 +845,7 @@ class VariableValueStore(
             listPosition = listPosition,
             numberValue = if (value is NumberValue) value.value else null,
             projectId = projectId,
-            textValue = if (value is TextValue) value.value else null,
+            textValue = textValue,
             variableId = value.variableId,
             variableTypeId = value.type,
         )
@@ -853,6 +864,7 @@ class VariableValueStore(
       is NumberValue,
       is TextValue,
       is DateValue,
+      is EmailValue,
       is TableValue ->
           // Some values don't require any rows in child tables.
           Unit

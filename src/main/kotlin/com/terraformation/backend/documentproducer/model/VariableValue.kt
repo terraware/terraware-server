@@ -60,6 +60,14 @@ data class DeletedValue<ID : VariableValueId?>(
     get() = null
 }
 
+data class EmailValue<ID : VariableValueId?>(
+    private val base: BaseVariableValueProperties<ID>,
+    override val value: String,
+) : VariableValue<ID, String>, BaseVariableValue<ID> by base {
+  override val type: VariableType
+    get() = VariableType.Email
+}
+
 data class ImageValueDetails(
     val caption: String?,
     val fileId: FileId,
@@ -143,6 +151,8 @@ typealias ExistingDateValue = DateValue<VariableValueId>
 
 typealias ExistingDeletedValue = DeletedValue<VariableValueId>
 
+typealias ExistingEmailValue = EmailValue<VariableValueId>
+
 typealias ExistingImageValue = ImageValue<VariableValueId>
 
 typealias ExistingLinkValue = LinkValue<VariableValueId>
@@ -160,6 +170,8 @@ typealias ExistingTextValue = TextValue<VariableValueId>
 typealias ExistingValue = VariableValue<VariableValueId, *>
 
 typealias NewDateValue = DateValue<Nothing?>
+
+typealias NewEmailValue = EmailValue<Nothing?>
 
 typealias NewImageValue = ImageValue<Nothing?>
 
