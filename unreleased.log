@@ -1,3 +1,6 @@
+a8ecc5565df Update dependency org.eclipse.jgit:org.eclipse.jgit to 7.1.+ (#2668)
+f3c70199f8a Added deal name to deliverable list endpoint (#2665)
+06677cc460e Updated translations from Phrase (#2670)
 6c2cc5f96ec Added list participants API and added deal name to projects if visible (#2664)
 6fe6649ca49 SW-6280 Observation planting site history IDs in API (#2663)
 edcda3784cd SW-6280 API to request historical planting site maps (#2662)
