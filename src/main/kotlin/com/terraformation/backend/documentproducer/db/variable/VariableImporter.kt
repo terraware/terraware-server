@@ -13,6 +13,7 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariableTablesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableTextsRow
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.model.DateVariable
+import com.terraformation.backend.documentproducer.model.EmailVariable
 import com.terraformation.backend.documentproducer.model.HierarchicalVariableType
 import com.terraformation.backend.documentproducer.model.ImageVariable
 import com.terraformation.backend.documentproducer.model.LinkVariable
@@ -443,6 +444,7 @@ class VariableImporter(
                     variable.isMultiple &&
                     hasSameOptions(csvVariable, variable)
             AllVariableCsvVariableType.Date -> variable is DateVariable
+            AllVariableCsvVariableType.Email -> variable is EmailVariable
             AllVariableCsvVariableType.Link -> variable is LinkVariable
             AllVariableCsvVariableType.Image -> variable is ImageVariable
             AllVariableCsvVariableType.Table ->

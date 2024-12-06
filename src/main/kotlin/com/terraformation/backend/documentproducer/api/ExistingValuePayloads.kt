@@ -12,8 +12,10 @@ import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.db.docprod.VariableWorkflowStatus
 import com.terraformation.backend.documentproducer.model.DateValue
 import com.terraformation.backend.documentproducer.model.DeletedValue
+import com.terraformation.backend.documentproducer.model.EmailValue
 import com.terraformation.backend.documentproducer.model.ExistingDateValue
 import com.terraformation.backend.documentproducer.model.ExistingDeletedValue
+import com.terraformation.backend.documentproducer.model.ExistingEmailValue
 import com.terraformation.backend.documentproducer.model.ExistingImageValue
 import com.terraformation.backend.documentproducer.model.ExistingLinkValue
 import com.terraformation.backend.documentproducer.model.ExistingNumberValue
@@ -40,6 +42,7 @@ import java.time.LocalDate
 enum class ExistingValuePayloadType {
   Date,
   Deleted,
+  Email,
   Image,
   Link,
   Number,
@@ -53,6 +56,7 @@ enum class ExistingValuePayloadType {
 @JsonSubTypes(
     JsonSubTypes.Type(value = ExistingDateValuePayload::class, name = "Date"),
     JsonSubTypes.Type(value = ExistingDeletedValuePayload::class, name = "Deleted"),
+    JsonSubTypes.Type(value = ExistingEmailValuePayload::class, name = "Email"),
     JsonSubTypes.Type(value = ExistingLinkValuePayload::class, name = "Link"),
     JsonSubTypes.Type(value = ExistingImageValuePayload::class, name = "Image"),
     JsonSubTypes.Type(value = ExistingNumberValuePayload::class, name = "Number"),
@@ -68,6 +72,7 @@ enum class ExistingValuePayloadType {
         [
             DiscriminatorMapping(schema = ExistingDateValuePayload::class, value = "Date"),
             DiscriminatorMapping(schema = ExistingDeletedValuePayload::class, value = "Deleted"),
+            DiscriminatorMapping(schema = ExistingEmailValuePayload::class, value = "Email"),
             DiscriminatorMapping(schema = ExistingImageValuePayload::class, value = "Image"),
             DiscriminatorMapping(schema = ExistingLinkValuePayload::class, value = "Link"),
             DiscriminatorMapping(schema = ExistingNumberValuePayload::class, value = "Number"),
@@ -91,6 +96,7 @@ sealed interface ExistingValuePayload {
       return when (model) {
         is DateValue -> ExistingDateValuePayload(model)
         is DeletedValue -> ExistingDeletedValuePayload(model)
+        is EmailValue -> ExistingEmailValuePayload(model)
         is ImageValue -> ExistingImageValuePayload(model)
         is LinkValue -> ExistingLinkValuePayload(model)
         is NumberValue -> ExistingNumberValuePayload(model)
@@ -136,6 +142,20 @@ data class ExistingDeletedValuePayload(
 
   override val citation: String?
     @JsonIgnore get() = null
+}
+
+data class ExistingEmailValuePayload(
+    override val id: VariableValueId,
+    override val listPosition: Int,
+    override val citation: String?,
+    val emailValue: String,
+) : ExistingValuePayload {
+  constructor(
+      model: ExistingEmailValue
+  ) : this(model.id, model.listPosition, model.citation, model.value)
+
+  override val type: ExistingValuePayloadType
+    get() = ExistingValuePayloadType.Email
 }
 
 @Schema(

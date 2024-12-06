@@ -13,6 +13,7 @@ import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.model.DateVariable
+import com.terraformation.backend.documentproducer.model.EmailVariable
 import com.terraformation.backend.documentproducer.model.ImageVariable
 import com.terraformation.backend.documentproducer.model.LinkVariable
 import com.terraformation.backend.documentproducer.model.NumberVariable
@@ -88,6 +89,7 @@ class VariablesController(
 
 @JsonSubTypes(
     Type(value = DateVariablePayload::class, name = "Date"),
+    Type(value = EmailVariablePayload::class, name = "Email"),
     Type(value = ImageVariablePayload::class, name = "Image"),
     Type(value = LinkVariablePayload::class, name = "Link"),
     Type(value = NumberVariablePayload::class, name = "Number"),
@@ -101,6 +103,7 @@ class VariablesController(
     discriminatorMapping =
         [
             DiscriminatorMapping(schema = DateVariablePayload::class, value = "Date"),
+            DiscriminatorMapping(schema = EmailVariablePayload::class, value = "Email"),
             DiscriminatorMapping(schema = ImageVariablePayload::class, value = "Image"),
             DiscriminatorMapping(schema = LinkVariablePayload::class, value = "Link"),
             DiscriminatorMapping(schema = NumberVariablePayload::class, value = "Number"),
@@ -164,6 +167,7 @@ interface VariablePayload {
     fun of(model: Variable): VariablePayload {
       return when (model) {
         is DateVariable -> DateVariablePayload(model)
+        is EmailVariable -> EmailVariablePayload(model)
         is ImageVariable -> ImageVariablePayload(model)
         is LinkVariable -> LinkVariablePayload(model)
         is NumberVariable -> NumberVariablePayload(model)
@@ -177,6 +181,8 @@ interface VariablePayload {
 }
 
 data class DateVariablePayload(override val model: DateVariable) : VariablePayload
+
+data class EmailVariablePayload(override val model: EmailVariable) : VariablePayload
 
 data class ImageVariablePayload(override val model: ImageVariable) : VariablePayload
 

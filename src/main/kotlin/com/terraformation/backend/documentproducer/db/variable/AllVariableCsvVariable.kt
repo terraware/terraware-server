@@ -92,6 +92,7 @@ enum class AllVariableCsvVariableType(val value: String, val variableType: Varia
   SingleSelect("Select (single)", VariableType.Select),
   MultiSelect("Select (multiple)", VariableType.Select),
   Date("Date", VariableType.Date),
+  Email("Email", VariableType.Email),
   Link("Link", VariableType.Link),
   Image("Image", VariableType.Image),
   Table("Table", VariableType.Table);

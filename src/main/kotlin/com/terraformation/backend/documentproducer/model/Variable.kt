@@ -19,6 +19,7 @@ import java.math.BigDecimal
 import java.net.URI
 import java.time.LocalDate
 import java.time.format.DateTimeParseException
+import org.apache.commons.validator.routines.EmailValidator
 
 /**
  * Generic information about a variable as it appears in a specific manifest, minus the variable's
@@ -282,6 +283,7 @@ data class TextVariable(
     val text =
         when (oldValue) {
           is DateValue -> "${oldValue.value}"
+          is EmailValue -> oldValue.value
           is NumberValue -> oldValue.value.stripTrailingZeros().toPlainString()
           is TextValue ->
               if (textType == VariableTextType.MultiLine) {
@@ -344,6 +346,47 @@ data class DateVariable(
         }
 
     return date?.let { NewDateValue(baseForValue(oldValue, newRowValueId), it) }
+  }
+}
+
+data class EmailVariable(
+    private val base: BaseVariableProperties,
+) : Variable, BaseVariable by base {
+  override val type: VariableType
+    get() = VariableType.Email
+
+  override fun validateForType(
+      value: VariableValue<*, *>,
+      fetchVariable: (VariableId) -> Variable
+  ) {
+    if (value !is EmailValue) {
+      throw VariableTypeMismatchException(id, VariableType.Email)
+    }
+
+    if (!EmailValidator.getInstance().isValid(value.value)) {
+      throw VariableValueInvalidException(id, "Value is not a valid email address")
+    }
+  }
+
+  override fun convertValueForType(
+      oldVariable: Variable,
+      oldValue: VariableValue<*, *>,
+      newRowValueId: VariableValueId?
+  ): NewValue? {
+    val oldText =
+        when (oldValue) {
+          is TextValue -> oldValue.value
+          is EmailValue -> oldValue.value
+          else -> null
+        }
+
+    val normalizedText = oldText?.trim()?.lowercase()
+
+    return if (normalizedText != null && EmailValidator.getInstance().isValid(normalizedText)) {
+      NewEmailValue(baseForValue(oldValue, newRowValueId), normalizedText)
+    } else {
+      null
+    }
   }
 }
 

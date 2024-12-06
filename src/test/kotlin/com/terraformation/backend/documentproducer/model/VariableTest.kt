@@ -106,6 +106,37 @@ class VariableTest {
   }
 
   @Nested
+  inner class ValidateEmail {
+    @Test
+    fun `allows valid email address`() {
+      testValidate(EmailVariable(baseVariable()), NewEmailValue(baseValue(), "valid@example.com"))
+    }
+
+    @Test
+    fun `rejects valid email address with name`() {
+      assertThrows<VariableValueInvalidException> {
+        testValidate(
+            EmailVariable(baseVariable()),
+            NewEmailValue(baseValue(), "Real Person <valid@example.com>"))
+      }
+    }
+
+    @Test
+    fun `rejects text that is not an email address`() {
+      assertThrows<VariableValueInvalidException> {
+        testValidate(EmailVariable(baseVariable()), NewEmailValue(baseValue(), "invalid"))
+      }
+    }
+
+    @Test
+    fun `rejects lists of email addresses`() {
+      assertThrows<VariableValueInvalidException> {
+        testValidate(EmailVariable(baseVariable()), NewEmailValue(baseValue(), "a@b.com,c@d.com"))
+      }
+    }
+  }
+
+  @Nested
   inner class ValidateText {
     @Test
     fun `allows single-line value if variable is single-line`() {
@@ -367,6 +398,40 @@ class VariableTest {
             oldVariable = TextVariable(baseVariable(1), VariableTextType.SingleLine),
             oldValue = NewTextValue(baseValue(1), "xyzzy"),
             newVariable = DateVariable(baseVariable(2)))
+      }
+    }
+
+    @Nested
+    inner class ConvertEmail {
+      @Test
+      fun `preserves existing email value`() {
+        val emailValue = "existing@example.com"
+
+        assertConversionResult(
+            expectedValue = emailValue,
+            oldVariable = EmailVariable(baseVariable(1)),
+            oldValue = NewEmailValue(baseValue(1), emailValue),
+            newVariable = EmailVariable(baseVariable(2)))
+      }
+
+      @Test
+      fun `converts valid email text to email`() {
+        val emailValue = "existing@example.com"
+
+        assertConversionResult(
+            expectedValue = emailValue,
+            oldVariable = TextVariable(baseVariable(1), VariableTextType.SingleLine),
+            oldValue = NewTextValue(baseValue(1), emailValue),
+            newVariable = EmailVariable(baseVariable(2)))
+      }
+
+      @Test
+      fun `does not convert text that is not a valid email address`() {
+        assertConversionResult(
+            expectedValue = null,
+            oldVariable = TextVariable(baseVariable(1), VariableTextType.SingleLine),
+            oldValue = NewTextValue(baseValue(1), "xyzzy"),
+            newVariable = EmailVariable(baseVariable(2)))
       }
     }
 

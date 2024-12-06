@@ -641,6 +641,7 @@ COMMENT ON TABLE docprod.variable_usage_types IS '(Enum) When a variable is used
 COMMENT ON TABLE docprod.variable_value_table_rows IS 'Linking table that defines which variable values are in which rows of a table.';
 
 COMMENT ON TABLE docprod.variable_values IS 'Insert-only table with all historical and current values of all inputs.';
+COMMENT ON COLUMN docprod.variable_values.text_value IS 'For text or email variables, the variable''s value. May contain newlines if the text variable is multi-line.';
 
 COMMENT ON TABLE docprod.variables IS 'variables that can be supplied by the user. This table stores the variables themselves, not the values of the variables in a particular document. Type-specific information is in child tables such as `variable_numbers`.';
 COMMENT ON COLUMN docprod.variables.is_list IS 'True if this variable is a list of values rather than a single value. If the variable is a table, true if the table can contain multiple rows.';

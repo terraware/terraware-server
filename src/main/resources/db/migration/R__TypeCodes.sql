@@ -170,7 +170,8 @@ VALUES (1, 'Number'),
        (5, 'Select'),
        (6, 'Table'),
        (7, 'Link'),
-       (8, 'Section')
+       (8, 'Section'),
+       (9, 'Email')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO docprod.variable_usage_types (id, name)

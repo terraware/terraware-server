@@ -12,6 +12,7 @@ import com.terraformation.backend.db.docprod.VariableUsageType
 import com.terraformation.backend.db.docprod.VariableValueId
 import com.terraformation.backend.documentproducer.model.BaseVariableValueProperties
 import com.terraformation.backend.documentproducer.model.DateValue
+import com.terraformation.backend.documentproducer.model.EmailValue
 import com.terraformation.backend.documentproducer.model.ImageValue
 import com.terraformation.backend.documentproducer.model.ImageValueDetails
 import com.terraformation.backend.documentproducer.model.LinkValue
@@ -32,6 +33,7 @@ import java.time.LocalDate
 
 @JsonSubTypes(
     JsonSubTypes.Type(value = NewDateValuePayload::class, name = "Date"),
+    JsonSubTypes.Type(value = NewEmailValuePayload::class, name = "Email"),
     JsonSubTypes.Type(value = NewImageValuePayload::class, name = "Image"),
     JsonSubTypes.Type(value = NewLinkValuePayload::class, name = "Link"),
     JsonSubTypes.Type(value = NewNumberValuePayload::class, name = "Number"),
@@ -49,6 +51,7 @@ import java.time.LocalDate
     discriminatorMapping =
         [
             DiscriminatorMapping(schema = NewDateValuePayload::class, value = "Date"),
+            DiscriminatorMapping(schema = NewEmailValuePayload::class, value = "Email"),
             DiscriminatorMapping(schema = NewImageValuePayload::class, value = "Image"),
             DiscriminatorMapping(schema = NewLinkValuePayload::class, value = "Link"),
             DiscriminatorMapping(schema = NewNumberValuePayload::class, value = "Number"),
@@ -80,6 +83,17 @@ data class NewDateValuePayload(
 
   override fun <ID : VariableValueId?> toValueModel(base: BaseVariableValueProperties<ID>) =
       DateValue(base, dateValue)
+}
+
+data class NewEmailValuePayload(
+    @get:JsonIgnore(false) override val citation: String?,
+    val emailValue: String,
+) : NewValuePayload {
+  override val type: VariableValuePayloadType
+    get() = VariableValuePayloadType.Email
+
+  override fun <ID : VariableValueId?> toValueModel(base: BaseVariableValueProperties<ID>) =
+      EmailValue(base, emailValue)
 }
 
 @Schema(
