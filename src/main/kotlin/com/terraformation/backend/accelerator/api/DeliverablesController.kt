@@ -32,7 +32,6 @@ import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.importer.CsvImportFailedException
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -104,13 +103,11 @@ class DeliverablesController(
     val models =
         deliverableStore.fetchDeliverableSubmissions(
             organizationId, participantId, projectId, moduleId = moduleId)
-    val details =
-        projectAcceleratorDetailsService
-            .fetchDetailsByCondition(PROJECTS.ID.`in`(models.map { it.projectId }))
-            .associateBy { it.projectId }
 
     return ListDeliverablesResponsePayload(
-        models.map { ListDeliverablesElement(it, details[it.projectId]) })
+        models.map {
+          ListDeliverablesElement(it, projectAcceleratorDetailsService.fetchOneOrNull(it.projectId))
+        })
   }
 
   @ApiResponse200
@@ -126,12 +123,8 @@ class DeliverablesController(
         deliverableStore
             .fetchDeliverableSubmissions(deliverableId = deliverableId, projectId = projectId)
             .firstOrNull() ?: throw DeliverableNotFoundException(deliverableId)
-    val projectDealName =
-        projectAcceleratorDetailsService
-            .fetchDetailsByCondition(PROJECTS.ID.eq(model.projectId))
-            .firstOrNull()
-            ?.dealName
-    return GetDeliverableResponsePayload(DeliverablePayload(model, projectDealName))
+    return GetDeliverableResponsePayload(
+        DeliverablePayload(model, projectAcceleratorDetailsService.fetchOneOrNull(model.projectId)))
   }
 
   @ApiResponse(
@@ -368,7 +361,7 @@ data class DeliverablePayload(
 ) {
   constructor(
       model: DeliverableSubmissionModel,
-      projectDealName: String?,
+      detail: ProjectAcceleratorDetailsModel?,
   ) : this(
       model.category,
       model.descriptionHtml,
@@ -383,7 +376,7 @@ data class DeliverablePayload(
       model.participantId,
       model.participantName,
       model.position,
-      projectDealName,
+      detail?.dealName,
       model.projectId,
       model.projectName,
       model.required,
