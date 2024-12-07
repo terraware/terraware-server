@@ -187,7 +187,12 @@ class DocumentUpgradeCalculator(
       val sectionValues =
           previousVariableIds[variable.id]
               ?.firstNotNullOfOrNull { existingValues[it] }
-              ?.filterIsInstance<ExistingSectionValue>() ?: return emptyList()
+              ?.filterIsInstance<ExistingSectionValue>()
+      if (sectionValues.isNullOrEmpty()) {
+        // This is a new section being added to a project document, we should see if a default value
+        // exists
+        return variableValueStore.populateDefaultValues(projectId, newManifestId, variable.id)
+      }
 
       sectionValues.flatMap { sectionValue ->
         val valueFragment: SectionValueFragment? =

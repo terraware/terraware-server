@@ -17,7 +17,9 @@ class DocumentService(
     return dslContext.transactionResult { _ ->
       val model = documentStore.create(newDocumentModel)
 
-      variableValueStore.populateDefaultValues(model.projectId, model.variableManifestId)
+      val operations =
+          variableValueStore.populateDefaultValues(model.projectId, model.variableManifestId)
+      variableValueStore.updateValues(operations)
 
       model
     }
