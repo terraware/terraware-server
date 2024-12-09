@@ -79,7 +79,6 @@ import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
 import jakarta.inject.Named
 import java.net.URI
 import java.time.InstantSource
-import java.util.Collections.emptyList
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -395,10 +394,10 @@ class VariableValueStore(
   }
 
   /** Create operations to populate project document section variables defaults. */
-  fun populateDefaultValues(
+  fun calculateDefaultValues(
       projectId: ProjectId,
       manifestId: VariableManifestId,
-      specificVariableId: VariableId? = null
+      variableId: VariableId? = null
   ): List<AppendValueOperation> {
     val hasValues =
         dslContext.fetchExists(
@@ -410,7 +409,7 @@ class VariableValueStore(
                 .where(
                     listOfNotNull(
                         VARIABLE_VALUES.PROJECT_ID.eq(projectId),
-                        specificVariableId?.let { VARIABLE_VALUES.VARIABLE_ID.eq(it) }))
+                        variableId?.let { VARIABLE_VALUES.VARIABLE_ID.eq(it) }))
                 .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId)))
     if (hasValues) {
       throw IllegalStateException("Can only populate initial values of variables without values")
@@ -422,7 +421,7 @@ class VariableValueStore(
             .where(
                 listOfNotNull(
                     VARIABLE_SECTION_DEFAULT_VALUES.VARIABLE_MANIFEST_ID.eq(manifestId),
-                    specificVariableId?.let { VARIABLE_SECTION_DEFAULT_VALUES.VARIABLE_ID.eq(it) }))
+                    variableId?.let { VARIABLE_SECTION_DEFAULT_VALUES.VARIABLE_ID.eq(it) }))
             .orderBy(
                 VARIABLE_SECTION_DEFAULT_VALUES.VARIABLE_ID,
                 VARIABLE_SECTION_DEFAULT_VALUES.LIST_POSITION)

@@ -191,7 +191,7 @@ class DocumentUpgradeCalculator(
       if (sectionValues.isNullOrEmpty()) {
         // This is a new section being added to a project document, we should see if a default value
         // exists
-        return variableValueStore.populateDefaultValues(projectId, newManifestId, variable.id)
+        return variableValueStore.calculateDefaultValues(projectId, newManifestId, variable.id)
       }
 
       sectionValues.flatMap { sectionValue ->

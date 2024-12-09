@@ -18,7 +18,7 @@ class DocumentService(
       val model = documentStore.create(newDocumentModel)
 
       val operations =
-          variableValueStore.populateDefaultValues(model.projectId, model.variableManifestId)
+          variableValueStore.calculateDefaultValues(model.projectId, model.variableManifestId)
       variableValueStore.updateValues(operations)
 
       model
