@@ -180,4 +180,36 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
       assertEquals(listOf(brazilOptionId), selections, "Project country variable value selections")
     }
   }
+
+  @Nested
+  inner class UpdateDealNameVariable {
+    @Test
+    fun `adds a new deal name variable value`() {
+      service.updateDealName(inserted.projectId, "New deal name")
+
+      val lastValueRow =
+          variableValuesDao
+              .fetchByVariableId(variableIdsByStableId[StableIds.dealName]!!)
+              .filter { it.projectId!! == inserted.projectId }
+              .maxBy { it.id!!.value }
+
+      assertEquals(lastValueRow.textValue, "New deal name")
+    }
+
+    @Test
+    fun `replaces existing country variable value`() {
+      insertValue(variableIdsByStableId[StableIds.dealName]!!, textValue = "Old deal name")
+      service.updateCountryVariable(inserted.projectId, "BR")
+
+      service.updateDealName(inserted.projectId, "New deal name")
+
+      val lastValueRow =
+          variableValuesDao
+              .fetchByVariableId(variableIdsByStableId[StableIds.dealName]!!)
+              .filter { it.projectId!! == inserted.projectId }
+              .maxBy { it.id!!.value }
+
+      assertEquals(lastValueRow.textValue, "New deal name")
+    }
+  }
 }

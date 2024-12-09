@@ -13,6 +13,7 @@ import com.terraformation.backend.documentproducer.db.VariableValueStore
 import com.terraformation.backend.documentproducer.model.ExistingValue
 import com.terraformation.backend.documentproducer.model.SelectValue
 import com.terraformation.backend.documentproducer.model.SelectVariable
+import com.terraformation.backend.documentproducer.model.TextVariable
 import com.terraformation.backend.documentproducer.model.Variable
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
@@ -141,6 +142,26 @@ class ApplicationVariableValuesService(
             countryVariable,
             existingCountryValue,
             setOf(countryName),
+        )
+
+    systemUser.run {
+      // Uses elevated permission to update variables without trigger workflow
+      operation?.let { variableValueStore.updateValues(listOf(it), false) }
+    }
+  }
+
+  /** Update deal name variable for a project. */
+  fun updateDealName(projectId: ProjectId, dealName: String) {
+    val dealNameVariable =
+        variablesByStableId[StableIds.dealName] as? TextVariable
+            ?: throw IllegalStateException("Deal name variable stable ID not configured correctly")
+
+    val operation =
+        updateTextValueOperation(
+            projectId,
+            dealNameVariable,
+            null,
+            dealName,
         )
 
     systemUser.run {
