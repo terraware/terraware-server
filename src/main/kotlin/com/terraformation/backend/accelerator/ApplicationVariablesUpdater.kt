@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.db.ApplicationStore
+import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
 import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.accelerator.variables.ApplicationVariableValuesService
 import com.terraformation.backend.accelerator.variables.StableId
@@ -11,7 +12,7 @@ import jakarta.inject.Named
 import org.springframework.context.event.EventListener
 
 @Named
-class ApplicationCountryUpdater(
+class ApplicationVariablesUpdater(
     private val systemUser: SystemUser,
     private val applicationStore: ApplicationStore,
     private val variableStore: VariableStore,
@@ -31,6 +32,17 @@ class ApplicationCountryUpdater(
           variableValues.countryCode?.let { applicationStore.updateCountryCode(application.id, it) }
         }
       }
+    }
+  }
+
+  @EventListener
+  fun on(event: ApplicationInternalNameUpdatedEvent) {
+    systemUser.run {
+      val application = applicationStore.fetchOneById(event.applicationId)
+      applicationVariableValuesService.updateDealName(
+          application.projectId,
+          application.internalName,
+      )
     }
   }
 }
