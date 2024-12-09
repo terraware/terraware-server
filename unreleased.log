@@ -1,3 +1,7 @@
+fad8be1e0a1 Update ktor monorepo to v3.0.2 (#2673)
+65606108965 Update database dependencies (#2672)
+c604cec3355 Update JamesIves/github-pages-deploy-action action to v4.7.2 (#2671)
+94b40d21068 Update plugin org.springdoc.openapi-gradle-plugin to v1.9.0 (#2628)
 7d4c6b43fef Added project deal name to documents payload (#2666)
 bce829384ba SW-6339 Add email variable type (#2669)
 a8ecc5565df Update dependency org.eclipse.jgit:org.eclipse.jgit to 7.1.+ (#2668)
