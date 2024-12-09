@@ -1,3 +1,4 @@
+41007271604 SW-6203 Attempt to fix slow test suite shutdown (#2676)
 1f7b30d194c Enable Spring virtual threads (#2675)
 eb9cc0f0f52 Upgrade to Java 23 JVM (#2674)
 fad8be1e0a1 Update ktor monorepo to v3.0.2 (#2673)
