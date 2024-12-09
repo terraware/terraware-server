@@ -132,8 +132,10 @@ class DeliverableStore(
                   null
                 }))
 
-    return dslContext
-        .select(
+    // All the fields we query, minus the due date since it varies depending on whether or not we're
+    // querying participant project submissions.
+    val fieldList =
+        arrayOf(
             DELIVERABLE_DOCUMENTS.TEMPLATE_URL,
             DELIVERABLES.DELIVERABLE_CATEGORY_ID,
             DELIVERABLES.DELIVERABLE_TYPE_ID,
@@ -158,108 +160,127 @@ class DeliverableStore(
             SUBMISSIONS.INTERNAL_COMMENT,
             SUBMISSIONS.MODIFIED_TIME,
             SUBMISSIONS.SUBMISSION_STATUS_ID,
-            dueDateField,
         )
-        .from(DELIVERABLES)
-        .join(MODULES)
-        .on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
-        .join(COHORT_MODULES)
-        .on(MODULES.ID.eq(COHORT_MODULES.MODULE_ID))
-        .join(PARTICIPANTS)
-        .on(COHORT_MODULES.COHORT_ID.eq(PARTICIPANTS.COHORT_ID))
-        .join(PROJECTS)
-        .on(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID))
-        .join(ORGANIZATIONS)
-        .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-        .leftJoin(DELIVERABLE_DOCUMENTS)
-        .on(DELIVERABLES.ID.eq(DELIVERABLE_DOCUMENTS.DELIVERABLE_ID))
-        .leftJoin(SUBMISSIONS)
-        .on(DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID))
-        .and(PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
-        .leftJoin(DELIVERABLE_COHORT_DUE_DATES)
-        .on(DELIVERABLE_COHORT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID))
-        .and(DELIVERABLE_COHORT_DUE_DATES.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
-        .leftJoin(DELIVERABLE_PROJECT_DUE_DATES)
-        .on(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID))
-        .and(DELIVERABLE_PROJECT_DUE_DATES.PROJECT_ID.eq(PROJECTS.ID))
-        .where(conditions)
-        .union(
-            DSL.select(
-                    DELIVERABLE_DOCUMENTS.TEMPLATE_URL,
-                    DELIVERABLES.DELIVERABLE_CATEGORY_ID,
-                    DELIVERABLES.DELIVERABLE_TYPE_ID,
-                    DELIVERABLES.DESCRIPTION_HTML,
-                    deliverableIdField,
-                    DELIVERABLES.IS_REQUIRED,
-                    DELIVERABLES.IS_SENSITIVE,
-                    DELIVERABLES.MODULE_ID,
-                    MODULES.NAME,
-                    COHORT_MODULES.TITLE,
-                    DELIVERABLES.NAME,
-                    DELIVERABLES.POSITION,
-                    documentsMultiset,
-                    ORGANIZATIONS.ID,
-                    ORGANIZATIONS.NAME,
-                    PARTICIPANTS.ID,
-                    PARTICIPANTS.NAME,
-                    projectIdField,
-                    PROJECTS.NAME,
-                    SUBMISSIONS.FEEDBACK,
-                    SUBMISSIONS.ID,
-                    SUBMISSIONS.INTERNAL_COMMENT,
-                    SUBMISSIONS.MODIFIED_TIME,
-                    SUBMISSIONS.SUBMISSION_STATUS_ID,
-                    DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE.`as`(dueDateField),
-                )
-                .from(SUBMISSIONS)
-                .join(DELIVERABLES)
-                .on(SUBMISSIONS.DELIVERABLE_ID.eq(DELIVERABLES.ID))
-                .join(MODULES)
-                .on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
-                .join(PROJECTS)
-                .on(SUBMISSIONS.PROJECT_ID.eq(PROJECTS.ID))
-                .join(ORGANIZATIONS)
-                .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                .leftJoin(PARTICIPANTS)
-                .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
-                .leftJoin(COHORT_MODULES)
-                .on(PARTICIPANTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
-                .leftJoin(DELIVERABLE_PROJECT_DUE_DATES)
-                .on(PROJECTS.ID.eq(DELIVERABLE_PROJECT_DUE_DATES.PROJECT_ID))
-                .leftJoin(DELIVERABLE_DOCUMENTS)
-                .on(DELIVERABLES.ID.eq(DELIVERABLE_DOCUMENTS.DELIVERABLE_ID))
-                .and(DELIVERABLES.ID.eq(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID))
-                .where(conditions)
-                .and(nonCohortConditions))
-        .orderBy(deliverableIdField, projectIdField)
-        .fetch { record ->
-          DeliverableSubmissionModel(
-              category = record[DELIVERABLES.DELIVERABLE_CATEGORY_ID]!!,
-              deliverableId = record[deliverableIdField]!!,
-              descriptionHtml = record[DELIVERABLES.DESCRIPTION_HTML],
-              documents = record[documentsMultiset] ?: emptyList(),
-              dueDate = record[dueDateField],
-              feedback = record[SUBMISSIONS.FEEDBACK],
-              internalComment = record[SUBMISSIONS.INTERNAL_COMMENT],
-              modifiedTime = record[SUBMISSIONS.MODIFIED_TIME],
-              moduleId = record[DELIVERABLES.MODULE_ID]!!,
-              moduleName = record[MODULES.NAME]!!,
-              moduleTitle = record[COHORT_MODULES.TITLE],
-              name = record[DELIVERABLES.NAME]!!,
-              organizationId = record[ORGANIZATIONS.ID]!!,
-              organizationName = record[ORGANIZATIONS.NAME]!!,
-              participantId = record[PARTICIPANTS.ID],
-              participantName = record[PARTICIPANTS.NAME],
-              position = record[DELIVERABLES.POSITION]!!,
-              projectId = record[projectIdField]!!,
-              projectName = record[PROJECTS.NAME]!!,
-              required = record[DELIVERABLES.IS_REQUIRED]!!,
-              sensitive = record[DELIVERABLES.IS_SENSITIVE]!!,
-              status = record[SUBMISSIONS.SUBMISSION_STATUS_ID] ?: SubmissionStatus.NotSubmitted,
-              submissionId = record[SUBMISSIONS.ID],
-              templateUrl = record[DELIVERABLE_DOCUMENTS.TEMPLATE_URL],
-              type = record[DELIVERABLES.DELIVERABLE_TYPE_ID]!!,
-          )
+
+    val query =
+        if (projectId != null && deliverableId != null) {
+          // Project and deliverable both specified, so return a single result (possibly an empty
+          // submission) regardless of whether or not there's a cohort and regardless of which
+          // cohort phase the deliverable's module is in.
+          dslContext
+              .select(*fieldList, dueDateField)
+              .from(DELIVERABLES)
+              .join(MODULES)
+              .on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
+              .join(PROJECTS)
+              .on(PROJECTS.ID.eq(projectId))
+              .join(ORGANIZATIONS)
+              .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+              .leftJoin(PARTICIPANTS)
+              .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+              .leftJoin(COHORT_MODULES)
+              .on(MODULES.ID.eq(COHORT_MODULES.MODULE_ID))
+              .and(PARTICIPANTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
+              .leftJoin(DELIVERABLE_DOCUMENTS)
+              .on(DELIVERABLES.ID.eq(DELIVERABLE_DOCUMENTS.DELIVERABLE_ID))
+              .leftJoin(SUBMISSIONS)
+              .on(DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID))
+              .and(PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
+              .leftJoin(DELIVERABLE_COHORT_DUE_DATES)
+              .on(DELIVERABLE_COHORT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID))
+              .and(DELIVERABLE_COHORT_DUE_DATES.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
+              .leftJoin(DELIVERABLE_PROJECT_DUE_DATES)
+              .on(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID))
+              .and(DELIVERABLE_PROJECT_DUE_DATES.PROJECT_ID.eq(PROJECTS.ID))
+              .where(conditions)
+        } else {
+          // Return submission data (possibly empty submissions) for deliverables in modules that
+          // the project's cohort is a member of.
+          dslContext
+              .select(*fieldList, dueDateField)
+              .from(DELIVERABLES)
+              .join(MODULES)
+              .on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
+              .join(COHORT_MODULES)
+              .on(MODULES.ID.eq(COHORT_MODULES.MODULE_ID))
+              .join(PARTICIPANTS)
+              .on(COHORT_MODULES.COHORT_ID.eq(PARTICIPANTS.COHORT_ID))
+              .join(PROJECTS)
+              .on(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID))
+              .join(ORGANIZATIONS)
+              .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+              .leftJoin(DELIVERABLE_DOCUMENTS)
+              .on(DELIVERABLES.ID.eq(DELIVERABLE_DOCUMENTS.DELIVERABLE_ID))
+              .leftJoin(SUBMISSIONS)
+              .on(DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID))
+              .and(PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
+              .leftJoin(DELIVERABLE_COHORT_DUE_DATES)
+              .on(DELIVERABLE_COHORT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID))
+              .and(DELIVERABLE_COHORT_DUE_DATES.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
+              .leftJoin(DELIVERABLE_PROJECT_DUE_DATES)
+              .on(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID))
+              .and(DELIVERABLE_PROJECT_DUE_DATES.PROJECT_ID.eq(PROJECTS.ID))
+              .where(conditions)
+              .union(
+                  // There are "submissions" from importing project data from the old project data
+                  // hub. The projects don't necessarily have cohorts or participants but they can
+                  // have submissions for deliverables that would ordinarily only appear for
+                  // projects in cohorts. Return these submissions if they exist, even if there's
+                  // no cohort in the picture.
+                  DSL.select(*fieldList, DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE.`as`(dueDateField))
+                      .from(SUBMISSIONS)
+                      .join(DELIVERABLES)
+                      .on(SUBMISSIONS.DELIVERABLE_ID.eq(DELIVERABLES.ID))
+                      .join(MODULES)
+                      .on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
+                      .join(PROJECTS)
+                      .on(SUBMISSIONS.PROJECT_ID.eq(PROJECTS.ID))
+                      .join(ORGANIZATIONS)
+                      .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+                      .leftJoin(PARTICIPANTS)
+                      .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+                      .leftJoin(COHORT_MODULES)
+                      .on(PARTICIPANTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
+                      .and(MODULES.ID.eq(COHORT_MODULES.MODULE_ID))
+                      .leftJoin(DELIVERABLE_PROJECT_DUE_DATES)
+                      .on(DELIVERABLES.ID.eq(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID))
+                      .and(PROJECTS.ID.eq(DELIVERABLE_PROJECT_DUE_DATES.PROJECT_ID))
+                      .leftJoin(DELIVERABLE_DOCUMENTS)
+                      .on(DELIVERABLES.ID.eq(DELIVERABLE_DOCUMENTS.DELIVERABLE_ID))
+                      .and(DELIVERABLES.ID.eq(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID))
+                      .where(conditions)
+                      .and(nonCohortConditions))
+              .orderBy(deliverableIdField, projectIdField)
         }
+
+    return query.fetch { record ->
+      DeliverableSubmissionModel(
+          category = record[DELIVERABLES.DELIVERABLE_CATEGORY_ID]!!,
+          deliverableId = record[deliverableIdField]!!,
+          descriptionHtml = record[DELIVERABLES.DESCRIPTION_HTML],
+          documents = record[documentsMultiset] ?: emptyList(),
+          dueDate = record[dueDateField],
+          feedback = record[SUBMISSIONS.FEEDBACK],
+          internalComment = record[SUBMISSIONS.INTERNAL_COMMENT],
+          modifiedTime = record[SUBMISSIONS.MODIFIED_TIME],
+          moduleId = record[DELIVERABLES.MODULE_ID]!!,
+          moduleName = record[MODULES.NAME]!!,
+          moduleTitle = record[COHORT_MODULES.TITLE],
+          name = record[DELIVERABLES.NAME]!!,
+          organizationId = record[ORGANIZATIONS.ID]!!,
+          organizationName = record[ORGANIZATIONS.NAME]!!,
+          participantId = record[PARTICIPANTS.ID],
+          participantName = record[PARTICIPANTS.NAME],
+          position = record[DELIVERABLES.POSITION]!!,
+          projectId = record[projectIdField]!!,
+          projectName = record[PROJECTS.NAME]!!,
+          required = record[DELIVERABLES.IS_REQUIRED]!!,
+          sensitive = record[DELIVERABLES.IS_SENSITIVE]!!,
+          status = record[SUBMISSIONS.SUBMISSION_STATUS_ID] ?: SubmissionStatus.NotSubmitted,
+          submissionId = record[SUBMISSIONS.ID],
+          templateUrl = record[DELIVERABLE_DOCUMENTS.TEMPLATE_URL],
+          type = record[DELIVERABLES.DELIVERABLE_TYPE_ID]!!,
+      )
+    }
   }
 }
