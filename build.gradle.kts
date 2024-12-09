@@ -257,8 +257,8 @@ sourceSets.main { java.srcDir("build/generated/kotlin") }
 sourceSets.test { java.srcDir("build/generated-test/kotlin") }
 
 java {
-  toolchain { languageVersion = JavaLanguageVersion.of(21) }
-  targetCompatibility = JavaVersion.VERSION_21
+  toolchain { languageVersion = JavaLanguageVersion.of(23) }
+  targetCompatibility = JavaVersion.VERSION_23
 }
 
 node { yarnVersion = "1.22.17" }
@@ -266,7 +266,7 @@ node { yarnVersion = "1.22.17" }
 tasks.withType<KotlinCompile> {
   compilerOptions {
     // Kotlin and Java target compatibility must be the same.
-    jvmTarget = JvmTarget.JVM_21
+    jvmTarget = JvmTarget.JVM_23
     allWarningsAsErrors = true
 
     extraWarnings = true

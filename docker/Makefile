@@ -16,9 +16,9 @@ image: prepare
 run: image
     # This will not work on Windows
 	@if [ -f .env ]; then\
-		docker-compose -f docker-compose.yml --env-file .env up;\
+		docker compose -f docker-compose.yml --env-file .env up;\
 	else\
-		docker-compose -f docker-compose.yml up;\
+		docker compose -f docker-compose.yml up;\
 	fi
 
 run-postgres:
