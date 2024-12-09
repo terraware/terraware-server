@@ -1,6 +1,7 @@
 package com.terraformation.backend.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
+import com.terraformation.backend.SpringShutdownListener
 import com.terraformation.backend.accelerator.variables.StableId
 import com.terraformation.backend.accelerator.variables.StableIds
 import com.terraformation.backend.api.ArbitraryJsonObject
@@ -386,6 +387,7 @@ import org.locationtech.jts.geom.Polygon
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
+import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextInitializer
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.ComponentScan
@@ -442,6 +444,11 @@ abstract class DatabaseBackedTest {
 
   /** IDs of entities that have been inserted using the `insert` helper methods during this test. */
   val inserted = Inserted()
+
+  @Autowired
+  fun registerApplicationContext(context: ApplicationContext) {
+    SpringShutdownListener.register(context)
+  }
 
   /**
    * Creates a lazily-instantiated jOOQ DAO object. In most cases, type inference will figure out

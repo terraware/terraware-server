@@ -140,6 +140,7 @@ dependencies {
   testImplementation("io.mockk:mockk:1.13.13")
   testImplementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   testImplementation("org.hsqldb:hsqldb:2.7.4")
+  testImplementation("org.junit.platform:junit-platform-launcher")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation(platform("org.testcontainers:testcontainers-bom:1.20.4"))
