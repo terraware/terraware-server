@@ -397,8 +397,12 @@ class VariableValueStore(
     }
   }
 
-  /** Populates a new document with the values of variables that are configured with defaults. */
-  fun populateDefaultValues(projectId: ProjectId, manifestId: VariableManifestId) {
+  /** Create operations to populate project document section variables defaults. */
+  fun calculateDefaultValues(
+      projectId: ProjectId,
+      manifestId: VariableManifestId,
+      variableId: VariableId? = null
+  ): List<AppendValueOperation> {
     val hasValues =
         dslContext.fetchExists(
             dslContext
@@ -406,16 +410,22 @@ class VariableValueStore(
                 .from(VARIABLE_VALUES)
                 .join(VARIABLE_MANIFEST_ENTRIES)
                 .on(VARIABLE_MANIFEST_ENTRIES.VARIABLE_ID.eq(VARIABLE_VALUES.VARIABLE_ID))
-                .where(VARIABLE_VALUES.PROJECT_ID.eq(projectId))
+                .where(
+                    listOfNotNull(
+                        VARIABLE_VALUES.PROJECT_ID.eq(projectId),
+                        variableId?.let { VARIABLE_VALUES.VARIABLE_ID.eq(it) }))
                 .and(VARIABLE_MANIFEST_ENTRIES.VARIABLE_MANIFEST_ID.eq(manifestId)))
     if (hasValues) {
-      throw IllegalStateException("Can only populate initial values of a new document")
+      throw IllegalStateException("Can only populate initial values of variables without values")
     }
 
     val operations =
         dslContext
             .selectFrom(VARIABLE_SECTION_DEFAULT_VALUES)
-            .where(VARIABLE_SECTION_DEFAULT_VALUES.VARIABLE_MANIFEST_ID.eq(manifestId))
+            .where(
+                listOfNotNull(
+                    VARIABLE_SECTION_DEFAULT_VALUES.VARIABLE_MANIFEST_ID.eq(manifestId),
+                    variableId?.let { VARIABLE_SECTION_DEFAULT_VALUES.VARIABLE_ID.eq(it) }))
             .orderBy(
                 VARIABLE_SECTION_DEFAULT_VALUES.VARIABLE_ID,
                 VARIABLE_SECTION_DEFAULT_VALUES.LIST_POSITION)
@@ -431,7 +441,7 @@ class VariableValueStore(
                       fragment))
             }
 
-    updateValues(operations)
+    return operations
   }
 
   /**
