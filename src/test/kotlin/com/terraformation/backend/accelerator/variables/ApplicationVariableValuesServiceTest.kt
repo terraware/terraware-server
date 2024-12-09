@@ -197,10 +197,8 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `replaces existing country variable value`() {
+    fun `replaces existing deal name variable value`() {
       insertValue(variableIdsByStableId[StableIds.dealName]!!, textValue = "Old deal name")
-      service.updateCountryVariable(inserted.projectId, "BR")
-
       service.updateDealName(inserted.projectId, "New deal name")
 
       val lastValueRow =
