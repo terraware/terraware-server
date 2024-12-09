@@ -1,3 +1,4 @@
+4e008cde6f8 SW-6319 Populate default value for new section values when a document is upgraded (#2667)
 00e3fcf3afe Revert "Enable Spring virtual threads (#2675)"
 41007271604 SW-6203 Attempt to fix slow test suite shutdown (#2676)
 1f7b30d194c Enable Spring virtual threads (#2675)
