@@ -80,6 +80,10 @@ spring:
   session:
     store-type: jdbc
 
+  threads:
+    virtual:
+      enabled: true
+
 server:
   tomcat:
     max-http-form-post-size: 200MB
