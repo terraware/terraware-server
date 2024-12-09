@@ -1,3 +1,4 @@
+00e3fcf3afe Revert "Enable Spring virtual threads (#2675)"
 41007271604 SW-6203 Attempt to fix slow test suite shutdown (#2676)
 1f7b30d194c Enable Spring virtual threads (#2675)
 eb9cc0f0f52 Upgrade to Java 23 JVM (#2674)
