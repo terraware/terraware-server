@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class PlantingSiteEditCalculatorTest {
+class PlantingSiteEditCalculatorV1Test {
   @Test
   fun `returns create edits for newly added zone and subzone`() {
     val existing = existingSite(width = 500)
@@ -508,7 +508,7 @@ class PlantingSiteEditCalculatorTest {
     @Test
     fun `throws exception if desired site has no boundary`() {
       assertThrows<IllegalArgumentException> {
-        PlantingSiteEditCalculator(
+        PlantingSiteEditCalculatorV1(
                 existingSite(),
                 newSite().copy(boundary = null),
                 emptySet(),
@@ -523,7 +523,7 @@ class PlantingSiteEditCalculatorTest {
       desired: AnyPlantingSiteModel,
       plantedSubzoneIds: Set<PlantingSubzoneId> = setOf(PlantingSubzoneId(1)),
   ): PlantingSiteEdit =
-      PlantingSiteEditCalculator(existing, desired, plantedSubzoneIds).calculateSiteEdit()
+      PlantingSiteEditCalculatorV1(existing, desired, plantedSubzoneIds).calculateSiteEdit()
 
   private fun assertEditResult(
       expected: PlantingSiteEdit,
