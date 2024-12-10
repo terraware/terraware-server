@@ -29,6 +29,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.ShapefilesInvalidException
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
+import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV1
 import com.terraformation.backend.tracking.mapbox.MapboxService
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewObservationModel
@@ -448,6 +449,7 @@ class AdminPlantingSitesController(
       @RequestParam plantingSiteId: PlantingSiteId,
       @RequestParam dryRun: Boolean,
       @RequestParam subzoneIdsToMarkIncomplete: String?,
+      @RequestParam editVersion: Int,
       @RequestPart zipfile: MultipartFile,
       redirectAttributes: RedirectAttributes,
   ): String {
@@ -466,8 +468,14 @@ class AdminPlantingSitesController(
                 existing.organizationId,
             )
         val plantedSubzoneIds = plantingSiteStore.fetchSubzoneIdsWithPastPlantings(plantingSiteId)
-        val edit =
-            PlantingSiteEditCalculator(existing, desired, plantedSubzoneIds).calculateSiteEdit()
+
+        val calculator: PlantingSiteEditCalculator =
+            when (editVersion) {
+              1 -> PlantingSiteEditCalculatorV1(existing, desired, plantedSubzoneIds)
+              else -> throw IllegalArgumentException("Unrecognized edit version $editVersion")
+            }
+
+        val edit = calculator.calculateSiteEdit()
 
         if (edit.problems.isEmpty()) {
           if (dryRun) {

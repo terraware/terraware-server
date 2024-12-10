@@ -12,8 +12,8 @@ import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
-import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
-import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorTest
+import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV1
+import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV1Test
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -36,8 +36,8 @@ import org.springframework.security.access.AccessDeniedException
 
 /**
  * Tests for applying edit operations to planting sites. Most of these tests don't manually
- * construct [PlantingSiteEdit] objects, but instead use [PlantingSiteEditCalculator] and rely on
- * the coverage in [PlantingSiteEditCalculatorTest] to verify that the calculated edits would be
+ * construct [PlantingSiteEdit] objects, but instead use [PlantingSiteEditCalculatorV1] and rely on
+ * the coverage in [PlantingSiteEditCalculatorV1Test] to verify that the calculated edits would be
  * correct.
  */
 internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
@@ -578,7 +578,7 @@ internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
         desired: AnyPlantingSiteModel,
         plantedSubzoneIds: Set<PlantingSubzoneId> = emptySet(),
     ): PlantingSiteEdit =
-        PlantingSiteEditCalculator(existing, desired, plantedSubzoneIds).calculateSiteEdit()
+        PlantingSiteEditCalculatorV1(existing, desired, plantedSubzoneIds).calculateSiteEdit()
 
     private fun assertHistories(
         existing: ExistingPlantingSiteModel,
