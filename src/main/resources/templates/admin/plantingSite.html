@@ -47,17 +47,26 @@
                 const totalPlotsField = document.getElementById(`total-${zoneId}`);
                 const varianceField = document.getElementById(`variance-${zoneId}`);
 
+                const calculateDefaultTotalPlots = () => {
+                    const errorMargin = Number.parseFloat(errorMarginField.value);
+                    const studentsT = Number.parseFloat(studentsTField.value);
+                    const variance = Number.parseFloat(varianceField.value);
+                    const extraPermanent = Number.parseFloat(extraPermanentField.value);
+                    return Math.ceil((studentsT * studentsT) * variance / errorMargin / errorMargin + extraPermanent);
+                };
+
                 const recalculateTotalPlots = () => {
                     const permanentClusters = Number.parseFloat(permanentClustersField.value) || 0;
                     const temporaryPlots = Number.parseFloat(temporaryPlotsField.value) || 0;
-                    const totalPlots = (permanentClusters * 4) + temporaryPlots;
+                    const totalPlots = permanentClusters + temporaryPlots;
 
                     totalPlotsField.innerText = `${totalPlots}`;
                 };
 
                 const recalculateTemporaryPlots = () => {
+                    const defaultTotalPlots = calculateDefaultTotalPlots();
                     const permanentClusters = Number.parseFloat(permanentClustersField.value);
-                    const temporaryPlots = Math.max(1, Math.floor(permanentClusters / 3));
+                    const temporaryPlots = Math.max(1, defaultTotalPlots - permanentClusters);
 
                     temporaryPlotsField.value = `${temporaryPlots}`;
 
@@ -65,12 +74,8 @@
                 };
 
                 const recalculatePermanentClusters = () => {
-                    const errorMargin = Number.parseFloat(errorMarginField.value);
-                    const studentsT = Number.parseFloat(studentsTField.value);
-                    const variance = Number.parseFloat(varianceField.value);
-                    const extraPermanent = Number.parseFloat(extraPermanentField.value);
-                    const permanentClusters =
-                            Math.ceil((studentsT * studentsT) * variance / errorMargin / errorMargin + extraPermanent);
+                    const defaultTotalPlots = calculateDefaultTotalPlots();
+                    const permanentClusters = Math.round(defaultTotalPlots * 0.75);
 
                     permanentClustersField.value = `${permanentClusters}`;
 
@@ -273,7 +278,7 @@
                 </td>
                 <td>
                     <span th:id="|total-${zone.id}|"
-                          th:text="${zone.numPermanentClusters != null || zone.numTemporaryPlots != null ? (zone.numPermanentClusters ?: 0) * 4 + (zone.numTemporaryPlots ?: 0) : ''}">
+                          th:text="${zone.numPermanentClusters != null || zone.numTemporaryPlots != null ? (zone.numPermanentClusters ?: 0) + (zone.numTemporaryPlots ?: 0) : ''}">
                         123
                     </span>
                 </td>
