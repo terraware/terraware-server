@@ -1,3 +1,4 @@
+138eb9cc5a7 SW-6285 Reduce number of permanent clusters (#2680)
 b1daa3e3c8c SW-6344 Make site map editing behavior selectable (#2679)
 3051488a16d SW-6338 Return submissions in more scenarios (#2678)
 6d3cc0c42db SW-6306 Added event listener to sync deal name and application internal name (#2677)
