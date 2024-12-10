@@ -1,3 +1,5 @@
+b1daa3e3c8c SW-6344 Make site map editing behavior selectable (#2679)
+3051488a16d SW-6338 Return submissions in more scenarios (#2678)
 6d3cc0c42db SW-6306 Added event listener to sync deal name and application internal name (#2677)
 4e008cde6f8 SW-6319 Populate default value for new section values when a document is upgraded (#2667)
 00e3fcf3afe Revert "Enable Spring virtual threads (#2675)"
