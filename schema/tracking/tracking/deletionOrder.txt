@@ -26,6 +26,7 @@ planting_site_histories
 planting_zones
 recorded_plant_statuses
 planting_types
+observation_types
 observation_states
 observation_plot_statuses
 observable_conditions

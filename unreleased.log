@@ -1,3 +1,4 @@
+88ebbcd4e81 SW-6282 Added isAdHoc flag and ObservationType to observation and monitoring plot tables (#2681)
 423929cfeef Convert CohortModuleStoreTest to RunsAsDatabaseUser (#2683)
 22ce3c21161 Record lower permission check in helper functions (#2682)
 138eb9cc5a7 SW-6285 Reduce number of permanent clusters (#2680)
