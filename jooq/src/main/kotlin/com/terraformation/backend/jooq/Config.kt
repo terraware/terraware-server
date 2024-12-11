@@ -171,6 +171,7 @@ val ENUM_TABLES =
                     isLocalizable = false),
                 EnumTable(
                     "observation_states", listOf("observations\\.state_id"), isLocalizable = false),
+                EnumTable("observation_types", listOf("observations\\.observation_type_id")),
                 EnumTable("planting_types"),
                 EnumTable(
                     "recorded_plant_statuses",
@@ -317,6 +318,9 @@ val ID_WRAPPERS =
                     listOf("monitoring_plot_histories\\.id", ".*\\.monitoring_plot_history_id")),
                 IdWrapper("MonitoringPlotId", listOf("monitoring_plots\\.id", ".*\\..*_plot_id")),
                 IdWrapper("ObservationId", listOf("observations\\.id", ".*\\.observation_id")),
+                IdWrapper(
+                    "ObservationTypeId",
+                    listOf("observation_types\\.id", ".*\\.observation_type_id")),
                 IdWrapper("ObservedPlotCoordinatesId", listOf("observed_plot_coordinates\\.id")),
                 IdWrapper("PlantingId", listOf("plantings\\.id")),
                 IdWrapper("PlantingSeasonId", listOf("planting_seasons\\.id")),

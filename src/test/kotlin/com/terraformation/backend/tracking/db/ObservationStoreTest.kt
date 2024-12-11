@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus.Dead
@@ -137,6 +138,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               ExistingObservationModel(
                   endDate = endDate1,
                   id = observationId2,
+                  isAdHoc = false,
+                  observationType = ObservationType.Monitoring,
                   plantingSiteHistoryId = plantingSiteHistoryId,
                   plantingSiteId = plantingSiteId,
                   requestedSubzoneIds = setOf(subzoneId),
@@ -146,6 +149,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               ExistingObservationModel(
                   endDate = endDate2,
                   id = observationId1,
+                  isAdHoc = false,
+                  observationType = ObservationType.Monitoring,
                   plantingSiteId = plantingSiteId,
                   startDate = startDate2,
                   state = ObservationState.Upcoming,
@@ -615,6 +620,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   completedTime = Instant.EPOCH,
                   endDate = LocalDate.of(2020, 1, 31),
                   id = null,
+                  isAdHoc = false,
+                  observationType = ObservationType.Monitoring,
                   plantingSiteId = plantingSiteId,
                   requestedSubzoneIds = setOf(subzoneId1, subzoneId2),
                   startDate = LocalDate.of(2020, 1, 1),
@@ -627,6 +634,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               createdTime = clock.instant(),
               endDate = LocalDate.of(2020, 1, 31),
               id = observationId,
+              isAdHoc = false,
+              observationTypeId = ObservationType.Monitoring,
               plantingSiteId = plantingSiteId,
               startDate = LocalDate.of(2020, 1, 1),
               stateId = ObservationState.Upcoming,
@@ -653,6 +662,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
             NewObservationModel(
                 endDate = LocalDate.of(2020, 1, 31),
                 id = null,
+                isAdHoc = false,
+                observationType = ObservationType.Monitoring,
                 plantingSiteId = plantingSiteId,
                 requestedSubzoneIds = setOf(otherSiteSubzoneId),
                 startDate = LocalDate.of(2020, 1, 1),
@@ -670,6 +681,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
             NewObservationModel(
                 endDate = LocalDate.EPOCH,
                 id = null,
+                isAdHoc = false,
+                observationType = ObservationType.Monitoring,
                 plantingSiteId = plantingSiteId,
                 startDate = LocalDate.EPOCH,
                 state = ObservationState.Upcoming,

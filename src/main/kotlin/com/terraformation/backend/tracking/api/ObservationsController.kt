@@ -27,6 +27,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
@@ -1012,6 +1013,8 @@ data class ScheduleObservationRequestPayload(
       NewObservationModel(
           endDate = endDate,
           id = null,
+          isAdHoc = false,
+          observationType = ObservationType.Monitoring,
           plantingSiteId = plantingSiteId,
           requestedSubzoneIds = requestedSubzoneIds ?: emptySet(),
           startDate = startDate,

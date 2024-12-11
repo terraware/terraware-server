@@ -7,6 +7,7 @@ import org.locationtech.jts.geom.Polygon
 data class MonitoringPlotModel(
     val boundary: Polygon,
     val id: MonitoringPlotId,
+    val isAdHoc: Boolean,
     val isAvailable: Boolean,
     val fullName: String,
     val name: String,
@@ -20,6 +21,7 @@ data class MonitoringPlotModel(
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is MonitoringPlotModel &&
         id == other.id &&
+        isAdHoc == other.isAdHoc &&
         isAvailable == other.isAvailable &&
         fullName == other.fullName &&
         name == other.name &&

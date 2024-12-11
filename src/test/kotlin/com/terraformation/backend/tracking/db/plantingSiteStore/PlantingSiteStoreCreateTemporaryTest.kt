@@ -45,6 +45,7 @@ internal class PlantingSiteStoreCreateTemporaryTest : PlantingSiteStoreTest() {
               createdTime = clock.instant,
               fullName = "Z1-1-18",
               id = newPlotId,
+              isAdHoc = false,
               isAvailable = true,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,

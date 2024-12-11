@@ -40,6 +40,9 @@ internal class PlantingSiteStoreFetchSiteTest : PlantingSiteStoreTest() {
           insertPlantingZone(boundary = multiPolygon(2.0), extraPermanentClusters = 1)
       val plantingSubzoneId = insertPlantingSubzone(boundary = multiPolygon(1.0))
       val monitoringPlotId = insertMonitoringPlot(boundary = polygon(0.1))
+      insertMonitoringPlot(
+          boundary = polygon(0.1), isAdHoc = true, name = "Ad hoc plot is not returned")
+
       val season1StartDate = LocalDate.of(2023, 6, 1)
       val season1EndDate = LocalDate.of(2023, 7, 31)
       val plantingSeasonId1 =
@@ -124,6 +127,7 @@ internal class PlantingSiteStoreFetchSiteTest : PlantingSiteStoreTest() {
                       MonitoringPlotModel(
                           boundary = polygon(0.2),
                           id = exteriorPlotId,
+                          isAdHoc = false,
                           isAvailable = true,
                           name = "2",
                           fullName = "2",
@@ -141,6 +145,7 @@ internal class PlantingSiteStoreFetchSiteTest : PlantingSiteStoreTest() {
                                                   MonitoringPlotModel(
                                                       boundary = polygon(0.1),
                                                       id = monitoringPlotId,
+                                                      isAdHoc = false,
                                                       isAvailable = true,
                                                       name = "1",
                                                       fullName = "Z1-1-1",
@@ -224,6 +229,7 @@ internal class PlantingSiteStoreFetchSiteTest : PlantingSiteStoreTest() {
                                               MonitoringPlotModel(
                                                   boundary = monitoringPlotBoundary4326,
                                                   id = monitoringPlotId,
+                                                  isAdHoc = false,
                                                   isAvailable = true,
                                                   name = "1",
                                                   fullName = "Z1-1-1",

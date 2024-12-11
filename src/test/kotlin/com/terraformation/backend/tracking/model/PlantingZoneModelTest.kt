@@ -681,6 +681,7 @@ class PlantingZoneModelTest {
     return MonitoringPlotModel(
         boundary = boundary,
         id = MonitoringPlotId(id.toLong()),
+        isAdHoc = false,
         isAvailable = isAvailable,
         fullName = "name",
         name = "name",
