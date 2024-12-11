@@ -33,10 +33,12 @@ class ObservationsTable(private val tables: SearchTables) : SearchTable() {
           timestampField("createdTime", OBSERVATIONS.CREATED_TIME),
           dateField("endDate", OBSERVATIONS.END_DATE),
           idWrapperField("id", OBSERVATIONS.ID) { ObservationId(it) },
+          booleanField("isAdHoc", OBSERVATIONS.IS_AD_HOC),
           idWrapperField("plantingSiteHistoryId", OBSERVATIONS.PLANTING_SITE_HISTORY_ID) {
             PlantingSiteHistoryId(it)
           },
           dateField("startDate", OBSERVATIONS.START_DATE),
+          enumField("type", OBSERVATIONS.OBSERVATION_TYPE_ID),
       )
 
   override val inheritsVisibilityFrom: SearchTable

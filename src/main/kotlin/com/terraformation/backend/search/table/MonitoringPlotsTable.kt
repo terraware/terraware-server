@@ -34,6 +34,8 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
           timestampField("createdTime", MONITORING_PLOTS.CREATED_TIME),
           textField("fullName", MONITORING_PLOTS.FULL_NAME),
           idWrapperField("id", MONITORING_PLOTS.ID) { MonitoringPlotId(it) },
+          booleanField("isAdHoc", MONITORING_PLOTS.IS_AD_HOC),
+          booleanField("isAvailable", MONITORING_PLOTS.IS_AVAILABLE),
           timestampField("modifiedTime", MONITORING_PLOTS.MODIFIED_TIME),
           textField("name", MONITORING_PLOTS.NAME),
           coordinateField("northeastLatitude", MONITORING_PLOTS.BOUNDARY, NORTHEAST, LATITUDE),
