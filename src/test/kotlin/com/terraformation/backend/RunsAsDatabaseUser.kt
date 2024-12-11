@@ -94,6 +94,10 @@ interface RunsAsDatabaseUser : RunsAsUser {
           }
         }
       }
+
+      // Allow tests to explicitly call this method if they are doing multiple permission-sensitive
+      // operations in a row where each operation should individually be checked for inversions.
+      permissionChecks.clear()
     }
   }
 }

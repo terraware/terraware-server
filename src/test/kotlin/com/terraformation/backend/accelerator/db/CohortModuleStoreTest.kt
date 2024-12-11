@@ -1,14 +1,15 @@
 package com.terraformation.backend.accelerator.db
 
-import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.accelerator.model.ModuleModel
+import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
-import com.terraformation.backend.mockUser
-import io.mockk.every
+import com.terraformation.backend.db.default_schema.GlobalRole
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -17,20 +18,14 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-class CohortModuleStoreTest : DatabaseTest(), RunsAsUser {
-  override val user = mockUser()
+class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
+  override lateinit var user: TerrawareUser
 
   private val store: CohortModuleStore by lazy { CohortModuleStore(dslContext) }
 
   @BeforeEach
   fun setUp() {
-    every { user.canReadModule(any()) } returns true
-    every { user.canReadCohort(any()) } returns true
-    every { user.canReadCohorts() } returns true
-    every { user.canReadParticipant(any()) } returns true
-    every { user.canReadProject(any()) } returns true
-    every { user.canReadProjectModules(any()) } returns true
-    every { user.canManageModules() } returns true
+    insertUserGlobalRole(role = GlobalRole.ReadOnly)
   }
 
   @Nested
@@ -47,33 +42,25 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsUser {
       insertParticipant(cohortId = inserted.cohortId)
       insertProject(participantId = inserted.participantId)
 
-      every { user.canReadCohorts() } returns false
-      assertThrows<AccessDeniedException> { store.fetch() }
+      deleteUserGlobalRole(role = GlobalRole.ReadOnly)
 
-      every { user.canReadProjectModules(any()) } returns false
-      assertThrows<AccessDeniedException> { store.fetch(projectId = inserted.projectId) }
-
-      every { user.canReadProject(any()) } returns false
       assertThrows<ProjectNotFoundException> { store.fetch(projectId = inserted.projectId) }
-
-      every { user.canReadParticipant(any()) } returns false
+      assertThrows<AccessDeniedException> { store.fetch() }
+      assertThrows<CohortNotFoundException> { store.fetch(cohortId = inserted.cohortId) }
       assertThrows<ParticipantNotFoundException> {
         store.fetch(participantId = inserted.participantId)
       }
-
-      every { user.canReadCohort(any()) } returns false
-      assertThrows<CohortNotFoundException> { store.fetch(cohortId = inserted.cohortId) }
     }
 
     @Test
     fun `filters by IDs, ordered by cohort ID, start date, end date, position`() {
+      insertOrganization()
+      insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
+
       val cohortA = insertCohort(phase = CohortPhase.Phase0DueDiligence)
       val cohortB = insertCohort(phase = CohortPhase.Phase0DueDiligence)
-
-      insertOrganization()
       val participantA = insertParticipant(cohortId = cohortA)
       val participantB = insertParticipant(cohortId = cohortB)
-
       val projectA = insertProject(participantId = participantA)
       val projectB = insertProject(participantId = participantB)
 
@@ -162,46 +149,49 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsUser {
           )
 
       assertEquals(expectedCohortModulesA, store.fetch(cohortId = cohortA), "Fetch by Cohort ID")
+      verifyNoPermissionInversions()
+
       assertEquals(
           expectedCohortModulesA,
           store.fetch(participantId = participantA),
           "Fetch by Participant ID")
+      verifyNoPermissionInversions()
+
       assertEquals(expectedCohortModulesA, store.fetch(projectId = projectA), "Fetch by Project ID")
+      verifyNoPermissionInversions()
 
       assertEquals(
           listOf(cohortAModule4),
           store.fetch(projectId = projectA, moduleId = module4),
           "Fetch by Project ID and Module ID")
+      verifyNoPermissionInversions()
 
       assertEquals(
           listOf(cohortBModule1), store.fetch(cohortId = cohortB), "Fetch by a different Cohort ID")
+      verifyNoPermissionInversions()
+
       assertEquals(
           listOf(cohortBModule1),
           store.fetch(participantId = participantB),
           "Fetch by a different Cohort ID")
+      verifyNoPermissionInversions()
+
       assertEquals(
           listOf(cohortBModule1),
           store.fetch(projectId = projectB),
           "Fetch by a different Cohort ID")
+      verifyNoPermissionInversions()
 
       assertEquals(
           listOf(cohortAModule4, cohortAModule2, cohortAModule1, cohortAModule3, cohortBModule1),
           store.fetch(),
           "Fetch all modules")
+      verifyNoPermissionInversions()
 
       assertEquals(
           listOf(cohortAModule1, cohortBModule1),
           store.fetch(moduleId = module1),
           "Fetch one module")
-
-      every { user.canReadCohort(cohortB) } returns false
-
-      assertEquals(
-          listOf(
-              cohortAModule1,
-          ),
-          store.fetch(moduleId = module1),
-          "Fetch one module with permission")
     }
   }
 
@@ -209,10 +199,11 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsUser {
   inner class Assign {
     @Test
     fun `throws exceptions if no associated permissions`() {
+      insertUserGlobalRole(role = GlobalRole.TFExpert)
+
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
       insertModule()
 
-      every { user.canManageModules() } returns false
       assertThrows<AccessDeniedException> {
         store.assign(
             inserted.cohortId,
@@ -225,6 +216,8 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `assigns new cohort module`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
       insertModule()
 
@@ -249,6 +242,8 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `updates existing cohort module`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
       insertModule()
 
@@ -283,10 +278,11 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsUser {
   inner class Remove {
     @Test
     fun `throws exceptions if no associated permissions`() {
+      insertUserGlobalRole(role = GlobalRole.TFExpert)
+
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
       insertModule()
 
-      every { user.canManageModules() } returns false
       assertThrows<AccessDeniedException> {
         store.remove(
             inserted.cohortId,
@@ -297,6 +293,8 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `removes existing cohort module`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
       insertModule()
 
