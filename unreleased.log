@@ -1,3 +1,4 @@
+423929cfeef Convert CohortModuleStoreTest to RunsAsDatabaseUser (#2683)
 22ce3c21161 Record lower permission check in helper functions (#2682)
 138eb9cc5a7 SW-6285 Reduce number of permanent clusters (#2680)
 b1daa3e3c8c SW-6344 Make site map editing behavior selectable (#2679)
