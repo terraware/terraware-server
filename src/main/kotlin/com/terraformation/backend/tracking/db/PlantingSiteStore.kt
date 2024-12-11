@@ -1576,6 +1576,7 @@ class PlantingSiteStore(
                 createdBy = userId,
                 createdTime = now,
                 fullName = "${subzone.fullName}-$plotNumber",
+                isAdHoc = false,
                 modifiedBy = userId,
                 modifiedTime = now,
                 name = "$plotNumber",
@@ -1627,6 +1628,7 @@ class PlantingSiteStore(
                 createdBy = userId,
                 createdTime = now,
                 fullName = "${subzone.fullName}-$plotNumber",
+                isAdHoc = false,
                 modifiedBy = userId,
                 modifiedTime = now,
                 name = "$plotNumber",
@@ -1703,6 +1705,7 @@ class PlantingSiteStore(
               DSL.select(
                       MONITORING_PLOTS.ID,
                       MONITORING_PLOTS.FULL_NAME,
+                      MONITORING_PLOTS.IS_AD_HOC,
                       MONITORING_PLOTS.IS_AVAILABLE,
                       MONITORING_PLOTS.NAME,
                       MONITORING_PLOTS.PERMANENT_CLUSTER,
@@ -1717,6 +1720,7 @@ class PlantingSiteStore(
               MonitoringPlotModel(
                   boundary = record[monitoringPlotBoundaryField]!! as Polygon,
                   id = record[MONITORING_PLOTS.ID]!!,
+                  isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC]!!,
                   isAvailable = record[MONITORING_PLOTS.IS_AVAILABLE]!!,
                   fullName = record[MONITORING_PLOTS.FULL_NAME]!!,
                   name = record[MONITORING_PLOTS.NAME]!!,
@@ -1765,7 +1769,11 @@ class PlantingSiteStore(
   ): Field<List<ExistingPlantingSubzoneModel>> {
     val plotsField =
         if (depth == PlantingSiteDepth.Plot)
-            monitoringPlotsMultiset(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
+            monitoringPlotsMultiset(
+                DSL.and(
+                    PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID),
+                    MONITORING_PLOTS.IS_AD_HOC.isFalse(),
+                ))
         else null
 
     return DSL.multiset(

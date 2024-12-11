@@ -255,6 +255,7 @@ private constructor(
             MonitoringPlotModel(
                 boundary = rectanglePolygon(size, size, x, y),
                 id = MonitoringPlotId(nextMonitoringPlotId++),
+                isAdHoc = false,
                 isAvailable = isAvailable,
                 fullName = "$fullName-$name",
                 name = name,

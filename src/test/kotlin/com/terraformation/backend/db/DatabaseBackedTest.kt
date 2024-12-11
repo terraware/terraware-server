@@ -287,6 +287,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.ObservedPlotCoordinatesId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
@@ -1942,6 +1943,7 @@ abstract class DatabaseBackedTest {
                   y.toDouble() * sizeMeters.toDouble()),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      isAdHoc: Boolean = row.isAdHoc ?: false,
       isAvailable: Boolean = row.isAvailable ?: true,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
@@ -1961,6 +1963,7 @@ abstract class DatabaseBackedTest {
             createdBy = createdBy,
             createdTime = createdTime,
             fullName = fullName,
+            isAdHoc = isAdHoc,
             isAvailable = isAvailable,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
@@ -2276,6 +2279,8 @@ abstract class DatabaseBackedTest {
       row: ObservationsRow = ObservationsRow(),
       createdTime: Instant = Instant.EPOCH,
       endDate: LocalDate = row.endDate ?: LocalDate.of(2023, 1, 31),
+      isAdHoc: Boolean = row.isAdHoc ?: false,
+      observationType: ObservationType = row.observationTypeId ?: ObservationType.Monitoring,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       startDate: LocalDate = row.startDate ?: LocalDate.of(2023, 1, 1),
       completedTime: Instant? = row.completedTime,
@@ -2300,6 +2305,8 @@ abstract class DatabaseBackedTest {
             completedTime = completedTime,
             createdTime = createdTime,
             endDate = endDate,
+            isAdHoc = isAdHoc,
+            observationTypeId = observationType,
             plantingSiteHistoryId = plantingSiteHistoryId,
             plantingSiteId = plantingSiteId,
             startDate = startDate,
