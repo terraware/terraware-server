@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class PlantingSiteStoreCountTest : PlantingSiteStoreTest() {
+internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
   @Nested
   inner class CountReportedPlants {
     @Test
