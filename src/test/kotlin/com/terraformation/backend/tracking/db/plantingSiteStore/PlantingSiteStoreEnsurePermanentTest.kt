@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-internal class PlantingSiteStoreEnsurePermanentTest : PlantingSiteStoreTest() {
+internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest() {
   @Nested
   inner class EnsurePermanentClustersExist {
     @Test

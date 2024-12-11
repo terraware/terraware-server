@@ -84,6 +84,7 @@ import com.terraformation.backend.tracking.model.PlantingZoneHistoryModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
+import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.toInstant
@@ -95,6 +96,7 @@ import java.time.InstantSource
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
+import org.geotools.referencing.CRS
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -1498,6 +1500,42 @@ class PlantingSiteStore(
     }
   }
 
+  /** Creates an ad-hoc monitoring plot for a planting site with a user-supplied corner. */
+  fun createAdHocMonitoringPlot(
+      name: String,
+      plantingSiteId: PlantingSiteId,
+      swCorner: Point,
+  ): MonitoringPlotId {
+    requirePermissions { scheduleObservation(plantingSiteId) }
+
+    val userId = currentUser().userId
+    val now = clock.instant()
+
+    val crs = CRS.decode("EPSG:${swCorner.srid}", true)
+
+    val plotBoundary = Turtle(swCorner, crs).makePolygon { square(MONITORING_PLOT_SIZE_INT) }
+
+    val monitoringPlotsRow =
+        MonitoringPlotsRow(
+            boundary = plotBoundary,
+            createdBy = userId,
+            createdTime = now,
+            fullName = name,
+            isAdHoc = true,
+            isAvailable = false,
+            modifiedBy = userId,
+            modifiedTime = now,
+            name = name,
+            plantingSiteId = plantingSiteId,
+            sizeMeters = MONITORING_PLOT_SIZE_INT,
+        )
+    monitoringPlotsDao.insert(monitoringPlotsRow)
+
+    insertMonitoringPlotHistory(monitoringPlotsRow)
+
+    return monitoringPlotsRow.id!!
+  }
+
   /**
    * Makes room for a new permanent cluster with a particular number. This is effectively an
    * insertion into the ordered list of clusters for the zone: the numbers of any existing clusters
@@ -2207,13 +2245,9 @@ class PlantingSiteStore(
           .set(PLANTING_SITE_ID, plantingSiteId)
           .set(
               PLANTING_SUBZONE_HISTORY_ID,
-              if (plantingSubzoneId != null) {
-                DSL.select(DSL.max(PLANTING_SUBZONE_HISTORIES.ID))
-                    .from(PLANTING_SUBZONE_HISTORIES)
-                    .where(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.eq(plantingSubzoneId))
-              } else {
-                null
-              })
+              DSL.select(DSL.max(PLANTING_SUBZONE_HISTORIES.ID))
+                  .from(PLANTING_SUBZONE_HISTORIES)
+                  .where(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.eq(plantingSubzoneId)))
           .set(PLANTING_SUBZONE_ID, plantingSubzoneId)
           .returning(ID)
           .fetchOne(ID)!!

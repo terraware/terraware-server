@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.locationtech.jts.geom.Geometry
 
-internal class PlantingSiteStoreFetchSiteTest : PlantingSiteStoreTest() {
+internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
   @Nested
   inner class FetchSiteById {
     @Test

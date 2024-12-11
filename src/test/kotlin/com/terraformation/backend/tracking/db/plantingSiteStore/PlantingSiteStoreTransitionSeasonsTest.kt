@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-internal class PlantingSiteStoreTransitionSeasonsTest : PlantingSiteStoreTest() {
+internal class PlantingSiteStoreTransitionSeasonsTest : BasePlantingSiteStoreTest() {
   @Nested
   inner class TransitionPlantingSeasons {
     @Test

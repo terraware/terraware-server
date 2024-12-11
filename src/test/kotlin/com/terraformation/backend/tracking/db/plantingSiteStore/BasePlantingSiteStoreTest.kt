@@ -13,7 +13,7 @@ import io.mockk.every
 import java.time.ZoneId
 import org.junit.jupiter.api.BeforeEach
 
-internal abstract class PlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
+internal abstract class BasePlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   protected val clock = TestClock()

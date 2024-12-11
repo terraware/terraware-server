@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
 import org.locationtech.jts.geom.Point
 
-internal class PlantingSiteStoreConvertClustersTest : PlantingSiteStoreTest() {
+internal class PlantingSiteStoreConvertClustersTest : BasePlantingSiteStoreTest() {
   @Test
   fun `converts 4-plot 25x25m clusters to 1-plot 30x30m`() {
     val gridOrigin = point(0)
