@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-internal class PlantingSiteStoreMarkNotificationTest : PlantingSiteStoreTest() {
+internal class PlantingSiteStoreMarkNotificationTest : BasePlantingSiteStoreTest() {
   @Nested
   inner class MarkSchedulingObservationsNotificationComplete {
     @Test

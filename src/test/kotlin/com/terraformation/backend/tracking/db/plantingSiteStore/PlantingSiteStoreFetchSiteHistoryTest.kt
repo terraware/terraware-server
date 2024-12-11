@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class PlantingSiteStoreFetchSiteHistoryTest : PlantingSiteStoreTest() {
+internal class PlantingSiteStoreFetchSiteHistoryTest : BasePlantingSiteStoreTest() {
   @Test
   fun `fetches site history`() {
     val gridOrigin = point(1)

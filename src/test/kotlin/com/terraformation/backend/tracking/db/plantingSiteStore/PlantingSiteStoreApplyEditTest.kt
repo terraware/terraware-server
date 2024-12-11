@@ -40,7 +40,7 @@ import org.springframework.security.access.AccessDeniedException
  * the coverage in [PlantingSiteEditCalculatorV1Test] to verify that the calculated edits would be
  * correct.
  */
-internal class PlantingSiteStoreApplyEditTest : PlantingSiteStoreTest() {
+internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
   private val editTime = Instant.ofEpochSecond(10000)
 
   @Nested
