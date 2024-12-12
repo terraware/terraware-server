@@ -24,7 +24,12 @@ import org.springframework.scheduling.annotation.EnableScheduling
             title = "Terraware Server",
             version = VERSION,
             description = "Back end for Terraware applications",
-            license = License(name = "MIT")),
+            license =
+                License(
+                    name = "Apache 2.0",
+                    url = "https://www.apache.org/licenses/LICENSE-2.0.html",
+                ),
+        ),
     security =
         [
             SecurityRequirement(name = "cookie"),
