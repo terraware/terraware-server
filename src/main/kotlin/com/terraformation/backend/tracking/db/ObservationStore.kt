@@ -564,7 +564,7 @@ class ObservationStore(
       requirePermissions { scheduleAdHocObservation(observation.plantingSiteId) }
       if (isPermanent) {
         throw IllegalArgumentException(
-            "BUG! Plot added to an ad-hoc observations must not be permanent")
+            "BUG! Plot added to an ad-hoc observation must not be permanent")
       }
       validateOneAdHocPlot(plotIds)
     } else if (!currentUser().canManageObservation(observationId)) {
