@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-internal class PlantingSiteStoreUpdateSiteTest : PlantingSiteStoreTest() {
+internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
   @Nested
   inner class UpdatePlantingSite {
     @Test

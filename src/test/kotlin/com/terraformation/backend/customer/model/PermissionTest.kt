@@ -529,6 +529,7 @@ internal class PermissionTest : DatabaseTest() {
         createObservation = true,
         deletePlantingSite = true,
         readPlantingSite = true,
+        scheduleAdHocObservation = true,
         scheduleObservation = true,
         updatePlantingSite = true,
         updatePlantingSiteProject = true,
@@ -793,6 +794,7 @@ internal class PermissionTest : DatabaseTest() {
         createObservation = true,
         deletePlantingSite = true,
         readPlantingSite = true,
+        scheduleAdHocObservation = true,
         scheduleObservation = true,
         updatePlantingSite = true,
         updatePlantingSiteProject = true,
@@ -980,6 +982,7 @@ internal class PermissionTest : DatabaseTest() {
         createDelivery = true,
         createObservation = true,
         readPlantingSite = true,
+        scheduleAdHocObservation = true,
         updatePlantingSiteProject = true,
     )
 
@@ -1138,6 +1141,7 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *plantingSiteIds.forOrg1(),
         readPlantingSite = true,
+        scheduleAdHocObservation = true,
         updatePlantingSiteProject = true,
     )
 
@@ -1412,6 +1416,7 @@ internal class PermissionTest : DatabaseTest() {
         deletePlantingSite = true,
         movePlantingSiteToAnyOrg = true,
         readPlantingSite = true,
+        scheduleAdHocObservation = true,
         scheduleObservation = true,
         updatePlantingSite = true,
         updatePlantingSiteProject = true,
@@ -1591,6 +1596,7 @@ internal class PermissionTest : DatabaseTest() {
         deletePlantingSite = true,
         movePlantingSiteToAnyOrg = true,
         readPlantingSite = true,
+        scheduleAdHocObservation = true,
         scheduleObservation = true,
         updatePlantingSite = true,
         updatePlantingSiteProject = true,
@@ -1804,6 +1810,7 @@ internal class PermissionTest : DatabaseTest() {
         deletePlantingSite = true,
         movePlantingSiteToAnyOrg = false,
         readPlantingSite = true,
+        scheduleAdHocObservation = true,
         scheduleObservation = true,
         updatePlantingSite = true,
         updatePlantingSiteProject = true,
@@ -2019,6 +2026,7 @@ internal class PermissionTest : DatabaseTest() {
         deletePlantingSite = true,
         movePlantingSiteToAnyOrg = false,
         readPlantingSite = true,
+        scheduleAdHocObservation = true,
         scheduleObservation = true,
         updatePlantingSite = true,
         updatePlantingSiteProject = true,
@@ -2204,6 +2212,7 @@ internal class PermissionTest : DatabaseTest() {
         deletePlantingSite = false,
         movePlantingSiteToAnyOrg = false,
         readPlantingSite = true,
+        scheduleAdHocObservation = true,
         scheduleObservation = false,
         updatePlantingSite = false,
         updatePlantingSiteProject = true,
@@ -2978,6 +2987,7 @@ internal class PermissionTest : DatabaseTest() {
         deletePlantingSite: Boolean = false,
         movePlantingSiteToAnyOrg: Boolean = false,
         readPlantingSite: Boolean = false,
+        scheduleAdHocObservation: Boolean = false,
         scheduleObservation: Boolean = false,
         updatePlantingSite: Boolean = false,
         updatePlantingSiteProject: Boolean = false,
@@ -3005,6 +3015,10 @@ internal class PermissionTest : DatabaseTest() {
             readPlantingSite,
             user.canReadPlantingSite(idInDatabase),
             "Can read planting site $plantingSiteId")
+        assertEquals(
+            scheduleAdHocObservation,
+            user.canScheduleAdHocObservation(idInDatabase),
+            "Can schedule ad-hoc observation $plantingSiteId")
         assertEquals(
             scheduleObservation,
             user.canScheduleObservation(idInDatabase),

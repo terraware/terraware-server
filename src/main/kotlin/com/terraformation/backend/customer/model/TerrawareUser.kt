@@ -405,6 +405,10 @@ interface TerrawareUser : Principal {
 
   fun canReviewApplication(applicationId: ApplicationId): Boolean = defaultPermission
 
+  fun canScheduleAdHocObservation(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
+
+  fun canScheduleObservation(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
+
   fun canSendAlert(facilityId: FacilityId): Boolean = defaultPermission
 
   fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role): Boolean =
@@ -413,8 +417,6 @@ interface TerrawareUser : Principal {
   fun canSetTestClock(): Boolean = defaultPermission
 
   fun canSetWithdrawalUser(accessionId: AccessionId): Boolean = defaultPermission
-
-  fun canScheduleObservation(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 
   fun canTriggerAutomation(automationId: AutomationId): Boolean = defaultPermission
 

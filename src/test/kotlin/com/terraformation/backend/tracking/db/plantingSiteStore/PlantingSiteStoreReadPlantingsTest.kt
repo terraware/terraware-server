@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class PlantingSiteStoreReadPlantingsTest : PlantingSiteStoreTest() {
+internal class PlantingSiteStoreReadPlantingsTest : BasePlantingSiteStoreTest() {
   @Nested
   inner class FetchSubzoneIdsWithPastPlantings {
     @Test

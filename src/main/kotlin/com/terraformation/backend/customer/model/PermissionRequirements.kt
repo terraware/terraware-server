@@ -1214,6 +1214,26 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun scheduleAdHocObservation(plantingSiteId: PlantingSiteId) {
+    user.recordPermissionChecks {
+      if (!user.canScheduleAdHocObservation(plantingSiteId)) {
+        readPlantingSite(plantingSiteId)
+        throw AccessDeniedException(
+            "No permission to schedule ad-hoc observation for planting site $plantingSiteId")
+      }
+    }
+  }
+
+  fun scheduleObservation(plantingSiteId: PlantingSiteId) {
+    user.recordPermissionChecks {
+      if (!user.canScheduleObservation(plantingSiteId)) {
+        readPlantingSite(plantingSiteId)
+        throw AccessDeniedException(
+            "No permission to schedule observation for planting site $plantingSiteId")
+      }
+    }
+  }
+
   fun sendAlert(facilityId: FacilityId) {
     user.recordPermissionChecks {
       if (!user.canSendAlert(facilityId)) {
@@ -1247,16 +1267,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
         readAccession(accessionId)
         throw AccessDeniedException(
             "No permission to set withdrawal user for accession $accessionId")
-      }
-    }
-  }
-
-  fun scheduleObservation(plantingSiteId: PlantingSiteId) {
-    user.recordPermissionChecks {
-      if (!user.canScheduleObservation(plantingSiteId)) {
-        readPlantingSite(plantingSiteId)
-        throw AccessDeniedException(
-            "No permission to schedule observation for planting site $plantingSiteId")
       }
     }
   }

@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-internal class PlantingSiteStoreUpdateSeasonsTest : PlantingSiteStoreTest() {
+internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() {
   @Nested
   inner class UpdatePlantingSite {
     @BeforeEach
