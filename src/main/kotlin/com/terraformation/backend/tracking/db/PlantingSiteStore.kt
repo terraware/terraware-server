@@ -1506,7 +1506,7 @@ class PlantingSiteStore(
       plantingSiteId: PlantingSiteId,
       swCorner: Point,
   ): MonitoringPlotId {
-    requirePermissions { scheduleObservation(plantingSiteId) }
+    requirePermissions { scheduleAdHocObservation(plantingSiteId) }
 
     val userId = currentUser().userId
     val now = clock.instant()

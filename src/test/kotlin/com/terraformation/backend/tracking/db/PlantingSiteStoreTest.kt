@@ -19,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.security.access.AccessDeniedException
 
 class PlantingSiteStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
@@ -43,7 +42,7 @@ class PlantingSiteStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    insertOrganizationUser(user.userId, inserted.organizationId, Role.Admin)
+    insertOrganizationUser(user.userId, inserted.organizationId, Role.Contributor)
   }
 
   @Nested
@@ -88,19 +87,6 @@ class PlantingSiteStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       deleteOrganizationUser(user.userId, inserted.organizationId)
 
       assertThrows<PlantingSiteNotFoundException> {
-        store.createAdHocMonitoringPlot("ad-hoc-plot", plantingSiteId, point(0, 0))
-      }
-    }
-
-    @Test
-    fun `throws access denied exception if user is a contributor`() {
-      val plantingSiteId = insertPlantingSite(boundary = multiPolygon(2.0))
-      insertPlantingSiteHistory()
-
-      deleteOrganizationUser(user.userId, inserted.organizationId)
-      insertOrganizationUser(user.userId, inserted.organizationId, Role.Contributor)
-
-      assertThrows<AccessDeniedException> {
         store.createAdHocMonitoringPlot("ad-hoc-plot", plantingSiteId, point(0, 0))
       }
     }

@@ -812,6 +812,20 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun reviewApplication() =
       allow { reviewApplication(applicationId) } ifUser { canReviewApplication(applicationId) }
 
+  @Test
+  fun scheduleObservation() =
+      allow { scheduleObservation(plantingSiteId) } ifUser
+          {
+            canScheduleObservation(plantingSiteId)
+          }
+
+  @Test
+  fun scheduleAdHocObservation() =
+      allow { scheduleAdHocObservation(plantingSiteId) } ifUser
+          {
+            canScheduleAdHocObservation(plantingSiteId)
+          }
+
   @Test fun sendAlert() = allow { sendAlert(facilityId) } ifUser { canSendAlert(facilityId) }
 
   @Test
@@ -827,13 +841,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun setWithdrawalUser() =
       allow { setWithdrawalUser(accessionId) } ifUser { canSetWithdrawalUser(accessionId) }
-
-  @Test
-  fun scheduleObservation() =
-      allow { scheduleObservation(plantingSiteId) } ifUser
-          {
-            canScheduleObservation(plantingSiteId)
-          }
 
   @Test
   fun triggerAutomation() =

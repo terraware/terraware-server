@@ -552,6 +552,12 @@ data class IndividualUser(
 
   override fun canReviewApplication(applicationId: ApplicationId) = isTFExpertOrHigher()
 
+  override fun canScheduleAdHocObservation(plantingSiteId: PlantingSiteId) =
+      isSuperAdmin() || isMember(parentStore.getOrganizationId(plantingSiteId))
+
+  override fun canScheduleObservation(plantingSiteId: PlantingSiteId) =
+      isSuperAdmin() || isAdminOrHigher(parentStore.getOrganizationId(plantingSiteId))
+
   override fun canSendAlert(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
   override fun canSetOrganizationUserRole(organizationId: OrganizationId, role: Role) =
@@ -561,9 +567,6 @@ data class IndividualUser(
 
   override fun canSetWithdrawalUser(accessionId: AccessionId) =
       isManagerOrHigher(parentStore.getOrganizationId(accessionId))
-
-  override fun canScheduleObservation(plantingSiteId: PlantingSiteId) =
-      isSuperAdmin() || isAdminOrHigher(parentStore.getOrganizationId(plantingSiteId))
 
   override fun canTriggerAutomation(automationId: AutomationId) =
       isAdminOrHigher(parentStore.getFacilityId(automationId))
