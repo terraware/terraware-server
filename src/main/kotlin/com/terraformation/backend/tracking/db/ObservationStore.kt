@@ -408,7 +408,13 @@ class ObservationStore(
   }
 
   fun createObservation(newModel: NewObservationModel): ObservationId {
-    requirePermissions { createObservation(newModel.plantingSiteId) }
+    requirePermissions {
+      if (newModel.isAdHoc) {
+        scheduleAdHocObservation(newModel.plantingSiteId)
+      } else {
+        createObservation(newModel.plantingSiteId)
+      }
+    }
 
     // Validate that all the requested subzones are part of the requested planting site.
     if (newModel.requestedSubzoneIds.isNotEmpty()) {
@@ -423,6 +429,10 @@ class ObservationStore(
       if (subzonesInRequestedSite != newModel.requestedSubzoneIds) {
         val missingSubzoneIds = newModel.requestedSubzoneIds - subzonesInRequestedSite
         throw PlantingSubzoneNotFoundException(missingSubzoneIds.first())
+      }
+
+      if (newModel.isAdHoc) {
+        throw IllegalArgumentException("Requested subzones must be empty for ad-hoc observations")
       }
     }
 
@@ -548,15 +558,22 @@ class ObservationStore(
       plotIds: Collection<MonitoringPlotId>,
       isPermanent: Boolean
   ) {
-    if (!currentUser().canManageObservation(observationId)) {
+    val observation = fetchObservationById(observationId)
+
+    if (observation.isAdHoc) {
+      requirePermissions { scheduleAdHocObservation(observation.plantingSiteId) }
+      if (isPermanent) {
+        throw IllegalArgumentException(
+            "BUG! Plot added to an ad-hoc observations must not be permanent")
+      }
+      validateOneAdHocPlot(plotIds)
+    } else if (!currentUser().canManageObservation(observationId)) {
       requirePermissions { replaceObservationPlot(observationId) }
     }
 
     if (plotIds.isEmpty()) {
       return
     }
-
-    val observation = fetchObservationById(observationId)
 
     validatePlotsInPlantingSite(observation.plantingSiteId, plotIds)
 
@@ -1526,6 +1543,24 @@ class ObservationStore(
           }
         }
       }
+    }
+  }
+
+  private fun validateOneAdHocPlot(plotIds: Collection<MonitoringPlotId>) {
+    if (plotIds.size != 1) {
+      throw IllegalArgumentException("BUG! Only one plot can be added to an ad-hoc observation.")
+    }
+
+    val isAdHoc =
+        dslContext
+            .select(MONITORING_PLOTS.IS_AD_HOC)
+            .from(MONITORING_PLOTS)
+            .where(MONITORING_PLOTS.ID.eq(plotIds.single()))
+            .fetchOneInto(Boolean::class.java)
+
+    if (isAdHoc != true) {
+      throw IllegalArgumentException(
+          "BUG! Only an ad-hoc plot can be added to an ad-hoc observation.")
     }
   }
 

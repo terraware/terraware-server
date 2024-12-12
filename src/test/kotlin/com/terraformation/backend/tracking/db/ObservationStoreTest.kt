@@ -100,6 +100,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canManageObservation(any()) } returns true
     every { user.canReadObservation(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
+    every { user.canScheduleAdHocObservation(any()) } returns true
     every { user.canUpdateObservation(any()) } returns true
   }
 
@@ -689,6 +690,44 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
             ))
       }
     }
+
+    @Test
+    fun `throws exception if no permission for ad-hoc observation`() {
+      every { user.canScheduleAdHocObservation(plantingSiteId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.createObservation(
+            NewObservationModel(
+                endDate = LocalDate.EPOCH,
+                id = null,
+                isAdHoc = true,
+                observationType = ObservationType.Monitoring,
+                plantingSiteId = plantingSiteId,
+                startDate = LocalDate.EPOCH,
+                state = ObservationState.Upcoming,
+            ))
+      }
+    }
+
+    @Test
+    fun `throws exception for ad-hoc observation with requested subzones`() {
+      insertPlantingZone()
+      val subzoneId1 = insertPlantingSubzone()
+      val subzoneId2 = insertPlantingSubzone()
+      assertThrows<IllegalArgumentException> {
+        store.createObservation(
+            NewObservationModel(
+                endDate = LocalDate.EPOCH,
+                id = null,
+                isAdHoc = true,
+                observationType = ObservationType.Monitoring,
+                plantingSiteId = plantingSiteId,
+                requestedSubzoneIds = setOf(subzoneId1, subzoneId2),
+                startDate = LocalDate.EPOCH,
+                state = ObservationState.Upcoming,
+            ))
+      }
+    }
   }
 
   @Nested
@@ -1226,6 +1265,54 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val observationId = insertObservation()
 
       every { user.canManageObservation(observationId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        store.addPlotsToObservation(observationId, emptyList(), true)
+      }
+    }
+
+    @Test
+    fun `throws exception if permanent plot is added to an ad-hoc observation`() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val plotId = insertMonitoringPlot(isAdHoc = true)
+      val observationId = insertObservation(isAdHoc = true)
+
+      assertThrows<IllegalArgumentException> {
+        store.addPlotsToObservation(observationId, listOf(plotId), true)
+      }
+    }
+
+    @Test
+    fun `throws exception if non-adhoc plot is added to an ad-hoc observation`() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val plotId = insertMonitoringPlot(isAdHoc = false)
+      val observationId = insertObservation(isAdHoc = true)
+
+      assertThrows<IllegalArgumentException> {
+        store.addPlotsToObservation(observationId, listOf(plotId), false)
+      }
+    }
+
+    @Test
+    fun `throws exception if multiple plots are added to an ad-hoc observation`() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val plotId1 = insertMonitoringPlot(isAdHoc = true)
+      val plotId2 = insertMonitoringPlot(isAdHoc = true)
+      val observationId = insertObservation(isAdHoc = true)
+
+      assertThrows<IllegalArgumentException> {
+        store.addPlotsToObservation(observationId, listOf(plotId1, plotId2), false)
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to schedule ad-hoc observation`() {
+      every { user.canScheduleAdHocObservation(plantingSiteId) } returns false
+
+      val observationId = insertObservation(isAdHoc = true)
 
       assertThrows<AccessDeniedException> {
         store.addPlotsToObservation(observationId, emptyList(), true)
