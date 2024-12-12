@@ -1,3 +1,5 @@
+d4bb2d13468 Show correct license in Swagger UI (#2686)
+9337fb5ebee Updated translations from Phrase (#2685)
 88ebbcd4e81 SW-6282 Added isAdHoc flag and ObservationType to observation and monitoring plot tables (#2681)
 423929cfeef Convert CohortModuleStoreTest to RunsAsDatabaseUser (#2683)
 22ce3c21161 Record lower permission check in helper functions (#2682)
