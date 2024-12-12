@@ -1,3 +1,4 @@
+49f3a4adc73 SW-6282 Added create ad-hoc plot function (#2684)
 d4bb2d13468 Show correct license in Swagger UI (#2686)
 9337fb5ebee Updated translations from Phrase (#2685)
 88ebbcd4e81 SW-6282 Added isAdHoc flag and ObservationType to observation and monitoring plot tables (#2681)
