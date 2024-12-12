@@ -396,7 +396,7 @@ class ObservationsController(
   }
 
   @Operation(summary = "Schedules a new ad-hoc observation.")
-  @PostMapping
+  @PostMapping("/adHoc")
   fun scheduleAdHocObservation(
       @RequestBody payload: ScheduleAdHocObservationRequestPayload
   ): ScheduleAdHocObservationResponsePayload {
