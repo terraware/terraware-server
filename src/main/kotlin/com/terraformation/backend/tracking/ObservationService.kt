@@ -408,7 +408,7 @@ class ObservationService(
   }
 
   /**
-   * Schedule an ad-hoc observation. This creates an an-hoc observation, creates an an-hoc
+  * Schedule an ad-hoc observation. This creates an ad-hoc observation, creates an ad-hoc
    * monitoring plot, and adds the plot to the observation.
    */
   fun scheduleAdHocObservation(
