@@ -1016,7 +1016,7 @@ data class ScheduleAdHocObservationRequestPayload(
         description =
             "The end date for this observation, should be limited to 2 months from the start date.")
     val endDate: LocalDate,
-   @Schema(description = "The plot name for the ad-hoc plot.") val plotName: String,
+    @Schema(description = "The plot name for the ad-hoc plot.") val plotName: String,
     @Schema(description = "Which planting site this observation needs to be scheduled for.")
     val plantingSiteId: PlantingSiteId,
     @Schema(
