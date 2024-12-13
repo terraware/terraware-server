@@ -31,7 +31,6 @@ class AdminEmailController(
 
   @GetMapping("/email")
   fun getSendTestEmailPage(model: Model): String {
-    model.addAttribute("emailNames", listOf("DocumentsUpdate"))
     model.addAttribute("isEmailEnabled", config.email.enabled)
 
     return "/admin/email"

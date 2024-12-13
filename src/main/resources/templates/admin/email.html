@@ -14,11 +14,7 @@
     <br/>
     <label for="emailName">Email to Send</label>
     <select name="emailName" id="emailName">
-        <option th:each="emailName : ${emailNames}"
-                th:text="${emailName}"
-                th:value="${emailName}">
-            Email Name
-        </option>
+        <option th:value="DocumentsUpdate">Documents Update (EULA, TOS, Privacy update)</option>
     </select>
     <input type="submit" value=" Send Test Email "/>
 </form>
