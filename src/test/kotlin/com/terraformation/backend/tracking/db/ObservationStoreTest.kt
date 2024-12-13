@@ -112,14 +112,18 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val plantingSiteHistoryId = inserted.plantingSiteHistoryId
       val startDate1 = LocalDate.of(2021, 4, 1)
       val startDate2 = LocalDate.of(2022, 3, 1)
-      val startDate3 = LocalDate.of(2022, 3, 1)
+      val startDate3 = LocalDate.of(2023, 3, 1)
       val endDate1 = LocalDate.of(2021, 4, 30)
       val endDate2 = LocalDate.of(2022, 3, 31)
-      val endDate3 = LocalDate.of(2022, 3, 31)
+      val endDate3 = LocalDate.of(2023, 3, 31)
 
       // Ad-hoc observations are excluded by default
       val adHocObservationId =
-          insertObservation(endDate = endDate3, isAdHoc = true, startDate = startDate3)
+          insertObservation(
+              endDate = endDate3,
+              isAdHoc = true,
+              startDate = startDate3,
+              state = ObservationState.Upcoming)
 
       // Insert in reverse time order
       val observationId1 =
