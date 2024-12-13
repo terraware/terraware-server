@@ -30,14 +30,14 @@ class AdminEmailController(
   private val log = perClassLogger()
 
   @GetMapping("/email")
-  fun getFacility(model: Model): String {
+  fun getSendTestEmailPage(model: Model): String {
     model.addAttribute("emailNames", listOf("DocumentsUpdate"))
 
     return "/admin/email"
   }
 
   @PostMapping("/sendEmail")
-  fun createFacility(
+  fun sendTestEmail(
       @NotBlank @RequestParam emailName: String,
       @NotBlank @RequestParam recipient: String,
       redirectAttributes: RedirectAttributes,
