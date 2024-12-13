@@ -6,8 +6,10 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
@@ -23,7 +25,10 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Other
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Unknown
 import com.terraformation.backend.db.tracking.embeddables.pojos.ObservationPlotId
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
@@ -32,12 +37,14 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.FileMetadata
+import com.terraformation.backend.i18n.TimeZones
 import com.terraformation.backend.onePixelPng
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
@@ -154,7 +161,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         observationPhotosDao,
         observationStore,
         plantingSiteStore,
-        parentStore)
+        parentStore,
+        SystemUser(usersDao),
+    )
   }
   private val helper: ObservationTestHelper by lazy {
     ObservationTestHelper(this, observationStore, user.userId)
@@ -1852,37 +1861,92 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class ScheduleAdHocObservation {
+  inner class CompleteAdHocObservation {
     @BeforeEach
     fun setUp() {
-      helper.insertPlantedSite(width = 2, height = 7, subzoneCompletedTime = Instant.EPOCH)
+      insertOrganizationUser(role = Role.Contributor)
     }
 
     @Test
     fun `creates new observation and monitoring plot`() {
-      val startDate = LocalDate.EPOCH
-      val endDate = startDate.plusDays(1)
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+
+      val observedTime = Instant.ofEpochSecond(1)
+      clock.instant = Instant.ofEpochSecond(123)
+
+      val date = LocalDate.ofInstant(observedTime, TimeZones.UTC)
+      val recordedPlants =
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = Known,
+                  gpsCoordinates = point(1),
+                  speciesId = speciesId1,
+                  statusId = RecordedPlantStatus.Live),
+              RecordedPlantsRow(
+                  certaintyId = Known,
+                  gpsCoordinates = point(1),
+                  speciesId = speciesId1,
+                  statusId = RecordedPlantStatus.Live),
+              RecordedPlantsRow(
+                  certaintyId = Known,
+                  gpsCoordinates = point(1),
+                  speciesId = speciesId1,
+                  statusId = RecordedPlantStatus.Dead),
+              RecordedPlantsRow(
+                  certaintyId = Known,
+                  gpsCoordinates = point(1),
+                  speciesId = speciesId1,
+                  statusId = RecordedPlantStatus.Existing),
+              RecordedPlantsRow(
+                  certaintyId = Known,
+                  gpsCoordinates = point(1),
+                  speciesId = speciesId2,
+                  statusId = RecordedPlantStatus.Existing,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = Other,
+                  gpsCoordinates = point(1),
+                  speciesName = "Other 1",
+                  statusId = RecordedPlantStatus.Existing,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = Other,
+                  gpsCoordinates = point(1),
+                  speciesName = "Other 2",
+                  statusId = RecordedPlantStatus.Dead,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = Unknown,
+                  gpsCoordinates = point(1),
+                  statusId = RecordedPlantStatus.Live,
+              ),
+          )
 
       val (observationId, plotId) =
-          service.scheduleAdHocObservation(
-              endDate,
+          service.completeAdHocObservation(
+              emptySet(),
+              "Notes",
+              observedTime,
               ObservationType.BiomassMeasurements,
               plantingSiteId,
+              recordedPlants,
               "Ad-hoc plot name",
-              startDate,
               point(1),
           )
 
       assertEquals(
           ObservationsRow(
+              completedTime = clock.instant,
               createdTime = clock.instant,
-              endDate = endDate,
+              endDate = date,
               id = observationId,
               isAdHoc = true,
               observationTypeId = ObservationType.BiomassMeasurements,
               plantingSiteId = plantingSiteId,
-              startDate = startDate,
-              stateId = ObservationState.Upcoming,
+              plantingSiteHistoryId = inserted.plantingSiteHistoryId,
+              startDate = date,
+              stateId = ObservationState.Completed,
           ),
           observationsDao.fetchOneById(observationId),
           "Observation row")
@@ -1915,18 +1979,106 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           ObservationPlotsRow(
               observationId = observationId,
               monitoringPlotId = plotId,
+              claimedBy = user.userId,
+              claimedTime = clock.instant,
+              completedBy = user.userId,
+              completedTime = clock.instant,
               createdBy = user.userId,
               createdTime = clock.instant,
               isPermanent = false,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
-              statusId = ObservationPlotStatus.Unclaimed,
+              observedTime = observedTime,
+              notes = "Notes",
+              statusId = ObservationPlotStatus.Completed,
               monitoringPlotHistoryId = latestPlotHistoryId,
           ),
           observationPlotsDao
               .fetchByObservationPlotId(ObservationPlotId(observationId, plotId))
               .single(),
           "Observation plot row")
+
+      val plotSpecies1Totals =
+          ObservedPlotSpeciesTotalsRow(
+              observationId, plotId, speciesId1, null, Known, 2, 1, 1, null, 0, 0)
+      val plotSpecies2Totals =
+          ObservedPlotSpeciesTotalsRow(
+              observationId, plotId, speciesId2, null, Known, 0, 0, 1, null, 0, 0)
+      val plotOther1Total =
+          ObservedPlotSpeciesTotalsRow(
+              observationId, plotId, null, "Other 1", Other, 0, 0, 1, null, 0, 0)
+      val plotOther2Total =
+          ObservedPlotSpeciesTotalsRow(
+              observationId, plotId, null, "Other 2", Other, 0, 1, 0, null, 0, 0)
+      val plotUnknownTotal =
+          ObservedPlotSpeciesTotalsRow(
+              observationId, plotId, null, null, Unknown, 1, 0, 0, null, 0, 0)
+
+      val siteSpecies1Totals =
+          ObservedSiteSpeciesTotalsRow(
+              observationId, plantingSiteId, speciesId1, null, Known, 2, 1, 1, null, 0, 0)
+      val siteSpecies2Totals =
+          ObservedSiteSpeciesTotalsRow(
+              observationId, plantingSiteId, speciesId2, null, Known, 0, 0, 1, null, 0, 0)
+      val siteOther1Total =
+          ObservedSiteSpeciesTotalsRow(
+              observationId, plantingSiteId, null, "Other 1", Other, 0, 0, 1, null, 0, 0)
+      val siteOther2Total =
+          ObservedSiteSpeciesTotalsRow(
+              observationId, plantingSiteId, null, "Other 2", Other, 0, 1, 0, null, 0, 0)
+      val siteUnknownTotal =
+          ObservedSiteSpeciesTotalsRow(
+              observationId, plantingSiteId, null, null, Unknown, 1, 0, 0, null, 0, 0)
+
+      helper.assertTotals(
+          setOf(
+              plotSpecies1Totals,
+              plotSpecies2Totals,
+              plotOther1Total,
+              plotOther2Total,
+              plotUnknownTotal,
+              siteSpecies1Totals,
+              siteSpecies2Totals,
+              siteOther1Total,
+              siteOther2Total,
+              siteUnknownTotal),
+          "Totals after observation")
+    }
+
+    @Test
+    fun `throws exception if no permission`() {
+      deleteOrganizationUser()
+
+      clock.instant = Instant.ofEpochSecond(500)
+
+      assertThrows<EntityNotFoundException> {
+        service.completeAdHocObservation(
+            emptySet(),
+            null,
+            clock.instant.minusSeconds(1),
+            ObservationType.BiomassMeasurements,
+            plantingSiteId,
+            emptySet(),
+            "Ad-hoc plot name",
+            point(1),
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception if no observed time is in the future`() {
+      assertThrows<IllegalArgumentException> {
+        service.completeAdHocObservation(
+            emptySet(),
+            null,
+            clock.instant.plusSeconds(1),
+            ObservationType.BiomassMeasurements,
+            plantingSiteId,
+            emptySet(),
+            "Ad-hoc plot name",
+            point(1),
+        )
+      }
     }
   }
 

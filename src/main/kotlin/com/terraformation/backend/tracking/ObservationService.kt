@@ -1,11 +1,13 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
@@ -14,6 +16,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
+import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
@@ -67,6 +70,7 @@ class ObservationService(
     private val observationStore: ObservationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val parentStore: ParentStore,
+    private val systemUser: SystemUser,
 ) {
   private val log = perClassLogger()
 
@@ -408,37 +412,55 @@ class ObservationService(
   }
 
   /**
-   * Schedule an ad-hoc observation. This creates an ad-hoc observation, creates an ad-hoc
-   * monitoring plot, and adds the plot to the observation.
+   * Record an ad-hoc observation. This creates an ad-hoc observation, creates an ad-hoc monitoring
+   * plot, adds the plot to the observation, and complete the observation with plants.
    */
-  fun scheduleAdHocObservation(
-      endDate: LocalDate,
+  fun completeAdHocObservation(
+      conditions: Set<ObservableCondition>,
+      notes: String?,
+      observedTime: Instant,
       observationType: ObservationType,
       plantingSiteId: PlantingSiteId,
+      plants: Collection<RecordedPlantsRow>,
       plotName: String,
-      startDate: LocalDate,
       swCorner: Point,
   ): Pair<ObservationId, MonitoringPlotId> {
     requirePermissions { scheduleAdHocObservation(plantingSiteId) }
 
-    validateSchedule(plantingSiteId, startDate, endDate)
+    if (observedTime.isAfter(clock.instant())) {
+      throw IllegalArgumentException("Observed time is in the future")
+    }
+
+    val effectiveTimeZone = parentStore.getEffectiveTimeZone(plantingSiteId)
+    val date = LocalDate.ofInstant(observedTime, effectiveTimeZone)
 
     return dslContext.transactionResult { _ ->
       val observationId =
           observationStore.createObservation(
               NewObservationModel(
-                  endDate = endDate,
+                  endDate = date,
                   id = null,
                   isAdHoc = true,
                   observationType = observationType,
                   plantingSiteId = plantingSiteId,
                   requestedSubzoneIds = emptySet(),
-                  startDate = startDate,
+                  startDate = date,
                   state = ObservationState.Upcoming))
 
       val plotId = plantingSiteStore.createAdHocMonitoringPlot(plotName, plantingSiteId, swCorner)
-
       observationStore.addAdHocPlotToObservation(observationId, plotId)
+
+      systemUser.run { observationStore.recordObservationStart(observationId) }
+
+      observationStore.claimPlot(observationId, plotId)
+      observationStore.completePlot(
+          observationId,
+          plotId,
+          conditions,
+          notes,
+          observedTime,
+          plants,
+      )
 
       observationId to plotId
     }
@@ -527,9 +549,9 @@ class ObservationService(
   }
 
   /**
-   * Validation rules:
-   * 1. start date can be up to one year from today and not earlier than today
-   * 2. end date should be after the start date but no more than 2 months from the start date
+   * Validation rules: 1a. for non-ad-hoc, start date can be up to one year from today and not
+   * earlier than today. 1b. for ad-hoc, start date can be on or before today.
+   * 2. end date should be after the start date but no more than 2 months from the start date.
    */
   private fun validateSchedule(
       plantingSiteId: PlantingSiteId,

@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -68,7 +69,9 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         observationPhotosDao,
         observationStore,
         plantingSiteStore,
-        parentStore)
+        parentStore,
+        SystemUser(usersDao),
+    )
   }
 
   private val gen = ShapefileGenerator(defaultPermanentClusters = 1, defaultTemporaryPlots = 2)
