@@ -420,6 +420,7 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
         errorMargin.equalsIgnoreScale(other.errorMargin) &&
         studentsT.equalsIgnoreScale(other.studentsT) &&
         variance.equalsIgnoreScale(other.variance) &&
+        targetPlantingDensity.equalsIgnoreScale(other.targetPlantingDensity) &&
         plantingSubzones.zip(other.plantingSubzones).all { (a, b) -> a.equals(b, tolerance) } &&
         boundary.equalsExact(other.boundary, tolerance)
   }

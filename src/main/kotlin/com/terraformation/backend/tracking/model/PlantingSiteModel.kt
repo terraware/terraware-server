@@ -133,7 +133,6 @@ data class PlantingSiteModel<
         id == other.id &&
         name == other.name &&
         timeZone == other.timeZone &&
-        plantingZones.size == other.plantingZones.size &&
         projectId == other.projectId &&
         areaHa.equalsIgnoreScale(other.areaHa) &&
         boundary.equalsOrBothNull(other.boundary) &&
@@ -141,6 +140,8 @@ data class PlantingSiteModel<
         gridOrigin.equalsOrBothNull(other.gridOrigin) &&
         exteriorPlots.size == other.exteriorPlots.size &&
         exteriorPlots.zip(other.exteriorPlots).all { it.first.equals(it.second, tolerance) } &&
+        plantingSeasons.size == other.plantingSeasons.size &&
+        plantingSeasons.zip(other.plantingSeasons).all { it.first == it.second } &&
         plantingZones.size == other.plantingZones.size &&
         plantingZones.zip(other.plantingZones).all { it.first.equals(it.second, tolerance) }
   }
