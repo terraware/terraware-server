@@ -4,11 +4,11 @@
 
 <span th:replace="~{/admin/header :: top}"/>
 
-<a href="/admin/">Home</a> -
+<a href="/admin/">Home</a>
 
 <h2>Send Test Email</h2>
 
-<form method="POST" action="/admin/sendEmail">
+<form method="POST" action="/admin/sendEmail" th:if="${isEmailEnabled}">
     <label for="recipient">Recipient</label>
     <input type="email" name="recipient" id="recipient" required />
     <br/>
@@ -22,6 +22,10 @@
     </select>
     <input type="submit" value=" Send Test Email "/>
 </form>
+
+<div th:if="${!isEmailEnabled}">
+    <h3>The system is not configured to send emails.</h3>
+</div>
 
 </body>
 </html>

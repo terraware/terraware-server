@@ -3,7 +3,7 @@ package com.terraformation.backend.admin
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.UserStore
-import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.db.UserNotFoundForEmailException
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.email.model.DocumentsUpdate
@@ -32,6 +32,7 @@ class AdminEmailController(
   @GetMapping("/email")
   fun getSendTestEmailPage(model: Model): String {
     model.addAttribute("emailNames", listOf("DocumentsUpdate"))
+    model.addAttribute("isEmailEnabled", config.email.enabled)
 
     return "/admin/email"
   }
@@ -42,7 +43,7 @@ class AdminEmailController(
       @NotBlank @RequestParam recipient: String,
       redirectAttributes: RedirectAttributes,
   ): String {
-    val user = userStore.fetchByEmail(recipient) as IndividualUser
+    val user = userStore.fetchByEmail(recipient) ?: throw UserNotFoundForEmailException(recipient)
 
     try {
       emailService.sendUserNotification(
