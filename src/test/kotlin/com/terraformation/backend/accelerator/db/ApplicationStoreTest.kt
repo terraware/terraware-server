@@ -46,6 +46,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
 import java.time.Instant
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -70,11 +71,12 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
         clock, countriesDao, TestSingletons.countryDetector, dslContext, eventPublisher, messages)
   }
 
+  private val organizationName = UUID.randomUUID().toString()
   private lateinit var organizationId: OrganizationId
 
   @BeforeEach
   fun setUp() {
-    organizationId = insertOrganization(countryCode = "US", name = "Organization 1")
+    organizationId = insertOrganization(countryCode = "US", name = organizationName)
     insertProject(name = "Project A")
 
     every { user.adminOrganizations() } returns setOf(organizationId)
@@ -106,7 +108,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               createdBy = user.userId,
               createdTime = now,
               id = model.id,
-              internalName = "XXX_Organization 1",
+              internalName = "XXX_$organizationName",
               modifiedBy = user.userId,
               modifiedTime = now,
               projectId = inserted.projectId))
@@ -212,7 +214,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 internalName = "internalName",
                 modifiedTime = clock.instant.plusSeconds(600),
                 organizationId = organizationId,
-                organizationName = "Organization 1",
+                organizationName = organizationName,
                 projectId = org1ProjectId1,
                 projectName = "Project A",
                 status = ApplicationStatus.PreCheck),
@@ -251,7 +253,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             simpleFeature.getAttribute("organizationId"),
             "organizationId attribute")
         assertEquals(
-            "Organization 1",
+            organizationName,
             simpleFeature.getAttribute("organizationName"),
             "organizationName attribute")
         assertEquals(
@@ -293,7 +295,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     internalName = "internalName",
                     modifiedTime = null,
                     organizationId = organizationId,
-                    organizationName = "Organization 1",
+                    organizationName = organizationName,
                     projectId = org1ProjectId1,
                     projectName = "Project A",
                     status = ApplicationStatus.PreCheck)),
@@ -338,7 +340,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     internalName = "internalName",
                     modifiedTime = null,
                     organizationId = organizationId,
-                    organizationName = "Organization 1",
+                    organizationName = organizationName,
                     projectId = org1ProjectId1,
                     projectName = "Project A",
                     status = ApplicationStatus.PreCheck),
@@ -351,7 +353,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     internalName = "internalName2",
                     modifiedTime = null,
                     organizationId = organizationId,
-                    organizationName = "Organization 1",
+                    organizationName = organizationName,
                     projectId = org1ProjectId2,
                     projectName = "Project B",
                     status = ApplicationStatus.PLReview),
@@ -385,7 +387,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     internalName = "internalName",
                     modifiedTime = null,
                     organizationId = organizationId,
-                    organizationName = "Organization 1",
+                    organizationName = organizationName,
                     projectId = org1ProjectId1,
                     projectName = "Project A",
                     status = ApplicationStatus.PreCheck),
@@ -398,7 +400,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     internalName = "internalName2",
                     modifiedTime = null,
                     organizationId = organizationId,
-                    organizationName = "Organization 1",
+                    organizationName = organizationName,
                     projectId = org1ProjectId2,
                     projectName = "Project B",
                     status = ApplicationStatus.PLReview),
@@ -717,7 +719,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 moduleTitle = null,
                 name = "Pre-screen deliverable",
                 organizationId = organizationId,
-                organizationName = "Organization 1",
+                organizationName = organizationName,
                 participantId = null,
                 participantName = null,
                 position = 1,
@@ -1332,16 +1334,16 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   applicationStatusId = ApplicationStatus.PassedPreScreen,
                   countryCode = "US",
                   feedback = null,
-                  internalName = "USA_Organization 1",
+                  internalName = "USA_$organizationName",
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant)),
           applicationsDao.findAll())
     }
 
     @Test
-    fun `adds suffix to conflicting internal name after passing prescreen`() {
+    fun `adds suffix to conflicting internal name after passing pre-screen`() {
       val otherUserId = insertUser()
-      insertApplication(createdBy = otherUserId, internalName = "USA_Organization 1")
+      insertApplication(createdBy = otherUserId, internalName = "USA_$organizationName")
       val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) }
 
       insertProject()
@@ -1356,7 +1358,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           initial.copy(
               applicationStatusId = ApplicationStatus.PassedPreScreen,
               countryCode = "US",
-              internalName = "USA_Organization 1_2",
+              internalName = "USA_${organizationName}_2",
               modifiedBy = user.userId,
               modifiedTime = clock.instant),
           applicationsDao.fetchOneById(applicationId))
@@ -1393,7 +1395,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   applicationStatusId = ApplicationStatus.PassedPreScreen,
                   countryCode = "US",
                   feedback = null,
-                  internalName = "USA_Organization 1",
+                  internalName = "USA_$organizationName",
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant)),
           applicationsDao.findAll())
@@ -1418,7 +1420,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               initial.copy(
                   applicationStatusId = ApplicationStatus.PassedPreScreen,
                   countryCode = "US",
-                  internalName = "USA_Organization 1",
+                  internalName = "USA_$organizationName",
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant)),
           applicationsDao.findAll())
@@ -1572,7 +1574,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     fun `updates boundary`() {
       val otherUserId = insertUser()
       val applicationId =
-          insertApplication(createdBy = otherUserId, internalName = "XXX_Organization 1")
+          insertApplication(createdBy = otherUserId, internalName = "XXX_$organizationName")
       val boundary = Turtle(point(0, 51)).makePolygon { rectangle(100, 100) }
 
       clock.instant = Instant.ofEpochSecond(30)
@@ -1587,7 +1589,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               createdBy = otherUserId,
               createdTime = Instant.EPOCH,
               id = applicationId,
-              internalName = "XXX_Organization 1",
+              internalName = "XXX_$organizationName",
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               projectId = inserted.projectId,
@@ -1624,7 +1626,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     fun `updates internal name and country code, and pubilshes event if they are changed`() {
       val otherUserId = insertUser()
       val applicationId =
-          insertApplication(createdBy = otherUserId, internalName = "XXX_Organization 1")
+          insertApplication(createdBy = otherUserId, internalName = "XXX_$organizationName")
 
       clock.instant = Instant.ofEpochSecond(30)
 
@@ -1638,7 +1640,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               createdBy = otherUserId,
               createdTime = Instant.EPOCH,
               id = applicationId,
-              internalName = "USA_Organization 1",
+              internalName = "USA_$organizationName",
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               projectId = inserted.projectId,
