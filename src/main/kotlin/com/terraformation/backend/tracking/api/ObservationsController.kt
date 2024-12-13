@@ -395,6 +395,57 @@ class ObservationsController(
     return SimpleSuccessResponsePayload()
   }
 
+  @GetMapping("/adHoc")
+  @Operation(summary = "Gets a list of observations of planting sites.")
+  fun listAdHocObservations(
+      @RequestParam
+      @Schema(
+          description =
+              "Limit results to observations of planting sites in a specific organization. " +
+                  "Ignored if plantingSiteId is specified.")
+      organizationId: OrganizationId? = null,
+      @RequestParam
+      @Schema(
+          description =
+              "Limit results to observations of a specific planting site. Required if " +
+                  "organizationId is not specified.")
+      plantingSiteId: PlantingSiteId? = null,
+  ): ListAdHocObservationsResponsePayload {
+    val observations: Collection<ExistingObservationModel>
+    val plantingSites: Map<PlantingSiteId, ExistingPlantingSiteModel>
+    val plotCounts: Map<ObservationId, ObservationPlotCounts>
+
+    if (plantingSiteId != null) {
+      observations =
+          observationStore.fetchObservationsByPlantingSite(plantingSiteId, isAdHoc = true)
+      plantingSites =
+          mapOf(
+              plantingSiteId to
+                  plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site))
+      plotCounts = observationStore.countPlots(plantingSiteId)
+    } else if (organizationId != null) {
+      observations =
+          observationStore.fetchObservationsByOrganization(organizationId, isAdHoc = true)
+      plantingSites =
+          plantingSiteStore.fetchSitesByOrganizationId(organizationId).associateBy { it.id }
+      plotCounts = observationStore.countPlots(organizationId)
+    } else {
+      throw BadRequestException("Must specify organizationId or plantingSiteId")
+    }
+
+    val payloads =
+        observations.map { observation ->
+          ObservationPayload(
+              observation,
+              plotCounts[observation.id],
+              plantingSites[observation.plantingSiteId]!!.name)
+        }
+
+    return ListAdHocObservationsResponsePayload(
+        observations = payloads,
+    )
+  }
+
   @Operation(summary = "Records a new completed ad-hoc observation.")
   @PostMapping("/adHoc")
   fun completeAdHocObservation(
@@ -504,6 +555,10 @@ data class ObservationPayload(
 
 data class GetObservationResponsePayload(val observation: ObservationPayload) :
     SuccessResponsePayload
+
+data class ListAdHocObservationsResponsePayload(
+    val observations: List<ObservationPayload>,
+) : SuccessResponsePayload
 
 data class ListObservationsResponsePayload(
     val observations: List<ObservationPayload>,

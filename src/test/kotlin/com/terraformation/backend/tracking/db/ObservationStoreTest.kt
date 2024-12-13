@@ -118,7 +118,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val endDate3 = LocalDate.of(2022, 3, 31)
 
       // Ad-hoc observations are excluded by default
-      val adHocObservationId = insertObservation(isAdHoc = true)
+      val adHocObservationId =
+          insertObservation(endDate = endDate3, isAdHoc = true, startDate = startDate3)
 
       // Insert in reverse time order
       val observationId1 =
@@ -170,15 +171,16 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(expected, actual, "Non-ad-hoc observations")
 
       assertEquals(
-          ExistingObservationModel(
-              endDate = endDate3,
-              id = adHocObservationId,
-              isAdHoc = true,
-              observationType = ObservationType.Monitoring,
-              plantingSiteId = plantingSiteId,
-              startDate = startDate3,
-              state = ObservationState.Upcoming,
-          ),
+          listOf(
+              ExistingObservationModel(
+                  endDate = endDate3,
+                  id = adHocObservationId,
+                  isAdHoc = true,
+                  observationType = ObservationType.Monitoring,
+                  plantingSiteId = plantingSiteId,
+                  startDate = startDate3,
+                  state = ObservationState.Upcoming,
+              )),
           store.fetchObservationsByPlantingSite(plantingSiteId, isAdHoc = true),
           "Ad-hoc observations")
     }
@@ -2319,13 +2321,14 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     @Nested
     inner class ByPlantingSite {
       @Test
-      fun `returns correct counts`() {
+      fun `returns correct counts without counting ad-hoc plots`() {
         val plotId1 = insertMonitoringPlot()
         val plotId2 = insertMonitoringPlot()
         val plotId3 = insertMonitoringPlot()
         val plotId4 = insertMonitoringPlot()
         val plotId5 = insertMonitoringPlot()
         val plotId6 = insertMonitoringPlot()
+        val adHocPlotId = insertMonitoringPlot(isAdHoc = true)
 
         val observationId1 = insertObservation()
         insertObservationPlot(monitoringPlotId = plotId1, claimedBy = user.userId)
@@ -2338,6 +2341,9 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
         insertObservationPlot(monitoringPlotId = plotId1)
         insertObservationPlot(monitoringPlotId = plotId2)
         insertObservationPlot(monitoringPlotId = plotId6)
+
+        val adHocObservationId = insertObservation(isAdHoc = true)
+        insertObservationPlot(observationId = adHocObservationId, monitoringPlotId = adHocPlotId)
 
         // Make sure we're actually filtering by planting site
         insertPlantingSite()
@@ -2360,6 +2366,12 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                         totalIncomplete = 3,
                         totalPlots = 3,
                         totalUnclaimed = 3,
+                    ),
+                adHocObservationId to
+                    ObservationPlotCounts(
+                        totalIncomplete = 1,
+                        totalPlots = 1,
+                        totalUnclaimed = 1,
                     ),
             )
 
