@@ -408,7 +408,13 @@ class ObservationStore(
   }
 
   fun createObservation(newModel: NewObservationModel): ObservationId {
-    requirePermissions { createObservation(newModel.plantingSiteId) }
+    requirePermissions {
+      if (newModel.isAdHoc) {
+        scheduleAdHocObservation(newModel.plantingSiteId)
+      } else {
+        createObservation(newModel.plantingSiteId)
+      }
+    }
 
     // Validate that all the requested subzones are part of the requested planting site.
     if (newModel.requestedSubzoneIds.isNotEmpty()) {
@@ -423,6 +429,10 @@ class ObservationStore(
       if (subzonesInRequestedSite != newModel.requestedSubzoneIds) {
         val missingSubzoneIds = newModel.requestedSubzoneIds - subzonesInRequestedSite
         throw PlantingSubzoneNotFoundException(missingSubzoneIds.first())
+      }
+
+      if (newModel.isAdHoc) {
+        throw IllegalArgumentException("Requested subzones must be empty for ad-hoc observations")
       }
     }
 
@@ -543,6 +553,22 @@ class ObservationStore(
         .execute()
   }
 
+  fun addAdHocPlotToObservation(
+      observationId: ObservationId,
+      plotId: MonitoringPlotId,
+  ) {
+    val observation = fetchObservationById(observationId)
+    requirePermissions { scheduleAdHocObservation(observation.plantingSiteId) }
+
+    if (!observation.isAdHoc) {
+      throw IllegalStateException("BUG: Must be an ad-hoc observation")
+    }
+
+    validateAdHocPlotInPlantingSite(observation.plantingSiteId, plotId)
+
+    insertObservationPlots(observationId, setOf(plotId), false)
+  }
+
   fun addPlotsToObservation(
       observationId: ObservationId,
       plotIds: Collection<MonitoringPlotId>,
@@ -552,37 +578,19 @@ class ObservationStore(
       requirePermissions { replaceObservationPlot(observationId) }
     }
 
+    val observation = fetchObservationById(observationId)
+
+    if (observation.isAdHoc) {
+      throw IllegalStateException("BUG: Cannot add monitoring plot to an ad-hoc observation")
+    }
+
     if (plotIds.isEmpty()) {
       return
     }
 
-    val observation = fetchObservationById(observationId)
+    validateNonAdHocPlotsInPlantingSite(observation.plantingSiteId, plotIds)
 
-    validatePlotsInPlantingSite(observation.plantingSiteId, plotIds)
-
-    val createdBy = currentUser().userId
-    val createdTime = clock.instant()
-
-    plotIds.forEach { plotId ->
-      with(OBSERVATION_PLOTS) {
-        dslContext
-            .insertInto(OBSERVATION_PLOTS)
-            .set(CREATED_BY, createdBy)
-            .set(CREATED_TIME, createdTime)
-            .set(IS_PERMANENT, isPermanent)
-            .set(MODIFIED_BY, createdBy)
-            .set(MODIFIED_TIME, createdTime)
-            .set(
-                MONITORING_PLOT_HISTORY_ID,
-                DSL.select(DSL.max(MONITORING_PLOT_HISTORIES.ID))
-                    .from(MONITORING_PLOT_HISTORIES)
-                    .where(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(plotId)))
-            .set(MONITORING_PLOT_ID, plotId)
-            .set(OBSERVATION_ID, observationId)
-            .set(STATUS_ID, ObservationPlotStatus.Unclaimed)
-            .execute()
-      }
-    }
+    insertObservationPlots(observationId, plotIds, isPermanent)
   }
 
   fun removePlotsFromObservation(
@@ -599,7 +607,11 @@ class ObservationStore(
 
     val observation = fetchObservationById(observationId)
 
-    validatePlotsInPlantingSite(observation.plantingSiteId, plotIds)
+    if (observation.isAdHoc) {
+      throw IllegalStateException("BUG: Cannot remove monitoring plot from an ad-hoc observation")
+    }
+
+    validateNonAdHocPlotsInPlantingSite(observation.plantingSiteId, plotIds)
 
     val observationPlots =
         dslContext
@@ -1313,6 +1325,36 @@ class ObservationStore(
         .execute()
   }
 
+  private fun insertObservationPlots(
+      observationId: ObservationId,
+      plotIds: Collection<MonitoringPlotId>,
+      isPermanent: Boolean
+  ) {
+    val createdBy = currentUser().userId
+    val createdTime = clock.instant()
+
+    plotIds.forEach { plotId ->
+      with(OBSERVATION_PLOTS) {
+        dslContext
+            .insertInto(OBSERVATION_PLOTS)
+            .set(CREATED_BY, createdBy)
+            .set(CREATED_TIME, createdTime)
+            .set(IS_PERMANENT, isPermanent)
+            .set(MODIFIED_BY, createdBy)
+            .set(MODIFIED_TIME, createdTime)
+            .set(
+                MONITORING_PLOT_HISTORY_ID,
+                DSL.select(DSL.max(MONITORING_PLOT_HISTORIES.ID))
+                    .from(MONITORING_PLOT_HISTORIES)
+                    .where(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(plotId)))
+            .set(MONITORING_PLOT_ID, plotId)
+            .set(OBSERVATION_ID, observationId)
+            .set(STATUS_ID, ObservationPlotStatus.Unclaimed)
+            .execute()
+      }
+    }
+  }
+
   /** Updates the tables that hold the aggregated per-species plant totals from observations. */
   private fun updateSpeciesTotals(
       observationId: ObservationId,
@@ -1529,22 +1571,53 @@ class ObservationStore(
     }
   }
 
-  private fun validatePlotsInPlantingSite(
+  private fun validateAdHocPlotInPlantingSite(
+      plantingSiteId: PlantingSiteId,
+      plotId: MonitoringPlotId
+  ) {
+    val isAdHoc =
+        dslContext
+            .select(MONITORING_PLOTS.IS_AD_HOC)
+            .from(MONITORING_PLOTS)
+            .where(MONITORING_PLOTS.ID.eq(plotId))
+            .and(MONITORING_PLOTS.PLANTING_SITE_ID.eq(plantingSiteId))
+            .fetchOneInto(Boolean::class.java)
+
+    if (isAdHoc != true) {
+      throw IllegalStateException(
+          "BUG! Only an ad-hoc plot in the planting site can be added to an ad-hoc observation.")
+    }
+  }
+
+  private fun validateNonAdHocPlotsInPlantingSite(
       plantingSiteId: PlantingSiteId,
       plotIds: Collection<MonitoringPlotId>
   ) {
+    val plantingSiteField =
+        DSL.ifnull(
+            MONITORING_PLOTS.plantingSubzones.PLANTING_SITE_ID, MONITORING_PLOTS.PLANTING_SITE_ID)
+
     val nonMatchingPlot =
         dslContext
-            .select(MONITORING_PLOTS.ID, MONITORING_PLOTS.plantingSubzones.PLANTING_SITE_ID)
+            .select(MONITORING_PLOTS.ID, plantingSiteField, MONITORING_PLOTS.IS_AD_HOC)
             .from(MONITORING_PLOTS)
             .where(MONITORING_PLOTS.ID.`in`(plotIds))
-            .and(MONITORING_PLOTS.plantingSubzones.PLANTING_SITE_ID.ne(plantingSiteId))
+            .and(
+                DSL.or(
+                    plantingSiteField.ne(plantingSiteId),
+                    MONITORING_PLOTS.IS_AD_HOC.isTrue(),
+                ))
             .limit(1)
             .fetchOne()
 
     if (nonMatchingPlot != null) {
-      throw IllegalStateException(
-          "BUG! Plot ${nonMatchingPlot.value1()} is in site ${nonMatchingPlot.value2()}, not $plantingSiteId")
+      if (nonMatchingPlot[plantingSiteField] != plantingSiteId) {
+        throw IllegalStateException(
+            "BUG! Plot ${nonMatchingPlot[MONITORING_PLOTS.ID]} is in site ${nonMatchingPlot[plantingSiteField]}, not $plantingSiteId")
+      } else {
+        throw IllegalStateException(
+            "BUG! Plot ${nonMatchingPlot[MONITORING_PLOTS.ID]} is an ad-hoc plot")
+      }
     }
   }
 

@@ -395,6 +395,24 @@ class ObservationsController(
     return SimpleSuccessResponsePayload()
   }
 
+  @Operation(summary = "Schedules a new ad-hoc observation.")
+  @PostMapping("/adHoc")
+  fun scheduleAdHocObservation(
+      @RequestBody payload: ScheduleAdHocObservationRequestPayload
+  ): ScheduleAdHocObservationResponsePayload {
+    val (observationId) =
+        observationService.scheduleAdHocObservation(
+            payload.endDate,
+            payload.type,
+            payload.plantingSiteId,
+            payload.plotName,
+            payload.startDate,
+            payload.swCorner,
+        )
+
+    return ScheduleAdHocObservationResponsePayload(observationId)
+  }
+
   @Operation(summary = "Schedules a new observation.")
   @PostMapping
   fun scheduleObservation(
@@ -435,6 +453,7 @@ data class ObservationPayload(
     @Schema(description = "Date this observation is scheduled to end.") //
     val endDate: LocalDate,
     val id: ObservationId,
+    val isAdHoc: Boolean,
     @Schema(
         description =
             "Total number of monitoring plots that haven't been completed yet. Includes both " +
@@ -468,6 +487,7 @@ data class ObservationPayload(
   ) : this(
       endDate = model.endDate,
       id = model.id,
+      isAdHoc = model.isAdHoc,
       numIncompletePlots = counts?.totalIncomplete ?: 0,
       numPlots = counts?.totalPlots ?: 0,
       numUnclaimedPlots = counts?.totalUnclaimed ?: 0,
@@ -991,6 +1011,24 @@ data class GetPlantingSiteObservationSummariesPayload(
     val summaries: List<PlantingSiteObservationSummaryPayload>,
 ) : SuccessResponsePayload
 
+data class ScheduleAdHocObservationRequestPayload(
+    @Schema(
+        description =
+            "The end date for this observation, should be limited to 2 months from the start date.")
+    val endDate: LocalDate,
+    @Schema(description = "The plot name for the ad-hoc plot.") val plotName: String,
+    @Schema(description = "Which planting site this observation needs to be scheduled for.")
+    val plantingSiteId: PlantingSiteId,
+    @Schema(
+        description =
+            "The start date for this observation, can be up to a year from the date this " +
+                "schedule request occurs on.")
+    val startDate: LocalDate,
+    @Schema(description = "GPS coordinates for the South West corner of the ad-hoc plot.")
+    val swCorner: Point,
+    @Schema(description = "Observation type for this observation.") val type: ObservationType,
+)
+
 data class ScheduleObservationRequestPayload(
     @Schema(
         description =
@@ -1020,6 +1058,8 @@ data class ScheduleObservationRequestPayload(
           startDate = startDate,
           state = ObservationState.Upcoming)
 }
+
+data class ScheduleAdHocObservationResponsePayload(val id: ObservationId) : SuccessResponsePayload
 
 data class ScheduleObservationResponsePayload(val id: ObservationId) : SuccessResponsePayload
 

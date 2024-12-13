@@ -9,6 +9,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
@@ -272,6 +273,9 @@ class ObservationService(
     requirePermissions { replaceObservationPlot(observationId) }
 
     return observationStore.withLockedObservation(observationId) { observation ->
+      if (observation.isAdHoc) {
+        throw IllegalStateException("Ad-hoc observation plot cannot be replaced.")
+      }
       val addedPlotIds = mutableSetOf<MonitoringPlotId>()
       val removedPlotIds = mutableSetOf(monitoringPlotId)
       val plantingSite =
@@ -403,6 +407,43 @@ class ObservationService(
     }
   }
 
+  /**
+   * Schedule an ad-hoc observation. This creates an ad-hoc observation, creates an ad-hoc
+   * monitoring plot, and adds the plot to the observation.
+   */
+  fun scheduleAdHocObservation(
+      endDate: LocalDate,
+      observationType: ObservationType,
+      plantingSiteId: PlantingSiteId,
+      plotName: String,
+      startDate: LocalDate,
+      swCorner: Point,
+  ): Pair<ObservationId, MonitoringPlotId> {
+    requirePermissions { scheduleAdHocObservation(plantingSiteId) }
+
+    validateSchedule(plantingSiteId, startDate, endDate)
+
+    return dslContext.transactionResult { _ ->
+      val observationId =
+          observationStore.createObservation(
+              NewObservationModel(
+                  endDate = endDate,
+                  id = null,
+                  isAdHoc = true,
+                  observationType = observationType,
+                  plantingSiteId = plantingSiteId,
+                  requestedSubzoneIds = emptySet(),
+                  startDate = startDate,
+                  state = ObservationState.Upcoming))
+
+      val plotId = plantingSiteStore.createAdHocMonitoringPlot(plotName, plantingSiteId, swCorner)
+
+      observationStore.addAdHocPlotToObservation(observationId, plotId)
+
+      observationId to plotId
+    }
+  }
+
   @EventListener
   fun on(event: PlantingSiteDeletionStartedEvent) {
     deletePhotosWhere(
@@ -522,7 +563,7 @@ class ObservationService(
       siteIds: List<PlantingSiteId>
   ): Collection<PlantingSiteId> {
     val observationCompletedTimes =
-        siteIds.associate { it to observationStore.fetchLastCompletedObservationTime(it) }
+        siteIds.associateWith { observationStore.fetchLastCompletedObservationTime(it) }
 
     return siteIds.filter { plantingSiteId ->
       observationCompletedTimes[plantingSiteId]?.let { elapsedWeeks(it, completedTimeElapsedWeeks) }

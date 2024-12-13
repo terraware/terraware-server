@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
+import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -17,12 +18,16 @@ import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
+import com.terraformation.backend.db.tracking.embeddables.pojos.ObservationPlotId
+import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
@@ -1822,6 +1827,17 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `throws illegal state exception if replacing ad-hoc observation plot`() {
+      val observationId = insertObservation(isAdHoc = true)
+      val monitoringPlotId = insertMonitoringPlot()
+
+      assertThrows<IllegalStateException> {
+        service.replaceMonitoringPlot(
+            observationId, monitoringPlotId, "justification", ReplacementDuration.LongTerm)
+      }
+    }
+
+    @Test
     fun `throws access denied exception if no permission to replace plot`() {
       val monitoringPlotId = insertMonitoringPlot()
       insertObservationPlot()
@@ -1832,6 +1848,85 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         service.replaceMonitoringPlot(
             observationId, monitoringPlotId, "justification", ReplacementDuration.LongTerm)
       }
+    }
+  }
+
+  @Nested
+  inner class ScheduleAdHocObservation {
+    @BeforeEach
+    fun setUp() {
+      helper.insertPlantedSite(width = 2, height = 7, subzoneCompletedTime = Instant.EPOCH)
+    }
+
+    @Test
+    fun `creates new observation and monitoring plot`() {
+      val startDate = LocalDate.EPOCH
+      val endDate = startDate.plusDays(1)
+
+      val (observationId, plotId) =
+          service.scheduleAdHocObservation(
+              endDate,
+              ObservationType.BiomassMeasurements,
+              plantingSiteId,
+              "Ad-hoc plot name",
+              startDate,
+              point(1),
+          )
+
+      assertEquals(
+          ObservationsRow(
+              createdTime = clock.instant,
+              endDate = endDate,
+              id = observationId,
+              isAdHoc = true,
+              observationTypeId = ObservationType.BiomassMeasurements,
+              plantingSiteId = plantingSiteId,
+              startDate = startDate,
+              stateId = ObservationState.Upcoming,
+          ),
+          observationsDao.fetchOneById(observationId),
+          "Observation row")
+
+      val plotBoundary = Turtle(point(1)).makePolygon { square(MONITORING_PLOT_SIZE_INT) }
+
+      val actual = monitoringPlotsDao.fetchOneById(plotId)
+      assertEquals(
+          MonitoringPlotsRow(
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              fullName = "Ad-hoc plot name",
+              id = plotId,
+              isAdHoc = true,
+              isAvailable = false,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+              name = "Ad-hoc plot name",
+              plantingSiteId = plantingSiteId,
+              sizeMeters = MONITORING_PLOT_SIZE_INT,
+          ),
+          actual?.copy(boundary = null),
+          "Ad-hoc plot row")
+      assertGeometryEquals(plotBoundary, actual?.boundary, "Ad-hoc plot boundary")
+
+      val latestPlotHistoryId =
+          monitoringPlotHistoriesDao.fetchByMonitoringPlotId(plotId).maxOf { it.id!! }
+
+      assertEquals(
+          ObservationPlotsRow(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              isPermanent = false,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+              statusId = ObservationPlotStatus.Unclaimed,
+              monitoringPlotHistoryId = latestPlotHistoryId,
+          ),
+          observationPlotsDao
+              .fetchByObservationPlotId(ObservationPlotId(observationId, plotId))
+              .single(),
+          "Observation plot row")
     }
   }
 
