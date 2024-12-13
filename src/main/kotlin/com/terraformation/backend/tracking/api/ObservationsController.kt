@@ -663,6 +663,8 @@ data class ObservationMonitoringPlotResultsPayload(
     val monitoringPlotId: MonitoringPlotId,
     @Schema(description = "Full name of this monitoring plot, including zone and subzone prefixes.")
     val monitoringPlotName: String,
+    @Schema(description = "Organization-unique number of this monitoring plot.")
+    val monitoringPlotNumber: Long,
     @Schema(
         description =
             "If this is a permanent monitoring plot in this observation, percentage of plants of " +
@@ -703,6 +705,7 @@ data class ObservationMonitoringPlotResultsPayload(
       isPermanent = model.isPermanent,
       monitoringPlotId = model.monitoringPlotId,
       monitoringPlotName = model.monitoringPlotName,
+      monitoringPlotNumber = model.monitoringPlotNumber,
       mortalityRate = model.mortalityRate,
       notes = model.notes,
       overlappedByPlotIds = model.overlappedByPlotIds,

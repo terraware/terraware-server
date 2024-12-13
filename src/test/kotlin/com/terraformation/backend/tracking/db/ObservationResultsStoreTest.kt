@@ -189,6 +189,24 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `returns plot information`() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertMonitoringPlot(fullName = "fullName", name = "name")
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+
+      val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
+
+      val plotResults =
+          results.first().plantingZones.first().plantingSubzones.first().monitoringPlots.first()
+
+      assertEquals(inserted.monitoringPlotId, plotResults.monitoringPlotId, "Plot ID")
+      assertEquals("fullName", plotResults.monitoringPlotName, "Plot name")
+      assertEquals(1L, plotResults.monitoringPlotNumber, "Plot number")
+    }
+
+    @Test
     fun `returns plot overlaps in both directions`() {
       insertPlantingZone()
       insertPlantingSubzone()
@@ -396,11 +414,11 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       val rowKeys = plotIds.keys.map { listOf(it) }
 
       val actual =
-          makeActualCsv(allResults, rowKeys) { (plotName), results ->
+          makeActualCsv(allResults, rowKeys) { (plotNumber), results ->
             results.plantingZones
                 .flatMap { zone -> zone.plantingSubzones }
                 .flatMap { subzone -> subzone.monitoringPlots }
-                .firstOrNull { it.monitoringPlotName == plotName }
+                .firstOrNull { it.monitoringPlotNumber == plotNumber.toLong() }
                 ?.let { plot ->
                   listOf(
                       plot.totalPlants.toStringOrBlank(),
@@ -426,11 +444,11 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       val rowKeys = plotIds.keys.map { listOf(it) }
 
       val actual =
-          makeActualCsv(allResults, rowKeys) { (plotName), results ->
+          makeActualCsv(allResults, rowKeys) { (plotNumber), results ->
             results.plantingZones
                 .flatMap { zone -> zone.plantingSubzones }
                 .flatMap { subzone -> subzone.monitoringPlots }
-                .firstOrNull { it.monitoringPlotName == plotName }
+                .firstOrNull { it.monitoringPlotNumber == plotNumber.toLong() }
                 ?.let { plot ->
                   listOf(
                       plot.totalPlants.toStringOrBlank(),
@@ -511,11 +529,11 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           }
 
       val actual =
-          makeActualCsv(allResults, rowKeys) { (plotName, speciesName), results ->
+          makeActualCsv(allResults, rowKeys) { (plotNumber, speciesName), results ->
             results.plantingZones
                 .flatMap { zone -> zone.plantingSubzones }
                 .flatMap { subzone -> subzone.monitoringPlots }
-                .firstOrNull { it.monitoringPlotName == plotName }
+                .firstOrNull { it.monitoringPlotNumber == plotNumber.toLong() }
                 ?.species
                 ?.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
                 ?.firstOrNull { getSpeciesNameValue(it) == speciesName }
@@ -574,21 +592,22 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     private fun importPlotsCsv(prefix: String, sizeMeters: Int): Map<String, MonitoringPlotId> {
       return associateCsv("$prefix/Plots.csv") { cols ->
         val subzoneName = cols[0]
-        val plotName = cols[1]
+        val plotNumber = cols[1]
         val subzoneId = subzoneIds[subzoneName]!!
 
         val plotId =
             insertMonitoringPlot(
-                fullName = plotName,
-                name = plotName,
+                fullName = plotNumber,
+                name = plotNumber,
                 plantingSubzoneId = subzoneId,
+                plotNumber = plotNumber.toLong(),
                 sizeMeters = sizeMeters)
 
         if (cols[2] == "Permanent") {
-          permanentPlotNames.add(plotName)
+          permanentPlotNames.add(plotNumber)
         }
 
-        plotName to plotId
+        plotNumber to plotId
       }
     }
 
