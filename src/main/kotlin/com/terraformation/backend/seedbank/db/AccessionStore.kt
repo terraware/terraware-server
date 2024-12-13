@@ -256,7 +256,7 @@ class AccessionStore(
     while (attemptsRemaining-- > 0) {
       val accessionNumber =
           accession.accessionNumber
-              ?: identifierGenerator.generateIdentifier(
+              ?: identifierGenerator.generateTextIdentifier(
                   organizationId, IdentifierType.ACCESSION, facility.facilityNumber!!)
 
       try {
