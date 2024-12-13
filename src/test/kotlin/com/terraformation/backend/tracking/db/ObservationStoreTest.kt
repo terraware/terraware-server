@@ -24,6 +24,7 @@ import com.terraformation.backend.db.tracking.RecordedPlantStatus.Live
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Other
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Unknown
+import com.terraformation.backend.db.tracking.embeddables.pojos.ObservationPlotId
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
@@ -1215,6 +1216,85 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
+  inner class AddAdHocPlotToObservation {
+    @Test
+    fun `inserts a non-permanent observation plot`() {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val plotId = insertMonitoringPlot(isAdHoc = true)
+      val observationId = insertObservation(isAdHoc = true)
+
+      store.addAdHocPlotToObservation(observationId, plotId)
+
+      assertEquals(
+          ObservationPlotsRow(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              isPermanent = false,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+              statusId = ObservationPlotStatus.Unclaimed,
+              monitoringPlotHistoryId = inserted.monitoringPlotHistoryId,
+          ),
+          observationPlotsDao
+              .fetchByObservationPlotId(ObservationPlotId(observationId, plotId))
+              .single(),
+          "Observation plot row")
+    }
+
+    @Test
+    fun `throws exception if plots belong to a different planting site`() {
+      val observationId = insertObservation(isAdHoc = true)
+
+      insertPlantingSite()
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val otherSitePlotId = insertMonitoringPlot(isAdHoc = true)
+
+      assertThrows<IllegalStateException> {
+        store.addAdHocPlotToObservation(observationId, otherSitePlotId)
+      }
+    }
+
+    @Test
+    fun `throws exception for a non-ad-hoc observation`() {
+      val observationId = insertObservation(isAdHoc = false)
+
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val plotId = insertMonitoringPlot(isAdHoc = true)
+
+      assertThrows<IllegalStateException> { store.addAdHocPlotToObservation(observationId, plotId) }
+    }
+
+    @Test
+    fun `throws exception for a non-ad-hoc plot`() {
+      val observationId = insertObservation(isAdHoc = true)
+
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val plotId = insertMonitoringPlot(isAdHoc = false)
+
+      assertThrows<IllegalStateException> { store.addAdHocPlotToObservation(observationId, plotId) }
+    }
+
+    @Test
+    fun `throws exception if no permission to schedule ad-hoc observation`() {
+      every { user.canScheduleAdHocObservation(plantingSiteId) } returns false
+
+      val observationId = insertObservation(isAdHoc = true)
+
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val plotId = insertMonitoringPlot(isAdHoc = false)
+
+      assertThrows<AccessDeniedException> { store.addAdHocPlotToObservation(observationId, plotId) }
+    }
+  }
+
+  @Nested
   inner class AddPlotsToObservation {
     @Test
     fun `honors isPermanent flag`() {
@@ -1261,58 +1341,36 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception if no permission to manage observation`() {
-      val observationId = insertObservation()
-
-      every { user.canManageObservation(observationId) } returns false
-
-      assertThrows<AccessDeniedException> {
-        store.addPlotsToObservation(observationId, emptyList(), true)
-      }
-    }
-
-    @Test
-    fun `throws exception if permanent plot is added to an ad-hoc observation`() {
-      insertPlantingZone()
-      insertPlantingSubzone()
-      val plotId = insertMonitoringPlot(isAdHoc = true)
+    fun `throws exception for an ad-hoc observation`() {
       val observationId = insertObservation(isAdHoc = true)
 
-      assertThrows<IllegalArgumentException> {
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val plotId = insertMonitoringPlot()
+
+      assertThrows<IllegalStateException> {
         store.addPlotsToObservation(observationId, listOf(plotId), true)
       }
     }
 
     @Test
-    fun `throws exception if non-adhoc plot is added to an ad-hoc observation`() {
+    fun `throws exception for an an-hoc plot`() {
+      val observationId = insertObservation()
+
       insertPlantingZone()
       insertPlantingSubzone()
-      val plotId = insertMonitoringPlot(isAdHoc = false)
-      val observationId = insertObservation(isAdHoc = true)
+      val plotId = insertMonitoringPlot(isAdHoc = true)
 
-      assertThrows<IllegalArgumentException> {
-        store.addPlotsToObservation(observationId, listOf(plotId), false)
+      assertThrows<IllegalStateException> {
+        store.addPlotsToObservation(observationId, listOf(plotId), true)
       }
     }
 
     @Test
-    fun `throws exception if multiple plots are added to an ad-hoc observation`() {
-      insertPlantingZone()
-      insertPlantingSubzone()
-      val plotId1 = insertMonitoringPlot(isAdHoc = true)
-      val plotId2 = insertMonitoringPlot(isAdHoc = true)
-      val observationId = insertObservation(isAdHoc = true)
+    fun `throws exception if no permission to manage observation`() {
+      val observationId = insertObservation()
 
-      assertThrows<IllegalArgumentException> {
-        store.addPlotsToObservation(observationId, listOf(plotId1, plotId2), false)
-      }
-    }
-
-    @Test
-    fun `throws exception if no permission to schedule ad-hoc observation`() {
-      every { user.canScheduleAdHocObservation(plantingSiteId) } returns false
-
-      val observationId = insertObservation(isAdHoc = true)
+      every { user.canManageObservation(observationId) } returns false
 
       assertThrows<AccessDeniedException> {
         store.addPlotsToObservation(observationId, emptyList(), true)

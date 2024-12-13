@@ -438,7 +438,7 @@ class ObservationService(
 
       val plotId = plantingSiteStore.createAdHocMonitoringPlot(plotName, plantingSiteId, swCorner)
 
-      observationStore.addPlotsToObservation(observationId, setOf(plotId), false)
+      observationStore.addAdHocPlotToObservation(observationId, plotId)
 
       observationId to plotId
     }
