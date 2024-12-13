@@ -37,7 +37,10 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
               timeZone = timeZone,
           )
       val plantingZoneId =
-          insertPlantingZone(boundary = multiPolygon(2.0), extraPermanentClusters = 1)
+          insertPlantingZone(
+              boundary = multiPolygon(2.0),
+              extraPermanentClusters = 1,
+              targetPlantingDensity = BigDecimal.ONE)
       val plantingSubzoneId = insertPlantingSubzone(boundary = multiPolygon(1.0))
       val monitoringPlotId = insertMonitoringPlot(boundary = polygon(0.1))
       insertMonitoringPlot(
@@ -46,11 +49,13 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       val season1StartDate = LocalDate.of(2023, 6, 1)
       val season1EndDate = LocalDate.of(2023, 7, 31)
       val plantingSeasonId1 =
-          insertPlantingSeason(startDate = season1StartDate, endDate = season1EndDate)
+          insertPlantingSeason(
+              startDate = season1StartDate, endDate = season1EndDate, timeZone = timeZone)
       val season2StartDate = LocalDate.of(2023, 1, 1)
       val season2EndDate = LocalDate.of(2023, 1, 31)
       val plantingSeasonId2 =
-          insertPlantingSeason(startDate = season2StartDate, endDate = season2EndDate)
+          insertPlantingSeason(
+              startDate = season2StartDate, endDate = season2EndDate, timeZone = timeZone)
 
       val exteriorPlotId = insertMonitoringPlot(boundary = polygon(0.2), plantingSubzoneId = null)
 
@@ -214,7 +219,6 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           extraPermanentClusters = 0,
                           id = plantingZoneId,
                           name = "Z1",
-                          targetPlantingDensity = BigDecimal.ONE,
                           plantingSubzones =
                               listOf(
                                   PlantingSubzoneModel(
