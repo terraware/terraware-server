@@ -1,3 +1,4 @@
+4494071e792 Add missing fields to custom equals methods (#2691)
 f0153a74279 Fix concurrency bug in ApplicationStoreTest (#2689)
 ba1e0eb415a Add labels to Renovate PRs (#2690)
 6695a4afa94 SW-6282 Added feature and endpoint to schedule an ad-hoc observation (#2687)
