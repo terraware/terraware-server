@@ -1,5 +1,6 @@
 package com.terraformation.backend.search.table
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
@@ -9,8 +10,8 @@ import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.CoordinateField.Companion.LATITUDE
 import com.terraformation.backend.search.field.CoordinateField.Companion.LONGITUDE
 import com.terraformation.backend.search.field.SearchField
+import org.jooq.Condition
 import org.jooq.Record
-import org.jooq.SelectJoinStep
 import org.jooq.TableField
 
 class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
@@ -42,6 +43,7 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
           coordinateField("northeastLongitude", MONITORING_PLOTS.BOUNDARY, NORTHEAST, LONGITUDE),
           coordinateField("northwestLatitude", MONITORING_PLOTS.BOUNDARY, NORTHWEST, LATITUDE),
           coordinateField("northwestLongitude", MONITORING_PLOTS.BOUNDARY, NORTHWEST, LONGITUDE),
+          longField("plotNumber", MONITORING_PLOTS.PLOT_NUMBER),
           integerField("sizeMeters", MONITORING_PLOTS.SIZE_METERS),
           coordinateField("southeastLatitude", MONITORING_PLOTS.BOUNDARY, SOUTHEAST, LATITUDE),
           coordinateField("southeastLongitude", MONITORING_PLOTS.BOUNDARY, SOUTHEAST, LONGITUDE),
@@ -49,12 +51,8 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
           coordinateField("southwestLongitude", MONITORING_PLOTS.BOUNDARY, SOUTHWEST, LONGITUDE),
       )
 
-  override val inheritsVisibilityFrom: SearchTable = tables.plantingSites
-
-  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
-    return query
-        .join(PLANTING_SITE_SUMMARIES)
-        .on(MONITORING_PLOTS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID))
+  override fun conditionForVisibility(): Condition {
+    return MONITORING_PLOTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
   }
 
   companion object {
