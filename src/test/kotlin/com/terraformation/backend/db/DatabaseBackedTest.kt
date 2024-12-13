@@ -2,6 +2,7 @@ package com.terraformation.backend.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.SpringShutdownListener
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.variables.StableId
 import com.terraformation.backend.accelerator.variables.StableIds
 import com.terraformation.backend.api.ArbitraryJsonObject
@@ -131,6 +132,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.DeviceTemplatesD
 import com.terraformation.backend.db.default_schema.tables.daos.DevicesDao
 import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
+import com.terraformation.backend.db.default_schema.tables.daos.IdentifierSequencesDao
 import com.terraformation.backend.db.default_schema.tables.daos.InternalTagsDao
 import com.terraformation.backend.db.default_schema.tables.daos.NotificationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationInternalTagsDao
@@ -506,6 +508,7 @@ abstract class DatabaseBackedTest {
   protected val facilitiesDao: FacilitiesDao by lazyDao()
   protected val filesDao: FilesDao by lazyDao()
   protected val geolocationsDao: GeolocationsDao by lazyDao()
+  protected val identifierSequencesDao: IdentifierSequencesDao by lazyDao()
   protected val internalTagsDao: InternalTagsDao by lazyDao()
   protected val documentTemplatesDao: DocumentTemplatesDao by lazyDao()
   protected val modulesDao: ModulesDao by lazyDao()
@@ -1926,7 +1929,7 @@ abstract class DatabaseBackedTest {
     return row.id!!.also { inserted.moduleIds.add(it) }
   }
 
-  private var nextMonitoringPlotNumber: Int = 1
+  private var nextMonitoringPlotNumber: Long = 1
   private lateinit var lastMonitoringPlotsRow: MonitoringPlotsRow
 
   fun insertMonitoringPlot(
@@ -1947,13 +1950,18 @@ abstract class DatabaseBackedTest {
       isAvailable: Boolean = row.isAvailable ?: true,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      name: String = row.name ?: "${nextMonitoringPlotNumber++}",
+      organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       permanentCluster: Int? = row.permanentCluster,
       permanentClusterSubplot: Int? =
           row.permanentClusterSubplot ?: if (permanentCluster != null) 1 else null,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       plantingSubzoneId: PlantingSubzoneId? =
           row.plantingSubzoneId ?: inserted.plantingSubzoneIds.lastOrNull(),
+      plotNumber: Long =
+          row.plotNumber
+              ?: IdentifierGenerator(TestClock(), dslContext)
+                  .generateNumericIdentifier(organizationId, NumericIdentifierType.PlotNumber),
+      name: String = row.name ?: "$plotNumber",
       fullName: String = if (plantingSubzoneId != null) "Z1-1-$name" else name,
       insertHistory: Boolean = true,
   ): MonitoringPlotId {
@@ -1968,10 +1976,12 @@ abstract class DatabaseBackedTest {
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
+            organizationId = organizationId,
             permanentCluster = permanentCluster,
             permanentClusterSubplot = permanentClusterSubplot,
             plantingSiteId = plantingSiteId,
             plantingSubzoneId = plantingSubzoneId,
+            plotNumber = plotNumber,
             sizeMeters = sizeMeters,
         )
 

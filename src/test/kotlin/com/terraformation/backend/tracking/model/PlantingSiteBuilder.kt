@@ -254,15 +254,18 @@ private constructor(
         val plot =
             MonitoringPlotModel(
                 boundary = rectanglePolygon(size, size, x, y),
-                id = MonitoringPlotId(nextMonitoringPlotId++),
+                id = MonitoringPlotId(nextMonitoringPlotId),
                 isAdHoc = false,
                 isAvailable = isAvailable,
                 fullName = "$fullName-$name",
                 name = name,
                 permanentCluster = cluster,
                 permanentClusterSubplot = subplot,
+                plotNumber = nextMonitoringPlotId,
                 sizeMeters = size,
             )
+
+        nextMonitoringPlotId++
 
         monitoringPlots.add(plot)
         return plot

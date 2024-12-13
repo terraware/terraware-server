@@ -8,6 +8,7 @@ import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.multiPolygon
@@ -31,6 +32,7 @@ class PlantingSiteStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         TestSingletons.countryDetector,
         dslContext,
         eventPublisher,
+        IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         ParentStore(dslContext),
         plantingSeasonsDao,
@@ -68,8 +70,10 @@ class PlantingSiteStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               name = "ad-hoc-plot",
+              organizationId = inserted.organizationId,
               plantingSiteId = plantingSiteId,
               plantingSubzoneId = null,
+              plotNumber = 1,
               sizeMeters = MONITORING_PLOT_SIZE_INT,
           )
 

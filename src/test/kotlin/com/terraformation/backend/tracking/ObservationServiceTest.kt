@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
+import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -136,6 +137,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         TestSingletons.countryDetector,
         dslContext,
         TestEventPublisher(),
+        IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         parentStore,
         plantingSeasonsDao,
@@ -1901,7 +1903,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               name = "Ad-hoc plot name",
+              organizationId = inserted.organizationId,
               plantingSiteId = plantingSiteId,
+              plotNumber = 1,
               sizeMeters = MONITORING_PLOT_SIZE_INT,
           ),
           actual?.copy(boundary = null),

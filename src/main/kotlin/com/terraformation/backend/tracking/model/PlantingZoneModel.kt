@@ -187,19 +187,6 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
   }
 
   /**
-   * Returns the highest-valued monitoring plot name from all the plots that have numeric names.
-   * This is used for generating names for new monitoring plots. If there are no monitoring plots,
-   * returns 0.
-   */
-  fun getMaxPlotName(): Int {
-    return plantingSubzones
-        .flatMap { subzone ->
-          subzone.monitoringPlots.mapNotNull { plot -> plot.name.toIntOrNull() }
-        }
-        .maxOrNull() ?: 0
-  }
-
-  /**
    * Returns a square Polygon of the requested width/height that is completely contained in the zone
    * and does not intersect with an exclusion area.
    *

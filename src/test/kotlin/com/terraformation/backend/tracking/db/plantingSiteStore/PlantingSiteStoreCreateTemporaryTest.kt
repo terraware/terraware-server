@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.assertGeometryEquals
+import com.terraformation.backend.db.NumericIdentifierType
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotHistoriesRecord
 import com.terraformation.backend.point
@@ -27,14 +28,8 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
       val plantingSubzoneId = insertPlantingSubzone(boundary = siteBoundary, insertHistory = false)
       val plantingSubzoneHistoryId = insertPlantingSubzoneHistory()
 
-      insertMonitoringPlot(
-          boundary =
-              Turtle(point(0)).makePolygon {
-                north(25)
-                square(25)
-              },
-          name = "17",
-          insertHistory = false)
+      identifierGenerator.generateNumericIdentifier(
+          organizationId, NumericIdentifierType.PlotNumber)
 
       val plotBoundary = Turtle(point(0)).makePolygon { square(25) }
       val newPlotId = store.createTemporaryPlot(plantingSiteId, plantingZoneId, plotBoundary)
@@ -43,15 +38,17 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
           MonitoringPlotsRow(
               createdBy = user.userId,
               createdTime = clock.instant,
-              fullName = "Z1-1-18",
+              fullName = "Z1-1-2",
               id = newPlotId,
               isAdHoc = false,
               isAvailable = true,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
-              name = "18",
+              name = "2",
+              organizationId = organizationId,
               plantingSiteId = plantingSiteId,
               plantingSubzoneId = plantingSubzoneId,
+              plotNumber = 2,
               sizeMeters = MONITORING_PLOT_SIZE_INT,
           )
 
@@ -65,9 +62,9 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
               MonitoringPlotHistoriesRecord(
                   createdBy = user.userId,
                   createdTime = Instant.EPOCH,
-                  fullName = "Z1-1-18",
+                  fullName = "Z1-1-2",
                   monitoringPlotId = newPlotId,
-                  name = "18",
+                  name = "2",
                   plantingSiteHistoryId = plantingSiteHistoryId,
                   plantingSiteId = plantingSiteId,
                   plantingSubzoneHistoryId = plantingSubzoneHistoryId,

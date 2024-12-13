@@ -19,6 +19,7 @@ import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.ReportAlreadySubmittedException
 import com.terraformation.backend.db.ReportLockedException
 import com.terraformation.backend.db.ReportNotLockedException
@@ -138,6 +139,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             TestSingletons.countryDetector,
             dslContext,
             publisher,
+            IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             parentStore,
             plantingSeasonsDao,

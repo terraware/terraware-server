@@ -13,6 +13,7 @@ data class MonitoringPlotModel(
     val name: String,
     val permanentCluster: Int? = null,
     val permanentClusterSubplot: Int? = null,
+    val plotNumber: Long,
     val sizeMeters: Int,
 ) {
   val areaHa: Double
@@ -27,6 +28,7 @@ data class MonitoringPlotModel(
         name == other.name &&
         permanentCluster == other.permanentCluster &&
         permanentClusterSubplot == other.permanentClusterSubplot &&
+        plotNumber == other.plotNumber &&
         sizeMeters == other.sizeMeters &&
         boundary.equalsExact(other.boundary, tolerance)
   }

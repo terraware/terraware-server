@@ -134,8 +134,9 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           id = exteriorPlotId,
                           isAdHoc = false,
                           isAvailable = true,
-                          name = "2",
-                          fullName = "2",
+                          name = "3",
+                          fullName = "3",
+                          plotNumber = 3,
                           sizeMeters = 30)),
               plantingZones =
                   listOf(
@@ -154,6 +155,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                       isAvailable = true,
                                                       name = "1",
                                                       fullName = "Z1-1-1",
+                                                      plotNumber = 1,
                                                       sizeMeters = 30)),
                                       )))))
 
@@ -237,6 +239,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                   isAvailable = true,
                                                   name = "1",
                                                   fullName = "Z1-1-1",
+                                                  plotNumber = 1,
                                                   sizeMeters = 30)),
                                   )))))
 
