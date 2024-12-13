@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a> -
+
+<h2>Send Test Email</h2>
+
+<form method="POST" action="/admin/sendEmail">
+    <label for="recipient">Recipient</label>
+    <input type="email" name="recipient" id="recipient" required />
+    <br/>
+    <label for="emailName">Email to Send</label>
+    <select name="emailName" id="emailName">
+        <option th:each="emailName : ${emailNames}"
+                th:text="${emailName}"
+                th:value="${emailName}">
+            Email Name
+        </option>
+    </select>
+    <input type="submit" value=" Send Test Email "/>
+</form>
+
+</body>
+</html>
