@@ -107,7 +107,8 @@ class ObservationStore(
   }
 
   fun fetchObservationsByOrganization(
-      organizationId: OrganizationId
+      organizationId: OrganizationId,
+      isAdHoc: Boolean = false,
   ): List<ExistingObservationModel> {
     requirePermissions { readOrganization(organizationId) }
 
@@ -115,6 +116,7 @@ class ObservationStore(
         .select(OBSERVATIONS.asterisk(), requestedSubzoneIdsField)
         .from(OBSERVATIONS)
         .where(OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId))
+        .and(OBSERVATIONS.IS_AD_HOC.eq(isAdHoc))
         .orderBy(OBSERVATIONS.START_DATE, OBSERVATIONS.ID)
         .fetch { ObservationModel.of(it, requestedSubzoneIdsField) }
   }
@@ -131,7 +133,8 @@ class ObservationStore(
   }
 
   fun fetchObservationsByPlantingSite(
-      plantingSiteId: PlantingSiteId
+      plantingSiteId: PlantingSiteId,
+      isAdHoc: Boolean = false,
   ): List<ExistingObservationModel> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
@@ -139,6 +142,7 @@ class ObservationStore(
         .select(OBSERVATIONS.asterisk(), requestedSubzoneIdsField)
         .from(OBSERVATIONS)
         .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+        .and(OBSERVATIONS.IS_AD_HOC.eq(isAdHoc))
         .orderBy(OBSERVATIONS.START_DATE, OBSERVATIONS.ID)
         .fetch { ObservationModel.of(it, requestedSubzoneIdsField) }
   }

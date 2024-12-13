@@ -112,8 +112,13 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val plantingSiteHistoryId = inserted.plantingSiteHistoryId
       val startDate1 = LocalDate.of(2021, 4, 1)
       val startDate2 = LocalDate.of(2022, 3, 1)
+      val startDate3 = LocalDate.of(2022, 3, 1)
       val endDate1 = LocalDate.of(2021, 4, 30)
       val endDate2 = LocalDate.of(2022, 3, 31)
+      val endDate3 = LocalDate.of(2022, 3, 31)
+
+      // Ad-hoc observations are excluded by default
+      val adHocObservationId = insertObservation(isAdHoc = true)
 
       // Insert in reverse time order
       val observationId1 =
@@ -125,6 +130,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               endDate = endDate1,
               plantingSiteHistoryId = plantingSiteHistoryId,
               startDate = startDate1)
+
       insertPlantingZone()
       val subzoneId = insertPlantingSubzone()
       insertMonitoringPlot()
@@ -161,7 +167,20 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       val actual = store.fetchObservationsByPlantingSite(plantingSiteId)
 
-      assertEquals(expected, actual)
+      assertEquals(expected, actual, "Non-ad-hoc observations")
+
+      assertEquals(
+          ExistingObservationModel(
+              endDate = endDate3,
+              id = adHocObservationId,
+              isAdHoc = true,
+              observationType = ObservationType.Monitoring,
+              plantingSiteId = plantingSiteId,
+              startDate = startDate3,
+              state = ObservationState.Upcoming,
+          ),
+          store.fetchObservationsByPlantingSite(plantingSiteId, isAdHoc = true),
+          "Ad-hoc observations")
     }
 
     @Test
