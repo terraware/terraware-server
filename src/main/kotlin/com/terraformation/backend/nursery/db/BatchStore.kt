@@ -207,7 +207,7 @@ class BatchStore(
             .copy(
                 batchNumber =
                     newModel.batchNumber
-                        ?: identifierGenerator.generateIdentifier(
+                        ?: identifierGenerator.generateTextIdentifier(
                             organizationId, IdentifierType.BATCH, facilityNumber),
                 createdBy = userId,
                 createdTime = now,

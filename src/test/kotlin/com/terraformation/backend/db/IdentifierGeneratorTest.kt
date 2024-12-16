@@ -25,18 +25,19 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `identifiers are allocated per organization and per type`() {
+  fun `text identifiers are allocated per organization and per type`() {
     clock.instant = Instant.parse("2022-01-01T00:00:00Z")
 
     val otherOrganizationId = insertOrganization()
 
     val org1AccessionIdentifier1 =
-        generator.generateIdentifier(organizationId, IdentifierType.ACCESSION, 1)
+        generator.generateTextIdentifier(organizationId, IdentifierType.ACCESSION, 1)
     val org1AccessionIdentifier2 =
-        generator.generateIdentifier(organizationId, IdentifierType.ACCESSION, 1)
-    val org1BatchIdentifier = generator.generateIdentifier(organizationId, IdentifierType.BATCH, 1)
+        generator.generateTextIdentifier(organizationId, IdentifierType.ACCESSION, 1)
+    val org1BatchIdentifier =
+        generator.generateTextIdentifier(organizationId, IdentifierType.BATCH, 1)
     val org2AccessionIdentifier =
-        generator.generateIdentifier(otherOrganizationId, IdentifierType.ACCESSION, 1)
+        generator.generateTextIdentifier(otherOrganizationId, IdentifierType.ACCESSION, 1)
 
     assertEquals(
         mapOf(
@@ -52,15 +53,15 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `identifier numbers are shared across facilities`() {
+  fun `text identifier numbers are shared across facilities`() {
     clock.instant = Instant.parse("2022-01-01T00:00:00Z")
 
     val nursery1BatchIdentifier1 =
-        generator.generateIdentifier(organizationId, IdentifierType.BATCH, 1)
+        generator.generateTextIdentifier(organizationId, IdentifierType.BATCH, 1)
     val nursery1BatchIdentifier2 =
-        generator.generateIdentifier(organizationId, IdentifierType.BATCH, 1)
+        generator.generateTextIdentifier(organizationId, IdentifierType.BATCH, 1)
     val nursery2BatchIdentifier1 =
-        generator.generateIdentifier(organizationId, IdentifierType.BATCH, 2)
+        generator.generateTextIdentifier(organizationId, IdentifierType.BATCH, 2)
 
     assertEquals(
         mapOf(
@@ -74,13 +75,14 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `generateIdentifier honors time zone`() {
+  fun `generateTextIdentifier honors time zone`() {
     clock.instant = Instant.parse("2019-12-31T23:59:59Z")
 
     val identifierInUtc =
-        generator.generateIdentifier(organizationId, IdentifierType.ACCESSION, 2, ZoneOffset.UTC)
+        generator.generateTextIdentifier(
+            organizationId, IdentifierType.ACCESSION, 2, ZoneOffset.UTC)
     val identifierInLaterZone =
-        generator.generateIdentifier(
+        generator.generateTextIdentifier(
             organizationId, IdentifierType.ACCESSION, 3, ZoneOffset.ofHours(1))
 
     assertEquals("19-1-2-001", identifierInUtc, "Identifier in earlier time zone")
@@ -88,28 +90,58 @@ internal class IdentifierGeneratorTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `generateIdentifier restarts suffixes at 001 when the year changes`() {
+  fun `generateTextIdentifier restarts suffixes at 001 when the year changes`() {
     clock.instant = Instant.parse("2022-01-01T00:00:00Z")
 
-    generator.generateIdentifier(organizationId, IdentifierType.ACCESSION, 1)
+    generator.generateTextIdentifier(organizationId, IdentifierType.ACCESSION, 1)
 
     clock.instant = Instant.parse("2023-05-06T00:00:00Z")
 
     val nextYearIdentifier =
-        generator.generateIdentifier(organizationId, IdentifierType.ACCESSION, 8)
+        generator.generateTextIdentifier(organizationId, IdentifierType.ACCESSION, 8)
 
     assertEquals("23-1-8-001", nextYearIdentifier)
   }
 
   @Test
-  fun `generateIdentifier picks up where it left off after a century`() {
+  fun `generateTextIdentifier picks up where it left off after a century`() {
     clock.instant = Instant.parse("2022-01-01T00:00:00Z")
-    generator.generateIdentifier(organizationId, IdentifierType.ACCESSION, 1)
+    generator.generateTextIdentifier(organizationId, IdentifierType.ACCESSION, 1)
 
     clock.instant = Instant.parse("2122-01-01T00:00:00Z")
-    val identifier = generator.generateIdentifier(organizationId, IdentifierType.ACCESSION, 1)
+    val identifier = generator.generateTextIdentifier(organizationId, IdentifierType.ACCESSION, 1)
 
     assertEquals("22-1-1-002", identifier)
+  }
+
+  @Test
+  fun `generateNumericIdentifier starts at 1 for each organization`() {
+    val otherOrganizationId = insertOrganization()
+
+    assertEquals(
+        1L,
+        generator.generateNumericIdentifier(organizationId, NumericIdentifierType.PlotNumber),
+        "Identifier for first organization")
+    assertEquals(
+        1L,
+        generator.generateNumericIdentifier(otherOrganizationId, NumericIdentifierType.PlotNumber),
+        "Identifier for second organization")
+  }
+
+  @Test
+  fun `generateNumericIdentifier return value increases by 1 on each call`() {
+    assertEquals(
+        1L,
+        generator.generateNumericIdentifier(organizationId, NumericIdentifierType.PlotNumber),
+        "Initial identifier")
+    assertEquals(
+        2L,
+        generator.generateNumericIdentifier(organizationId, NumericIdentifierType.PlotNumber),
+        "Second identifier")
+    assertEquals(
+        3L,
+        generator.generateNumericIdentifier(organizationId, NumericIdentifierType.PlotNumber),
+        "Third identifier")
   }
 
   @Test

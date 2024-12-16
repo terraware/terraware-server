@@ -15,7 +15,11 @@ import org.jooq.DSLContext
  * identify a resource but it's not acceptable to display the underlying integer ID from the
  * database, e.g., accession numbers.
  *
- * Identifiers are mostly-fixed-length numeric values of the form `YY-T-F-XXX` where:
+ * Identifiers come in two flavors: text and numeric.
+ *
+ * # Text identifiers
+ *
+ * Text identifiers are mostly-fixed-length values of the form `YY-T-F-XXX` where:
  * - `YY` is the two-digit year
  * - `T` is a digit indicating the type of identifier; see [IdentifierType]
  * - `F` is a facility number that starts at 1 for each facility type in an organization
@@ -38,6 +42,15 @@ import org.jooq.DSLContext
  * organization ID, it is possible for the generated identifiers to collide with user-supplied
  * identifiers. To guard against that, [AccessionStore.create] will retry a few times if it gets an
  * identifier that's already in use.
+ *
+ * # Numeric identifiers
+ *
+ * Numeric identifiers are sequential [Long] values that start at 1 for a given organization and
+ * identifier type. Unlike text identifiers, numeric identifiers don't reset at the start of the
+ * year and don't include any facility information.
+ *
+ * The identifier types for numeric identifiers are distinct from the ones for text identifiers and
+ * are listed in [NumericIdentifierType].
  */
 @Named
 class IdentifierGenerator(
@@ -45,11 +58,11 @@ class IdentifierGenerator(
     private val dslContext: DSLContext,
 ) {
   /**
-   * Generates a new identifier for an organization.
+   * Generates a new text identifier for an organization.
    *
    * @param timeZone Time zone to use to determine the current date.
    */
-  fun generateIdentifier(
+  fun generateTextIdentifier(
       organizationId: OrganizationId,
       identifierType: IdentifierType,
       facilityNumber: Int,
@@ -58,20 +71,28 @@ class IdentifierGenerator(
     val shortYear = LocalDate.ofInstant(clock.instant(), timeZone).year.rem(100)
     val prefix = "%02d-%c-".format(shortYear, identifierType.digit)
 
-    val sequenceValue =
-        with(IDENTIFIER_SEQUENCES) {
-          dslContext
-              .insertInto(IDENTIFIER_SEQUENCES)
-              .set(ORGANIZATION_ID, organizationId)
-              .set(PREFIX, prefix)
-              .set(NEXT_VALUE, 1)
-              .onDuplicateKeyUpdate()
-              .set(NEXT_VALUE, NEXT_VALUE.plus(1))
-              .returning(NEXT_VALUE)
-              .fetchOne(NEXT_VALUE)!!
-        }
+    val sequenceValue = getNextValue(organizationId, prefix)
 
     return "%s%d-%03d".format(prefix, facilityNumber, sequenceValue)
+  }
+
+  /** Generates a new numeric identifier for an organization. */
+  fun generateNumericIdentifier(organizationId: OrganizationId, type: NumericIdentifierType): Long {
+    return getNextValue(organizationId, type.name)
+  }
+
+  private fun getNextValue(organizationId: OrganizationId, prefix: String): Long {
+    return with(IDENTIFIER_SEQUENCES) {
+      dslContext
+          .insertInto(IDENTIFIER_SEQUENCES)
+          .set(ORGANIZATION_ID, organizationId)
+          .set(PREFIX, prefix)
+          .set(NEXT_VALUE, 1)
+          .onDuplicateKeyUpdate()
+          .set(NEXT_VALUE, NEXT_VALUE.plus(1))
+          .returning(NEXT_VALUE)
+          .fetchOne(NEXT_VALUE)!!
+    }
   }
 
   /**
@@ -88,4 +109,8 @@ class IdentifierGenerator(
 enum class IdentifierType(val digit: Char) {
   ACCESSION('1'),
   BATCH('2')
+}
+
+enum class NumericIdentifierType {
+  PlotNumber
 }
