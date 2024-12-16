@@ -1,3 +1,4 @@
+52ae0815078 SW-6348 Add plot numbers to monitoring plots (#2694)
 b3d26bc249a SW-6348 Add numeric identifiers to IdentifierGenerator (#2693)
 ca8aa1739dc Update dependency com.google.auth:google-auth-library-oauth2-http to v1.30.1 (#2700)
 1098b748f06 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.27 (#2701)
