@@ -311,7 +311,10 @@ class ObservationStore(
         .filter { it != null && currentUser().canManageObservation(it.id) }
   }
 
-  fun countPlots(plantingSiteId: PlantingSiteId): Map<ObservationId, ObservationPlotCounts> {
+  fun countPlots(
+      plantingSiteId: PlantingSiteId,
+      isAdHoc: Boolean = false
+  ): Map<ObservationId, ObservationPlotCounts> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     val incompleteField = DSL.count().filterWhere(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
@@ -322,6 +325,7 @@ class ObservationStore(
         .select(OBSERVATION_PLOTS.OBSERVATION_ID, incompleteField, totalField, unclaimedField)
         .from(OBSERVATION_PLOTS)
         .where(OBSERVATION_PLOTS.observations.PLANTING_SITE_ID.eq(plantingSiteId))
+        .and(OBSERVATION_PLOTS.observations.IS_AD_HOC.eq(isAdHoc))
         .groupBy(OBSERVATION_PLOTS.OBSERVATION_ID)
         .fetchMap(OBSERVATION_PLOTS.OBSERVATION_ID.asNonNullable()) { record ->
           ObservationPlotCounts(
@@ -356,7 +360,10 @@ class ObservationStore(
     }
   }
 
-  fun countPlots(organizationId: OrganizationId): Map<ObservationId, ObservationPlotCounts> {
+  fun countPlots(
+      organizationId: OrganizationId,
+      isAdHoc: Boolean = false
+  ): Map<ObservationId, ObservationPlotCounts> {
     requirePermissions { readOrganization(organizationId) }
 
     val incompleteField = DSL.count().filterWhere(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
@@ -367,6 +374,7 @@ class ObservationStore(
         .select(OBSERVATION_PLOTS.OBSERVATION_ID, incompleteField, totalField, unclaimedField)
         .from(OBSERVATION_PLOTS)
         .where(OBSERVATION_PLOTS.observations.plantingSites.ORGANIZATION_ID.eq(organizationId))
+        .and(OBSERVATION_PLOTS.observations.IS_AD_HOC.eq(isAdHoc))
         .groupBy(OBSERVATION_PLOTS.OBSERVATION_ID)
         .fetchMap(OBSERVATION_PLOTS.OBSERVATION_ID.asNonNullable()) { record ->
           ObservationPlotCounts(

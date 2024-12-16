@@ -396,7 +396,7 @@ class ObservationsController(
   }
 
   @GetMapping("/adHoc")
-  @Operation(summary = "Gets a list of observations of planting sites.")
+  @Operation(summary = "Gets a list of ad-hoc observations of planting sites.")
   fun listAdHocObservations(
       @RequestParam
       @Schema(
@@ -422,13 +422,13 @@ class ObservationsController(
           mapOf(
               plantingSiteId to
                   plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site))
-      plotCounts = observationStore.countPlots(plantingSiteId)
+      plotCounts = observationStore.countPlots(plantingSiteId, true)
     } else if (organizationId != null) {
       observations =
           observationStore.fetchObservationsByOrganization(organizationId, isAdHoc = true)
       plantingSites =
           plantingSiteStore.fetchSitesByOrganizationId(organizationId).associateBy { it.id }
-      plotCounts = observationStore.countPlots(organizationId)
+      plotCounts = observationStore.countPlots(organizationId, true)
     } else {
       throw BadRequestException("Must specify organizationId or plantingSiteId")
     }
