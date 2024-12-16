@@ -313,7 +313,7 @@ class ObservationStore(
 
   fun countPlots(
       plantingSiteId: PlantingSiteId,
-      isAdHoc: Boolean = false
+      isAdHoc: Boolean = false,
   ): Map<ObservationId, ObservationPlotCounts> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
@@ -362,7 +362,7 @@ class ObservationStore(
 
   fun countPlots(
       organizationId: OrganizationId,
-      isAdHoc: Boolean = false
+      isAdHoc: Boolean = false,
   ): Map<ObservationId, ObservationPlotCounts> {
     requirePermissions { readOrganization(organizationId) }
 

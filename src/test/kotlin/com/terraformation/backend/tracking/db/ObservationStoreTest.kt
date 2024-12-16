@@ -2371,17 +2371,22 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                         totalPlots = 3,
                         totalUnclaimed = 3,
                     ),
+            )
+
+        val actual = store.countPlots(plantingSiteId)
+
+        assertEquals(expected, actual, "counting non-ad-hoc")
+
+        assertEquals(
+            mapOf(
                 adHocObservationId to
                     ObservationPlotCounts(
                         totalIncomplete = 1,
                         totalPlots = 1,
                         totalUnclaimed = 1,
-                    ),
-            )
-
-        val actual = store.countPlots(plantingSiteId)
-
-        assertEquals(expected, actual)
+                    )),
+            store.countPlots(plantingSiteId, true),
+            "counting ad-hoc")
       }
 
       @Test
