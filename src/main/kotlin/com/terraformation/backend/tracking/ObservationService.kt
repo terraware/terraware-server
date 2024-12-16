@@ -59,6 +59,9 @@ import org.locationtech.jts.geom.Point
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
+/** Number of seconds of tolerance when checking if observation time is before server clock time */
+const val CLOCK_TOLERANCE_SECONDS: Long = 3600
+
 @Named
 class ObservationService(
     private val clock: InstantSource,
@@ -412,8 +415,8 @@ class ObservationService(
   }
 
   /**
-   * Record an ad-hoc observation. This creates an ad-hoc observation, creates an ad-hoc monitoring
-   * plot, adds the plot to the observation, and complete the observation with plants.
+   * Records an ad-hoc observation. This creates an ad-hoc observation, creates an ad-hoc monitoring
+   * plot, adds the plot to the observation, and completes the observation with plants.
    */
   fun completeAdHocObservation(
       conditions: Set<ObservableCondition>,
@@ -427,7 +430,7 @@ class ObservationService(
   ): Pair<ObservationId, MonitoringPlotId> {
     requirePermissions { scheduleAdHocObservation(plantingSiteId) }
 
-    if (observedTime.isAfter(clock.instant())) {
+    if (observedTime.isAfter(clock.instant().plusSeconds(CLOCK_TOLERANCE_SECONDS))) {
       throw IllegalArgumentException("Observed time is in the future")
     }
 
@@ -549,8 +552,8 @@ class ObservationService(
   }
 
   /**
-   * Validation rules: 1a. for non-ad-hoc, start date can be up to one year from today and not
-   * earlier than today. 1b. for ad-hoc, start date can be on or before today.
+   * Validation rules:
+   * 1. start date can be up to one year from today and not earlier than today.
    * 2. end date should be after the start date but no more than 2 months from the start date.
    */
   private fun validateSchedule(

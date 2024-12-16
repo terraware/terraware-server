@@ -2066,12 +2066,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception if no observed time is in the future`() {
+    fun `throws exception if no observed time is in the future outside of tolerance`() {
       assertThrows<IllegalArgumentException> {
         service.completeAdHocObservation(
             emptySet(),
             null,
-            clock.instant.plusSeconds(1),
+            clock.instant.plusSeconds(CLOCK_TOLERANCE_SECONDS + 1),
             ObservationType.BiomassMeasurements,
             plantingSiteId,
             emptySet(),
