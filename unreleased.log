@@ -1,3 +1,4 @@
+a4dbf4e1c0a SW-6348 Add monitoring plot numbers to search API (#2695)
 52ae0815078 SW-6348 Add plot numbers to monitoring plots (#2694)
 b3d26bc249a SW-6348 Add numeric identifiers to IdentifierGenerator (#2693)
 ca8aa1739dc Update dependency com.google.auth:google-auth-library-oauth2-http to v1.30.1 (#2700)
