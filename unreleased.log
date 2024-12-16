@@ -1,3 +1,6 @@
+1098b748f06 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.27 (#2701)
+4292733271f Update dependency com.google.api-client:google-api-client to v2.7.1 (#2699)
+9d18f35967f Update database dependencies (#2698)
 4494071e792 Add missing fields to custom equals methods (#2691)
 f0153a74279 Fix concurrency bug in ApplicationStoreTest (#2689)
 ba1e0eb415a Add labels to Renovate PRs (#2690)
