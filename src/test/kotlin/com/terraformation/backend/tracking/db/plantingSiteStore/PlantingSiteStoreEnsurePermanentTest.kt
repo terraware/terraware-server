@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
+import com.terraformation.backend.db.NumericIdentifierType
 import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotHistoriesRecord
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
@@ -170,22 +171,27 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
     }
 
     @Test
-    fun `uses plot number after existing highest number even if lower numbers are unused`() {
+    fun `uses next plot number for organization`() {
       val gridOrigin = point(0)
       val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(101, 51) }
       val existingPlotBoundary = Turtle(gridOrigin).makePolygon { square(25) }
 
+      repeat(5) {
+        identifierGenerator.generateNumericIdentifier(
+            organizationId, NumericIdentifierType.PlotNumber)
+      }
+
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
       insertPlantingZone(boundary = siteBoundary, numPermanentClusters = 2)
       insertPlantingSubzone(boundary = siteBoundary)
-      insertMonitoringPlot(boundary = existingPlotBoundary, name = "123", permanentCluster = 1)
+      insertMonitoringPlot(boundary = existingPlotBoundary, plotNumber = 1, permanentCluster = 1)
 
       store.ensurePermanentClustersExist(plantingSiteId)
 
       val plots = monitoringPlotsDao.findAll()
       assertEquals(
-          setOf("123", "124"),
-          plots.map { it.name }.toSet(),
+          setOf(1L, 6L),
+          plots.map { it.plotNumber }.toSet(),
           "Plot numbers including existing plot")
     }
   }

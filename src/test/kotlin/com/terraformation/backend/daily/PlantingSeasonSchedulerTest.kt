@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -39,6 +40,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
             TestSingletons.countryDetector,
             dslContext,
             eventPublisher,
+            IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             ParentStore(dslContext),
             plantingSeasonsDao,

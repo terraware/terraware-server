@@ -4,6 +4,8 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.IdentifierGenerator
+import com.terraformation.backend.db.NumericIdentifierType
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.asNonNullable
@@ -114,6 +116,7 @@ class PlantingSiteStore(
     private val countryDetector: CountryDetector,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val identifierGenerator: IdentifierGenerator,
     private val monitoringPlotsDao: MonitoringPlotsDao,
     private val parentStore: ParentStore,
     private val plantingSeasonsDao: PlantingSeasonsDao,
@@ -1436,8 +1439,6 @@ class PlantingSiteStore(
                 }
                 .groupBy { it.permanentCluster!! }
 
-        var nextPlotNumber = plantingZone.getMaxPlotName() + 1
-
         plotsByCluster.values
             .sortedBy { it[0].permanentCluster }
             .filter { it.size == 4 }
@@ -1478,16 +1479,13 @@ class PlantingSiteStore(
                       plantingSite,
                       plantingZoneWithoutCluster,
                       listOf(clusterNumber),
-                      clusterBoundary,
-                      nextPlotNumber)
+                      clusterBoundary)
 
               if (newPlotIds.isEmpty()) {
                 throw IllegalStateException(
                     "Unable to find replacement plot for planting site $plantingSiteId zone " +
                         "${plantingZone.id} cluster $clusterNumber")
               }
-
-              nextPlotNumber += newPlotIds.size
 
               oldPlots.forEach { oldPlot ->
                 MonitoringPlotOverlapsRecord(
@@ -1515,6 +1513,13 @@ class PlantingSiteStore(
 
     val plotBoundary = Turtle(swCorner, crs).makePolygon { square(MONITORING_PLOT_SIZE_INT) }
 
+    val organizationId =
+        parentStore.getOrganizationId(plantingSiteId)
+            ?: throw PlantingSiteNotFoundException(plantingSiteId)
+    val plotNumber =
+        identifierGenerator.generateNumericIdentifier(
+            organizationId, NumericIdentifierType.PlotNumber)
+
     val monitoringPlotsRow =
         MonitoringPlotsRow(
             boundary = plotBoundary,
@@ -1526,7 +1531,9 @@ class PlantingSiteStore(
             modifiedBy = userId,
             modifiedTime = now,
             name = name,
+            organizationId = organizationId,
             plantingSiteId = plantingSiteId,
+            plotNumber = plotNumber,
             sizeMeters = MONITORING_PLOT_SIZE_INT,
         )
     monitoringPlotsDao.insert(monitoringPlotsRow)
@@ -1566,12 +1573,9 @@ class PlantingSiteStore(
       plantingZone: ExistingPlantingZoneModel,
       clusterNumbers: List<Int>,
       searchBoundary: MultiPolygon = plantingZone.boundary,
-      firstNewPlotNumber: Int = plantingZone.getMaxPlotName() + 1
   ): List<MonitoringPlotId> {
     val userId = currentUser().userId
     val now = clock.instant()
-
-    var nextPlotNumber = firstNewPlotNumber
 
     if (plantingSite.gridOrigin == null) {
       throw IllegalStateException("Planting site ${plantingSite.id} has no grid origin")
@@ -1606,7 +1610,9 @@ class PlantingSiteStore(
             plantingZone.findPlantingSubzone(plotBoundary)
                 ?: throw IllegalStateException(
                     "Planting zone ${plantingZone.id} not fully covered by subzones")
-        val plotNumber = nextPlotNumber++
+        val plotNumber =
+            identifierGenerator.generateNumericIdentifier(
+                plantingSite.organizationId, NumericIdentifierType.PlotNumber)
 
         val monitoringPlotsRow =
             MonitoringPlotsRow(
@@ -1618,10 +1624,12 @@ class PlantingSiteStore(
                 modifiedBy = userId,
                 modifiedTime = now,
                 name = "$plotNumber",
+                organizationId = plantingSite.organizationId,
                 permanentCluster = clusterNumber,
                 permanentClusterSubplot = 1,
                 plantingSiteId = plantingSite.id,
                 plantingSubzoneId = subzone.id,
+                plotNumber = plotNumber,
                 sizeMeters = MONITORING_PLOT_SIZE_INT,
             )
 
@@ -1654,7 +1662,9 @@ class PlantingSiteStore(
       if (existingPlotId != null) {
         existingPlotId
       } else {
-        val plotNumber = plantingZone.getMaxPlotName() + 1
+        val plotNumber =
+            identifierGenerator.generateNumericIdentifier(
+                plantingSite.organizationId, NumericIdentifierType.PlotNumber)
         val subzone =
             plantingZone.findPlantingSubzone(plotBoundary)
                 ?: throw IllegalStateException(
@@ -1670,8 +1680,10 @@ class PlantingSiteStore(
                 modifiedBy = userId,
                 modifiedTime = now,
                 name = "$plotNumber",
+                organizationId = plantingSite.organizationId,
                 plantingSiteId = plantingSiteId,
                 plantingSubzoneId = subzone.id,
+                plotNumber = plotNumber,
                 sizeMeters = MONITORING_PLOT_SIZE_INT)
         monitoringPlotsDao.insert(monitoringPlotsRow)
 
@@ -1748,6 +1760,7 @@ class PlantingSiteStore(
                       MONITORING_PLOTS.NAME,
                       MONITORING_PLOTS.PERMANENT_CLUSTER,
                       MONITORING_PLOTS.PERMANENT_CLUSTER_SUBPLOT,
+                      MONITORING_PLOTS.PLOT_NUMBER,
                       MONITORING_PLOTS.SIZE_METERS,
                       monitoringPlotBoundaryField)
                   .from(MONITORING_PLOTS)
@@ -1764,6 +1777,7 @@ class PlantingSiteStore(
                   name = record[MONITORING_PLOTS.NAME]!!,
                   permanentCluster = record[MONITORING_PLOTS.PERMANENT_CLUSTER],
                   permanentClusterSubplot = record[MONITORING_PLOTS.PERMANENT_CLUSTER_SUBPLOT],
+                  plotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
                   sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!,
               )
             }

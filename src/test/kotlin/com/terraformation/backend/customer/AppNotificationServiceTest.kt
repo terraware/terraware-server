@@ -191,6 +191,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             TestSingletons.countryDetector,
             dslContext,
             publisher,
+            IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             parentStore,
             plantingSeasonsDao,

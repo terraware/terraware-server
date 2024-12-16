@@ -687,6 +687,7 @@ class PlantingZoneModelTest {
         name = "name",
         permanentCluster = permanentCluster,
         permanentClusterSubplot = if (permanentCluster != null) 1 else null,
+        plotNumber = id.toLong(),
         sizeMeters = MONITORING_PLOT_SIZE_INT,
     )
   }

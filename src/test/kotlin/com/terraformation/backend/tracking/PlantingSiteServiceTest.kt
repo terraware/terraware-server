@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEvent
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.PlantingSiteInUseException
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.mockUser
@@ -29,13 +30,15 @@ import org.springframework.security.access.AccessDeniedException
 class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
+  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val plantingSiteStore by lazy {
     PlantingSiteStore(
-        TestClock(),
+        clock,
         TestSingletons.countryDetector,
         dslContext,
         eventPublisher,
+        IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         ParentStore(dslContext),
         plantingSeasonsDao,

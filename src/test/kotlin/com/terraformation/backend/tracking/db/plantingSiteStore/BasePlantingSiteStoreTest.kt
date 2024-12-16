@@ -6,6 +6,7 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -18,12 +19,16 @@ internal abstract class BasePlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
   protected val clock = TestClock()
   protected val eventPublisher = TestEventPublisher()
+  protected val identifierGenerator: IdentifierGenerator by lazy {
+    IdentifierGenerator(clock, dslContext)
+  }
   protected val store: PlantingSiteStore by lazy {
     PlantingSiteStore(
         clock,
         TestSingletons.countryDetector,
         dslContext,
         eventPublisher,
+        identifierGenerator,
         monitoringPlotsDao,
         ParentStore(dslContext),
         plantingSeasonsDao,
