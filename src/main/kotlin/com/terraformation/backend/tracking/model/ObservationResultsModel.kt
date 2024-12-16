@@ -76,6 +76,7 @@ data class ObservationMonitoringPlotResultsModel(
     val isPermanent: Boolean,
     val monitoringPlotId: MonitoringPlotId,
     val monitoringPlotName: String,
+    val monitoringPlotNumber: Long,
     /**
      * If this is a permanent monitoring plot in this observation, percentage of plants of all
      * species that were dead. Dead plants from previous observations are counted in this
