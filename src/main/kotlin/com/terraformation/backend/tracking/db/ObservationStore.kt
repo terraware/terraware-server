@@ -716,11 +716,12 @@ class ObservationStore(
     requirePermissions { updateObservation(observationId) }
 
     dslContext.transaction { _ ->
-      val (plantingZoneId, plantingSiteId) =
+      val (plantingZoneId, plantingSiteId, isAdHoc) =
           dslContext
               .select(
                   MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID,
-                  MONITORING_PLOTS.PLANTING_SITE_ID.asNonNullable())
+                  MONITORING_PLOTS.PLANTING_SITE_ID.asNonNullable(),
+                  MONITORING_PLOTS.IS_AD_HOC.asNonNullable())
               .from(MONITORING_PLOTS)
               .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
               .fetchOne()!!
@@ -769,6 +770,7 @@ class ObservationStore(
           plantingSiteId,
           plantingZoneId,
           monitoringPlotId,
+          isAdHoc,
           observationPlotsRow.isPermanent!!,
           plantCountsBySpecies)
 
@@ -798,17 +800,24 @@ class ObservationStore(
   }
 
   fun removePlotFromTotals(monitoringPlotId: MonitoringPlotId) {
-    val (plantingSiteId, plantingZoneId) =
+    val (plantingSiteId, plantingZoneId, isAdHoc) =
         dslContext
             .select(
-                PLANTING_ZONES.PLANTING_SITE_ID.asNonNullable(), PLANTING_ZONES.ID.asNonNullable())
+                PLANTING_ZONES.PLANTING_SITE_ID.asNonNullable(),
+                PLANTING_ZONES.ID.asNonNullable(),
+                MONITORING_PLOTS.IS_AD_HOC.asNonNullable(),
+            )
             .from(MONITORING_PLOTS)
-            .join(PLANTING_SUBZONES)
+            .leftJoin(PLANTING_SUBZONES)
             .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
-            .join(PLANTING_ZONES)
+            .leftJoin(PLANTING_ZONES)
             .on(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
             .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
             .fetchOne() ?: throw PlotNotFoundException(monitoringPlotId)
+
+    if (isAdHoc) {
+      throw IllegalStateException("Cannot subtract plant counts for ad-hoc plot $monitoringPlotId")
+    }
 
     data class NegativeCount(
         val observationId: ObservationId,
@@ -883,6 +892,7 @@ class ObservationStore(
           plantingSiteId,
           plantingZoneId,
           null,
+          isAdHoc,
           negativeCount.isPermanent,
           negativeCount.plantCountsBySpecies)
     }
@@ -977,6 +987,7 @@ class ObservationStore(
             observation.plantingSiteId,
             plantingZoneId,
             monitoringPlotId,
+            observation.isAdHoc,
             plotDetails.model.isPermanent,
             mapOf(
                 RecordedSpeciesKey(RecordedSpeciesCertainty.Other, null, otherSpeciesName) to
@@ -1361,6 +1372,7 @@ class ObservationStore(
       plantingSiteId: PlantingSiteId,
       plantingZoneId: PlantingZoneId?,
       monitoringPlotId: MonitoringPlotId?,
+      isAdHoc: Boolean,
       isPermanent: Boolean,
       plantCountsBySpecies: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>
   ) {
@@ -1375,23 +1387,25 @@ class ObservationStore(
         )
       }
 
-      if (plantingZoneId != null) {
+      if (!isAdHoc) {
+        if (plantingZoneId != null) {
+          updateSpeciesTotalsTable(
+              OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID,
+              observationId,
+              plantingZoneId,
+              isPermanent,
+              plantCountsBySpecies,
+          )
+        }
+
         updateSpeciesTotalsTable(
-            OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID,
+            OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID,
             observationId,
-            plantingZoneId,
+            plantingSiteId,
             isPermanent,
             plantCountsBySpecies,
         )
       }
-
-      updateSpeciesTotalsTable(
-          OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID,
-          observationId,
-          plantingSiteId,
-          isPermanent,
-          plantCountsBySpecies,
-      )
     }
   }
 

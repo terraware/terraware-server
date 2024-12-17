@@ -2014,22 +2014,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           ObservedPlotSpeciesTotalsRow(
               observationId, plotId, null, null, Unknown, 1, 0, 0, null, 0, 0)
 
-      val siteSpecies1Totals =
-          ObservedSiteSpeciesTotalsRow(
-              observationId, plantingSiteId, speciesId1, null, Known, 2, 1, 1, null, 0, 0)
-      val siteSpecies2Totals =
-          ObservedSiteSpeciesTotalsRow(
-              observationId, plantingSiteId, speciesId2, null, Known, 0, 0, 1, null, 0, 0)
-      val siteOther1Total =
-          ObservedSiteSpeciesTotalsRow(
-              observationId, plantingSiteId, null, "Other 1", Other, 0, 0, 1, null, 0, 0)
-      val siteOther2Total =
-          ObservedSiteSpeciesTotalsRow(
-              observationId, plantingSiteId, null, "Other 2", Other, 0, 1, 0, null, 0, 0)
-      val siteUnknownTotal =
-          ObservedSiteSpeciesTotalsRow(
-              observationId, plantingSiteId, null, null, Unknown, 1, 0, 0, null, 0, 0)
-
       helper.assertTotals(
           setOf(
               plotSpecies1Totals,
@@ -2037,11 +2021,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               plotOther1Total,
               plotOther2Total,
               plotUnknownTotal,
-              siteSpecies1Totals,
-              siteSpecies2Totals,
-              siteOther1Total,
-              siteOther2Total,
-              siteUnknownTotal),
+          ),
           "Totals after observation")
     }
 
