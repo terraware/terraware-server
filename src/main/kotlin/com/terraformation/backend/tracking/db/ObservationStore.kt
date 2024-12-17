@@ -815,8 +815,8 @@ class ObservationStore(
     val (plantingSiteId, plantingZoneId, isAdHoc) =
         dslContext
             .select(
-                PLANTING_ZONES.PLANTING_SITE_ID.asNonNullable(),
-                PLANTING_ZONES.ID.asNonNullable(),
+                MONITORING_PLOTS.PLANTING_SITE_ID.asNonNullable(),
+                PLANTING_ZONES.ID,
                 MONITORING_PLOTS.IS_AD_HOC.asNonNullable(),
             )
             .from(MONITORING_PLOTS)
