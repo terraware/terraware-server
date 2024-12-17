@@ -2690,5 +2690,13 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       helper.assertTotals(totalsBeforeRemoval, "Totals after plot removal")
     }
+
+    @Test
+    fun `throws exception if removing plot totals for an ad-hoc plot`() {
+      insertPlantingSite()
+      val plotId = insertMonitoringPlot(isAdHoc = true)
+
+      assertThrows<IllegalStateException> { store.removePlotFromTotals(plotId) }
+    }
   }
 }
