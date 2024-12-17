@@ -1,3 +1,4 @@
+57ce5e7760c Combined functionality to schedule and complete ad-hoc observation into one endpoint (#2697)
 1c6853ab46f Use new name for Renovate base config (#2702)
 a6a24a0bee7 Updated translations from Phrase (#2703)
 540825617a4 SW-6348 Add plot numbers to observation results (#2696)
