@@ -38,15 +38,13 @@ internal class PlantingSiteStoreFetchSiteHistoryTest : BasePlantingSiteStoreTest
     val plantingZoneHistoryId1 = inserted.plantingZoneHistoryId
     val plantingSubzoneId1 = insertPlantingSubzone(boundary = subzoneBoundary1, name = "Subzone 1")
     val subzoneHistoryId1 = inserted.plantingSubzoneHistoryId
-    val monitoringPlotId1 =
-        insertMonitoringPlot(boundary = monitoringPlotBoundary1, name = "Plot 1")
+    val monitoringPlotId1 = insertMonitoringPlot(boundary = monitoringPlotBoundary1)
     val monitoringPlotHistoryId1 = inserted.monitoringPlotHistoryId
 
     // A subzone that was deleted after a monitoring plot was added to it.
     val subzoneId2 = insertPlantingSubzone(boundary = subzoneBoundary2, name = "Subzone 2")
     val subzoneHistoryId2 = inserted.plantingSubzoneHistoryId
-    val monitoringPlotId2 =
-        insertMonitoringPlot(boundary = monitoringPlotBoundary2, name = "Plot 2")
+    val monitoringPlotId2 = insertMonitoringPlot(boundary = monitoringPlotBoundary2)
     val monitoringPlotHistoryId2 = inserted.monitoringPlotHistoryId
     plantingSubzonesDao.deleteById(subzoneId2)
 
@@ -60,7 +58,7 @@ internal class PlantingSiteStoreFetchSiteHistoryTest : BasePlantingSiteStoreTest
     insertPlantingSite(boundary = siteBoundary2, name = "Site 2")
     insertPlantingZone(name = "Site 2 Zone")
     insertPlantingSubzone(name = "Site 2 Subzone")
-    insertMonitoringPlot(name = "Site 2 Plot")
+    insertMonitoringPlot()
 
     val expected =
         PlantingSiteHistoryModel(
@@ -89,10 +87,8 @@ internal class PlantingSiteStoreFetchSiteHistoryTest : BasePlantingSiteStoreTest
                                                 boundary = monitoringPlotBoundary1,
                                                 createdBy = user.userId,
                                                 createdTime = Instant.EPOCH,
-                                                fullName = "Z1-1-Plot 1",
                                                 id = monitoringPlotHistoryId1,
                                                 monitoringPlotId = monitoringPlotId1,
-                                                name = "Plot 1",
                                                 sizeMeters = MONITORING_PLOT_SIZE_INT,
                                             ),
                                         ),
@@ -109,10 +105,8 @@ internal class PlantingSiteStoreFetchSiteHistoryTest : BasePlantingSiteStoreTest
                                                 boundary = monitoringPlotBoundary2,
                                                 createdBy = user.userId,
                                                 createdTime = Instant.EPOCH,
-                                                fullName = "Z1-1-Plot 2",
                                                 id = monitoringPlotHistoryId2,
                                                 monitoringPlotId = monitoringPlotId2,
-                                                name = "Plot 2",
                                                 sizeMeters = MONITORING_PLOT_SIZE_INT,
                                             ),
                                         )),

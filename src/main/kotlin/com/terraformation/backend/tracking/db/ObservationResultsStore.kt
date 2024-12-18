@@ -309,7 +309,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       OBSERVATION_PLOTS.STATUS_ID,
                       monitoringPlotsBoundaryField,
                       MONITORING_PLOTS.ID,
-                      MONITORING_PLOTS.FULL_NAME,
                       MONITORING_PLOTS.PLOT_NUMBER,
                       MONITORING_PLOTS.SIZE_METERS,
                       monitoringPlotOverlappedByMultiset,
@@ -329,7 +328,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               val claimedBy = record[OBSERVATION_PLOTS.CLAIMED_BY]
               val completedTime = record[OBSERVATION_PLOTS.COMPLETED_TIME]
               val isPermanent = record[OBSERVATION_PLOTS.IS_PERMANENT.asNonNullable()]
-              val monitoringPlotName = record[MONITORING_PLOTS.FULL_NAME.asNonNullable()]
               val sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!
               val species = record[monitoringPlotSpeciesMultiset]
               val totalLive = species.sumOf { it.totalLive }
@@ -358,7 +356,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   coordinates = record[coordinatesMultiset],
                   isPermanent = isPermanent,
                   monitoringPlotId = record[MONITORING_PLOTS.ID]!!,
-                  monitoringPlotName = monitoringPlotName,
                   monitoringPlotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
                   mortalityRate = mortalityRate,
                   notes = record[OBSERVATION_PLOTS.NOTES],
