@@ -261,7 +261,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   isFirstObservation = false,
                   plantingSubzoneId = plantingSubzoneId1,
                   plantingSubzoneName = "Z1-S1",
-                  plotName = "Z1-S1-1",
+                  plotNumber = 1,
                   sizeMeters = 30,
               ),
               AssignedPlotDetails(
@@ -279,7 +279,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   isFirstObservation = true,
                   plantingSubzoneId = plantingSubzoneId1,
                   plantingSubzoneName = "Z1-S1",
-                  plotName = "Z1-S1-2",
+                  plotNumber = 2,
                   sizeMeters = 30,
               ),
               AssignedPlotDetails(
@@ -301,7 +301,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   isFirstObservation = true,
                   plantingSubzoneId = plantingSubzoneId2,
                   plantingSubzoneName = "Z1-S2",
-                  plotName = "Z1-S2-1",
+                  plotNumber = 3,
                   sizeMeters = 30,
               ))
 

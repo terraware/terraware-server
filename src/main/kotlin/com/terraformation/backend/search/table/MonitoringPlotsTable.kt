@@ -33,12 +33,14 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
       listOf(
           geometryField("boundary", MONITORING_PLOTS.BOUNDARY),
           timestampField("createdTime", MONITORING_PLOTS.CREATED_TIME),
-          textField("fullName", MONITORING_PLOTS.FULL_NAME),
+          // For backward compatibility; remove once clients aren't searching this anymore.
+          longField("fullName", MONITORING_PLOTS.PLOT_NUMBER),
           idWrapperField("id", MONITORING_PLOTS.ID) { MonitoringPlotId(it) },
           booleanField("isAdHoc", MONITORING_PLOTS.IS_AD_HOC),
           booleanField("isAvailable", MONITORING_PLOTS.IS_AVAILABLE),
           timestampField("modifiedTime", MONITORING_PLOTS.MODIFIED_TIME),
-          textField("name", MONITORING_PLOTS.NAME),
+          // For backward compatibility; remove once clients aren't searching this anymore.
+          longField("name", MONITORING_PLOTS.PLOT_NUMBER),
           coordinateField("northeastLatitude", MONITORING_PLOTS.BOUNDARY, NORTHEAST, LATITUDE),
           coordinateField("northeastLongitude", MONITORING_PLOTS.BOUNDARY, NORTHEAST, LONGITUDE),
           coordinateField("northwestLatitude", MONITORING_PLOTS.BOUNDARY, NORTHWEST, LATITUDE),

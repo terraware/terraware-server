@@ -590,6 +590,7 @@ data class AssignedPlotPayload(
     val plantingSubzoneName: String,
     val plotId: MonitoringPlotId,
     val plotName: String,
+    val plotNumber: Long,
     @Schema(description = "Length of each edge of the monitoring plot in meters.")
     val sizeMeters: Int,
 ) {
@@ -608,7 +609,8 @@ data class AssignedPlotPayload(
       plantingSubzoneId = details.plantingSubzoneId,
       plantingSubzoneName = details.plantingSubzoneName,
       plotId = details.model.monitoringPlotId,
-      plotName = details.plotName,
+      plotName = "${details.plotNumber}",
+      plotNumber = details.plotNumber,
       sizeMeters = details.sizeMeters,
   )
 }
@@ -761,7 +763,7 @@ data class ObservationMonitoringPlotResultsPayload(
       coordinates = model.coordinates.map { ObservationMonitoringPlotCoordinatesPayload(it) },
       isPermanent = model.isPermanent,
       monitoringPlotId = model.monitoringPlotId,
-      monitoringPlotName = model.monitoringPlotName,
+      monitoringPlotName = "${model.monitoringPlotNumber}",
       monitoringPlotNumber = model.monitoringPlotNumber,
       mortalityRate = model.mortalityRate,
       notes = model.notes,
