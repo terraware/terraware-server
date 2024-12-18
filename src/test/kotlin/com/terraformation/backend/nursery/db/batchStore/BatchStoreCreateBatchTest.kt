@@ -17,6 +17,8 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.nursery.api.CreateBatchRequestPayload
 import com.terraformation.backend.nursery.model.ExistingBatchModel
 import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -27,9 +29,12 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     val subLocationId1 = insertSubLocation()
     val subLocationId2 = insertSubLocation()
 
+    val addedDate = LocalDate.of(2022, 1, 2)
+    clock.instant = addedDate.plusDays(7).atStartOfDay(ZoneOffset.UTC).toInstant()
+
     val inputModel =
         CreateBatchRequestPayload(
-                addedDate = LocalDate.of(2022, 1, 2),
+                addedDate = addedDate,
                 facilityId = facilityId,
                 germinatingQuantity = 0,
                 notes = "notes",
@@ -48,8 +53,8 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
 
     val expectedRow =
         BatchesRow(
-            addedDate = LocalDate.of(2022, 1, 2),
-            batchNumber = "70-2-1-001",
+            addedDate = addedDate,
+            batchNumber = "22-2-1-001",
             createdBy = user.userId,
             createdTime = clock.instant(),
             facilityId = facilityId,
@@ -58,7 +63,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
             latestObservedGerminatingQuantity = 0,
             latestObservedNotReadyQuantity = 1,
             latestObservedReadyQuantity = 2,
-            latestObservedTime = clock.instant(),
+            latestObservedTime = addedDate.atStartOfDay(ZoneOffset.UTC).toInstant(),
             lossRate = 0,
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
@@ -161,6 +166,57 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     val batch = store.create(inputModel)
 
     assertEquals("70-2-2-001", batch.batchNumber)
+  }
+
+  @Test
+  fun `uses added date midnight at facility as latest observed time if it is in the past`() {
+    val timeZone = ZoneId.of("America/New_York")
+    val newYorkFacilityId = insertFacility(type = FacilityType.Nursery, timeZone = timeZone)
+    val addedDate = LocalDate.of(2022, 1, 2)
+    val startOfAddedDate = addedDate.atStartOfDay(timeZone).toInstant()
+    val now = addedDate.plusDays(1).atStartOfDay(timeZone).toInstant()
+
+    clock.instant = now
+
+    val inputModel =
+        CreateBatchRequestPayload(
+                addedDate = addedDate,
+                facilityId = newYorkFacilityId,
+                germinatingQuantity = 0,
+                notReadyQuantity = 1,
+                readyQuantity = 2,
+                speciesId = speciesId,
+            )
+            .toModel()
+
+    val batch = store.create(inputModel)
+
+    assertEquals(startOfAddedDate, batch.latestObservedTime)
+  }
+
+  @Test
+  fun `uses current time as latest observed time if added date is today at facility`() {
+    val timeZone = ZoneId.of("America/New_York")
+    val newYorkFacilityId = insertFacility(type = FacilityType.Nursery, timeZone = timeZone)
+    val addedDate = LocalDate.of(2022, 1, 2)
+    val now = addedDate.atTime(23, 59).atZone(timeZone).toInstant()
+
+    clock.instant = now
+
+    val inputModel =
+        CreateBatchRequestPayload(
+                addedDate = addedDate,
+                facilityId = newYorkFacilityId,
+                germinatingQuantity = 0,
+                notReadyQuantity = 1,
+                readyQuantity = 2,
+                speciesId = speciesId,
+            )
+            .toModel()
+
+    val batch = store.create(inputModel)
+
+    assertEquals(now, batch.latestObservedTime)
   }
 
   @Test

@@ -577,7 +577,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   createdBy = user.userId,
                   createdTime = withdrawalTime,
                   facilityId = destinationFacilityId,
-                  latestObservedTime = withdrawalTime,
+                  latestObservedTime =
+                      ZonedDateTime.of(2022, 10, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant(),
                   lossRate = 0,
                   modifiedBy = user.userId,
                   modifiedTime = withdrawalTime,
@@ -786,7 +787,10 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
   fun `nursery transfer adds to existing batch if batch number already exists`() {
     val species1Batch1 = batchesDao.fetchOneById(species1Batch1Id)!!
 
-    val destinationFacilityId = insertFacility(type = FacilityType.Nursery, facilityNumber = 2)
+    val destinationTimeZone = ZoneId.of("Asia/Tokyo")
+    val destinationFacilityId =
+        insertFacility(
+            type = FacilityType.Nursery, facilityNumber = 2, timeZone = destinationTimeZone)
 
     val newReadyByDate = LocalDate.of(2000, 1, 2)
     val firstWithdrawalTime = ZonedDateTime.of(2023, 2, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
@@ -856,7 +860,9 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                       facilityId = destinationFacilityId,
                       id = newBatch.id!!,
                       initialBatchId = species1Batch1Id,
-                      latestObservedTime = firstWithdrawalTime,
+                      latestObservedTime =
+                          ZonedDateTime.of(2022, 10, 1, 0, 0, 0, 0, destinationTimeZone)
+                              .toInstant(),
                       modifiedBy = user.userId,
                       modifiedTime = secondWithdrawalTime,
                       organizationId = organizationId,

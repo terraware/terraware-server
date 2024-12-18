@@ -70,6 +70,7 @@ import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
 import jakarta.inject.Named
 import java.time.Clock
 import java.time.LocalDate
+import java.time.ZonedDateTime
 import kotlin.math.roundToInt
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -168,6 +169,7 @@ class BatchStore(
         newModel.projectId?.let { projectId ->
           projectsDao.fetchOneById(projectId) ?: throw ProjectNotFoundException(projectId)
         }
+    val facilityTimeZone = parentStore.getEffectiveTimeZone(newModel.facilityId)
     val now = clock.instant()
     val userId = currentUser().userId
 
@@ -201,6 +203,16 @@ class BatchStore(
           subLocationsRow.name
         }
 
+    // If the added date is in the past, backdate the latest observed quantity to midnight on the
+    // added date so that any subsequent backdated withdrawals will count as quantity updates.
+    val todayInFacilityTimeZone = ZonedDateTime.ofInstant(now, facilityTimeZone).toLocalDate()
+    val latestObservedTime =
+        if (newModel.addedDate < todayInFacilityTimeZone) {
+          newModel.addedDate.atStartOfDay(facilityTimeZone).toInstant()
+        } else {
+          now
+        }
+
     val rowWithDefaults =
         newModel
             .toRow()
@@ -211,7 +223,7 @@ class BatchStore(
                             organizationId, IdentifierType.BATCH, facilityNumber),
                 createdBy = userId,
                 createdTime = now,
-                latestObservedTime = now,
+                latestObservedTime = latestObservedTime,
                 lossRate =
                     if (newModel.notReadyQuantity > 0 || newModel.readyQuantity > 0) 0 else null,
                 modifiedBy = userId,
