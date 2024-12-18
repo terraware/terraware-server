@@ -1,4 +1,4 @@
-package com.terraformation.backend.tracking.db
+package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
@@ -13,6 +13,8 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
+import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
+import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.util.Turtle
 import org.junit.jupiter.api.Assertions.*
@@ -54,8 +56,7 @@ class PlantingSiteStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val plantingSiteId = insertPlantingSite(boundary = multiPolygon(2.0))
       insertPlantingSiteHistory()
 
-      val monitoringPlotId =
-          store.createAdHocMonitoringPlot("ad-hoc-plot", plantingSiteId, point(0, 0))
+      val monitoringPlotId = store.createAdHocMonitoringPlot(plantingSiteId, point(0, 0))
 
       val plotBoundary = Turtle(point(0)).makePolygon { square(MONITORING_PLOT_SIZE_INT) }
 
@@ -63,13 +64,11 @@ class PlantingSiteStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           MonitoringPlotsRow(
               createdBy = user.userId,
               createdTime = clock.instant,
-              fullName = "ad-hoc-plot",
               id = monitoringPlotId,
               isAdHoc = true,
               isAvailable = false,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
-              name = "ad-hoc-plot",
               organizationId = inserted.organizationId,
               plantingSiteId = plantingSiteId,
               plantingSubzoneId = null,
@@ -91,7 +90,7 @@ class PlantingSiteStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       deleteOrganizationUser(user.userId, inserted.organizationId)
 
       assertThrows<PlantingSiteNotFoundException> {
-        store.createAdHocMonitoringPlot("ad-hoc-plot", plantingSiteId, point(0, 0))
+        store.createAdHocMonitoringPlot(plantingSiteId, point(0, 0))
       }
     }
   }

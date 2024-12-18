@@ -38,13 +38,11 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
           MonitoringPlotsRow(
               createdBy = user.userId,
               createdTime = clock.instant,
-              fullName = "Z1-1-2",
               id = newPlotId,
               isAdHoc = false,
               isAvailable = true,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
-              name = "2",
               organizationId = organizationId,
               plantingSiteId = plantingSiteId,
               plantingSubzoneId = plantingSubzoneId,
@@ -62,9 +60,7 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
               MonitoringPlotHistoriesRecord(
                   createdBy = user.userId,
                   createdTime = Instant.EPOCH,
-                  fullName = "Z1-1-2",
                   monitoringPlotId = newPlotId,
-                  name = "2",
                   plantingSiteHistoryId = plantingSiteHistoryId,
                   plantingSiteId = plantingSiteId,
                   plantingSubzoneHistoryId = plantingSubzoneHistoryId,
