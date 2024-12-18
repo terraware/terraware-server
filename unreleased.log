@@ -1,3 +1,4 @@
+c0e7aaf2394 SW-6368 Allow withdrawals from backdated batches (#2704)
 e8a75bb62f5 API to fetch observations by ad-hoc flag (#2688)
 57ce5e7760c Combined functionality to schedule and complete ad-hoc observation into one endpoint (#2697)
 1c6853ab46f Use new name for Renovate base config (#2702)
