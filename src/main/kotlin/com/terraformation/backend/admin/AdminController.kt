@@ -64,6 +64,9 @@ class AdminController(
     model.addAttribute(
         "canPopulatePlantingSiteCountries", currentUser().canPopulatePlantingSiteCountries())
     model.addAttribute("canReadCohorts", currentUser().canReadCohorts())
+    model.addAttribute(
+        "canSendTestEmail",
+        config.email.enabled && GlobalRole.SuperAdmin in currentUser().globalRoles)
     model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())
     model.addAttribute("canUpdateAppVersions", currentUser().canUpdateAppVersions())
     model.addAttribute("canUpdateDefaultVoters", currentUser().canUpdateDefaultVoters())

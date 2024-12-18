@@ -200,5 +200,13 @@
     </th:block>
 </details>
 
+<details id="sendTestEmail" class="section" th:if="${canSendTestEmail}">
+    <summary>Send Test Email</summary>
+
+    <p>
+        <a href="/admin/email">Send Test Email Form</a>
+    </p>
+</details>
+
 </body>
 </html>
