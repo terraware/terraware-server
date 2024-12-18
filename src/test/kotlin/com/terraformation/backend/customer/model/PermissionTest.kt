@@ -1072,8 +1072,10 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         org1Id,
         listFacilities = true,
+        listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationSelf = true,
+        readOrganizationUser = true,
         removeOrganizationSelf = true,
     )
 

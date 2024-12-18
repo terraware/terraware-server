@@ -348,7 +348,7 @@ data class IndividualUser(
   }
 
   override fun canListOrganizationUsers(organizationId: OrganizationId) =
-      isManagerOrHigher(organizationId) || isGlobalReader(organizationId)
+      isMember(organizationId) || isGlobalReader(organizationId)
 
   override fun canListReports(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
 
