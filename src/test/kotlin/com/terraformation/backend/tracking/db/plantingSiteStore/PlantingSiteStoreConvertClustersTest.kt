@@ -163,11 +163,10 @@ internal class PlantingSiteStoreConvertClustersTest : BasePlantingSiteStoreTest(
       gridOrigin: Point,
       plots: List<Pair<Pair<Int, Int>, Pair<Int, Int>>>
   ) {
-    plots.forEachIndexed { index, (clusterAndSubplot, eastAndNorth) ->
+    plots.forEach { (clusterAndSubplot, eastAndNorth) ->
       val (cluster, subplot) = clusterAndSubplot
       val (eastMeters, northMeters) = eastAndNorth
       insertMonitoringPlot(
-          name = "$index",
           permanentCluster = cluster,
           permanentClusterSubplot = subplot,
           sizeMeters = 25,
