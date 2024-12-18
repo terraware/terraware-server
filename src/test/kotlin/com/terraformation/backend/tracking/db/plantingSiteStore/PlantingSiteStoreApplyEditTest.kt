@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
+import com.terraformation.backend.db.NumericIdentifierType
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
@@ -213,6 +214,9 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                 initial =
                     newSite(width = 500) {
                       name = "Site $currentAttempt"
+                      nextPlotNumber =
+                          identifierGenerator.generateNumericIdentifier(
+                              inserted.organizationId, NumericIdentifierType.PlotNumber)
                       zone {
                         numPermanentClusters = 2
                         subzone {
@@ -270,13 +274,15 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
     @Test
     fun `marks existing temporary plots as unavailable if they are outside the new usable area`() {
+      val exclusionAreaPlotNumber = 1L
+      val plantableAreaPlotNumber = 2L
       val (edited) =
           runScenario(
               newSite {
                 zone {
                   subzone {
-                    plot(name = "plot in exclusion area")
-                    plot(name = "plot in plantable area")
+                    plot(plotNumber = exclusionAreaPlotNumber)
+                    plot(plotNumber = plantableAreaPlotNumber)
                   }
                 }
               },
@@ -286,9 +292,9 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               })
 
       assertEquals(
-          mapOf("plot in exclusion area" to false, "plot in plantable area" to true),
+          mapOf(exclusionAreaPlotNumber to false, plantableAreaPlotNumber to true),
           edited.plantingZones[0].plantingSubzones[0].monitoringPlots.associate {
-            it.name to it.isAvailable
+            it.plotNumber to it.isAvailable
           },
           "isAvailable flags")
     }
@@ -311,15 +317,15 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               })
 
       assertEquals(
-          mapOf("1" to null, "2" to 2),
+          mapOf(1L to null, 2L to 2),
           edited.plantingZones[0].plantingSubzones[0].monitoringPlots.associate {
-            it.name to it.permanentCluster
+            it.plotNumber to it.permanentCluster
           },
           "Cluster numbers of monitoring plots")
       assertEquals(
-          mapOf("1" to false, "2" to true),
+          mapOf(1L to false, 2L to true),
           edited.plantingZones[0].plantingSubzones[0].monitoringPlots.associate {
-            it.name to it.isAvailable
+            it.plotNumber to it.isAvailable
           },
           "isAvailable flags")
     }
@@ -501,27 +507,38 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       val existingWithoutPlots =
           store.createPlantingSite(initial.copy(organizationId = organizationId))
 
-      initial.plantingZones.forEach { initialZone ->
-        val existingZone = existingWithoutPlots.plantingZones.single { it.name == initialZone.name }
+      val maxPlotNumber =
+          initial.plantingZones.maxOfOrNull { initialZone ->
+            val existingZone =
+                existingWithoutPlots.plantingZones.single { it.name == initialZone.name }
 
-        initialZone.plantingSubzones.forEach { initialSubzone ->
-          val existingSubzone =
-              existingZone.plantingSubzones.single { it.name == initialSubzone.name }
+            initialZone.plantingSubzones.maxOfOrNull { initialSubzone ->
+              val existingSubzone =
+                  existingZone.plantingSubzones.single { it.name == initialSubzone.name }
 
-          initialSubzone.monitoringPlots.forEach { initialPlot ->
-            insertMonitoringPlot(
-                boundary = initialPlot.boundary,
-                fullName = initialPlot.fullName,
-                isAvailable = initialPlot.isAvailable,
-                name = initialPlot.name,
-                permanentCluster = initialPlot.permanentCluster,
-                permanentClusterSubplot = initialPlot.permanentClusterSubplot,
-                plantingSiteId = existingWithoutPlots.id,
-                plantingSubzoneId = existingSubzone.id,
-            )
-          }
-        }
-      }
+              initialSubzone.monitoringPlots.maxOfOrNull { initialPlot ->
+                insertMonitoringPlot(
+                    boundary = initialPlot.boundary,
+                    isAvailable = initialPlot.isAvailable,
+                    permanentCluster = initialPlot.permanentCluster,
+                    permanentClusterSubplot = initialPlot.permanentClusterSubplot,
+                    plantingSiteId = existingWithoutPlots.id,
+                    plantingSubzoneId = existingSubzone.id,
+                    plotNumber = initialPlot.plotNumber,
+                )
+
+                initialPlot.plotNumber
+              } ?: 0L
+            } ?: 0L
+          } ?: 0L
+
+      // Applying the edit may cause new plots to be created, and we don't want their plot numbers
+      // to collide with the plots we've just inserted.
+      do {
+        val nextPlotNumber =
+            identifierGenerator.generateNumericIdentifier(
+                organizationId, NumericIdentifierType.PlotNumber)
+      } while (nextPlotNumber <= maxPlotNumber)
 
       val existing = store.fetchSiteById(existingWithoutPlots.id, PlantingSiteDepth.Plot)
       val subzonesToMarkIncomplete = getSubzonesToMarkIncomplete(existing)
@@ -671,9 +688,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                 MonitoringPlotHistoriesRecord(
                     createdBy = user.userId,
                     createdTime = editTime,
-                    fullName = plot.fullName,
                     monitoringPlotId = plot.id,
-                    name = plot.name,
                     plantingSiteHistoryId = editedSiteHistory.id,
                     plantingSiteId = edited.id,
                     plantingSubzoneHistoryId = plantingSubzoneHistoryId,

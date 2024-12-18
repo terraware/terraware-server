@@ -793,8 +793,7 @@ class PlantingSiteStore(
 
           // For now, plots can't move between subzones, so we can add history for all the existing
           // plots with the new site and subzone history IDs.
-          insertMonitoringPlotHistory(
-              plot.id, plantingSiteId, plantingSubzoneId, plot.name, plot.fullName)
+          insertMonitoringPlotHistory(plot.id, plantingSiteId, plantingSubzoneId)
         }
       }
     }
@@ -1500,7 +1499,6 @@ class PlantingSiteStore(
 
   /** Creates an ad-hoc monitoring plot for a planting site with a user-supplied corner. */
   fun createAdHocMonitoringPlot(
-      name: String,
       plantingSiteId: PlantingSiteId,
       swCorner: Point,
   ): MonitoringPlotId {
@@ -1525,12 +1523,10 @@ class PlantingSiteStore(
             boundary = plotBoundary,
             createdBy = userId,
             createdTime = now,
-            fullName = name,
             isAdHoc = true,
             isAvailable = false,
             modifiedBy = userId,
             modifiedTime = now,
-            name = name,
             organizationId = organizationId,
             plantingSiteId = plantingSiteId,
             plotNumber = plotNumber,
@@ -1619,11 +1615,9 @@ class PlantingSiteStore(
                 boundary = plotBoundary,
                 createdBy = userId,
                 createdTime = now,
-                fullName = "${subzone.fullName}-$plotNumber",
                 isAdHoc = false,
                 modifiedBy = userId,
                 modifiedTime = now,
-                name = "$plotNumber",
                 organizationId = plantingSite.organizationId,
                 permanentCluster = clusterNumber,
                 permanentClusterSubplot = 1,
@@ -1675,11 +1669,9 @@ class PlantingSiteStore(
                 boundary = plotBoundary,
                 createdBy = userId,
                 createdTime = now,
-                fullName = "${subzone.fullName}-$plotNumber",
                 isAdHoc = false,
                 modifiedBy = userId,
                 modifiedTime = now,
-                name = "$plotNumber",
                 organizationId = plantingSite.organizationId,
                 plantingSiteId = plantingSiteId,
                 plantingSubzoneId = subzone.id,
@@ -1754,10 +1746,8 @@ class PlantingSiteStore(
       DSL.multiset(
               DSL.select(
                       MONITORING_PLOTS.ID,
-                      MONITORING_PLOTS.FULL_NAME,
                       MONITORING_PLOTS.IS_AD_HOC,
                       MONITORING_PLOTS.IS_AVAILABLE,
-                      MONITORING_PLOTS.NAME,
                       MONITORING_PLOTS.PERMANENT_CLUSTER,
                       MONITORING_PLOTS.PERMANENT_CLUSTER_SUBPLOT,
                       MONITORING_PLOTS.PLOT_NUMBER,
@@ -1765,7 +1755,7 @@ class PlantingSiteStore(
                       monitoringPlotBoundaryField)
                   .from(MONITORING_PLOTS)
                   .where(condition)
-                  .orderBy(MONITORING_PLOTS.FULL_NAME))
+                  .orderBy(MONITORING_PLOTS.PLOT_NUMBER))
           .convertFrom { result ->
             result.map { record ->
               MonitoringPlotModel(
@@ -1773,8 +1763,6 @@ class PlantingSiteStore(
                   id = record[MONITORING_PLOTS.ID]!!,
                   isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC]!!,
                   isAvailable = record[MONITORING_PLOTS.IS_AVAILABLE]!!,
-                  fullName = record[MONITORING_PLOTS.FULL_NAME]!!,
-                  name = record[MONITORING_PLOTS.NAME]!!,
                   permanentCluster = record[MONITORING_PLOTS.PERMANENT_CLUSTER],
                   permanentClusterSubplot = record[MONITORING_PLOTS.PERMANENT_CLUSTER_SUBPLOT],
                   plotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
@@ -1788,9 +1776,7 @@ class PlantingSiteStore(
               DSL.select(
                       MONITORING_PLOT_HISTORIES.CREATED_BY,
                       MONITORING_PLOT_HISTORIES.CREATED_TIME,
-                      MONITORING_PLOT_HISTORIES.FULL_NAME,
                       MONITORING_PLOT_HISTORIES.ID,
-                      MONITORING_PLOT_HISTORIES.NAME,
                       MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID,
                       MONITORING_PLOTS.SIZE_METERS,
                       monitoringPlotBoundaryField)
@@ -1800,16 +1786,14 @@ class PlantingSiteStore(
                   .where(
                       PLANTING_SUBZONE_HISTORIES.ID.eq(
                           MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID))
-                  .orderBy(MONITORING_PLOT_HISTORIES.FULL_NAME))
+                  .orderBy(MONITORING_PLOTS.PLOT_NUMBER))
           .convertFrom { result ->
             result.map { record ->
               MonitoringPlotHistoryModel(
                   boundary = record[monitoringPlotBoundaryField]!! as Polygon,
                   createdBy = record[MONITORING_PLOT_HISTORIES.CREATED_BY]!!,
                   createdTime = record[MONITORING_PLOT_HISTORIES.CREATED_TIME]!!,
-                  fullName = record[MONITORING_PLOT_HISTORIES.FULL_NAME]!!,
                   id = record[MONITORING_PLOT_HISTORIES.ID]!!,
-                  name = record[MONITORING_PLOT_HISTORIES.NAME]!!,
                   monitoringPlotId = record[MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID]!!,
                   sizeMeters = record[MONITORING_PLOTS.SIZE_METERS]!!,
               )
@@ -2232,7 +2216,7 @@ class PlantingSiteStore(
       monitoringPlotsRow: MonitoringPlotsRow
   ): MonitoringPlotHistoryId {
     return with(monitoringPlotsRow) {
-      insertMonitoringPlotHistory(id!!, plantingSiteId!!, plantingSubzoneId, name!!, fullName!!)
+      insertMonitoringPlotHistory(id!!, plantingSiteId!!, plantingSubzoneId)
     }
   }
 
@@ -2240,17 +2224,13 @@ class PlantingSiteStore(
       monitoringPlotId: MonitoringPlotId,
       plantingSiteId: PlantingSiteId,
       plantingSubzoneId: PlantingSubzoneId?,
-      name: String,
-      fullName: String,
   ): MonitoringPlotHistoryId {
     return with(MONITORING_PLOT_HISTORIES) {
       dslContext
           .insertInto(MONITORING_PLOT_HISTORIES)
           .set(CREATED_BY, currentUser().userId)
           .set(CREATED_TIME, clock.instant())
-          .set(FULL_NAME, fullName)
           .set(MONITORING_PLOT_ID, monitoringPlotId)
-          .set(NAME, name)
           .set(
               PLANTING_SITE_HISTORY_ID,
               DSL.select(DSL.max(PLANTING_SITE_HISTORIES.ID))

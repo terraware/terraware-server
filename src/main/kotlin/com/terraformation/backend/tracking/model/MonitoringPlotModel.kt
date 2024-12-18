@@ -9,8 +9,6 @@ data class MonitoringPlotModel(
     val id: MonitoringPlotId,
     val isAdHoc: Boolean,
     val isAvailable: Boolean,
-    val fullName: String,
-    val name: String,
     val permanentCluster: Int? = null,
     val permanentClusterSubplot: Int? = null,
     val plotNumber: Long,
@@ -24,8 +22,6 @@ data class MonitoringPlotModel(
         id == other.id &&
         isAdHoc == other.isAdHoc &&
         isAvailable == other.isAvailable &&
-        fullName == other.fullName &&
-        name == other.name &&
         permanentCluster == other.permanentCluster &&
         permanentClusterSubplot == other.permanentClusterSubplot &&
         plotNumber == other.plotNumber &&

@@ -111,10 +111,10 @@ private constructor(
   var gridOrigin: Point = geometryFactory.createPoint(boundary.envelope.coordinates[0])
   var name: String = "Site"
   var organizationId: OrganizationId = OrganizationId(-1)
+  var nextPlotNumber: Long = 1
 
   private var currentSubzoneId: Long = 0
   private var currentZoneId: Long = 0
-  private var nextMonitoringPlotId: Long = 1
   private var nextZoneX = x
   private val plantingZones = mutableListOf<ExistingPlantingZoneModel>()
 
@@ -241,8 +241,8 @@ private constructor(
                 else -> 1
               },
           isAvailable: Boolean = true,
-          name: String = "$nextMonitoringPlotId",
           size: Int = MONITORING_PLOT_SIZE_INT,
+          plotNumber: Long = nextPlotNumber,
       ): MonitoringPlotModel {
         lastCluster = cluster
         nextMonitoringPlotX = x + size
@@ -254,18 +254,16 @@ private constructor(
         val plot =
             MonitoringPlotModel(
                 boundary = rectanglePolygon(size, size, x, y),
-                id = MonitoringPlotId(nextMonitoringPlotId),
+                id = MonitoringPlotId(nextPlotNumber),
                 isAdHoc = false,
                 isAvailable = isAvailable,
-                fullName = "$fullName-$name",
-                name = name,
                 permanentCluster = cluster,
                 permanentClusterSubplot = subplot,
-                plotNumber = nextMonitoringPlotId,
+                plotNumber = plotNumber,
                 sizeMeters = size,
             )
 
-        nextMonitoringPlotId++
+        nextPlotNumber++
 
         monitoringPlots.add(plot)
         return plot

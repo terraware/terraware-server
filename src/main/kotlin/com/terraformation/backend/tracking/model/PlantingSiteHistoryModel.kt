@@ -80,9 +80,7 @@ data class MonitoringPlotHistoryModel(
     val boundary: Polygon,
     val createdBy: UserId,
     val createdTime: Instant,
-    val fullName: String,
     val id: MonitoringPlotHistoryId,
-    val name: String,
     val monitoringPlotId: MonitoringPlotId,
     val sizeMeters: Int,
 ) {
@@ -90,9 +88,7 @@ data class MonitoringPlotHistoryModel(
     return other is MonitoringPlotHistoryModel &&
         createdBy == other.createdBy &&
         createdTime == other.createdTime &&
-        fullName == other.fullName &&
         id == other.id &&
-        name == other.name &&
         monitoringPlotId == other.monitoringPlotId &&
         sizeMeters == other.sizeMeters &&
         boundary.equalsExact(other.boundary, tolerance)

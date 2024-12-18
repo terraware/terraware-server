@@ -42,7 +42,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val allSpeciesNames = mutableSetOf<String>()
-  private val permanentPlotNames = mutableSetOf<String>()
+  private val permanentPlotNumbers = mutableSetOf<String>()
   private val speciesIds = mutableMapOf<String, SpeciesId>()
 
   private val speciesNames: Map<SpeciesId, String> by lazy {
@@ -192,7 +192,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     fun `returns plot information`() {
       insertPlantingZone()
       insertPlantingSubzone()
-      insertMonitoringPlot(fullName = "fullName", name = "name")
+      insertMonitoringPlot()
       insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
@@ -202,7 +202,6 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           results.first().plantingZones.first().plantingSubzones.first().monitoringPlots.first()
 
       assertEquals(inserted.monitoringPlotId, plotResults.monitoringPlotId, "Plot ID")
-      assertEquals("fullName", plotResults.monitoringPlotName, "Plot name")
       assertEquals(1L, plotResults.monitoringPlotNumber, "Plot number")
     }
 
@@ -391,8 +390,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
       val actual =
           makeActualCsv(allResults, rowKeys) { (zoneName), results ->
-            val zone =
-                results.plantingZones.firstOrNull() { it.plantingZoneId == zoneIds[zoneName] }
+            val zone = results.plantingZones.firstOrNull { it.plantingZoneId == zoneIds[zoneName] }
             listOf(
                 zone?.totalPlants.toStringOrBlank(),
                 zone?.plantingDensity.toStringOrBlank(),
@@ -597,14 +595,12 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
         val plotId =
             insertMonitoringPlot(
-                fullName = plotNumber,
-                name = plotNumber,
                 plantingSubzoneId = subzoneId,
                 plotNumber = plotNumber.toLong(),
                 sizeMeters = sizeMeters)
 
         if (cols[2] == "Permanent") {
-          permanentPlotNames.add(plotNumber)
+          permanentPlotNumbers.add(plotNumber)
         }
 
         plotNumber to plotId
@@ -650,7 +646,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                 insertObservationPlot(
                     claimedBy = user.userId,
                     claimedTime = Instant.EPOCH,
-                    isPermanent = plotName in permanentPlotNames,
+                    isPermanent = plotName in permanentPlotNumbers,
                     observationId = observationId,
                     monitoringPlotId = plotId,
                 )
@@ -825,7 +821,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                   insertObservationPlot(
                       claimedBy = user.userId,
                       claimedTime = Instant.EPOCH,
-                      isPermanent = plotName in permanentPlotNames,
+                      isPermanent = plotName in permanentPlotNumbers,
                       observationId = observationId,
                       monitoringPlotId = plotId,
                   )

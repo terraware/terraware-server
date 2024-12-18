@@ -31,17 +31,15 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       assertEquals(4, plots.size, "Number of monitoring plots created")
       assertEquals(
           setOf(1, 2, 3, 4), plots.map { it.permanentCluster }.toSet(), "Permanent cluster numbers")
-      assertEquals(1, plots.minOf { it.name!!.toInt() }, "Smallest plot number")
-      assertEquals(4, plots.maxOf { it.name!!.toInt() }, "Largest plot number")
+      assertEquals(1L, plots.minOf { it.plotNumber!! }, "Smallest plot number")
+      assertEquals(4L, plots.maxOf { it.plotNumber!! }, "Largest plot number")
 
       assertTableEquals(
           plots.map { plot ->
             MonitoringPlotHistoriesRecord(
                 createdBy = user.userId,
                 createdTime = Instant.EPOCH,
-                fullName = plot.fullName,
                 monitoringPlotId = plot.id,
-                name = plot.name,
                 plantingSiteHistoryId = plantingSiteHistoryId,
                 plantingSiteId = plantingSiteId,
                 plantingSubzoneHistoryId = plantingSubzoneHistoryId,
@@ -69,8 +67,8 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
       assertEquals(2, plots.size, "Number of monitoring plots created")
       assertEquals(
           setOf(1, 2), plots.map { it.permanentCluster }.toSet(), "Permanent cluster numbers")
-      assertEquals(1, plots.minOf { it.name!!.toInt() }, "Smallest plot number")
-      assertEquals(2, plots.maxOf { it.name!!.toInt() }, "Largest plot number")
+      assertEquals(1L, plots.minOf { it.plotNumber!! }, "Smallest plot number")
+      assertEquals(2L, plots.maxOf { it.plotNumber!! }, "Largest plot number")
     }
 
     @Test
@@ -107,9 +105,7 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
                 MonitoringPlotHistoriesRecord(
                     createdBy = user.userId,
                     createdTime = Instant.EPOCH,
-                    fullName = plot.fullName,
                     monitoringPlotId = plot.id,
-                    name = plot.name,
                     plantingSiteHistoryId = plantingSiteHistoryId,
                     plantingSiteId = plantingSiteId,
                     plantingSubzoneHistoryId = plantingSubzoneHistoryId,
