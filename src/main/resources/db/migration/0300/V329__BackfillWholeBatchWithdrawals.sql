@@ -27,6 +27,11 @@ CREATE TEMPORARY TABLE backfill_withdrawals AS
        FROM nursery.batch_quantity_history bqh
        WHERE bqh.batch_id = b.id
        AND bqh.version > 1
+    )
+    AND 1 = (
+        SELECT COUNT(*)
+        FROM nursery.batch_withdrawals bw2
+        WHERE b.id = bw2.batch_id
     );
 
 INSERT INTO nursery.batch_quantity_history (
