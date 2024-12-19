@@ -210,16 +210,14 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val plantingSubzoneId1 = insertPlantingSubzone(fullName = "Z1-S1", name = "S1")
 
       // A plot that was observed previously and again in this observation
-      val monitoringPlotId11 =
-          insertMonitoringPlot(boundary = polygon(1), fullName = "Z1-S1-1", name = "1")
+      val monitoringPlotId11 = insertMonitoringPlot(boundary = polygon(1))
       insertObservation()
       insertObservationPlot()
       val observationId = insertObservation()
       insertObservationPlot(isPermanent = true)
 
       // This plot is claimed
-      val monitoringPlotId12 =
-          insertMonitoringPlot(boundary = polygon(2), fullName = "Z1-S1-2", name = "2")
+      val monitoringPlotId12 = insertMonitoringPlot(boundary = polygon(2))
       val claimedTime12 = Instant.ofEpochSecond(12)
       insertObservationPlot(
           ObservationPlotsRow(
@@ -230,8 +228,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val plantingSubzoneId2 = insertPlantingSubzone(fullName = "Z1-S2", name = "S2")
 
       // This plot is claimed and completed
-      val monitoringPlotId21 =
-          insertMonitoringPlot(boundary = polygon(3), fullName = "Z1-S2-1", name = "1")
+      val monitoringPlotId21 = insertMonitoringPlot(boundary = polygon(3))
       val claimedTime21 = Instant.ofEpochSecond(210)
       val completedTime21 = Instant.ofEpochSecond(211)
       val observedTime21 = Instant.ofEpochSecond(212)

@@ -43,8 +43,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
               targetPlantingDensity = BigDecimal.ONE)
       val plantingSubzoneId = insertPlantingSubzone(boundary = multiPolygon(1.0))
       val monitoringPlotId = insertMonitoringPlot(boundary = polygon(0.1))
-      insertMonitoringPlot(
-          boundary = polygon(0.1), isAdHoc = true, name = "Ad hoc plot is not returned")
+      insertMonitoringPlot(boundary = polygon(0.1), isAdHoc = true)
 
       val season1StartDate = LocalDate.of(2023, 6, 1)
       val season1EndDate = LocalDate.of(2023, 7, 31)
@@ -134,8 +133,6 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           id = exteriorPlotId,
                           isAdHoc = false,
                           isAvailable = true,
-                          name = "3",
-                          fullName = "3",
                           plotNumber = 3,
                           sizeMeters = 30)),
               plantingZones =
@@ -153,8 +150,6 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                       id = monitoringPlotId,
                                                       isAdHoc = false,
                                                       isAvailable = true,
-                                                      name = "1",
-                                                      fullName = "Z1-1-1",
                                                       plotNumber = 1,
                                                       sizeMeters = 30)),
                                       )))))
@@ -237,8 +232,6 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                                   id = monitoringPlotId,
                                                   isAdHoc = false,
                                                   isAvailable = true,
-                                                  name = "1",
-                                                  fullName = "Z1-1-1",
                                                   plotNumber = 1,
                                                   sizeMeters = 30)),
                                   )))))

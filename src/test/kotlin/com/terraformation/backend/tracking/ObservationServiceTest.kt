@@ -572,11 +572,10 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               (1 to 3) to (25 to 25),
               (1 to 4) to (0 to 25),
           )
-          .forEachIndexed { index, (clusterAndSubplot, eastAndNorth) ->
+          .forEach { (clusterAndSubplot, eastAndNorth) ->
             val (cluster, subplot) = clusterAndSubplot
             val (eastMeters, northMeters) = eastAndNorth
             insertMonitoringPlot(
-                name = "$index",
                 permanentCluster = cluster,
                 permanentClusterSubplot = subplot,
                 sizeMeters = 25,
@@ -1933,7 +1932,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               ObservationType.BiomassMeasurements,
               plantingSiteId,
               recordedPlants,
-              "Ad-hoc plot name",
               point(1),
           )
 
@@ -1960,13 +1958,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           MonitoringPlotsRow(
               createdBy = user.userId,
               createdTime = clock.instant,
-              fullName = "Ad-hoc plot name",
               id = plotId,
               isAdHoc = true,
               isAvailable = false,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
-              name = "Ad-hoc plot name",
               organizationId = inserted.organizationId,
               plantingSiteId = plantingSiteId,
               plotNumber = 1,
@@ -2043,7 +2039,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             ObservationType.BiomassMeasurements,
             plantingSiteId,
             emptySet(),
-            "Ad-hoc plot name",
             point(1),
         )
       }
@@ -2059,7 +2054,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             ObservationType.BiomassMeasurements,
             plantingSiteId,
             emptySet(),
-            "Ad-hoc plot name",
             point(1),
         )
       }

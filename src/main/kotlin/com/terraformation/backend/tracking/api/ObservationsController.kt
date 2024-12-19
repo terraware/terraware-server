@@ -459,7 +459,6 @@ class ObservationsController(
             payload.observationType,
             payload.plantingSiteId,
             payload.plants.map { it.toRow() },
-            payload.plotName,
             payload.swCorner,
         )
 
@@ -1007,8 +1006,6 @@ data class CompleteAdHocObservationRequestPayload(
     val observedTime: Instant,
     @Schema(description = "Observation type for this observation.")
     val observationType: ObservationType,
-    @Schema(description = "The plot name for the ad-hoc plot.") //
-    val plotName: String,
     val plants: List<RecordedPlantPayload>,
     @Schema(description = "Which planting site this observation needs to be scheduled for.")
     val plantingSiteId: PlantingSiteId,
