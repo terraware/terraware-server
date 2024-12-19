@@ -99,13 +99,36 @@ class EmailService(
   fun sendUserNotification(
       user: IndividualUser,
       model: EmailTemplateModel,
-      requireOptIn: Boolean = true
+      requireOptIn: Boolean = true,
   ) {
     if (requireOptIn && !user.emailNotificationsEnabled) {
       log.info("Skipping email notification for user ${user.userId} because they didn't enable it")
     } else {
       val locale = user.locale ?: Locale.ENGLISH
       locale.use { send(model, listOf(user.email)) }
+    }
+  }
+
+  /**
+   * Sends an email notification to all users.
+   *
+   * @param [model] Model object containing values that can be referenced by the template.
+   * @param [requireOptIn] If false, send the notification even if the user has not opted into email
+   *   notifications. The default is to obey the user's notification preference, which is the
+   *   correct thing to do in the majority of cases.
+   */
+  fun sendAllUsersNotification(
+      model: EmailTemplateModel,
+      requireOptIn: Boolean = true,
+  ) {
+    val allUsers = userStore.fetchUsers(requireOptIn)
+    allUsers.forEach { usr ->
+      if (requireOptIn && !usr.emailNotificationsEnabled) {
+        log.info("Skipping email notification for user ${usr.userId} because they didn't enable it")
+      } else {
+        val locale = usr.locale ?: Locale.ENGLISH
+        locale.use { send(model, listOf(usr.email)) }
+      }
     }
   }
 

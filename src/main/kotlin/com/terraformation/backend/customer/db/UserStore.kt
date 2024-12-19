@@ -217,6 +217,21 @@ class UserStore(
   }
 
   /**
+   * Returns all users.
+   *
+   * @param requireOptIn Only return the users who are opted into email notifications.
+   */
+  fun fetchUsers(requireOptIn: Boolean = true): List<IndividualUser> {
+
+    return dslContext
+        .select(USERS.asterisk())
+        .from(USERS)
+        .apply { if (requireOptIn) where(USERS.EMAIL_NOTIFICATIONS_ENABLED.isTrue) }
+        .fetchInto(UsersRow::class.java)
+        .map { rowToIndividualUser(it) }
+  }
+
+  /**
    * Returns the users who have global roles. If [roles] is non-null, only returns users with those
    * roles.
    */
