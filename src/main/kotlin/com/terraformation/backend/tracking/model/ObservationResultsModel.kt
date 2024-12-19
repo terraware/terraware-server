@@ -73,6 +73,7 @@ data class ObservationMonitoringPlotResultsModel(
     val claimedByUserId: UserId?,
     val completedTime: Instant?,
     val coordinates: List<ObservedPlotCoordinatesModel>,
+    val isAdHoc: Boolean,
     val isPermanent: Boolean,
     val monitoringPlotId: MonitoringPlotId,
     val monitoringPlotName: String,
@@ -186,8 +187,10 @@ data class ObservationPlantingZoneResultsModel(
 ) : BaseMonitoringResult
 
 data class ObservationResultsModel(
+    val adHocPlot: ObservationMonitoringPlotResultsModel?,
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
+    val isAdHoc: Boolean,
     override val mortalityRate: Int,
     val observationId: ObservationId,
     override val plantingCompleted: Boolean,

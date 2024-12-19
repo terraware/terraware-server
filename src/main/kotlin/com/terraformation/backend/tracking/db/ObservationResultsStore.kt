@@ -64,23 +64,30 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
       plantingSiteId: PlantingSiteId,
       limit: Int? = null,
       maxCompletionTime: Instant? = null,
+      isAdHoc: Boolean = false,
   ): List<ObservationResultsModel> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return fetchByCondition(
         DSL.and(
             OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId),
+            OBSERVATIONS.IS_AD_HOC.eq(isAdHoc),
             maxCompletionTime?.let { OBSERVATIONS.COMPLETED_TIME.lessOrEqual(it) }),
         limit)
   }
 
   fun fetchByOrganizationId(
       organizationId: OrganizationId,
-      limit: Int? = null
+      limit: Int? = null,
+      isAdHoc: Boolean = false,
   ): List<ObservationResultsModel> {
     requirePermissions { readOrganization(organizationId) }
 
-    return fetchByCondition(OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId), limit)
+    return fetchByCondition(
+        DSL.and(
+            OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId),
+            OBSERVATIONS.IS_AD_HOC.eq(isAdHoc)),
+        limit)
   }
 
   /**
@@ -297,7 +304,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
   private val monitoringPlotsBoundaryField = MONITORING_PLOTS.BOUNDARY.forMultiset()
 
-  private val monitoringPlotMultiset =
+  /** monitoring plots for an observation */
+  private fun monitoringPlotMultiset(condition: Condition) =
       DSL.multiset(
               DSL.select(
                       USERS.FIRST_NAME,
@@ -309,6 +317,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       OBSERVATION_PLOTS.STATUS_ID,
                       monitoringPlotsBoundaryField,
                       MONITORING_PLOTS.ID,
+                      MONITORING_PLOTS.IS_AD_HOC,
                       MONITORING_PLOTS.FULL_NAME,
                       MONITORING_PLOTS.PLOT_NUMBER,
                       MONITORING_PLOTS.SIZE_METERS,
@@ -323,7 +332,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   .leftJoin(USERS)
                   .on(OBSERVATION_PLOTS.CLAIMED_BY.eq(USERS.ID))
                   .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                  .and(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID)))
+                  .and(condition))
           .convertFrom { results ->
             results.map { record ->
               val claimedBy = record[OBSERVATION_PLOTS.CLAIMED_BY]
@@ -356,6 +365,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   claimedByUserId = claimedBy,
                   completedTime = completedTime,
                   coordinates = record[coordinatesMultiset],
+                  isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC.asNonNullable()],
                   isPermanent = isPermanent,
                   monitoringPlotId = record[MONITORING_PLOTS.ID]!!,
                   monitoringPlotName = monitoringPlotName,
@@ -375,13 +385,19 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             }
           }
 
+  private val adHocMonitoringPlotMultiset =
+      monitoringPlotMultiset(MONITORING_PLOTS.IS_AD_HOC.isTrue())
+
+  private val plantingSubzoneMonitoringPlotMultiset =
+      monitoringPlotMultiset(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+
   private val plantingSubzoneMultiset =
       DSL.multiset(
               DSL.select(
                       PLANTING_SUBZONES.ID,
                       PLANTING_SUBZONES.AREA_HA,
                       PLANTING_SUBZONES.PLANTING_COMPLETED_TIME,
-                      monitoringPlotMultiset)
+                      plantingSubzoneMonitoringPlotMultiset)
                   .from(PLANTING_SUBZONES)
                   .where(
                       PLANTING_SUBZONES.ID.`in`(
@@ -395,7 +411,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                               .and(PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID)))))
           .convertFrom { results ->
             results.map { record ->
-              val monitoringPlots = record[monitoringPlotMultiset]
+              val monitoringPlots = record[plantingSubzoneMonitoringPlotMultiset]
 
               val areaHa = record[PLANTING_SUBZONES.AREA_HA.asNonNullable()]
 
@@ -436,7 +452,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   areaHa = areaHa,
                   completedTime = completedTime,
                   estimatedPlants = estimatedPlants?.roundToInt(),
-                  monitoringPlots = record[monitoringPlotMultiset],
+                  monitoringPlots = monitoringPlots,
                   mortalityRate = mortalityRate,
                   plantingCompleted = plantingCompleted,
                   plantingDensity = plantingDensity?.roundToInt(),
@@ -584,8 +600,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   private fun fetchByCondition(condition: Condition, limit: Int?): List<ObservationResultsModel> {
     return dslContext
         .select(
+            adHocMonitoringPlotMultiset,
             OBSERVATIONS.COMPLETED_TIME,
             OBSERVATIONS.ID,
+            OBSERVATIONS.IS_AD_HOC,
             OBSERVATIONS.PLANTING_SITE_ID,
             OBSERVATIONS.START_DATE,
             OBSERVATIONS.STATE_ID,
@@ -629,8 +647,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
           val mortalityRate = species.calculateMortalityRate()
 
           ObservationResultsModel(
+              adHocPlot = record[adHocMonitoringPlotMultiset].firstOrNull(),
               completedTime = record[OBSERVATIONS.COMPLETED_TIME],
               estimatedPlants = estimatedPlants,
+              isAdHoc = record[OBSERVATIONS.IS_AD_HOC.asNonNullable()],
               mortalityRate = mortalityRate,
               observationId = record[OBSERVATIONS.ID.asNonNullable()],
               plantingCompleted = plantingCompleted,
