@@ -1,3 +1,5 @@
+184f244d0a7 SW-6368 Fix withdrawal backfill migration (#2713)
+fe79088ba04 Make deploy script fail if any step fails (#2712)
 476f20ea3d2 SW-6351 Send email from admin ui to all terraware users (#2710)
 b2cf7e7cf47 SW-6368 Backfill quantities for whole-batch withdrawals (#2711)
 aee5028b331 Update tailscale/github-action action to v3 (#2709)
