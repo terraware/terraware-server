@@ -296,7 +296,7 @@ class AdminPlantingSitesController(
                             mapOf(
                                 "cluster" to cluster,
                                 "id" to "${plot.id}",
-                                "name" to plot.fullName,
+                                "plotNumber" to plot.plotNumber,
                                 "subzone" to subzone.name,
                                 "zone" to zone.name,
                             ) + plotTypeProperty
