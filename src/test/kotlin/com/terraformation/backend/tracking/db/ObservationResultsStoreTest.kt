@@ -215,6 +215,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       val plotResults =
           observationResults.plantingZones.first().plantingSubzones.first().monitoringPlots.first()
       assertEquals(inserted.monitoringPlotId, plotResults.monitoringPlotId, "Plot ID")
+      assertFalse(plotResults.isAdHoc, "Plot Is Ad Hoc")
       assertEquals("fullName", plotResults.monitoringPlotName, "Plot name")
       assertEquals(2L, plotResults.monitoringPlotNumber, "Plot number")
     }
@@ -246,6 +247,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
       val plotResults = observationResults.adHocPlot!!
       assertEquals(inserted.monitoringPlotId, plotResults.monitoringPlotId, "Plot ID")
+      assertTrue(plotResults.isAdHoc, "Plot Is Ad Hoc")
       assertEquals("fullName", plotResults.monitoringPlotName, "Plot name")
       assertEquals(2L, plotResults.monitoringPlotNumber, "Plot number")
     }
