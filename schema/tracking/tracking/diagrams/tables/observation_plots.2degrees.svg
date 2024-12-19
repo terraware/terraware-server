@@ -61,21 +61,17 @@
 <!-- monitoring_plots -->
 <g id="node2" class="node"><title>monitoring_plots</title>
 <g id="a_node2"><a xlink:href="../../tables/monitoring_plots.html" xlink:title="monitoring_plots" target="_top">
-<polygon fill="#ffffff" stroke="none" points="395,-674 395,-864 579,-864 579,-674 395,-674"/>
-<polygon fill="#f5f5f5" stroke="none" points="395,-842 395,-864 579,-864 579,-842 395,-842"/>
-<polygon fill="none" stroke="black" points="395,-842 395,-864 579,-864 579,-842 395,-842"/>
-<text text-anchor="start" x="400" y="-851.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">monitoring_plots</text>
-<text text-anchor="start" x="540" y="-850.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="#ffffff" stroke="none" points="395,-674 395,-842 579,-842 579,-674 395,-674"/>
+<polygon fill="#f5f5f5" stroke="none" points="395,-820 395,-842 579,-842 579,-820 395,-820"/>
 <polygon fill="none" stroke="black" points="395,-820 395,-842 579,-842 579,-820 395,-820"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="400" y="-837"/>
-<text text-anchor="start" x="415" y="-828.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="none" points="395,-798 395,-820 579,-820 579,-798 395,-798"/>
+<text text-anchor="start" x="400" y="-829.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">monitoring_plots</text>
+<text text-anchor="start" x="540" y="-828.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="395,-798 395,-820 579,-820 579,-798 395,-798"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="400" y="-815"/>
-<text text-anchor="start" x="415" y="-806.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_subzone_id</text>
-<polygon fill="#ffffff" stroke="none" points="395,-776 395,-798 579,-798 579,-776 395,-776"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="400" y="-815"/>
+<text text-anchor="start" x="415" y="-806.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="none" stroke="black" points="395,-776 395,-798 579,-798 579,-776 395,-776"/>
-<text text-anchor="start" x="415" y="-784.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="400" y="-793"/>
+<text text-anchor="start" x="415" y="-784.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_subzone_id</text>
 <polygon fill="#ffffff" stroke="none" points="395,-754 395,-776 579,-776 579,-754 395,-754"/>
 <polygon fill="none" stroke="black" points="395,-754 395,-776 579,-776 579,-754 395,-754"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="400" y="-771"/>
@@ -102,9 +98,9 @@
 </g>
 <!-- monitoring_plot_histories&#45;&gt;monitoring_plots -->
 <g id="edge1" class="edge"><title>monitoring_plot_histories:monitoring_plot_id:w&#45;&gt;monitoring_plots:id:e</title>
-<path fill="none" stroke="black" d="M633.698,-647.089C572.721,-667.523 662.517,-831 580,-831"/>
-<polygon fill="black" stroke="black" points="640.084,-646.156 648.52,-648.562 644.042,-645.578 648,-645 648,-645 648,-645 644.042,-645.578 647.48,-641.438 640.084,-646.156 640.084,-646.156"/>
-<ellipse fill="none" stroke="black" cx="636.918" cy="-646.619" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M633.741,-647.318C580.89,-667.252 653.358,-809 580,-809"/>
+<polygon fill="black" stroke="black" points="640.104,-646.284 648.578,-648.553 644.052,-645.642 648,-645 648,-645 648,-645 644.052,-645.642 647.422,-641.447 640.104,-646.284 640.104,-646.284"/>
+<ellipse fill="none" stroke="black" cx="636.945" cy="-646.797" rx="3.2" ry="3.2"/>
 </g>
 <!-- planting_site_histories -->
 <g id="node3" class="node"><title>planting_site_histories</title>
@@ -226,9 +222,9 @@
 </g>
 <!-- monitoring_plots&#45;&gt;planting_subzones -->
 <g id="edge9" class="edge"><title>monitoring_plots:planting_subzone_id:w&#45;&gt;planting_subzones:elipses:e</title>
-<path fill="none" stroke="black" d="M380.825,-802.554C348.627,-764.228 388.09,-568 338.5,-568"/>
-<polygon fill="black" stroke="black" points="386.814,-805.484 392.418,-812.234 390.407,-807.242 394,-809 394,-809 394,-809 390.407,-807.242 395.582,-805.766 386.814,-805.484 386.814,-805.484"/>
-<ellipse fill="none" stroke="black" cx="383.94" cy="-804.078" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M379.651,-785.107C308.749,-763.702 433.419,-568 338.5,-568"/>
+<polygon fill="black" stroke="black" points="386.069,-785.953 393.529,-790.569 390.034,-786.477 394,-787 394,-787 394,-787 390.034,-786.477 394.471,-783.431 386.069,-785.953 386.069,-785.953"/>
+<ellipse fill="none" stroke="black" cx="382.896" cy="-785.535" rx="3.2" ry="3.2"/>
 </g>
 <!-- planting_site_histories&#45;&gt;planting_sites -->
 <g id="edge40" class="edge"><title>planting_site_histories:elipses:w&#45;&gt;planting_sites:elipses:e</title>
@@ -272,15 +268,15 @@
 </g>
 <!-- monitoring_plot_overlaps&#45;&gt;monitoring_plots -->
 <g id="edge6" class="edge"><title>monitoring_plot_overlaps:elipses:w&#45;&gt;monitoring_plots:id:e</title>
-<path fill="none" stroke="black" d="M635.361,-1195.79C576.935,-1150.22 658.412,-825.375 580,-831"/>
-<polygon fill="black" stroke="black" points="641.527,-1198.15 647.715,-1204.36 645.263,-1199.57 649,-1201 649,-1201 649,-1201 645.263,-1199.57 650.285,-1197.64 641.527,-1198.15 641.527,-1198.15"/>
-<ellipse fill="none" stroke="black" cx="638.537" cy="-1197" rx="3.20001" ry="3.20001"/>
+<path fill="none" stroke="black" d="M635.395,-1196.13C572.52,-1150.43 663.268,-803.352 580,-809"/>
+<polygon fill="black" stroke="black" points="641.468,-1198.3 647.786,-1204.39 645.234,-1199.65 649,-1201 649,-1201 649,-1201 645.234,-1199.65 650.214,-1197.61 641.468,-1198.3 641.468,-1198.3"/>
+<ellipse fill="none" stroke="black" cx="638.456" cy="-1197.22" rx="3.20001" ry="3.20001"/>
 </g>
 <!-- monitoring_plot_overlaps&#45;&gt;monitoring_plots -->
 <g id="edge7" class="edge"><title>monitoring_plot_overlaps:elipses:w&#45;&gt;monitoring_plots:id:e</title>
-<path fill="none" stroke="black" d="M634.638,-1197.62C577.611,-1160.46 658.086,-837.535 580,-831"/>
-<polygon fill="black" stroke="black" points="641.212,-1199.17 648.176,-1204.5 645.106,-1200.08 649,-1201 649,-1201 649,-1201 645.106,-1200.08 649.824,-1197.5 641.212,-1199.17 641.212,-1199.17"/>
-<ellipse fill="none" stroke="black" cx="638.097" cy="-1198.44" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M634.621,-1197.83C573.27,-1160.5 662.922,-815.562 580,-809"/>
+<polygon fill="black" stroke="black" points="641.188,-1199.28 648.225,-1204.52 645.094,-1200.14 649,-1201 649,-1201 649,-1201 645.094,-1200.14 649.775,-1197.48 641.188,-1199.28 641.188,-1199.28"/>
+<ellipse fill="none" stroke="black" cx="638.063" cy="-1198.59" rx="3.2" ry="3.2"/>
 </g>
 <!-- observation_photos -->
 <g id="node8" class="node"><title>observation_photos</title>
@@ -319,7 +315,7 @@
 </g>
 <!-- observation_photos&#45;&gt;monitoring_plots -->
 <g id="edge10" class="edge"><title>observation_photos:monitoring_plot_id:w&#45;&gt;monitoring_plots:id:e</title>
-<path fill="none" stroke="black" d="M1244.22,-1071.96C1221.8,-1083.14 1229.57,-1122.83 1198,-1137 1075.54,-1191.96 1026.7,-1167.54 896,-1137 767.096,-1106.88 713.576,-1106.84 629,-1005 577.669,-943.195 660.341,-831 580,-831"/>
+<path fill="none" stroke="black" d="M1244.22,-1071.96C1221.8,-1083.14 1229.57,-1122.83 1198,-1137 1075.54,-1191.96 1026.7,-1167.54 896,-1137 767.096,-1106.88 712.064,-1108.07 629,-1005 572.657,-935.085 669.792,-809 580,-809"/>
 <polygon fill="black" stroke="black" points="1250.67,-1070.62 1259.23,-1072.52 1254.58,-1069.81 1258.5,-1069 1258.5,-1069 1258.5,-1069 1254.58,-1069.81 1257.77,-1065.48 1250.67,-1070.62 1250.67,-1070.62"/>
 <ellipse fill="none" stroke="black" cx="1247.53" cy="-1071.27" rx="3.2" ry="3.2"/>
 </g>
@@ -502,9 +498,9 @@
 </g>
 <!-- observation_plots&#45;&gt;monitoring_plots -->
 <g id="edge18" class="edge"><title>observation_plots:monitoring_plot_id:w&#45;&gt;monitoring_plots:id:e</title>
-<path fill="none" stroke="black" d="M890.361,-1068.82C763.512,-1065.53 723.496,-1018.38 629,-924 595.945,-890.984 626.72,-831 580,-831"/>
-<polygon fill="black" stroke="black" points="897.001,-1068.9 904.955,-1072.6 901,-1068.95 905,-1069 905,-1069 905,-1069 901,-1068.95 905.045,-1065.4 897.001,-1068.9 897.001,-1068.9"/>
-<ellipse fill="none" stroke="black" cx="893.801" cy="-1068.86" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M890.345,-1068.83C763.226,-1065.81 719.542,-1022.18 629,-924 591.337,-883.158 635.557,-809 580,-809"/>
+<polygon fill="black" stroke="black" points="897.001,-1068.91 904.958,-1072.6 901,-1068.95 905,-1069 905,-1069 905,-1069 901,-1068.95 905.042,-1065.4 897.001,-1068.91 897.001,-1068.91"/>
+<ellipse fill="none" stroke="black" cx="893.801" cy="-1068.87" rx="3.2" ry="3.2"/>
 </g>
 <!-- observation_plots&#45;&gt;observations -->
 <g id="edge19" class="edge"><title>observation_plots:observation_id:w&#45;&gt;observations:id:e</title>
@@ -636,7 +632,7 @@
 </g>
 <!-- observation_plot_conditions&#45;&gt;monitoring_plots -->
 <g id="edge15" class="edge"><title>observation_plot_conditions:elipses:w&#45;&gt;monitoring_plots:id:e</title>
-<path fill="none" stroke="black" d="M927.753,-702.638C913.526,-708.962 910.511,-725.672 896,-742 879.285,-760.807 884.58,-775.062 863,-788 773.024,-841.947 732.1,-799.605 629,-819 606.965,-823.145 602.421,-831 580,-831"/>
+<path fill="none" stroke="black" d="M927.753,-702.638C913.526,-708.962 910.511,-725.672 896,-742 879.285,-760.807 884.944,-775.689 863,-788 808.003,-818.856 643.062,-809 580,-809"/>
 <polygon fill="black" stroke="black" points="934.134,-701.457 942.656,-703.54 938.067,-700.728 942,-700 942,-700 942,-700 938.067,-700.728 941.344,-696.46 934.134,-701.457 934.134,-701.457"/>
 <ellipse fill="none" stroke="black" cx="930.987" cy="-702.039" rx="3.2" ry="3.2"/>
 </g>
@@ -719,7 +715,7 @@
 </g>
 <!-- observed_plot_coordinates&#45;&gt;monitoring_plots -->
 <g id="edge27" class="edge"><title>observed_plot_coordinates:monitoring_plot_id:w&#45;&gt;monitoring_plots:id:e</title>
-<path fill="none" stroke="black" d="M1224.1,-648.705C1139.14,-645.604 953.432,-619.933 896,-663 859.231,-690.572 898.663,-732.011 863,-761 781.723,-827.068 724.899,-746.879 629,-789 602.739,-800.535 608.683,-831 580,-831"/>
+<path fill="none" stroke="black" d="M1224.1,-648.705C1139.14,-645.604 953.432,-619.933 896,-663 859.231,-690.572 898.663,-732.011 863,-761 822.362,-794.034 679.7,-775.875 629,-789 606.229,-794.895 603.522,-809 580,-809"/>
 <polygon fill="black" stroke="black" points="1230.5,-648.836 1238.43,-652.599 1234.5,-648.918 1238.5,-649 1238.5,-649 1238.5,-649 1234.5,-648.918 1238.57,-645.401 1230.5,-648.836 1230.5,-648.836"/>
 <ellipse fill="none" stroke="black" cx="1227.3" cy="-648.771" rx="3.2" ry="3.2"/>
 </g>
@@ -771,7 +767,7 @@
 </g>
 <!-- observed_plot_species_totals&#45;&gt;monitoring_plots -->
 <g id="edge33" class="edge"><title>observed_plot_species_totals:elipses:w&#45;&gt;monitoring_plots:id:e</title>
-<path fill="none" stroke="black" d="M925.467,-569.647C910.83,-576.034 907.498,-593.16 896,-612 871.839,-651.59 898.821,-681.539 863,-711 782.019,-777.602 715.545,-681.808 629,-741 591.407,-766.711 625.544,-831 580,-831"/>
+<path fill="none" stroke="black" d="M925.467,-569.647C910.83,-576.034 907.498,-593.16 896,-612 871.839,-651.59 898.821,-681.539 863,-711 782.019,-777.602 719.096,-687.367 629,-741 596.991,-760.055 617.251,-809 580,-809"/>
 <polygon fill="black" stroke="black" points="932.129,-568.434 940.645,-570.542 936.065,-567.717 940,-567 940,-567 940,-567 936.065,-567.717 939.355,-563.458 932.129,-568.434 932.129,-568.434"/>
 <ellipse fill="none" stroke="black" cx="928.981" cy="-569.007" rx="3.2" ry="3.2"/>
 </g>
@@ -927,7 +923,7 @@
 </g>
 <!-- recorded_plants&#45;&gt;monitoring_plots -->
 <g id="edge44" class="edge"><title>recorded_plants:monitoring_plot_id:w&#45;&gt;monitoring_plots:id:e</title>
-<path fill="none" stroke="black" d="M1253.91,-311.937C1145.16,-327.15 1296.99,-523.534 1198,-609 1147.01,-653.019 948.779,-593.148 896,-635 858.998,-664.342 899.636,-706.202 863,-736 781.821,-802.027 719.179,-708.923 629,-762 596.585,-781.079 617.613,-831 580,-831"/>
+<path fill="none" stroke="black" d="M1253.91,-311.937C1145.16,-327.15 1296.99,-523.534 1198,-609 1147.01,-653.019 948.779,-593.148 896,-635 858.998,-664.342 899.636,-706.202 863,-736 822.411,-769.013 676.39,-739.828 629,-762 601.667,-774.788 610.176,-809 580,-809"/>
 <polygon fill="black" stroke="black" points="1260.52,-311.513 1268.73,-314.593 1264.51,-311.257 1268.5,-311 1268.5,-311 1268.5,-311 1264.51,-311.257 1268.27,-307.407 1260.52,-311.513 1260.52,-311.513"/>
 <ellipse fill="none" stroke="black" cx="1257.32" cy="-311.718" rx="3.2" ry="3.2"/>
 </g>

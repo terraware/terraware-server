@@ -146,12 +146,12 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="observed_plot_coordinates.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observed_plot_coordinates_observation_id_monitoring_plot_i_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">observed_plot_coordinates_observation_id_monitoring_plot_i_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="observed_plot_coordinates.observation_id references observations.id via observed_plot_coordinates_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">observed_plot_coordinates_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="observed_plot_coordinates.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observed_plot_coordinates_observation_id_monitoring_plot_i_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">observed_plot_coordinates_observation_id_monitoring_plot_i_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -171,12 +171,12 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="observed_plot_coordinates.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observed_plot_coordinates_observation_id_monitoring_plot_i_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.monitoring_plot_id</span></td>
-                                                <td class="constraint detail">observed_plot_coordinates_observation_id_monitoring_plot_i_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="observed_plot_coordinates.monitoring_plot_id references monitoring_plots.id via observed_plot_coordinates_monitoring_plot_id_fkey"><a href='monitoring_plots.html'>monitoring_plots</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">observed_plot_coordinates_monitoring_plot_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="observed_plot_coordinates.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observed_plot_coordinates_observation_id_monitoring_plot_i_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.monitoring_plot_id</span></td>
+                                                <td class="constraint detail">observed_plot_coordinates_observation_id_monitoring_plot_i_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -279,23 +279,23 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="375,43,637,365">
-<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="28,319,295,641">
-<area shape="rect" id="node3" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="5,5,317,240">
-<area shape="rect" id="node4" href="../../tables/observed_plot_coordinates.html" target="_top" title="observed_plot_coordinates" alt="" coords="695,11,1136,227">
-<area shape="rect" id="node5" href="../../tables/observation_plot_positions.html" target="_top" title="observation_plot_positions" alt="" coords="361,419,651,541">
+<area shape="rect" id="node1" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="375,44,637,366">
+<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="28,320,295,613">
+<area shape="rect" id="node3" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="5,6,317,241">
+<area shape="rect" id="node4" href="../../tables/observed_plot_coordinates.html" target="_top" title="observed_plot_coordinates" alt="" coords="695,12,1136,228">
+<area shape="rect" id="node5" href="../../tables/observation_plot_positions.html" target="_top" title="observation_plot_positions" alt="" coords="361,420,651,542">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/observed_plot_coordinates.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/monitoring_plot_histories.html" target="_top" title="monitoring_plot_histories" alt="" coords="1208,191,1488,279">
-<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="36,289,215,377">
-<area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="847,365,1113,688">
-<area shape="rect" id="node4" href="../../tables/planting_site_histories.html" target="_top" title="planting_site_histories" alt="" coords="524,228,780,316">
-<area shape="rect" id="node5" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="289,511,480,599">
-<area shape="rect" id="node6" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="539,333,765,421">
-<area shape="rect" id="node8" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="5,625,245,713">
+<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="36,288,215,376">
+<area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="847,365,1113,659">
+<area shape="rect" id="node4" href="../../tables/planting_site_histories.html" target="_top" title="planting_site_histories" alt="" coords="524,227,780,315">
+<area shape="rect" id="node5" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="289,509,480,597">
+<area shape="rect" id="node6" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="539,332,765,420">
+<area shape="rect" id="node8" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="5,609,245,697">
 <area shape="rect" id="node7" href="../../tables/monitoring_plot_overlaps.html" target="_top" title="monitoring_plot_overlaps" alt="" coords="1209,368,1487,456">
 <area shape="rect" id="node9" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="1997,475,2231,563">
 <area shape="rect" id="node10" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="1574,239,1835,561">
