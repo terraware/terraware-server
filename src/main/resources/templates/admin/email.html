@@ -8,8 +8,10 @@
         sendToAllCheckbox.addEventListener('change', function() {
             if (sendToAllCheckbox.checked) {
                 recipientInput.removeAttribute('required');
+                recipientInput.disabled = true;
             } else {
                 recipientInput.setAttribute('required', true);
+                recipientInput.disabled = false;
             }
         });
     </script>

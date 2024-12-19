@@ -122,12 +122,13 @@ class EmailService(
       requireOptIn: Boolean = true,
   ) {
     val allUsers = userStore.fetchUsers(requireOptIn)
-    allUsers.forEach { usr ->
-      if (requireOptIn && !usr.emailNotificationsEnabled) {
-        log.info("Skipping email notification for user ${usr.userId} because they didn't enable it")
+    allUsers.forEach { user ->
+      if (requireOptIn && !user.emailNotificationsEnabled) {
+        log.info(
+            "Skipping email notification for user ${user.userId} because they didn't enable it")
       } else {
-        val locale = usr.locale ?: Locale.ENGLISH
-        locale.use { send(model, listOf(usr.email)) }
+        val locale = user.locale ?: Locale.ENGLISH
+        locale.use { send(model, listOf(user.email)) }
       }
     }
   }
