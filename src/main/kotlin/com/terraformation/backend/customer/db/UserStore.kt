@@ -226,9 +226,9 @@ class UserStore(
     return dslContext
         .select(USERS.asterisk())
         .from(USERS)
-        .apply { if (requireOptIn) where(USERS.EMAIL_NOTIFICATIONS_ENABLED.isTrue) }
         .where(USERS.USER_TYPE_ID.eq(UserType.Individual))
         .and(USERS.DELETED_TIME.isNull)
+        .apply { if (requireOptIn) and(USERS.EMAIL_NOTIFICATIONS_ENABLED.isTrue) }
         .fetchInto(UsersRow::class.java)
         .map { rowToIndividualUser(it) }
   }
