@@ -73,6 +73,7 @@ data class ObservationMonitoringPlotResultsModel(
     val claimedByUserId: UserId?,
     val completedTime: Instant?,
     val coordinates: List<ObservedPlotCoordinatesModel>,
+    val isAdHoc: Boolean,
     val isPermanent: Boolean,
     val monitoringPlotId: MonitoringPlotId,
     val monitoringPlotNumber: Long,

@@ -731,6 +731,7 @@ data class ObservationMonitoringPlotResultsPayload(
     @ArraySchema(
         arraySchema = Schema(description = "Observed coordinates, if any, up to one per position."))
     val coordinates: List<ObservationMonitoringPlotCoordinatesPayload>,
+    val isAdHoc: Boolean,
     @Schema(
         description =
             "True if this was a permanent monitoring plot in this observation. Clients should " +
@@ -780,6 +781,7 @@ data class ObservationMonitoringPlotResultsPayload(
       claimedByUserId = model.claimedByUserId,
       completedTime = model.completedTime,
       coordinates = model.coordinates.map { ObservationMonitoringPlotCoordinatesPayload(it) },
+      isAdHoc = model.isAdHoc,
       isPermanent = model.isPermanent,
       monitoringPlotId = model.monitoringPlotId,
       monitoringPlotName = "${model.monitoringPlotNumber}",
@@ -895,6 +897,7 @@ data class ObservationPlantingZoneResultsPayload(
 }
 
 data class ObservationResultsPayload(
+    val adHocPlot: ObservationMonitoringPlotResultsPayload?,
     val completedTime: Instant?,
     @Schema(
         description =
@@ -906,6 +909,7 @@ data class ObservationResultsPayload(
         description =
             "Percentage of plants of all species that were dead in this site's permanent " +
                 "monitoring plots.")
+    val isAdHoc: Boolean,
     val mortalityRate: Int,
     val observationId: ObservationId,
     @Schema(
@@ -924,8 +928,10 @@ data class ObservationResultsPayload(
   constructor(
       model: ObservationResultsModel
   ) : this(
+      adHocPlot = model.adHocPlot?.let { ObservationMonitoringPlotResultsPayload(it) },
       completedTime = model.completedTime,
       estimatedPlants = model.estimatedPlants,
+      isAdHoc = model.isAdHoc,
       mortalityRate = model.mortalityRate,
       observationId = model.observationId,
       plantingDensity = model.plantingDensity,
