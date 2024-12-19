@@ -1,16 +1,27 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}">
+    <script>
+        const sendToAllCheckbox = document.getElementById('sendToAll');
+        const recipientInput = document.getElementById('recipient');
+
+        sendToAllCheckbox.addEventListener('change', function() {
+            if (sendToAllCheckbox.checked) {
+                recipientInput.removeAttribute('required');
+            } else {
+                recipientInput.setAttribute('required', true);
+            }
+        });
+    </script>
+</head>
 <body>
-
-<span th:replace="~{/admin/header :: top}"/>
-
 <a href="/admin/">Home</a>
 
 <h2>Send Test Email</h2>
 
 <form method="POST" action="/admin/sendEmail" th:if="${isEmailEnabled}">
     <label for="recipient">Recipient</label>
-    <input type="email" name="recipient" id="recipient" />
+    <input type="email" name="recipient" id="recipient" required/>
     <input type="checkbox" id="sendToAll" name="sendToAll">
     <label for="sendToAll"> Send to all users</label>
     <br/>
