@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{/admin/header :: head}">
-    <script>
+    <script th:fragment="additionalScript">
         const sendToAllCheckbox = document.getElementById('sendToAll');
         const recipientInput = document.getElementById('recipient');
 
