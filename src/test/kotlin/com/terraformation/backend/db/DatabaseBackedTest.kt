@@ -1961,8 +1961,6 @@ abstract class DatabaseBackedTest {
           row.plotNumber
               ?: IdentifierGenerator(TestClock(), dslContext)
                   .generateNumericIdentifier(organizationId, NumericIdentifierType.PlotNumber),
-      name: String = row.name ?: "$plotNumber",
-      fullName: String = if (plantingSubzoneId != null) "Z1-1-$name" else name,
       insertHistory: Boolean = true,
   ): MonitoringPlotId {
     val rowWithDefaults =
@@ -1970,12 +1968,10 @@ abstract class DatabaseBackedTest {
             boundary = boundary,
             createdBy = createdBy,
             createdTime = createdTime,
-            fullName = fullName,
             isAdHoc = isAdHoc,
             isAvailable = isAvailable,
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
-            name = name,
             organizationId = organizationId,
             permanentCluster = permanentCluster,
             permanentClusterSubplot = permanentClusterSubplot,
@@ -2001,9 +1997,7 @@ abstract class DatabaseBackedTest {
   fun insertMonitoringPlotHistory(
       createdBy: UserId = lastMonitoringPlotsRow.createdBy!!,
       createdTime: Instant = lastMonitoringPlotsRow.createdTime!!,
-      fullName: String = lastMonitoringPlotsRow.fullName!!,
       monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
-      name: String = lastMonitoringPlotsRow.name!!,
       plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
       plantingSiteHistoryId: PlantingSiteHistoryId = inserted.plantingSiteHistoryId,
       plantingSubzoneId: PlantingSubzoneId? =
@@ -2015,9 +2009,7 @@ abstract class DatabaseBackedTest {
         MonitoringPlotHistoriesRow(
             createdBy = createdBy,
             createdTime = createdTime,
-            fullName = fullName,
             monitoringPlotId = monitoringPlotId,
-            name = name,
             plantingSiteHistoryId = plantingSiteHistoryId,
             plantingSiteId = plantingSiteId,
             plantingSubzoneHistoryId = plantingSubzoneHistoryId,

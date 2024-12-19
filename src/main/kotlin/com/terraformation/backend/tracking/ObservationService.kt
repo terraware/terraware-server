@@ -425,7 +425,6 @@ class ObservationService(
       observationType: ObservationType,
       plantingSiteId: PlantingSiteId,
       plants: Collection<RecordedPlantsRow>,
-      plotName: String,
       swCorner: Point,
   ): Pair<ObservationId, MonitoringPlotId> {
     requirePermissions { scheduleAdHocObservation(plantingSiteId) }
@@ -450,7 +449,7 @@ class ObservationService(
                   startDate = date,
                   state = ObservationState.Upcoming))
 
-      val plotId = plantingSiteStore.createAdHocMonitoringPlot(plotName, plantingSiteId, swCorner)
+      val plotId = plantingSiteStore.createAdHocMonitoringPlot(plantingSiteId, swCorner)
       observationStore.addAdHocPlotToObservation(observationId, plotId)
 
       systemUser.run { observationStore.recordObservationStart(observationId) }

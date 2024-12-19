@@ -683,8 +683,6 @@ class PlantingZoneModelTest {
         id = MonitoringPlotId(id.toLong()),
         isAdHoc = false,
         isAvailable = isAvailable,
-        fullName = "name",
-        name = "name",
         permanentCluster = permanentCluster,
         permanentClusterSubplot = if (permanentCluster != null) 1 else null,
         plotNumber = id.toLong(),
