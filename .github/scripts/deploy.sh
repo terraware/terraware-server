@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eo pipefail
 
 mkdir -p ~/.ssh
 echo "$SSH_KEY" > ~/.ssh/key
