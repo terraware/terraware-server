@@ -7,7 +7,7 @@
 
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
-                <mj-text mj-class="text-body03">
+                <mj-text mj-class="text-body03" padding-top="24px">
                     ${strings("notification.documentsUpdate.email.body.1")}
                 </mj-text>
                 <mj-text mj-class="text-body03">
@@ -19,7 +19,7 @@
                 <mj-text mj-class="text-body03">
                     ${strings("notification.documentsUpdate.email.body.4")}
                 </mj-text>
-                <mj-text mj-class="text-body03">
+                <mj-text mj-class="text-body03" padding-bottom="24px">
                     ${strings("notification.documentsUpdate.email.body.5")}
                 </mj-text>
                 <mj-include path="../manageSettings.ftlh.mjml"/>
