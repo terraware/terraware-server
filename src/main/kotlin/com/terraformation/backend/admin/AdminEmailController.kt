@@ -40,7 +40,7 @@ class AdminEmailController(
   fun sendEmail(
       @NotBlank @RequestParam emailName: String,
       @RequestParam recipient: String?,
-      @RequestParam sendToAll: Boolean,
+      @RequestParam sendToAll: Boolean?,
       redirectAttributes: RedirectAttributes,
   ): String {
 
@@ -51,7 +51,7 @@ class AdminEmailController(
         }
 
     try {
-      if (sendToAll) {
+      if (sendToAll == true) {
         emailService.sendAllUsersNotification(
             emailNameResult,
             false,
