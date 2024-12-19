@@ -1,22 +1,8 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{/admin/header :: head}">
-    <script th:fragment="additionalScript">
-        const sendToAllCheckbox = document.getElementById('sendToAll');
-        const recipientInput = document.getElementById('recipient');
 
-        sendToAllCheckbox.addEventListener('change', function() {
-            if (sendToAllCheckbox.checked) {
-                recipientInput.removeAttribute('required');
-                recipientInput.disabled = true;
-            } else {
-                recipientInput.setAttribute('required', true);
-                recipientInput.disabled = false;
-            }
-        });
-    </script>
-</head>
 <body>
+<span th:replace="~{/admin/header :: top}"/>
 <a href="/admin/">Home</a>
 
 <h2>Send Test Email</h2>
@@ -38,5 +24,19 @@
     <h3>The system is not configured to send emails.</h3>
 </div>
 
+<script>
+    const sendToAllCheckbox = document.getElementById('sendToAll');
+    const recipientInput = document.getElementById('recipient');
+
+    sendToAllCheckbox.addEventListener('change', function() {
+        if (sendToAllCheckbox.checked) {
+            recipientInput.removeAttribute('required');
+            recipientInput.disabled = true;
+        } else {
+            recipientInput.setAttribute('required', true);
+            recipientInput.disabled = false;
+        }
+    });
+</script>
 </body>
 </html>
