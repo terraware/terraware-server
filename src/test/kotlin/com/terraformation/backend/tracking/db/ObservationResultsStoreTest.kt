@@ -21,6 +21,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
+import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
@@ -32,6 +33,9 @@ import java.math.BigDecimal
 import java.nio.file.NoSuchFileException
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -190,6 +194,11 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `returns plot information`() {
+      // Ad-hoc observations are not returned
+      insertMonitoringPlot(isAdHoc = true)
+      val adHocObservationId = insertObservation(completedTime = Instant.EPOCH, isAdHoc = true)
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+
       insertPlantingZone()
       insertPlantingSubzone()
       insertMonitoringPlot()
@@ -197,12 +206,45 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
+      assertNull(results.find { it.observationId == adHocObservationId }, "No ad-hoc observation")
+
+      val observationResults = results.first()
+      assertEquals(inserted.observationId, observationResults.observationId, "Observation ID")
+      assertFalse(observationResults.isAdHoc, "Observation Is Ad Hoc")
 
       val plotResults =
-          results.first().plantingZones.first().plantingSubzones.first().monitoringPlots.first()
-
+          observationResults.plantingZones.first().plantingSubzones.first().monitoringPlots.first()
       assertEquals(inserted.monitoringPlotId, plotResults.monitoringPlotId, "Plot ID")
-      assertEquals(1L, plotResults.monitoringPlotNumber, "Plot number")
+      assertEquals(2L, plotResults.monitoringPlotNumber, "Plot number")
+    }
+
+    @Test
+    fun `returns ad-hoc observation and plot information`() {
+      // Assigned observation is omitted
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertMonitoringPlot()
+      val observationId = insertObservation(completedTime = Instant.EPOCH)
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+
+      insertMonitoringPlot(plantingSubzoneId = null)
+      insertObservation(completedTime = Instant.EPOCH, isAdHoc = true)
+      insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+
+      val results = resultsStore.fetchByPlantingSiteId(plantingSiteId, isAdHoc = true)
+      assertNull(results.find { it.observationId == observationId }, "No assigned observation")
+
+      val observationResults = results.first()
+      assertEquals(inserted.observationId, observationResults.observationId, "Observation ID")
+      assertTrue(observationResults.isAdHoc, "Observation Is Ad Hoc")
+      assertEquals(
+          emptyList<ObservationPlantingZoneResultsModel>(),
+          observationResults.plantingZones,
+          "No zone in observation")
+
+      val plotResults = observationResults.adHocPlot!!
+      assertEquals(inserted.monitoringPlotId, plotResults.monitoringPlotId, "Plot ID")
+      assertEquals(2L, plotResults.monitoringPlotNumber, "Plot number")
     }
 
     @Test
