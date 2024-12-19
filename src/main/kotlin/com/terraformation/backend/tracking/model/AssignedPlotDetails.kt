@@ -16,7 +16,7 @@ data class AssignedPlotDetails(
     val isFirstObservation: Boolean,
     val plantingSubzoneId: PlantingSubzoneId,
     val plantingSubzoneName: String,
-    val plotName: String,
+    val plotNumber: Long,
     val sizeMeters: Int,
 ) {
   fun gpxWaypoints(messages: Messages): List<GpxWaypoint> {
@@ -24,22 +24,22 @@ data class AssignedPlotDetails(
         GpxWaypoint(
             boundary.coordinates[SOUTHWEST].y,
             boundary.coordinates[SOUTHWEST].x,
-            messages.monitoringPlotSouthwestCorner(plotName),
+            messages.monitoringPlotSouthwestCorner(plotNumber),
         ),
         GpxWaypoint(
             boundary.coordinates[SOUTHEAST].y,
             boundary.coordinates[SOUTHEAST].x,
-            messages.monitoringPlotSoutheastCorner(plotName),
+            messages.monitoringPlotSoutheastCorner(plotNumber),
         ),
         GpxWaypoint(
             boundary.coordinates[NORTHEAST].y,
             boundary.coordinates[NORTHEAST].x,
-            messages.monitoringPlotNortheastCorner(plotName),
+            messages.monitoringPlotNortheastCorner(plotNumber),
         ),
         GpxWaypoint(
             boundary.coordinates[NORTHWEST].y,
             boundary.coordinates[NORTHWEST].x,
-            messages.monitoringPlotNorthwestCorner(plotName),
+            messages.monitoringPlotNorthwestCorner(plotNumber),
         ),
     )
   }
