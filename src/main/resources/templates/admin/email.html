@@ -10,7 +10,9 @@
 
 <form method="POST" action="/admin/sendEmail" th:if="${isEmailEnabled}">
     <label for="recipient">Recipient</label>
-    <input type="email" name="recipient" id="recipient" required />
+    <input type="email" name="recipient" id="recipient" />
+    <input type="checkbox" id="sendToAll">
+    <label for="sendToAll"> Send to all users</label>
     <br/>
     <label for="emailName">Email to Send</label>
     <select name="emailName" id="emailName">

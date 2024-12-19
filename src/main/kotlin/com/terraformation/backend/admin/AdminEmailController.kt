@@ -38,31 +38,53 @@ class AdminEmailController(
 
   @PostMapping("/sendEmail")
   fun sendTestEmail(
-      @NotBlank @RequestParam emailName: String,
+      @RequestParam emailName: String,
       @NotBlank @RequestParam recipient: String,
+      @RequestParam sendToAll: Boolean,
       redirectAttributes: RedirectAttributes,
   ): String {
-    val user = userStore.fetchByEmail(recipient) ?: throw UserNotFoundForEmailException(recipient)
+    if (sendToAll) {
+      try {
+        emailService.sendAllUsersNotification(
+            when (emailName) {
+              "DocumentsUpdate" -> DocumentsUpdate(config)
+              else -> throw IllegalArgumentException("Invalid test email name $emailName")
+            },
+            false,
+        )
 
-    try {
-      emailService.sendUserNotification(
-          user,
-          when (emailName) {
-            "DocumentsUpdate" -> DocumentsUpdate(config)
-            else -> throw IllegalArgumentException("Invalid test email name $emailName")
-          },
-          false,
-      )
+        redirectAttributes.successMessage =
+            if (config.email.enabled) {
+              "Test email sent."
+            } else {
+              "Email sending is currently disabled."
+            }
+      } catch (e: Exception) {
+        log.error("Failed to send alert", e)
+        redirectAttributes.failureMessage = "Failed to send test email."
+      }
+    } else {
+      val user = userStore.fetchByEmail(recipient) ?: throw UserNotFoundForEmailException(recipient)
+      try {
+        emailService.sendUserNotification(
+            user,
+            when (emailName) {
+              "DocumentsUpdate" -> DocumentsUpdate(config)
+              else -> throw IllegalArgumentException("Invalid test email name $emailName")
+            },
+            false,
+        )
 
-      redirectAttributes.successMessage =
-          if (config.email.enabled) {
-            "Test email sent."
-          } else {
-            "Email sending is currently disabled."
-          }
-    } catch (e: Exception) {
-      log.error("Failed to send alert", e)
-      redirectAttributes.failureMessage = "Failed to send test email."
+        redirectAttributes.successMessage =
+            if (config.email.enabled) {
+              "Test email sent."
+            } else {
+              "Email sending is currently disabled."
+            }
+      } catch (e: Exception) {
+        log.error("Failed to send alert", e)
+        redirectAttributes.failureMessage = "Failed to send test email."
+      }
     }
 
     return "redirect:/admin/email"
