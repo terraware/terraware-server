@@ -176,7 +176,7 @@ class ObservationsController(
 
   @GetMapping("/results/summaries")
   @Operation(summary = "Gets the rollup observation summaries of a planting site")
-  fun getPlantingSiteObservationSummaries(
+  fun listObservationSummaries(
       @RequestParam plantingSiteId: PlantingSiteId,
       @Parameter(
           description =
@@ -184,9 +184,9 @@ class ObservationsController(
                   "observations completion time, newest first, so setting this to 1 will return the " +
                   "summaries including the most recently completed observation.")
       limit: Int? = null,
-  ): GetPlantingSiteObservationSummariesPayload {
+  ): ListObservationSummariesResponsePayload {
     val results = observationResultsStore.fetchSummariesForPlantingSite(plantingSiteId, limit)
-    return GetPlantingSiteObservationSummariesPayload(
+    return ListObservationSummariesResponsePayload(
         results.map { PlantingSiteObservationSummaryPayload(it) })
   }
 
@@ -465,6 +465,30 @@ class ObservationsController(
     return CompleteAdHocObservationResponsePayload(observationId, plotId)
   }
 
+  @GetMapping("/adHoc/results")
+  @Operation(summary = "Gets a list of the results of ad-hoc observations.")
+  fun listAdHocObservationResults(
+      @RequestParam organizationId: OrganizationId?,
+      @RequestParam plantingSiteId: PlantingSiteId?,
+      @Parameter(
+          description =
+              "Maximum number of results to return. Results are always returned in order of " +
+                  "completion time, newest first, so setting this to 1 will return the results " +
+                  "of the most recently completed observation.")
+      limit: Int? = null,
+  ): ListAdHocObservationResultsResponsePayload {
+    val results =
+        when {
+          plantingSiteId != null ->
+              observationResultsStore.fetchByPlantingSiteId(plantingSiteId, limit, isAdHoc = true)
+          organizationId != null ->
+              observationResultsStore.fetchByOrganizationId(organizationId, limit, isAdHoc = true)
+          else -> throw BadRequestException("Must specify a search criterion")
+        }
+
+    return ListAdHocObservationResultsResponsePayload(results.map { ObservationResultsPayload(it) })
+  }
+
   @Operation(summary = "Schedules a new observation.")
   @PostMapping
   fun scheduleObservation(
@@ -554,10 +578,6 @@ data class ObservationPayload(
 
 data class GetObservationResponsePayload(val observation: ObservationPayload) :
     SuccessResponsePayload
-
-data class ListAdHocObservationsResponsePayload(
-    val observations: List<ObservationPayload>,
-) : SuccessResponsePayload
 
 data class ListObservationsResponsePayload(
     val observations: List<ObservationPayload>,
@@ -711,6 +731,7 @@ data class ObservationMonitoringPlotResultsPayload(
     @ArraySchema(
         arraySchema = Schema(description = "Observed coordinates, if any, up to one per position."))
     val coordinates: List<ObservationMonitoringPlotCoordinatesPayload>,
+    val isAdHoc: Boolean,
     @Schema(
         description =
             "True if this was a permanent monitoring plot in this observation. Clients should " +
@@ -760,6 +781,7 @@ data class ObservationMonitoringPlotResultsPayload(
       claimedByUserId = model.claimedByUserId,
       completedTime = model.completedTime,
       coordinates = model.coordinates.map { ObservationMonitoringPlotCoordinatesPayload(it) },
+      isAdHoc = model.isAdHoc,
       isPermanent = model.isPermanent,
       monitoringPlotId = model.monitoringPlotId,
       monitoringPlotName = "${model.monitoringPlotNumber}",
@@ -875,6 +897,7 @@ data class ObservationPlantingZoneResultsPayload(
 }
 
 data class ObservationResultsPayload(
+    val adHocPlot: ObservationMonitoringPlotResultsPayload?,
     val completedTime: Instant?,
     @Schema(
         description =
@@ -886,6 +909,7 @@ data class ObservationResultsPayload(
         description =
             "Percentage of plants of all species that were dead in this site's permanent " +
                 "monitoring plots.")
+    val isAdHoc: Boolean,
     val mortalityRate: Int,
     val observationId: ObservationId,
     @Schema(
@@ -904,8 +928,10 @@ data class ObservationResultsPayload(
   constructor(
       model: ObservationResultsModel
   ) : this(
+      adHocPlot = model.adHocPlot?.let { ObservationMonitoringPlotResultsPayload(it) },
       completedTime = model.completedTime,
       estimatedPlants = model.estimatedPlants,
+      isAdHoc = model.isAdHoc,
       mortalityRate = model.mortalityRate,
       observationId = model.observationId,
       plantingDensity = model.plantingDensity,
@@ -1013,6 +1039,11 @@ data class CompleteAdHocObservationRequestPayload(
     val swCorner: Point,
 )
 
+data class CompleteAdHocObservationResponsePayload(
+    val observationId: ObservationId,
+    val plotId: MonitoringPlotId
+) : SuccessResponsePayload
+
 data class CompletePlotObservationRequestPayload(
     val conditions: Set<ObservableCondition>,
     val notes: String?,
@@ -1021,9 +1052,45 @@ data class CompletePlotObservationRequestPayload(
     val plants: List<RecordedPlantPayload>,
 )
 
+data class GetObservationResultsResponsePayload(val observation: ObservationResultsPayload) :
+    SuccessResponsePayload
+
+data class ListAdHocObservationsResponsePayload(
+    val observations: List<ObservationPayload>,
+) : SuccessResponsePayload
+
+data class ListAdHocObservationResultsResponsePayload(
+    val observations: List<ObservationResultsPayload>
+) : SuccessResponsePayload
+
 data class ListAssignedPlotsResponsePayload(
     val plots: List<AssignedPlotPayload>,
 ) : SuccessResponsePayload
+
+data class ListObservationResultsResponsePayload(
+    val observations: List<ObservationResultsPayload>
+) : SuccessResponsePayload
+
+data class ListObservationSummariesResponsePayload(
+    @Schema(
+        description =
+            "History of rollup summaries of planting site observations in order of observation " +
+                "time, latest first. ")
+    val summaries: List<PlantingSiteObservationSummaryPayload>,
+) : SuccessResponsePayload
+
+data class MergeOtherSpeciesRequestPayload(
+    @Schema(
+        description =
+            "Name of the species of certainty Other whose recorded plants should be updated to " +
+                "refer to the known species.")
+    val otherSpeciesName: String,
+    @Schema(
+        description =
+            "ID of the existing species that the Other species' recorded plants should be merged " +
+                "into.")
+    val speciesId: SpeciesId,
+)
 
 data class ReplaceObservationPlotRequestPayload(
     val duration: ReplacementDuration,
@@ -1051,40 +1118,16 @@ data class ReplaceObservationPlotResponsePayload(
   )
 }
 
-data class UploadPlotPhotoRequestPayload(
-    val gpsCoordinates: Point,
-    val position: ObservationPlotPosition,
+data class RescheduleObservationRequestPayload(
+    @Schema(
+        description =
+            "The end date for this observation, should be limited to 2 months from the start date .")
+    val endDate: LocalDate,
+    @Schema(
+        description =
+            "The start date for this observation, can be up to a year from the date this schedule request occurs on.")
+    val startDate: LocalDate,
 )
-
-data class UploadPlotPhotoResponsePayload(val fileId: FileId) : SuccessResponsePayload
-
-data class GetObservationResultsResponsePayload(val observation: ObservationResultsPayload) :
-    SuccessResponsePayload
-
-data class ListObservationResultsResponsePayload(
-    val observations: List<ObservationResultsPayload>
-) : SuccessResponsePayload
-
-data class MergeOtherSpeciesRequestPayload(
-    @Schema(
-        description =
-            "Name of the species of certainty Other whose recorded plants should be updated to " +
-                "refer to the known species.")
-    val otherSpeciesName: String,
-    @Schema(
-        description =
-            "ID of the existing species that the Other species' recorded plants should be merged " +
-                "into.")
-    val speciesId: SpeciesId,
-)
-
-data class GetPlantingSiteObservationSummariesPayload(
-    @Schema(
-        description =
-            "History of rollup summaries of planting site observations in order of observation " +
-                "time, latest first. ")
-    val summaries: List<PlantingSiteObservationSummaryPayload>,
-) : SuccessResponsePayload
 
 data class ScheduleObservationRequestPayload(
     @Schema(
@@ -1116,26 +1159,17 @@ data class ScheduleObservationRequestPayload(
           state = ObservationState.Upcoming)
 }
 
-data class CompleteAdHocObservationResponsePayload(
-    val observationId: ObservationId,
-    val plotId: MonitoringPlotId
-) : SuccessResponsePayload
-
 data class ScheduleObservationResponsePayload(val id: ObservationId) : SuccessResponsePayload
-
-data class RescheduleObservationRequestPayload(
-    @Schema(
-        description =
-            "The end date for this observation, should be limited to 2 months from the start date .")
-    val endDate: LocalDate,
-    @Schema(
-        description =
-            "The start date for this observation, can be up to a year from the date this schedule request occurs on.")
-    val startDate: LocalDate,
-)
 
 data class UpdatePlotObservationRequestPayload(
     @ArraySchema(
         arraySchema = Schema(description = "Observed coordinates, if any, up to one per position."))
     val coordinates: List<ObservationMonitoringPlotCoordinatesPayload>,
 )
+
+data class UploadPlotPhotoRequestPayload(
+    val gpsCoordinates: Point,
+    val position: ObservationPlotPosition,
+)
+
+data class UploadPlotPhotoResponsePayload(val fileId: FileId) : SuccessResponsePayload
