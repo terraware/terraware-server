@@ -1,3 +1,4 @@
+79b9f0ff7d6 Implemented Ad-Hoc observation results API and store functions (#2714)
 b5c43d317c0 SW-6387 Include filenames in upload failure reports (#2718)
 72f40da2827 SW-6387 Truncate document filenames (#2717)
 5b3bd75b2a9 SW-6348 Remove monitoring plot names (#2706)
