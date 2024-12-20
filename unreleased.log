@@ -1,2 +1,3 @@
+72f40da2827 SW-6387 Truncate document filenames (#2717)
 5b3bd75b2a9 SW-6348 Remove monitoring plot names (#2706)
 c55c1b56feb SW-6348 Return plot numbers as names in API (#2705)
