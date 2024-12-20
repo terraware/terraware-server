@@ -17,6 +17,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
@@ -133,11 +134,17 @@ interface BaseMonitoringResult {
    */
   val mortalityRate: Int
 
+  /** Standard deviation of mortality rates of plots */
+  val mortalityRateStdDev: Double
+
   /**
    * Whether planting has completed. Planting is considered completed if all subzones in the region
    * have completed planting.
    */
   val plantingCompleted: Boolean
+
+  /** Standard deviation of planting density of plots */
+  val plantingDensityStdDev: Double
 
   /**
    * Estimated planting density for the region based on the observed planting densities of
@@ -151,9 +158,11 @@ data class ObservationPlantingSubzoneResultsModel(
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
     override val mortalityRate: Int,
+    override val mortalityRateStdDev: Double,
     val monitoringPlots: List<ObservationMonitoringPlotResultsModel>,
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int?,
+    override val plantingDensityStdDev: Double,
     val plantingSubzoneId: PlantingSubzoneId,
     /** List of species result used for this rollup */
     val species: List<ObservationSpeciesResultsModel>,
@@ -175,8 +184,10 @@ data class ObservationPlantingZoneResultsModel(
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
     override val mortalityRate: Int,
+    override val mortalityRateStdDev: Double,
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int?,
+    override val plantingDensityStdDev: Double,
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
     val plantingZoneId: PlantingZoneId,
     val species: List<ObservationSpeciesResultsModel>,
@@ -199,9 +210,11 @@ data class ObservationResultsModel(
     override val estimatedPlants: Int?,
     val isAdHoc: Boolean,
     override val mortalityRate: Int,
+    override val mortalityRateStdDev: Double,
     val observationId: ObservationId,
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int?,
+    override val plantingDensityStdDev: Double,
     val plantingSiteId: PlantingSiteId,
     val plantingZones: List<ObservationPlantingZoneResultsModel>,
     val species: List<ObservationSpeciesResultsModel>,
@@ -218,8 +231,10 @@ data class ObservationPlantingZoneRollupResultsModel(
     /** Time when the latest observation in this rollup was completed. */
     val latestCompletedTime: Instant,
     override val mortalityRate: Int,
+    override val mortalityRateStdDev: Double,
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int?,
+    override val plantingDensityStdDev: Double,
     /** List of subzone observation results used for this rollup */
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
     val plantingZoneId: PlantingZoneId,
@@ -264,6 +279,8 @@ data class ObservationPlantingZoneRollupResultsModel(
           } else {
             null
           }
+      val plantingDensityStdDev =
+          monitoringPlots.map { it.plantingDensity }.calculateStandardDeviation()
 
       val estimatedPlants =
           if (plantingDensity != null) {
@@ -273,6 +290,8 @@ data class ObservationPlantingZoneRollupResultsModel(
           }
 
       val mortalityRate = species.calculateMortalityRate()
+      val mortalityRateStdDev =
+          monitoringPlots.mapNotNull { it.mortalityRate }.calculateStandardDeviation()
 
       return ObservationPlantingZoneRollupResultsModel(
           areaHa = areaHa,
@@ -280,8 +299,10 @@ data class ObservationPlantingZoneRollupResultsModel(
           estimatedPlants = estimatedPlants?.roundToInt(),
           latestCompletedTime = nonNullSubzoneResults.maxOf { it.completedTime!! },
           mortalityRate = mortalityRate,
+          mortalityRateStdDev = mortalityRateStdDev,
           plantingCompleted = plantingCompleted,
           plantingDensity = plantingDensity,
+          plantingDensityStdDev = plantingDensityStdDev,
           plantingSubzones = nonNullSubzoneResults,
           plantingZoneId = plantingZoneId,
           species = species,
@@ -299,8 +320,10 @@ data class ObservationRollupResultsModel(
     /** Time when the latest observation in this rollup was completed. */
     val latestCompletedTime: Instant,
     override val mortalityRate: Int,
+    override val mortalityRateStdDev: Double,
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int?,
+    override val plantingDensityStdDev: Double,
     val plantingSiteId: PlantingSiteId,
     /** List of subzone observation results used for this rollup */
     val plantingZones: List<ObservationPlantingZoneRollupResultsModel>,
@@ -346,6 +369,9 @@ data class ObservationRollupResultsModel(
             null
           }
 
+      val plantingDensityStdDev =
+          monitoringPlots.map { it.plantingDensity }.calculateStandardDeviation()
+
       val estimatedPlants =
           if (plantingDensity != null) {
             nonNullZoneResults.sumOf { it.estimatedPlants ?: 0 }
@@ -354,14 +380,18 @@ data class ObservationRollupResultsModel(
           }
 
       val mortalityRate = species.calculateMortalityRate()
+      val mortalityRateStdDev =
+          monitoringPlots.mapNotNull { it.mortalityRate }.calculateStandardDeviation()
 
       return ObservationRollupResultsModel(
           earliestCompletedTime = nonNullZoneResults.minOf { it.earliestCompletedTime },
           estimatedPlants = estimatedPlants,
           latestCompletedTime = nonNullZoneResults.maxOf { it.latestCompletedTime },
           mortalityRate = mortalityRate,
+          mortalityRateStdDev = mortalityRateStdDev,
           plantingCompleted = plantingCompleted,
           plantingDensity = plantingDensity,
+          plantingDensityStdDev = plantingDensityStdDev,
           plantingSiteId = plantingSiteId,
           plantingZones = nonNullZoneResults,
           species = species,
@@ -422,4 +452,17 @@ fun List<ObservationSpeciesResultsModel>.unionSpecies(
             groupedSpecies.sumOf { it.totalPlants },
         )
       }
+}
+
+/** Calculate standard deviation */
+fun <T : Number> Collection<T>.calculateStandardDeviation(): Double {
+  if (this.size <= 1) {
+    return 0.0
+  }
+
+  val mean = this.sumOf { it.toDouble() }
+  val sumSquaredDifferences = this.sumOf { (it.toDouble() - mean) * (it.toDouble() - mean) }
+  val variance = sumSquaredDifferences / (this.size - 1).toDouble()
+
+  return sqrt(variance)
 }
