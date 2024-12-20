@@ -43,10 +43,17 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   private val contentType = MediaType.APPLICATION_OCTET_STREAM
-  private val description = "description"
-  private val googleDriveFolder = "https://drive.google.com/drive/folders/abc"
   private val inputStream = byteArrayOf(1, 2, 3).inputStream()
   private val originalName = "file.doc"
+
+  private val fileNaming = "xyz"
+
+  private val googleDriveFolder = "https://drive.google.com/drive/folders/abc"
+  private val googleDriveId = "drive"
+  private val googleDriveNewFolderId = "xyzzy"
+  private val googleDriveNewFolderUrl =
+      URI("https://drive.google.com/drive/$googleDriveNewFolderId")
+  private val googleDriveParentFolderId = "parent"
 
   private lateinit var deliverableId: DeliverableId
   private lateinit var projectId: ProjectId
@@ -99,77 +106,64 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates new Google Drive folder if none exists and deliverable is not sensitive`() {
-      val parentFolderId = "parent"
-      val driveId = "drive"
-      val fileNaming = "xyz"
-      val newFolderId = "xyzzy"
-      val newFolderUrl = URI("https://drive.google.com/drive/$newFolderId")
-
       insertProjectAcceleratorDetails(fileNaming = fileNaming)
 
-      every { config.accelerator } returns
-          TerrawareServerConfig.AcceleratorConfig(applicationGoogleFolderId = parentFolderId)
-      every { googleDriveWriter.findOrCreateFolders(driveId, parentFolderId, any()) } returns
-          newFolderId
-      every { googleDriveWriter.getDriveIdForFile(any()) } returns driveId
-      every { googleDriveWriter.getFileIdForFolderUrl(newFolderUrl) } returns newFolderId
-      every { googleDriveWriter.shareFile(newFolderId) } returns newFolderUrl
-      every {
-        googleDriveWriter.uploadFile(
-            newFolderId, any(), any(), any(), driveId, any(), any(), any(), any())
-      } returns "file"
+      configureMockGoogleDrive()
 
       receiveDocument()
 
       verify(exactly = 1) {
         googleDriveWriter.findOrCreateFolders(
-            driveId, parentFolderId, listOf("$fileNaming [Internal]"))
+            googleDriveId, googleDriveParentFolderId, listOf("$fileNaming [Internal]"))
       }
 
       assertEquals(
-          newFolderUrl,
+          googleDriveNewFolderUrl,
           projectAcceleratorDetailsDao.fetchOneByProjectId(projectId)?.googleFolderUrl,
           "Google folder URL")
     }
 
     @Test
-    fun `creates new Google Drive folder for new application`() {
-      val parentFolderId = "parent"
-      val driveId = "drive"
-      val fileNaming = "xyz"
-      val newFolderId = "xyzzy"
-      val newFolderUrl = URI("https://drive.google.com/drive/$newFolderId")
+    fun `truncates filename if it is too long`() {
+      insertProjectAcceleratorDetails(fileNaming = fileNaming)
 
+      configureMockGoogleDrive()
+
+      val description = "x".repeat(SubmissionService.MAX_FILENAME_LENGTH * 2)
+      receiveDocument(description = description)
+
+      val expectedFileName =
+          "Deliverable 1_1970-01-01_${fileNaming}_$description"
+              .take(SubmissionService.MAX_FILENAME_LENGTH - 4) + ".doc"
+
+      verify {
+        googleDriveWriter.uploadFile(
+            any(), expectedFileName, any(), any(), any(), any(), any(), any(), any())
+      }
+    }
+
+    @Test
+    fun `creates new Google Drive folder for new application`() {
       insertApplication(internalName = fileNaming)
 
-      every { config.accelerator } returns
-          TerrawareServerConfig.AcceleratorConfig(applicationGoogleFolderId = parentFolderId)
-      every { googleDriveWriter.findOrCreateFolders(driveId, parentFolderId, any()) } returns
-          newFolderId
-      every { googleDriveWriter.getDriveIdForFile(any()) } returns driveId
-      every { googleDriveWriter.getFileIdForFolderUrl(newFolderUrl) } returns newFolderId
-      every { googleDriveWriter.shareFile(newFolderId) } returns newFolderUrl
-      every {
-        googleDriveWriter.uploadFile(
-            newFolderId, any(), any(), any(), driveId, any(), any(), any(), any())
-      } returns "file"
+      configureMockGoogleDrive()
 
       receiveDocument()
 
       verify(exactly = 1) {
         googleDriveWriter.findOrCreateFolders(
-            driveId, parentFolderId, listOf("$fileNaming [Internal]"))
+            googleDriveId, googleDriveParentFolderId, listOf("$fileNaming [Internal]"))
       }
 
       assertEquals(
-          newFolderUrl,
+          googleDriveNewFolderUrl,
           projectAcceleratorDetailsDao.fetchOneByProjectId(projectId)?.googleFolderUrl,
           "Google folder URL")
     }
 
     @Test
     fun `publishes event and throws exception if upload to document store fails`() {
-      insertProjectAcceleratorDetails(fileNaming = "xyz", googleFolderUrl = googleDriveFolder)
+      insertProjectAcceleratorDetails(fileNaming = fileNaming, googleFolderUrl = googleDriveFolder)
 
       val exception = IllegalStateException("Failure")
 
@@ -209,8 +203,34 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
               deliverableId, projectId, reason, documentStore, originalName, folder, cause))
     }
 
-    private fun receiveDocument(): SubmissionDocumentId =
+    private fun receiveDocument(description: String = "description"): SubmissionDocumentId =
         service.receiveDocument(
             inputStream, originalName, projectId, deliverableId, description, contentType)
+  }
+
+  private fun configureMockGoogleDrive() {
+    every { config.accelerator } returns
+        TerrawareServerConfig.AcceleratorConfig(
+            applicationGoogleFolderId = googleDriveParentFolderId)
+    every {
+      googleDriveWriter.findOrCreateFolders(googleDriveId, googleDriveParentFolderId, any())
+    } returns googleDriveNewFolderId
+    every { googleDriveWriter.getDriveIdForFile(any()) } returns googleDriveId
+    every { googleDriveWriter.getFileIdForFolderUrl(googleDriveNewFolderUrl) } returns
+        googleDriveNewFolderId
+    every { googleDriveWriter.shareFile(googleDriveNewFolderId) } returns googleDriveNewFolderUrl
+    every {
+      googleDriveWriter.uploadFile(
+          googleDriveNewFolderId,
+          any(),
+          any(),
+          any(),
+          googleDriveId,
+          any(),
+          any(),
+          any(),
+          any(),
+      )
+    } returns "file"
   }
 }
