@@ -459,8 +459,8 @@ fun <T : Number> Collection<T>.calculateStandardDeviation(): Double {
   if (this.size <= 1) {
     return 0.0
   }
-
-  val mean = this.sumOf { it.toDouble() }
+  
+  val mean = this.map { it.toDouble() }.average()
   val sumSquaredDifferences = this.sumOf { (it.toDouble() - mean) * (it.toDouble() - mean) }
   val variance = sumSquaredDifferences / (this.size - 1).toDouble()
 
