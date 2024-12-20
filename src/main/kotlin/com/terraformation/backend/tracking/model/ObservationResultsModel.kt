@@ -155,11 +155,19 @@ data class ObservationPlantingSubzoneResultsModel(
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int?,
     val plantingSubzoneId: PlantingSubzoneId,
+    /** List of species result used for this rollup */
+    val species: List<ObservationSpeciesResultsModel>,
     /**
      * Total number of plants recorded. Includes all plants, regardless of live/dead status or
      * species.
      */
     val totalPlants: Int,
+    /**
+     * Total number of species observed, not counting dead plants. Includes plants with Known and
+     * Other certainties. In the case of Other, each distinct user-supplied species name is counted
+     * as a separate species for purposes of this total.
+     */
+    val totalSpecies: Int,
 ) : BaseMonitoringResult
 
 data class ObservationPlantingZoneResultsModel(
@@ -215,11 +223,14 @@ data class ObservationPlantingZoneRollupResultsModel(
     /** List of subzone observation results used for this rollup */
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
     val plantingZoneId: PlantingZoneId,
+    /** List of species result used for this rollup */
+    val species: List<ObservationSpeciesResultsModel>,
     /**
      * Total number of plants recorded. Includes all plants, regardless of live/dead status or
      * species in this observation summary.
      */
     val totalPlants: Int,
+    val totalSpecies: Int,
 ) : BaseMonitoringResult {
   companion object {
     fun of(
@@ -236,7 +247,16 @@ data class ObservationPlantingZoneRollupResultsModel(
       val plantingCompleted = subzoneResults.values.none { it == null || !it.plantingCompleted }
 
       val monitoringPlots = nonNullSubzoneResults.flatMap { it.monitoringPlots }
-      val monitoringPlotsSpecies = monitoringPlots.flatMap { it.species }
+      val species =
+          nonNullSubzoneResults
+              .map { it.species }
+              .reduce { acc, species -> acc.unionSpecies(species) }
+
+      val totalLiveSpeciesExceptUnknown =
+          species.count {
+            it.certainty != RecordedSpeciesCertainty.Unknown &&
+                (it.totalLive + it.totalExisting) > 0
+          }
 
       val plantingDensity =
           if (plantingCompleted) {
@@ -252,7 +272,7 @@ data class ObservationPlantingZoneRollupResultsModel(
             null
           }
 
-      val mortalityRate = monitoringPlotsSpecies.calculateMortalityRate()
+      val mortalityRate = species.calculateMortalityRate()
 
       return ObservationPlantingZoneRollupResultsModel(
           areaHa = areaHa,
@@ -264,7 +284,9 @@ data class ObservationPlantingZoneRollupResultsModel(
           plantingDensity = plantingDensity,
           plantingSubzones = nonNullSubzoneResults,
           plantingZoneId = plantingZoneId,
-          totalPlants = monitoringPlotsSpecies.sumOf { it.totalLive + it.totalDead },
+          species = species,
+          totalPlants = species.sumOf { it.totalLive + it.totalDead },
+          totalSpecies = totalLiveSpeciesExceptUnknown,
       )
     }
   }
@@ -282,6 +304,14 @@ data class ObservationRollupResultsModel(
     val plantingSiteId: PlantingSiteId,
     /** List of subzone observation results used for this rollup */
     val plantingZones: List<ObservationPlantingZoneRollupResultsModel>,
+    /** List of species result used for this rollup */
+    val species: List<ObservationSpeciesResultsModel>,
+    /**
+     * Total number of plants recorded. Includes all plants, regardless of live/dead status or
+     * species in this observation summary.
+     */
+    val totalPlants: Int,
+    val totalSpecies: Int,
 ) : BaseMonitoringResult {
   companion object {
     fun of(
@@ -298,9 +328,16 @@ data class ObservationRollupResultsModel(
 
       val monitoringPlots =
           nonNullZoneResults.flatMap { zone ->
-            zone.plantingSubzones.flatMap { it?.monitoringPlots ?: emptyList() }
+            zone.plantingSubzones.flatMap { it.monitoringPlots }
           }
-      val monitoringPlotsSpecies = monitoringPlots.flatMap { it.species }
+      val species =
+          nonNullZoneResults.map { it.species }.reduce { acc, species -> acc.unionSpecies(species) }
+
+      val totalLiveSpeciesExceptUnknown =
+          species.count {
+            it.certainty != RecordedSpeciesCertainty.Unknown &&
+                (it.totalLive + it.totalExisting) > 0
+          }
 
       val plantingDensity =
           if (plantingCompleted) {
@@ -316,7 +353,7 @@ data class ObservationRollupResultsModel(
             null
           }
 
-      val mortalityRate = monitoringPlotsSpecies.calculateMortalityRate()
+      val mortalityRate = species.calculateMortalityRate()
 
       return ObservationRollupResultsModel(
           earliestCompletedTime = nonNullZoneResults.minOf { it.earliestCompletedTime },
@@ -327,6 +364,9 @@ data class ObservationRollupResultsModel(
           plantingDensity = plantingDensity,
           plantingSiteId = plantingSiteId,
           plantingZones = nonNullZoneResults,
+          species = species,
+          totalPlants = species.sumOf { it.totalLive + it.totalDead },
+          totalSpecies = totalLiveSpeciesExceptUnknown,
       )
     }
   }
@@ -345,4 +385,41 @@ fun List<ObservationSpeciesResultsModel>.calculateMortalityRate(): Int {
   } else {
     0
   }
+}
+
+/**
+ * Combining observation species results by summing up numbers for results with matching (certainty,
+ * speciesId, speciesName) triple. This is used to build per species data starting from permanent
+ * monitoring plots data.
+ */
+fun List<ObservationSpeciesResultsModel>.unionSpecies(
+    other: List<ObservationSpeciesResultsModel>
+): List<ObservationSpeciesResultsModel> {
+  val combined = this + other
+  return combined
+      .groupBy { Triple(it.certainty, it.speciesId, it.speciesName) }
+      .map { (key, groupedSpecies) ->
+        val permanentLive = groupedSpecies.sumOf { it.permanentLive }
+        val cumulativeDead = groupedSpecies.sumOf { it.cumulativeDead }
+        val numNonExistingPlants = permanentLive + cumulativeDead
+
+        val mortalityRate =
+            if (numNonExistingPlants > 0) {
+              (cumulativeDead * 100.0 / numNonExistingPlants).roundToInt()
+            } else {
+              0
+            }
+        ObservationSpeciesResultsModel(
+            key.first,
+            cumulativeDead,
+            mortalityRate,
+            permanentLive,
+            key.second,
+            key.third,
+            groupedSpecies.sumOf { it.totalDead },
+            groupedSpecies.sumOf { it.totalExisting },
+            groupedSpecies.sumOf { it.totalLive },
+            groupedSpecies.sumOf { it.totalPlants },
+        )
+      }
 }
