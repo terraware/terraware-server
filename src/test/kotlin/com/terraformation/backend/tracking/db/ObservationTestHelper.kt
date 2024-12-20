@@ -12,10 +12,12 @@ import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubzoneSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.point
 import java.time.Instant
@@ -53,6 +55,9 @@ class ObservationTestHelper(
     return (dslContext
             .selectFrom(OBSERVED_PLOT_SPECIES_TOTALS)
             .fetchInto(ObservedPlotSpeciesTotalsRow::class.java) +
+            dslContext
+                .selectFrom(OBSERVED_SUBZONE_SPECIES_TOTALS)
+                .fetchInto(ObservedSubzoneSpeciesTotalsRow::class.java) +
             dslContext
                 .selectFrom(OBSERVED_ZONE_SPECIES_TOTALS)
                 .fetchInto(ObservedZoneSpeciesTotalsRow::class.java) +

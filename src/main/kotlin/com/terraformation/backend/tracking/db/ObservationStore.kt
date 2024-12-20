@@ -40,6 +40,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQU
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -728,9 +729,10 @@ class ObservationStore(
     requirePermissions { updateObservation(observationId) }
 
     dslContext.transaction { _ ->
-      val (plantingZoneId, plantingSiteId, isAdHoc) =
+      val (plantingSubzoneId, plantingZoneId, plantingSiteId, isAdHoc) =
           dslContext
               .select(
+                  MONITORING_PLOTS.PLANTING_SUBZONE_ID,
                   MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID,
                   MONITORING_PLOTS.PLANTING_SITE_ID.asNonNullable(),
                   MONITORING_PLOTS.IS_AD_HOC.asNonNullable())
@@ -781,6 +783,7 @@ class ObservationStore(
           observationId,
           plantingSiteId,
           plantingZoneId,
+          plantingSubzoneId,
           monitoringPlotId,
           isAdHoc,
           observationPlotsRow.isPermanent!!,
@@ -812,11 +815,12 @@ class ObservationStore(
   }
 
   fun removePlotFromTotals(monitoringPlotId: MonitoringPlotId) {
-    val (plantingSiteId, plantingZoneId, isAdHoc) =
+    val (plantingSiteId, plantingZoneId, plantingSubzoneId, isAdHoc) =
         dslContext
             .select(
                 MONITORING_PLOTS.PLANTING_SITE_ID.asNonNullable(),
                 PLANTING_ZONES.ID,
+                PLANTING_SUBZONES.ID,
                 MONITORING_PLOTS.IS_AD_HOC.asNonNullable(),
             )
             .from(MONITORING_PLOTS)
@@ -903,6 +907,7 @@ class ObservationStore(
           negativeCount.observationId,
           plantingSiteId,
           plantingZoneId,
+          plantingSubzoneId,
           null,
           isAdHoc,
           negativeCount.isPermanent,
@@ -998,6 +1003,7 @@ class ObservationStore(
             observationId,
             observation.plantingSiteId,
             plantingZoneId,
+            plotDetails.plantingSubzoneId,
             monitoringPlotId,
             observation.isAdHoc,
             plotDetails.model.isPermanent,
@@ -1239,7 +1245,7 @@ class ObservationStore(
       with(OBSERVED_PLOT_SPECIES_TOTALS) {
         dslContext
             .insertInto(
-                OBSERVED_PLOT_SPECIES_TOTALS,
+                this,
                 CERTAINTY_ID,
                 CUMULATIVE_DEAD,
                 MONITORING_PLOT_ID,
@@ -1267,12 +1273,46 @@ class ObservationStore(
       }
 
       // Roll up the just-inserted plot totals (which only include plots that are currently
-      // permanent and that had dead plants previously) to get the zone totals.
+      // permanent and that had dead plants previously) to get the subzone totals.
+
+      with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
+        dslContext
+            .insertInto(
+                this,
+                CERTAINTY_ID,
+                CUMULATIVE_DEAD,
+                MORTALITY_RATE,
+                OBSERVATION_ID,
+                PLANTING_SUBZONE_ID,
+                SPECIES_ID,
+                SPECIES_NAME)
+            .select(
+                DSL.select(
+                        OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID,
+                        DSL.sum(OBSERVED_PLOT_SPECIES_TOTALS.CUMULATIVE_DEAD).cast(Int::class.java),
+                        DSL.value(100),
+                        DSL.value(observationId),
+                        MONITORING_PLOTS.PLANTING_SUBZONE_ID,
+                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
+                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_NAME)
+                    .from(OBSERVED_PLOT_SPECIES_TOTALS)
+                    .join(MONITORING_PLOTS)
+                    .on(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                    .where(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+                    .groupBy(
+                        OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID,
+                        MONITORING_PLOTS.PLANTING_SUBZONE_ID,
+                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
+                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_NAME))
+            .execute()
+      }
+
+      // Roll up the just-inserted zone totals to get the zone totals.
 
       with(OBSERVED_ZONE_SPECIES_TOTALS) {
         dslContext
             .insertInto(
-                OBSERVED_ZONE_SPECIES_TOTALS,
+                this,
                 CERTAINTY_ID,
                 CUMULATIVE_DEAD,
                 MORTALITY_RATE,
@@ -1282,24 +1322,25 @@ class ObservationStore(
                 SPECIES_NAME)
             .select(
                 DSL.select(
-                        OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID,
-                        DSL.sum(OBSERVED_PLOT_SPECIES_TOTALS.CUMULATIVE_DEAD).cast(Int::class.java),
+                        OBSERVED_SUBZONE_SPECIES_TOTALS.CERTAINTY_ID,
+                        DSL.sum(OBSERVED_SUBZONE_SPECIES_TOTALS.CUMULATIVE_DEAD)
+                            .cast(Int::class.java),
                         DSL.value(100),
                         DSL.value(observationId),
                         PLANTING_SUBZONES.PLANTING_ZONE_ID,
-                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
-                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_NAME)
-                    .from(OBSERVED_PLOT_SPECIES_TOTALS)
-                    .join(MONITORING_PLOTS)
-                    .on(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                        OBSERVED_SUBZONE_SPECIES_TOTALS.SPECIES_ID,
+                        OBSERVED_SUBZONE_SPECIES_TOTALS.SPECIES_NAME)
+                    .from(OBSERVED_SUBZONE_SPECIES_TOTALS)
                     .join(PLANTING_SUBZONES)
-                    .on(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
-                    .where(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+                    .on(
+                        PLANTING_SUBZONES.ID.eq(
+                            OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID))
+                    .where(OBSERVED_SUBZONE_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
                     .groupBy(
-                        OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID,
+                        OBSERVED_SUBZONE_SPECIES_TOTALS.CERTAINTY_ID,
                         PLANTING_SUBZONES.PLANTING_ZONE_ID,
-                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
-                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_NAME))
+                        OBSERVED_SUBZONE_SPECIES_TOTALS.SPECIES_ID,
+                        OBSERVED_SUBZONE_SPECIES_TOTALS.SPECIES_NAME))
             .execute()
       }
 
@@ -1308,7 +1349,7 @@ class ObservationStore(
       with(OBSERVED_SITE_SPECIES_TOTALS) {
         dslContext
             .insertInto(
-                OBSERVED_SITE_SPECIES_TOTALS,
+                this,
                 CERTAINTY_ID,
                 CUMULATIVE_DEAD,
                 MORTALITY_RATE,
@@ -1383,6 +1424,7 @@ class ObservationStore(
       observationId: ObservationId,
       plantingSiteId: PlantingSiteId,
       plantingZoneId: PlantingZoneId?,
+      plantingSubzoneId: PlantingSubzoneId?,
       monitoringPlotId: MonitoringPlotId?,
       isAdHoc: Boolean,
       isPermanent: Boolean,
@@ -1400,6 +1442,16 @@ class ObservationStore(
       }
 
       if (!isAdHoc) {
+        if (plantingSubzoneId != null) {
+          updateSpeciesTotalsTable(
+              OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID,
+              observationId,
+              plantingSubzoneId,
+              isPermanent,
+              plantCountsBySpecies,
+          )
+        }
+
         if (plantingZoneId != null) {
           updateSpeciesTotalsTable(
               OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID,

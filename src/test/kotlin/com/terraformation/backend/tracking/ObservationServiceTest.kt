@@ -37,6 +37,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubzoneSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
@@ -2116,7 +2117,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     // just to verify that the event handler actually updates the totals.
     @Test
     fun `subtracts removed plot plant counts from totals`() {
-      insertPlantingSubzone(plantingCompletedTime = Instant.EPOCH, width = 3, height = 7)
+      val plantingSubzoneId =
+          insertPlantingSubzone(plantingCompletedTime = Instant.EPOCH, width = 3, height = 7)
       insertPlanting()
       val observationId = insertObservation()
       val remainingPlotId = insertMonitoringPlot()
@@ -2151,6 +2153,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   observationId, removedPlotId, speciesId, null, Known, 4, 5, 6, 56, 5, 4),
               ObservedPlotSpeciesTotalsRow(
                   observationId, remainingPlotId, speciesId, null, Known, 3, 2, 1, 40, 2, 3),
+              ObservedSubzoneSpeciesTotalsRow(
+                  observationId, plantingSubzoneId, speciesId, null, Known, 3, 2, 1, 40, 2, 3),
               ObservedZoneSpeciesTotalsRow(
                   observationId, plantingZoneId, speciesId, null, Known, 3, 2, 1, 40, 2, 3),
               ObservedSiteSpeciesTotalsRow(

@@ -405,6 +405,11 @@ COMMENT ON COLUMN tracking.observed_site_species_totals.cumulative_dead IS 'Tota
 COMMENT ON COLUMN tracking.observed_site_species_totals.mortality_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the planting site, in either this observation or in previous ones, that were dead.';
 COMMENT ON COLUMN tracking.observed_site_species_totals.permanent_live IS 'The number of live and existing plants observed in permanent monitoring plots.';
 
+COMMENT ON TABLE tracking.observed_subzone_species_totals IS 'Aggregated per-planting-subzone, per-species totals of plants recorded during observations.';
+COMMENT ON COLUMN tracking.observed_subzone_species_totals.cumulative_dead IS 'Total number of dead plants of the species observed, both in this observation and in all previous ones, in plots in this subzone that are included as permanent plots in this observation.';
+COMMENT ON COLUMN tracking.observed_subzone_species_totals.mortality_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the planting subzone, in either the current observation or in previous ones, that were dead.';
+COMMENT ON COLUMN tracking.observed_subzone_species_totals.permanent_live IS 'The number of live and existing plants observed in permanent monitoring plots.';
+
 COMMENT ON TABLE tracking.observed_zone_species_totals IS 'Aggregated per-planting-zone, per-species totals of plants recorded during observations.';
 COMMENT ON COLUMN tracking.observed_zone_species_totals.cumulative_dead IS 'Total number of dead plants of the species observed, both in this observation and in all previous ones, in plots in this zone that are included as permanent plots in this observation.';
 COMMENT ON COLUMN tracking.observed_zone_species_totals.mortality_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the planting zone, in either the current observation or in previous ones, that were dead.';
