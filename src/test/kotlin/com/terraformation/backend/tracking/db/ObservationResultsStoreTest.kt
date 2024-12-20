@@ -228,7 +228,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       val observationId = insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
-      insertMonitoringPlot(plantingSubzoneId = null)
+      insertMonitoringPlot(isAdHoc = true, plantingSubzoneId = null)
       insertObservation(completedTime = Instant.EPOCH, isAdHoc = true)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
