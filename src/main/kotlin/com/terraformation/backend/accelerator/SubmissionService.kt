@@ -50,7 +50,20 @@ class SubmissionService(
     private val eventPublisher: ApplicationEventPublisher,
     private val googleDriveWriter: GoogleDriveWriter,
 ) {
-  private val log = perClassLogger()
+  companion object {
+    /**
+     * Longest name we'll use for an uploaded file, including extension. This should be less than
+     * the maximum filename length on any of the file stores or common local filesystems by at least
+     * a few characters so there's room to add a numeric suffix to the base name in case of filename
+     * collisions.
+     */
+    const val MAX_FILENAME_LENGTH = 250
+
+    /** Maximum number of characters allowed in a filename extension, including leading period. */
+    const val MAX_EXTENSION_LENGTH = 10
+
+    private val log = perClassLogger()
+  }
 
   fun receiveDocument(
       inputStream: InputStream,
@@ -101,7 +114,9 @@ class SubmissionService(
     val currentDateUtc = LocalDate.ofInstant(now, ZoneOffset.UTC)
 
     // Use the file extension from the original filename.
-    val extension = sanitizeForFilename(originalName?.substringAfterLast('.')?.let { ".$it" } ?: "")
+    val extension =
+        sanitizeForFilename(originalName?.substringAfterLast('.')?.let { ".$it" } ?: "")
+            .take(MAX_EXTENSION_LENGTH)
 
     // Filenames follow a fixed format.
     val fileNaming =
@@ -123,8 +138,9 @@ class SubmissionService(
             )
             .joinToString("_")
 
-    // Some of the components of the name can have characters that aren't allowed in filenames.
-    val baseName = sanitizeForFilename(rawFileName)
+    // Some of the components of the name can have characters that aren't allowed in filenames, and
+    // filenames can't be infinitely long.
+    val baseName = sanitizeForFilename(rawFileName).take(MAX_FILENAME_LENGTH - extension.length)
     val fileName = baseName + extension
 
     // This is a String for Dropbox and a URI for Google
