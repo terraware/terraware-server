@@ -18,6 +18,11 @@ data class DeliverableDocumentUploadFailedEvent(
     val originalName: String?,
     /** Which folder on the document store would have been used, or null if none is configured. */
     val documentStoreFolder: String? = null,
+    /**
+     * The name of the file we tried to create, or null if we didn't get as far as attempting to
+     * save the file.
+     */
+    val fileName: String? = null,
     /** Exception that caused the failure, if any. */
     val exception: Throwable? = null,
 ) {
