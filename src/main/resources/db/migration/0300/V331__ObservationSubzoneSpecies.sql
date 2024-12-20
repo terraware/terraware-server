@@ -22,7 +22,6 @@ CREATE TABLE tracking.observed_subzone_species_totals (
 CREATE UNIQUE INDEX ON tracking.observed_subzone_species_totals (observation_id, planting_subzone_id, species_id) WHERE species_id IS NOT NULL;
 CREATE UNIQUE INDEX ON tracking.observed_subzone_species_totals (observation_id, planting_subzone_id, species_name) WHERE species_name IS NOT NULL;
 CREATE UNIQUE INDEX ON tracking.observed_subzone_species_totals (observation_id, planting_subzone_id) WHERE species_id IS NULL AND species_name IS NULL;
-CREATE INDEX ON tracking.observed_subzone_species_totals (planting_subzone_id);
 
 CREATE INDEX ON tracking.observed_subzone_species_totals (observation_id);
 CREATE INDEX ON tracking.observed_subzone_species_totals (species_id);
@@ -43,5 +42,5 @@ UPDATE tracking.observed_subzone_species_totals
 SET mortality_rate =
     case
         when cumulative_dead + permanent_live = 0 then null
-        else cumulative_dead / (cumulative_dead + permanent_live)
+        else (cumulative_dead * 100) / (cumulative_dead + permanent_live)
     end;
