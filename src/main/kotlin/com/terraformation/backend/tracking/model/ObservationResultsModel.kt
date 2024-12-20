@@ -230,6 +230,7 @@ data class ObservationPlantingZoneRollupResultsModel(
      * species in this observation summary.
      */
     val totalPlants: Int,
+    val totalSpecies: Int,
 ) : BaseMonitoringResult {
   companion object {
     fun of(
@@ -250,6 +251,12 @@ data class ObservationPlantingZoneRollupResultsModel(
           nonNullSubzoneResults
               .map { it.species }
               .reduce { acc, species -> acc.unionSpecies(species) }
+
+      val totalLiveSpeciesExceptUnknown =
+          species.count {
+            it.certainty != RecordedSpeciesCertainty.Unknown &&
+                (it.totalLive + it.totalExisting) > 0
+          }
 
       val plantingDensity =
           if (plantingCompleted) {
@@ -279,6 +286,7 @@ data class ObservationPlantingZoneRollupResultsModel(
           plantingZoneId = plantingZoneId,
           species = species,
           totalPlants = species.sumOf { it.totalLive + it.totalDead },
+          totalSpecies = totalLiveSpeciesExceptUnknown,
       )
     }
   }
@@ -298,6 +306,12 @@ data class ObservationRollupResultsModel(
     val plantingZones: List<ObservationPlantingZoneRollupResultsModel>,
     /** List of species result used for this rollup */
     val species: List<ObservationSpeciesResultsModel>,
+    /**
+     * Total number of plants recorded. Includes all plants, regardless of live/dead status or
+     * species in this observation summary.
+     */
+    val totalPlants: Int,
+    val totalSpecies: Int,
 ) : BaseMonitoringResult {
   companion object {
     fun of(
@@ -318,6 +332,12 @@ data class ObservationRollupResultsModel(
           }
       val species =
           nonNullZoneResults.map { it.species }.reduce { acc, species -> acc.unionSpecies(species) }
+
+      val totalLiveSpeciesExceptUnknown =
+          species.count {
+            it.certainty != RecordedSpeciesCertainty.Unknown &&
+                (it.totalLive + it.totalExisting) > 0
+          }
 
       val plantingDensity =
           if (plantingCompleted) {
@@ -345,6 +365,8 @@ data class ObservationRollupResultsModel(
           plantingSiteId = plantingSiteId,
           plantingZones = nonNullZoneResults,
           species = species,
+          totalPlants = species.sumOf { it.totalLive + it.totalDead },
+          totalSpecies = totalLiveSpeciesExceptUnknown,
       )
     }
   }
