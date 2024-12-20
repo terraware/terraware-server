@@ -44,6 +44,7 @@ class FailureReportingService(
             
             Service: ${event.documentStore}
             Folder: ${event.documentStoreFolder ?: "Not configured"}
+            File: ${event.fileName ?: "N/A"}
             
             System error: ${event.exception}
           """

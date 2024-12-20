@@ -176,6 +176,7 @@ class SubmissionService(
               documentStore,
               originalName,
               folder.toString(),
+              fileName,
               e)
         }
 
@@ -275,6 +276,7 @@ class SubmissionService(
               documentStore,
               originalName,
               folder.toString(),
+              submissionDocument.name,
               e)
         }
       }
@@ -355,6 +357,7 @@ class SubmissionService(
       documentStore: DocumentStore,
       originalName: String?,
       documentStoreFolder: String? = null,
+      fileName: String? = null,
       exception: Exception? = null,
   ): Nothing {
     eventPublisher.publishEvent(
@@ -365,6 +368,7 @@ class SubmissionService(
             documentStore,
             originalName,
             documentStoreFolder,
+            fileName,
             exception))
 
     if (exception != null) {

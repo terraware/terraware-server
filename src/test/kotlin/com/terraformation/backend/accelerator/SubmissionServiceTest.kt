@@ -177,6 +177,7 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
           FailureReason.CouldNotUpload,
           DocumentStore.Google,
           googleDriveFolder,
+          "Deliverable 1_1970-01-01_${fileNaming}_description.doc",
           ProjectDocumentStorageFailedException(projectId, cause = exception))
     }
 
@@ -192,6 +193,7 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
         reason: FailureReason,
         documentStore: DocumentStore = DocumentStore.Google,
         folder: String? = null,
+        fileName: String? = null,
         exception: E? = null,
     ) {
       assertThrows<E> { receiveDocument() }
@@ -200,7 +202,14 @@ class SubmissionServiceTest : DatabaseTest(), RunsAsUser {
 
       eventPublisher.assertEventPublished(
           DeliverableDocumentUploadFailedEvent(
-              deliverableId, projectId, reason, documentStore, originalName, folder, cause))
+              deliverableId,
+              projectId,
+              reason,
+              documentStore,
+              originalName,
+              folder,
+              fileName,
+              cause))
     }
 
     private fun receiveDocument(description: String = "description"): SubmissionDocumentId =
