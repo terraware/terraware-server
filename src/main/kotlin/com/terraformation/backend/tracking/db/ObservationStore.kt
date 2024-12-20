@@ -1307,7 +1307,7 @@ class ObservationStore(
             .execute()
       }
 
-      // Roll up the just-inserted zone totals to get the zone totals.
+      // Roll up the just-inserted subzone totals to get the zone totals.
 
       with(OBSERVED_ZONE_SPECIES_TOTALS) {
         dslContext
