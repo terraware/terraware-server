@@ -162,6 +162,12 @@ data class ObservationPlantingSubzoneResultsModel(
      * species.
      */
     val totalPlants: Int,
+    /**
+     * Total number of species observed, not counting dead plants. Includes plants with Known and
+     * Other certainties. In the case of Other, each distinct user-supplied species name is counted
+     * as a separate species for purposes of this total.
+     */
+    val totalSpecies: Int,
 ) : BaseMonitoringResult
 
 data class ObservationPlantingZoneResultsModel(
