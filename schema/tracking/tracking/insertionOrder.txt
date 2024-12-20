@@ -27,6 +27,7 @@ observation_requested_subzones
 observation_plot_conditions
 observed_plot_species_totals
 observed_site_species_totals
+observed_subzone_species_totals
 observed_zone_species_totals
 observation_photos
 observed_plot_coordinates

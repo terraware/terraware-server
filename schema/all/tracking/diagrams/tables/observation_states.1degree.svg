@@ -37,15 +37,15 @@
 <text text-anchor="start" x="316" y="-81.2" font-family="Helvetica,sans-Serif" font-size="11.00">observation_type_id</text>
 <polygon fill="none" stroke="black" points="296,-55 296,-73 514,-73 514,-55 296,-55"/>
 <text text-anchor="start" x="299" y="-61.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="296,-37 296,-55 384,-55 384,-37 296,-37"/>
-<polygon fill="none" stroke="black" points="296,-37 296,-55 384,-55 384,-37 296,-37"/>
+<polygon fill="#ffffff" stroke="none" points="296,-37 296,-55 380,-55 380,-37 296,-37"/>
+<polygon fill="none" stroke="black" points="296,-37 296,-55 380,-55 380,-37 296,-37"/>
 <text text-anchor="start" x="299" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="none" points="384,-37 384,-55 458,-55 458,-37 384,-37"/>
-<polygon fill="none" stroke="black" points="384,-37 384,-55 458,-55 458,-37 384,-37"/>
-<text text-anchor="start" x="419" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="458,-37 458,-55 514,-55 514,-37 458,-37"/>
-<polygon fill="none" stroke="black" points="458,-37 458,-55 514,-55 514,-37 458,-37"/>
-<text text-anchor="start" x="494" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">9 &gt;</text>
+<polygon fill="#ffffff" stroke="none" points="380,-37 380,-55 453,-55 453,-37 380,-37"/>
+<polygon fill="none" stroke="black" points="380,-37 380,-55 453,-55 453,-37 380,-37"/>
+<text text-anchor="start" x="414" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="453,-37 453,-55 514,-55 514,-37 453,-37"/>
+<polygon fill="none" stroke="black" points="453,-37 453,-55 514,-55 514,-37 453,-37"/>
+<text text-anchor="start" x="487" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">10 &gt;</text>
 </a>
 </g>
 </g>

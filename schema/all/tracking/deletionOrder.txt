@@ -4,6 +4,7 @@ draft_planting_sites
 observation_photos
 observed_plot_coordinates
 observed_zone_species_totals
+observed_subzone_species_totals
 observed_site_species_totals
 observed_plot_species_totals
 observation_plot_conditions
