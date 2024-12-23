@@ -137,7 +137,7 @@ dependencies {
   runtimeOnly("net.logstash.logback:logstash-logback-encoder:8.0")
 
   testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
-  testImplementation("io.mockk:mockk:1.13.13")
+  testImplementation("io.mockk:mockk:1.13.14")
   testImplementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   testImplementation("org.hsqldb:hsqldb:2.7.4")
   testImplementation("org.junit.platform:junit-platform-launcher")
