@@ -113,7 +113,7 @@ dependencies {
   implementation("org.apache.tika:tika-core:3.0.0")
   implementation("org.flywaydb:flyway-core:$flywayVersion")
   implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
-  implementation("org.freemarker:freemarker:2.3.33")
+  implementation("org.freemarker:freemarker:2.3.34")
   implementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   implementation("org.geotools:gt-geojson:$geoToolsVersion")
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
