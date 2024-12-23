@@ -1,3 +1,8 @@
+1495fcc6790 Update dependency org.freemarker:freemarker to v2.3.34 (#2725)
+1cc641f896c Update dependency com.google.apis:google-api-services-drive to v3-rev20241206-2.0.0 (#2724)
+a8a88f7f60f Update dependency io.mockk:mockk to v1.13.14 (#2723)
+d15becaa480 Update ktor monorepo to v3.0.3 (#2722)
+af1daab46c5 Update Spring dependencies (#2721)
 51fe78dc8d0 Data migrations for subzone species totals (#2716)
 79b9f0ff7d6 Implemented Ad-Hoc observation results API and store functions (#2714)
 b5c43d317c0 SW-6387 Include filenames in upload failure reports (#2718)
