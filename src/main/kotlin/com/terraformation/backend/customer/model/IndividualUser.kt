@@ -511,8 +511,10 @@ data class IndividualUser(
 
   // If this logic changes, make sure to also change code that bakes this rule into SQL queries
   // for efficiency. Example: SpeciesStore.fetchUncheckedSpeciesIds
-  override fun canReadSpecies(speciesId: SpeciesId) =
-      isMember(parentStore.getOrganizationId(speciesId))
+  override fun canReadSpecies(speciesId: SpeciesId): Boolean {
+    val organizationId = parentStore.getOrganizationId(speciesId) ?: return false
+    return isMember(organizationId) || isGlobalReader(organizationId)
+  }
 
   override fun canReadSubLocation(subLocationId: SubLocationId) =
       isMember(parentStore.getFacilityId(subLocationId))

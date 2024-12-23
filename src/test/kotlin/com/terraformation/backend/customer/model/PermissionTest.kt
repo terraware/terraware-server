@@ -134,17 +134,15 @@ internal class PermissionTest : DatabaseTest() {
   private val user: TerrawareUser by lazy { fetchUser() }
 
   /*
-   * Test data set; see class docs for a prettier version. This takes advantage of the default
-   * "parent ID is our ID divided by 10" logic of the insert functions in DatabaseTest.
+   * Test data set; see class docs for a prettier version.
    */
-  private val nonEmptyOrganizationIds = listOf(OrganizationId(1), OrganizationId(3))
-  private val organizationIds =
-      nonEmptyOrganizationIds + listOf(OrganizationId(2), OrganizationId(4))
   private val org1Id = OrganizationId(1)
+  private val organizationIds =
+      listOf(org1Id, OrganizationId(2), OrganizationId(3), OrganizationId(4))
 
   // Org 2 is empty (no reports or species)
-  private val reportIds = nonEmptyOrganizationIds.map { ReportId(it.value) }
-  private val speciesIds = nonEmptyOrganizationIds.map { SpeciesId(it.value) }
+  private val reportIds = listOf(ReportId(1), ReportId(3))
+  private val speciesIds = listOf(SpeciesId(1), SpeciesId(3), SpeciesId(4))
 
   private val facilityIds = listOf(1000, 1001, 3000).map { FacilityId(it.toLong()) }
   private val draftPlantingSiteIds = facilityIds.map { DraftPlantingSiteId(it.value) }
@@ -1682,6 +1680,12 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        SpeciesId(3),
+        SpeciesId(4),
+        readSpecies = true,
+    )
+
+    permissions.expect(
         *moduleEventIds.toTypedArray(),
         readModuleEvent = true,
     )
@@ -1902,6 +1906,12 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        SpeciesId(3),
+        SpeciesId(4),
+        readSpecies = true,
+    )
+
+    permissions.expect(
         *moduleEventIds.toTypedArray(),
         readModuleEvent = true,
     )
@@ -2044,6 +2054,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *speciesIds.forOrg1(),
+        deleteSpecies = true,
+        readSpecies = true,
+        updateSpecies = true,
+    )
+
+    permissions.expect(
         *participantProjectSpeciesIds.forOrg1(),
         deleteParticipantProjectSpecies = true,
         readParticipantProjectSpecies = true,
@@ -2101,6 +2118,12 @@ internal class PermissionTest : DatabaseTest() {
         updateProjectScores = true,
         updateProjectVotes = true,
         updateSubmissionStatus = true,
+    )
+
+    permissions.expect(
+        SpeciesId(3),
+        SpeciesId(4),
+        readSpecies = true,
     )
 
     permissions.expect(
@@ -2292,6 +2315,12 @@ internal class PermissionTest : DatabaseTest() {
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
+    )
+
+    permissions.expect(
+        SpeciesId(3),
+        SpeciesId(4),
+        readSpecies = true,
     )
 
     permissions.expect(
