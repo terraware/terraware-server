@@ -339,7 +339,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           }
 
       val summaries = resultsStore.fetchSummariesForPlantingSite(plantingSiteId)
-      assertSummary(prefix, summaries.reversed())
+      assertSummary(prefix, numSpecies, summaries.reversed())
 
       assertEquals(
           summaries.take(2),
@@ -359,11 +359,20 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           "Partial summaries via limit and completion time.")
     }
 
-    private fun assertSummary(prefix: String, results: List<ObservationRollupResultsModel>) {
+    private fun assertSummary(
+        prefix: String,
+        numSpecies: Int,
+        results: List<ObservationRollupResultsModel>
+    ) {
       assertAll(
           { assertSiteSummary(prefix, results) },
+          { assertSiteSpeciesSummary(prefix, numSpecies, results) },
           { assertZoneSummary(prefix, results) },
+          { assertZoneSpeciesSummary(prefix, numSpecies, results) },
+          { assertSubzoneSummary(prefix, results) },
+          { assertSubzoneSpeciesSummary(prefix, numSpecies, results) },
           { assertPlotSummary(prefix, results) },
+          { assertPlotSpeciesSummary(prefix, numSpecies, results) },
       )
     }
 
@@ -392,25 +401,6 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertResultsMatchCsv("$prefix/SiteStats.csv", actual)
     }
 
-    private fun assertSiteSummary(prefix: String, allResults: List<ObservationRollupResultsModel>) {
-      val actual =
-          makeActualCsv(allResults, listOf(emptyList())) { _, results ->
-            listOf(
-                results.plantingDensity.toStringOrBlank(),
-                results.estimatedPlants.toStringOrBlank(),
-                results.mortalityRate.toStringOrBlank("%"),
-            )
-          }
-
-      assertResultsMatchCsv("$prefix/SiteStats.csv", actual) { row ->
-        row.filterIndexed { index, _ ->
-          val positionInColumnGroup = index % 4
-          // Filtered out total number of species until that is computed and added to summaries
-          positionInColumnGroup != 2
-        }
-      }
-    }
-
     private fun assertZoneResults(prefix: String, allResults: List<ObservationResultsModel>) {
       val rowKeys = zoneIds.keys.map { listOf(it) }
 
@@ -429,6 +419,50 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertResultsMatchCsv("$prefix/ZoneStats.csv", actual)
     }
 
+    private fun assertPlotResults(prefix: String, allResults: List<ObservationResultsModel>) {
+      val rowKeys = plotIds.keys.map { listOf(it) }
+
+      val actual =
+          makeActualCsv(allResults, rowKeys) { (plotNumber), results ->
+            val plot =
+                results.plantingZones
+                    .flatMap { zone -> zone.plantingSubzones }
+                    .flatMap { subzone -> subzone.monitoringPlots }
+                    .firstOrNull { it.monitoringPlotNumber == plotNumber.toLong() }
+
+            listOf(
+                plot?.totalPlants.toStringOrBlank(),
+                plot?.totalSpecies.toStringOrBlank(),
+                plot?.mortalityRate.toStringOrBlank("%"),
+                // Live and existing plants columns are in spreadsheet but not included in
+                // calculated
+                // results; it will be removed by the filter function below.
+                plot?.plantingDensity.toStringOrBlank(),
+            )
+          }
+
+      assertResultsMatchCsv("$prefix/PlotStats.csv", actual) { row ->
+        row.filterIndexed { index, _ ->
+          val positionInColumnGroup = (index - 1) % 6
+          positionInColumnGroup != 3 && positionInColumnGroup != 4
+        }
+      }
+    }
+
+    private fun assertSiteSummary(prefix: String, allResults: List<ObservationRollupResultsModel>) {
+      val actual =
+          makeActualCsv(allResults, listOf(emptyList())) { _, results ->
+            listOf(
+                results.plantingDensity.toStringOrBlank(),
+                results.estimatedPlants.toStringOrBlank(),
+                results.totalSpecies.toStringOrBlank(),
+                results.mortalityRate.toStringOrBlank("%"),
+            )
+          }
+
+      assertResultsMatchCsv("$prefix/SiteStats.csv", actual)
+    }
+
     private fun assertZoneSummary(prefix: String, allResults: List<ObservationRollupResultsModel>) {
       val rowKeys = zoneIds.keys.map { listOf(it) }
 
@@ -438,46 +472,41 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
             listOf(
                 zone?.totalPlants.toStringOrBlank(),
                 zone?.plantingDensity.toStringOrBlank(),
+                zone?.totalSpecies.toStringOrBlank(),
                 zone?.mortalityRate.toStringOrBlank("%"),
                 zone?.estimatedPlants.toStringOrBlank(),
             )
           }
 
-      assertResultsMatchCsv("$prefix/ZoneStats.csv", actual) { row ->
-        row.filterIndexed { index, _ ->
-          val positionInColumnGroup = (index - 1) % 5
-          // Filtered out total number of species until that is computed and added to summaries
-          positionInColumnGroup != 2
-        }
-      }
+      assertResultsMatchCsv("$prefix/ZoneStats.csv", actual)
     }
 
-    private fun assertPlotResults(prefix: String, allResults: List<ObservationResultsModel>) {
-      val rowKeys = plotIds.keys.map { listOf(it) }
+    private fun assertSubzoneSummary(
+        prefix: String,
+        allResults: List<ObservationRollupResultsModel>
+    ) {
+      val rowKeys = subzoneIds.keys.map { listOf(it) }
 
       val actual =
-          makeActualCsv(allResults, rowKeys) { (plotNumber), results ->
-            results.plantingZones
-                .flatMap { zone -> zone.plantingSubzones }
-                .flatMap { subzone -> subzone.monitoringPlots }
-                .firstOrNull { it.monitoringPlotNumber == plotNumber.toLong() }
-                ?.let { plot ->
-                  listOf(
-                      plot.totalPlants.toStringOrBlank(),
-                      plot.totalSpecies.toStringOrBlank(),
-                      plot.mortalityRate.toStringOrBlank("%"),
-                      // Live and existing plants columns are in spreadsheet but not included in
-                      // calculated
-                      // results; it will be removed by the filter function below.
-                      plot.plantingDensity.toStringOrBlank(),
-                  )
-                } ?: listOf("", "", "", "")
+          makeActualCsv(allResults, rowKeys) { (subzoneName), results ->
+            val subzone =
+                results.plantingZones
+                    .flatMap { it.plantingSubzones }
+                    .firstOrNull { it.plantingSubzoneId == subzoneIds[subzoneName] }
+            listOf(
+                subzone?.totalPlants.toStringOrBlank(),
+                subzone?.plantingDensity.toStringOrBlank(),
+                subzone?.totalSpecies.toStringOrBlank(),
+                subzone?.mortalityRate.toStringOrBlank("%"),
+                subzone?.estimatedPlants.toStringOrBlank(),
+            )
           }
 
-      assertResultsMatchCsv("$prefix/PlotStats.csv", actual) { row ->
+      assertResultsMatchCsv("$prefix/SubzoneStats.csv", actual) { row ->
         row.filterIndexed { index, _ ->
-          val positionInColumnGroup = (index - 1) % 6
-          positionInColumnGroup != 3 && positionInColumnGroup != 4
+          val positionInColumnGroup = (index - 1) % 7
+          // filter out STD DEV until later
+          positionInColumnGroup != 2 && positionInColumnGroup != 5
         }
       }
     }
@@ -587,6 +616,113 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertResultsMatchCsv("$prefix/PlotStatsPerSpecies.csv", actual)
     }
 
+    private fun assertSiteSpeciesSummary(
+        prefix: String,
+        numSpecies: Int,
+        allResults: List<ObservationRollupResultsModel>
+    ) {
+      val actual =
+          makeActualCsv(allResults, listOf(emptyList())) { _, results ->
+            makeCsvColumnsFromSpeciesSummary(numSpecies, results.species)
+          }
+
+      assertResultsMatchCsv("$prefix/SiteStatsPerSpecies.csv", actual, skipRows = 3)
+    }
+
+    private fun assertZoneSpeciesSummary(
+        prefix: String,
+        numSpecies: Int,
+        allResults: List<ObservationRollupResultsModel>
+    ) {
+      val rowKeys = zoneIds.keys.map { listOf(it) }
+
+      val actual =
+          makeActualCsv(allResults, rowKeys) { (zoneName), results ->
+            results.plantingZones
+                .firstOrNull { it.plantingZoneId == zoneIds[zoneName] }
+                ?.let { makeCsvColumnsFromSpeciesSummary(numSpecies, it.species) }
+                ?: List(numSpecies * 2 + 2) { "" }
+          }
+
+      assertResultsMatchCsv("$prefix/ZoneStatsPerSpecies.csv", actual, skipRows = 3)
+    }
+
+    private fun assertSubzoneSpeciesSummary(
+        prefix: String,
+        numSpecies: Int,
+        allResults: List<ObservationRollupResultsModel>
+    ) {
+      val rowKeys = subzoneIds.keys.map { listOf(it) }
+
+      val actual =
+          makeActualCsv(allResults, rowKeys) { (subzoneName), results ->
+            results.plantingZones
+                .flatMap { zone -> zone.plantingSubzones }
+                .firstOrNull { subzone -> subzone.plantingSubzoneId == subzoneIds[subzoneName] }
+                ?.let { makeCsvColumnsFromSpeciesSummary(numSpecies, it.species) }
+                ?: List(numSpecies * 2 + 2) { "" }
+          }
+
+      assertResultsMatchCsv("$prefix/SubzoneStatsPerSpecies.csv", actual, skipRows = 3)
+    }
+
+    private fun assertPlotSpeciesSummary(
+        prefix: String,
+        numSpecies: Int,
+        allResults: List<ObservationRollupResultsModel>
+    ) {
+      val rowKeys = plotIds.keys.map { listOf(it) }
+
+      val actual =
+          makeActualCsv(allResults, rowKeys) { (plotNumber), results ->
+            results.plantingZones
+                .flatMap { zone -> zone.plantingSubzones }
+                .flatMap { subzone -> subzone.monitoringPlots }
+                .firstOrNull { it.monitoringPlotNumber == plotNumber.toLong() }
+                ?.let { makeCsvColumnsFromSpeciesSummary(numSpecies, it.species) }
+                ?: List(numSpecies * 2 + 2) { "" }
+          }
+
+      assertResultsMatchCsv("$prefix/PlotStatsPerSpecies.csv", actual, skipRows = 3)
+    }
+
+    private fun makeCsvColumnsFromSpeciesSummary(
+        numSpecies: Int,
+        speciesResults: List<ObservationSpeciesResultsModel>
+    ): List<String> {
+      val knownSpecies =
+          List(numSpecies) { speciesNum ->
+                val speciesName = "Species $speciesNum"
+                val speciesId = speciesIds[speciesName]
+
+                if (speciesId != null) {
+                  speciesResults
+                      .firstOrNull { it.speciesId == speciesId }
+                      ?.let {
+                        listOf(
+                            it.totalPlants.toStringOrBlank(),
+                            it.mortalityRate.toStringOrBlank("%"),
+                        )
+                      } ?: listOf("", "")
+                } else {
+                  listOf("", "")
+                }
+              }
+              .flatten()
+
+      val otherSpecies =
+          speciesResults
+              .firstOrNull { it.certainty == RecordedSpeciesCertainty.Other }
+              ?.let {
+                listOf(
+                    it.totalPlants.toStringOrBlank(),
+                    it.mortalityRate.toStringOrBlank("%"),
+                )
+              } ?: listOf("", "")
+
+      return knownSpecies + otherSpecies
+    }
+
     private fun importFromCsvFiles(prefix: String, numObservations: Int, sizeMeters: Int) {
       importSiteFromCsvFile(prefix, sizeMeters)
       importPlantsCsv(prefix, numObservations)
@@ -611,10 +747,11 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       return associateCsv("$prefix/Subzones.csv", 2) { cols ->
         val zoneName = cols[0]
         val subzoneName = cols[1]
+        val subZoneArea = BigDecimal(cols[2])
         val zoneId = zoneIds[zoneName]!!
 
         // Find the first observation where the subzone is marked as completed planting, if any.
-        val plantingCompletedColumn = cols.drop(2).indexOfFirst { it == "Yes" }
+        val plantingCompletedColumn = cols.drop(3).indexOfFirst { it == "Yes" }
         val plantingCompletedTime =
             if (plantingCompletedColumn >= 0) {
               Instant.ofEpochSecond(plantingCompletedColumn.toLong())
@@ -624,6 +761,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
 
         subzoneName to
             insertPlantingSubzone(
+                areaHa = subZoneArea,
                 plantingCompletedTime = plantingCompletedTime,
                 fullName = subzoneName,
                 name = subzoneName,
@@ -747,8 +885,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                 val plotId = plotIds[plotName]!!
 
                 val knownPlantsRows =
-                    (0..<numSpecies)
-                        .map { speciesNum ->
+                    List(numSpecies) { speciesNum ->
                           val existingNum = cols[1 + 3 * speciesNum].toIntOrNull()
                           val liveNum = cols[2 + 3 * speciesNum].toIntOrNull()
                           val deadNum = cols[3 + 3 * speciesNum].toIntOrNull()
@@ -957,11 +1094,14 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     private fun assertResultsMatchCsv(
         path: String,
         actual: List<List<String>>,
-        mapCsvRow: (List<String>) -> List<String> = { it }
+        skipRows: Int = 2,
+        mapCsvRow: (List<String>) -> List<String> = { it },
     ) {
       val actualRendered = actual.map { it.joinToString(",") }.sorted().joinToString("\n")
       val expected =
-          mapCsv(path, 2) { mapCsvRow(it.toList()).joinToString(",") }.sorted().joinToString("\n")
+          mapCsv(path, skipRows) { mapCsvRow(it.toList()).joinToString(",") }
+              .sorted()
+              .joinToString("\n")
 
       assertEquals(expected, actualRendered, path)
     }
