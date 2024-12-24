@@ -18,6 +18,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
@@ -388,13 +389,35 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   private val plantingSubzoneMonitoringPlotMultiset =
       monitoringPlotMultiset(MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
 
+  private val plantingSubzoneSpeciesMultiset =
+      with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
+        speciesMultiset(
+            DSL.select(
+                    CERTAINTY_ID,
+                    MORTALITY_RATE,
+                    SPECIES_ID,
+                    SPECIES_NAME,
+                    TOTAL_LIVE,
+                    TOTAL_DEAD,
+                    TOTAL_EXISTING,
+                    CUMULATIVE_DEAD,
+                    PERMANENT_LIVE,
+                )
+                .from(OBSERVED_SUBZONE_SPECIES_TOTALS)
+                .where(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                .orderBy(SPECIES_ID, SPECIES_NAME))
+      }
+
   private val plantingSubzoneMultiset =
       DSL.multiset(
               DSL.select(
                       PLANTING_SUBZONES.ID,
                       PLANTING_SUBZONES.AREA_HA,
                       PLANTING_SUBZONES.PLANTING_COMPLETED_TIME,
-                      plantingSubzoneMonitoringPlotMultiset)
+                      plantingSubzoneMonitoringPlotMultiset,
+                      plantingSubzoneSpeciesMultiset,
+                  )
                   .from(PLANTING_SUBZONES)
                   .where(
                       PLANTING_SUBZONES.ID.`in`(
@@ -412,8 +435,13 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
               val areaHa = record[PLANTING_SUBZONES.AREA_HA.asNonNullable()]
 
-              val species = monitoringPlots.flatMap { it.species }
+              val species = record[plantingSubzoneSpeciesMultiset]
               val totalPlants = species.sumOf { it.totalLive + it.totalDead }
+              val totalLiveSpeciesExceptUnknown =
+                  species.count {
+                    it.certainty != RecordedSpeciesCertainty.Unknown &&
+                        (it.totalLive + it.totalExisting) > 0
+                  }
 
               val isCompleted =
                   monitoringPlots.isNotEmpty() && monitoringPlots.all { it.completedTime != null }
@@ -445,6 +473,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   } else {
                     null
                   }
+
               ObservationPlantingSubzoneResultsModel(
                   areaHa = areaHa,
                   completedTime = completedTime,
@@ -454,7 +483,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   plantingCompleted = plantingCompleted,
                   plantingDensity = plantingDensity?.roundToInt(),
                   plantingSubzoneId = record[PLANTING_SUBZONES.ID.asNonNullable()],
+                  species = species,
                   totalPlants = totalPlants,
+                  totalSpecies = totalLiveSpeciesExceptUnknown,
               )
             }
           }
