@@ -1,3 +1,4 @@
+d9bb227ee7a Update dependency mypy to v1.14.0 (#2728)
 166f40c0269 SW-6394 Allow admins to read accelerator species (#2726)
 1495fcc6790 Update dependency org.freemarker:freemarker to v2.3.34 (#2725)
 1cc641f896c Update dependency com.google.apis:google-api-services-drive to v3-rev20241206-2.0.0 (#2724)
