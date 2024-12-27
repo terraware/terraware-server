@@ -382,6 +382,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           { assertSiteSpeciesResults(prefix, allResults) },
           { assertZoneResults(prefix, allResults) },
           { assertZoneSpeciesResults(prefix, allResults) },
+          { assertSubzoneResults(prefix, allResults) },
+          { assertSubzoneSpeciesResults(prefix, allResults) },
           { assertPlotResults(prefix, allResults) },
           { assertPlotSpeciesResults(prefix, allResults) },
       )
@@ -417,6 +419,27 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           }
 
       assertResultsMatchCsv("$prefix/ZoneStats.csv", actual)
+    }
+
+    private fun assertSubzoneResults(prefix: String, allResults: List<ObservationResultsModel>) {
+      val rowKeys = subzoneIds.keys.map { listOf(it) }
+
+      val actual =
+          makeActualCsv(allResults, rowKeys) { (subzoneName), results ->
+            val subzone =
+                results.plantingZones
+                    .flatMap { it.plantingSubzones }
+                    .firstOrNull { it.plantingSubzoneId == subzoneIds[subzoneName] }
+            listOf(
+                subzone?.totalPlants.toStringOrBlank(),
+                subzone?.plantingDensity.toStringOrBlank(),
+                subzone?.totalSpecies.toStringOrBlank(),
+                subzone?.mortalityRate.toStringOrBlank("%"),
+                subzone?.estimatedPlants.toStringOrBlank(),
+            )
+          }
+
+      assertResultsMatchCsv("$prefix/SubzoneStats.csv", actual)
     }
 
     private fun assertPlotResults(prefix: String, allResults: List<ObservationResultsModel>) {
@@ -561,6 +584,34 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           }
 
       assertResultsMatchCsv("$prefix/SiteStatsPerSpecies.csv", actual)
+    }
+
+    private fun assertSubzoneSpeciesResults(
+        prefix: String,
+        allResults: List<ObservationResultsModel>
+    ) {
+      val rowKeys =
+          subzoneIds.keys.flatMap { zoneName ->
+            allSpeciesNames.map { speciesName -> listOf(zoneName, speciesName) }
+          }
+
+      val actual =
+          makeActualCsv(allResults, rowKeys) { (subzoneName, speciesName), results ->
+            results.plantingZones
+                .flatMap { it.plantingSubzones }
+                .firstOrNull { it.plantingSubzoneId == subzoneIds[subzoneName] }
+                ?.species
+                ?.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
+                ?.firstOrNull { getSpeciesNameValue(it) == speciesName }
+                ?.let { species ->
+                  listOf(
+                      species.totalPlants.toStringOrBlank(),
+                      species.mortalityRate.toStringOrBlank("%"),
+                  )
+                } ?: listOf("", "")
+          }
+
+      assertResultsMatchCsv("$prefix/SubzoneStatsPerSpecies.csv", actual)
     }
 
     private fun assertZoneSpeciesResults(
