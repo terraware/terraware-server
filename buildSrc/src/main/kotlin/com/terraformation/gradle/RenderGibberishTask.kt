@@ -6,7 +6,9 @@ import java.util.Base64
 import java.util.Properties
 import javax.inject.Inject
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileType
+import org.gradle.api.file.ProjectLayout
 import org.gradle.api.file.RegularFile
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Provider
@@ -14,21 +16,37 @@ import org.gradle.api.tasks.IgnoreEmptyDirectories
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFiles
 import org.gradle.api.tasks.SkipWhenEmpty
+import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.TaskAction
 import org.gradle.work.ChangeType
 import org.gradle.work.InputChanges
 
 /** Translates English messages into gibberish for localization testing. */
-abstract class RenderGibberishTask : DefaultTask() {
+abstract class RenderGibberishTask
+@Inject
+constructor(
+    layout: ProjectLayout,
+    objectFactory: ObjectFactory,
+    sourceSets: SourceSetContainer,
+) : DefaultTask() {
+  private val resourcesSourceDir =
+      sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME).resources.srcDirs.first()
+  private val resourcesBuildDir = layout.buildDirectory.dir("resources/main")
+
   @get:IgnoreEmptyDirectories
   @get:InputFiles
   @get:SkipWhenEmpty
-  val propertiesFiles =
-      project.files(project.fileTree("src/main/resources/i18n") { include("**/*_en.properties") })
+  val propertiesFiles: ConfigurableFileCollection =
+      objectFactory
+          .fileCollection()
+          .from(
+              objectFactory
+                  .fileTree()
+                  .from(resourcesSourceDir.resolve("i18n"))
+                  .include("**/*_en.properties"))
 
   @get:OutputFiles val outputFiles = propertiesFiles.files.map { getTargetFile(it) }
-
-  @get:Inject abstract val objects: ObjectFactory
 
   init {
     group = "build"
@@ -112,12 +130,8 @@ abstract class RenderGibberishTask : DefaultTask() {
     val targetFilename = file.name.replace("_en.$extension", "_gx.$extension")
 
     val targetRelativeToResourcesDir =
-        file.parentFile
-            .resolve(targetFilename)
-            .relativeTo(project.projectDir.resolve("src/main/resources"))
+        file.parentFile.resolve(targetFilename).relativeTo(resourcesSourceDir)
 
-    return project.layout.buildDirectory.dir("resources/main").map {
-      it.file(targetRelativeToResourcesDir.toString())
-    }
+    return resourcesBuildDir.map { it.file(targetRelativeToResourcesDir.toString()) }
   }
 }
