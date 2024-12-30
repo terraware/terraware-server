@@ -9,6 +9,7 @@ import com.terraformation.backend.api.ResourceInUseException
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.ScientificNameExistsException
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.GrowthForm
@@ -122,14 +123,19 @@ class SpeciesController(
   @ApiResponse(
       responseCode = "200", description = "Species updated or merged with an existing species.")
   @ApiResponse404
+  @ApiResponse409("A species with the requested name already exists.")
   @Operation(summary = "Updates an existing species.")
   @PutMapping("/{speciesId}")
   fun updateSpecies(
       @PathVariable speciesId: SpeciesId,
       @RequestBody payload: SpeciesRequestPayload
   ): SimpleSuccessResponsePayload {
-    speciesService.updateSpecies(payload.toExisting(speciesId))
-    return SimpleSuccessResponsePayload()
+    try {
+      speciesService.updateSpecies(payload.toExisting(speciesId))
+      return SimpleSuccessResponsePayload()
+    } catch (e: ScientificNameExistsException) {
+      throw DuplicateNameException(e.message)
+    }
   }
 
   @ApiResponse404

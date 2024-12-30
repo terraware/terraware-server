@@ -398,6 +398,22 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `updateSpecies throws exception if scientific name exists in organization`() {
+    insertSpecies(scientificName = "Test 1")
+    val speciesId = insertSpecies(scientificName = "Test 2")
+
+    assertThrows<ScientificNameExistsException> {
+      store.updateSpecies(
+          ExistingSpeciesModel(
+              createdTime = Instant.EPOCH,
+              id = speciesId,
+              modifiedTime = Instant.EPOCH,
+              organizationId = organizationId,
+              scientificName = "Test 1"))
+    }
+  }
+
+  @Test
   fun `updateSpecies throws exception if user has no permission to update species`() {
     every { user.canUpdateSpecies(any()) } returns false
 
