@@ -1,2 +1,4 @@
+3f8010e85e3 Update dependency gradle to v8.12 (#2727)
+b135e80c3b9 SW-6402 Return HTTP 409 on species name conflict (#2731)
 9ecb297691b Stop accessing project in task execution phase (#2729)
 6fee0601258 Update plugin dev.monosoul.jooq-docker to v6.1.15 (#2730)
