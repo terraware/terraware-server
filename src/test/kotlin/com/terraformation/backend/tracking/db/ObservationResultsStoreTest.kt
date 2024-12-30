@@ -477,9 +477,11 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           makeActualCsv(allResults, listOf(emptyList())) { _, results ->
             listOf(
                 results.plantingDensity.toStringOrBlank(),
+                results.plantingDensityStdDev.toStringOrBlank(),
                 results.estimatedPlants.toStringOrBlank(),
                 results.totalSpecies.toStringOrBlank(),
                 results.mortalityRate.toStringOrBlank("%"),
+                results.mortalityRateStdDev.toStringOrBlank("%"),
             )
           }
 
@@ -495,8 +497,10 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
             listOf(
                 zone?.totalPlants.toStringOrBlank(),
                 zone?.plantingDensity.toStringOrBlank(),
+                zone?.plantingDensityStdDev.toStringOrBlank(),
                 zone?.totalSpecies.toStringOrBlank(),
                 zone?.mortalityRate.toStringOrBlank("%"),
+                zone?.mortalityRateStdDev.toStringOrBlank("%"),
                 zone?.estimatedPlants.toStringOrBlank(),
             )
           }
@@ -519,19 +523,15 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
             listOf(
                 subzone?.totalPlants.toStringOrBlank(),
                 subzone?.plantingDensity.toStringOrBlank(),
+                subzone?.plantingDensityStdDev.toStringOrBlank(),
                 subzone?.totalSpecies.toStringOrBlank(),
                 subzone?.mortalityRate.toStringOrBlank("%"),
+                subzone?.mortalityRateStdDev.toStringOrBlank("%"),
                 subzone?.estimatedPlants.toStringOrBlank(),
             )
           }
 
-      assertResultsMatchCsv("$prefix/SubzoneStats.csv", actual) { row ->
-        row.filterIndexed { index, _ ->
-          val positionInColumnGroup = (index - 1) % 7
-          // filter out STD DEV until later
-          positionInColumnGroup != 2 && positionInColumnGroup != 5
-        }
-      }
+      assertResultsMatchCsv("$prefix/SubzoneStats.csv", actual)
     }
 
     private fun assertPlotSummary(prefix: String, allResults: List<ObservationRollupResultsModel>) {
