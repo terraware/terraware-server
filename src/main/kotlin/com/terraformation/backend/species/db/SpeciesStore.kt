@@ -573,7 +573,7 @@ class SpeciesStore(
    * [SpeciesService.updateSpecies] instead of this.
    *
    * @return The updated row. This is a new object; the input row is not modified.
-   * @throws DuplicateKeyException The requested name was already in use.
+   * @throws ScientificNameExistsException The requested name was already in use.
    * @throws SpeciesNotFoundException No species with the requested ID exists.
    */
   fun updateSpecies(model: ExistingSpeciesModel): ExistingSpeciesModel {
@@ -605,7 +605,11 @@ class SpeciesStore(
             woodDensityLevelId = model.woodDensityLevel,
         )
 
-    speciesDao.update(updatedRow)
+    try {
+      speciesDao.update(updatedRow)
+    } catch (e: DuplicateKeyException) {
+      throw ScientificNameExistsException(model.scientificName)
+    }
 
     updateEcosystemTypes(model.id, model.ecosystemTypes)
     updateGrowthForms(model.id, model.growthForms)
