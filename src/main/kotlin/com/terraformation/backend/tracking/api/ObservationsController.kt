@@ -824,7 +824,18 @@ data class ObservationPlantingSubzoneResultsPayload(
                 "of monitoring plots. Only present if the subzone has completed planting.")
     val plantingDensity: Int?,
     val plantingSubzoneId: PlantingSubzoneId,
+    val species: List<ObservationSpeciesResultsPayload>,
+    @Schema(
+        description =
+            "Total number of plants recorded. Includes all plants, regardless of live/dead " +
+                "status or species.")
     val totalPlants: Int,
+    @Schema(
+        description =
+            "Total number of species observed, not counting dead plants. Includes plants with " +
+                "Known and Other certainties. In the case of Other, each distinct user-supplied " +
+                "species name is counted as a separate species for purposes of this total.")
+    val totalSpecies: Int,
 ) {
   constructor(
       model: ObservationPlantingSubzoneResultsModel
@@ -836,7 +847,12 @@ data class ObservationPlantingSubzoneResultsPayload(
       mortalityRate = model.mortalityRate,
       plantingDensity = model.plantingDensity,
       plantingSubzoneId = model.plantingSubzoneId,
+      species =
+          model.species
+              .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
+              .map { ObservationSpeciesResultsPayload(it) },
       totalPlants = model.totalPlants,
+      totalSpecies = model.totalSpecies,
   )
 }
 
@@ -974,6 +990,20 @@ data class PlantingZoneObservationSummaryPayload(
     @Schema(description = "List of subzone observations used in this summary.")
     val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
     val plantingZoneId: PlantingZoneId,
+    @Schema(
+        description =
+            "Combined list of observed species and their statuses from the latest observation of each subzone.")
+    val species: List<ObservationSpeciesResultsPayload>,
+    @Schema(
+        description =
+            "Total number of plants recorded from the latest observations of each subzone. Includes all plants, regardless of live/dead status or species.")
+    val totalPlants: Int,
+    @Schema(
+        description =
+            "Total number of species observed, not counting dead plants. Includes plants with " +
+                "Known and Other certainties. In the case of Other, each distinct user-supplied " +
+                "species name is counted as a separate species for purposes of this total.")
+    val totalSpecies: Int,
 ) {
   constructor(
       model: ObservationPlantingZoneRollupResultsModel
@@ -987,6 +1017,12 @@ data class PlantingZoneObservationSummaryPayload(
       plantingSubzones =
           model.plantingSubzones.map { ObservationPlantingSubzoneResultsPayload(it) },
       plantingZoneId = model.plantingZoneId,
+      species =
+          model.species
+              .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
+              .map { ObservationSpeciesResultsPayload(it) },
+      totalPlants = model.totalPlants,
+      totalSpecies = model.totalSpecies,
   )
 }
 
@@ -1012,7 +1048,21 @@ data class PlantingSiteObservationSummaryPayload(
                 "of monitoring plots. Only present if all the subzones in the site have been " +
                 "marked as having completed planting.")
     val plantingDensity: Int?,
-    val plantingZones: List<PlantingZoneObservationSummaryPayload>
+    val plantingZones: List<PlantingZoneObservationSummaryPayload>,
+    @Schema(
+        description =
+            "Combined list of observed species and their statuses from the latest observation of each subzone within each zone.")
+    val species: List<ObservationSpeciesResultsPayload>,
+    @Schema(
+        description =
+            "Total number of plants recorded from the latest observations of each subzone within each zone. Includes all plants, regardless of live/dead status or species.")
+    val totalPlants: Int,
+    @Schema(
+        description =
+            "Total number of species observed, not counting dead plants. Includes plants with " +
+                "Known and Other certainties. In the case of Other, each distinct user-supplied " +
+                "species name is counted as a separate species for purposes of this total.")
+    val totalSpecies: Int,
 ) {
   constructor(
       model: ObservationRollupResultsModel
@@ -1022,7 +1072,14 @@ data class PlantingSiteObservationSummaryPayload(
       latestObservationTime = model.latestCompletedTime,
       mortalityRate = model.mortalityRate,
       plantingDensity = model.plantingDensity,
-      plantingZones = model.plantingZones.map { PlantingZoneObservationSummaryPayload(it) })
+      plantingZones = model.plantingZones.map { PlantingZoneObservationSummaryPayload(it) },
+      species =
+          model.species
+              .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
+              .map { ObservationSpeciesResultsPayload(it) },
+      totalPlants = model.totalPlants,
+      totalSpecies = model.totalSpecies,
+  )
 }
 
 data class CompleteAdHocObservationRequestPayload(
