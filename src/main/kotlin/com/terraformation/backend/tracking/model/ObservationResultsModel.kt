@@ -5,6 +5,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPhotoType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
@@ -25,6 +26,7 @@ data class ObservationMonitoringPlotPhotoModel(
     val fileId: FileId,
     val gpsCoordinates: Point,
     val position: ObservationPlotPosition,
+    val type: ObservationPhotoType,
 )
 
 data class ObservedPlotCoordinatesModel(

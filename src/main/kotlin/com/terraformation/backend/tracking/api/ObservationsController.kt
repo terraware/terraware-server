@@ -24,6 +24,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPhotoType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
@@ -362,6 +363,7 @@ class ObservationsController(
             monitoringPlotId = plotId,
             observationId = observationId,
             position = payload.position,
+            type = payload.type ?: ObservationPhotoType.Plot,
         )
 
     return UploadPlotPhotoResponsePayload(fileId)
@@ -663,10 +665,11 @@ data class ObservationMonitoringPlotPhotoPayload(
     val fileId: FileId,
     val gpsCoordinates: Point,
     val position: ObservationPlotPosition,
+    val type: ObservationPhotoType,
 ) {
   constructor(
       model: ObservationMonitoringPlotPhotoModel
-  ) : this(model.fileId, model.gpsCoordinates, model.position)
+  ) : this(model.fileId, model.gpsCoordinates, model.position, model.type)
 }
 
 data class ObservationMonitoringPlotCoordinatesPayload(
@@ -1227,6 +1230,11 @@ data class UpdatePlotObservationRequestPayload(
 data class UploadPlotPhotoRequestPayload(
     val gpsCoordinates: Point,
     val position: ObservationPlotPosition,
+    @Schema(
+        description = "Type of observation plot photo.",
+        defaultValue = "Plot",
+    )
+    val type: ObservationPhotoType?,
 )
 
 data class UploadPlotPhotoResponsePayload(val fileId: FileId) : SuccessResponsePayload

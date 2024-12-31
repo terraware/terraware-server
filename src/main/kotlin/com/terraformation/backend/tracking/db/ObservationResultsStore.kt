@@ -190,7 +190,12 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
   private val photosMultiset =
       DSL.multiset(
-              DSL.select(OBSERVATION_PHOTOS.FILE_ID, photosGpsField, OBSERVATION_PHOTOS.POSITION_ID)
+              DSL.select(
+                      OBSERVATION_PHOTOS.FILE_ID,
+                      photosGpsField,
+                      OBSERVATION_PHOTOS.POSITION_ID,
+                      OBSERVATION_PHOTOS.TYPE_ID,
+                  )
                   .from(OBSERVATION_PHOTOS)
                   .where(OBSERVATION_PHOTOS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
                   .and(OBSERVATION_PHOTOS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
@@ -201,6 +206,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   fileId = record[OBSERVATION_PHOTOS.FILE_ID.asNonNullable()],
                   gpsCoordinates = record[photosGpsField.asNonNullable()] as Point,
                   position = record[OBSERVATION_PHOTOS.POSITION_ID.asNonNullable()],
+                  type = record[OBSERVATION_PHOTOS.TYPE_ID.asNonNullable()],
               )
             }
           }

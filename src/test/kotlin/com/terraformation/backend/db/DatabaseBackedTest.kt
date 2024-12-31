@@ -286,6 +286,7 @@ import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPhotoType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
@@ -2328,6 +2329,7 @@ abstract class DatabaseBackedTest {
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       gpsCoordinates: Point = row.gpsCoordinates?.centroid ?: point(1),
       position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.SouthwestCorner,
+      type: ObservationPhotoType = row.typeId ?: ObservationPhotoType.Plot,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -2336,6 +2338,7 @@ abstract class DatabaseBackedTest {
             monitoringPlotId = monitoringPlotId,
             observationId = observationId,
             positionId = position,
+            typeId = type,
         )
 
     observationPhotosDao.insert(rowWithDefaults)
