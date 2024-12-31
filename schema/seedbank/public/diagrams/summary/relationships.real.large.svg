@@ -1277,7 +1277,7 @@
 <!-- tracking.observation_photos -->
 <g id="node25" class="node"><title>tracking.observation_photos</title>
 <g id="a_node25"><a xlink:href="../../../tracking/tables/observation_photos.html" xlink:title="tracking.observation_photos" target="_top">
-<polygon fill="#ffffff" stroke="none" points="877.5,-4769 877.5,-4919 1088.5,-4919 1088.5,-4769 877.5,-4769"/>
+<polygon fill="#ffffff" stroke="none" points="877.5,-4747 877.5,-4919 1088.5,-4919 1088.5,-4747 877.5,-4747"/>
 <polygon fill="#f5f5f5" stroke="none" points="878,-4897 878,-4919 1089,-4919 1089,-4897 878,-4897"/>
 <polygon fill="none" stroke="black" points="878,-4897 878,-4919 1089,-4919 1089,-4897 878,-4897"/>
 <text text-anchor="start" x="883" y="-4906.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">tracking.observation_photos</text>
@@ -1293,15 +1293,17 @@
 <text text-anchor="start" x="934" y="-4817.2" font-family="Helvetica,sans-Serif" font-size="11.00">position_id</text>
 <polygon fill="none" stroke="black" points="878,-4787 878,-4809 1089,-4809 1089,-4787 878,-4787"/>
 <text text-anchor="start" x="934" y="-4795.2" font-family="Helvetica,sans-Serif" font-size="11.00">gps_coordinates</text>
-<polygon fill="#ffffff" stroke="none" points="878,-4769 878,-4787 967,-4787 967,-4769 878,-4769"/>
-<polygon fill="none" stroke="black" points="878,-4769 878,-4787 967,-4787 967,-4769 878,-4769"/>
-<text text-anchor="start" x="881" y="-4775.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="none" points="967,-4769 967,-4787 1042,-4787 1042,-4769 967,-4769"/>
-<polygon fill="none" stroke="black" points="967,-4769 967,-4787 1042,-4787 1042,-4769 967,-4769"/>
-<text text-anchor="start" x="1003" y="-4775.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="1042,-4769 1042,-4787 1089,-4787 1089,-4769 1042,-4769"/>
-<polygon fill="none" stroke="black" points="1042,-4769 1042,-4787 1089,-4787 1089,-4769 1042,-4769"/>
-<text text-anchor="start" x="1079" y="-4775.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="none" stroke="black" points="878,-4765 878,-4787 1089,-4787 1089,-4765 878,-4765"/>
+<text text-anchor="start" x="934" y="-4773.2" font-family="Helvetica,sans-Serif" font-size="11.00">type_id</text>
+<polygon fill="#ffffff" stroke="none" points="878,-4747 878,-4765 967,-4765 967,-4747 878,-4747"/>
+<polygon fill="none" stroke="black" points="878,-4747 878,-4765 967,-4765 967,-4747 878,-4747"/>
+<text text-anchor="start" x="881" y="-4753.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="none" points="967,-4747 967,-4765 1042,-4765 1042,-4747 967,-4747"/>
+<polygon fill="none" stroke="black" points="967,-4747 967,-4765 1042,-4765 1042,-4747 967,-4747"/>
+<text text-anchor="start" x="1003" y="-4753.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="1042,-4747 1042,-4765 1089,-4765 1089,-4747 1042,-4747"/>
+<polygon fill="none" stroke="black" points="1042,-4747 1042,-4765 1089,-4765 1089,-4747 1042,-4747"/>
+<text text-anchor="start" x="1079" y="-4753.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>

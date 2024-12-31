@@ -1,7 +1,7 @@
 plantings
 recorded_plants
-draft_planting_sites
 observation_photos
+draft_planting_sites
 observed_plot_coordinates
 observed_zone_species_totals
 observed_subzone_species_totals
@@ -31,6 +31,7 @@ planting_types
 observation_types
 observation_states
 observation_plot_statuses
+observation_photo_types
 observable_conditions
 observation_plot_positions
 recorded_species_certainties
