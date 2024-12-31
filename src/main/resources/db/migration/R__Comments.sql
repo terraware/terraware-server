@@ -369,6 +369,8 @@ COMMENT ON TABLE tracking.observable_conditions IS '(Enum) Conditions that can b
 
 COMMENT ON TABLE tracking.observation_photos IS 'Observation-specific details about a photo of a monitoring plot. Generic metadata is in the `files` table.';
 
+COMMENT ON TABLE tracking.observation_photo_types IS '(Enum) Types of observation plot photo.';
+
 COMMENT ON TABLE tracking.observation_plot_conditions IS 'List of conditions observed in each monitoring plot.';
 
 COMMENT ON TABLE tracking.observation_plot_positions IS '(Enum) Positions in a monitoring plot where users can take photos or record coordinates.';

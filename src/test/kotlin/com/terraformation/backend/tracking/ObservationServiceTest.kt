@@ -20,6 +20,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPhotoType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
@@ -32,7 +33,6 @@ import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Other
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Unknown
 import com.terraformation.backend.db.tracking.embeddables.pojos.ObservationPlotId
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
@@ -40,6 +40,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTo
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubzoneSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.records.ObservationPhotosRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
@@ -772,7 +773,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     inner class StorePhoto {
       @Test
       fun `associates photo with observation and plot`() {
-        val fileId =
+        val fileId1 =
             service.storePhoto(
                 observationId,
                 plotId,
@@ -781,17 +782,36 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 byteArrayOf(1).inputStream(),
                 metadata)
 
-        fileStore.assertFileExists(filesDao.fetchOneById(fileId)!!.storageUrl!!)
+        val fileId2 =
+            service.storePhoto(
+                observationId,
+                plotId,
+                point(1),
+                ObservationPlotPosition.SouthwestCorner,
+                byteArrayOf(1).inputStream(),
+                metadata,
+                ObservationPhotoType.Soil)
 
-        assertEquals(
+        fileStore.assertFileExists(filesDao.fetchOneById(fileId1)!!.storageUrl!!)
+        fileStore.assertFileExists(filesDao.fetchOneById(fileId2)!!.storageUrl!!)
+
+        assertTableEquals(
             listOf(
-                ObservationPhotosRow(
-                    fileId,
+                ObservationPhotosRecord(
+                    fileId1,
                     observationId,
                     plotId,
                     ObservationPlotPosition.NortheastCorner,
-                    point(1))),
-            observationPhotosDao.findAll())
+                    point(1),
+                    ObservationPhotoType.Plot),
+                ObservationPhotosRecord(
+                    fileId2,
+                    observationId,
+                    plotId,
+                    ObservationPlotPosition.SouthwestCorner,
+                    point(1),
+                    ObservationPhotoType.Soil),
+            ))
       }
 
       @Test

@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPhotoType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -125,7 +126,9 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       val results = resultsStore.fetchByOrganizationId(organizationId)
 
       assertEquals(
-          listOf(ObservationMonitoringPlotPhotoModel(inserted.fileId, gpsCoordinates, position)),
+          listOf(
+              ObservationMonitoringPlotPhotoModel(
+                  inserted.fileId, gpsCoordinates, position, ObservationPhotoType.Plot)),
           results[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].photos)
     }
 

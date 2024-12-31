@@ -160,6 +160,10 @@ val ENUM_TABLES =
                     listOf("observation_plot_conditions\\.condition_id"),
                     isLocalizable = false),
                 EnumTable(
+                    "observation_photo_types",
+                    listOf("observation_photos\\.type_id"),
+                    isLocalizable = false),
+                EnumTable(
                     "observation_plot_positions",
                     listOf(
                         "observation_photos\\.position_id",

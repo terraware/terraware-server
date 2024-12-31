@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPhotoType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
@@ -173,7 +174,8 @@ class ObservationService(
       gpsCoordinates: Point,
       position: ObservationPlotPosition,
       data: InputStream,
-      metadata: NewFileMetadata
+      metadata: NewFileMetadata,
+      type: ObservationPhotoType = ObservationPhotoType.Plot,
   ): FileId {
     requirePermissions { updateObservation(observationId) }
 
@@ -186,10 +188,12 @@ class ObservationService(
                   monitoringPlotId = monitoringPlotId,
                   observationId = observationId,
                   positionId = position,
+                  typeId = type,
               ))
         }
 
-    log.info("Stored photo $fileId for observation $observationId of plot $monitoringPlotId")
+    log.info(
+        "Stored photo $fileId of type $type for observation $observationId of plot $monitoringPlotId")
 
     return fileId
   }
