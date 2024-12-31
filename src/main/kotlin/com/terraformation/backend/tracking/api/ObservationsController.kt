@@ -1230,7 +1230,10 @@ data class UpdatePlotObservationRequestPayload(
 data class UploadPlotPhotoRequestPayload(
     val gpsCoordinates: Point,
     val position: ObservationPlotPosition,
-    @Schema(description = "Type of observation plot photo. Defaulted to Plot")
+    @Schema(
+        description = "Type of observation plot photo.",
+        defaultValue = "Plot",
+    )
     val type: ObservationPhotoType?,
 )
 
