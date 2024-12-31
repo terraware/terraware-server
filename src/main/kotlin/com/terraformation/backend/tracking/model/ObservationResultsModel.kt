@@ -462,7 +462,7 @@ fun Collection<Int>.calculateStandardDeviation(): Int? {
 
   val numSamples = this.size.toDouble()
   val samples = this.map { it.toDouble() }
-  val mean = samples.sumOf { it } / numSamples
+  val mean = samples.average()
   val sumSquaredDifferences = samples.sumOf { (it - mean) * (it - mean) }
   val variance = sumSquaredDifferences / (numSamples - 1)
 
