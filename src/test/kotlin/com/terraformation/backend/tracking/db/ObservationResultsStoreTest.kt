@@ -458,8 +458,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                 plot?.totalSpecies.toStringOrBlank(),
                 plot?.mortalityRate.toStringOrBlank("%"),
                 // Live and existing plants columns are in spreadsheet but not included in
-                // calculated
-                // results; it will be removed by the filter function below.
+                // calculated results; it will be removed by the filter
+                // function below.
                 plot?.plantingDensity.toStringOrBlank(),
             )
           }
