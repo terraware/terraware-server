@@ -32,6 +32,7 @@ import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.calculateMortalityRate
+import com.terraformation.backend.tracking.model.calculateStandardDeviation
 import com.terraformation.backend.util.SQUARE_METERS_PER_HECTARE
 import jakarta.inject.Named
 import java.time.Instant
@@ -453,19 +454,18 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   }
 
               val mortalityRate = species.calculateMortalityRate()
+              val mortalityRateStdDev =
+                  monitoringPlots.mapNotNull { it.mortalityRate }.calculateStandardDeviation()
 
               val plantingCompleted = record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME] != null
               val plantingDensity =
-                  if (plantingCompleted) {
-                    val plotDensities = monitoringPlots.map { it.plantingDensity }
-                    if (plotDensities.isNotEmpty()) {
-                      plotDensities.average()
-                    } else {
-                      null
-                    }
+                  if (plantingCompleted && monitoringPlots.isNotEmpty()) {
+                    monitoringPlots.map { it.plantingDensity }.average()
                   } else {
                     null
                   }
+              val plantingDensityStdDev =
+                  monitoringPlots.map { it.plantingDensity }.calculateStandardDeviation()
 
               val estimatedPlants =
                   if (plantingDensity != null && areaHa != null) {
@@ -480,8 +480,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   estimatedPlants = estimatedPlants?.roundToInt(),
                   monitoringPlots = monitoringPlots,
                   mortalityRate = mortalityRate,
+                  mortalityRateStdDev = mortalityRateStdDev,
                   plantingCompleted = plantingCompleted,
                   plantingDensity = plantingDensity?.roundToInt(),
+                  plantingDensityStdDev = plantingDensityStdDev,
                   plantingSubzoneId = record[PLANTING_SUBZONES.ID.asNonNullable()],
                   species = species,
                   totalPlants = totalPlants,
@@ -565,23 +567,24 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     null
                   }
 
+              val monitoringPlots = subzones.flatMap { it.monitoringPlots }
+
               val mortalityRate = species.calculateMortalityRate()
+              val mortalityRateStdDev =
+                  monitoringPlots.mapNotNull { it.mortalityRate }.calculateStandardDeviation()
 
               val plantingCompleted = record[zonePlantingCompletedField]
               val plantingDensity =
-                  if (plantingCompleted) {
-                    val plotDensities =
-                        subzones.flatMap { subzone ->
-                          subzone.monitoringPlots.map { it.plantingDensity }
-                        }
-                    if (plotDensities.isNotEmpty()) {
-                      plotDensities.average()
-                    } else {
-                      null
-                    }
+                  if (plantingCompleted && monitoringPlots.isNotEmpty()) {
+                    monitoringPlots.map { it.plantingDensity }.average()
                   } else {
                     null
                   }
+              val plantingDensityStdDev =
+                  subzones
+                      .flatMap { it.monitoringPlots }
+                      .map { it.plantingDensity }
+                      .calculateStandardDeviation()
 
               val estimatedPlants =
                   if (plantingDensity != null && areaHa != null) {
@@ -595,8 +598,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   completedTime = completedTime,
                   estimatedPlants = estimatedPlants?.roundToInt(),
                   mortalityRate = mortalityRate,
+                  mortalityRateStdDev = mortalityRateStdDev,
                   plantingCompleted = plantingCompleted,
                   plantingDensity = plantingDensity?.roundToInt(),
+                  plantingDensityStdDev = plantingDensityStdDev,
                   plantingSubzones = subzones,
                   plantingZoneId = record[PLANTING_ZONES.ID.asNonNullable()],
                   species = identifiedSpecies,
@@ -649,19 +654,15 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
           val plantingCompleted = zones.isNotEmpty() && zones.all { it.plantingCompleted }
 
+          val monitoringPlots = zones.flatMap { it.plantingSubzones }.flatMap { it.monitoringPlots }
           val plantingDensity =
-              if (zones.isNotEmpty() && zones.all { it.plantingDensity != null }) {
-                zones
-                    .flatMap { zone ->
-                      zone.plantingSubzones.flatMap { subzone ->
-                        subzone.monitoringPlots.map { plot -> plot.plantingDensity }
-                      }
-                    }
-                    .average()
-                    .roundToInt()
+              if (plantingCompleted && monitoringPlots.isNotEmpty()) {
+                monitoringPlots.map { it.plantingDensity }.average()
               } else {
                 null
               }
+          val plantingDensityStdDev =
+              monitoringPlots.map { it.plantingDensity }.calculateStandardDeviation()
 
           val estimatedPlants =
               if (zones.isNotEmpty() && zones.all { it.estimatedPlants != null }) {
@@ -673,6 +674,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
           val totalSpecies = liveSpecies.size
 
           val mortalityRate = species.calculateMortalityRate()
+          val mortalityRateStdDev =
+              monitoringPlots.mapNotNull { it.mortalityRate }.calculateStandardDeviation()
 
           ObservationResultsModel(
               adHocPlot = record[adHocMonitoringPlotMultiset].firstOrNull(),
@@ -680,9 +683,11 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               estimatedPlants = estimatedPlants,
               isAdHoc = record[OBSERVATIONS.IS_AD_HOC.asNonNullable()],
               mortalityRate = mortalityRate,
+              mortalityRateStdDev = mortalityRateStdDev,
               observationId = record[OBSERVATIONS.ID.asNonNullable()],
               plantingCompleted = plantingCompleted,
-              plantingDensity = plantingDensity,
+              plantingDensity = plantingDensity?.roundToInt(),
+              plantingDensityStdDev = plantingDensityStdDev,
               plantingSiteId = record[OBSERVATIONS.PLANTING_SITE_ID.asNonNullable()],
               plantingZones = zones,
               species = knownSpecies,
