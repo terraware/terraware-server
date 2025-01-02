@@ -280,8 +280,6 @@ interface TerrawareUser : Principal {
 
   fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 
-  fun canPopulatePlantingSiteCountries(): Boolean = defaultPermission
-
   fun canReadAccession(accessionId: AccessionId): Boolean = defaultPermission
 
   fun canReadAllAcceleratorDetails(): Boolean = defaultPermission

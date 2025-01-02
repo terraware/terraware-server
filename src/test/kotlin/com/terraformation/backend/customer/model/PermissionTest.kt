@@ -1390,7 +1390,6 @@ internal class PermissionTest : DatabaseTest() {
         manageDefaultProjectLeads = true,
         manageModuleEventStatuses = true,
         manageNotifications = true,
-        populatePlantingSiteCountries = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
@@ -1752,7 +1751,6 @@ internal class PermissionTest : DatabaseTest() {
         manageInternalTags = true,
         manageModuleEvents = true,
         manageModules = true,
-        populatePlantingSiteCountries = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
@@ -2847,7 +2845,6 @@ internal class PermissionTest : DatabaseTest() {
         manageModules: Boolean = false,
         manageNotifications: Boolean = false,
         manageDefaultProjectLeads: Boolean = false,
-        populatePlantingSiteCountries: Boolean = false,
         readAllAcceleratorDetails: Boolean = false,
         readAllDeliverables: Boolean = false,
         readCohort: Boolean = false,
@@ -2915,10 +2912,6 @@ internal class PermissionTest : DatabaseTest() {
           "Can manage module event statuses")
       assertEquals(manageModules, user.canManageModules(), "Can manage modules")
       assertEquals(manageNotifications, user.canManageNotifications(), "Can manage notifications")
-      assertEquals(
-          populatePlantingSiteCountries,
-          user.canPopulatePlantingSiteCountries(),
-          "Can populate planting site countries")
       assertEquals(
           readAllAcceleratorDetails,
           user.canReadAllAcceleratorDetails(),

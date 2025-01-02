@@ -375,8 +375,6 @@ data class IndividualUser(
   override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId) =
       canUpdatePlantingSite(plantingSiteId) && isSuperAdmin()
 
-  override fun canPopulatePlantingSiteCountries() = isSuperAdmin()
-
   override fun canReadAccession(accessionId: AccessionId) =
       isMember(parentStore.getFacilityId(accessionId))
 
