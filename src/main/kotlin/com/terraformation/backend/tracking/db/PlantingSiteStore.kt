@@ -1686,37 +1686,6 @@ class PlantingSiteStore(
     }
   }
 
-  fun populateExistingSiteCountries() {
-    requirePermissions { populatePlantingSiteCountries() }
-
-    with(PLANTING_SITES) {
-      dslContext
-          .select(ID.asNonNullable(), BOUNDARY.asNonNullable())
-          .from(PLANTING_SITES)
-          .where(BOUNDARY.isNotNull)
-          .and(COUNTRY_CODE.isNull)
-          .fetch()
-          .forEach { (plantingSiteId, boundary) ->
-            val countryCode = countryDetector.getCountries(boundary).singleOrNull()
-            if (countryCode != null) {
-              log.debug("Detected country code $countryCode for planting site $plantingSiteId")
-
-              withLockedPlantingSite(plantingSiteId) {
-                dslContext
-                    .update(PLANTING_SITES)
-                    .set(COUNTRY_CODE, countryCode)
-                    .set(MODIFIED_BY, currentUser().userId)
-                    .set(MODIFIED_TIME, clock.instant())
-                    .where(ID.eq(plantingSiteId))
-                    .execute()
-              }
-            } else {
-              log.debug("No country code detected for planting site $plantingSiteId")
-            }
-          }
-    }
-  }
-
   private val plantingSeasonsMultiset =
       DSL.multiset(
               DSL.select(

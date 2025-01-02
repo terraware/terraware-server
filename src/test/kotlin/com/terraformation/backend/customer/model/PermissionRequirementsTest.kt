@@ -561,11 +561,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
     requirements.movePlantingSiteToAnyOrg(plantingSiteId)
   }
 
-  @Test
-  fun populatePlantingSiteCountries() {
-    allow { populatePlantingSiteCountries() } ifUser { canPopulatePlantingSiteCountries() }
-  }
-
   @Test fun readAccession() = testRead { readAccession(accessionId) }
 
   @Test
