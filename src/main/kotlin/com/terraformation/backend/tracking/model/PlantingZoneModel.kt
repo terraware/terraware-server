@@ -10,6 +10,9 @@ import com.terraformation.backend.util.equalsIgnoreScale
 import com.terraformation.backend.util.nearlyCoveredBy
 import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
+import java.math.RoundingMode
+import kotlin.math.max
+import kotlin.math.roundToInt
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
@@ -450,13 +453,19 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
         exclusion: MultiPolygon? = null,
         errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
         extraPermanentClusters: Int = 0,
-        numPermanentClusters: Int = DEFAULT_NUM_PERMANENT_CLUSTERS,
-        numTemporaryPlots: Int = DEFAULT_NUM_TEMPORARY_PLOTS,
+        numPermanentClusters: Int? = null,
+        numTemporaryPlots: Int? = null,
         studentsT: BigDecimal = DEFAULT_STUDENTS_T,
         targetPlantingDensity: BigDecimal = DEFAULT_TARGET_PLANTING_DENSITY,
         variance: BigDecimal = DEFAULT_VARIANCE,
     ): NewPlantingZoneModel {
       val areaHa: BigDecimal = boundary.differenceNullable(exclusion).calculateAreaHectares()
+      val defaultTotalPlots =
+          (studentsT * studentsT * variance / errorMargin / errorMargin)
+              .setScale(0, RoundingMode.UP)
+              .toInt()
+      val defaultPermanentClusters = max((defaultTotalPlots * 0.75).roundToInt(), 1)
+      val defaultTemporaryPlots = max(defaultTotalPlots - defaultPermanentClusters, 1)
 
       return NewPlantingZoneModel(
           areaHa = areaHa,
@@ -465,8 +474,8 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
           extraPermanentClusters = extraPermanentClusters,
           id = null,
           name = name,
-          numPermanentClusters = numPermanentClusters,
-          numTemporaryPlots = numTemporaryPlots,
+          numPermanentClusters = numPermanentClusters ?: defaultPermanentClusters,
+          numTemporaryPlots = numTemporaryPlots ?: defaultTemporaryPlots,
           plantingSubzones = plantingSubzones,
           studentsT = studentsT,
           targetPlantingDensity = targetPlantingDensity,

@@ -14,12 +14,17 @@ import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.tracking.model.Shapefile
 import io.mockk.every
+import java.math.BigDecimal
 import kotlin.io.path.Path
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
@@ -70,6 +75,87 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
+  inner class PlotCounts {
+    // Error, Student's t, variance, permanent clusters, temporary plots
+    @CsvSource(
+        "defaults        ,100,1.645,40000, 8, 3",
+        "no students t   ,100,     ,40000, 8, 3",
+        "different values, 70,1.7  ,70000,32,10",
+        ignoreLeadingAndTrailingWhitespace = true,
+    )
+    @ParameterizedTest(name = "{0}")
+    fun `calculates number of monitoring plots based on statistical properties`(
+        name: String,
+        errorMargin: BigDecimal,
+        studentsT: BigDecimal?,
+        variance: BigDecimal,
+        expectedPermanent: Int,
+        expectedTemporary: Int,
+    ) {
+      val gen = ShapefileGenerator()
+      val siteBoundary = gen.multiRectangle(0 to 0, 1000 to 1000)
+      val subzoneFeature =
+          gen.subzoneFeature(
+              siteBoundary, errorMargin = errorMargin, studentsT = studentsT, variance = variance)
+
+      importer.import("site", null, organizationId, listOf(Shapefile(listOf(subzoneFeature))))
+
+      val plantingZonesRow = plantingZonesDao.findAll().first()
+      assertEquals(expectedPermanent, plantingZonesRow.numPermanentClusters, "Permanent clusters")
+      assertEquals(expectedTemporary, plantingZonesRow.numTemporaryPlots, "Temporary plots")
+    }
+
+    @Test
+    fun `allows statistical properties to appear on any subzone`() {
+      val gen = ShapefileGenerator()
+      val subzoneFeatures =
+          listOf(
+              gen.subzoneFeature(
+                  gen.multiRectangle(0 to 0, 100 to 100),
+                  errorMargin = BigDecimal(70),
+                  studentsT = null,
+                  variance = null),
+              gen.subzoneFeature(
+                  gen.multiRectangle(100 to 0, 200 to 100),
+                  errorMargin = null,
+                  studentsT = BigDecimal(1.7),
+                  variance = null),
+              gen.subzoneFeature(
+                  gen.multiRectangle(200 to 0, 300 to 100),
+                  errorMargin = null,
+                  studentsT = null,
+                  variance = BigDecimal(70000)),
+          )
+
+      importer.import("site", null, organizationId, listOf(Shapefile(subzoneFeatures)))
+
+      val plantingZonesRow = plantingZonesDao.findAll().first()
+      assertEquals(32, plantingZonesRow.numPermanentClusters, "Permanent clusters")
+      assertEquals(10, plantingZonesRow.numTemporaryPlots, "Temporary plots")
+    }
+
+    @Test
+    fun `can override temporary and permanent plot counts`() {
+      val gen = ShapefileGenerator()
+      val subzoneFeatures =
+          listOf(
+              gen.subzoneFeature(
+                  gen.multiRectangle(0 to 0, 100 to 100),
+                  errorMargin = BigDecimal(70),
+                  studentsT = BigDecimal(1.7),
+                  variance = BigDecimal(70000),
+                  permanentClusters = 15,
+                  temporaryPlots = 4))
+
+      importer.import("site", null, organizationId, listOf(Shapefile(subzoneFeatures)))
+
+      val plantingZonesRow = plantingZonesDao.findAll().first()
+      assertEquals(15, plantingZonesRow.numPermanentClusters, "Permanent clusters")
+      assertEquals(4, plantingZonesRow.numTemporaryPlots, "Temporary plots")
+    }
+  }
+
+  @Nested
   inner class Validation {
     @Test
     fun `detects too few shapefiles`() {
@@ -79,6 +165,25 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             "description",
             organizationId,
             Shapefile.fromZipFile(Path("$resourcesDir/NoShapefiles.zip")))
+      }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = ["error_marg", "variance"])
+    fun `detects missing statistical properties`(property: String) {
+      val gen = ShapefileGenerator()
+      val siteBoundary =
+          gen.multiRectangle(0 to 0, MONITORING_PLOT_SIZE_INT - 1 to MONITORING_PLOT_SIZE_INT)
+      val subzoneFeature =
+          when (property) {
+            "error_marg" -> gen.subzoneFeature(siteBoundary, errorMargin = null)
+            "variance" -> gen.subzoneFeature(siteBoundary, variance = null)
+            else -> throw IllegalArgumentException("Test bug: unknown field $property")
+          }
+
+      assertHasProblem("Zone Z1 has no subzone with positive value for properties: $property") {
+        importer.import(
+            "name", "description", organizationId, listOf(Shapefile(listOf(subzoneFeature))))
       }
     }
 
