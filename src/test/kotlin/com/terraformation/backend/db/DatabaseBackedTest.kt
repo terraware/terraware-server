@@ -369,9 +369,11 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedBranchesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_ADDITIONAL_SPECIES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRANT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.rectanglePolygon
@@ -1254,6 +1256,27 @@ abstract class DatabaseBackedTest {
   ) {
     userGlobalRolesDao.insert(UserGlobalRolesRow(globalRoleId = role, userId = userId))
     clearCachedPermissions(userId)
+  }
+
+  fun deleteObservationBiomassDetails(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+  ) {
+    with(OBSERVATION_BIOMASS_DETAILS) {
+      dslContext
+          .deleteFrom(this)
+          .where(OBSERVATION_ID.eq(observationId))
+          .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+          .execute()
+    }
+  }
+
+  fun deleteRecordedTree(
+      treeId: RecordedTreeId,
+  ) {
+    with(RECORDED_TREES) { dslContext.deleteFrom(this).where(ID.eq(treeId)).execute() }
+
+    inserted.recordedTreeIds.removeIf { it == treeId }
   }
 
   fun deleteUserGlobalRole(
@@ -2567,7 +2590,7 @@ abstract class DatabaseBackedTest {
       treeId: RecordedTreeId = row.treeId ?: inserted.recordedTreeId,
       branchNumber: Long = row.branchNumber ?: nextBranchNumber.getOrDefault(treeId, 1),
       diameterAtBreastHeightCm: Double = row.diameterAtBreastHeightCm ?: 0.0,
-      pointOfMeasurementM: Double = row.pointOfMeasurementM ?: 0.0,
+      pointOfMeasurementM: Double = row.pointOfMeasurementM ?: 1.3,
       isDead: Boolean = row.isDead ?: false,
       description: String? = row.description
   ): RecordedBranchId {
