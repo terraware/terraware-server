@@ -1,6 +1,5 @@
 package com.terraformation.backend.tracking.edit
 
-import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.AnyPlantingSubzoneModel
@@ -83,10 +82,6 @@ class PlantingSiteEditCalculatorV1(
 
           PlantingZoneEdit.Delete(
               existingModel = existingZone,
-              monitoringPlotsRemoved =
-                  existingZone.plantingSubzones
-                      .flatMap { it.monitoringPlots.map { plot -> plot.id } }
-                      .toSet(),
               plantingSubzoneEdits = plantingSubzoneEdits,
           )
         }
@@ -144,19 +139,12 @@ class PlantingSiteEditCalculatorV1(
                     existingUsableBoundary
                         .difference(desiredUsableBoundary)
                         .toNormalizedMultiPolygon()
-                val monitoringPlotsRemoved: Set<MonitoringPlotId> =
-                    existingZone.plantingSubzones
-                        .flatMap { it.monitoringPlots }
-                        .filter { it.boundary.coveragePercent(removedRegion) > 0.00001 }
-                        .map { it.id }
-                        .toSet()
 
                 PlantingZoneEdit.Update(
                     addedRegion = addedRegion,
                     areaHaDifference = areaHaDifference,
                     desiredModel = desiredZone,
                     existingModel = existingZone,
-                    monitoringPlotsRemoved = monitoringPlotsRemoved,
                     numPermanentClustersToAdd = newClustersThatFitInAddedRegion,
                     plantingSubzoneEdits = subzoneEdits,
                     removedRegion = removedRegion,
@@ -244,7 +232,6 @@ class PlantingSiteEditCalculatorV1(
         existingSite.plantingZones.map { existingZone ->
           PlantingZoneEdit.Delete(
               existingModel = existingZone,
-              monitoringPlotsRemoved = emptySet(),
               plantingSubzoneEdits =
                   existingZone.plantingSubzones.map { existingSubzone ->
                     PlantingSubzoneEdit.Delete(existingSubzone)
