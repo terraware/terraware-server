@@ -43,6 +43,7 @@ import com.terraformation.backend.db.default_schema.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES
+import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
@@ -154,6 +155,7 @@ internal class PermissionTest : DatabaseTest() {
 
   private val projectIds = listOf(1000, 1001, 3000, 4000).map { ProjectId(it.toLong()) }
   private val moduleEventIds = listOf(1000, 1001, 3000, 4000).map { EventId(it.toLong()) }
+  private val documentIds = projectIds.map { DocumentId(it.value) }
   private val submissionDocumentIds = projectIds.map { SubmissionDocumentId(it.value) }
 
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
@@ -1523,6 +1525,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *documentIds.toTypedArray(),
+        createSavedVersion = true,
+        readDocument = true,
+        updateDocument = true,
+    )
+
+    permissions.expect(
         *applicationIds.toTypedArray(),
         readApplication = true,
         reviewApplication = true,
@@ -1714,6 +1723,13 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
+    )
+
+    permissions.expect(
+        *documentIds.toTypedArray(),
+        createSavedVersion = true,
+        readDocument = true,
+        updateDocument = true,
     )
 
     permissions.expect(
@@ -1943,6 +1959,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *documentIds.toTypedArray(),
+        createSavedVersion = true,
+        readDocument = true,
+        updateDocument = true,
+    )
+
+    permissions.expect(
         *applicationIds.toTypedArray(),
         readApplication = true,
         reviewApplication = true,
@@ -2158,6 +2181,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *documentIds.toTypedArray(),
+        createSavedVersion = true,
+        readDocument = true,
+        updateDocument = true,
+    )
+
+    permissions.expect(
         *applicationIds.toTypedArray(),
         readApplication = true,
         reviewApplication = true,
@@ -2280,6 +2310,11 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         *submissionDocumentIds.toTypedArray(),
         readSubmissionDocument = true,
+    )
+
+    permissions.expect(
+        *documentIds.toTypedArray(),
+        readDocument = true,
     )
 
     permissions.expect(
@@ -2475,6 +2510,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedDeliveries = deliveryIds.toMutableSet()
     private val uncheckedDeviceManagers = deviceManagerIds.toMutableSet()
     private val uncheckedDevices = deviceIds.toMutableSet()
+    private val uncheckedDocuments = documentIds.toMutableSet()
     private val uncheckedDraftPlantingSites = draftPlantingSiteIds.toMutableSet()
     private val uncheckedFacilities = facilityIds.toMutableSet()
     private val uncheckedModuleEvents = moduleEventIds.toMutableSet()
@@ -3416,16 +3452,36 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun expect(
-        vararg documentIds: SubmissionDocumentId,
+        vararg submissionDocumentIds: SubmissionDocumentId,
         readSubmissionDocument: Boolean = false,
     ) {
-      documentIds.forEach { documentId ->
+      submissionDocumentIds.forEach { documentId ->
         assertEquals(
             readSubmissionDocument,
             user.canReadSubmissionDocument(documentId),
             "Can read submission document $documentId")
 
         uncheckedSubmissionDocuments.remove(documentId)
+      }
+    }
+
+    fun expect(
+        vararg documentIds: DocumentId,
+        createSavedVersion: Boolean = false,
+        readDocument: Boolean = false,
+        updateDocument: Boolean = false,
+    ) {
+      documentIds.forEach { documentId ->
+        assertEquals(
+            createSavedVersion,
+            user.canCreateSavedVersion(documentId),
+            "Can create saved version of document $documentId")
+        assertEquals(
+            readDocument, user.canReadDocument(documentId), "Can read document $documentId")
+        assertEquals(
+            updateDocument, user.canUpdateDocument(documentId), "Can update document $documentId")
+
+        uncheckedDocuments.remove(documentId)
       }
     }
 
@@ -3501,6 +3557,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedDeliveries.toTypedArray())
       expect(*uncheckedDeviceManagers.toTypedArray())
       expect(*uncheckedDevices.toTypedArray())
+      expect(*uncheckedDocuments.toTypedArray())
       expect(*uncheckedDraftPlantingSites.toTypedArray())
       expect(*uncheckedFacilities.toTypedArray())
       expect(*uncheckedModuleEvents.toTypedArray())
