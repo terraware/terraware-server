@@ -415,7 +415,7 @@ data class IndividualUser(
     }
   }
 
-  override fun canReadDocument(documentId: DocumentId) = isTFExpertOrHigher()
+  override fun canReadDocument(documentId: DocumentId) = isReadOnlyOrHigher()
 
   override fun canReadDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
       isManagerOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
