@@ -1,6 +1,5 @@
 package com.terraformation.backend.tracking.edit
 
-import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
@@ -68,7 +67,6 @@ class PlantingSiteEditCalculatorV1Test {
                         areaHaDifference = BigDecimal("12.5"),
                         desiredModel = desired.plantingZones[0],
                         existingModel = existing.plantingZones[0],
-                        monitoringPlotsRemoved = emptySet(),
                         numPermanentClustersToAdd =
                             PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * (750 - 500) / 500,
                         plantingSubzoneEdits =
@@ -97,7 +95,6 @@ class PlantingSiteEditCalculatorV1Test {
                         areaHaDifference = BigDecimal("5.0"),
                         desiredModel = desired.plantingZones[0],
                         existingModel = existing.plantingZones[0],
-                        monitoringPlotsRemoved = emptySet(),
                         numPermanentClustersToAdd =
                             PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * 200 / 500,
                         plantingSubzoneEdits =
@@ -135,7 +132,6 @@ class PlantingSiteEditCalculatorV1Test {
                         areaHaDifference = BigDecimal("10.0"),
                         desiredModel = desired.plantingZones[0],
                         existingModel = existing.plantingZones[0],
-                        monitoringPlotsRemoved = emptySet(),
                         numPermanentClustersToAdd =
                             PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * 200 / 700,
                         plantingSubzoneEdits =
@@ -170,7 +166,6 @@ class PlantingSiteEditCalculatorV1Test {
                 listOf(
                     PlantingZoneEdit.Delete(
                         existingModel = existing.plantingZones[1],
-                        monitoringPlotsRemoved = emptySet(),
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Delete(
@@ -208,7 +203,6 @@ class PlantingSiteEditCalculatorV1Test {
                         areaHaDifference = BigDecimal("-12.5"),
                         desiredModel = desired.plantingZones[1],
                         existingModel = existing.plantingZones[1],
-                        monitoringPlotsRemoved = emptySet(),
                         numPermanentClustersToAdd = 0,
                         plantingSubzoneEdits =
                             listOf(
@@ -271,48 +265,6 @@ class PlantingSiteEditCalculatorV1Test {
   }
 
   @Test
-  fun `removes monitoring plots that overlap with added exclusion area`() {
-    val existing = existingSite {
-      zone {
-        subzone {
-          plot()
-          plot()
-        }
-      }
-    }
-    val desired = newSite { exclusion = rectangle(1) }
-
-    assertEquals(
-        setOf(MonitoringPlotId(1)),
-        calculateSiteEdit(existing, desired)
-            .plantingZoneEdits
-            .firstOrNull()
-            ?.monitoringPlotsRemoved,
-        "Monitoring plots removed")
-  }
-
-  @Test
-  fun `removes monitoring plots that no longer lie in site`() {
-    val existing = existingSite {
-      zone {
-        subzone {
-          plot()
-          plot()
-        }
-      }
-    }
-    val desired = newSite(x = 1)
-
-    assertEquals(
-        setOf(MonitoringPlotId(1)),
-        calculateSiteEdit(existing, desired)
-            .plantingZoneEdits
-            .firstOrNull()
-            ?.monitoringPlotsRemoved,
-        "Monitoring plots removed")
-  }
-
-  @Test
   fun `returns empty list of edits if nothing changed`() {
     val existing = existingSite()
     val desired = existing.toNew()
@@ -352,7 +304,6 @@ class PlantingSiteEditCalculatorV1Test {
                 listOf(
                     PlantingZoneEdit.Delete(
                         existingModel = existing.plantingZones[0],
-                        monitoringPlotsRemoved = emptySet(),
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Delete(
@@ -360,7 +311,6 @@ class PlantingSiteEditCalculatorV1Test {
                     ),
                     PlantingZoneEdit.Delete(
                         existingModel = existing.plantingZones[1],
-                        monitoringPlotsRemoved = emptySet(),
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Delete(

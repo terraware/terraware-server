@@ -1,6 +1,5 @@
 package com.terraformation.backend.tracking.edit
 
-import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.tracking.model.AnyPlantingZoneModel
 import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
 import com.terraformation.backend.util.equalsIgnoreScale
@@ -36,12 +35,6 @@ sealed interface PlantingZoneEdit {
   val existingModel: ExistingPlantingZoneModel?
 
   /**
-   * IDs of existing monitoring plots that are no longer contained in the zone's usable area and
-   * should be removed.
-   */
-  val monitoringPlotsRemoved: Set<MonitoringPlotId>
-
-  /**
    * Number of permanent clusters to add to the zone. These clusters must all be located in
    * [addedRegion].
    */
@@ -62,7 +55,6 @@ sealed interface PlantingZoneEdit {
           areaHaDifference.equalsIgnoreScale(other.areaHaDifference) &&
           desiredModel == other.desiredModel &&
           existingModel == other.existingModel &&
-          monitoringPlotsRemoved == other.monitoringPlotsRemoved &&
           numPermanentClustersToAdd == other.numPermanentClustersToAdd &&
           plantingSubzoneEdits.size == other.plantingSubzoneEdits.size &&
           plantingSubzoneEdits.zip(other.plantingSubzoneEdits).all { (edit, otherEdit) ->
@@ -83,9 +75,6 @@ sealed interface PlantingZoneEdit {
     override val existingModel: ExistingPlantingZoneModel?
       get() = null
 
-    override val monitoringPlotsRemoved: Set<MonitoringPlotId>
-      get() = emptySet()
-
     override val numPermanentClustersToAdd: Int
       get() = 0
 
@@ -95,7 +84,6 @@ sealed interface PlantingZoneEdit {
 
   data class Delete(
       override val existingModel: ExistingPlantingZoneModel,
-      override val monitoringPlotsRemoved: Set<MonitoringPlotId>,
       override val plantingSubzoneEdits: List<PlantingSubzoneEdit.Delete>,
   ) : PlantingZoneEdit {
     override val areaHaDifference: BigDecimal
@@ -119,7 +107,6 @@ sealed interface PlantingZoneEdit {
       override val areaHaDifference: BigDecimal,
       override val desiredModel: AnyPlantingZoneModel,
       override val existingModel: ExistingPlantingZoneModel,
-      override val monitoringPlotsRemoved: Set<MonitoringPlotId>,
       override val numPermanentClustersToAdd: Int,
       override val plantingSubzoneEdits: List<PlantingSubzoneEdit>,
       override val removedRegion: MultiPolygon,
