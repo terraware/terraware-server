@@ -321,11 +321,17 @@ class SchemaDocsGenerator : DatabaseTest() {
               ),
           "tracking" to
               mapOf(
+                  "biomass_forest_types" to setOf(ALL, TRACKING),
                   "deliveries" to setOf(ALL, TRACKING),
                   "draft_planting_sites" to setOf(ALL, TRACKING),
+                  "mangrove_tides" to setOf(ALL, TRACKING),
                   "monitoring_plot_histories" to setOf(ALL, TRACKING),
                   "monitoring_plot_overlaps" to setOf(ALL, TRACKING),
                   "monitoring_plots" to setOf(ALL, TRACKING),
+                  "observation_biomass_additional_species" to setOf(ALL, TRACKING),
+                  "observation_biomass_details" to setOf(ALL, TRACKING),
+                  "observation_biomass_quadrat_details" to setOf(ALL, TRACKING),
+                  "observation_biomass_quadrat_species" to setOf(ALL, TRACKING),
                   "observable_conditions" to setOf(ALL, TRACKING),
                   "observation_photos" to setOf(ALL, TRACKING),
                   "observation_photo_types" to setOf(ALL, TRACKING),
@@ -355,9 +361,12 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "planting_subzone_populations" to setOf(ALL, TRACKING),
                   "planting_subzones" to setOf(ALL, TRACKING),
                   "plantings" to setOf(ALL, TRACKING),
+                  "recorded_branches" to setOf(ALL, TRACKING),
                   "recorded_plant_statuses" to setOf(ALL, TRACKING),
                   "recorded_plants" to setOf(ALL, TRACKING),
                   "recorded_species_certainties" to setOf(ALL, TRACKING),
+                  "recorded_trees" to setOf(ALL, TRACKING),
+                  "tree_growth_forms" to setOf(ALL, TRACKING),
               ),
       )
 

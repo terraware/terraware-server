@@ -156,6 +156,9 @@ val ENUM_TABLES =
         "tracking" to
             listOf(
                 EnumTable(
+                    "biomass_forest_types", listOf("observation_biomass_details\\.forest_type_id")),
+                EnumTable("mangrove_tides", listOf("observation_biomass_details\\.tide_id")),
+                EnumTable(
                     "observable_conditions",
                     listOf("observation_plot_conditions\\.condition_id"),
                     isLocalizable = false),
@@ -165,9 +168,7 @@ val ENUM_TABLES =
                     isLocalizable = false),
                 EnumTable(
                     "observation_plot_positions",
-                    listOf(
-                        "observation_photos\\.position_id",
-                        "observed_plot_coordinates\\.position_id"),
+                    listOf("tracking\\..*\\.position_id"),
                     isLocalizable = false),
                 EnumTable(
                     "observation_plot_statuses",
@@ -186,6 +187,7 @@ val ENUM_TABLES =
                     listOf("tracking\\..*\\.certainty_id"),
                     "RecordedSpeciesCertainty",
                     isLocalizable = false),
+                EnumTable("tree_growth_forms", listOf("recorded_trees\\.tree_growth_form_id")),
             ),
     )
 
@@ -348,7 +350,10 @@ val ID_WRAPPERS =
                     "PlantingZoneHistoryId",
                     listOf("planting_zone_histories\\.id", ".*\\.planting_zone_history_id")),
                 IdWrapper("PlantingZoneId", listOf("planting_zones\\.id", ".*\\.planting_zone_id")),
+                IdWrapper("RecordedBranchId", listOf("recorded_branches\\.id")),
                 IdWrapper("RecordedPlantId", listOf("recorded_plants\\.id")),
+                IdWrapper(
+                    "RecordedTreeId", listOf("recorded_trees\\.id", "recorded_branches\\.tree_id")),
             ),
     )
 
