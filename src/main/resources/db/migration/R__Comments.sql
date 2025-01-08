@@ -516,7 +516,9 @@ COMMENT ON TABLE tracking.recorded_plant_statuses IS '(Enum) Possible statuses o
 
 COMMENT ON TABLE tracking.recorded_branches IS 'Recorded branches of a tree in a biomass observation.';
 COMMENT ON COLUMN tracking.recorded_branches.tree_id IS 'Foreign key ID of the tree the branch belongs to. The tree must have growth form "Tree".';
-COMMENT ON COLUMN tracking.recorded_branches.branch_number IS 'A system-assigned incremental number starting at 1for accounting branches.';
+
+COMMENT ON COLUMN tracking.recorded_branches.branch_number IS 'A system-assigned incremental number starting at 1 for accounting branches.';
+
 
 COMMENT ON TABLE tracking.recorded_plants IS 'Information about individual plants observed in monitoring plots.';
 COMMENT ON COLUMN tracking.recorded_plants.species_id IS 'If certainty is "Known," the ID of the plant''s species. Null for other certainty values.';
