@@ -54,8 +54,6 @@ COMMENT ON COLUMN country_subdivisions.name IS 'Name of subdivision in US Englis
 
 COMMENT ON TABLE seedbank.data_sources IS '(Enum) Original sources of data, e.g., manual entry via web app.';
 
-COMMENT ON TABLE docprod.dependency_conditions IS '(Enum) Types of conditions that can control whether or not a variable is presented to the user.';
-
 COMMENT ON TABLE device_managers IS 'Information about device managers. This is a combination of information from the Balena API and locally-generated values.';
 COMMENT ON COLUMN device_managers.balena_id IS 'Balena-assigned device identifier.';
 COMMENT ON COLUMN device_managers.balena_modified_time IS 'Last modification timestamp from Balena. This is distinct from `refreshed_time`, which is updated locally.';
@@ -68,14 +66,6 @@ COMMENT ON TABLE device_template_categories IS '(Enum) User-facing categories of
 COMMENT ON TABLE device_templates IS 'Canned device configurations for use in cases where we want to show a list of possible devices to the user and create the selected device with the correct settings so that the device manager can talk to it.';
 
 COMMENT ON TABLE devices IS 'Hardware devices managed by the device manager at a facility.';
-
-COMMENT ON TABLE docprod.document_saved_versions IS 'Saved versions of document variable values. A saved version is conceptually just a reference to a particular point in the edit history of the document; to restore that version, we ignore any later edits.';
-
-COMMENT ON TABLE docprod.document_statuses IS '(Enum) Current stage of a document''s lifecycle.';
-
-COMMENT ON TABLE docprod.document_templates IS 'Templates for the different types of documents this system can produce.';
-
-COMMENT ON TABLE docprod.documents IS 'Top-level information about documents.';
 
 COMMENT ON TABLE ecosystem_types IS '(Enum) Types of ecosystems in which plants can be found. Based on the World Wildlife Federation''s "Terrestrial Ecoregions of the World" report.';
 
@@ -609,8 +599,6 @@ COMMENT ON COLUMN accelerator.project_votes.vote_option_id IS 'Vote option can b
 
 COMMENT ON TABLE accelerator.project_vote_decisions IS 'Calculated vote decisions for project.';
 
-COMMENT ON FUNCTION docprod.reject_delete_value() IS 'Trigger function that rejects deletion of `variable_values` rows unless the entire document is being deleted.';
-
 COMMENT ON TABLE accelerator.score_categories IS '(Enum) Project score categories.';
 
 COMMENT ON TABLE accelerator.submission_documents IS 'Information about documents uploaded by users to satisfy deliverables. A deliverable can have multiple documents.';
@@ -627,6 +615,20 @@ COMMENT ON TABLE accelerator.submissions IS 'Information about the current state
 COMMENT ON TABLE tracking.tree_growth_forms IS '(Enum) Growth form of each species in a biomass observation.';
 
 COMMENT ON TABLE accelerator.user_internal_interests IS 'Which internal interest categories are assigned to which internal users. This affects things like which accelerator admins are notified.';
+
+COMMENT ON TABLE accelerator.vote_options IS '(Enum) Available vote options.';
+
+COMMENT ON TABLE docprod.dependency_conditions IS '(Enum) Types of conditions that can control whether or not a variable is presented to the user.';
+
+COMMENT ON TABLE docprod.document_saved_versions IS 'Saved versions of document variable values. A saved version is conceptually just a reference to a particular point in the edit history of the document; to restore that version, we ignore any later edits.';
+
+COMMENT ON TABLE docprod.document_statuses IS '(Enum) Current stage of a document''s lifecycle.';
+
+COMMENT ON TABLE docprod.document_templates IS 'Templates for the different types of documents this system can produce.';
+
+COMMENT ON TABLE docprod.documents IS 'Top-level information about documents.';
+
+COMMENT ON FUNCTION docprod.reject_delete_value() IS 'Trigger function that rejects deletion of `variable_values` rows unless the entire document is being deleted.';
 
 COMMENT ON TABLE docprod.variable_image_values IS 'Linking table that defines which image files are values of which variables.';
 
@@ -686,7 +688,5 @@ COMMENT ON TABLE docprod.variable_workflow_history IS 'History of changes to the
 COMMENT ON COLUMN docprod.variable_workflow_history.max_variable_value_id IS 'The highest variable value ID at the time the workflow operation happened. This is to support fetching the variable value as it existed at the time of the workflow operation. This ID is not required to be a value of the variable referenced by `variable_id` (it can be the maximum value ID for the project as a whole).';
 
 COMMENT ON TABLE docprod.variable_workflow_statuses IS '(Enum) Workflow statuses of variables in projects. The list of valid statuses depends on the variable type.';
-
-COMMENT ON TABLE accelerator.vote_options IS '(Enum) Available vote options.';
 
 -- When adding new tables, put them in alphabetical (ASCII) order.

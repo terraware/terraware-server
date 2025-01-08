@@ -2376,25 +2376,15 @@ abstract class DatabaseBackedTest {
       isInvasive: Boolean = row.isInvasive ?: false,
       isThreatened: Boolean = row.isThreatened ?: false,
   ) {
-    val rowWithDefaults =
-        row.copy(
-            observationId = observationId,
-            monitoringPlotId = monitoringPlotId,
-            speciesId = speciesId,
-            speciesName = speciesName,
-            isInvasive = isInvasive,
-            isThreatened = isThreatened,
-        )
-
     with(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES) {
       dslContext
           .insertInto(this)
-          .set(OBSERVATION_ID, rowWithDefaults.observationId)
-          .set(MONITORING_PLOT_ID, rowWithDefaults.monitoringPlotId)
-          .set(SPECIES_ID, rowWithDefaults.speciesId)
-          .set(SPECIES_NAME, rowWithDefaults.speciesName)
-          .set(IS_INVASIVE, rowWithDefaults.isInvasive)
-          .set(IS_THREATENED, rowWithDefaults.isThreatened)
+          .set(OBSERVATION_ID, observationId)
+          .set(MONITORING_PLOT_ID, monitoringPlotId)
+          .set(SPECIES_ID, speciesId)
+          .set(SPECIES_NAME, speciesName)
+          .set(IS_INVASIVE, isInvasive)
+          .set(IS_THREATENED, isThreatened)
           .execute()
     }
   }
