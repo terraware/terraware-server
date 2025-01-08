@@ -415,9 +415,9 @@ COMMENT ON COLUMN tracking.observation_biomass_details.ph IS 'Acidity of water i
 COMMENT ON COLUMN tracking.observation_biomass_details.tide_id IS 'High/low tide during observation. Must be non-null if forest type is "Mangrove".';
 COMMENT ON COLUMN tracking.observation_biomass_details.tide_time IS 'Time when the tide is recorded. Must be non-null if forest type is "Mangrove".';
 
-COMMENT ON TABLE tracking.observation_biomass_quadrant_details IS 'Details of a biomass observation at each quadrant of a monitoring plot.';
+COMMENT ON TABLE tracking.observation_biomass_quadrat_details IS 'Details of a biomass observation at each quadrat of a monitoring plot.';
 
-COMMENT ON TABLE tracking.observation_biomass_quadrant_species IS 'Herbaceous species at each quadrant of a monitoring plot of a biomass observation';
+COMMENT ON TABLE tracking.observation_biomass_quadrat_species IS 'Herbaceous species at each quadrat of a monitoring plot of a biomass observation';
 
 COMMENT ON TABLE tracking.observed_plot_coordinates IS 'Observed GPS coordinates in monitoring plots. Does not include photo coordinates or coordinates of recorded plants.';
 

@@ -15,10 +15,11 @@ import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
-import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadrantDetailsRecord
-import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadrantSpeciesRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratDetailsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedBranchesRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
+import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -92,7 +93,9 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exception if herbaceous cover is negative`() {
       assertThrows<DataIntegrityViolationException> {
         insertObservationBiomassDetails(
-            observationId = observationId, monitoringPlotId = plotId, herbaceousCoverPercent = -1.0)
+            observationId = observationId,
+            monitoringPlotId = plotId,
+            herbaceousCoverPercent = BigDecimal.valueOf(-1))
       }
     }
 
@@ -102,7 +105,7 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
         insertObservationBiomassDetails(
             observationId = observationId,
             monitoringPlotId = plotId,
-            herbaceousCoverPercent = 101.0)
+            herbaceousCoverPercent = BigDecimal.valueOf(101))
       }
     }
 
@@ -113,8 +116,8 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             forestType = BiomassForestType.Terrestrial,
-            waterDepthCm = -1.0,
-            salinityPpt = 0.0,
+            waterDepthCm = BigDecimal.valueOf(-1),
+            salinityPpt = BigDecimal.ZERO,
             tideId = MangroveTide.Low,
             tideTime = Instant.EPOCH)
       }
@@ -127,8 +130,8 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             forestType = BiomassForestType.Mangrove,
-            waterDepthCm = -1.0,
-            salinityPpt = 0.0,
+            waterDepthCm = BigDecimal.valueOf(-1),
+            salinityPpt = BigDecimal.ZERO,
             tideId = MangroveTide.Low,
             tideTime = Instant.EPOCH)
       }
@@ -142,7 +145,7 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             monitoringPlotId = plotId,
             forestType = BiomassForestType.Mangrove,
             waterDepthCm = null,
-            salinityPpt = 0.0,
+            salinityPpt = BigDecimal.ZERO,
             tideId = MangroveTide.Low,
             tideTime = Instant.EPOCH)
       }
@@ -155,8 +158,8 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             forestType = BiomassForestType.Mangrove,
-            waterDepthCm = 0.0,
-            salinityPpt = -1.0,
+            waterDepthCm = BigDecimal.ZERO,
+            salinityPpt = BigDecimal.valueOf(-1),
             tideId = MangroveTide.Low,
             tideTime = Instant.EPOCH)
       }
@@ -169,7 +172,7 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             forestType = BiomassForestType.Mangrove,
-            waterDepthCm = 0.0,
+            waterDepthCm = BigDecimal.ZERO,
             salinityPpt = null,
             tideId = MangroveTide.Low,
             tideTime = Instant.EPOCH)
@@ -183,8 +186,8 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             forestType = BiomassForestType.Mangrove,
-            waterDepthCm = 0.0,
-            salinityPpt = 0.0,
+            waterDepthCm = BigDecimal.ZERO,
+            salinityPpt = BigDecimal.ZERO,
             tideId = null,
             tideTime = Instant.EPOCH)
       }
@@ -197,8 +200,8 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             forestType = BiomassForestType.Mangrove,
-            waterDepthCm = 0.0,
-            salinityPpt = 0.0,
+            waterDepthCm = BigDecimal.ZERO,
+            salinityPpt = BigDecimal.ZERO,
             tideId = MangroveTide.Low,
             tideTime = null)
       }
@@ -206,11 +209,11 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class ObservationBiomassQuadrantDetailsTable {
+  inner class ObservationBiomassQuadratDetailsTable {
     @Test
-    fun `throws exception if inserting quadrant details without biomass details`() {
+    fun `throws exception if inserting Quadrat details without biomass details`() {
       assertThrows<DataIntegrityViolationException> {
-        insertObservationBiomassQuadrantDetails(
+        insertObservationBiomassQuadratDetails(
             observationId = observationId,
             monitoringPlotId = plotId,
             position = ObservationPlotPosition.SouthwestCorner,
@@ -219,16 +222,16 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception if same quadrant inserted twice`() {
+    fun `throws exception if same Quadrat inserted twice`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
-      insertObservationBiomassQuadrantDetails(
+      insertObservationBiomassQuadratDetails(
           observationId = observationId,
           monitoringPlotId = plotId,
           position = ObservationPlotPosition.SouthwestCorner,
           description = "First insert")
 
       assertThrows<DataIntegrityViolationException> {
-        insertObservationBiomassQuadrantDetails(
+        insertObservationBiomassQuadratDetails(
             observationId = observationId,
             monitoringPlotId = plotId,
             position = ObservationPlotPosition.SouthwestCorner,
@@ -237,15 +240,15 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `deletes associated quadrant details if biomass details row is deleted`() {
+    fun `deletes associated Quadrat details if biomass details row is deleted`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
-      insertObservationBiomassQuadrantDetails(
+      insertObservationBiomassQuadratDetails(
           observationId = observationId,
           monitoringPlotId = plotId,
           position = ObservationPlotPosition.SouthwestCorner,
           description = "SW description")
 
-      insertObservationBiomassQuadrantDetails(
+      insertObservationBiomassQuadratDetails(
           observationId = observationId,
           monitoringPlotId = plotId,
           position = ObservationPlotPosition.NortheastCorner,
@@ -257,7 +260,7 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservationPlot(observationId = otherObservationId, monitoringPlotId = otherPlotId)
       insertObservationBiomassDetails(
           observationId = otherObservationId, monitoringPlotId = otherPlotId)
-      insertObservationBiomassQuadrantDetails(
+      insertObservationBiomassQuadratDetails(
           observationId = otherObservationId,
           monitoringPlotId = otherPlotId,
           position = ObservationPlotPosition.NorthwestCorner,
@@ -265,19 +268,19 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              ObservationBiomassQuadrantDetailsRecord(
+              ObservationBiomassQuadratDetailsRecord(
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.SouthwestCorner,
                   description = "SW description",
               ),
-              ObservationBiomassQuadrantDetailsRecord(
+              ObservationBiomassQuadratDetailsRecord(
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.NortheastCorner,
                   description = "NE description",
               ),
-              ObservationBiomassQuadrantDetailsRecord(
+              ObservationBiomassQuadratDetailsRecord(
                   observationId = otherObservationId,
                   monitoringPlotId = otherPlotId,
                   positionId = ObservationPlotPosition.NorthwestCorner,
@@ -290,7 +293,7 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              ObservationBiomassQuadrantDetailsRecord(
+              ObservationBiomassQuadratDetailsRecord(
                   observationId = otherObservationId,
                   monitoringPlotId = otherPlotId,
                   positionId = ObservationPlotPosition.NorthwestCorner,
@@ -302,7 +305,7 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class ObservationBiomassQuadrantSpeciesTable {
+  inner class ObservationBiomassQuadratSpeciesTable {
     private lateinit var speciesId1: SpeciesId
     private lateinit var speciesId2: SpeciesId
 
@@ -313,9 +316,9 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception if inserting quadrant species without biomass details`() {
+    fun `throws exception if inserting Quadrat species without biomass details`() {
       assertThrows<DataIntegrityViolationException> {
-        insertObservationBiomassQuadrantSpecies(
+        insertObservationBiomassQuadratSpecies(
             observationId = observationId,
             monitoringPlotId = plotId,
             position = ObservationPlotPosition.SouthwestCorner,
@@ -325,9 +328,9 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception if same species Id inserted twice in the same quadrant`() {
+    fun `throws exception if same species Id inserted twice in the same Quadrat`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
-      insertObservationBiomassQuadrantSpecies(
+      insertObservationBiomassQuadratSpecies(
           observationId = observationId,
           monitoringPlotId = plotId,
           position = ObservationPlotPosition.SouthwestCorner,
@@ -335,7 +338,7 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertThrows<DataIntegrityViolationException> {
-        insertObservationBiomassQuadrantSpecies(
+        insertObservationBiomassQuadratSpecies(
             observationId = observationId,
             monitoringPlotId = plotId,
             position = ObservationPlotPosition.SouthwestCorner,
@@ -345,9 +348,9 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception if same species name inserted twice in the same quadrant`() {
+    fun `throws exception if same species name inserted twice in the same Quadrat`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
-      insertObservationBiomassQuadrantSpecies(
+      insertObservationBiomassQuadratSpecies(
           observationId = observationId,
           monitoringPlotId = plotId,
           position = ObservationPlotPosition.SouthwestCorner,
@@ -355,7 +358,7 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertThrows<DataIntegrityViolationException> {
-        insertObservationBiomassQuadrantSpecies(
+        insertObservationBiomassQuadratSpecies(
             observationId = observationId,
             monitoringPlotId = plotId,
             position = ObservationPlotPosition.SouthwestCorner,
@@ -369,7 +372,7 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
 
       assertThrows<DataIntegrityViolationException> {
-        insertObservationBiomassQuadrantSpecies(
+        insertObservationBiomassQuadratSpecies(
             observationId = observationId,
             monitoringPlotId = plotId,
             position = ObservationPlotPosition.SouthwestCorner,
@@ -384,12 +387,12 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
 
       assertThrows<DataIntegrityViolationException> {
-        insertObservationBiomassQuadrantSpecies(
+        insertObservationBiomassQuadratSpecies(
             observationId = observationId,
             monitoringPlotId = plotId,
             position = ObservationPlotPosition.SouthwestCorner,
             speciesId = speciesId1,
-            abundancePercent = -1.0,
+            abundancePercent = BigDecimal.valueOf(-1),
         )
       }
     }
@@ -399,20 +402,20 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
 
       assertThrows<DataIntegrityViolationException> {
-        insertObservationBiomassQuadrantSpecies(
+        insertObservationBiomassQuadratSpecies(
             observationId = observationId,
             monitoringPlotId = plotId,
             position = ObservationPlotPosition.SouthwestCorner,
             speciesId = speciesId1,
-            abundancePercent = 101.0,
+            abundancePercent = BigDecimal.valueOf(101),
         )
       }
     }
 
     @Test
-    fun `deletes associated quadrant species if biomass details row is deleted`() {
+    fun `deletes associated Quadrat species if biomass details row is deleted`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
-      insertObservationBiomassQuadrantSpecies(
+      insertObservationBiomassQuadratSpecies(
           observationId = observationId,
           monitoringPlotId = plotId,
           position = ObservationPlotPosition.SouthwestCorner,
@@ -420,7 +423,7 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
           isThreatened = true,
       )
 
-      insertObservationBiomassQuadrantSpecies(
+      insertObservationBiomassQuadratSpecies(
           observationId = observationId,
           monitoringPlotId = plotId,
           position = ObservationPlotPosition.SouthwestCorner,
@@ -428,7 +431,7 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
           isInvasive = true,
       )
 
-      insertObservationBiomassQuadrantSpecies(
+      insertObservationBiomassQuadratSpecies(
           observationId = observationId,
           monitoringPlotId = plotId,
           position = ObservationPlotPosition.NortheastCorner,
@@ -442,7 +445,7 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservationPlot(observationId = otherObservationId, monitoringPlotId = otherPlotId)
       insertObservationBiomassDetails(
           observationId = otherObservationId, monitoringPlotId = otherPlotId)
-      insertObservationBiomassQuadrantSpecies(
+      insertObservationBiomassQuadratSpecies(
           observationId = otherObservationId,
           monitoringPlotId = otherPlotId,
           position = ObservationPlotPosition.NortheastCorner,
@@ -452,41 +455,41 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              ObservationBiomassQuadrantSpeciesRecord(
+              ObservationBiomassQuadratSpeciesRecord(
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.SouthwestCorner,
                   speciesId = speciesId1,
                   isThreatened = true,
                   isInvasive = false,
-                  abundancePercent = 0.0,
+                  abundancePercent = BigDecimal.ZERO,
               ),
-              ObservationBiomassQuadrantSpeciesRecord(
+              ObservationBiomassQuadratSpeciesRecord(
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.SouthwestCorner,
                   speciesId = speciesId2,
                   isThreatened = false,
                   isInvasive = true,
-                  abundancePercent = 0.0,
+                  abundancePercent = BigDecimal.ZERO,
               ),
-              ObservationBiomassQuadrantSpeciesRecord(
+              ObservationBiomassQuadratSpeciesRecord(
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.NortheastCorner,
                   speciesId = speciesId1,
                   isThreatened = true,
                   isInvasive = false,
-                  abundancePercent = 0.0,
+                  abundancePercent = BigDecimal.ZERO,
               ),
-              ObservationBiomassQuadrantSpeciesRecord(
+              ObservationBiomassQuadratSpeciesRecord(
                   observationId = otherObservationId,
                   monitoringPlotId = otherPlotId,
                   positionId = ObservationPlotPosition.NortheastCorner,
                   speciesId = speciesId1,
                   isThreatened = true,
                   isInvasive = false,
-                  abundancePercent = 0.0,
+                  abundancePercent = BigDecimal.ZERO,
               ),
           ),
           "Table before deletion")
@@ -495,14 +498,14 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              ObservationBiomassQuadrantSpeciesRecord(
+              ObservationBiomassQuadratSpeciesRecord(
                   observationId = otherObservationId,
                   monitoringPlotId = otherPlotId,
                   positionId = ObservationPlotPosition.NortheastCorner,
                   speciesId = speciesId1,
                   isThreatened = true,
                   isInvasive = false,
-                  abundancePercent = 0.0,
+                  abundancePercent = BigDecimal.ZERO,
               ),
           ),
           "Table after deletion")
@@ -665,9 +668,9 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class RecordedTreesTable {
+  inner class RecordedTreeTable {
     @Test
-    fun `throws exception if recording trees without biomass details`() {
+    fun `throws exception if recording Tree without biomass details`() {
       assertThrows<DataIntegrityViolationException> {
         insertRecordedTree(
             observationId = observationId,
@@ -685,8 +688,8 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
           monitoringPlotId = plotId,
           speciesId = speciesId1,
           treeNumber = 1,
-          treeGrowthForm = TreeGrowthForm.Shrubs,
-          shrubDiameterCm = 1.0)
+          treeGrowthForm = TreeGrowthForm.Shrub,
+          shrubDiameterCm = BigDecimal.valueOf(1))
 
       assertThrows<DataIntegrityViolationException> {
         insertRecordedTree(
@@ -694,8 +697,8 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             monitoringPlotId = plotId,
             speciesId = speciesId1,
             treeNumber = 1,
-            treeGrowthForm = TreeGrowthForm.Shrubs,
-            shrubDiameterCm = 1.0)
+            treeGrowthForm = TreeGrowthForm.Shrub,
+            shrubDiameterCm = BigDecimal.valueOf(1))
       }
     }
 
@@ -713,7 +716,7 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception if tree data are not-null for shrubs`() {
+    fun `throws exception if tree data are not-null for Shrub`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
 
       assertThrows<DataIntegrityViolationException> {
@@ -721,17 +724,17 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             speciesId = speciesId1,
-            treeGrowthForm = TreeGrowthForm.Shrubs,
+            treeGrowthForm = TreeGrowthForm.Shrub,
             isTrunk = true,
-            diameterAtBreastHeightCm = 1.0,
-            pointOfMeasurementM = 1.3,
-            shrubDiameterCm = 1.0,
+            diameterAtBreastHeightCm = BigDecimal.valueOf(1),
+            pointOfMeasurementM = BigDecimal.valueOf(1.3),
+            shrubDiameterCm = BigDecimal.valueOf(1),
         )
       }
     }
 
     @Test
-    fun `throws exception if shrub diameter is null for shrubs`() {
+    fun `throws exception if shrub diameter is null for Shrub`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
 
       assertThrows<DataIntegrityViolationException> {
@@ -739,14 +742,14 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             speciesId = speciesId1,
-            treeGrowthForm = TreeGrowthForm.Shrubs,
+            treeGrowthForm = TreeGrowthForm.Shrub,
             shrubDiameterCm = null,
         )
       }
     }
 
     @Test
-    fun `throws exception if shrub diameter is negative for shrubs`() {
+    fun `throws exception if shrub diameter is negative for Shrub`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
 
       assertThrows<DataIntegrityViolationException> {
@@ -754,14 +757,14 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             speciesId = speciesId1,
-            treeGrowthForm = TreeGrowthForm.Shrubs,
-            shrubDiameterCm = -1.0,
+            treeGrowthForm = TreeGrowthForm.Shrub,
+            shrubDiameterCm = BigDecimal.valueOf(-1),
         )
       }
     }
 
     @Test
-    fun `throws exception if shrub diameter is not null for trees`() {
+    fun `throws exception if shrub diameter is not null for Tree`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
 
       assertThrows<DataIntegrityViolationException> {
@@ -769,18 +772,18 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             speciesId = speciesId1,
-            treeGrowthForm = TreeGrowthForm.Trees,
+            treeGrowthForm = TreeGrowthForm.Tree,
             isTrunk = true,
-            diameterAtBreastHeightCm = 1.0,
-            pointOfMeasurementM = 1.3,
-            heightM = 1.0,
-            shrubDiameterCm = 1.0,
+            diameterAtBreastHeightCm = BigDecimal.valueOf(1),
+            pointOfMeasurementM = BigDecimal.valueOf(1.3),
+            heightM = BigDecimal.valueOf(1),
+            shrubDiameterCm = BigDecimal.valueOf(1),
         )
       }
     }
 
     @Test
-    fun `throws exception if isTrunk is null for trees`() {
+    fun `throws exception if isTrunk is null for Tree`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
 
       assertThrows<DataIntegrityViolationException> {
@@ -788,17 +791,17 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             speciesId = speciesId1,
-            treeGrowthForm = TreeGrowthForm.Trees,
+            treeGrowthForm = TreeGrowthForm.Tree,
             isTrunk = null,
-            diameterAtBreastHeightCm = 1.0,
-            pointOfMeasurementM = 1.3,
-            heightM = 1.0,
+            diameterAtBreastHeightCm = BigDecimal.valueOf(1),
+            pointOfMeasurementM = BigDecimal.valueOf(1.3),
+            heightM = BigDecimal.valueOf(1),
         )
       }
     }
 
     @Test
-    fun `throws exception if diameter at breast height is negative for trees`() {
+    fun `throws exception if diameter at breast height is negative for Tree`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
 
       assertThrows<DataIntegrityViolationException> {
@@ -806,17 +809,17 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             speciesId = speciesId1,
-            treeGrowthForm = TreeGrowthForm.Trees,
+            treeGrowthForm = TreeGrowthForm.Tree,
             isTrunk = true,
-            diameterAtBreastHeightCm = -1.0,
-            pointOfMeasurementM = 1.3,
-            heightM = 1.0,
+            diameterAtBreastHeightCm = BigDecimal.valueOf(-1),
+            pointOfMeasurementM = BigDecimal.valueOf(1.3),
+            heightM = BigDecimal.valueOf(1),
         )
       }
     }
 
     @Test
-    fun `throws exception if diameter at breast height is null for trees`() {
+    fun `throws exception if diameter at breast height is null for Tree`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
 
       assertThrows<DataIntegrityViolationException> {
@@ -824,17 +827,17 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             speciesId = speciesId1,
-            treeGrowthForm = TreeGrowthForm.Trees,
+            treeGrowthForm = TreeGrowthForm.Tree,
             isTrunk = true,
             diameterAtBreastHeightCm = null,
-            pointOfMeasurementM = 1.3,
-            heightM = 1.0,
+            pointOfMeasurementM = BigDecimal.valueOf(1.3),
+            heightM = BigDecimal.valueOf(1),
         )
       }
     }
 
     @Test
-    fun `throws exception if point of measurement is negative for trees`() {
+    fun `throws exception if point of measurement is negative for Tree`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
 
       assertThrows<DataIntegrityViolationException> {
@@ -842,17 +845,17 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             speciesId = speciesId1,
-            treeGrowthForm = TreeGrowthForm.Trees,
+            treeGrowthForm = TreeGrowthForm.Tree,
             isTrunk = true,
-            diameterAtBreastHeightCm = 1.0,
-            pointOfMeasurementM = -1.0,
-            heightM = 1.0,
+            diameterAtBreastHeightCm = BigDecimal.valueOf(1),
+            pointOfMeasurementM = BigDecimal.valueOf(-1),
+            heightM = BigDecimal.valueOf(1),
         )
       }
     }
 
     @Test
-    fun `throws exception if point of measurement is null for trees`() {
+    fun `throws exception if point of measurement is null for Tree`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
 
       assertThrows<DataIntegrityViolationException> {
@@ -860,17 +863,17 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             speciesId = speciesId1,
-            treeGrowthForm = TreeGrowthForm.Trees,
+            treeGrowthForm = TreeGrowthForm.Tree,
             isTrunk = true,
-            diameterAtBreastHeightCm = 1.0,
+            diameterAtBreastHeightCm = BigDecimal.valueOf(1),
             pointOfMeasurementM = null,
-            heightM = 1.0,
+            heightM = BigDecimal.valueOf(1),
         )
       }
     }
 
     @Test
-    fun `throws exception if height is negative for trees`() {
+    fun `throws exception if height is negative for Tree`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
 
       assertThrows<DataIntegrityViolationException> {
@@ -878,11 +881,11 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             speciesId = speciesId1,
-            treeGrowthForm = TreeGrowthForm.Trees,
+            treeGrowthForm = TreeGrowthForm.Tree,
             isTrunk = true,
-            diameterAtBreastHeightCm = 1.0,
-            pointOfMeasurementM = 1.3,
-            heightM = -1.0,
+            diameterAtBreastHeightCm = BigDecimal.valueOf(1),
+            pointOfMeasurementM = BigDecimal.valueOf(1.3),
+            heightM = BigDecimal.valueOf(-1),
         )
       }
     }
@@ -896,26 +899,26 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
             observationId = observationId,
             monitoringPlotId = plotId,
             speciesId = speciesId1,
-            treeGrowthForm = TreeGrowthForm.Trees,
+            treeGrowthForm = TreeGrowthForm.Tree,
             isTrunk = true,
-            diameterAtBreastHeightCm = 5.1,
-            pointOfMeasurementM = 1.3,
+            diameterAtBreastHeightCm = BigDecimal.valueOf(5.1),
+            pointOfMeasurementM = BigDecimal.valueOf(1.3),
             heightM = null,
         )
       }
     }
 
     @Test
-    fun `deletes associated recorded trees if biomass details row is deleted`() {
+    fun `deletes associated recorded Tree if biomass details row is deleted`() {
       insertObservationBiomassDetails(observationId = observationId, monitoringPlotId = plotId)
       val treeId1 =
           insertRecordedTree(
               observationId = observationId,
               monitoringPlotId = plotId,
               speciesId = speciesId1,
-              treeGrowthForm = TreeGrowthForm.Shrubs,
+              treeGrowthForm = TreeGrowthForm.Shrub,
               isDead = true,
-              shrubDiameterCm = 1.0,
+              shrubDiameterCm = BigDecimal.valueOf(1),
           )
 
       val treeId2 =
@@ -923,12 +926,12 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
               observationId = observationId,
               monitoringPlotId = plotId,
               speciesId = speciesId2,
-              treeGrowthForm = TreeGrowthForm.Trees,
+              treeGrowthForm = TreeGrowthForm.Tree,
               isDead = false,
               isTrunk = true,
-              diameterAtBreastHeightCm = 10.0,
-              pointOfMeasurementM = 1.3,
-              heightM = 1.5,
+              diameterAtBreastHeightCm = BigDecimal.ZERO,
+              pointOfMeasurementM = BigDecimal.valueOf(1.3),
+              heightM = BigDecimal(1.5),
           )
 
       val otherObservationId =
@@ -943,9 +946,9 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
               observationId = otherObservationId,
               monitoringPlotId = otherPlotId,
               speciesId = speciesId1,
-              treeGrowthForm = TreeGrowthForm.Shrubs,
+              treeGrowthForm = TreeGrowthForm.Shrub,
               isDead = false,
-              shrubDiameterCm = 1.0,
+              shrubDiameterCm = BigDecimal.valueOf(1),
           )
 
       assertTableEquals(
@@ -955,33 +958,33 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   speciesId = speciesId1,
-                  treeGrowthFormId = TreeGrowthForm.Shrubs,
+                  treeGrowthFormId = TreeGrowthForm.Shrub,
                   treeNumber = 1L,
                   isDead = true,
-                  shrubDiameterCm = 1.0,
+                  shrubDiameterCm = BigDecimal.valueOf(1),
               ),
               RecordedTreesRecord(
                   id = treeId2,
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   speciesId = speciesId2,
-                  treeGrowthFormId = TreeGrowthForm.Trees,
+                  treeGrowthFormId = TreeGrowthForm.Tree,
                   treeNumber = 2L,
                   isDead = false,
                   isTrunk = true,
-                  diameterAtBreastHeightCm = 10.0,
-                  pointOfMeasurementM = 1.3,
-                  heightM = 1.5,
+                  diameterAtBreastHeightCm = BigDecimal.ZERO,
+                  pointOfMeasurementM = BigDecimal.valueOf(1.3),
+                  heightM = BigDecimal(1.5),
               ),
               RecordedTreesRecord(
                   id = otherTreeId,
                   observationId = otherObservationId,
                   monitoringPlotId = otherPlotId,
                   speciesId = speciesId1,
-                  treeGrowthFormId = TreeGrowthForm.Shrubs,
+                  treeGrowthFormId = TreeGrowthForm.Shrub,
                   treeNumber = 1L,
                   isDead = false,
-                  shrubDiameterCm = 1.0,
+                  shrubDiameterCm = BigDecimal.valueOf(1),
               ),
           ),
           "Table before deletion")
@@ -995,10 +998,10 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
                   observationId = otherObservationId,
                   monitoringPlotId = otherPlotId,
                   speciesId = speciesId1,
-                  treeGrowthFormId = TreeGrowthForm.Shrubs,
+                  treeGrowthFormId = TreeGrowthForm.Shrub,
                   treeNumber = 1L,
                   isDead = false,
-                  shrubDiameterCm = 1.0,
+                  shrubDiameterCm = BigDecimal.valueOf(1),
               ),
           ),
           "Table after deletion")
@@ -1017,12 +1020,12 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
               observationId = observationId,
               monitoringPlotId = plotId,
               speciesId = speciesId1,
-              treeGrowthForm = TreeGrowthForm.Trees,
+              treeGrowthForm = TreeGrowthForm.Tree,
               isDead = false,
               isTrunk = true,
-              diameterAtBreastHeightCm = 10.0,
-              pointOfMeasurementM = 1.3,
-              heightM = 1.5,
+              diameterAtBreastHeightCm = BigDecimal.ZERO,
+              pointOfMeasurementM = BigDecimal.valueOf(1.3),
+              heightM = BigDecimal(1.5),
           )
     }
 
@@ -1046,7 +1049,7 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
       assertThrows<DataIntegrityViolationException> {
         insertRecordedBranch(
             treeId = treeId,
-            diameterAtBreastHeightCm = -1.0,
+            diameterAtBreastHeightCm = BigDecimal.valueOf(-1),
         )
       }
     }
@@ -1056,7 +1059,7 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
       assertThrows<DataIntegrityViolationException> {
         insertRecordedBranch(
             treeId = treeId,
-            pointOfMeasurementM = -1.0,
+            pointOfMeasurementM = BigDecimal.valueOf(-1),
         )
       }
     }
@@ -1066,12 +1069,12 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
       val branchId1 =
           insertRecordedBranch(
               treeId = treeId,
-              diameterAtBreastHeightCm = 3.0,
+              diameterAtBreastHeightCm = BigDecimal.valueOf(3.0),
           )
       val branchId2 =
           insertRecordedBranch(
               treeId = treeId,
-              diameterAtBreastHeightCm = 5.0,
+              diameterAtBreastHeightCm = BigDecimal(5.0),
               isDead = true,
           )
 
@@ -1080,17 +1083,17 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
               observationId = observationId,
               monitoringPlotId = plotId,
               speciesId = speciesId1,
-              treeGrowthForm = TreeGrowthForm.Trees,
+              treeGrowthForm = TreeGrowthForm.Tree,
               isDead = false,
               isTrunk = true,
-              diameterAtBreastHeightCm = 10.0,
-              pointOfMeasurementM = 1.3,
-              heightM = 1.5,
+              diameterAtBreastHeightCm = BigDecimal.ZERO,
+              pointOfMeasurementM = BigDecimal.valueOf(1.3),
+              heightM = BigDecimal(1.5),
           )
       val otherBranchId =
           insertRecordedBranch(
               treeId = otherTreeId,
-              diameterAtBreastHeightCm = 5.0,
+              diameterAtBreastHeightCm = BigDecimal(5.0),
               isDead = false,
           )
 
@@ -1101,24 +1104,24 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
                   treeId = treeId,
                   branchNumber = 1L,
                   isDead = false,
-                  diameterAtBreastHeightCm = 3.0,
-                  pointOfMeasurementM = 1.3,
+                  diameterAtBreastHeightCm = BigDecimal.valueOf(3.0),
+                  pointOfMeasurementM = BigDecimal.valueOf(1.3),
               ),
               RecordedBranchesRecord(
                   id = branchId2,
                   treeId = treeId,
                   branchNumber = 2L,
                   isDead = true,
-                  diameterAtBreastHeightCm = 5.0,
-                  pointOfMeasurementM = 1.3,
+                  diameterAtBreastHeightCm = BigDecimal(5.0),
+                  pointOfMeasurementM = BigDecimal.valueOf(1.3),
               ),
               RecordedBranchesRecord(
                   id = otherBranchId,
                   treeId = otherTreeId,
                   branchNumber = 1L,
                   isDead = false,
-                  diameterAtBreastHeightCm = 5.0,
-                  pointOfMeasurementM = 1.3,
+                  diameterAtBreastHeightCm = BigDecimal(5.0),
+                  pointOfMeasurementM = BigDecimal.valueOf(1.3),
               ),
           ),
           "Table before deletion")
@@ -1132,8 +1135,8 @@ class ObservationBiomassDatabaseTest : DatabaseTest(), RunsAsDatabaseUser {
                   treeId = otherTreeId,
                   branchNumber = 1L,
                   isDead = false,
-                  diameterAtBreastHeightCm = 5.0,
-                  pointOfMeasurementM = 1.3,
+                  diameterAtBreastHeightCm = BigDecimal(5.0),
+                  pointOfMeasurementM = BigDecimal.valueOf(1.3),
               ),
           ),
           "Table after deletion")

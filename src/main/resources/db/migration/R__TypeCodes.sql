@@ -271,8 +271,8 @@ VALUES (1, 'SeedBank'),
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO tracking.mangrove_tides (id, name)
-VALUES (1, 'High'),
-       (2, 'Low')
+VALUES (1, 'Low'),
+       (2, 'High')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO notification_criticalities (id, name)
@@ -520,8 +520,8 @@ VALUES (1, 'Numeric'),
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO tracking.tree_growth_forms (id, name)
-VALUES (1, 'Trees'),
-       (2, 'Shrubs')
+VALUES (1, 'Tree'),
+       (2, 'Shrub')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO upload_problem_types (id, name)
