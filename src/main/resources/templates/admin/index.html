@@ -174,19 +174,6 @@
 <details id="migrations" class="section">
     <summary>Migrations</summary>
 
-    <th:block th:if="${canPopulatePlantingSiteCountries}">
-        <h3>Populate Planting Site Countries</h3>
-
-        <p>
-            This is a one-time operation to calculate the country codes of existing planting sites
-            based on their site boundaries.
-        </p>
-
-        <form method="POST" action="/admin/plantingSite/populateCountries">
-            <input type="submit" value="Populate Countries"/>
-        </form>
-    </th:block>
-
     <th:block th:if="${canMigrateAcceleratorProjectDetails}">
         <h3>Update Deal Names</h3>
 

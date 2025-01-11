@@ -5,8 +5,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.customer.model.SystemUser
-import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -80,7 +78,6 @@ class AdminPlantingSitesController(
     private val organizationStore: OrganizationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val plantingSiteImporter: PlantingSiteImporter,
-    private val systemUser: SystemUser,
 ) {
   private val log = perClassLogger()
 
@@ -732,20 +729,6 @@ class AdminPlantingSitesController(
     }
 
     return redirectToPlantingSite(plantingSiteId)
-  }
-
-  @PostMapping("/plantingSite/populateCountries")
-  fun populatePlantingSiteCountries(redirectAttributes: RedirectAttributes): String {
-    requirePermissions { populatePlantingSiteCountries() }
-
-    try {
-      systemUser.run { plantingSiteStore.populateExistingSiteCountries() }
-      redirectAttributes.successMessage = "Populated countries of existing planting sites"
-    } catch (e: Exception) {
-      redirectAttributes.failureMessage = "Failed to populate planting site countries: $e"
-    }
-
-    return redirectToAdminHome()
   }
 
   private fun redirectToAdminHome() = "redirect:/admin/"
