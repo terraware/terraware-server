@@ -43,6 +43,7 @@ import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
+import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -420,9 +421,10 @@ class ObservationService(
 
   /**
    * Records an ad-hoc observation. This creates an ad-hoc observation, creates an ad-hoc monitoring
-   * plot, adds the plot to the observation, and completes the observation with plants.
+   * plot, adds the plot to the observation, and completes the observation.
    */
   fun completeAdHocObservation(
+      biomassDetails: NewBiomassDetailsModel?,
       conditions: Set<ObservableCondition>,
       notes: String?,
       observedTime: Instant,
@@ -435,6 +437,14 @@ class ObservationService(
 
     if (observedTime.isAfter(clock.instant().plusSeconds(CLOCK_TOLERANCE_SECONDS))) {
       throw IllegalArgumentException("Observed time is in the future")
+    }
+
+    if (observationType == ObservationType.BiomassMeasurements && plants.isNotEmpty()) {
+      throw IllegalArgumentException("Biomass observations must not contain plants")
+    }
+
+    if (observationType == ObservationType.BiomassMeasurements && biomassDetails == null) {
+      throw IllegalArgumentException("Biomass observations must contain biomass details")
     }
 
     val effectiveTimeZone = parentStore.getEffectiveTimeZone(plantingSiteId)

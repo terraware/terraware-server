@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationIdConverter
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -25,16 +26,24 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditi
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationRequestedSubzonesDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
+import com.terraformation.backend.db.tracking.tables.daos.RecordedBranchesDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
+import com.terraformation.backend.db.tracking.tables.daos.RecordedTreesDao
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.RecordedBranchesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratDetailsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
@@ -55,6 +64,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.ObservationModel
@@ -83,7 +93,9 @@ class ObservationStore(
     private val observationPlotsDao: ObservationPlotsDao,
     private val observationRequestedSubzonesDao: ObservationRequestedSubzonesDao,
     private val parentStore: ParentStore,
+    private val recordedBranchesDao: RecordedBranchesDao,
     private val recordedPlantsDao: RecordedPlantsDao,
+    private val recordedTreesDao: RecordedTreesDao,
 ) {
   private val requestedSubzoneIdsField: Field<Set<PlantingSubzoneId>> =
       with(OBSERVATION_REQUESTED_SUBZONES) {
@@ -811,6 +823,126 @@ class ObservationStore(
       if (allPlotsCompleted) {
         completeObservation(observationId, plantingSiteId)
       }
+    }
+  }
+
+  fun insertBiomassDetails(model: NewBiomassDetailsModel) {
+    val (observationType, observationState) =
+        with(OBSERVATION_PLOTS) {
+          dslContext
+              .select(
+                  observations.OBSERVATION_TYPE_ID.asNonNullable(),
+                  observations.STATE_ID.asNonNullable())
+              .from(this)
+              .where(OBSERVATION_ID.eq(model.observationId))
+              .and(MONITORING_PLOT_ID.eq(model.plotId))
+              .fetchOne()
+              ?: throw IllegalStateException(
+                  "Plot ${model.plotId} is not part of observation ${model.observationId}")
+        }
+
+    if (observationState == ObservationState.Completed) {
+      throw IllegalStateException("Observation ${model.observationId} is already completed.")
+    }
+
+    if (observationType != ObservationType.BiomassMeasurements) {
+      throw IllegalStateException("Observation ${model.observationId} is not a biomass measurement")
+    }
+
+    dslContext.transaction { _ ->
+      with(OBSERVATION_BIOMASS_DETAILS) {
+        dslContext
+            .insertInto(this)
+            .set(OBSERVATION_ID, model.observationId)
+            .set(MONITORING_PLOT_ID, model.plotId)
+            .set(DESCRIPTION, model.description)
+            .set(FOREST_TYPE_ID, model.forestType)
+            .set(SMALL_TREES_COUNT_LOW, model.smallTreeCountRange.first)
+            .set(SMALL_TREES_COUNT_HIGH, model.smallTreeCountRange.second)
+            .set(HERBACEOUS_COVER_PERCENT, model.herbaceousCoverPercent)
+            .set(SOIL_ASSESSMENT, model.soilAssessment)
+            .set(WATER_DEPTH_CM, model.waterDepthCm)
+            .set(SALINITY_PPT, model.salinityPpt)
+            .set(PH, model.ph)
+            .set(TIDE_ID, model.tide)
+            .set(TIDE_TIME, model.tideTime)
+            .execute()
+      }
+
+      val quadratDetailsRecords =
+          model.quadrats.map { (position, details) ->
+            ObservationBiomassQuadratDetailsRecord(
+                model.observationId, model.plotId, position, details.description)
+          }
+      dslContext.batchInsert(quadratDetailsRecords).execute()
+
+      val quadratSpeciesRecords =
+          model.quadrats.flatMap { (position, details) ->
+            details.species.map {
+              ObservationBiomassQuadratSpeciesRecord(
+                  model.observationId,
+                  model.plotId,
+                  position,
+                  it.speciesId,
+                  it.speciesName,
+                  it.isInvasive,
+                  it.isThreatened,
+                  it.abundancePercent,
+              )
+            }
+          }
+      dslContext.batchInsert(quadratSpeciesRecords).execute()
+
+      val additionalSpeciesRecords =
+          model.additionalSpecies.map {
+            ObservationBiomassAdditionalSpeciesRecord(
+                model.observationId,
+                model.plotId,
+                it.speciesId,
+                it.speciesName,
+                it.isInvasive,
+                it.isThreatened)
+          }
+      dslContext.batchInsert(additionalSpeciesRecords).execute()
+
+      val recordedTreesRows =
+          model.trees.map {
+            RecordedTreesRow(
+                null,
+                model.observationId,
+                model.plotId,
+                it.speciesId,
+                it.speciesName,
+                it.treeNumber,
+                it.treeGrowthForm,
+                it.isDead,
+                it.isTrunk,
+                it.diameterAtBreastHeightCm,
+                it.pointOfMeasurementM,
+                it.heightM,
+                it.shrubDiameterCm,
+                it.description,
+            )
+          }
+      recordedTreesDao.insert(recordedTreesRows)
+
+      val treeIdsByTreeNumber = recordedTreesRows.associate { it.treeNumber!! to it.id!! }
+
+      val recordedBranchesRow =
+          model.trees.flatMap { tree ->
+            tree.branches.map {
+              RecordedBranchesRow(
+                  null,
+                  treeIdsByTreeNumber[tree.treeNumber],
+                  it.branchNumber,
+                  it.diameterAtBreastHeightCm,
+                  it.pointOfMeasurementM,
+                  it.isDead,
+                  it.description,
+              )
+            }
+          }
+      recordedBranchesDao.insert(recordedBranchesRow)
     }
   }
 
