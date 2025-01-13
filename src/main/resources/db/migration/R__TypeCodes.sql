@@ -55,6 +55,11 @@ VALUES (1, 'MediaMix'),
        (6, 'Other')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO tracking.biomass_forest_types (id, name)
+VALUES (1, 'Terrestrial'),
+       (2, 'Mangrove')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO accelerator.cohort_phases (id, name)
 VALUES (0, 'Phase 0 - Due Diligence'),
        (1, 'Phase 1 - Feasibility Study'),
@@ -87,18 +92,6 @@ INSERT INTO seedbank.data_sources (id, name)
 VALUES (1, 'Web'),
        (2, 'Seed Collector App'),
        (3, 'File Import')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO accelerator.internal_interests (id, name)
-VALUES (1, 'Compliance'),
-       (2, 'Financial Viability'),
-       (3, 'GIS'),
-       (4, 'Carbon Eligibility'),
-       (5, 'Stakeholders and Community Impact'),
-       (6, 'Proposed Restoration Activities'),
-       (7, 'Verra Non-Permanence Risk Tool (NPRT)'),
-       (8, 'Supplemental Files'),
-       (101, 'Sourcing')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.deliverable_categories (id, name, internal_interest_id)
@@ -248,6 +241,18 @@ VALUES (1, 'Tree'),
        (15, 'Herb')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO accelerator.internal_interests (id, name)
+VALUES (1, 'Compliance'),
+       (2, 'Financial Viability'),
+       (3, 'GIS'),
+       (4, 'Carbon Eligibility'),
+       (5, 'Stakeholders and Community Impact'),
+       (6, 'Proposed Restoration Activities'),
+       (7, 'Verra Non-Permanence Risk Tool (NPRT)'),
+       (8, 'Supplemental Files'),
+       (101, 'Sourcing')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO land_use_model_types (id, name)
 VALUES (1, 'Native Forest'),
        (2, 'Monoculture'),
@@ -263,6 +268,11 @@ INSERT INTO managed_location_types (id, name)
 VALUES (1, 'SeedBank'),
        (2, 'Nursery'),
        (3, 'PlantingSite')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO tracking.mangrove_tides (id, name)
+VALUES (1, 'Low'),
+       (2, 'High')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO notification_criticalities (id, name)
@@ -299,22 +309,6 @@ VALUES (1, 'User Added to Organization', 1),
        (31, 'Completed Section Variable Updated', 1)
 ON CONFLICT (id) DO UPDATE SET name                        = excluded.name,
                                notification_criticality_id = excluded.notification_criticality_id;
-
-INSERT INTO plant_material_sourcing_methods (id, name)
-VALUES (1, 'Seed collection & germination'),
-       (2, 'Seed purchase & germination'),
-       (3, 'Mangrove propagules'),
-       (4, 'Vegetative propagation'),
-       (5, 'Wildling harvest'),
-       (6, 'Seedling purchase'),
-       (7, 'Other')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO wood_density_levels (id, name)
-VALUES (1, 'Species'),
-       (2, 'Genus'),
-       (3, 'Family')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO tracking.observable_conditions (id, name)
 VALUES (1, 'AnimalDamage'),
@@ -372,6 +366,16 @@ INSERT INTO accelerator.pipelines (id, name)
 VALUES (1, 'Accelerator Projects'),
        (2, 'Carbon Supply'),
        (3, 'Carbon Waitlist')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO plant_material_sourcing_methods (id, name)
+VALUES (1, 'Seed collection & germination'),
+       (2, 'Seed purchase & germination'),
+       (3, 'Mangrove propagules'),
+       (4, 'Vegetative propagation'),
+       (5, 'Wildling harvest'),
+       (6, 'Seedling purchase'),
+       (7, 'Other')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO tracking.planting_types (id, name)
@@ -510,25 +514,14 @@ VALUES (1, 'Not Submitted'),
        (7, 'Completed')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO internal_tags (id, name, description, is_system, created_by, created_time, modified_by, modified_time)
-SELECT t.id, t.name, t.description, TRUE, system_user.id, NOW(), system_user.id, NOW()
-    FROM (
-        SELECT id
-        FROM users
-        WHERE user_type_id = 4
-        AND email = 'system'
-    ) AS system_user, (
-        VALUES (1, 'Reporter', 'Organization must submit reports to Terraformation.'),
-               (2, 'Internal', 'Terraformation-managed internal organization, not a customer.'),
-               (3, 'Testing', 'Used for internal testing; may contain invalid data.'),
-               (4, 'Accelerator', 'Organization is an accelerator participant.')
-    ) AS t (id, name, description)
-ON CONFLICT (id) DO UPDATE SET name = excluded.name,
-                               description = excluded.description;
-
 INSERT INTO timeseries_types (id, name)
 VALUES (1, 'Numeric'),
        (2, 'Text')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO tracking.tree_growth_forms (id, name)
+VALUES (1, 'Tree'),
+       (2, 'Shrub')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO upload_problem_types (id, name)
@@ -624,8 +617,13 @@ VALUES (6, 'Other'),
        (9, 'Nursery')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
--- Depends on accelerator.pipelines
+INSERT INTO wood_density_levels (id, name)
+VALUES (1, 'Species'),
+       (2, 'Genus'),
+       (3, 'Family')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+-- Depends on accelerator.pipelines
 INSERT INTO accelerator.deal_stages (id, name, pipeline_id)
 VALUES (101, 'Phase 0 (Doc Review)', 1),
        (102, 'Phase 1', 1),
@@ -645,6 +643,24 @@ VALUES (101, 'Phase 0 (Doc Review)', 1),
        (303, 'Issue Reesolved', 3)
 ON CONFLICT (id) DO UPDATE SET name = excluded.name,
                                pipeline_id = excluded.pipeline_id;
+
+-- Depends on user_types
+INSERT INTO internal_tags (id, name, description, is_system, created_by, created_time, modified_by, modified_time)
+SELECT t.id, t.name, t.description, TRUE, system_user.id, NOW(), system_user.id, NOW()
+FROM (
+         SELECT id
+         FROM users
+         WHERE user_type_id = 4
+           AND email = 'system'
+     ) AS system_user, (
+         VALUES (1, 'Reporter', 'Organization must submit reports to Terraformation.'),
+                (2, 'Internal', 'Terraformation-managed internal organization, not a customer.'),
+                (3, 'Testing', 'Used for internal testing; may contain invalid data.'),
+                (4, 'Accelerator', 'Organization is an accelerator participant.')
+     ) AS t (id, name, description)
+ON CONFLICT (id) DO UPDATE SET name = excluded.name,
+                               description = excluded.description;
+
 
 -- When adding new tables, put them in alphabetical (ASCII) order unless they depend on other
 -- tables with alphabetically-greater names.

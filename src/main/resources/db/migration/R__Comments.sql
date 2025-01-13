@@ -329,6 +329,7 @@ COMMENT ON COLUMN nursery.withdrawals.withdrawn_date IS 'User-supplied date when
 
 COMMENT ON VIEW nursery.withdrawal_summaries IS 'Withdrawal information including aggregated and calculated values that need to be made available as filter and sort keys.';
 
+COMMENT ON TABLE tracking.biomass_forest_types IS '(Enum) Types for forest in a biomass observation.';
 
 COMMENT ON TABLE tracking.deliveries IS 'Incoming deliveries of new seedlings to a planting site. Mostly exists to link plantings and nursery withdrawals.';
 COMMENT ON COLUMN tracking.deliveries.created_by IS 'Which user created the delivery.';
@@ -344,6 +345,8 @@ COMMENT ON TABLE tracking.draft_planting_sites IS 'Details of planting sites tha
 COMMENT ON COLUMN tracking.draft_planting_sites.data IS 'Client-defined state of the definition of the planting site. This may include a mix of map data and application state and is treated as opaque by the server.';
 COMMENT ON COLUMN tracking.draft_planting_sites.num_planting_subzones is 'Number of planting subzones defined so far.';
 COMMENT ON COLUMN tracking.draft_planting_sites.num_planting_zones is 'Number of planting zones defined so far.';
+
+COMMENT ON TABLE tracking.mangrove_tides IS '(Enum) High/Low tide at a mangrove during an observation.';
 
 COMMENT ON TABLE tracking.monitoring_plot_overlaps IS 'Which monitoring plots overlap with previously-used monitoring plots. A plot may overlap with multiple older or newer plots.';
 COMMENT ON COLUMN tracking.monitoring_plot_overlaps.monitoring_plot_id IS 'ID of the newer monitoring plot.';
@@ -392,6 +395,19 @@ COMMENT ON COLUMN tracking.observations.end_date IS 'Last day of the observation
 COMMENT ON COLUMN tracking.observations.planting_site_history_id IS 'Which version of the planting site map was used for the observation. Null for upcoming observations since monitoring plots are only placed on the map when an observation starts.';
 COMMENT ON COLUMN tracking.observations.start_date IS 'First day of the observation. This is either the first day of the month following the end of the planting season, or 6 months after that day.';
 COMMENT ON COLUMN tracking.observations.upcoming_notification_sent_time IS 'When the notification that the observation is starting in 1 month was sent. Null if the notification has not been sent yet.';
+
+COMMENT ON TABLE tracking.observation_biomass_additional_species IS 'Additional threatened/invasive herbaceous species at a monitoring plot of a biomass observation';
+
+COMMENT ON TABLE tracking.observation_biomass_details IS 'Recorded data for a biomass observation.';
+COMMENT ON COLUMN tracking.observation_biomass_details.water_depth_cm IS 'Depth of water in centimeters (cm). Must be non-null if forest type is "Mangrove".';
+COMMENT ON COLUMN tracking.observation_biomass_details.salinity_ppt IS 'Salinity of water in parts per thousand (ppt). Must be non-null if forest type is "Mangrove".';
+COMMENT ON COLUMN tracking.observation_biomass_details.ph IS 'Acidity of water in pH. Must only exists if forest type is "Mangrove".';
+COMMENT ON COLUMN tracking.observation_biomass_details.tide_id IS 'High/low tide during observation. Must be non-null if forest type is "Mangrove".';
+COMMENT ON COLUMN tracking.observation_biomass_details.tide_time IS 'Time when the tide is recorded. Must be non-null if forest type is "Mangrove".';
+
+COMMENT ON TABLE tracking.observation_biomass_quadrat_details IS 'Details of a biomass observation at each quadrat of a monitoring plot.';
+
+COMMENT ON TABLE tracking.observation_biomass_quadrat_species IS 'Herbaceous species at each quadrat of a monitoring plot of a biomass observation';
 
 COMMENT ON TABLE tracking.observed_plot_coordinates IS 'Observed GPS coordinates in monitoring plots. Does not include photo coordinates or coordinates of recorded plants.';
 
@@ -488,9 +504,18 @@ COMMENT ON COLUMN tracking.plantings.species_id IS 'Which species was planted.';
 
 COMMENT ON TABLE tracking.recorded_plant_statuses IS '(Enum) Possible statuses of a plant recorded during observation of a monitoring plot.';
 
+COMMENT ON TABLE tracking.recorded_branches IS 'Recorded branches of a tree in a biomass observation.';
+COMMENT ON COLUMN tracking.recorded_branches.tree_id IS 'Foreign key ID of the tree the branch belongs to. The tree must have growth form "Tree".';
+
+COMMENT ON COLUMN tracking.recorded_branches.branch_number IS 'A system-assigned incremental number starting at 1 for accounting branches.';
+
+
 COMMENT ON TABLE tracking.recorded_plants IS 'Information about individual plants observed in monitoring plots.';
 COMMENT ON COLUMN tracking.recorded_plants.species_id IS 'If certainty is "Known," the ID of the plant''s species. Null for other certainty values.';
 COMMENT ON COLUMN tracking.recorded_plants.species_name IS 'If certainty is "Other," the user-supplied name of the plant''s species. Null for other certainty values.';
+
+COMMENT ON TABLE tracking.recorded_trees IS 'Recorded trees or shrubs of a biomass observation.';
+COMMENT ON COLUMN tracking.recorded_trees.tree_number IS 'A system-assigned incremental number starting at 1 for accounting trees at a biomass observation';
 
 COMMENT ON TABLE tracking.recorded_species_certainties IS '(Enum) Levels of certainty about the identity of a species recorded in a monitoring plot observation.';
 
@@ -586,6 +611,8 @@ COMMENT ON TABLE accelerator.submission_snapshots IS 'Snapshot files associated 
 COMMENT ON TABLE accelerator.submission_statuses IS '(Enum) Statuses of submissions of deliverables by specific projects.';
 
 COMMENT ON TABLE accelerator.submissions IS 'Information about the current states of the information supplied by specific projects in response to deliverables.';
+
+COMMENT ON TABLE tracking.tree_growth_forms IS '(Enum) Growth form of each species in a biomass observation.';
 
 COMMENT ON TABLE accelerator.user_internal_interests IS 'Which internal interest categories are assigned to which internal users. This affects things like which accelerator admins are notified.';
 
