@@ -125,6 +125,10 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="observation_biomass_details.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observation_biomass_details_observation_id_monitoring_plot_fkey"><a href='observation_biomass_details.html'>observation_biomass_details</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">observation_biomass_details_observation_id_monitoring_plot_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="observation_photos.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observation_photos_observation_id_monitoring_plot_id_fkey"><a href='observation_photos.html'>observation_photos</a><span class='relatedKey'>.observation_id</span></td>
                                                 <td class="constraint detail">observation_photos_observation_id_monitoring_plot_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -157,6 +161,10 @@
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="observation_biomass_details.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observation_biomass_details_observation_id_monitoring_plot_fkey"><a href='observation_biomass_details.html'>observation_biomass_details</a><span class='relatedKey'>.monitoring_plot_id</span></td>
+                                                <td class="constraint detail">observation_biomass_details_observation_id_monitoring_plot_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                             <tr>
                                                 <td title="observation_photos.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observation_photos_observation_id_monitoring_plot_id_fkey"><a href='observation_photos.html'>observation_photos</a><span class='relatedKey'>.monitoring_plot_id</span></td>
                                                 <td class="constraint detail">observation_photos_observation_id_monitoring_plot_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -501,44 +509,52 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/monitoring_plot_histories.html" target="_top" title="monitoring_plot_histories" alt="" coords="332,525,612,819">
-<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="5,555,272,789">
-<area shape="rect" id="node3" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="1146,5,1381,240">
-<area shape="rect" id="node4" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="672,237,1075,747">
-<area shape="rect" id="node5" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="316,97,628,332">
-<area shape="rect" id="node6" href="../../tables/observation_plot_statuses.html" target="_top" title="observation_plot_statuses" alt="" coords="331,385,613,508">
-<area shape="rect" id="node7" href="../../tables/observed_plot_coordinates.html" target="_top" title="observed_plot_coordinates" alt="" coords="1119,257,1408,463">
-<area shape="rect" id="node8" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1159,601,1368,865">
+<area shape="rect" id="node1" href="../../tables/monitoring_plot_histories.html" target="_top" title="monitoring_plot_histories" alt="" coords="332,621,612,915">
+<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="5,528,272,763">
+<area shape="rect" id="node3" href="../../tables/observation_biomass_details.html" target="_top" title="observation_biomass_details" alt="" coords="1119,509,1421,715">
+<area shape="rect" id="node4" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="672,269,1075,779">
+<area shape="rect" id="node5" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="316,193,628,428">
+<area shape="rect" id="node7" href="../../tables/observation_plot_statuses.html" target="_top" title="observation_plot_statuses" alt="" coords="331,481,613,604">
+<area shape="rect" id="node6" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="1153,789,1387,1024">
+<area shape="rect" id="node8" href="../../tables/observed_plot_coordinates.html" target="_top" title="observed_plot_coordinates" alt="" coords="1125,5,1415,211">
+<area shape="rect" id="node9" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1165,228,1375,492">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/observation_plots.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/monitoring_plot_histories.html" target="_top" title="monitoring_plot_histories" alt="" coords="924,1207,1204,1500">
-<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="563,819,829,1053">
-<area shape="rect" id="node3" href="../../tables/planting_site_histories.html" target="_top" title="planting_site_histories" alt="" coords="240,953,496,1041">
-<area shape="rect" id="node4" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,847,196,935">
-<area shape="rect" id="node5" href="../../tables/planting_subzone_histories.html" target="_top" title="planting_subzone_histories" alt="" coords="551,1273,841,1361">
-<area shape="rect" id="node6" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="255,812,481,900">
-<area shape="rect" id="node7" href="../../tables/monitoring_plot_overlaps.html" target="_top" title="monitoring_plot_overlaps" alt="" coords="925,1065,1203,1153">
-<area shape="rect" id="node8" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="1750,837,1985,1072">
-<area shape="rect" id="node9" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="1276,503,1679,1012">
-<area shape="rect" id="node10" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="540,408,852,643">
-<area shape="rect" id="node11" href="../../tables/observation_plot_positions.html" target="_top" title="observation_plot_positions" alt="" coords="1333,1065,1622,1153">
-<area shape="rect" id="node12" href="../../tables/observation_photo_types.html" target="_top" title="observation_photo_types" alt="" coords="1339,1207,1615,1295">
-<area shape="rect" id="node14" href="../../tables/observation_plot_statuses.html" target="_top" title="observation_plot_statuses" alt="" coords="923,889,1205,1012">
-<area shape="rect" id="node16" href="../../tables/observation_types.html" target="_top" title="observation_types" alt="" coords="255,597,481,685">
-<area shape="rect" id="node17" href="../../tables/observation_states.html" target="_top" title="observation_states" alt="" coords="253,492,483,580">
-<area shape="rect" id="node13" href="../../tables/observation_plot_conditions.html" target="_top" title="observation_plot_conditions" alt="" coords="914,712,1214,800">
-<area shape="rect" id="node15" href="../../tables/observation_requested_subzones.html" target="_top" title="observation_requested_subzones" alt="" coords="896,607,1232,695">
-<area shape="rect" id="node18" href="../../tables/observed_plot_coordinates.html" target="_top" title="observed_plot_coordinates" alt="" coords="1723,476,2012,681">
-<area shape="rect" id="node19" href="../../tables/observed_plot_species_totals.html" target="_top" title="observed_plot_species_totals" alt="" coords="912,501,1216,589">
-<area shape="rect" id="node20" href="../../tables/recorded_species_certainties.html" target="_top" title="recorded_species_certainties" alt="" coords="543,220,849,308">
-<area shape="rect" id="node21" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="913,5,1215,93">
-<area shape="rect" id="node22" href="../../tables/observed_subzone_species_totals.html" target="_top" title="observed_subzone_species_totals" alt="" coords="897,147,1231,235">
-<area shape="rect" id="node23" href="../../tables/observed_zone_species_totals.html" target="_top" title="observed_zone_species_totals" alt="" coords="910,252,1218,340">
-<area shape="rect" id="node24" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1763,151,1972,415">
-<area shape="rect" id="node25" href="../../tables/recorded_plant_statuses.html" target="_top" title="recorded_plant_statuses" alt="" coords="1342,307,1613,395">
+<area shape="rect" id="node1" href="../../tables/monitoring_plot_histories.html" target="_top" title="monitoring_plot_histories" alt="" coords="860,112,1140,405">
+<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="521,1369,788,1604">
+<area shape="rect" id="node3" href="../../tables/planting_site_histories.html" target="_top" title="planting_site_histories" alt="" coords="527,1264,783,1352">
+<area shape="rect" id="node4" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,1364,196,1452">
+<area shape="rect" id="node5" href="../../tables/planting_subzone_histories.html" target="_top" title="planting_subzone_histories" alt="" coords="509,287,800,375">
+<area shape="rect" id="node6" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="240,145,465,233">
+<area shape="rect" id="node7" href="../../tables/monitoring_plot_overlaps.html" target="_top" title="monitoring_plot_overlaps" alt="" coords="861,1759,1139,1847">
+<area shape="rect" id="node8" href="../../tables/observation_biomass_additional_species.html" target="_top" title="observation_biomass_additional_species" alt="" coords="1993,2531,2384,2619">
+<area shape="rect" id="node9" href="../../tables/observation_biomass_details.html" target="_top" title="observation_biomass_details" alt="" coords="1647,2188,1949,2393">
+<area shape="rect" id="node10" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="844,1864,1156,2099">
+<area shape="rect" id="node11" href="../../tables/biomass_forest_types.html" target="_top" title="biomass_forest_types" alt="" coords="1278,2260,1525,2348">
+<area shape="rect" id="node12" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="1200,777,1603,1287">
+<area shape="rect" id="node13" href="../../tables/mangrove_tides.html" target="_top" title="mangrove_tides" alt="" coords="1298,2365,1505,2453">
+<area shape="rect" id="node22" href="../../tables/observation_types.html" target="_top" title="observation_types" alt="" coords="542,2008,767,2096">
+<area shape="rect" id="node23" href="../../tables/observation_states.html" target="_top" title="observation_states" alt="" coords="540,1903,769,1991">
+<area shape="rect" id="node20" href="../../tables/observation_plot_statuses.html" target="_top" title="observation_plot_statuses" alt="" coords="859,1161,1141,1284">
+<area shape="rect" id="node14" href="../../tables/observation_biomass_quadrat_details.html" target="_top" title="observation_biomass_quadrat_details" alt="" coords="2003,2044,2374,2132">
+<area shape="rect" id="node15" href="../../tables/observation_plot_positions.html" target="_top" title="observation_plot_positions" alt="" coords="1257,531,1546,619">
+<area shape="rect" id="node16" href="../../tables/observation_biomass_quadrat_species.html" target="_top" title="observation_biomass_quadrat_species" alt="" coords="2001,2149,2376,2237">
+<area shape="rect" id="node17" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="1681,827,1915,1061">
+<area shape="rect" id="node18" href="../../tables/observation_photo_types.html" target="_top" title="observation_photo_types" alt="" coords="1263,1304,1539,1392">
+<area shape="rect" id="node19" href="../../tables/observation_plot_conditions.html" target="_top" title="observation_plot_conditions" alt="" coords="1251,1551,1551,1639">
+<area shape="rect" id="node21" href="../../tables/observation_requested_subzones.html" target="_top" title="observation_requested_subzones" alt="" coords="1233,672,1569,760">
+<area shape="rect" id="node24" href="../../tables/observed_plot_coordinates.html" target="_top" title="observed_plot_coordinates" alt="" coords="1653,604,1943,809">
+<area shape="rect" id="node25" href="../../tables/observed_plot_species_totals.html" target="_top" title="observed_plot_species_totals" alt="" coords="1249,1692,1553,1780">
+<area shape="rect" id="node26" href="../../tables/recorded_species_certainties.html" target="_top" title="recorded_species_certainties" alt="" coords="847,1617,1153,1705">
+<area shape="rect" id="node27" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="1251,2507,1552,2595">
+<area shape="rect" id="node28" href="../../tables/observed_subzone_species_totals.html" target="_top" title="observed_subzone_species_totals" alt="" coords="1234,1445,1569,1533">
+<area shape="rect" id="node29" href="../../tables/observed_zone_species_totals.html" target="_top" title="observed_zone_species_totals" alt="" coords="1247,1797,1555,1885">
+<area shape="rect" id="node30" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1693,1420,1903,1684">
+<area shape="rect" id="node31" href="../../tables/recorded_plant_statuses.html" target="_top" title="recorded_plant_statuses" alt="" coords="1266,2011,1537,2099">
+<area shape="rect" id="node32" href="../../tables/recorded_trees.html" target="_top" title="recorded_trees" alt="" coords="2089,2344,2289,2432">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/observation_plots.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

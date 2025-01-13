@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <database name="terraware" schema="tracking" type="PostgreSQL - 13.1 (Debian 13.1-1.pgdg100+1)">
    <tables>
+      <table name="biomass_forest_types" numRows="2" remarks="(Enum) Types for forest in a biomass observation." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="forest_type_id" foreignKey="observation_biomass_details_forest_type_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_biomass_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="biomass_forest_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="biomass_forest_types_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
       <table name="deliveries" numRows="0" remarks="Incoming deliveries of new seedlings to a planting site. Mostly exists to link plantings and nursery withdrawals." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="delivery_id" foreignKey="plantings_planting_site_id_delivery_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
@@ -39,8 +52,8 @@
       <table name="draft_planting_sites" numRows="0" remarks="Details of planting sites that are in the process of being defined." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="organization_id" foreignKey="draft_planting_sites_organization_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <parent column="id" foreignKey="draft_planting_sites_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>
+            <parent column="organization_id" foreignKey="draft_planting_sites_organization_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="project_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="draft_planting_sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
@@ -70,6 +83,19 @@
          </index>
          <index name="draft_planting_sites_project_id_idx" unique="false">
             <column ascending="true" name="project_id"/>
+         </index>
+      </table>
+      <table name="mangrove_tides" numRows="2" remarks="(Enum) High/Low tide at a mangrove during an observation." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="tide_id" foreignKey="observation_biomass_details_tide_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_biomass_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="mangrove_tides_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="mangrove_tides_name_key" unique="true">
+            <column ascending="true" name="name"/>
          </index>
       </table>
       <table name="monitoring_plot_histories" numRows="0" remarks="Versions of monitoring plots over time. Each time a planting site changes, its monitoring plots are added to this table." schema="tracking" type="TABLE">
@@ -141,12 +167,17 @@
             <child column="monitoring_plot_id" foreignKey="monitoring_plot_histories_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plot_histories"/>
             <child column="monitoring_plot_id" foreignKey="monitoring_plot_overlaps_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plot_overlaps"/>
             <child column="overlaps_plot_id" foreignKey="monitoring_plot_overlaps_overlaps_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plot_overlaps"/>
+            <child column="monitoring_plot_id" foreignKey="observation_biomass_additional_species_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_additional_species"/>
+            <child column="monitoring_plot_id" foreignKey="observation_biomass_details_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_details"/>
+            <child column="monitoring_plot_id" foreignKey="observation_biomass_quadrat_details_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_details"/>
+            <child column="monitoring_plot_id" foreignKey="observation_biomass_quadrat_species_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_species"/>
             <child column="monitoring_plot_id" foreignKey="observation_photos_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_photos"/>
             <child column="monitoring_plot_id" foreignKey="observation_plot_conditions_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plot_conditions"/>
             <child column="monitoring_plot_id" foreignKey="observation_plots_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
             <child column="monitoring_plot_id" foreignKey="observed_plot_coordinates_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_plot_coordinates"/>
             <child column="monitoring_plot_id" foreignKey="observed_plot_species_totals_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_plot_species_totals"/>
             <child column="monitoring_plot_id" foreignKey="recorded_plants_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="recorded_plants"/>
+            <child column="monitoring_plot_id" foreignKey="recorded_trees_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="recorded_trees"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="planting_subzone_id" nullable="true" remarks="Which planting subzone this monitoring plot is currently part of, if any. May be null if the subzone was edited or removed after the plot was created, or if the plot was created outside the site boundary." size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="monitoring_plots_planting_subzone_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
@@ -198,6 +229,148 @@
          <index name="observable_conditions_name_key" unique="true">
             <column ascending="true" name="name"/>
          </index>
+      </table>
+      <table name="observation_biomass_additional_species" numRows="0" remarks="Additional threatened/invasive herbaceous species at a monitoring plot of a biomass observation" schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="observation_id" foreignKey="observation_biomass_additiona_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_details"/>
+            <parent column="id" foreignKey="observation_biomass_additional_species_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_biomass_additional_species_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
+            <parent column="monitoring_plot_id" foreignKey="observation_biomass_additiona_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="species_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_biomass_additional_species_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="species_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="is_invasive" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="is_threatened" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <index name="observation_biomass_additiona_observation_id_monitoring_pl_idx1" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="monitoring_plot_id"/>
+            <column ascending="true" name="species_name"/>
+         </index>
+         <index name="observation_biomass_additiona_observation_id_monitoring_plo_idx" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="monitoring_plot_id"/>
+            <column ascending="true" name="species_id"/>
+         </index>
+         <index name="observation_biomass_additional_species_monitoring_plot_id_idx" unique="false">
+            <column ascending="true" name="monitoring_plot_id"/>
+         </index>
+         <checkConstraint constraint="(((is_invasive IS TRUE) OR (is_threatened IS TRUE)))" name="invasive_or_threatened"/>
+         <checkConstraint constraint="((((species_id IS NOT NULL) AND (species_name IS NULL)) OR ((species_id IS NULL) AND (species_name IS NOT NULL))))" name="species_identifier"/>
+      </table>
+      <table name="observation_biomass_details" numRows="0" remarks="Recorded data for a biomass observation." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="observation_id" foreignKey="observation_biomass_additiona_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_additional_species"/>
+            <child column="observation_id" foreignKey="observation_biomass_quadrat_d_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_details"/>
+            <child column="observation_id" foreignKey="observation_biomass_quadrat_s_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_species"/>
+            <child column="observation_id" foreignKey="recorded_trees_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="recorded_trees"/>
+            <parent column="observation_id" foreignKey="observation_biomass_details_observation_id_monitoring_plot_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <parent column="id" foreignKey="observation_biomass_details_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="monitoring_plot_id" foreignKey="observation_biomass_additiona_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_additional_species"/>
+            <child column="monitoring_plot_id" foreignKey="observation_biomass_quadrat_d_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_details"/>
+            <child column="monitoring_plot_id" foreignKey="observation_biomass_quadrat_s_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_species"/>
+            <child column="monitoring_plot_id" foreignKey="recorded_trees_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="recorded_trees"/>
+            <parent column="id" foreignKey="observation_biomass_details_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
+            <parent column="monitoring_plot_id" foreignKey="observation_biomass_details_observation_id_monitoring_plot_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="forest_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="observation_biomass_details_forest_type_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="biomass_forest_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="small_trees_count_low" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="small_trees_count_high" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="herbaceous_cover_percent" nullable="false" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="soil_assessment" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="water_depth_cm" nullable="true" remarks="Depth of water in centimeters (cm). Must be non-null if forest type is &quot;Mangrove&quot;." size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="salinity_ppt" nullable="true" remarks="Salinity of water in parts per thousand (ppt). Must be non-null if forest type is &quot;Mangrove&quot;." size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="ph" nullable="true" remarks="Acidity of water in pH. Must only exists if forest type is &quot;Mangrove&quot;." size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="tide_id" nullable="true" remarks="High/low tide during observation. Must be non-null if forest type is &quot;Mangrove&quot;." size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="observation_biomass_details_tide_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="mangrove_tides"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="12" name="tide_time" nullable="true" remarks="Time when the tide is recorded. Must be non-null if forest type is &quot;Mangrove&quot;." size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="observation_id" sequenceNumberInPK="1"/>
+         <primaryKey column="monitoring_plot_id" sequenceNumberInPK="2"/>
+         <index name="observation_biomass_details_pkey" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="monitoring_plot_id"/>
+         </index>
+         <index name="observation_biomass_details_monitoring_plot_id_idx" unique="false">
+            <column ascending="true" name="monitoring_plot_id"/>
+         </index>
+         <checkConstraint constraint="((((forest_type_id = 1) AND (water_depth_cm IS NULL) AND (salinity_ppt IS NULL) AND (ph IS NULL) AND (tide_id IS NULL) AND (tide_time IS NULL)) OR ((forest_type_id = 2) AND (water_depth_cm IS NOT NULL) AND (salinity_ppt IS NOT NULL) AND (ph IS NOT NULL) AND (tide_id IS NOT NULL) AND (tide_time IS NOT NULL))))" name="mangrove_required_values"/>
+         <checkConstraint constraint="((small_trees_count_low &lt;= small_trees_count_high))" name="observation_biomass_details_check"/>
+         <checkConstraint constraint="(((herbaceous_cover_percent &gt;= (0)::numeric) AND (herbaceous_cover_percent &lt;= (100)::numeric)))" name="observation_biomass_details_herbaceous_cover_percent_check"/>
+         <checkConstraint constraint="(((ph &gt;= (0)::numeric) AND (ph &lt;= (14)::numeric)))" name="observation_biomass_details_ph_check"/>
+         <checkConstraint constraint="((salinity_ppt &gt;= (0)::numeric))" name="observation_biomass_details_salinity_ppt_check"/>
+         <checkConstraint constraint="((small_trees_count_low &gt;= 0))" name="observation_biomass_details_small_trees_count_low_check"/>
+         <checkConstraint constraint="((water_depth_cm &gt;= (0)::numeric))" name="observation_biomass_details_water_depth_cm_check"/>
+      </table>
+      <table name="observation_biomass_quadrat_details" numRows="0" remarks="Details of a biomass observation at each quadrat of a monitoring plot." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="observation_id" foreignKey="observation_biomass_quadrat_d_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_details"/>
+            <parent column="id" foreignKey="observation_biomass_quadrat_details_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_biomass_quadrat_details_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
+            <parent column="monitoring_plot_id" foreignKey="observation_biomass_quadrat_d_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="position_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="observation_biomass_quadrat_details_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plot_positions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="observation_id" sequenceNumberInPK="1"/>
+         <primaryKey column="monitoring_plot_id" sequenceNumberInPK="2"/>
+         <primaryKey column="position_id" sequenceNumberInPK="3"/>
+         <index name="observation_biomass_quadrat_details_pkey" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="monitoring_plot_id"/>
+            <column ascending="true" name="position_id"/>
+         </index>
+         <index name="observation_biomass_quadrat_details_monitoring_plot_id_idx" unique="false">
+            <column ascending="true" name="monitoring_plot_id"/>
+         </index>
+      </table>
+      <table name="observation_biomass_quadrat_species" numRows="0" remarks="Herbaceous species at each quadrat of a monitoring plot of a biomass observation" schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="observation_id" foreignKey="observation_biomass_quadrat_s_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_details"/>
+            <parent column="id" foreignKey="observation_biomass_quadrat_species_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_biomass_quadrat_species_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
+            <parent column="monitoring_plot_id" foreignKey="observation_biomass_quadrat_s_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="position_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="observation_biomass_quadrat_species_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plot_positions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="species_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_biomass_quadrat_species_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="species_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="is_invasive" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="is_threatened" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="abundance_percent" nullable="false" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <index name="observation_biomass_quadrat_s_observation_id_monitoring_pl_idx1" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="monitoring_plot_id"/>
+            <column ascending="true" name="position_id"/>
+            <column ascending="true" name="species_name"/>
+         </index>
+         <index name="observation_biomass_quadrat_s_observation_id_monitoring_plo_idx" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="monitoring_plot_id"/>
+            <column ascending="true" name="position_id"/>
+            <column ascending="true" name="species_id"/>
+         </index>
+         <index name="observation_biomass_quadrat_species_monitoring_plot_id_idx" unique="false">
+            <column ascending="true" name="monitoring_plot_id"/>
+         </index>
+         <checkConstraint constraint="(((abundance_percent &gt;= (0)::numeric) AND (abundance_percent &lt;= (100)::numeric)))" name="observation_biomass_quadrat_species_abundance_percent_check"/>
+         <checkConstraint constraint="((((species_id IS NOT NULL) AND (species_name IS NULL)) OR ((species_id IS NULL) AND (species_name IS NOT NULL))))" name="species_identifier"/>
       </table>
       <table name="observation_photo_types" numRows="3" remarks="(Enum) Types of observation plot photo." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -266,6 +439,8 @@
       </table>
       <table name="observation_plot_positions" numRows="4" remarks="(Enum) Positions in a monitoring plot where users can take photos or record coordinates." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="position_id" foreignKey="observation_biomass_quadrat_details_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_biomass_quadrat_details"/>
+            <child column="position_id" foreignKey="observation_biomass_quadrat_species_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_biomass_quadrat_species"/>
             <child column="position_id" foreignKey="observation_photos_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_photos"/>
             <child column="position_id" foreignKey="observed_plot_coordinates_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_plot_coordinates"/>
          </column>
@@ -293,12 +468,14 @@
       </table>
       <table name="observation_plots" numRows="0" remarks="Information about monitoring plots that are required to be surveyed as part of observations. This is not populated until the scheduled start time of the observation." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="observation_id" foreignKey="observation_biomass_details_observation_id_monitoring_plot_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_biomass_details"/>
             <child column="observation_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_photos"/>
             <child column="observation_id" foreignKey="observed_plot_coordinates_observation_id_monitoring_plot_i_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_plot_coordinates"/>
             <child column="observation_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="recorded_plants"/>
             <parent column="id" foreignKey="observation_plots_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="monitoring_plot_id" foreignKey="observation_biomass_details_observation_id_monitoring_plot_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_biomass_details"/>
             <child column="monitoring_plot_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_photos"/>
             <child column="monitoring_plot_id" foreignKey="observed_plot_coordinates_observation_id_monitoring_plot_i_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_plot_coordinates"/>
             <child column="monitoring_plot_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="recorded_plants"/>
@@ -388,6 +565,10 @@
       </table>
       <table name="observations" numRows="0" remarks="Scheduled observations of planting sites. This table may contain rows describing future observations as well as current and past ones." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="observation_id" foreignKey="observation_biomass_additional_species_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_additional_species"/>
+            <child column="observation_id" foreignKey="observation_biomass_details_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_details"/>
+            <child column="observation_id" foreignKey="observation_biomass_quadrat_details_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_details"/>
+            <child column="observation_id" foreignKey="observation_biomass_quadrat_species_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_species"/>
             <child column="observation_id" foreignKey="observation_photos_observation_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_photos"/>
             <child column="observation_id" foreignKey="observation_plot_conditions_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plot_conditions"/>
             <child column="observation_id" foreignKey="observation_plots_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
@@ -398,6 +579,7 @@
             <child column="observation_id" foreignKey="observed_subzone_species_totals_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_subzone_species_totals"/>
             <child column="observation_id" foreignKey="observed_zone_species_totals_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_zone_species_totals"/>
             <child column="observation_id" foreignKey="recorded_plants_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="recorded_plants"/>
+            <child column="observation_id" foreignKey="recorded_trees_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="recorded_trees"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="planting_site_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observations_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
@@ -971,8 +1153,8 @@
             <parent column="id" foreignKey="plantings_planting_type_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="planting_site_id" nullable="false" remarks="Which planting site has the planting. Must be the same as the planting site ID of the delivery. This identifies the site as a whole; in addition, there may be a plot ID." size="19" type="int8" typeCode="-5">
-            <parent column="planting_site_id" foreignKey="plantings_planting_site_id_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
             <parent column="id" foreignKey="plantings_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
+            <parent column="planting_site_id" foreignKey="plantings_planting_site_id_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
             <parent column="planting_site_id" foreignKey="plantings_planting_site_id_delivery_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="deliveries"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="planting_subzone_id" nullable="true" remarks="Which plot this planting affected, if any. Must be a plot at the planting site referenced by `planting_site_id`. Null if the planting site does not have plot information. For reassignments, this is the original plot if `num_plants` is negative, or the new plot if `num_plants` is positive." size="19" type="int8" typeCode="-5">
@@ -1007,6 +1189,28 @@
          </index>
          <checkConstraint constraint="((((planting_type_id = ANY (ARRAY[2, 4])) AND (num_plants &lt; 0)) OR ((planting_type_id &lt;&gt; ALL (ARRAY[2, 4])) AND (num_plants &gt; 0))))" name="num_plants_sign_consistent_with_type"/>
          <checkConstraint constraint="((notes !~ similar_to_escape(' *'::text)))" name="plantings_notes_check"/>
+      </table>
+      <table name="recorded_branches" numRows="0" remarks="Recorded branches of a tree in a biomass observation." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="tree_id" nullable="false" remarks="Foreign key ID of the tree the branch belongs to. The tree must have growth form &quot;Tree&quot;." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="recorded_branches_tree_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="recorded_trees"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="branch_number" nullable="false" remarks="A system-assigned incremental number starting at 1 for accounting branches." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="diameter_at_breast_height_cm" nullable="false" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="point_of_measurement_m" nullable="false" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="is_dead" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="recorded_branches_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="recorded_branches_tree_id_branch_number_key" unique="true">
+            <column ascending="true" name="tree_id"/>
+            <column ascending="true" name="branch_number"/>
+         </index>
+         <checkConstraint constraint="((branch_number &gt;= 1))" name="recorded_branches_branch_number_check"/>
+         <checkConstraint constraint="((diameter_at_breast_height_cm &gt;= (0)::numeric))" name="recorded_branches_diameter_at_breast_height_cm_check"/>
+         <checkConstraint constraint="((point_of_measurement_m &gt;= (0)::numeric))" name="recorded_branches_point_of_measurement_m_check"/>
       </table>
       <table name="recorded_plant_statuses" numRows="3" remarks="(Enum) Possible statuses of a plant recorded during observation of a monitoring plot." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -1072,6 +1276,66 @@
             <column ascending="true" name="id"/>
          </index>
          <index name="recorded_species_certainties_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="recorded_trees" numRows="0" remarks="Recorded trees or shrubs of a biomass observation." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="tree_id" foreignKey="recorded_branches_tree_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="recorded_branches"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="observation_id" foreignKey="recorded_trees_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_details"/>
+            <parent column="id" foreignKey="recorded_trees_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="recorded_trees_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
+            <parent column="monitoring_plot_id" foreignKey="recorded_trees_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_details"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="species_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="recorded_trees_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="species_name" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="tree_number" nullable="false" remarks="A system-assigned incremental number starting at 1 for accounting trees at a biomass observation" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="tree_growth_form_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="recorded_trees_tree_growth_form_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="tree_growth_forms"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="is_dead" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="is_trunk" nullable="true" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="diameter_at_breast_height_cm" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="point_of_measurement_m" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="height_m" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="shrub_diameter_cm" nullable="true" remarks="" size="131089" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="recorded_trees_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="recorded_trees_monitoring_plot_id_idx" unique="false">
+            <column ascending="true" name="monitoring_plot_id"/>
+         </index>
+         <index name="recorded_trees_observation_id_tree_number_key" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="tree_number"/>
+         </index>
+         <checkConstraint constraint="((((tree_growth_form_id = 1) AND (is_trunk IS NOT NULL) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (shrub_diameter_cm IS NULL)) OR ((tree_growth_form_id = 2) AND (is_trunk IS NULL) AND (diameter_at_breast_height_cm IS NULL) AND (point_of_measurement_m IS NULL) AND (height_m IS NULL) AND (shrub_diameter_cm IS NOT NULL))))" name="growth_form_specific_data"/>
+         <checkConstraint constraint="((NOT ((diameter_at_breast_height_cm &gt; (5)::numeric) AND (height_m IS NULL))))" name="height_required_dbm_threshold"/>
+         <checkConstraint constraint="((diameter_at_breast_height_cm &gt;= (0)::numeric))" name="recorded_trees_diameter_at_breast_height_cm_check"/>
+         <checkConstraint constraint="((height_m &gt;= (0)::numeric))" name="recorded_trees_height_m_check"/>
+         <checkConstraint constraint="((point_of_measurement_m &gt;= (0)::numeric))" name="recorded_trees_point_of_measurement_m_check"/>
+         <checkConstraint constraint="((shrub_diameter_cm &gt;= (0)::numeric))" name="recorded_trees_shrub_diameter_cm_check"/>
+         <checkConstraint constraint="((tree_number &gt;= 1))" name="recorded_trees_tree_number_check"/>
+         <checkConstraint constraint="((((species_id IS NOT NULL) AND (species_name IS NULL)) OR ((species_id IS NULL) AND (species_name IS NOT NULL))))" name="species_identifier"/>
+      </table>
+      <table name="tree_growth_forms" numRows="2" remarks="(Enum) Growth form of each species in a biomass observation." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="tree_growth_form_id" foreignKey="recorded_trees_tree_growth_form_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_trees"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="tree_growth_forms_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="tree_growth_forms_name_key" unique="true">
             <column ascending="true" name="name"/>
          </index>
       </table>

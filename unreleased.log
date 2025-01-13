@@ -1,3 +1,4 @@
+2d893745cd1 SW-6409 Added biomass tables and database test methods (#2738)
 0abf98657f3 Update database dependencies (#2740)
 10e1ea2b646 Update dependency commons-codec:commons-codec to v1.17.2 (#2741)
 a56c9533c6b Update dependency io.mockk:mockk to v1.13.16 (#2742)

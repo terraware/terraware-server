@@ -1,5 +1,7 @@
 recorded_species_certainties
 observation_plot_positions
+biomass_forest_types
+mangrove_tides
 observable_conditions
 observation_photo_types
 observation_plot_statuses
@@ -7,6 +9,7 @@ observation_states
 observation_types
 planting_types
 recorded_plant_statuses
+tree_growth_forms
 planting_sites
 planting_zones
 planting_site_histories
@@ -17,8 +20,11 @@ planting_subzone_histories
 observations
 monitoring_plot_histories
 observation_plots
+observation_biomass_details
 deliveries
+recorded_trees
 planting_seasons
+recorded_branches
 monitoring_plot_overlaps
 observation_requested_subzones
 planting_site_notifications
@@ -30,7 +36,10 @@ observed_plot_species_totals
 observed_site_species_totals
 observed_subzone_species_totals
 observed_zone_species_totals
+observation_biomass_additional_species
+observation_biomass_quadrat_details
 observed_plot_coordinates
+observation_biomass_quadrat_species
 draft_planting_sites
 observation_photos
 recorded_plants
