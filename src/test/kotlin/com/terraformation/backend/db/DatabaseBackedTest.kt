@@ -2573,12 +2573,12 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!
   }
 
-  private val nextBranchNumber = mutableMapOf<RecordedTreeId, Long>()
+  private val nextBranchNumber = mutableMapOf<RecordedTreeId, Int>()
 
   fun insertRecordedBranch(
       row: RecordedBranchesRow = RecordedBranchesRow(),
       treeId: RecordedTreeId = row.treeId ?: inserted.recordedTreeId,
-      branchNumber: Long = row.branchNumber ?: nextBranchNumber.getOrDefault(treeId, 1),
+      branchNumber: Int = row.branchNumber ?: nextBranchNumber.getOrDefault(treeId, 1),
       diameterAtBreastHeightCm: BigDecimal = row.diameterAtBreastHeightCm ?: BigDecimal.ZERO,
       pointOfMeasurementM: BigDecimal = row.pointOfMeasurementM ?: BigDecimal.valueOf(1.3),
       isDead: Boolean = row.isDead ?: false,
@@ -2600,7 +2600,7 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!
   }
 
-  private val nextTreeNumber = mutableMapOf<ObservationId, Long>()
+  private val nextTreeNumber = mutableMapOf<ObservationId, Int>()
 
   fun insertRecordedTree(
       row: RecordedTreesRow = RecordedTreesRow(),
@@ -2608,7 +2608,7 @@ abstract class DatabaseBackedTest {
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       speciesId: SpeciesId? = row.speciesId,
       speciesName: String? = row.speciesName,
-      treeNumber: Long = row.treeNumber ?: nextTreeNumber.getOrDefault(observationId, 1),
+      treeNumber: Int = row.treeNumber ?: nextTreeNumber.getOrDefault(observationId, 1),
       treeGrowthForm: TreeGrowthForm = row.treeGrowthFormId ?: TreeGrowthForm.Tree,
       isDead: Boolean = row.isDead ?: false,
       isTrunk: Boolean? = row.isTrunk,
