@@ -1,3 +1,3 @@
-8735906405f SW-6344 Remove unused monitoring plot edit calculation (#2737)
-fa09c99dd69 SW-6415 Allow Read Only users to read documents (#2736)
-1884ae73b21 Update dependency mypy to v1.14.1 (#2735)
+0abf98657f3 Update database dependencies (#2740)
+10e1ea2b646 Update dependency commons-codec:commons-codec to v1.17.2 (#2741)
+a56c9533c6b Update dependency io.mockk:mockk to v1.13.16 (#2742)
