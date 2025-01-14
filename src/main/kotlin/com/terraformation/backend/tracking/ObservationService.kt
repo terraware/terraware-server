@@ -424,13 +424,13 @@ class ObservationService(
    * plot, adds the plot to the observation, and completes the observation.
    */
   fun completeAdHocObservation(
-      biomassDetails: NewBiomassDetailsModel?,
-      conditions: Set<ObservableCondition>,
-      notes: String?,
+      biomassDetails: NewBiomassDetailsModel? = null,
+      conditions: Set<ObservableCondition> = emptySet(),
+      notes: String? = null,
       observedTime: Instant,
       observationType: ObservationType,
       plantingSiteId: PlantingSiteId,
-      plants: Collection<RecordedPlantsRow>,
+      plants: Collection<RecordedPlantsRow> = emptySet(),
       swCorner: Point,
   ): Pair<ObservationId, MonitoringPlotId> {
     requirePermissions { scheduleAdHocObservation(plantingSiteId) }
@@ -439,12 +439,20 @@ class ObservationService(
       throw IllegalArgumentException("Observed time is in the future")
     }
 
-    if (observationType == ObservationType.BiomassMeasurements && plants.isNotEmpty()) {
-      throw IllegalArgumentException("Biomass observations must not contain plants")
-    }
-
-    if (observationType == ObservationType.BiomassMeasurements && biomassDetails == null) {
-      throw IllegalArgumentException("Biomass observations must contain biomass details")
+    when (observationType) {
+      ObservationType.BiomassMeasurements -> {
+        if (biomassDetails == null) {
+          throw IllegalArgumentException("Biomass observations must contain biomass details")
+        }
+        if (plants.isNotEmpty()) {
+          throw IllegalArgumentException("Biomass observations must not contain plants")
+        }
+      }
+      ObservationType.Monitoring -> {
+        if (biomassDetails != null) {
+          throw IllegalArgumentException("Monitoring observations must not contain biomass details")
+        }
+      }
     }
 
     val effectiveTimeZone = parentStore.getEffectiveTimeZone(plantingSiteId)

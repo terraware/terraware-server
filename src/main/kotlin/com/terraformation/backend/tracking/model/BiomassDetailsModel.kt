@@ -80,24 +80,24 @@ data class BiomassDetailsModel<
     PlotId : MonitoringPlotId?,
     TreeId : RecordedTreeId?,
     BranchId : RecordedBranchId?>(
-    val additionalSpecies: List<BiomassAdditionalSpeciesModel>,
+    val additionalSpecies: List<BiomassAdditionalSpeciesModel> = emptyList(),
     val description: String? = null,
     val forestType: BiomassForestType,
     val herbaceousCoverPercent: BigDecimal,
     val observationId: ID,
     val ph: BigDecimal? = null,
-    val quadrats: Map<ObservationPlotPosition, BiomassQuadratModel>,
+    val quadrats: Map<ObservationPlotPosition, BiomassQuadratModel> = emptyMap(),
     val salinityPpt: BigDecimal? = null,
     val smallTreeCountRange: Pair<Int, Int>,
     val soilAssessment: String,
     val plotId: PlotId,
     val tide: MangroveTide? = null,
     val tideTime: Instant? = null,
-    val trees: List<RecordedTreeModel<TreeId, BranchId>>,
+    val trees: List<RecordedTreeModel<TreeId, BranchId>> = emptyList(),
     val waterDepthCm: BigDecimal? = null,
 ) {
   fun validate() {
-    // TODO convert database validation errors to human-readable error messages
+    // TODO implement field validation according to acceptable ranges once finalized
     trees.forEach { it.validate() }
   }
 }

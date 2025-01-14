@@ -48,6 +48,9 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRec
 import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedSiteSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedZoneSpeciesTotalsRecord
+import com.terraformation.backend.db.tracking.tables.records.PlantingSitePopulationsRecord
+import com.terraformation.backend.db.tracking.tables.records.PlantingSubzonePopulationsRecord
+import com.terraformation.backend.db.tracking.tables.records.PlantingZonePopulationsRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedBranchesRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedPlantsRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
@@ -104,9 +107,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
         observationPlotsDao,
         observationRequestedSubzonesDao,
         ParentStore(dslContext),
-        recordedBranchesDao,
-        recordedPlantsDao,
-        recordedTreesDao)
+        recordedPlantsDao)
   }
   private val helper: ObservationTestHelper by lazy {
     ObservationTestHelper(this, store, user.userId)
@@ -2063,21 +2064,17 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           ),
           "Totals after observation in second zone")
 
-      assertEquals(
-          listOf(PlantingSitePopulationsRow(plantingSiteId, inserted.speciesId, 3, 3)),
-          plantingSitePopulationsDao.findAll(),
-          "Planting site populations should not have changed")
+      assertTableEquals(
+          PlantingSitePopulationsRecord(plantingSiteId, inserted.speciesId, 3, 3),
+          "Planting site total populations should be unchanged")
 
-      assertEquals(
-          listOf(PlantingZonePopulationsRow(inserted.plantingZoneId, inserted.speciesId, 2, 2)),
-          plantingZonePopulationsDao.findAll(),
-          "Planting zone populations should not have changed")
+      assertTableEquals(
+          PlantingZonePopulationsRecord(inserted.plantingZoneId, inserted.speciesId, 2, 2),
+          "Planting zone total populations should be unchanged")
 
-      assertEquals(
-          listOf(
-              PlantingSubzonePopulationsRow(inserted.plantingSubzoneId, inserted.speciesId, 1, 1)),
-          plantingSubzonePopulationsDao.findAll(),
-          "Planting subzone populations should not have changed")
+      assertTableEquals(
+          PlantingSubzonePopulationsRecord(inserted.plantingSubzoneId, inserted.speciesId, 1, 1),
+          "Planting subzone total populations should be unchanged")
     }
 
     @Test
@@ -2121,7 +2118,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               )
 
       assertTableEquals(ObservationPlotsRecord(newRow), "Updated observation plot entry")
-      assertTableEquals(expectedConditions, "Inserted observation plot conditions ")
+      assertTableEquals(expectedConditions, "Inserted observation plot conditions")
       assertTableEmpty(RECORDED_PLANTS, "No plants recorded")
 
       assertTableEmpty(OBSERVED_PLOT_SPECIES_TOTALS, "Observed plot species should be empty")
@@ -2129,21 +2126,17 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       assertTableEmpty(OBSERVED_ZONE_SPECIES_TOTALS, "Observed zone species should be empty")
       assertTableEmpty(OBSERVED_SITE_SPECIES_TOTALS, "Observed site species should be empty")
 
-      assertEquals(
-          listOf(PlantingSitePopulationsRow(plantingSiteId, inserted.speciesId, 3, 0)),
-          plantingSitePopulationsDao.findAll(),
-          "Planting site total plants should not have changed")
+      assertTableEquals(
+          PlantingSitePopulationsRecord(plantingSiteId, inserted.speciesId, 3, 0),
+          "Planting site total plants should be unchanged")
 
-      assertEquals(
-          listOf(PlantingZonePopulationsRow(inserted.plantingZoneId, inserted.speciesId, 2, 0)),
-          plantingZonePopulationsDao.findAll(),
-          "Planting zone total plants should not have changed")
+      assertTableEquals(
+          PlantingZonePopulationsRecord(inserted.plantingZoneId, inserted.speciesId, 2, 0),
+          "Planting zone total plants should be unchanged")
 
-      assertEquals(
-          listOf(
-              PlantingSubzonePopulationsRow(inserted.plantingSubzoneId, inserted.speciesId, 1, 0)),
-          plantingSubzonePopulationsDao.findAll(),
-          "Planting subzone total plants should not have changed")
+      assertTableEquals(
+          PlantingSubzonePopulationsRecord(inserted.plantingSubzoneId, inserted.speciesId, 1, 0),
+          "Planting subzone total plants should be unchanged")
     }
 
     @Test

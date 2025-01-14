@@ -43,6 +43,8 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTo
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationPhotosRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
@@ -141,9 +143,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         observationPlotsDao,
         observationRequestedSubzonesDao,
         parentStore,
-        recordedBranchesDao,
-        recordedPlantsDao,
-        recordedTreesDao)
+        recordedPlantsDao)
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {
     PlantingSiteStore(
@@ -1962,8 +1962,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               point(1),
           )
 
-      assertEquals(
-          ObservationsRow(
+      assertTableEquals(
+          ObservationsRecord(
               completedTime = clock.instant,
               createdTime = clock.instant,
               endDate = date,
@@ -1975,8 +1975,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = date,
               stateId = ObservationState.Completed,
           ),
-          observationsDao.fetchOneById(observationId),
-          "Observation row")
+          "Observation table")
 
       val plotBoundary = Turtle(point(1)).makePolygon { square(MONITORING_PLOT_SIZE_INT) }
 
@@ -2056,21 +2055,14 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `creates new observation, plot and biomass details for monitoring observations`() {
       val model =
           NewBiomassDetailsModel(
-              emptyList(),
-              "Basic biomass details",
-              BiomassForestType.Terrestrial,
-              BigDecimal.ZERO,
-              null,
-              null,
-              emptyMap(),
-              null,
-              0 to 0,
-              "Basic soil assessment",
-              null,
-              null,
-              null,
-              emptyList(),
-              null)
+              description = "Basic biomass details",
+              forestType = BiomassForestType.Terrestrial,
+              herbaceousCoverPercent = BigDecimal.ZERO,
+              observationId = null,
+              smallTreeCountRange = 0 to 0,
+              soilAssessment = "Basic soil assessment",
+              plotId = null,
+          )
 
       val observedTime = Instant.ofEpochSecond(1)
       clock.instant = Instant.ofEpochSecond(123)
@@ -2079,14 +2071,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val (observationId, plotId) =
           service.completeAdHocObservation(
-              model,
-              emptySet(),
-              "Notes",
-              observedTime,
-              ObservationType.BiomassMeasurements,
-              plantingSiteId,
-              emptySet(),
-              point(1),
+              biomassDetails = model,
+              notes = "Notes",
+              observedTime = observedTime,
+              observationType = ObservationType.BiomassMeasurements,
+              plantingSiteId = plantingSiteId,
+              swCorner = point(1),
           )
 
       assertEquals(
@@ -2129,8 +2119,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val latestPlotHistoryId =
           monitoringPlotHistoriesDao.fetchByMonitoringPlotId(plotId).maxOf { it.id!! }
 
-      assertEquals(
-          ObservationPlotsRow(
+      assertTableEquals(
+          ObservationPlotsRecord(
               observationId = observationId,
               monitoringPlotId = plotId,
               claimedBy = user.userId,
@@ -2147,10 +2137,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               statusId = ObservationPlotStatus.Completed,
               monitoringPlotHistoryId = latestPlotHistoryId,
           ),
-          observationPlotsDao
-              .fetchByObservationPlotId(ObservationPlotId(observationId, plotId))
-              .single(),
-          "Observation plot row")
+          "Observation plot record")
 
       // Detailed biomass row and tables are covered by ObservationStoreTest
       assertTableEquals(
@@ -2175,14 +2162,10 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<EntityNotFoundException> {
         service.completeAdHocObservation(
-            null,
-            emptySet(),
-            null,
-            clock.instant.minusSeconds(1),
-            ObservationType.Monitoring,
-            plantingSiteId,
-            emptySet(),
-            point(1),
+            observedTime = clock.instant.minusSeconds(1),
+            observationType = ObservationType.Monitoring,
+            plantingSiteId = plantingSiteId,
+            swCorner = point(1),
         )
       }
     }
@@ -2191,14 +2174,10 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exception if no observed time is in the future outside of tolerance`() {
       assertThrows<IllegalArgumentException> {
         service.completeAdHocObservation(
-            null,
-            emptySet(),
-            null,
-            clock.instant.plusSeconds(CLOCK_TOLERANCE_SECONDS + 1),
-            ObservationType.Monitoring,
-            plantingSiteId,
-            emptySet(),
-            point(1),
+            observedTime = clock.instant.plusSeconds(CLOCK_TOLERANCE_SECONDS + 1),
+            observationType = ObservationType.BiomassMeasurements,
+            plantingSiteId = plantingSiteId,
+            swCorner = point(1),
         )
       }
     }
@@ -2207,14 +2186,11 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exception if no biomass details was provided for Biomass measurements`() {
       assertThrows<IllegalArgumentException> {
         service.completeAdHocObservation(
-            null,
-            emptySet(),
-            null,
-            clock.instant,
-            ObservationType.BiomassMeasurements,
-            plantingSiteId,
-            emptySet(),
-            point(1),
+            biomassDetails = null,
+            observedTime = clock.instant,
+            observationType = ObservationType.BiomassMeasurements,
+            plantingSiteId = plantingSiteId,
+            swCorner = point(1),
         )
       }
     }
@@ -2223,39 +2199,31 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exception if plants were provided for Biomass measurements`() {
       val model =
           NewBiomassDetailsModel(
-              emptyList(),
-              null,
-              BiomassForestType.Terrestrial,
-              BigDecimal.ZERO,
-              null,
-              null,
-              emptyMap(),
-              null,
-              0 to 0,
-              "Basic soil assessment",
-              null,
-              null,
-              null,
-              emptyList(),
-              null)
+              description = "Basic biomass details",
+              forestType = BiomassForestType.Terrestrial,
+              herbaceousCoverPercent = BigDecimal.ZERO,
+              observationId = null,
+              smallTreeCountRange = 0 to 0,
+              soilAssessment = "Basic soil assessment",
+              plotId = null,
+          )
 
       assertThrows<IllegalArgumentException> {
         service.completeAdHocObservation(
-            model,
-            emptySet(),
-            null,
-            clock.instant,
-            ObservationType.BiomassMeasurements,
-            plantingSiteId,
-            setOf(
-                RecordedPlantsRow(
-                    certaintyId = Other,
-                    gpsCoordinates = point(1),
-                    speciesName = "Other 1",
-                    statusId = RecordedPlantStatus.Existing,
+            biomassDetails = model,
+            observedTime = clock.instant,
+            observationType = ObservationType.BiomassMeasurements,
+            plantingSiteId = plantingSiteId,
+            plants =
+                setOf(
+                    RecordedPlantsRow(
+                        certaintyId = Other,
+                        gpsCoordinates = point(1),
+                        speciesName = "Other 1",
+                        statusId = RecordedPlantStatus.Existing,
+                    ),
                 ),
-            ),
-            point(1),
+            swCorner = point(1),
         )
       }
     }

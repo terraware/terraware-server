@@ -661,7 +661,8 @@ data class BiomassMeasurementPayload(
     val additionalSpecies: List<BiomassAdditionalSpeciesPayload>,
     val description: String?,
     val forestType: BiomassForestType,
-    @Schema(minimum = "0", maximum = "100") val herbaceousCoverPercent: BigDecimal,
+    @Schema(minimum = "0", maximum = "100") //
+    val herbaceousCoverPercent: BigDecimal,
     @Schema(description = "Required for Mangrove forest.", minimum = "0", maximum = "14")
     val ph: BigDecimal?,
     val quadrats: List<BiomassQuadratPayload>,
