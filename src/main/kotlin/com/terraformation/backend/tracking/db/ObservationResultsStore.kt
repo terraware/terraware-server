@@ -111,7 +111,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         }
 
     val numObservations = completedObservations.size
-    val depth = max(0, limit?.let { min(it, numObservations) } ?: numObservations)
+    val depth = max(1, limit?.let { min(it, numObservations) } ?: numObservations)
 
     // Remove observations one at a time, to build a historical summary
     return List(depth) {
@@ -141,7 +141,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
     val observationsBySubzone =
         completedObservations
-            .flatMap { observation -> observation.plantingZones.flatMap { it.plantingSubzones } }
+            .flatMap { it.plantingZones }
+            .flatMap { it.plantingSubzones }
+            .filter { it.completedTime != null }
             .groupBy { it.plantingSubzoneId }
 
     val latestPerSubzone =
