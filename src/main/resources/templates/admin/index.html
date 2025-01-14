@@ -185,20 +185,6 @@
             <input type="submit" value="Update"/>
         </form>
     </th:block>
-
-    <th:block th:if="${canConvertPlots}">
-        <h3>Convert 25-meter permanent clusters</h3>
-
-        <p>
-            This is a one-time operation to convert clusters of 25-meter permanent monitoring plots
-            to 30-meter plots on any planting sites that haven't had observations since the
-            introduction of 30-meter plots.
-        </p>
-
-        <form method="POST" action="/admin/convert25">
-            <input type="submit" value="Convert"/>
-        </form>
-    </th:block>
 </details>
 
 <details id="sendTestEmail" class="section" th:if="${canSendTestEmail}">

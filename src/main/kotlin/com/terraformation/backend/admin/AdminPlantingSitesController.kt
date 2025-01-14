@@ -5,9 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.SRID
-import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
@@ -20,7 +18,6 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
-import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.file.useAndDelete
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.DatabaseBackedClock
@@ -48,7 +45,6 @@ import java.time.LocalDate
 import java.time.Month
 import java.time.format.TextStyle
 import java.util.Locale
-import org.jooq.DSLContext
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Polygon
@@ -74,7 +70,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 class AdminPlantingSitesController(
     private val clock: DatabaseBackedClock,
     private val countriesDao: CountriesDao,
-    private val dslContext: DSLContext,
     private val mapboxService: MapboxService,
     private val objectMapper: ObjectMapper,
     private val observationService: ObservationService,
@@ -83,7 +78,6 @@ class AdminPlantingSitesController(
     private val organizationStore: OrganizationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val plantingSiteImporter: PlantingSiteImporter,
-    private val systemUser: SystemUser,
 ) {
   private val log = perClassLogger()
 
@@ -736,39 +730,6 @@ class AdminPlantingSitesController(
 
     return redirectToPlantingSite(plantingSiteId)
   }
-
-  @PostMapping("/convert25")
-  @RequireGlobalRole([GlobalRole.SuperAdmin])
-  fun convert25MeterPlots(redirectAttributes: RedirectAttributes): String {
-    val plantingSiteIds =
-        dslContext
-            .selectDistinct(MONITORING_PLOTS.PLANTING_SITE_ID)
-            .from(MONITORING_PLOTS)
-            .where(MONITORING_PLOTS.SIZE_METERS.eq(25))
-            .and(MONITORING_PLOTS.PERMANENT_CLUSTER.isNotNull)
-            .fetch(MONITORING_PLOTS.PLANTING_SITE_ID.asNonNullable())
-
-    val messages = mutableListOf<String>()
-
-    systemUser.run {
-      plantingSiteIds.forEach { plantingSiteId ->
-        try {
-          plantingSiteStore.convert25MeterClusters(plantingSiteId)
-          messages.add("Converted $plantingSiteId")
-        } catch (e: Exception) {
-          log.warn("Failed to convert $plantingSiteId", e)
-          messages.add("Failed to convert $plantingSiteId: $e")
-        }
-      }
-    }
-
-    redirectAttributes.successMessage = "Finished scanning planting sites"
-    redirectAttributes.successDetails = messages
-
-    return redirectToAdminHome()
-  }
-
-  private fun redirectToAdminHome() = "redirect:/admin/"
 
   private fun redirectToOrganization(organizationId: OrganizationId) =
       "redirect:/admin/organization/$organizationId"
