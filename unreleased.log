@@ -1,3 +1,4 @@
+07f9b2ec21d Fixed planting site summaries null-pointer exception (#2750)
 43c9cb82ac0 Added observation standard deviations to API payloads (#2748)
 260d54e93f2 Updated translations from Phrase (#2743)
 53be8629aaa Remove migration to populate planting site countries (#2734)
