@@ -116,10 +116,10 @@ class UnusedSquareFinder(
   /**
    * Returns true if a polygon is sufficiently covered by the zone geometry. If an edge of the site
    * geometry is axis-aligned, rounding errors can cause a polygon on the edge to test as not
-   * completely covered by the zone. So instead we test that the polygon is at least 99.99% covered.
+   * completely covered by the zone. So instead we test that the polygon is at least 99.9% covered.
    */
   private fun coveredByZone(polygon: Geometry): Boolean {
-    return polygon.nearlyCoveredBy(zoneGeometry)
+    return polygon.nearlyCoveredBy(zoneGeometry, 99.9)
   }
 
   /**
