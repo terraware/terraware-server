@@ -89,7 +89,7 @@ data class BiomassDetailsModel<
     val quadrats: Map<ObservationPlotPosition, BiomassQuadratModel>,
     val salinityPpt: BigDecimal? = null,
     val smallTreeCountRange: Pair<Int, Int>,
-    val soilAssessment: String? = null,
+    val soilAssessment: String,
     val plotId: PlotId,
     val tide: MangroveTide? = null,
     val tideTime: Instant? = null,

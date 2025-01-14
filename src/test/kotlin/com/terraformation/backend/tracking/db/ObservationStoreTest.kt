@@ -3234,7 +3234,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               emptyMap(),
               null,
               0 to 0,
-              null,
+              "soil",
               null,
               null,
               null,

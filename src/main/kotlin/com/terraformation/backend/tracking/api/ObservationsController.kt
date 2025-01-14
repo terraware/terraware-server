@@ -669,7 +669,7 @@ data class BiomassMeasurementPayload(
     val salinity: BigDecimal?,
     @Schema(minimum = "0") val smallTreeCountLow: Int,
     @Schema(minimum = "smallTreeCountHigh") val smallTreeCountHigh: Int,
-    val soilAssessment: String?,
+    val soilAssessment: String,
     @Schema(description = "Low or high tide. Required for Mangrove forest.")
     val tide: MangroveTide?,
     @Schema(description = "Time when ide is observed. Required for Mangrove forest.")
