@@ -821,11 +821,13 @@ data class ObservationPlantingSubzoneResultsPayload(
                 "monitoring plots.")
     val monitoringPlots: List<ObservationMonitoringPlotResultsPayload>,
     val mortalityRate: Int,
+    val mortalityRateStdDev: Int?,
     @Schema(
         description =
             "Estimated planting density for the subzone based on the observed planting densities " +
                 "of monitoring plots. Only present if the subzone has completed planting.")
     val plantingDensity: Int?,
+    val plantingDensityStdDev: Int?,
     val plantingSubzoneId: PlantingSubzoneId,
     val species: List<ObservationSpeciesResultsPayload>,
     @Schema(
@@ -848,7 +850,9 @@ data class ObservationPlantingSubzoneResultsPayload(
       estimatedPlants = model.estimatedPlants,
       monitoringPlots = model.monitoringPlots.map { ObservationMonitoringPlotResultsPayload(it) },
       mortalityRate = model.mortalityRate,
+      mortalityRateStdDev = model.mortalityRateStdDev,
       plantingDensity = model.plantingDensity,
+      plantingDensityStdDev = model.plantingDensityStdDev,
       plantingSubzoneId = model.plantingSubzoneId,
       species =
           model.species
@@ -874,12 +878,14 @@ data class ObservationPlantingZoneResultsPayload(
             "Percentage of plants of all species that were dead in this zone's permanent " +
                 "monitoring plots.")
     val mortalityRate: Int,
+    val mortalityRateStdDev: Int?,
     @Schema(
         description =
             "Estimated planting density for the zone based on the observed planting densities " +
                 "of monitoring plots. Only present if all the subzones in the zone have been " +
                 "marked as having completed planting.")
     val plantingDensity: Int?,
+    val plantingDensityStdDev: Int?,
     val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
     val plantingZoneId: PlantingZoneId,
     val species: List<ObservationSpeciesResultsPayload>,
@@ -902,7 +908,9 @@ data class ObservationPlantingZoneResultsPayload(
       completedTime = model.completedTime,
       estimatedPlants = model.estimatedPlants,
       mortalityRate = model.mortalityRate,
+      mortalityRateStdDev = model.mortalityRateStdDev,
       plantingDensity = model.plantingDensity,
+      plantingDensityStdDev = model.plantingDensityStdDev,
       plantingSubzones =
           model.plantingSubzones.map { ObservationPlantingSubzoneResultsPayload(it) },
       plantingZoneId = model.plantingZoneId,
@@ -930,6 +938,7 @@ data class ObservationResultsPayload(
                 "monitoring plots.")
     val isAdHoc: Boolean,
     val mortalityRate: Int,
+    val mortalityRateStdDev: Int?,
     val observationId: ObservationId,
     @Schema(
         description =
@@ -937,6 +946,7 @@ data class ObservationResultsPayload(
                 "of monitoring plots. Only present if all the subzones in the site have been " +
                 "marked as having completed planting.")
     val plantingDensity: Int?,
+    val plantingDensityStdDev: Int?,
     val plantingSiteId: PlantingSiteId,
     val plantingZones: List<ObservationPlantingZoneResultsPayload>,
     val species: List<ObservationSpeciesResultsPayload>,
@@ -952,8 +962,10 @@ data class ObservationResultsPayload(
       estimatedPlants = model.estimatedPlants,
       isAdHoc = model.isAdHoc,
       mortalityRate = model.mortalityRate,
+      mortalityRateStdDev = model.mortalityRateStdDev,
       observationId = model.observationId,
       plantingDensity = model.plantingDensity,
+      plantingDensityStdDev = model.plantingDensityStdDev,
       plantingSiteId = model.plantingSiteId,
       plantingZones = model.plantingZones.map { ObservationPlantingZoneResultsPayload(it) },
       species =
@@ -984,12 +996,14 @@ data class PlantingZoneObservationSummaryPayload(
             "Percentage of plants of all species that were dead in this zone's permanent " +
                 "monitoring plots.")
     val mortalityRate: Int,
+    val mortalityRateStdDev: Int?,
     @Schema(
         description =
             "Estimated planting density for the zone based on the observed planting densities " +
                 "of monitoring plots. Only present if all the subzones in the zone have been " +
                 "marked as having completed planting.")
     val plantingDensity: Int?,
+    val plantingDensityStdDev: Int?,
     @Schema(description = "List of subzone observations used in this summary.")
     val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
     val plantingZoneId: PlantingZoneId,
@@ -1016,7 +1030,9 @@ data class PlantingZoneObservationSummaryPayload(
       estimatedPlants = model.estimatedPlants,
       latestObservationTime = model.latestCompletedTime,
       mortalityRate = model.mortalityRate,
+      mortalityRateStdDev = model.mortalityRateStdDev,
       plantingDensity = model.plantingDensity,
+      plantingDensityStdDev = model.plantingDensityStdDev,
       plantingSubzones =
           model.plantingSubzones.map { ObservationPlantingSubzoneResultsPayload(it) },
       plantingZoneId = model.plantingZoneId,
@@ -1045,12 +1061,14 @@ data class PlantingSiteObservationSummaryPayload(
             "Percentage of plants of all species that were dead in this site's permanent " +
                 "monitoring plots.")
     val mortalityRate: Int?,
+    val mortalityRateStdDev: Int?,
     @Schema(
         description =
             "Estimated planting density for the site, based on the observed planting densities " +
                 "of monitoring plots. Only present if all the subzones in the site have been " +
                 "marked as having completed planting.")
     val plantingDensity: Int?,
+    val plantingDensityStdDev: Int?,
     val plantingZones: List<PlantingZoneObservationSummaryPayload>,
     @Schema(
         description =
@@ -1074,7 +1092,9 @@ data class PlantingSiteObservationSummaryPayload(
       estimatedPlants = model.estimatedPlants,
       latestObservationTime = model.latestCompletedTime,
       mortalityRate = model.mortalityRate,
+      mortalityRateStdDev = model.mortalityRateStdDev,
       plantingDensity = model.plantingDensity,
+      plantingDensityStdDev = model.plantingDensityStdDev,
       plantingZones = model.plantingZones.map { PlantingZoneObservationSummaryPayload(it) },
       species =
           model.species
