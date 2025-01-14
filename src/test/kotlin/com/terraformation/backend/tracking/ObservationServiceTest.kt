@@ -138,7 +138,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         observationPlotsDao,
         observationRequestedSubzonesDao,
         parentStore,
-        recordedPlantsDao)
+        recordedBranchesDao,
+        recordedPlantsDao,
+        recordedTreesDao)
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {
     PlantingSiteStore(
@@ -1947,6 +1949,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val (observationId, plotId) =
           service.completeAdHocObservation(
+              null,
               emptySet(),
               "Notes",
               observedTime,
@@ -2054,6 +2057,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<EntityNotFoundException> {
         service.completeAdHocObservation(
+            null,
             emptySet(),
             null,
             clock.instant.minusSeconds(1),
@@ -2069,6 +2073,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exception if no observed time is in the future outside of tolerance`() {
       assertThrows<IllegalArgumentException> {
         service.completeAdHocObservation(
+            null,
             emptySet(),
             null,
             clock.instant.plusSeconds(CLOCK_TOLERANCE_SECONDS + 1),

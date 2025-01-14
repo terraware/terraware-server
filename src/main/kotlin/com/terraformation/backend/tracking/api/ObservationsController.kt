@@ -662,7 +662,6 @@ data class BiomassMeasurementPayload(
     val description: String?,
     val forestType: BiomassForestType,
     @Schema(minimum = "0", maximum = "100") val herbaceousCoverPercent: BigDecimal,
-    val observationId: ObservationId,
     @Schema(description = "Required for Mangrove forest.", minimum = "0", maximum = "14")
     val ph: BigDecimal?,
     val quadrats: List<BiomassQuadratPayload>,
@@ -671,7 +670,6 @@ data class BiomassMeasurementPayload(
     @Schema(minimum = "0") val smallTreeCountLow: Int,
     @Schema(minimum = "smallTreeCountHigh") val smallTreeCountHigh: Int,
     val soilAssessment: String?,
-    val plotId: MonitoringPlotId,
     @Schema(description = "Low or high tide. Required for Mangrove forest.")
     val tide: MangroveTide?,
     @Schema(description = "Time when ide is observed. Required for Mangrove forest.")
@@ -686,13 +684,13 @@ data class BiomassMeasurementPayload(
         description = description,
         forestType = forestType,
         herbaceousCoverPercent = herbaceousCoverPercent,
-        observationId = observationId,
+        observationId = null,
         ph = ph,
-        quadrats = quadrats.map { it.toModel() }.associateBy { it.position },
+        quadrats = quadrats.associateBy { it.position }.mapValues { it.value.toModel() },
         salinityPpt = salinity,
         smallTreeCountRange = smallTreeCountLow to smallTreeCountHigh,
         soilAssessment = soilAssessment,
-        plotId = plotId,
+        plotId = null,
         tide = tide,
         tideTime = tideTime,
         trees = trees.mapIndexed { index, tree -> tree.toModel(index + 1) },
@@ -707,7 +705,7 @@ data class BiomassQuadratPayload(
     val species: List<BiomassQuadratSpeciesPayload>,
 ) {
   fun toModel(): BiomassQuadratModel {
-    return BiomassQuadratModel(description, position, species.map { it.toModel() })
+    return BiomassQuadratModel(description, species.map { it.toModel() })
   }
 }
 

@@ -15,21 +15,20 @@ import java.time.Instant
 data class BiomassAdditionalSpeciesModel(
     val isInvasive: Boolean,
     val isThreatened: Boolean,
-    val speciesId: SpeciesId?,
-    val speciesName: String?,
+    val speciesId: SpeciesId? = null,
+    val speciesName: String? = null,
 )
 
 data class BiomassQuadratSpeciesModel(
     val abundancePercent: BigDecimal,
     val isInvasive: Boolean,
     val isThreatened: Boolean,
-    val speciesId: SpeciesId?,
-    val speciesName: String?,
+    val speciesId: SpeciesId? = null,
+    val speciesName: String? = null,
 )
 
 data class BiomassQuadratModel(
-    val description: String?,
-    val position: ObservationPlotPosition,
+    val description: String? = null,
     val species: List<BiomassQuadratSpeciesModel>,
 )
 
@@ -48,27 +47,25 @@ typealias NewRecordedBranchModel = RecordedBranchModel<Nothing?>
 
 data class RecordedTreeModel<TreeId : RecordedTreeId?, BranchId : RecordedBranchId?>(
     val id: TreeId,
-    val branches: List<RecordedBranchModel<BranchId>>,
-    val description: String?,
-    val diameterAtBreastHeightCm: BigDecimal?,
-    val heightM: BigDecimal?,
+    val branches: List<RecordedBranchModel<BranchId>> = emptyList(),
+    val description: String? = null,
+    val diameterAtBreastHeightCm: BigDecimal? = null,
+    val heightM: BigDecimal? = null,
     val isDead: Boolean,
-    val isTrunk: Boolean?,
-    val pointOfMeasurementM: BigDecimal?,
-    val shrubDiameterCm: BigDecimal?,
-    val speciesId: SpeciesId?,
-    val speciesName: String?,
+    val isTrunk: Boolean? = null,
+    val pointOfMeasurementM: BigDecimal? = null,
+    val shrubDiameterCm: BigDecimal? = null,
+    val speciesId: SpeciesId? = null,
+    val speciesName: String? = null,
     val treeGrowthForm: TreeGrowthForm,
     val treeNumber: Int,
 ) {
   fun validate() {
-    val shouldHaveBranches = treeGrowthForm != TreeGrowthForm.Tree && isTrunk != true
-
-    if (shouldHaveBranches && branches.isEmpty()) {
+    if (isTrunk == true && branches.isEmpty()) {
       throw IllegalStateException("Tree trunk must contain at least one branch.")
     }
 
-    if (!shouldHaveBranches && branches.isNotEmpty()) {
+    if (isTrunk != true && branches.isNotEmpty()) {
       throw IllegalStateException("Only tree trunk can contain branches.")
     }
   }
@@ -78,22 +75,26 @@ typealias ExistingRecordedTreeModel = RecordedTreeModel<RecordedTreeId, Recorded
 
 typealias NewRecordedTreeModel = RecordedTreeModel<Nothing?, Nothing?>
 
-data class BiomassDetailsModel<TreeId : RecordedTreeId?, BranchId : RecordedBranchId?>(
+data class BiomassDetailsModel<
+    ID : ObservationId?,
+    PlotId : MonitoringPlotId?,
+    TreeId : RecordedTreeId?,
+    BranchId : RecordedBranchId?>(
     val additionalSpecies: List<BiomassAdditionalSpeciesModel>,
-    val description: String?,
+    val description: String? = null,
     val forestType: BiomassForestType,
     val herbaceousCoverPercent: BigDecimal,
-    val observationId: ObservationId,
-    val ph: BigDecimal?,
+    val observationId: ID,
+    val ph: BigDecimal? = null,
     val quadrats: Map<ObservationPlotPosition, BiomassQuadratModel>,
-    val salinityPpt: BigDecimal?,
+    val salinityPpt: BigDecimal? = null,
     val smallTreeCountRange: Pair<Int, Int>,
-    val soilAssessment: String?,
-    val plotId: MonitoringPlotId,
-    val tide: MangroveTide?,
-    val tideTime: Instant?,
+    val soilAssessment: String? = null,
+    val plotId: PlotId,
+    val tide: MangroveTide? = null,
+    val tideTime: Instant? = null,
     val trees: List<RecordedTreeModel<TreeId, BranchId>>,
-    val waterDepthCm: BigDecimal?,
+    val waterDepthCm: BigDecimal? = null,
 ) {
   fun validate() {
     // TODO convert database validation errors to human-readable error messages
@@ -101,6 +102,7 @@ data class BiomassDetailsModel<TreeId : RecordedTreeId?, BranchId : RecordedBran
   }
 }
 
-typealias ExistingBiomassDetailsModel = BiomassDetailsModel<RecordedTreeId, RecordedBranchId>
+typealias ExistingBiomassDetailsModel =
+    BiomassDetailsModel<ObservationId, MonitoringPlotId, RecordedTreeId, RecordedBranchId>
 
-typealias NewBiomassDetailsModel = BiomassDetailsModel<Nothing?, Nothing?>
+typealias NewBiomassDetailsModel = BiomassDetailsModel<Nothing?, Nothing?, Nothing?, Nothing?>

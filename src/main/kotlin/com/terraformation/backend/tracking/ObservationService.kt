@@ -469,6 +469,9 @@ class ObservationService(
       systemUser.run { observationStore.recordObservationStart(observationId) }
 
       observationStore.claimPlot(observationId, plotId)
+
+      biomassDetails?.let { observationStore.insertBiomassDetails(observationId, plotId, it) }
+
       observationStore.completePlot(
           observationId,
           plotId,

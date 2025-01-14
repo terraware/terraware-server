@@ -821,12 +821,18 @@ class ObservationStore(
               .isEmpty()
 
       if (allPlotsCompleted) {
-        completeObservation(observationId, plantingSiteId)
+        completeObservation(observationId, plantingSiteId, isAdHoc)
       }
     }
   }
 
-  fun insertBiomassDetails(model: NewBiomassDetailsModel) {
+  fun insertBiomassDetails(
+      observationId: ObservationId,
+      plotId: MonitoringPlotId,
+      model: NewBiomassDetailsModel
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
     val (observationType, observationState) =
         with(OBSERVATION_PLOTS) {
           dslContext
@@ -834,27 +840,29 @@ class ObservationStore(
                   observations.OBSERVATION_TYPE_ID.asNonNullable(),
                   observations.STATE_ID.asNonNullable())
               .from(this)
-              .where(OBSERVATION_ID.eq(model.observationId))
-              .and(MONITORING_PLOT_ID.eq(model.plotId))
+              .where(OBSERVATION_ID.eq(observationId))
+              .and(MONITORING_PLOT_ID.eq(plotId))
               .fetchOne()
               ?: throw IllegalStateException(
-                  "Plot ${model.plotId} is not part of observation ${model.observationId}")
+                  "Plot $plotId is not part of observation $observationId")
         }
 
     if (observationState == ObservationState.Completed) {
-      throw IllegalStateException("Observation ${model.observationId} is already completed.")
+      throw IllegalStateException("Observation $observationId is already completed.")
     }
 
     if (observationType != ObservationType.BiomassMeasurements) {
-      throw IllegalStateException("Observation ${model.observationId} is not a biomass measurement")
+      throw IllegalStateException("Observation $observationId is not a biomass measurement")
     }
+
+    model.validate()
 
     dslContext.transaction { _ ->
       with(OBSERVATION_BIOMASS_DETAILS) {
         dslContext
             .insertInto(this)
-            .set(OBSERVATION_ID, model.observationId)
-            .set(MONITORING_PLOT_ID, model.plotId)
+            .set(OBSERVATION_ID, observationId)
+            .set(MONITORING_PLOT_ID, plotId)
             .set(DESCRIPTION, model.description)
             .set(FOREST_TYPE_ID, model.forestType)
             .set(SMALL_TREES_COUNT_LOW, model.smallTreeCountRange.first)
@@ -872,7 +880,7 @@ class ObservationStore(
       val quadratDetailsRecords =
           model.quadrats.map { (position, details) ->
             ObservationBiomassQuadratDetailsRecord(
-                model.observationId, model.plotId, position, details.description)
+                observationId, plotId, position, details.description)
           }
       dslContext.batchInsert(quadratDetailsRecords).execute()
 
@@ -880,8 +888,8 @@ class ObservationStore(
           model.quadrats.flatMap { (position, details) ->
             details.species.map {
               ObservationBiomassQuadratSpeciesRecord(
-                  model.observationId,
-                  model.plotId,
+                  observationId,
+                  plotId,
                   position,
                   it.speciesId,
                   it.speciesName,
@@ -896,12 +904,7 @@ class ObservationStore(
       val additionalSpeciesRecords =
           model.additionalSpecies.map {
             ObservationBiomassAdditionalSpeciesRecord(
-                model.observationId,
-                model.plotId,
-                it.speciesId,
-                it.speciesName,
-                it.isInvasive,
-                it.isThreatened)
+                observationId, plotId, it.speciesId, it.speciesName, it.isInvasive, it.isThreatened)
           }
       dslContext.batchInsert(additionalSpeciesRecords).execute()
 
@@ -909,8 +912,8 @@ class ObservationStore(
           model.trees.map {
             RecordedTreesRow(
                 null,
-                model.observationId,
-                model.plotId,
+                observationId,
+                plotId,
                 it.speciesId,
                 it.speciesName,
                 it.treeNumber,
@@ -1291,9 +1294,16 @@ class ObservationStore(
     }
   }
 
-  private fun completeObservation(observationId: ObservationId, plantingSiteId: PlantingSiteId) {
+  private fun completeObservation(
+      observationId: ObservationId,
+      plantingSiteId: PlantingSiteId,
+      isAdHoc: Boolean = false,
+  ) {
     updateObservationState(observationId, ObservationState.Completed)
-    resetPlantPopulationSinceLastObservation(plantingSiteId)
+    if (!isAdHoc) {
+      // Ad-hoc observations do not reset unobserved populations
+      resetPlantPopulationSinceLastObservation(plantingSiteId)
+    }
   }
 
   private fun deleteObservation(observationId: ObservationId) {
