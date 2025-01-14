@@ -1,3 +1,5 @@
+43c9cb82ac0 Added observation standard deviations to API payloads (#2748)
+260d54e93f2 Updated translations from Phrase (#2743)
 53be8629aaa Remove migration to populate planting site countries (#2734)
 2d893745cd1 SW-6409 Added biomass tables and database test methods (#2738)
 0abf98657f3 Update database dependencies (#2740)
