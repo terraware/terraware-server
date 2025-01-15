@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationIdConverter
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
@@ -31,10 +32,16 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratDetailsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
+import com.terraformation.backend.db.tracking.tables.records.RecordedBranchesRecord
+import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
@@ -51,10 +58,12 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.ObservationModel
@@ -809,8 +818,147 @@ class ObservationStore(
               .isEmpty()
 
       if (allPlotsCompleted) {
-        completeObservation(observationId, plantingSiteId)
+        completeObservation(observationId, plantingSiteId, isAdHoc)
       }
+    }
+  }
+
+  fun insertBiomassDetails(
+      observationId: ObservationId,
+      plotId: MonitoringPlotId,
+      model: NewBiomassDetailsModel
+  ) {
+    requirePermissions { updateObservation(observationId) }
+
+    val (observationType, observationState) =
+        with(OBSERVATION_PLOTS) {
+          dslContext
+              .select(
+                  observations.OBSERVATION_TYPE_ID.asNonNullable(),
+                  observations.STATE_ID.asNonNullable())
+              .from(this)
+              .where(OBSERVATION_ID.eq(observationId))
+              .and(MONITORING_PLOT_ID.eq(plotId))
+              .fetchOne()
+              ?: throw IllegalStateException(
+                  "Plot $plotId is not part of observation $observationId")
+        }
+
+    if (observationState == ObservationState.Completed) {
+      throw IllegalStateException("Observation $observationId is already completed.")
+    }
+
+    if (observationType != ObservationType.BiomassMeasurements) {
+      throw IllegalStateException("Observation $observationId is not a biomass measurement")
+    }
+
+    model.validate()
+
+    dslContext.transaction { _ ->
+      with(OBSERVATION_BIOMASS_DETAILS) {
+        dslContext
+            .insertInto(this)
+            .set(OBSERVATION_ID, observationId)
+            .set(MONITORING_PLOT_ID, plotId)
+            .set(DESCRIPTION, model.description)
+            .set(FOREST_TYPE_ID, model.forestType)
+            .set(SMALL_TREES_COUNT_LOW, model.smallTreeCountRange.first)
+            .set(SMALL_TREES_COUNT_HIGH, model.smallTreeCountRange.second)
+            .set(HERBACEOUS_COVER_PERCENT, model.herbaceousCoverPercent)
+            .set(SOIL_ASSESSMENT, model.soilAssessment)
+            .set(WATER_DEPTH_CM, model.waterDepthCm)
+            .set(SALINITY_PPT, model.salinityPpt)
+            .set(PH, model.ph)
+            .set(TIDE_ID, model.tide)
+            .set(TIDE_TIME, model.tideTime)
+            .execute()
+      }
+
+      val quadratDetailsRecords =
+          model.quadrats.map { (position, details) ->
+            ObservationBiomassQuadratDetailsRecord(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                positionId = position,
+                description = details.description,
+            )
+          }
+      dslContext.batchInsert(quadratDetailsRecords).execute()
+
+      val quadratSpeciesRecords =
+          model.quadrats.flatMap { (position, details) ->
+            details.species.map {
+              ObservationBiomassQuadratSpeciesRecord(
+                  observationId = observationId,
+                  monitoringPlotId = plotId,
+                  positionId = position,
+                  speciesId = it.speciesId,
+                  speciesName = it.speciesName,
+                  isInvasive = it.isInvasive,
+                  isThreatened = it.isThreatened,
+                  abundancePercent = it.abundancePercent,
+              )
+            }
+          }
+      dslContext.batchInsert(quadratSpeciesRecords).execute()
+
+      val additionalSpeciesRecords =
+          model.additionalSpecies.map {
+            ObservationBiomassAdditionalSpeciesRecord(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                speciesId = it.speciesId,
+                speciesName = it.speciesName,
+                isInvasive = it.isInvasive,
+                isThreatened = it.isThreatened,
+            )
+          }
+      dslContext.batchInsert(additionalSpeciesRecords).execute()
+
+      val recordedTreesRecords =
+          model.trees.map {
+            RecordedTreesRecord(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                speciesId = it.speciesId,
+                speciesName = it.speciesName,
+                treeNumber = it.treeNumber,
+                treeGrowthFormId = it.treeGrowthForm,
+                isDead = it.isDead,
+                isTrunk = it.isTrunk,
+                diameterAtBreastHeightCm = it.diameterAtBreastHeightCm,
+                pointOfMeasurementM = it.pointOfMeasurementM,
+                heightM = it.heightM,
+                shrubDiameterCm = it.shrubDiameterCm,
+                description = it.description,
+            )
+          }
+      dslContext.batchInsert(recordedTreesRecords).execute()
+
+      val treeIdsByTreeNumber =
+          with(RECORDED_TREES) {
+            dslContext
+                .select(ID.asNonNullable(), TREE_NUMBER.asNonNullable())
+                .from(this)
+                .where(OBSERVATION_ID.eq(observationId))
+                .fetch()
+                .associate { it[TREE_NUMBER.asNonNullable()] to it[ID.asNonNullable()] }
+          }
+
+      val recordedBranchesRecords =
+          model.trees.flatMap { tree ->
+            tree.branches.map {
+              RecordedBranchesRecord(
+                  treeId = treeIdsByTreeNumber[tree.treeNumber],
+                  branchNumber = it.branchNumber,
+                  diameterAtBreastHeightCm = it.diameterAtBreastHeightCm,
+                  pointOfMeasurementM = it.pointOfMeasurementM,
+                  isDead = it.isDead,
+                  description = it.description,
+              )
+            }
+          }
+      dslContext.batchInsert(recordedBranchesRecords).execute()
     }
   }
 
@@ -1159,9 +1307,16 @@ class ObservationStore(
     }
   }
 
-  private fun completeObservation(observationId: ObservationId, plantingSiteId: PlantingSiteId) {
+  private fun completeObservation(
+      observationId: ObservationId,
+      plantingSiteId: PlantingSiteId,
+      isAdHoc: Boolean = false,
+  ) {
     updateObservationState(observationId, ObservationState.Completed)
-    resetPlantPopulationSinceLastObservation(plantingSiteId)
+    if (!isAdHoc) {
+      // Ad-hoc observations do not reset unobserved populations
+      resetPlantPopulationSinceLastObservation(plantingSiteId)
+    }
   }
 
   private fun deleteObservation(observationId: ObservationId) {
