@@ -180,7 +180,7 @@
 <polygon fill="none" stroke="black" points="537,-143 537,-165 786,-165 786,-143 537,-143"/>
 <text text-anchor="start" x="557" y="-151.2" font-family="Helvetica,sans-Serif" font-size="11.00">abundance_percent</text>
 <polygon fill="none" stroke="black" points="786,-143 786,-165 887,-165 887,-143 786,-143"/>
-<text text-anchor="start" x="789" y="-151.2" font-family="Helvetica,sans-Serif" font-size="11.00">numeric[131089]</text>
+<text text-anchor="start" x="789" y="-151.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
 <polygon fill="#ffffff" stroke="none" points="537,-125 537,-143 652,-143 652,-125 537,-125"/>
 <polygon fill="none" stroke="black" points="537,-125 537,-143 652,-143 652,-125 537,-125"/>
 <text text-anchor="start" x="540" y="-131.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>

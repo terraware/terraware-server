@@ -1347,7 +1347,7 @@
 <polygon fill="none" stroke="black" points="1669,-406 1669,-428 1872,-428 1872,-406 1669,-406"/>
 <text text-anchor="start" x="1689" y="-414.2" font-family="Helvetica,sans-Serif" font-size="11.00">shrub_diameter_cm</text>
 <polygon fill="none" stroke="black" points="1872,-406 1872,-428 1973,-428 1973,-406 1872,-406"/>
-<text text-anchor="start" x="1875" y="-414.2" font-family="Helvetica,sans-Serif" font-size="11.00">numeric[131089]</text>
+<text text-anchor="start" x="1875" y="-414.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
 <polygon fill="none" stroke="black" points="1669,-384 1669,-406 1872,-406 1872,-384 1669,-384"/>
 <text text-anchor="start" x="1689" y="-392.2" font-family="Helvetica,sans-Serif" font-size="11.00">description</text>
 <polygon fill="none" stroke="black" points="1872,-384 1872,-406 1973,-406 1973,-384 1872,-384"/>

@@ -1,3 +1,4 @@
+09e4ac65845 SW-6409 Updated biomass details column types (#2751)
 1fcef198847 SW-6419 Implemented API to record Biomass Observation (#2745)
 07f9b2ec21d Fixed planting site summaries null-pointer exception (#2750)
 43c9cb82ac0 Added observation standard deviations to API payloads (#2748)

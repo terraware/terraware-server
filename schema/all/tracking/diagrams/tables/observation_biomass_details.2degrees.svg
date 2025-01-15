@@ -410,7 +410,7 @@
 <polygon fill="none" stroke="black" points="1409,-976 1409,-998 1601,-998 1601,-976 1409,-976"/>
 <text text-anchor="start" x="1429" y="-984.2" font-family="Helvetica,sans-Serif" font-size="11.00">herbaceous_cover_percent</text>
 <polygon fill="none" stroke="black" points="1601,-976 1601,-998 1703,-998 1703,-976 1601,-976"/>
-<text text-anchor="start" x="1604" y="-984.2" font-family="Helvetica,sans-Serif" font-size="11.00">numeric[131089]</text>
+<text text-anchor="start" x="1604" y="-984.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
 <polygon fill="none" stroke="black" points="1409,-954 1409,-976 1601,-976 1601,-954 1409,-954"/>
 <text text-anchor="start" x="1429" y="-962.2" font-family="Helvetica,sans-Serif" font-size="11.00">soil_assessment</text>
 <polygon fill="none" stroke="black" points="1601,-954 1601,-976 1703,-976 1703,-954 1601,-954"/>
@@ -418,7 +418,7 @@
 <polygon fill="none" stroke="black" points="1409,-932 1409,-954 1601,-954 1601,-932 1409,-932"/>
 <text text-anchor="start" x="1429" y="-940.2" font-family="Helvetica,sans-Serif" font-size="11.00">water_depth_cm</text>
 <polygon fill="none" stroke="black" points="1601,-932 1601,-954 1703,-954 1703,-932 1601,-932"/>
-<text text-anchor="start" x="1604" y="-940.2" font-family="Helvetica,sans-Serif" font-size="11.00">numeric[131089]</text>
+<text text-anchor="start" x="1604" y="-940.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
 <polygon fill="none" stroke="black" points="1409,-910 1409,-932 1601,-932 1601,-910 1409,-910"/>
 <text text-anchor="start" x="1429" y="-918.2" font-family="Helvetica,sans-Serif" font-size="11.00">salinity_ppt</text>
 <polygon fill="none" stroke="black" points="1601,-910 1601,-932 1703,-932 1703,-910 1601,-910"/>
