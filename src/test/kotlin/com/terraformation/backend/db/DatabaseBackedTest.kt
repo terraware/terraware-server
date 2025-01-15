@@ -2397,9 +2397,9 @@ abstract class DatabaseBackedTest {
       forestType: BiomassForestType = row.forestTypeId ?: BiomassForestType.Terrestrial,
       smallTreesCountLow: Int = row.smallTreesCountLow ?: 0,
       smallTreesCountHigh: Int = row.smallTreesCountHigh ?: 0,
-      herbaceousCoverPercent: BigDecimal = row.herbaceousCoverPercent ?: BigDecimal.ZERO,
+      herbaceousCoverPercent: Int = row.herbaceousCoverPercent ?: 0,
       soilAssessment: String = row.soilAssessment ?: "Soil Assessment",
-      waterDepthCm: BigDecimal? = row.waterDepthCm,
+      waterDepthCm: Int? = row.waterDepthCm,
       salinityPpt: BigDecimal? = row.salinityPpt,
       ph: BigDecimal? = row.ph,
       tideId: MangroveTide? = row.tideId,
@@ -2452,7 +2452,7 @@ abstract class DatabaseBackedTest {
       speciesName: String? = row.speciesName,
       isInvasive: Boolean = row.isInvasive ?: false,
       isThreatened: Boolean = row.isThreatened ?: false,
-      abundancePercent: BigDecimal = row.abundancePercent ?: BigDecimal.ZERO,
+      abundancePercent: Int = row.abundancePercent ?: 0,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -2615,7 +2615,7 @@ abstract class DatabaseBackedTest {
       diameterAtBreastHeightCm: BigDecimal? = row.diameterAtBreastHeightCm,
       pointOfMeasurementM: BigDecimal? = row.pointOfMeasurementM,
       heightM: BigDecimal? = row.heightM,
-      shrubDiameterCm: BigDecimal? = row.shrubDiameterCm,
+      shrubDiameterCm: Int? = row.shrubDiameterCm,
       description: String? = row.description,
   ): RecordedTreeId {
     val rowWithDefaults =

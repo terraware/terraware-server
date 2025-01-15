@@ -20,7 +20,7 @@ data class BiomassAdditionalSpeciesModel(
 )
 
 data class BiomassQuadratSpeciesModel(
-    val abundancePercent: BigDecimal,
+    val abundancePercent: Int,
     val isInvasive: Boolean,
     val isThreatened: Boolean,
     val speciesId: SpeciesId? = null,
@@ -54,7 +54,7 @@ data class RecordedTreeModel<TreeId : RecordedTreeId?, BranchId : RecordedBranch
     val isDead: Boolean,
     val isTrunk: Boolean? = null,
     val pointOfMeasurementM: BigDecimal? = null,
-    val shrubDiameterCm: BigDecimal? = null,
+    val shrubDiameterCm: Int? = null,
     val speciesId: SpeciesId? = null,
     val speciesName: String? = null,
     val treeGrowthForm: TreeGrowthForm,
@@ -83,7 +83,7 @@ data class BiomassDetailsModel<
     val additionalSpecies: List<BiomassAdditionalSpeciesModel> = emptyList(),
     val description: String? = null,
     val forestType: BiomassForestType,
-    val herbaceousCoverPercent: BigDecimal,
+    val herbaceousCoverPercent: Int,
     val observationId: ID,
     val ph: BigDecimal? = null,
     val quadrats: Map<ObservationPlotPosition, BiomassQuadratModel> = emptyMap(),
@@ -94,7 +94,7 @@ data class BiomassDetailsModel<
     val tide: MangroveTide? = null,
     val tideTime: Instant? = null,
     val trees: List<RecordedTreeModel<TreeId, BranchId>> = emptyList(),
-    val waterDepthCm: BigDecimal? = null,
+    val waterDepthCm: Int? = null,
 ) {
   fun validate() {
     // TODO implement field validation according to acceptable ranges once finalized
