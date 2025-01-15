@@ -2057,7 +2057,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           NewBiomassDetailsModel(
               description = "Basic biomass details",
               forestType = BiomassForestType.Terrestrial,
-              herbaceousCoverPercent = BigDecimal.ZERO,
+              herbaceousCoverPercent = 0,
               observationId = null,
               smallTreeCountRange = 0 to 0,
               soilAssessment = "Basic soil assessment",
@@ -2146,7 +2146,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               monitoringPlotId = plotId,
               description = "Basic biomass details",
               forestTypeId = BiomassForestType.Terrestrial,
-              herbaceousCoverPercent = BigDecimal.ZERO,
+              herbaceousCoverPercent = 0,
               smallTreesCountLow = 0,
               smallTreesCountHigh = 0,
               soilAssessment = "Basic soil assessment",
@@ -2201,7 +2201,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           NewBiomassDetailsModel(
               description = "Basic biomass details",
               forestType = BiomassForestType.Terrestrial,
-              herbaceousCoverPercent = BigDecimal.ZERO,
+              herbaceousCoverPercent = 0,
               observationId = null,
               smallTreeCountRange = 0 to 0,
               soilAssessment = "Basic soil assessment",

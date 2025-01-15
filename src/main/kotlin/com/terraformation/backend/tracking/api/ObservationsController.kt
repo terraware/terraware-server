@@ -662,7 +662,7 @@ data class BiomassMeasurementPayload(
     val description: String?,
     val forestType: BiomassForestType,
     @Schema(minimum = "0", maximum = "100") //
-    val herbaceousCoverPercent: BigDecimal,
+    val herbaceousCoverPercent: Int,
     @Schema(description = "Required for Mangrove forest.", minimum = "0", maximum = "14")
     val ph: BigDecimal?,
     val quadrats: List<BiomassQuadratPayload>,
@@ -677,7 +677,7 @@ data class BiomassMeasurementPayload(
     val tideTime: Instant?,
     val trees: List<RecordedTreePayload>,
     @Schema(description = "Measured in centimeters. Required for Mangrove forest.")
-    val waterDepth: BigDecimal?,
+    val waterDepth: Int?,
 ) {
   fun toModel(): NewBiomassDetailsModel {
     return NewBiomassDetailsModel(
@@ -711,7 +711,8 @@ data class BiomassQuadratPayload(
 }
 
 data class BiomassQuadratSpeciesPayload(
-    @Schema(minimum = "0", maximum = "100") val abundancePercent: BigDecimal,
+    @Schema(minimum = "0", maximum = "100") //
+    val abundancePercent: Int,
     val isInvasive: Boolean,
     val isThreatened: Boolean,
     val speciesId: SpeciesId?,
@@ -775,11 +776,12 @@ data class RecordedTreePayload(
     @Schema(description = "Measured in meters, required if diameter at breast height is above 5cm.")
     val height: BigDecimal?,
     val isDead: Boolean,
-    @Schema(description = "Required if growth form is Tree.") val isTrunk: Boolean?,
+    @Schema(description = "Required if growth form is Tree.") //
+    val isTrunk: Boolean?,
     @Schema(description = "Measured in meters, required if growth form is Tree.")
     val pointOfMeasurement: BigDecimal?,
     @Schema(description = "Measured in centimeters, required if growth form is Tree.")
-    val shrubDiameter: BigDecimal?,
+    val shrubDiameter: Int?,
     val speciesId: SpeciesId?,
     val speciesName: String?,
     val treeGrowthForm: TreeGrowthForm,

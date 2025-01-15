@@ -2931,7 +2931,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   ),
               description = "description",
               forestType = BiomassForestType.Mangrove,
-              herbaceousCoverPercent = BigDecimal.TEN,
+              herbaceousCoverPercent = 10,
               observationId = null,
               ph = BigDecimal.valueOf(6.5),
               quadrats =
@@ -2942,7 +2942,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                               species =
                                   listOf(
                                       BiomassQuadratSpeciesModel(
-                                          abundancePercent = BigDecimal.valueOf(40),
+                                          abundancePercent = 40,
                                           isInvasive = true,
                                           isThreatened = false,
                                           speciesId = speciesId1,
@@ -2953,13 +2953,13 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                               species =
                                   listOf(
                                       BiomassQuadratSpeciesModel(
-                                          abundancePercent = BigDecimal.valueOf(60),
+                                          abundancePercent = 60,
                                           isInvasive = false,
                                           isThreatened = false,
                                           speciesId = speciesId2,
                                       ),
                                       BiomassQuadratSpeciesModel(
-                                          abundancePercent = BigDecimal.valueOf(5),
+                                          abundancePercent = 5,
                                           isInvasive = false,
                                           isThreatened = true,
                                           speciesName = "Other quadrat species",
@@ -2971,7 +2971,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                               species =
                                   listOf(
                                       BiomassQuadratSpeciesModel(
-                                          abundancePercent = BigDecimal.valueOf(90),
+                                          abundancePercent = 90,
                                           isInvasive = true,
                                           isThreatened = false,
                                           speciesId = speciesId1,
@@ -2993,7 +2993,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                       NewRecordedTreeModel(
                           id = null,
                           isDead = false,
-                          shrubDiameterCm = BigDecimal.valueOf(25),
+                          shrubDiameterCm = 25,
                           speciesId = speciesId1,
                           treeGrowthForm = TreeGrowthForm.Shrub,
                           treeNumber = 1,
@@ -3038,7 +3038,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                           treeGrowthForm = TreeGrowthForm.Tree,
                           treeNumber = 3,
                       )),
-              waterDepthCm = BigDecimal.TWO,
+              waterDepthCm = 2,
           )
 
       store.insertBiomassDetails(observationId, plotId, model)
@@ -3049,7 +3049,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               monitoringPlotId = plotId,
               description = "description",
               forestTypeId = BiomassForestType.Mangrove,
-              herbaceousCoverPercent = BigDecimal.TEN,
+              herbaceousCoverPercent = 10,
               ph = BigDecimal.valueOf(6.5),
               salinityPpt = BigDecimal.valueOf(20),
               smallTreesCountHigh = 10,
@@ -3057,7 +3057,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               soilAssessment = "soil",
               tideId = MangroveTide.High,
               tideTime = Instant.ofEpochSecond(123),
-              waterDepthCm = BigDecimal.TWO,
+              waterDepthCm = 2,
           ),
           "Biomass details table")
 
@@ -3111,7 +3111,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.NortheastCorner,
-                  abundancePercent = BigDecimal.valueOf(40),
+                  abundancePercent = 40,
                   isInvasive = true,
                   isThreatened = false,
                   speciesId = speciesId1,
@@ -3120,7 +3120,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.NorthwestCorner,
-                  abundancePercent = BigDecimal.valueOf(60),
+                  abundancePercent = 60,
                   isInvasive = false,
                   isThreatened = false,
                   speciesId = speciesId2,
@@ -3129,7 +3129,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.NorthwestCorner,
-                  abundancePercent = BigDecimal.valueOf(5),
+                  abundancePercent = 5,
                   isInvasive = false,
                   isThreatened = true,
                   speciesName = "Other quadrat species",
@@ -3138,7 +3138,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.SoutheastCorner,
-                  abundancePercent = BigDecimal.valueOf(90),
+                  abundancePercent = 90,
                   isInvasive = true,
                   isThreatened = false,
                   speciesId = speciesId1,
@@ -3157,7 +3157,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   isDead = false,
-                  shrubDiameterCm = BigDecimal.valueOf(25),
+                  shrubDiameterCm = 25,
                   speciesId = speciesId1,
                   treeGrowthFormId = TreeGrowthForm.Shrub,
                   treeNumber = 1,
@@ -3218,21 +3218,14 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if no permission`() {
       val model =
           NewBiomassDetailsModel(
-              emptyList(),
-              null,
-              BiomassForestType.Terrestrial,
-              BigDecimal.ZERO,
-              null,
-              null,
-              emptyMap(),
-              null,
-              0 to 0,
-              "soil",
-              null,
-              null,
-              null,
-              emptyList(),
-              null)
+              description = "Basic biomass details",
+              forestType = BiomassForestType.Terrestrial,
+              herbaceousCoverPercent = 0,
+              observationId = null,
+              smallTreeCountRange = 0 to 0,
+              soilAssessment = "Basic soil assessment",
+              plotId = null,
+          )
 
       every { user.canUpdateObservation(any()) } returns false
 
