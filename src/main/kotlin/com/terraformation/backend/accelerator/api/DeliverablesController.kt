@@ -104,10 +104,11 @@ class DeliverablesController(
         deliverableStore.fetchDeliverableSubmissions(
             organizationId, participantId, projectId, moduleId = moduleId)
 
+    val projectIds = models.map { it.projectId }.toSet()
+    val acceleratorDetails = projectAcceleratorDetailsService.fetchForProjectIds(projectIds)
+
     return ListDeliverablesResponsePayload(
-        models.map {
-          ListDeliverablesElement(it, projectAcceleratorDetailsService.fetchOneOrNull(it.projectId))
-        })
+        models.map { ListDeliverablesElement(it, acceleratorDetails[it.projectId]) })
   }
 
   @ApiResponse200

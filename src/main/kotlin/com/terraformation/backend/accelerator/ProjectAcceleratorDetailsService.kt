@@ -20,6 +20,16 @@ class ProjectAcceleratorDetailsService(
     return projectAcceleratorDetailsStore.fetchOneById(projectId, variableValues)
   }
 
+  fun fetchForProjectIds(
+      projectIds: Collection<ProjectId>
+  ): Map<ProjectId, ProjectAcceleratorDetailsModel> {
+    return projectAcceleratorDetailsStore
+        .fetch(PROJECTS.ID.`in`(projectIds)) {
+          acceleratorProjectVariableValuesService.fetchValues(it)
+        }
+        .associateBy { it.projectId }
+  }
+
   /** Returns accelerator details for projects that are assigned to cohorts. */
   fun fetchAllParticipantProjectDetails(): List<ProjectAcceleratorDetailsModel> {
     return projectAcceleratorDetailsStore.fetch(COHORTS.ID.isNotNull()) {
