@@ -383,21 +383,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               ),
           )
 
-      val treeId2 =
-          insertRecordedTree(
-              RecordedTreesRow(
-                  observationId = observationId,
-                  monitoringPlotId = plotId,
-                  diameterAtBreastHeightCm = BigDecimal.TWO,
-                  pointOfMeasurementM = BigDecimal.valueOf(1.3),
-                  isDead = true,
-                  isTrunk = false,
-                  speciesName = "Other tree species",
-                  treeGrowthFormId = TreeGrowthForm.Tree,
-                  treeNumber = 2,
-              ),
-          )
-
+      // Insert this first to show sort by treeNumber
       val treeId3 =
           insertRecordedTree(
               RecordedTreesRow(
@@ -414,16 +400,20 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
               ),
           )
 
-      val branchId1 =
-          insertRecordedBranch(
-              RecordedBranchesRow(
-                  treeId = treeId3,
-                  branchNumber = 1,
-                  description = "branch 1 description",
-                  diameterAtBreastHeightCm = BigDecimal.valueOf(4),
-                  isDead = false,
+      val treeId2 =
+          insertRecordedTree(
+              RecordedTreesRow(
+                  observationId = observationId,
+                  monitoringPlotId = plotId,
+                  diameterAtBreastHeightCm = BigDecimal.TWO,
                   pointOfMeasurementM = BigDecimal.valueOf(1.3),
-              ))
+                  isDead = true,
+                  isTrunk = false,
+                  speciesName = "Other tree species",
+                  treeGrowthFormId = TreeGrowthForm.Tree,
+                  treeNumber = 2,
+              ),
+          )
 
       val branchId2 =
           insertRecordedBranch(
@@ -434,6 +424,17 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                   diameterAtBreastHeightCm = BigDecimal.valueOf(2),
                   isDead = true,
                   pointOfMeasurementM = BigDecimal.valueOf(1.4),
+              ))
+
+      val branchId1 =
+          insertRecordedBranch(
+              RecordedBranchesRow(
+                  treeId = treeId3,
+                  branchNumber = 1,
+                  description = "branch 1 description",
+                  diameterAtBreastHeightCm = BigDecimal.valueOf(4),
+                  isDead = false,
+                  pointOfMeasurementM = BigDecimal.valueOf(1.3),
               ))
 
       val expectedBiomassModel =
