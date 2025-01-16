@@ -1,6 +1,7 @@
 package com.terraformation.backend.documentproducer.api
 
 import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
+import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse409
@@ -47,7 +48,7 @@ class DocumentsController(
     private val documentStore: DocumentStore,
     private val documentTemplatesDao: DocumentTemplatesDao,
     private val documentUpgradeService: DocumentUpgradeService,
-    private val projectAcceleratorDetailService: ProjectAcceleratorDetailsService,
+    private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
 ) {
   @GetMapping
   @Operation(summary = "Gets a list of all the documents.")
@@ -63,7 +64,11 @@ class DocumentsController(
           documentStore.fetchAll()
         }
 
-    return ListDocumentsResponsePayload(models.map { makeDocumentPayload(it) })
+    val projectIds = models.map { it.projectId }.toSet()
+    val projectAcceleratorDetails = projectAcceleratorDetailsService.fetchForProjectIds(projectIds)
+
+    return ListDocumentsResponsePayload(
+        models.map { makeDocumentPayload(it, projectAcceleratorDetails) })
   }
 
   @Operation(summary = "Creates a new document.")
@@ -166,8 +171,17 @@ class DocumentsController(
   }
 
   private fun makeDocumentPayload(model: ExistingDocumentModel): DocumentPayload {
+    val projectAcceleratorDetails = projectAcceleratorDetailsService.fetchOneOrNull(model.projectId)
+    return makeDocumentPayload(
+        model, projectAcceleratorDetails?.let { mapOf(model.projectId to it) } ?: emptyMap())
+  }
+
+  private fun makeDocumentPayload(
+      model: ExistingDocumentModel,
+      projectAcceleratorDetails: Map<ProjectId, ProjectAcceleratorDetailsModel>
+  ): DocumentPayload {
     val documentTemplateName = documentTemplatesDao.fetchOneById(model.documentTemplateId)!!.name!!
-    val projectDealName = projectAcceleratorDetailService.fetchOneOrNull(model.projectId)?.dealName
+    val projectDealName = projectAcceleratorDetails[model.projectId]?.dealName
     return DocumentPayload(
         createdBy = model.createdBy,
         createdTime = model.createdTime,
