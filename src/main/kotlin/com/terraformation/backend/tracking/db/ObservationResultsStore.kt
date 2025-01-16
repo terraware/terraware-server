@@ -215,7 +215,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     .where(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
                     .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
                     .orderBy(POSITION_ID))
-            .convertFrom { result -> result.map { it[POSITION_ID]!! to it[DESCRIPTION] }.toMap() }
+            .convertFrom { result -> result.associate { it[POSITION_ID]!! to it[DESCRIPTION] } }
       }
 
   private val biomassQuadratSpeciesMultiset =
@@ -346,33 +346,33 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     .where(OBSERVATION_ID.eq(OBSERVATIONS.ID))
                     .orderBy(MONITORING_PLOT_ID))
             .convertFrom { result ->
-              result.map {
-                val quadratDescriptions = it[biomassQuadratDetailsMultiset]
-                val quadratSpecies = it[biomassQuadratSpeciesMultiset]
+              result.map { record ->
+                val quadratDescriptions = record[biomassQuadratDetailsMultiset]
+                val quadratSpecies = record[biomassQuadratSpeciesMultiset]
                 val quadrats =
-                    ObservationPlotPosition.entries.associateWith { position ->
+                    ObservationPlotPosition.entries.associateWith {
                       BiomassQuadratModel(
-                          description = quadratDescriptions[position],
-                          species = quadratSpecies[position] ?: emptyList(),
+                          description = quadratDescriptions[it],
+                          species = quadratSpecies[it] ?: emptyList(),
                       )
                     }
                 ExistingBiomassDetailsModel(
-                    additionalSpecies = it[biomassAdditionalSpeciesMultiset],
-                    description = it[DESCRIPTION],
-                    forestType = it[FOREST_TYPE_ID]!!,
-                    herbaceousCoverPercent = it[HERBACEOUS_COVER_PERCENT]!!,
-                    observationId = it[OBSERVATION_ID]!!,
-                    ph = it[PH],
+                    additionalSpecies = record[biomassAdditionalSpeciesMultiset],
+                    description = record[DESCRIPTION],
+                    forestType = record[FOREST_TYPE_ID]!!,
+                    herbaceousCoverPercent = record[HERBACEOUS_COVER_PERCENT]!!,
+                    observationId = record[OBSERVATION_ID]!!,
+                    ph = record[PH],
                     quadrats = quadrats,
-                    salinityPpt = it[SALINITY_PPT],
+                    salinityPpt = record[SALINITY_PPT],
                     smallTreeCountRange =
-                        it[SMALL_TREES_COUNT_LOW]!! to it[SMALL_TREES_COUNT_HIGH]!!,
-                    soilAssessment = it[SOIL_ASSESSMENT]!!,
-                    plotId = it[MONITORING_PLOT_ID]!!,
-                    tide = it[TIDE_ID],
-                    tideTime = it[TIDE_TIME],
-                    trees = it[recordedTreesMultiset],
-                    waterDepthCm = it[WATER_DEPTH_CM],
+                        record[SMALL_TREES_COUNT_LOW]!! to record[SMALL_TREES_COUNT_HIGH]!!,
+                    soilAssessment = record[SOIL_ASSESSMENT]!!,
+                    plotId = record[MONITORING_PLOT_ID]!!,
+                    tide = record[TIDE_ID],
+                    tideTime = record[TIDE_TIME],
+                    trees = record[recordedTreesMultiset],
+                    waterDepthCm = record[WATER_DEPTH_CM],
                 )
               }
             }
