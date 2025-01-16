@@ -8,11 +8,16 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_OVERLAPS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_ADDITIONAL_SPECIES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
@@ -22,6 +27,14 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_BRANCHES
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
+import com.terraformation.backend.tracking.model.BiomassAdditionalSpeciesModel
+import com.terraformation.backend.tracking.model.BiomassQuadratModel
+import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
+import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
+import com.terraformation.backend.tracking.model.ExistingRecordedBranchModel
+import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsModel
@@ -165,6 +178,205 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
     return ObservationRollupResultsModel.of(plantingSiteId, plantingZoneResults)
   }
+
+  private val biomassAdditionalSpeciesMultiset =
+      with(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES) {
+        DSL.multiset(
+                DSL.select(
+                        SPECIES_ID,
+                        SPECIES_NAME,
+                        IS_INVASIVE,
+                        IS_THREATENED,
+                    )
+                    .from(this)
+                    .where(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
+                    .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
+                    .orderBy(SPECIES_ID, SPECIES_NAME))
+            .convertFrom { result ->
+              result.map {
+                BiomassAdditionalSpeciesModel(
+                    isInvasive = it[IS_INVASIVE]!!,
+                    isThreatened = it[IS_THREATENED]!!,
+                    speciesId = it[SPECIES_ID],
+                    speciesName = it[SPECIES_NAME],
+                )
+              }
+            }
+      }
+
+  private val biomassQuadratDetailsMultiset =
+      with(OBSERVATION_BIOMASS_QUADRAT_DETAILS) {
+        DSL.multiset(
+                DSL.select(
+                        POSITION_ID,
+                        DESCRIPTION,
+                    )
+                    .from(this)
+                    .where(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
+                    .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
+                    .orderBy(POSITION_ID))
+            .convertFrom { result -> result.associate { it[POSITION_ID]!! to it[DESCRIPTION] } }
+      }
+
+  private val biomassQuadratSpeciesMultiset =
+      with(OBSERVATION_BIOMASS_QUADRAT_SPECIES) {
+        DSL.multiset(
+                DSL.select(
+                        POSITION_ID,
+                        SPECIES_ID,
+                        SPECIES_NAME,
+                        IS_INVASIVE,
+                        IS_THREATENED,
+                        ABUNDANCE_PERCENT,
+                    )
+                    .from(this)
+                    .where(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
+                    .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
+                    .orderBy(POSITION_ID, SPECIES_ID, SPECIES_NAME))
+            .convertFrom { result ->
+              result
+                  .groupBy { it[POSITION_ID]!! }
+                  .mapValues { (_, records) ->
+                    records.map {
+                      BiomassQuadratSpeciesModel(
+                          abundancePercent = it[ABUNDANCE_PERCENT]!!,
+                          isInvasive = it[IS_INVASIVE]!!,
+                          isThreatened = it[IS_THREATENED]!!,
+                          speciesId = it[SPECIES_ID],
+                          speciesName = it[SPECIES_NAME])
+                    }
+                  }
+            }
+      }
+
+  private val recordedBranchesMultiset =
+      with(RECORDED_BRANCHES) {
+        DSL.multiset(
+                DSL.select(
+                        ID,
+                        BRANCH_NUMBER,
+                        DESCRIPTION,
+                        DIAMETER_AT_BREAST_HEIGHT_CM,
+                        IS_DEAD,
+                        POINT_OF_MEASUREMENT_M,
+                    )
+                    .from(this)
+                    .where(TREE_ID.eq(RECORDED_TREES.ID))
+                    .orderBy(BRANCH_NUMBER))
+            .convertFrom { result ->
+              result.map {
+                ExistingRecordedBranchModel(
+                    id = it[ID]!!,
+                    branchNumber = it[BRANCH_NUMBER]!!,
+                    description = it[DESCRIPTION],
+                    diameterAtBreastHeightCm = it[DIAMETER_AT_BREAST_HEIGHT_CM]!!,
+                    isDead = it[IS_DEAD]!!,
+                    pointOfMeasurementM = it[POINT_OF_MEASUREMENT_M]!!,
+                )
+              }
+            }
+      }
+
+  private val recordedTreesMultiset =
+      with(RECORDED_TREES) {
+        DSL.multiset(
+                DSL.select(
+                        ID,
+                        recordedBranchesMultiset,
+                        DESCRIPTION,
+                        DIAMETER_AT_BREAST_HEIGHT_CM,
+                        HEIGHT_M,
+                        IS_DEAD,
+                        IS_TRUNK,
+                        POINT_OF_MEASUREMENT_M,
+                        SHRUB_DIAMETER_CM,
+                        SPECIES_ID,
+                        SPECIES_NAME,
+                        TREE_GROWTH_FORM_ID,
+                        TREE_NUMBER,
+                    )
+                    .from(this)
+                    .where(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
+                    .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
+                    .orderBy(TREE_NUMBER))
+            .convertFrom { result ->
+              result.map {
+                ExistingRecordedTreeModel(
+                    id = it[ID]!!,
+                    branches = it[recordedBranchesMultiset],
+                    description = it[DESCRIPTION],
+                    diameterAtBreastHeightCm = it[DIAMETER_AT_BREAST_HEIGHT_CM],
+                    heightM = it[HEIGHT_M],
+                    isDead = it[IS_DEAD]!!,
+                    isTrunk = it[IS_TRUNK],
+                    pointOfMeasurementM = it[POINT_OF_MEASUREMENT_M],
+                    shrubDiameterCm = it[SHRUB_DIAMETER_CM],
+                    speciesId = it[SPECIES_ID],
+                    speciesName = it[SPECIES_NAME],
+                    treeGrowthForm = it[TREE_GROWTH_FORM_ID]!!,
+                    treeNumber = it[TREE_NUMBER]!!,
+                )
+              }
+            }
+      }
+
+  private val biomassDetailsMultiset =
+      with(OBSERVATION_BIOMASS_DETAILS) {
+        DSL.multiset(
+                DSL.select(
+                        biomassAdditionalSpeciesMultiset,
+                        DESCRIPTION,
+                        FOREST_TYPE_ID,
+                        HERBACEOUS_COVER_PERCENT,
+                        OBSERVATION_ID,
+                        PH,
+                        biomassQuadratDetailsMultiset,
+                        biomassQuadratSpeciesMultiset,
+                        SALINITY_PPT,
+                        SMALL_TREES_COUNT_LOW,
+                        SMALL_TREES_COUNT_HIGH,
+                        SOIL_ASSESSMENT,
+                        MONITORING_PLOT_ID,
+                        TIDE_ID,
+                        TIDE_TIME,
+                        recordedTreesMultiset,
+                        WATER_DEPTH_CM,
+                    )
+                    .from(this)
+                    .where(OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                    .orderBy(MONITORING_PLOT_ID))
+            .convertFrom { result ->
+              result.map { record ->
+                val quadratDescriptions = record[biomassQuadratDetailsMultiset]
+                val quadratSpecies = record[biomassQuadratSpeciesMultiset]
+                val quadrats =
+                    ObservationPlotPosition.entries.associateWith {
+                      BiomassQuadratModel(
+                          description = quadratDescriptions[it],
+                          species = quadratSpecies[it] ?: emptyList(),
+                      )
+                    }
+                ExistingBiomassDetailsModel(
+                    additionalSpecies = record[biomassAdditionalSpeciesMultiset],
+                    description = record[DESCRIPTION],
+                    forestType = record[FOREST_TYPE_ID]!!,
+                    herbaceousCoverPercent = record[HERBACEOUS_COVER_PERCENT]!!,
+                    observationId = record[OBSERVATION_ID]!!,
+                    ph = record[PH],
+                    quadrats = quadrats,
+                    salinityPpt = record[SALINITY_PPT],
+                    smallTreeCountRange =
+                        record[SMALL_TREES_COUNT_LOW]!! to record[SMALL_TREES_COUNT_HIGH]!!,
+                    soilAssessment = record[SOIL_ASSESSMENT]!!,
+                    plotId = record[MONITORING_PLOT_ID]!!,
+                    tide = record[TIDE_ID],
+                    tideTime = record[TIDE_TIME],
+                    trees = record[recordedTreesMultiset],
+                    waterDepthCm = record[WATER_DEPTH_CM],
+                )
+              }
+            }
+      }
 
   private val coordinatesGpsField = OBSERVED_PLOT_COORDINATES.GPS_COORDINATES.forMultiset()
 
@@ -642,9 +854,11 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     return dslContext
         .select(
             adHocMonitoringPlotMultiset,
+            biomassDetailsMultiset,
             OBSERVATIONS.COMPLETED_TIME,
             OBSERVATIONS.ID,
             OBSERVATIONS.IS_AD_HOC,
+            OBSERVATIONS.OBSERVATION_TYPE_ID,
             OBSERVATIONS.PLANTING_SITE_ID,
             OBSERVATIONS.START_DATE,
             OBSERVATIONS.STATE_ID,
@@ -687,12 +901,14 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
           ObservationResultsModel(
               adHocPlot = record[adHocMonitoringPlotMultiset].firstOrNull(),
+              biomassDetails = record[biomassDetailsMultiset].firstOrNull(),
               completedTime = record[OBSERVATIONS.COMPLETED_TIME],
               estimatedPlants = estimatedPlants,
               isAdHoc = record[OBSERVATIONS.IS_AD_HOC.asNonNullable()],
               mortalityRate = mortalityRate,
               mortalityRateStdDev = mortalityRateStdDev,
               observationId = record[OBSERVATIONS.ID.asNonNullable()],
+              observationType = record[OBSERVATIONS.OBSERVATION_TYPE_ID.asNonNullable()],
               plantingCompleted = plantingCompleted,
               plantingDensity = plantingDensity?.roundToInt(),
               plantingDensityStdDev = plantingDensityStdDev,

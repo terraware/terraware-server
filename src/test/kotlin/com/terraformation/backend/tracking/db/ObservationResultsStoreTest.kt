@@ -8,19 +8,35 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.tracking.BiomassForestType
+import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPhotoType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.TreeGrowthForm
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassAdditionalSpeciesRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassDetailsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQuadratDetailsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQuadratSpeciesRow
+import com.terraformation.backend.db.tracking.tables.pojos.RecordedBranchesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
+import com.terraformation.backend.tracking.model.BiomassAdditionalSpeciesModel
+import com.terraformation.backend.tracking.model.BiomassQuadratModel
+import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
+import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
+import com.terraformation.backend.tracking.model.ExistingRecordedBranchModel
+import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
 import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsModel
@@ -223,31 +239,351 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `returns ad-hoc observation and plot information`() {
+    fun `returns ad-hoc observation with biomass details`() {
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+      val speciesId3 = insertSpecies()
+
       // Assigned observation is omitted
       insertPlantingZone()
       insertPlantingSubzone()
       insertMonitoringPlot()
-      val observationId = insertObservation(completedTime = Instant.EPOCH)
+      val assignedObservationId = insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
-      insertMonitoringPlot(isAdHoc = true, plantingSubzoneId = null)
-      insertObservation(completedTime = Instant.EPOCH, isAdHoc = true)
+      val plotId = insertMonitoringPlot(isAdHoc = true, plantingSubzoneId = null)
+      val observationId =
+          insertObservation(
+              completedTime = Instant.EPOCH,
+              isAdHoc = true,
+              observationType = ObservationType.BiomassMeasurements)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+
+      insertObservationBiomassDetails(
+          ObservationBiomassDetailsRow(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              description = "description",
+              forestTypeId = BiomassForestType.Mangrove,
+              herbaceousCoverPercent = 10,
+              ph = BigDecimal.valueOf(6.5),
+              salinityPpt = BigDecimal.valueOf(20),
+              smallTreesCountHigh = 10,
+              smallTreesCountLow = 0,
+              soilAssessment = "soil",
+              tideId = MangroveTide.High,
+              tideTime = Instant.ofEpochSecond(123),
+              waterDepthCm = 2,
+          ))
+
+      insertObservationBiomassAdditionalSpecies(
+          ObservationBiomassAdditionalSpeciesRow(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              speciesId = speciesId3,
+              isInvasive = true,
+              isThreatened = false,
+          ))
+
+      insertObservationBiomassAdditionalSpecies(
+          ObservationBiomassAdditionalSpeciesRow(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              speciesName = "Other additional species",
+              isInvasive = false,
+              isThreatened = true,
+          ))
+
+      insertObservationBiomassQuadratDetails(
+          ObservationBiomassQuadratDetailsRow(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              positionId = ObservationPlotPosition.NortheastCorner,
+              description = "NE description",
+          ))
+
+      insertObservationBiomassQuadratDetails(
+          ObservationBiomassQuadratDetailsRow(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              positionId = ObservationPlotPosition.NorthwestCorner,
+              description = "NW description",
+          ))
+
+      insertObservationBiomassQuadratDetails(
+          ObservationBiomassQuadratDetailsRow(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              positionId = ObservationPlotPosition.SoutheastCorner,
+              description = "SE description",
+          ))
+
+      insertObservationBiomassQuadratDetails(
+          ObservationBiomassQuadratDetailsRow(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              positionId = ObservationPlotPosition.SouthwestCorner,
+              description = "SW description",
+          ))
+
+      insertObservationBiomassQuadratSpecies(
+          ObservationBiomassQuadratSpeciesRow(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              positionId = ObservationPlotPosition.NortheastCorner,
+              abundancePercent = 40,
+              isInvasive = true,
+              isThreatened = false,
+              speciesId = speciesId1,
+          ))
+
+      insertObservationBiomassQuadratSpecies(
+          ObservationBiomassQuadratSpeciesRow(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              positionId = ObservationPlotPosition.NorthwestCorner,
+              abundancePercent = 5,
+              isInvasive = false,
+              isThreatened = true,
+              speciesName = "Other quadrat species",
+          ))
+
+      insertObservationBiomassQuadratSpecies(
+          ObservationBiomassQuadratSpeciesRow(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              positionId = ObservationPlotPosition.NorthwestCorner,
+              abundancePercent = 60,
+              isInvasive = false,
+              isThreatened = false,
+              speciesId = speciesId2,
+          ))
+
+      insertObservationBiomassQuadratSpecies(
+          ObservationBiomassQuadratSpeciesRow(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              positionId = ObservationPlotPosition.SoutheastCorner,
+              abundancePercent = 90,
+              isInvasive = true,
+              isThreatened = false,
+              speciesId = speciesId1,
+          ))
+
+      val treeId1 =
+          insertRecordedTree(
+              RecordedTreesRow(
+                  observationId = observationId,
+                  monitoringPlotId = plotId,
+                  isDead = false,
+                  shrubDiameterCm = 25,
+                  speciesId = speciesId1,
+                  treeGrowthFormId = TreeGrowthForm.Shrub,
+                  treeNumber = 1,
+              ),
+          )
+
+      // Insert this first to show sort by treeNumber
+      val treeId3 =
+          insertRecordedTree(
+              RecordedTreesRow(
+                  observationId = observationId,
+                  monitoringPlotId = plotId,
+                  diameterAtBreastHeightCm = BigDecimal.TEN,
+                  pointOfMeasurementM = BigDecimal.valueOf(1.5),
+                  heightM = BigDecimal.TEN,
+                  isDead = false,
+                  isTrunk = true,
+                  speciesId = speciesId2,
+                  treeGrowthFormId = TreeGrowthForm.Tree,
+                  treeNumber = 3,
+              ),
+          )
+
+      val treeId2 =
+          insertRecordedTree(
+              RecordedTreesRow(
+                  observationId = observationId,
+                  monitoringPlotId = plotId,
+                  diameterAtBreastHeightCm = BigDecimal.TWO,
+                  pointOfMeasurementM = BigDecimal.valueOf(1.3),
+                  isDead = true,
+                  isTrunk = false,
+                  speciesName = "Other tree species",
+                  treeGrowthFormId = TreeGrowthForm.Tree,
+                  treeNumber = 2,
+              ),
+          )
+
+      val branchId2 =
+          insertRecordedBranch(
+              RecordedBranchesRow(
+                  treeId = treeId3,
+                  branchNumber = 2,
+                  description = "branch 2 description",
+                  diameterAtBreastHeightCm = BigDecimal.valueOf(2),
+                  isDead = true,
+                  pointOfMeasurementM = BigDecimal.valueOf(1.4),
+              ))
+
+      val branchId1 =
+          insertRecordedBranch(
+              RecordedBranchesRow(
+                  treeId = treeId3,
+                  branchNumber = 1,
+                  description = "branch 1 description",
+                  diameterAtBreastHeightCm = BigDecimal.valueOf(4),
+                  isDead = false,
+                  pointOfMeasurementM = BigDecimal.valueOf(1.3),
+              ))
+
+      val expectedBiomassModel =
+          ExistingBiomassDetailsModel(
+              additionalSpecies =
+                  listOf(
+                      BiomassAdditionalSpeciesModel(
+                          isInvasive = true,
+                          isThreatened = false,
+                          speciesId = speciesId3,
+                      ),
+                      BiomassAdditionalSpeciesModel(
+                          isInvasive = false,
+                          isThreatened = true,
+                          speciesName = "Other additional species",
+                      ),
+                  ),
+              description = "description",
+              forestType = BiomassForestType.Mangrove,
+              herbaceousCoverPercent = 10,
+              observationId = observationId,
+              ph = BigDecimal.valueOf(6.5),
+              quadrats =
+                  mapOf(
+                      ObservationPlotPosition.NortheastCorner to
+                          BiomassQuadratModel(
+                              description = "NE description",
+                              species =
+                                  listOf(
+                                      BiomassQuadratSpeciesModel(
+                                          abundancePercent = 40,
+                                          isInvasive = true,
+                                          isThreatened = false,
+                                          speciesId = speciesId1,
+                                      ))),
+                      ObservationPlotPosition.NorthwestCorner to
+                          BiomassQuadratModel(
+                              description = "NW description",
+                              species =
+                                  listOf(
+                                      BiomassQuadratSpeciesModel(
+                                          abundancePercent = 60,
+                                          isInvasive = false,
+                                          isThreatened = false,
+                                          speciesId = speciesId2,
+                                      ),
+                                      BiomassQuadratSpeciesModel(
+                                          abundancePercent = 5,
+                                          isInvasive = false,
+                                          isThreatened = true,
+                                          speciesName = "Other quadrat species",
+                                      ),
+                                  )),
+                      ObservationPlotPosition.SoutheastCorner to
+                          BiomassQuadratModel(
+                              description = "SE description",
+                              species =
+                                  listOf(
+                                      BiomassQuadratSpeciesModel(
+                                          abundancePercent = 90,
+                                          isInvasive = true,
+                                          isThreatened = false,
+                                          speciesId = speciesId1,
+                                      ))),
+                      ObservationPlotPosition.SouthwestCorner to
+                          BiomassQuadratModel(
+                              description = "SW description",
+                              species = emptyList(),
+                          ),
+                  ),
+              salinityPpt = BigDecimal.valueOf(20),
+              smallTreeCountRange = 0 to 10,
+              soilAssessment = "soil",
+              plotId = plotId,
+              tide = MangroveTide.High,
+              tideTime = Instant.ofEpochSecond(123),
+              trees =
+                  listOf(
+                      ExistingRecordedTreeModel(
+                          id = treeId1,
+                          isDead = false,
+                          shrubDiameterCm = 25,
+                          speciesId = speciesId1,
+                          treeGrowthForm = TreeGrowthForm.Shrub,
+                          treeNumber = 1,
+                      ),
+                      ExistingRecordedTreeModel(
+                          id = treeId2,
+                          diameterAtBreastHeightCm = BigDecimal.TWO,
+                          pointOfMeasurementM = BigDecimal.valueOf(1.3),
+                          isDead = true,
+                          isTrunk = false,
+                          speciesName = "Other tree species",
+                          treeGrowthForm = TreeGrowthForm.Tree,
+                          treeNumber = 2,
+                      ),
+                      ExistingRecordedTreeModel(
+                          id = treeId3,
+                          branches =
+                              listOf(
+                                  ExistingRecordedBranchModel(
+                                      id = branchId1,
+                                      branchNumber = 1,
+                                      description = "branch 1 description",
+                                      diameterAtBreastHeightCm = BigDecimal.valueOf(4),
+                                      isDead = false,
+                                      pointOfMeasurementM = BigDecimal.valueOf(1.3),
+                                  ),
+                                  ExistingRecordedBranchModel(
+                                      id = branchId2,
+                                      branchNumber = 2,
+                                      description = "branch 2 description",
+                                      diameterAtBreastHeightCm = BigDecimal.valueOf(2),
+                                      isDead = true,
+                                      pointOfMeasurementM = BigDecimal.valueOf(1.4),
+                                  ),
+                              ),
+                          diameterAtBreastHeightCm = BigDecimal.TEN,
+                          pointOfMeasurementM = BigDecimal.valueOf(1.5),
+                          heightM = BigDecimal.TEN,
+                          isDead = false,
+                          isTrunk = true,
+                          speciesId = speciesId2,
+                          treeGrowthForm = TreeGrowthForm.Tree,
+                          treeNumber = 3,
+                      )),
+              waterDepthCm = 2,
+          )
 
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId, isAdHoc = true)
-      assertNull(results.find { it.observationId == observationId }, "No assigned observation")
+      assertNull(
+          results.find { it.observationId == assignedObservationId }, "No assigned observation")
 
       val observationResults = results.first()
-      assertEquals(inserted.observationId, observationResults.observationId, "Observation ID")
+      assertEquals(observationId, observationResults.observationId, "Observation ID")
+      assertEquals(
+          ObservationType.BiomassMeasurements,
+          observationResults.observationType,
+          "Observation type")
       assertTrue(observationResults.isAdHoc, "Observation Is Ad Hoc")
       assertEquals(
           emptyList<ObservationPlantingZoneResultsModel>(),
           observationResults.plantingZones,
           "No zone in observation")
 
+      assertEquals(expectedBiomassModel, observationResults.biomassDetails, "Biomass details")
+
       val plotResults = observationResults.adHocPlot!!
-      assertEquals(inserted.monitoringPlotId, plotResults.monitoringPlotId, "Plot ID")
+      assertEquals(plotId, plotResults.monitoringPlotId, "Plot ID")
       assertTrue(plotResults.isAdHoc, "Plot Is Ad Hoc")
       assertEquals(2L, plotResults.monitoringPlotNumber, "Plot number")
     }
