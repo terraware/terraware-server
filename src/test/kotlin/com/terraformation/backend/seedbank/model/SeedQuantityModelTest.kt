@@ -62,6 +62,14 @@ internal class SeedQuantityModelTest {
   }
 
   @Test
+  fun `toUnits throws exception if subset weight quantity is zero`() {
+    assertThrows<IllegalArgumentException> {
+      SeedQuantityModel(BigDecimal.ONE, SeedQuantityUnits.Grams)
+          .toUnits(SeedQuantityUnits.Seeds, grams(0), 1)
+    }
+  }
+
+  @Test
   fun `toUnits throws exception for seed to weight conversion if no subset weight and count`() {
     assertThrows<IllegalArgumentException> {
       SeedQuantityModel(BigDecimal.ONE, SeedQuantityUnits.Seeds)

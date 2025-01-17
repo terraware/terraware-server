@@ -78,6 +78,9 @@ data class SeedQuantityModel(val quantity: BigDecimal, val units: SeedQuantityUn
       subsetWeight == null || subsetCount == null -> {
         null
       }
+      subsetWeight.quantity <= BigDecimal.ZERO -> {
+        throw IllegalArgumentException("Subset weight must be above zero.")
+      }
       newUnits == SeedQuantityUnits.Seeds -> {
         // Seed count must always be an integer, so we need to round the calculated quantity.
         val subsetInOurUnits = subsetWeight.toUnits(units)
