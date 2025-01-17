@@ -1,3 +1,6 @@
+832ca45c74a Migration to convert remaining 25-meter plots (#2747)
+c288193696e Explicitly set OpenAPI version (#2746)
+7ceaadb3e82 SW-6416 Read zone settings from shapefiles (#2744)
 ddbecb601c6 SW-6431 Implemented fetch for biomass details (#2754)
 aeb767536d1 SW-6422 Do not re-fetch projectAcceleratorDetails variables (#2755)
 49ed21c2619 Update dependency com.opencsv:opencsv to v5.10 (#2753)
