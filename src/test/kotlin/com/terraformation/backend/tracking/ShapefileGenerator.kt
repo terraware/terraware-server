@@ -1,6 +1,7 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.db.SRID
+import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.ShapefileFeature
 import java.math.BigDecimal
 import org.geotools.referencing.CRS
@@ -37,6 +38,9 @@ class ShapefileGenerator(
       boundary: MultiPolygon,
       name: String = "S${nextSubzoneNumber++}",
       zone: String = lastZoneName,
+      errorMargin: BigDecimal? = PlantingZoneModel.DEFAULT_ERROR_MARGIN,
+      studentsT: BigDecimal? = null,
+      variance: BigDecimal? = PlantingZoneModel.DEFAULT_VARIANCE,
       permanentClusters: Int? = defaultPermanentClusters,
       temporaryPlots: Int? = defaultTemporaryPlots,
       targetPlantingDensity: BigDecimal? = null,
@@ -49,6 +53,9 @@ class ShapefileGenerator(
                 "subzone" to name,
                 "zone" to zone,
                 "density" to "1200",
+                errorMargin?.let { "error_marg" to "$it" },
+                studentsT?.let { "students_t" to "$it" },
+                variance?.let { "variance" to "$it" },
                 permanentClusters?.let { "permanent" to "$it" },
                 temporaryPlots?.let { "temporary" to "$it" },
                 targetPlantingDensity?.let { "density" to "$it" },

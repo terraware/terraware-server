@@ -31,6 +31,11 @@ class PlantingSiteImporter(
     val targetPlantingDensityProperties = setOf("plan_dens", "density")
     val zoneNameProperties = setOf("planting_z", "zone")
 
+    // Zone-level properties to control number of monitoring plots
+    val errorMarginProperties = setOf("error_marg")
+    val studentsTProperties = setOf("students_t")
+    val varianceProperties = setOf("variance")
+
     // Optional zone-level properties to set initial plot counts; mostly for testing
     val permanentClusterCountProperties = setOf("permanent")
     val temporaryPlotCountProperties = setOf("temporary")
@@ -174,12 +179,12 @@ class PlantingSiteImporter(
           val subzoneName = feature.getProperty(subzoneNameProperties)
           val zoneName = feature.getProperty(zoneNameProperties)
 
-          if (subzoneName == null || subzoneName == "") {
+          if (subzoneName.isNullOrBlank()) {
             problems +=
                 "Subzone is missing subzone name properties: " +
                     subzoneNameProperties.joinToString()
             false
-          } else if (zoneName == null || zoneName == "") {
+          } else if (zoneName.isNullOrBlank()) {
             problems +=
                 "Subzone $subzoneName is missing zone name properties: " +
                     zoneNameProperties.joinToString()
@@ -192,7 +197,7 @@ class PlantingSiteImporter(
     val subzonesByZone =
         validSubzones.groupBy { feature -> feature.getProperty(zoneNameProperties)!! }
 
-    return subzonesByZone.map { (zoneName, subzoneFeatures) ->
+    return subzonesByZone.mapNotNull { (zoneName, subzoneFeatures) ->
       val subzoneModels =
           subzoneFeatures.map { subzoneFeature ->
             val boundary = convertToXY(subzoneFeature.geometry)
@@ -208,29 +213,60 @@ class PlantingSiteImporter(
 
       val zoneBoundary = mergeToMultiPolygon(subzoneModels.map { it.boundary })
 
-      // Zone settings only need to appear on one subzone; take the first values we find.
+      // Zone settings only need to appear on one subzone; take the first valid values we find.
+      val errorMargin =
+          subzoneFeatures
+              .mapNotNull { it.getProperty(errorMarginProperties)?.toBigDecimalOrNull() }
+              .find { it.signum() > 0 }
+      val variance =
+          subzoneFeatures
+              .mapNotNull { it.getProperty(varianceProperties)?.toBigDecimalOrNull() }
+              .find { it.signum() > 0 }
+      val studentsT =
+          subzoneFeatures
+              .mapNotNull { it.getProperty(studentsTProperties)?.toBigDecimalOrNull() }
+              .find { it.signum() > 0 } ?: PlantingZoneModel.DEFAULT_STUDENTS_T
+
       val numPermanentClusters =
           subzoneFeatures.firstNotNullOfOrNull {
             it.getProperty(permanentClusterCountProperties)?.toIntOrNull()
-          } ?: PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS
+          }
       val numTemporaryPlots =
           subzoneFeatures.firstNotNullOfOrNull {
             it.getProperty(temporaryPlotCountProperties)?.toIntOrNull()
-          } ?: PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS
+          }
       val targetPlantingDensity =
           subzoneFeatures.firstNotNullOfOrNull {
             it.getProperty(targetPlantingDensityProperties)?.toBigDecimalOrNull()
           } ?: PlantingZoneModel.DEFAULT_TARGET_PLANTING_DENSITY
 
-      PlantingZoneModel.create(
-          boundary = zoneBoundary,
-          exclusion = exclusion,
-          name = zoneName,
-          numPermanentClusters = numPermanentClusters,
-          numTemporaryPlots = numTemporaryPlots,
-          plantingSubzones = subzoneModels,
-          targetPlantingDensity = targetPlantingDensity,
-      )
+      if (errorMargin != null && variance != null) {
+        PlantingZoneModel.create(
+            boundary = zoneBoundary,
+            errorMargin = errorMargin,
+            exclusion = exclusion,
+            name = zoneName,
+            numPermanentClusters = numPermanentClusters,
+            numTemporaryPlots = numTemporaryPlots,
+            plantingSubzones = subzoneModels,
+            studentsT = studentsT,
+            targetPlantingDensity = targetPlantingDensity,
+            variance = variance,
+        )
+      } else {
+        if (errorMargin == null) {
+          problems +=
+              "Zone $zoneName has no subzone with positive value for properties: " +
+                  errorMarginProperties.joinToString()
+        }
+        if (variance == null) {
+          problems +=
+              "Zone $zoneName has no subzone with positive value for properties: " +
+                  varianceProperties.joinToString()
+        }
+
+        null
+      }
     }
   }
 
