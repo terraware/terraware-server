@@ -99,6 +99,8 @@ management:
 # and serving real requests; there are also settings in application-apidoc.yaml that are used when
 # generating the API documentation from the command line.
 springdoc:
+  api-docs:
+    version: "openapi_3_0"
   # Limit the package scan to just the API classes. Otherwise the schema will include a bunch of
   # internal data model classes we don't actually expose to clients.
   packages-to-scan:
