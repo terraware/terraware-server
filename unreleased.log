@@ -1,3 +1,5 @@
+19c19cb78f7 Add zipProportionally function (#2752)
+de205a3ce86 Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.3 (#2739)
 bd97dfd0818 SW-6238 Added Cohort ID and Cohort Name to deliverables (#2756)
 5a5aac186b4 SW-6426 Check for positive quantity for accession subset weight (#2757)
 832ca45c74a Migration to convert remaining 25-meter plots (#2747)
