@@ -707,6 +707,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
         val org1Project1PrescreenModel =
             DeliverableSubmissionModel(
                 category = DeliverableCategory.Compliance,
+                cohortId = null,
+                cohortName = null,
                 deliverableId = prescreenDeliverableId,
                 descriptionHtml = "Pre-screen deliverable description",
                 documents = emptyList(),

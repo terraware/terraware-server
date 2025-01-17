@@ -53,6 +53,8 @@ class PreScreenBoundarySubmissionFetcherTest : DatabaseTest(), RunsAsUser {
     initialSubmissionModel =
         DeliverableSubmissionModel(
             category = DeliverableCategory.GIS,
+            cohortId = null,
+            cohortName = null,
             deliverableId = deliverableId,
             descriptionHtml = "Deliverable description",
             documents = emptyList(),

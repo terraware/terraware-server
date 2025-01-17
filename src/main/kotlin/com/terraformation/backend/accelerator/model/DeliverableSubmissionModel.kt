@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.model
 
+import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
@@ -18,6 +19,8 @@ import java.time.LocalDate
  */
 data class DeliverableSubmissionModel(
     val category: DeliverableCategory,
+    val cohortId: CohortId?,
+    val cohortName: String?,
     val deliverableId: DeliverableId,
     val descriptionHtml: String?,
     val documents: List<SubmissionDocumentModel>,

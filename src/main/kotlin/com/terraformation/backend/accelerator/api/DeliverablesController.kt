@@ -21,6 +21,7 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessOrError
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.getFilename
+import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
@@ -256,6 +257,8 @@ class DeliverablesController(
 
 data class ListDeliverablesElement(
     val category: DeliverableCategory,
+    val cohortId: CohortId?,
+    val cohortName: String?,
     @Schema(description = "Optional description of the deliverable in HTML form.")
     val descriptionHtml: String?,
     val dueDate: LocalDate?,
@@ -287,6 +290,8 @@ data class ListDeliverablesElement(
       detail: ProjectAcceleratorDetailsModel?,
   ) : this(
       model.category,
+      model.cohortId,
+      model.cohortName,
       model.descriptionHtml,
       model.dueDate,
       model.deliverableId,
