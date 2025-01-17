@@ -340,12 +340,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>observation_biomass_quadrat_species_abundance_percent_check</td>
-                                    <td>((((abundance_percent)::numeric &gt;= (0)::numeric) AND ((abundance_percent)::numeric &lt;= (100)::numeric)))</td>
-                                </tr>
-                                <tr>
                                     <td>species_identifier</td>
                                     <td>((((species_id IS NOT NULL) AND (species_name IS NULL)) OR ((species_id IS NULL) AND (species_name IS NOT NULL))))</td>
+                                </tr>
+                                <tr>
+                                    <td>observation_biomass_quadrat_species_abundance_percent_check</td>
+                                    <td>((((abundance_percent)::numeric &gt;= (0)::numeric) AND ((abundance_percent)::numeric &lt;= (100)::numeric)))</td>
                                 </tr>
                                 </tbody>
                             </table>

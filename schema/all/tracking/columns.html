@@ -196,30 +196,30 @@
         "comments": ""
     },
     {
-        "tableName": "monitoring_plot_overlaps",
+        "tableName": "observation_biomass_quadrat_species",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>ID of the newer monitoring plot.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "plantings",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>created_by",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which user created the planting.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observation_biomass_additional_species",
@@ -313,17 +313,17 @@
         "comments": "<p>Which user created the subzone.<\/p>"
     },
     {
-        "tableName": "plantings",
+        "tableName": "planting_subzone_histories",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_subzone_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "√",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "full_name",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which plot this planting affected, if any. Must be a plot at the planting site referenced by <code>planting_site_id<\/code>. Null if the planting site does not have plot information. For reassignments, this is the original plot if <code>num_plants<\/code> is negative, or the new plot if <code>num_plants<\/code> is positive.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "deliveries",
@@ -586,17 +586,17 @@
         "comments": ""
     },
     {
-        "tableName": "observation_biomass_quadrat_species",
+        "tableName": "monitoring_plot_overlaps",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "abundance_percent",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>overlaps_plot_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>ID of the older monitoring plot.<\/p>"
     },
     {
         "tableName": "monitoring_plots",
@@ -729,17 +729,17 @@
         "comments": ""
     },
     {
-        "tableName": "plantings",
+        "tableName": "planting_subzone_histories",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_type_id",
-        "type": "int4",
-        "length": 10,
-        "nullable": "",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_subzone_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Whether this is the plant assignment from the initial delivery or an adjustment from a reassignment.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "planting_zones",
@@ -911,17 +911,17 @@
         "comments": ""
     },
     {
-        "tableName": "plantings",
+        "tableName": "planting_subzone_histories",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>delivery_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_zone_history_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which delivery this planting is part of.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observed_site_species_totals",
@@ -989,17 +989,17 @@
         "comments": "<p>Number of planting subzones defined so far.<\/p>"
     },
     {
-        "tableName": "planting_subzone_histories",
+        "tableName": "plantings",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "full_name",
-        "type": "text",
-        "length": 2147483647,
+        "name": "num_plants",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Number of plants that were planted (if the number is positive) or reassigned (if the number is negative).<\/p>"
     },
     {
         "tableName": "planting_zone_histories",
@@ -1353,7 +1353,7 @@
         "comments": ""
     },
     {
-        "tableName": "plantings",
+        "tableName": "planting_subzone_histories",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
@@ -1550,24 +1550,24 @@
     {
         "tableName": "plantings",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "num_plants",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_type_id",
         "type": "int4",
         "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Number of plants that were planted (if the number is positive) or reassigned (if the number is negative).<\/p>"
+        "comments": "<p>Whether this is the plant assignment from the initial delivery or an adjustment from a reassignment.<\/p>"
     },
     {
         "tableName": "observation_biomass_quadrat_species",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
-        "type": "int8",
-        "length": 19,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>position_id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -1730,17 +1730,17 @@
         "comments": ""
     },
     {
-        "tableName": "planting_subzone_histories",
+        "tableName": "plantings",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_subzone_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>created_by",
         "type": "int8",
         "length": 19,
-        "nullable": "√",
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Which user created the planting.<\/p>"
     },
     {
         "tableName": "observations",
@@ -1927,15 +1927,15 @@
     {
         "tableName": "plantings",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "notes",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "√",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_site_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Notes about this specific planting. In the initial version of the web app, the user can only enter per-planting notes for reassignments, not for initial deliveries.<\/p>"
+        "comments": "<p>Which planting site has the planting. Must be the same as the planting site ID of the delivery. This identifies the site as a whole; in addition, there may be a plot ID.<\/p>"
     },
     {
         "tableName": "planting_zones",
@@ -2107,17 +2107,17 @@
         "comments": "<p>Which planting subzone this monitoring plot is currently part of, if any. May be null if the subzone was edited or removed after the plot was created, or if the plot was created outside the site boundary.<\/p>"
     },
     {
-        "tableName": "observation_biomass_quadrat_species",
+        "tableName": "monitoring_plot_overlaps",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "is_threatened",
-        "type": "bool",
-        "length": 1,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>ID of the newer monitoring plot.<\/p>"
     },
     {
         "tableName": "observations",
@@ -2653,17 +2653,17 @@
         "comments": "<p>When the monitoring plot was created, edited, or associated with a new planting site history record. May differ from the time when the subzone or planting site was created or edited since plots can be created when observations start.<\/p>"
     },
     {
-        "tableName": "plantings",
+        "tableName": "planting_subzone_histories",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_site_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "name",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which planting site has the planting. Must be the same as the planting site ID of the delivery. This identifies the site as a whole; in addition, there may be a plot ID.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "planting_subzones",
@@ -3082,17 +3082,17 @@
         "comments": ""
     },
     {
-        "tableName": "planting_subzone_histories",
+        "tableName": "plantings",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "boundary",
-        "type": "geometry",
+        "name": "notes",
+        "type": "text",
         "length": 2147483647,
-        "nullable": "",
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Notes about this specific planting. In the initial version of the web app, the user can only enter per-planting notes for reassignments, not for initial deliveries.<\/p>"
     },
     {
         "tableName": "planting_site_populations",
@@ -3177,10 +3177,10 @@
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>species_id",
         "type": "int8",
         "length": 19,
-        "nullable": "",
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -3203,9 +3203,9 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "is_invasive",
-        "type": "bool",
-        "length": 1,
+        "name": "abundance_percent",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -3472,40 +3472,40 @@
         "comments": ""
     },
     {
-        "tableName": "monitoring_plot_overlaps",
+        "tableName": "observation_biomass_quadrat_species",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>overlaps_plot_id",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>ID of the older monitoring plot.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "plantings",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "created_time",
-        "type": "timestamptz",
-        "length": 35,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>delivery_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When the planting was created. Note that plantings are never updated, so there is no modified time.<\/p>"
+        "comments": "<p>Which delivery this planting is part of.<\/p>"
     },
     {
         "tableName": "observation_biomass_quadrat_species",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>species_name",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "√",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "is_threatened",
+        "type": "bool",
+        "length": 1,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -3576,17 +3576,17 @@
         "comments": ""
     },
     {
-        "tableName": "planting_subzone_histories",
+        "tableName": "plantings",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "name",
-        "type": "text",
-        "length": 2147483647,
+        "name": "created_time",
+        "type": "timestamptz",
+        "length": 35,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>When the planting was created. Note that plantings are never updated, so there is no modified time.<\/p>"
     },
     {
         "tableName": "observed_zone_species_totals",
@@ -3643,12 +3643,12 @@
     {
         "tableName": "observation_biomass_quadrat_species",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>position_id",
-        "type": "int4",
-        "length": 10,
-        "nullable": "",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>species_name",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -3719,17 +3719,17 @@
         "comments": ""
     },
     {
-        "tableName": "plantings",
+        "tableName": "planting_subzone_histories",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>species_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "boundary",
+        "type": "geometry",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which species was planted.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observation_biomass_details",
@@ -3849,17 +3849,17 @@
         "comments": ""
     },
     {
-        "tableName": "planting_subzone_histories",
+        "tableName": "plantings",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_subzone_id",
         "type": "int8",
         "length": 19,
-        "nullable": "",
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Which plot this planting affected, if any. Must be a plot at the planting site referenced by <code>planting_site_id<\/code>. Null if the planting site does not have plot information. For reassignments, this is the original plot if <code>num_plants<\/code> is negative, or the new plot if <code>num_plants<\/code> is positive.<\/p>"
     },
     {
         "tableName": "recorded_trees",
@@ -4057,17 +4057,17 @@
         "comments": ""
     },
     {
-        "tableName": "planting_subzone_histories",
+        "tableName": "plantings",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_zone_history_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>species_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Which species was planted.<\/p>"
     },
     {
         "tableName": "recorded_trees",
@@ -4085,12 +4085,12 @@
     {
         "tableName": "observation_biomass_quadrat_species",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>species_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "√",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "is_invasive",
+        "type": "bool",
+        "length": 1,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
