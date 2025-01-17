@@ -78,8 +78,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = now
 
       val suffix = "${UUID.randomUUID()}"
-      val cohortId1 = insertCohort()
-      val cohortId2 = insertCohort()
+      val cohortId1 = insertCohort(name = "Cohort 1")
+      val cohortId2 = insertCohort(name = "Cohort 2")
       val participantId1 = insertParticipant(cohortId = cohortId1, name = "Participant 1 $suffix")
       val participantId2 = insertParticipant(cohortId = cohortId1, name = "Participant 2 $suffix")
       val participantId3 = insertParticipant(cohortId = cohortId2, name = "Participant 3 $suffix")
@@ -155,6 +155,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
 
       fun DeliverableSubmissionModel.forProject4() =
           copy(
+              cohortId = cohortId2,
+              cohortName = "Cohort 2",
               dueDate = LocalDate.of(2024, 3, 2),
               moduleTitle = "Module 3",
               organizationId = organizationId2,
@@ -178,6 +180,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       val deliverable1Project1 =
           DeliverableSubmissionModel(
               category = DeliverableCategory.FinancialViability,
+              cohortId = cohortId1,
+              cohortName = "Cohort 1",
               deliverableId = deliverableId1,
               descriptionHtml = "Description 1",
               documents =
@@ -425,6 +429,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               DeliverableSubmissionModel(
                   category = DeliverableCategory.FinancialViability,
+                  cohortId = null,
+                  cohortName = null,
                   deliverableId = deliverableId,
                   descriptionHtml = "Description 1",
                   documents =
@@ -476,6 +482,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               DeliverableSubmissionModel(
                   category = DeliverableCategory.FinancialViability,
+                  cohortId = null,
+                  cohortName = null,
                   deliverableId = deliverableId,
                   descriptionHtml = "Description 1",
                   documents =
@@ -518,7 +526,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
     fun `returns application submissions for participant projects if deliverable ID is specified`() {
       val participantName = "Participant ${UUID.randomUUID()}"
       val organizationId = insertOrganization()
-      val cohortId = insertCohort()
+      val cohortId = insertCohort(name = "Cohort Name")
       val participantId = insertParticipant(cohortId = cohortId, name = participantName)
       val projectId = insertProject(participantId = participantId)
       val moduleId = insertModule(phase = CohortPhase.PreScreen)
@@ -531,6 +539,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               DeliverableSubmissionModel(
                   category = DeliverableCategory.FinancialViability,
+                  cohortId = cohortId,
+                  cohortName = "Cohort Name",
                   deliverableId = deliverableId,
                   descriptionHtml = "Description 1",
                   documents = emptyList(),
@@ -570,6 +580,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               DeliverableSubmissionModel(
                   category = DeliverableCategory.FinancialViability,
+                  cohortId = null,
+                  cohortName = null,
                   deliverableId = deliverableId,
                   descriptionHtml = "Description 1",
                   documents = emptyList(),

@@ -10,6 +10,7 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEve
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
+import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -34,6 +35,8 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.NotificationJobFinishedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.accelerator.ApplicationId
+import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
@@ -252,9 +255,19 @@ internal class EmailNotificationServiceTest {
           name = "My Site",
           plantingZones = emptyList(),
       )
+  private val cohort =
+      ExistingCohortModel(
+          createdBy = UserId(1),
+          createdTime = Instant.EPOCH,
+          id = CohortId(1),
+          modifiedBy = UserId(1),
+          modifiedTime = Instant.EPOCH,
+          name = "My Cohort",
+          participantIds = setOf(ParticipantId(1)),
+          phase = CohortPhase.Phase1FeasibilityStudy)
   private val participant =
       ExistingParticipantModel(
-          cohortId = null,
+          cohortId = cohort.id,
           id = ParticipantId(1),
           name = "My Participant",
           projectIds = emptySet(),
@@ -288,6 +301,8 @@ internal class EmailNotificationServiceTest {
   private val deliverable =
       DeliverableSubmissionModel(
           category = deliverableCategory,
+          cohortId = cohort.id,
+          cohortName = cohort.name,
           deliverableId = DeliverableId(1),
           descriptionHtml = null,
           documents = emptyList(),

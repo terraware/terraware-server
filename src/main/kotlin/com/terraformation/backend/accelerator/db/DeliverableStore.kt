@@ -10,6 +10,7 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_COHORT_DUE_DATES
@@ -145,6 +146,8 @@ class DeliverableStore(
             DELIVERABLES.IS_SENSITIVE,
             DELIVERABLES.MODULE_ID,
             MODULES.NAME,
+            COHORTS.ID,
+            COHORTS.NAME,
             COHORT_MODULES.TITLE,
             DELIVERABLES.NAME,
             DELIVERABLES.POSITION,
@@ -178,9 +181,11 @@ class DeliverableStore(
               .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
               .leftJoin(PARTICIPANTS)
               .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+              .leftJoin(COHORTS)
+              .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
               .leftJoin(COHORT_MODULES)
               .on(MODULES.ID.eq(COHORT_MODULES.MODULE_ID))
-              .and(PARTICIPANTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
+              .and(COHORTS.ID.eq(COHORT_MODULES.COHORT_ID))
               .leftJoin(DELIVERABLE_DOCUMENTS)
               .on(DELIVERABLES.ID.eq(DELIVERABLE_DOCUMENTS.DELIVERABLE_ID))
               .leftJoin(SUBMISSIONS)
@@ -205,6 +210,8 @@ class DeliverableStore(
               .on(MODULES.ID.eq(COHORT_MODULES.MODULE_ID))
               .join(PARTICIPANTS)
               .on(COHORT_MODULES.COHORT_ID.eq(PARTICIPANTS.COHORT_ID))
+              .join(COHORTS)
+              .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
               .join(PROJECTS)
               .on(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID))
               .join(ORGANIZATIONS)
@@ -239,8 +246,10 @@ class DeliverableStore(
                       .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
                       .leftJoin(PARTICIPANTS)
                       .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+                      .leftJoin(COHORTS)
+                      .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
                       .leftJoin(COHORT_MODULES)
-                      .on(PARTICIPANTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
+                      .on(COHORTS.ID.eq(COHORT_MODULES.COHORT_ID))
                       .and(MODULES.ID.eq(COHORT_MODULES.MODULE_ID))
                       .leftJoin(DELIVERABLE_PROJECT_DUE_DATES)
                       .on(DELIVERABLES.ID.eq(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID))
@@ -256,6 +265,8 @@ class DeliverableStore(
     return query.fetch { record ->
       DeliverableSubmissionModel(
           category = record[DELIVERABLES.DELIVERABLE_CATEGORY_ID]!!,
+          cohortId = record[COHORTS.ID],
+          cohortName = record[COHORTS.NAME],
           deliverableId = record[deliverableIdField]!!,
           descriptionHtml = record[DELIVERABLES.DESCRIPTION_HTML],
           documents = record[documentsMultiset] ?: emptyList(),
