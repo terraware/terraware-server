@@ -425,6 +425,36 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     }
 
     @Test
+    fun `updates zone boundary modified time if geometry changed`() {
+      runScenario(
+          initial =
+              newSite(width = 1000) {
+                zone(width = 500) { subzone() }
+                zone(width = 500) { subzone() }
+              },
+          desired =
+              newSite(width = 1100) {
+                zone(width = 500) { subzone() }
+                zone(width = 600) { subzone() }
+              },
+          expected =
+              newSite(width = 1100) {
+                zone(width = 500) { subzone() }
+                zone(width = 600) {
+                  extraPermanentClusters = 1
+                  numPermanentClusters = 9
+                  subzone()
+                }
+              },
+      )
+
+      val zonesRows = plantingZonesDao.findAll().associateBy { it.name }
+      assertEquals(
+          Instant.EPOCH, zonesRows["Z1"]?.boundaryModifiedTime, "Zone with no boundary change")
+      assertEquals(editTime, zonesRows["Z2"]?.boundaryModifiedTime, "Zone with boundary change")
+    }
+
+    @Test
     fun `publishes event if site was edited`() {
       val results =
           runScenario(

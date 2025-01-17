@@ -172,6 +172,7 @@ private constructor(
       return ExistingPlantingZoneModel(
           areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
           boundary = boundary,
+          boundaryModifiedTime = Instant.EPOCH,
           extraPermanentClusters = extraPermanentClusters,
           id = PlantingZoneId(currentZoneId),
           name = name,

@@ -6,14 +6,15 @@ import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
+import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
-import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.util.toInstant
 import io.mockk.every
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDate
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
@@ -36,9 +37,11 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
               gridOrigin = point(9, 10),
               timeZone = timeZone,
           )
+      val boundaryModifiedTime = Instant.ofEpochSecond(5001)
       val plantingZoneId =
           insertPlantingZone(
               boundary = multiPolygon(2.0),
+              boundaryModifiedTime = boundaryModifiedTime,
               extraPermanentClusters = 1,
               targetPlantingDensity = BigDecimal.ONE)
       val plantingSubzoneId = insertPlantingSubzone(boundary = multiPolygon(1.0))
@@ -95,9 +98,10 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           expectedWithSite.copy(
               plantingZones =
                   listOf(
-                      PlantingZoneModel(
+                      ExistingPlantingZoneModel(
                           areaHa = BigDecimal.TEN,
                           boundary = multiPolygon(2.0),
+                          boundaryModifiedTime = boundaryModifiedTime,
                           extraPermanentClusters = 1,
                           id = plantingZoneId,
                           name = "Z1",
@@ -201,7 +205,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       val monitoringPlotId = insertMonitoringPlot(boundary = monitoringPlotBoundary3857)
 
       val expected =
-          PlantingSiteModel(
+          ExistingPlantingSiteModel(
               boundary = siteBoundary4326,
               description = null,
               exclusion = exclusion4326,
@@ -213,6 +217,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                       PlantingZoneModel(
                           areaHa = BigDecimal.TEN,
                           boundary = zoneBoundary4326,
+                          boundaryModifiedTime = Instant.EPOCH,
                           extraPermanentClusters = 0,
                           id = plantingZoneId,
                           name = "Z1",

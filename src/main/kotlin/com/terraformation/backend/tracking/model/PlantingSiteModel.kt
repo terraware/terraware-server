@@ -16,6 +16,7 @@ import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.nearlyCoveredBy
 import java.math.BigDecimal
 import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import org.geotools.geometry.jts.JTS
@@ -29,6 +30,7 @@ data class PlantingSiteModel<
     PSID : PlantingSiteId?,
     PZID : PlantingZoneId?,
     PSZID : PlantingSubzoneId?,
+    TIMESTAMP : Instant?,
 >(
     val areaHa: BigDecimal? = null,
     val boundary: MultiPolygon?,
@@ -47,7 +49,7 @@ data class PlantingSiteModel<
     val name: String,
     val organizationId: OrganizationId,
     val plantingSeasons: List<ExistingPlantingSeasonModel> = emptyList(),
-    val plantingZones: List<PlantingZoneModel<PZID, PSZID>> = emptyList(),
+    val plantingZones: List<PlantingZoneModel<PZID, PSZID, TIMESTAMP>> = emptyList(),
     val projectId: ProjectId? = null,
     val timeZone: ZoneId? = null,
 ) {
@@ -72,7 +74,7 @@ data class PlantingSiteModel<
    */
   fun findZoneWithMonitoringPlot(
       monitoringPlotId: MonitoringPlotId
-  ): PlantingZoneModel<PZID, PSZID>? {
+  ): PlantingZoneModel<PZID, PSZID, TIMESTAMP>? {
     return plantingZones.firstOrNull { zone ->
       zone.findSubzoneWithMonitoringPlot(monitoringPlotId) != null
     }
@@ -127,7 +129,7 @@ data class PlantingSiteModel<
   }
 
   fun equals(other: Any?, tolerance: Double): Boolean {
-    return other is PlantingSiteModel<*, *, *> &&
+    return other is AnyPlantingSiteModel &&
         countryCode == other.countryCode &&
         description == other.description &&
         id == other.id &&
@@ -250,9 +252,10 @@ data class PlantingSiteModel<
 }
 
 typealias AnyPlantingSiteModel =
-    PlantingSiteModel<out PlantingSiteId?, out PlantingZoneId?, out PlantingSubzoneId?>
+    PlantingSiteModel<
+        out PlantingSiteId?, out PlantingZoneId?, out PlantingSubzoneId?, out Instant?>
 
 typealias ExistingPlantingSiteModel =
-    PlantingSiteModel<PlantingSiteId, PlantingZoneId, PlantingSubzoneId>
+    PlantingSiteModel<PlantingSiteId, PlantingZoneId, PlantingSubzoneId, Instant>
 
-typealias NewPlantingSiteModel = PlantingSiteModel<Nothing?, Nothing?, Nothing?>
+typealias NewPlantingSiteModel = PlantingSiteModel<Nothing?, Nothing?, Nothing?, Nothing?>

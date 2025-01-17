@@ -199,6 +199,11 @@ data class PlantingZonePayload(
     @Schema(description = "Area of planting zone in hectares.") //
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
+    @Schema(
+        description =
+            "When the boundary of this planting zone was last modified. Modifications of other " +
+                "attributes of the planting zone do not cause this timestamp to change.")
+    val boundaryModifiedTime: Instant,
     val id: PlantingZoneId,
     val name: String,
     val plantingSubzones: List<PlantingSubzonePayload>,
@@ -209,6 +214,7 @@ data class PlantingZonePayload(
   ) : this(
       model.areaHa,
       model.boundary,
+      model.boundaryModifiedTime,
       model.id,
       model.name,
       model.plantingSubzones.map { PlantingSubzonePayload(it) },

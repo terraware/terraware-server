@@ -11,6 +11,7 @@ import com.terraformation.backend.util.nearlyCoveredBy
 import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.time.Instant
 import kotlin.math.max
 import kotlin.math.roundToInt
 import org.locationtech.jts.geom.Coordinate
@@ -19,9 +20,11 @@ import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
-data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>(
+data class PlantingZoneModel<
+    PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?, TIMESTAMP : Instant?>(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
+    val boundaryModifiedTime: TIMESTAMP,
     val errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
     val extraPermanentClusters: Int = 0,
     val id: PZID,
@@ -301,7 +304,7 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
     }
   }
 
-  fun validate(newModel: PlantingSiteModel<*, *, *>): List<PlantingSiteValidationFailure> {
+  fun validate(newModel: AnyPlantingSiteModel): List<PlantingSiteValidationFailure> {
     val problems = mutableListOf<PlantingSiteValidationFailure>()
 
     // Find two squares: one for a permanent plot and one for a temporary plot.
@@ -400,9 +403,10 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
   }
 
   fun equals(other: Any?, tolerance: Double): Boolean {
-    return other is PlantingZoneModel<*, *> &&
+    return other is AnyPlantingZoneModel &&
         id == other.id &&
         name == other.name &&
+        boundaryModifiedTime == other.boundaryModifiedTime &&
         extraPermanentClusters == other.extraPermanentClusters &&
         numPermanentClusters == other.numPermanentClusters &&
         numTemporaryPlots == other.numTemporaryPlots &&
@@ -419,6 +423,7 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
       NewPlantingZoneModel(
           areaHa = areaHa,
           boundary = boundary,
+          boundaryModifiedTime = null,
           errorMargin = errorMargin,
           extraPermanentClusters = extraPermanentClusters,
           id = null,
@@ -470,6 +475,7 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
       return NewPlantingZoneModel(
           areaHa = areaHa,
           boundary = boundary,
+          boundaryModifiedTime = null,
           errorMargin = errorMargin,
           extraPermanentClusters = extraPermanentClusters,
           id = null,
@@ -485,8 +491,9 @@ data class PlantingZoneModel<PZID : PlantingZoneId?, PSZID : PlantingSubzoneId?>
   }
 }
 
-typealias AnyPlantingZoneModel = PlantingZoneModel<out PlantingZoneId?, out PlantingSubzoneId?>
+typealias AnyPlantingZoneModel =
+    PlantingZoneModel<out PlantingZoneId?, out PlantingSubzoneId?, out Instant?>
 
-typealias ExistingPlantingZoneModel = PlantingZoneModel<PlantingZoneId, PlantingSubzoneId>
+typealias ExistingPlantingZoneModel = PlantingZoneModel<PlantingZoneId, PlantingSubzoneId, Instant>
 
-typealias NewPlantingZoneModel = PlantingZoneModel<Nothing?, Nothing?>
+typealias NewPlantingZoneModel = PlantingZoneModel<Nothing?, Nothing?, Nothing?>

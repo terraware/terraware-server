@@ -63,6 +63,9 @@ import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
+import com.terraformation.backend.tracking.model.AnyPlantingSubzoneModel
+import com.terraformation.backend.tracking.model.AnyPlantingZoneModel
 import com.terraformation.backend.tracking.model.CannotUpdatePastPlantingSeasonException
 import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -83,7 +86,6 @@ import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSubzoneHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneHistoryModel
-import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.Turtle
@@ -657,11 +659,19 @@ class PlantingSiteStore(
       }
       is PlantingZoneEdit.Update -> {
         with(PLANTING_ZONES) {
+          val boundaryChanged =
+              !edit.existingModel.boundary.equalsOrBothNull(edit.desiredModel.boundary)
           val rowsUpdated =
               dslContext
                   .update(PLANTING_ZONES)
                   .set(AREA_HA, edit.desiredModel.areaHa)
                   .set(BOUNDARY, edit.desiredModel.boundary)
+                  .apply {
+                    if (boundaryChanged) {
+                      set(BOUNDARY_MODIFIED_BY, currentUser().userId)
+                          .set(BOUNDARY_MODIFIED_TIME, now)
+                    }
+                  }
                   .set(
                       EXTRA_PERMANENT_CLUSTERS,
                       edit.existingModel.extraPermanentClusters + edit.numPermanentClustersToAdd)
@@ -979,6 +989,8 @@ class PlantingSiteStore(
         PlantingZonesRow(
             areaHa = zone.areaHa,
             boundary = zone.boundary,
+            boundaryModifiedBy = userId,
+            boundaryModifiedTime = now,
             createdBy = userId,
             createdTime = now,
             errorMargin = zone.errorMargin,
@@ -1854,6 +1866,7 @@ class PlantingSiteStore(
     return DSL.multiset(
             DSL.select(
                     PLANTING_ZONES.AREA_HA,
+                    PLANTING_ZONES.BOUNDARY_MODIFIED_TIME,
                     PLANTING_ZONES.ERROR_MARGIN,
                     PLANTING_ZONES.EXTRA_PERMANENT_CLUSTERS,
                     PLANTING_ZONES.ID,
@@ -1870,9 +1883,10 @@ class PlantingSiteStore(
                 .orderBy(PLANTING_ZONES.NAME))
         .convertFrom { result ->
           result.map { record: Record ->
-            PlantingZoneModel(
+            ExistingPlantingZoneModel(
                 record[PLANTING_ZONES.AREA_HA]!!,
                 record[plantingZonesBoundaryField]!! as MultiPolygon,
+                record[PLANTING_ZONES.BOUNDARY_MODIFIED_TIME]!!,
                 record[PLANTING_ZONES.ERROR_MARGIN]!!,
                 record[PLANTING_ZONES.EXTRA_PERMANENT_CLUSTERS]!!,
                 record[PLANTING_ZONES.ID]!!,
@@ -2118,7 +2132,7 @@ class PlantingSiteStore(
   }
 
   private fun insertPlantingSiteHistory(
-      newModel: PlantingSiteModel<*, *, *>,
+      newModel: AnyPlantingSiteModel,
       gridOrigin: Point,
       now: Instant,
       plantingSiteId: PlantingSiteId =
@@ -2141,7 +2155,7 @@ class PlantingSiteStore(
   }
 
   private fun insertPlantingZoneHistory(
-      model: PlantingZoneModel<*, *>,
+      model: AnyPlantingZoneModel,
       plantingSiteHistoryId: PlantingSiteHistoryId,
       plantingZoneId: PlantingZoneId =
           model.id ?: throw IllegalArgumentException("Planting zone missing ID"),
@@ -2161,7 +2175,7 @@ class PlantingSiteStore(
   }
 
   private fun insertPlantingSubzoneHistory(
-      model: PlantingSubzoneModel<*>,
+      model: AnyPlantingSubzoneModel,
       plantingZoneHistoryId: PlantingZoneHistoryId,
       plantingSubzoneId: PlantingSubzoneId =
           model.id ?: throw IllegalArgumentException("Planting subzone missing ID"),

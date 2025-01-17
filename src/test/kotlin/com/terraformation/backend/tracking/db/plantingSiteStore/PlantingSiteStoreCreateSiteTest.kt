@@ -15,7 +15,6 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.model.CannotCreatePastPlantingSeasonException
-import com.terraformation.backend.tracking.model.NewPlantingZoneModel
 import com.terraformation.backend.tracking.model.PlantingSeasonTooFarInFutureException
 import com.terraformation.backend.tracking.model.PlantingSeasonTooLongException
 import com.terraformation.backend.tracking.model.PlantingSeasonTooShortException
@@ -216,6 +215,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       val commonZonesRow =
           PlantingZonesRow(
               areaHa = BigDecimal("1.5"),
+              boundaryModifiedBy = user.userId,
+              boundaryModifiedTime = Instant.EPOCH,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
@@ -504,11 +505,9 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               organizationId = organizationId,
               plantingZones =
                   listOf(
-                      NewPlantingZoneModel(
-                          areaHa = BigDecimal.ONE,
+                      PlantingZoneModel.create(
                           boundary = boundary,
                           name = "name",
-                          id = null,
                           // Empty subzone list is invalid.
                           plantingSubzones = emptyList())))
 
