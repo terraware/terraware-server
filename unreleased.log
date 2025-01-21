@@ -1,3 +1,4 @@
+7f17308792a Remove support for converting 25m plots (#2749)
 6558f4a3794 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.28 (#2760)
 aa58af86fe4 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v7.4.0 (#2762)
 e1bb962947f Added Biomass Observation payloads to fetch endpoints (#2761)
