@@ -178,6 +178,10 @@ data class PlantingSubzonePayload(
     val fullName: String,
     val id: PlantingSubzoneId,
     val name: String,
+    @Schema(
+        description =
+            "When any monitoring plot in the planting subzone was most recently observed.")
+    val observedTime: Instant?,
     val plantingCompleted: Boolean,
     @Schema(description = "When planting of the planting subzone was marked as completed.")
     val plantingCompletedTime: Instant?,
@@ -185,13 +189,14 @@ data class PlantingSubzonePayload(
   constructor(
       model: ExistingPlantingSubzoneModel
   ) : this(
-      model.areaHa,
-      model.boundary,
-      model.fullName,
-      model.id,
-      model.name,
-      model.plantingCompletedTime != null,
-      model.plantingCompletedTime,
+      areaHa = model.areaHa,
+      boundary = model.boundary,
+      fullName = model.fullName,
+      id = model.id,
+      name = model.name,
+      observedTime = model.observedTime,
+      plantingCompleted = model.plantingCompletedTime != null,
+      plantingCompletedTime = model.plantingCompletedTime,
   )
 }
 

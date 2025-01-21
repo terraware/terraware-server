@@ -83,7 +83,6 @@ import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSubzoneHistoryModel
-import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneHistoryModel
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
@@ -1717,10 +1716,11 @@ class PlantingSiteStore(
     return DSL.multiset(
             DSL.select(
                     PLANTING_SUBZONES.AREA_HA,
-                    PLANTING_SUBZONES.PLANTING_COMPLETED_TIME,
                     PLANTING_SUBZONES.ID,
                     PLANTING_SUBZONES.FULL_NAME,
                     PLANTING_SUBZONES.NAME,
+                    PLANTING_SUBZONES.OBSERVED_TIME,
+                    PLANTING_SUBZONES.PLANTING_COMPLETED_TIME,
                     plantingSubzoneBoundaryField,
                     plotsField)
                 .from(PLANTING_SUBZONES)
@@ -1728,14 +1728,15 @@ class PlantingSiteStore(
                 .orderBy(PLANTING_SUBZONES.FULL_NAME))
         .convertFrom { result ->
           result.map { record: Record ->
-            PlantingSubzoneModel(
-                record[PLANTING_SUBZONES.AREA_HA]!!,
-                record[plantingSubzoneBoundaryField]!! as MultiPolygon,
-                record[PLANTING_SUBZONES.ID]!!,
-                record[PLANTING_SUBZONES.FULL_NAME]!!,
-                record[PLANTING_SUBZONES.NAME]!!,
-                record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME],
-                plotsField?.let { record[it] } ?: emptyList(),
+            ExistingPlantingSubzoneModel(
+                areaHa = record[PLANTING_SUBZONES.AREA_HA]!!,
+                boundary = record[plantingSubzoneBoundaryField]!! as MultiPolygon,
+                id = record[PLANTING_SUBZONES.ID]!!,
+                fullName = record[PLANTING_SUBZONES.FULL_NAME]!!,
+                name = record[PLANTING_SUBZONES.NAME]!!,
+                observedTime = record[PLANTING_SUBZONES.OBSERVED_TIME],
+                plantingCompletedTime = record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME],
+                monitoringPlots = plotsField?.let { record[it] } ?: emptyList(),
             )
           }
         }

@@ -73,7 +73,11 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
 
     val plantingZoneId2 = insertPlantingZone(boundary = plantingZoneGeometry, name = "Z2")
 
-    val plantingSubzoneId3 = insertPlantingSubzone(boundary = plantingSubzoneGeometry3, name = "3")
+    val plantingSubzoneId3 =
+        insertPlantingSubzone(
+            boundary = plantingSubzoneGeometry3,
+            name = "3",
+            observedTime = Instant.ofEpochSecond(1))
     val monitoringPlotId5 = insertMonitoringPlot(boundary = monitoringPlotGeometry5)
     val monitoringPlotId6 = insertMonitoringPlot(boundary = monitoringPlotGeometry6)
 
@@ -318,6 +322,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "id" to "$plantingSubzoneId3",
                                             "modifiedTime" to "1970-01-01T00:00:00Z",
                                             "name" to "3",
+                                            "observedTime" to "1970-01-01T00:00:01Z",
                                             "totalPlants" to "10",
                                             "populations" to
                                                 listOf(
@@ -489,6 +494,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingZones.plantingSubzones.id",
                 "plantingZones.plantingSubzones.modifiedTime",
                 "plantingZones.plantingSubzones.name",
+                "plantingZones.plantingSubzones.observedTime",
                 "plantingZones.plantingSubzones.plantingCompletedTime",
                 "plantingZones.plantingSubzones.populations.plantsSinceLastObservation",
                 "plantingZones.plantingSubzones.populations.species_id",

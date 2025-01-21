@@ -741,8 +741,8 @@ class ObservationStore(
       val (plantingSubzoneId, plantingZoneId, plantingSiteId, isAdHoc) =
           dslContext
               .select(
-                  MONITORING_PLOTS.PLANTING_SUBZONE_ID,
-                  MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID,
+                  MONITORING_PLOTS.PLANTING_SUBZONE_ID.asNonNullable(),
+                  MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID.asNonNullable(),
                   MONITORING_PLOTS.PLANTING_SITE_ID.asNonNullable(),
                   MONITORING_PLOTS.IS_AD_HOC.asNonNullable())
               .from(MONITORING_PLOTS)
@@ -807,6 +807,8 @@ class ObservationStore(
               statusId = ObservationPlotStatus.Completed,
           ))
 
+      updateSubzoneObservedTime(plantingSubzoneId, observedTime)
+
       val allPlotsCompleted =
           dslContext
               .selectOne()
@@ -820,6 +822,25 @@ class ObservationStore(
       if (allPlotsCompleted) {
         completeObservation(observationId, plantingSiteId, isAdHoc)
       }
+    }
+  }
+
+  /**
+   * Updates the observed time of a planting subzone if it wasn't already observed more recently.
+   */
+  private fun updateSubzoneObservedTime(
+      plantingSubzoneId: PlantingSubzoneId,
+      observedTime: Instant
+  ) {
+    with(PLANTING_SUBZONES) {
+      dslContext
+          .update(PLANTING_SUBZONES)
+          .set(MODIFIED_BY, currentUser().userId)
+          .set(MODIFIED_TIME, clock.instant())
+          .set(OBSERVED_TIME, observedTime)
+          .where(ID.eq(plantingSubzoneId))
+          .and(OBSERVED_TIME.isNull.or(OBSERVED_TIME.lt(observedTime)))
+          .execute()
     }
   }
 
