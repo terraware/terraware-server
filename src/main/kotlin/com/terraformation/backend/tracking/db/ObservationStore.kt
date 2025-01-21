@@ -741,8 +741,8 @@ class ObservationStore(
       val (plantingSubzoneId, plantingZoneId, plantingSiteId, isAdHoc) =
           dslContext
               .select(
-                  MONITORING_PLOTS.PLANTING_SUBZONE_ID.asNonNullable(),
-                  MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID.asNonNullable(),
+                  MONITORING_PLOTS.PLANTING_SUBZONE_ID,
+                  MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID,
                   MONITORING_PLOTS.PLANTING_SITE_ID.asNonNullable(),
                   MONITORING_PLOTS.IS_AD_HOC.asNonNullable())
               .from(MONITORING_PLOTS)
@@ -807,7 +807,9 @@ class ObservationStore(
               statusId = ObservationPlotStatus.Completed,
           ))
 
-      updateSubzoneObservedTime(plantingSubzoneId, observedTime)
+      if (plantingSubzoneId != null) {
+        updateSubzoneObservedTime(plantingSubzoneId, observedTime)
+      }
 
       val allPlotsCompleted =
           dslContext
