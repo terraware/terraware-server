@@ -498,24 +498,24 @@
                                     <td>(((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text)))</td>
                                 </tr>
                                 <tr>
-                                    <td>country_code_matches_subdivision</td>
-                                    <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
+                                    <td>organizations_country_subdivision_code_check</td>
+                                    <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
                                     <td>other_type_details_only_for_other</td>
                                     <td>((((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6))))</td>
                                 </tr>
                                 <tr>
-                                    <td>organizations_description_check</td>
-                                    <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>organizations_country_code_check</td>
                                     <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
-                                    <td>organizations_country_subdivision_code_check</td>
-                                    <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    <td>country_code_matches_subdivision</td>
+                                    <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
+                                </tr>
+                                <tr>
+                                    <td>organizations_description_check</td>
+                                    <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -616,7 +616,7 @@
 <area shape="rect" id="node38" href="../../../nursery/tables/batches.html" target="_top" title="nursery.batches" alt="" coords="1629,3132,1984,3425">
 <area shape="rect" id="node44" href="../../tables/country_subdivisions.html" target="_top" title="country_subdivisions" alt="" coords="418,1363,665,1509">
 <area shape="rect" id="node59" href="../../tables/organization_types.html" target="_top" title="organization_types" alt="" coords="427,1763,656,1880">
-<area shape="rect" id="node40" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="1685,3445,1929,3533">
+<area shape="rect" id="node40" href="../../../nursery/tables/withdrawals.html" target="_top" title="nursery.withdrawals" alt="" coords="1685,3447,1929,3535">
 <area shape="rect" id="node41" href="../../tables/automations.html" target="_top" title="automations" alt="" coords="2139,3525,2322,3613">
 <area shape="rect" id="node42" href="../../tables/devices.html" target="_top" title="devices" alt="" coords="1735,4099,1878,4187">
 <area shape="rect" id="node45" href="../../tables/device_managers.html" target="_top" title="device_managers" alt="" coords="1699,3888,1915,3976">

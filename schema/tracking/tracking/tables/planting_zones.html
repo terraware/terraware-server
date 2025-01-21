@@ -411,6 +411,40 @@
                                     </td>
                                     <td><p>Number of clusters to add to observation in addition to the number that is derived from the statistical formula. Typically this is due to additional area being added to a zone after initial creation. This is included in the value of <code>num_permanent_clusters</code>, that is, it is an input to the calculation of that column&rsquo;s value.</p></td>
                                 </tr>
+                                <tr>
+                                    <td><span id="boundary_modified_by">boundary_modified_by</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>Which user most recently edited the planting zone&rsquo;s boundary.</p></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="boundary_modified_time">boundary_modified_time</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td><p>When the planting zone&rsquo;s boundary was most recently modified.</p></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -476,20 +510,20 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>area_positive</td>
-                                    <td>((area_ha &gt; (0)::numeric))</td>
+                                    <td>must_have_permanent_clusters</td>
+                                    <td>((num_permanent_clusters &gt; 0))</td>
                                 </tr>
                                 <tr>
                                     <td>positive_target_density</td>
                                     <td>((target_planting_density &gt; (0)::numeric))</td>
                                 </tr>
                                 <tr>
-                                    <td>must_have_permanent_clusters</td>
-                                    <td>((num_permanent_clusters &gt; 0))</td>
-                                </tr>
-                                <tr>
                                     <td>must_have_temporary_plots</td>
                                     <td>((num_temporary_plots &gt; 0))</td>
+                                </tr>
+                                <tr>
+                                    <td>area_positive</td>
+                                    <td>((area_ha &gt; (0)::numeric))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -515,8 +549,8 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/observed_zone_species_totals.html" target="_top" title="observed_zone_species_totals" alt="" coords="721,5,1029,240">
-<area shape="rect" id="node2" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="240,380,677,919">
-<area shape="rect" id="node4" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,655,196,860">
+<area shape="rect" id="node2" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="240,380,677,977">
+<area shape="rect" id="node4" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,684,196,889">
 <area shape="rect" id="node3" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="750,615,1001,820">
 <area shape="rect" id="node5" href="../../tables/planting_zone_histories.html" target="_top" title="planting_zone_histories" alt="" coords="744,257,1007,433">
 <area shape="rect" id="node6" href="../../tables/planting_zone_populations.html" target="_top" title="planting_zone_populations" alt="" coords="731,451,1019,597">
@@ -526,23 +560,23 @@
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/deliveries.html" target="_top" title="deliveries" alt="" coords="793,95,955,183">
-<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,601,196,807">
+<area shape="rect" id="node2" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,631,196,836">
 <area shape="rect" id="node3" href="../../tables/monitoring_plot_histories.html" target="_top" title="monitoring_plot_histories" alt="" coords="1451,475,1731,563">
 <area shape="rect" id="node4" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="1131,301,1346,389">
-<area shape="rect" id="node5" href="../../tables/planting_site_histories.html" target="_top" title="planting_site_histories" alt="" coords="331,864,587,952">
+<area shape="rect" id="node5" href="../../tables/planting_site_histories.html" target="_top" title="planting_site_histories" alt="" coords="331,923,587,1011">
 <area shape="rect" id="node6" href="../../tables/planting_subzone_histories.html" target="_top" title="planting_subzone_histories" alt="" coords="1093,548,1384,636">
 <area shape="rect" id="node7" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="749,436,999,641">
 <area shape="rect" id="node18" href="../../tables/planting_zone_histories.html" target="_top" title="planting_zone_histories" alt="" coords="743,659,1005,835">
-<area shape="rect" id="node14" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="240,308,677,847">
-<area shape="rect" id="node8" href="../../tables/observation_requested_subzones.html" target="_top" title="observation_requested_subzones" alt="" coords="1071,821,1407,909">
-<area shape="rect" id="node9" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="782,929,966,1017">
-<area shape="rect" id="node10" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="1088,1284,1389,1372">
-<area shape="rect" id="node11" href="../../tables/recorded_species_certainties.html" target="_top" title="recorded_species_certainties" alt="" coords="721,1152,1027,1240">
-<area shape="rect" id="node12" href="../../tables/observed_subzone_species_totals.html" target="_top" title="observed_subzone_species_totals" alt="" coords="1071,927,1406,1015">
-<area shape="rect" id="node13" href="../../tables/observed_zone_species_totals.html" target="_top" title="observed_zone_species_totals" alt="" coords="1085,1032,1393,1267">
-<area shape="rect" id="node15" href="../../tables/planting_seasons.html" target="_top" title="planting_seasons" alt="" coords="351,1005,566,1093">
-<area shape="rect" id="node16" href="../../tables/planting_site_notifications.html" target="_top" title="planting_site_notifications" alt="" coords="315,1111,602,1199">
-<area shape="rect" id="node17" href="../../tables/planting_site_populations.html" target="_top" title="planting_site_populations" alt="" coords="318,1216,599,1304">
+<area shape="rect" id="node14" href="../../tables/planting_zones.html" target="_top" title="planting_zones" alt="" coords="240,308,677,905">
+<area shape="rect" id="node8" href="../../tables/observation_requested_subzones.html" target="_top" title="observation_requested_subzones" alt="" coords="1071,880,1407,968">
+<area shape="rect" id="node9" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="782,988,966,1076">
+<area shape="rect" id="node10" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="1088,1343,1389,1431">
+<area shape="rect" id="node11" href="../../tables/recorded_species_certainties.html" target="_top" title="recorded_species_certainties" alt="" coords="721,1211,1027,1299">
+<area shape="rect" id="node12" href="../../tables/observed_subzone_species_totals.html" target="_top" title="observed_subzone_species_totals" alt="" coords="1071,985,1406,1073">
+<area shape="rect" id="node13" href="../../tables/observed_zone_species_totals.html" target="_top" title="observed_zone_species_totals" alt="" coords="1085,1091,1393,1325">
+<area shape="rect" id="node15" href="../../tables/planting_seasons.html" target="_top" title="planting_seasons" alt="" coords="351,1064,566,1152">
+<area shape="rect" id="node16" href="../../tables/planting_site_notifications.html" target="_top" title="planting_site_notifications" alt="" coords="315,1169,602,1257">
+<area shape="rect" id="node17" href="../../tables/planting_site_populations.html" target="_top" title="planting_site_populations" alt="" coords="318,1275,599,1363">
 <area shape="rect" id="node19" href="../../tables/planting_subzone_populations.html" target="_top" title="planting_subzone_populations" alt="" coords="1081,407,1396,495">
 <area shape="rect" id="node20" href="../../tables/planting_zone_populations.html" target="_top" title="planting_zone_populations" alt="" coords="730,272,1018,419">
 <area shape="rect" id="node21" href="../../tables/plantings.html" target="_top" title="plantings" alt="" coords="1160,163,1317,251">

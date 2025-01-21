@@ -106,7 +106,7 @@
 <text text-anchor="start" x="187.5" y="-644.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="none" points="184.5,-620 184.5,-638 229.5,-638 229.5,-620 184.5,-620"/>
 <polygon fill="none" stroke="black" points="184.5,-620 184.5,-638 229.5,-638 229.5,-620 184.5,-620"/>
-<text text-anchor="start" x="187.5" y="-626.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
+<text text-anchor="start" x="187.5" y="-626.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
 <polygon fill="#ffffff" stroke="none" points="229.5,-620 229.5,-638 282.5,-638 282.5,-620 229.5,-620"/>
 <polygon fill="none" stroke="black" points="229.5,-620 229.5,-638 282.5,-638 282.5,-620 229.5,-620"/>
 <text text-anchor="start" x="243.5" y="-626.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
