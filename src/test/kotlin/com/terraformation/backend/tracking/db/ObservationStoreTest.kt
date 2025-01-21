@@ -1687,6 +1687,11 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(expectedConditions, observationPlotConditionsDao.findAll().toSet())
       assertEquals(expectedPlants, recordedPlantsDao.findAll().map { it.copy(id = null) }.toSet())
       assertEquals(expectedRows, observationPlotsDao.findAll().toSet())
+
+      assertEquals(
+          observedTime,
+          plantingSubzonesDao.fetchOneById(inserted.plantingSubzoneId)?.observedTime,
+          "Subzone observed time")
     }
 
     @Test

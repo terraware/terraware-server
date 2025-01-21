@@ -45,6 +45,7 @@ class PlantingSubzonesTable(tables: SearchTables) : SearchTable() {
           idWrapperField("id", PLANTING_SUBZONES.ID) { PlantingSubzoneId(it) },
           timestampField("modifiedTime", PLANTING_SUBZONES.MODIFIED_TIME),
           textField("name", PLANTING_SUBZONES.NAME),
+          timestampField("observedTime", PLANTING_SUBZONES.OBSERVED_TIME),
           timestampField("plantingCompletedTime", PLANTING_SUBZONES.PLANTING_COMPLETED_TIME),
           bigDecimalField(
               "totalPlants",

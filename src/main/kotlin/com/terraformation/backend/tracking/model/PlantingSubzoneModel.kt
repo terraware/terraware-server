@@ -15,6 +15,7 @@ data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
     val id: PSZID,
     val fullName: String,
     val name: String,
+    val observedTime: Instant? = null,
     val plantingCompletedTime: Instant? = null,
     val monitoringPlots: List<MonitoringPlotModel> = emptyList(),
 ) {
@@ -26,6 +27,7 @@ data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
         id == other.id &&
         fullName == other.fullName &&
         name == other.name &&
+        observedTime == other.observedTime &&
         plantingCompletedTime == other.plantingCompletedTime &&
         areaHa.equalsIgnoreScale(other.areaHa) &&
         monitoringPlots.zip(other.monitoringPlots).all { it.first.equals(it.second, tolerance) } &&
@@ -39,6 +41,7 @@ data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
           id = null,
           fullName = fullName,
           name = name,
+          observedTime = null,
           plantingCompletedTime = plantingCompletedTime,
           monitoringPlots = monitoringPlots,
       )
