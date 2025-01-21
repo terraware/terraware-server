@@ -1,52 +1,70 @@
 {
-    "extends": ["config:recommended"],
-    "labels": ["bot", "renovate"],
-    "packageRules": [
+    extends: [
+        'config:recommended',
+    ],
+    labels: [
+        'bot',
+        'renovate',
+    ],
+    packageRules: [
         {
-            "matchUpdateTypes": ["patch"],
-            "schedule": ["every weekend"],
-            "stabilityDays": 1
-        },
-        {
-            "matchPackagePrefixes": ["software.amazon.awssdk"],
-            "schedule": ["on the first day of the month"]
-        },
-        {
-            "description": "Group Node dependencies",
-            "matchFileNames": ["package.json"],
-            "groupName": "Node dependencies"
-        },
-        {
-            "description": "Group Python dependencies",
-            "matchFileNames": ["**/requirements.txt"],
-            "groupName": "Python dependencies"
-        },
-        {
-            "description": "Group database-related dependencies",
-            "matchPackagePatterns": [
-                "flyway",
-                "jooq",
-                "postgresql",
-                "testcontainers",
+            matchUpdateTypes: [
+                'patch',
             ],
-            "groupName": "database dependencies"
-        },
-        {
-            "description": "Group Spring dependencies",
-            "matchPackagePatterns": ["spring"],
-            // Until https://github.com/springdoc/springdoc-openapi/issues/2639 is fixed
-            "excludePackagePatterns": ["springdoc-openapi"],
-            "groupName": "Spring dependencies"
-        },
-        {
-            "description": "Group GitHub Actions dependencies",
-            "matchFileNames": [
-                ".github/workflows/*.yml",
-                ".github/workflows/*.yaml"
+            schedule: [
+                'every weekend',
             ],
-            "groupName": "GitHub Actions"
+            minimumReleaseAge: '1 day',
+        },
+        {
+            schedule: [
+                'on the first day of the month',
+            ],
+            matchPackageNames: [
+                'software.amazon.awssdk{/,}**',
+            ],
+        },
+        {
+            description: 'Group Node dependencies',
+            matchFileNames: [
+                'package.json',
+            ],
+            groupName: 'Node dependencies',
+        },
+        {
+            description: 'Group Python dependencies',
+            matchFileNames: [
+                '**/requirements.txt',
+            ],
+            groupName: 'Python dependencies',
+        },
+        {
+            description: 'Group database-related dependencies',
+            groupName: 'database dependencies',
+            matchPackageNames: [
+                '/flyway/',
+                '/jooq/',
+                '/postgresql/',
+                '/testcontainers/',
+            ],
+        },
+        {
+            description: 'Group Spring dependencies',
+            groupName: 'Spring dependencies',
+            matchPackageNames: [
+                '/spring/',
+                '!/springdoc-openapi/',
+            ],
+        },
+        {
+            description: 'Group GitHub Actions dependencies',
+            matchFileNames: [
+                '.github/workflows/*.yml',
+                '.github/workflows/*.yaml',
+            ],
+            groupName: 'GitHub Actions',
         },
     ],
-    "prCreation": "not-pending",
-    "stabilityDays": 3
+    prCreation: 'not-pending',
+    minimumReleaseAge: '3 days',
 }
