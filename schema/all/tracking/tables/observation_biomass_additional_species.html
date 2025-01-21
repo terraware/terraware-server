@@ -302,12 +302,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>species_identifier</td>
-                                    <td>((((species_id IS NOT NULL) AND (species_name IS NULL)) OR ((species_id IS NULL) AND (species_name IS NOT NULL))))</td>
-                                </tr>
-                                <tr>
                                     <td>invasive_or_threatened</td>
                                     <td>(((is_invasive IS TRUE) OR (is_threatened IS TRUE)))</td>
+                                </tr>
+                                <tr>
+                                    <td>species_identifier</td>
+                                    <td>((((species_id IS NOT NULL) AND (species_name IS NULL)) OR ((species_id IS NULL) AND (species_name IS NOT NULL))))</td>
                                 </tr>
                                 </tbody>
                             </table>
