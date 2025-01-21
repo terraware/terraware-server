@@ -234,7 +234,7 @@
 <!-- planting_subzones -->
 <g id="node6" class="node"><title>planting_subzones</title>
 <g id="a_node6"><a xlink:href="../../tables/planting_subzones.html" xlink:title="planting_subzones" target="_top">
-<polygon fill="#ffffff" stroke="none" points="577,-432.147 577,-740.147 884,-740.147 884,-432.147 577,-432.147"/>
+<polygon fill="#ffffff" stroke="none" points="577,-410.147 577,-740.147 884,-740.147 884,-410.147 577,-410.147"/>
 <polygon fill="#f5f5f5" stroke="none" points="579.5,-716.147 579.5,-738.147 882.5,-738.147 882.5,-716.147 579.5,-716.147"/>
 <polygon fill="none" stroke="black" points="579.5,-716.147 579.5,-738.147 882.5,-738.147 882.5,-716.147 579.5,-716.147"/>
 <text text-anchor="start" x="584.5" y="-725.347" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">planting_subzones</text>
@@ -295,16 +295,20 @@
 <text text-anchor="start" x="599.5" y="-460.347" font-family="Helvetica,sans-Serif" font-size="11.00">planting_completed_time</text>
 <polygon fill="none" stroke="black" points="751.5,-452.147 751.5,-474.147 882.5,-474.147 882.5,-452.147 751.5,-452.147"/>
 <text text-anchor="start" x="754.5" y="-460.347" font-family="Helvetica,sans-Serif" font-size="11.00">timestamptz[35,6]</text>
-<polygon fill="#ffffff" stroke="none" points="579.5,-434.147 579.5,-452.147 655.5,-452.147 655.5,-434.147 579.5,-434.147"/>
-<polygon fill="none" stroke="black" points="579.5,-434.147 579.5,-452.147 655.5,-452.147 655.5,-434.147 579.5,-434.147"/>
-<text text-anchor="start" x="582.5" y="-440.347" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
-<polygon fill="#ffffff" stroke="none" points="655.5,-434.147 655.5,-452.147 751.5,-452.147 751.5,-434.147 655.5,-434.147"/>
-<polygon fill="none" stroke="black" points="655.5,-434.147 655.5,-452.147 751.5,-452.147 751.5,-434.147 655.5,-434.147"/>
-<text text-anchor="start" x="712.5" y="-440.347" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="751.5,-434.147 751.5,-452.147 882.5,-452.147 882.5,-434.147 751.5,-434.147"/>
-<polygon fill="none" stroke="black" points="751.5,-434.147 751.5,-452.147 882.5,-452.147 882.5,-434.147 751.5,-434.147"/>
-<text text-anchor="start" x="862.5" y="-440.347" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="578,-433.147 578,-739.147 883,-739.147 883,-433.147 578,-433.147"/>
+<polygon fill="none" stroke="black" points="579.5,-430.147 579.5,-452.147 751.5,-452.147 751.5,-430.147 579.5,-430.147"/>
+<text text-anchor="start" x="599.5" y="-438.347" font-family="Helvetica,sans-Serif" font-size="11.00">observed_time</text>
+<polygon fill="none" stroke="black" points="751.5,-430.147 751.5,-452.147 882.5,-452.147 882.5,-430.147 751.5,-430.147"/>
+<text text-anchor="start" x="754.5" y="-438.347" font-family="Helvetica,sans-Serif" font-size="11.00">timestamptz[35,6]</text>
+<polygon fill="#ffffff" stroke="none" points="579.5,-412.147 579.5,-430.147 655.5,-430.147 655.5,-412.147 579.5,-412.147"/>
+<polygon fill="none" stroke="black" points="579.5,-412.147 579.5,-430.147 655.5,-430.147 655.5,-412.147 579.5,-412.147"/>
+<text text-anchor="start" x="582.5" y="-418.347" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<polygon fill="#ffffff" stroke="none" points="655.5,-412.147 655.5,-430.147 751.5,-430.147 751.5,-412.147 655.5,-412.147"/>
+<polygon fill="none" stroke="black" points="655.5,-412.147 655.5,-430.147 751.5,-430.147 751.5,-412.147 655.5,-412.147"/>
+<text text-anchor="start" x="712.5" y="-418.347" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="751.5,-412.147 751.5,-430.147 882.5,-430.147 882.5,-412.147 751.5,-412.147"/>
+<polygon fill="none" stroke="black" points="751.5,-412.147 751.5,-430.147 882.5,-430.147 882.5,-412.147 751.5,-412.147"/>
+<text text-anchor="start" x="862.5" y="-418.347" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="578,-411.147 578,-739.147 883,-739.147 883,-411.147 578,-411.147"/>
 </a>
 </g>
 </g>
@@ -322,7 +326,7 @@
 </g>
 <!-- monitoring_plots&#45;&gt;public.users -->
 <g id="edge7" class="edge"><title>monitoring_plots:modified_by:w&#45;&gt;public.users:id:e</title>
-<path fill="none" stroke="black" d="M943.582,-1071.22C677.632,-1073.9 557.989,-1148.57 343,-983.147 128.749,-818.294 80.4048,-457.766 70.4152,-346.513"/>
+<path fill="none" stroke="black" d="M943.582,-1071.22C677.635,-1073.89 558.077,-1148.45 343,-983.147 128.661,-818.408 80.3767,-457.803 70.4085,-346.522"/>
 <polygon fill="black" stroke="black" points="950,-1071.19 958.018,-1074.75 954,-1071.17 958,-1071.15 958,-1071.15 958,-1071.15 954,-1071.17 957.982,-1067.55 950,-1071.19 950,-1071.19"/>
 <ellipse fill="none" stroke="black" cx="946.8" cy="-1071.2" rx="3.2" ry="3.2"/>
 </g>
@@ -618,9 +622,9 @@
 </g>
 <!-- plantings&#45;&gt;planting_sites -->
 <g id="edge26" class="edge"><title>plantings:planting_site_id:w&#45;&gt;planting_sites:id:e</title>
-<path fill="none" stroke="black" d="M965.39,-222.323C762.12,-227.291 729.353,-336.526 536,-422.147 450.461,-460.025 422.963,-457.593 343,-506.147 323.688,-517.873 326.094,-538.147 303.5,-538.147"/>
-<polygon fill="black" stroke="black" points="972.001,-222.243 980.043,-225.747 976,-222.195 980,-222.147 980,-222.147 980,-222.147 976,-222.195 979.957,-218.547 972.001,-222.243 972.001,-222.243"/>
-<ellipse fill="none" stroke="black" cx="968.801" cy="-222.282" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M965.425,-222.3C779.005,-226.281 739.496,-307.369 569,-400.147 553.517,-408.572 551.476,-413.708 536,-422.147 453.869,-466.936 422.963,-457.593 343,-506.147 323.688,-517.873 326.094,-538.147 303.5,-538.147"/>
+<polygon fill="black" stroke="black" points="972,-222.231 980.038,-225.747 976,-222.189 980,-222.147 980,-222.147 980,-222.147 976,-222.189 979.962,-218.547 972,-222.231 972,-222.231"/>
+<ellipse fill="none" stroke="black" cx="968.801" cy="-222.265" rx="3.2" ry="3.2"/>
 </g>
 <!-- plantings&#45;&gt;planting_subzones -->
 <g id="edge27" class="edge"><title>plantings:planting_site_id:w&#45;&gt;planting_subzones:planting_site_id.type:e</title>
