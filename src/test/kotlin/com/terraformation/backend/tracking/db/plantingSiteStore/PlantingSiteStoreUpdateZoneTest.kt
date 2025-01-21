@@ -23,6 +23,8 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
       val initialRow =
           PlantingZonesRow(
               areaHa = BigDecimal.ONE,
+              boundaryModifiedBy = createdBy,
+              boundaryModifiedTime = createdTime,
               boundary = multiPolygon(1),
               createdBy = createdBy,
               createdTime = createdTime,
@@ -74,6 +76,8 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
             targetPlantingDensity = newTargetPlantingDensity,
             variance = newVariance,
             // Not editable
+            boundaryModifiedBy = user.userId,
+            boundaryModifiedTime = Instant.ofEpochSecond(5000),
             createdBy = user.userId,
             createdTime = Instant.ofEpochSecond(5000),
             modifiedBy = createdBy,

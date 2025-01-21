@@ -117,7 +117,7 @@ class PlantingSiteModelTest {
     }
 
     private fun assertHasProblem(
-        site: PlantingSiteModel<*, *, *>,
+        site: AnyPlantingSiteModel,
         problem: PlantingSiteValidationFailure,
         message: String = "Expected problems list to contain entry",
     ) {
@@ -129,7 +129,7 @@ class PlantingSiteModelTest {
       }
     }
 
-    private fun assertHasNoProblems(site: PlantingSiteModel<*, *, *>) {
+    private fun assertHasNoProblems(site: AnyPlantingSiteModel) {
       val problems = site.validate()
 
       assertNull(problems, "Validation returned problems")

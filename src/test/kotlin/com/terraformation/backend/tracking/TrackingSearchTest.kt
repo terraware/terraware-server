@@ -303,6 +303,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                         listOf(
                             mapOf(
                                 "boundary" to postgisRenderGeoJson(plantingZoneGeometry),
+                                "boundaryModifiedTime" to "1970-01-01T00:00:00Z",
                                 "createdTime" to "1970-01-01T00:00:00Z",
                                 "id" to "$plantingZoneId2",
                                 "modifiedTime" to "1970-01-01T00:00:00Z",
@@ -477,6 +478,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingSeasons.isActive",
                 "plantingSeasons.startDate",
                 "plantingZones.boundary",
+                "plantingZones.boundaryModifiedTime",
                 "plantingZones.createdTime",
                 "plantingZones.id",
                 "plantingZones.modifiedTime",

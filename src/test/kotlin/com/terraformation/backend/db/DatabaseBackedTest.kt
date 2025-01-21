@@ -1807,11 +1807,15 @@ abstract class DatabaseBackedTest {
       targetPlantingDensity: BigDecimal? = row.targetPlantingDensity,
       variance: BigDecimal = row.variance ?: PlantingZoneModel.DEFAULT_VARIANCE,
       insertHistory: Boolean = true,
+      boundaryModifiedBy: UserId = row.boundaryModifiedBy ?: modifiedBy,
+      boundaryModifiedTime: Instant = row.boundaryModifiedTime ?: modifiedTime,
   ): PlantingZoneId {
     val rowWithDefaults =
         row.copy(
             areaHa = areaHa,
             boundary = boundary,
+            boundaryModifiedBy = boundaryModifiedBy,
+            boundaryModifiedTime = boundaryModifiedTime,
             createdBy = createdBy,
             createdTime = createdTime,
             errorMargin = errorMargin,

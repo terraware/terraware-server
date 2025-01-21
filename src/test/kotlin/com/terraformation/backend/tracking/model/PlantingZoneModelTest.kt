@@ -8,6 +8,7 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
+import java.time.Instant
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -774,6 +775,7 @@ class PlantingZoneModelTest {
       ExistingPlantingZoneModel(
           areaHa = BigDecimal.ONE,
           boundary = boundary,
+          boundaryModifiedTime = Instant.EPOCH,
           errorMargin = BigDecimal.ONE,
           extraPermanentClusters = 0,
           id = PlantingZoneId(1),
