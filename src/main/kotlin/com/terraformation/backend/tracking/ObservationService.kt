@@ -183,12 +183,12 @@ class ObservationService(
       ObservationPhotoType.Plot,
       ObservationPhotoType.Quadrat -> {
         if (position == null) {
-          throw IllegalArgumentException("Position is required for plot photo ${type.name}")
+          throw IllegalArgumentException("Position is required for photo of type ${type.name}")
         }
       }
       ObservationPhotoType.Soil -> {
         if (position != null) {
-          throw IllegalArgumentException("Position must be null for plot photo ${type.name}")
+          throw IllegalArgumentException("Position must be null for photo of type ${type.name}")
         }
       }
     }
