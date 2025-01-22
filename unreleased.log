@@ -1,3 +1,6 @@
+042a2c3f22c Updated translations from Phrase (#2764)
+b178b5c8563 Updated plot photo position requirements (#2767)
+4bb87adf535 SW-6462 Populate default text for unmodified sections (#2766)
 1d9d75db9a7 SW-6456 Track subzone observed time (#2763)
 23f2a129660 SW-6444 Track zone boundary modification time (#2758)
 7f17308792a Remove support for converting 25m plots (#2749)
