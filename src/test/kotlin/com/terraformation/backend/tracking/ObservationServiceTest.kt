@@ -728,7 +728,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 observationId,
                 plotId,
                 point(1),
-                ObservationPlotPosition.SouthwestCorner,
+                null,
                 byteArrayOf(1).inputStream(),
                 metadata,
                 ObservationPhotoType.Soil)
@@ -746,13 +746,47 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                     point(1),
                     ObservationPhotoType.Plot),
                 ObservationPhotosRecord(
-                    fileId2,
-                    observationId,
-                    plotId,
-                    ObservationPlotPosition.SouthwestCorner,
-                    point(1),
-                    ObservationPhotoType.Soil),
+                    fileId2, observationId, plotId, null, point(1), ObservationPhotoType.Soil),
             ))
+      }
+
+      @Test
+      fun `throws exception for missing photo position for Plot and Quadrat photos`() {
+        assertThrows<IllegalArgumentException> {
+          service.storePhoto(
+              observationId,
+              plotId,
+              point(1),
+              null,
+              byteArrayOf(1).inputStream(),
+              metadata,
+              ObservationPhotoType.Plot)
+        }
+
+        assertThrows<IllegalArgumentException> {
+          service.storePhoto(
+              observationId,
+              plotId,
+              point(1),
+              null,
+              byteArrayOf(1).inputStream(),
+              metadata,
+              ObservationPhotoType.Quadrat)
+        }
+      }
+
+      @Test
+      fun `throws exception for providing photo position for Soil photos`() {
+        assertThrows<IllegalArgumentException> {
+          service.storePhoto(
+              observationId,
+              plotId,
+              point(1),
+              ObservationPlotPosition.SoutheastCorner,
+              byteArrayOf(1).inputStream(),
+              metadata,
+              ObservationPhotoType.Soil)
+        }
       }
 
       @Test

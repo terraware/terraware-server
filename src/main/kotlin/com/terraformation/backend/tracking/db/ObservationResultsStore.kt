@@ -419,7 +419,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               ObservationMonitoringPlotPhotoModel(
                   fileId = record[OBSERVATION_PHOTOS.FILE_ID.asNonNullable()],
                   gpsCoordinates = record[photosGpsField.asNonNullable()] as Point,
-                  position = record[OBSERVATION_PHOTOS.POSITION_ID.asNonNullable()],
+                  position = record[OBSERVATION_PHOTOS.POSITION_ID],
                   type = record[OBSERVATION_PHOTOS.TYPE_ID.asNonNullable()],
               )
             }

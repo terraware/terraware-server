@@ -899,7 +899,7 @@ data class RecordedTreePayload(
 data class ObservationMonitoringPlotPhotoPayload(
     val fileId: FileId,
     val gpsCoordinates: Point,
-    val position: ObservationPlotPosition,
+    val position: ObservationPlotPosition?,
     val type: ObservationPhotoType,
 ) {
   constructor(
@@ -1491,7 +1491,7 @@ data class UpdatePlotObservationRequestPayload(
 
 data class UploadPlotPhotoRequestPayload(
     val gpsCoordinates: Point,
-    val position: ObservationPlotPosition,
+    val position: ObservationPlotPosition?,
     @Schema(
         description = "Type of observation plot photo.",
         defaultValue = "Plot",
