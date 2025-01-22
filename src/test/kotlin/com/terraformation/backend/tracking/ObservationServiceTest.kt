@@ -778,16 +778,14 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       @Test
       fun `throws exception for providing photo position for Soil photos`() {
         assertThrows<IllegalArgumentException> {
-          assertThrows<ObservationNotFoundException> {
-            service.storePhoto(
-                observationId,
-                plotId,
-                point(1),
-                ObservationPlotPosition.SoutheastCorner,
-                byteArrayOf(1).inputStream(),
-                metadata,
-                ObservationPhotoType.Soil)
-          }
+          service.storePhoto(
+              observationId,
+              plotId,
+              point(1),
+              ObservationPlotPosition.SoutheastCorner,
+              byteArrayOf(1).inputStream(),
+              metadata,
+              ObservationPhotoType.Soil)
         }
       }
 
