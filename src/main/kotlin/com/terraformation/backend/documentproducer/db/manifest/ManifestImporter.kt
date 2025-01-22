@@ -202,7 +202,9 @@ class ManifestImporter(
               parentVariableId = parentVariable?.variableId,
               parentVariableTypeId = if (parentVariable != null) VariableType.Section else null,
               renderHeading = !csvVariable.isNonNumberedSection))
+    }
 
+    private fun importDefaultSectionText(csvVariable: CsvSectionVariable) {
       if (csvVariable.defaultSectionText != null) {
         val regex =
             Regex("(.*?)(?:\\{\\{(?:[^}]*-\\s*)?([0-9]+)}}|\$)", RegexOption.DOT_MATCHES_ALL)
@@ -326,6 +328,7 @@ class ManifestImporter(
         importSectionVariable(csvVariable)
       }
 
+      importDefaultSectionText(csvVariable)
       importRecommendedVariables(csvVariable)
     }
 

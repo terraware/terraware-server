@@ -11,6 +11,7 @@ import com.terraformation.backend.db.docprod.VariableUsageType
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionDefaultValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableSectionsRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
+import com.terraformation.backend.db.docprod.tables.records.VariableSectionDefaultValuesRecord
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_MANIFEST_ENTRIES
 import com.terraformation.backend.documentproducer.db.manifest.ManifestImporter
 import com.terraformation.backend.documentproducer.db.variable.VariableImporter
@@ -655,6 +656,35 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(initialTop, updatedTop, "Top-level section should be reused")
       assertEquals(initialBottom, updatedBottom, "Top-level section should be reused")
+    }
+
+    @Test
+    fun `populates default value for new manifest if section has not changed`() {
+      val csv = header + "\nSection,A,,,,,Default Value"
+
+      val initialManifestId =
+          importer.import(inserted.documentTemplateId, sizedInputStream(csv)).newVersion
+      val updatedManifestId =
+          importer.import(inserted.documentTemplateId, sizedInputStream(csv)).newVersion
+      val variableId = getVariableByName("Section").id
+
+      assertTableEquals(
+          listOf(
+              VariableSectionDefaultValuesRecord(
+                  listPosition = 1,
+                  textValue = "Default Value",
+                  variableId = variableId,
+                  variableManifestId = initialManifestId,
+                  variableTypeId = VariableType.Section,
+              ),
+              VariableSectionDefaultValuesRecord(
+                  listPosition = 1,
+                  textValue = "Default Value",
+                  variableId = variableId,
+                  variableManifestId = updatedManifestId,
+                  variableTypeId = VariableType.Section,
+              ),
+          ))
     }
 
     private fun sizedInputStream(content: ByteArray) =
