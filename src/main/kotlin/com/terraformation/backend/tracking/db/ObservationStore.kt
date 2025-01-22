@@ -32,9 +32,9 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
-import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedBranchesRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
@@ -897,6 +897,20 @@ class ObservationStore(
             .execute()
       }
 
+      val biomassSpeciesRecords =
+          model.species.map {
+            ObservationBiomassSpeciesRecord(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                commonName = it.commonName,
+                isInvasive = it.isInvasive,
+                isThreatened = it.isThreatened,
+                scientificName = it.scientificName,
+                speciesId = it.speciesId,
+            )
+          }
+      dslContext.batchInsert(biomassSpeciesRecords).execute()
+
       val quadratDetailsRecords =
           model.quadrats.map { (position, details) ->
             ObservationBiomassQuadratDetailsRecord(
@@ -915,36 +929,21 @@ class ObservationStore(
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   positionId = position,
-                  speciesId = it.speciesId,
-                  speciesName = it.speciesName,
-                  isInvasive = it.isInvasive,
-                  isThreatened = it.isThreatened,
+                  speciesId = it.species.speciesId,
+                  speciesName = it.species.scientificName,
                   abundancePercent = it.abundancePercent,
               )
             }
           }
       dslContext.batchInsert(quadratSpeciesRecords).execute()
 
-      val additionalSpeciesRecords =
-          model.additionalSpecies.map {
-            ObservationBiomassAdditionalSpeciesRecord(
-                observationId = observationId,
-                monitoringPlotId = plotId,
-                speciesId = it.speciesId,
-                speciesName = it.speciesName,
-                isInvasive = it.isInvasive,
-                isThreatened = it.isThreatened,
-            )
-          }
-      dslContext.batchInsert(additionalSpeciesRecords).execute()
-
       val recordedTreesRecords =
           model.trees.map {
             RecordedTreesRecord(
                 observationId = observationId,
                 monitoringPlotId = plotId,
-                speciesId = it.speciesId,
-                speciesName = it.speciesName,
+                speciesId = it.species.speciesId,
+                speciesName = it.species.scientificName,
                 treeNumber = it.treeNumber,
                 treeGrowthFormId = it.treeGrowthForm,
                 isDead = it.isDead,

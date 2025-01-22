@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.model
 
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MangroveTide
@@ -9,27 +10,58 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.RecordedBranchId
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import java.math.BigDecimal
 import java.time.Instant
+import org.jooq.Record
 
 data class BiomassAdditionalSpeciesModel(
+    val speciesId: SpeciesId? = null,
+    val speciesName: String? = null,
+) {
+  fun validate(): List<String> {
+    return if (speciesId == null && speciesName == null) {
+      listOf("Additional species is missing an identifier")
+    } else if (speciesId != null && speciesName != null) {
+      listOf("Additional species with known ID should not have a speciesName")
+    } else {
+      emptyList()
+    }
+  }
+}
+
+data class BiomassSpeciesModel(
+    val commonName: String? = null,
     val isInvasive: Boolean,
     val isThreatened: Boolean,
     val speciesId: SpeciesId? = null,
-    val speciesName: String? = null,
-)
+    val scientificName: String? = null,
+) {
+
+  companion object {
+    fun of(record: Record): BiomassSpeciesModel {
+      return with(OBSERVATION_BIOMASS_SPECIES) {
+        BiomassSpeciesModel(
+            commonName = record[COMMON_NAME],
+            isInvasive = record[IS_INVASIVE.asNonNullable()],
+            isThreatened = record[IS_THREATENED.asNonNullable()],
+            scientificName = record[SCIENTIFIC_NAME],
+            speciesId = record[SPECIES_ID],
+        )
+      }
+    }
+  }
+}
 
 data class BiomassQuadratSpeciesModel(
     val abundancePercent: Int,
-    val isInvasive: Boolean,
-    val isThreatened: Boolean,
     val speciesId: SpeciesId? = null,
     val speciesName: String? = null,
 )
 
 data class BiomassQuadratModel(
     val description: String? = null,
-    val species: List<BiomassQuadratSpeciesModel>,
+    val species: Set<BiomassQuadratSpeciesModel>,
 )
 
 data class RecordedBranchModel<ID : RecordedBranchId?>(
@@ -80,7 +112,7 @@ data class BiomassDetailsModel<
     PlotId : MonitoringPlotId?,
     TreeId : RecordedTreeId?,
     BranchId : RecordedBranchId?>(
-    val additionalSpecies: List<BiomassAdditionalSpeciesModel> = emptyList(),
+    val additionalSpecies: Set<BiomassAdditionalSpeciesModel> = emptySet(),
     val description: String? = null,
     val forestType: BiomassForestType,
     val herbaceousCoverPercent: Int,
@@ -90,6 +122,7 @@ data class BiomassDetailsModel<
     val salinityPpt: BigDecimal? = null,
     val smallTreeCountRange: Pair<Int, Int>,
     val soilAssessment: String,
+    val species: Set<BiomassSpeciesModel> = emptySet(),
     val plotId: PlotId,
     val tide: MangroveTide? = null,
     val tideTime: Instant? = null,
@@ -99,6 +132,19 @@ data class BiomassDetailsModel<
   fun validate() {
     // TODO implement field validation according to acceptable ranges once finalized
     trees.forEach { it.validate() }
+
+    val allSpeciesIds =
+        additionalSpecies.mapNotNull { it.speciesId }.toSet() +
+            quadrats.flatMap { it.value.species }.mapNotNull { it.speciesId }
+
+    val allSpeciesNames =
+        additionalSpecies.mapNotNull { it.speciesName }.toSet() +
+            quadrats.flatMap { it.value.species }.mapNotNull { it.speciesName }
+
+    if (allSpeciesIds.all { speciesId -> species.none { it.speciesId == speciesId } } ||
+        allSpeciesNames.all { speciesName -> species.none { it.scientificName == speciesName } }) {
+      throw IllegalStateException("Missing species data.")
+    }
   }
 }
 
