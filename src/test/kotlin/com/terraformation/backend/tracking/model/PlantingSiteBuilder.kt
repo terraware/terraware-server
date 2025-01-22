@@ -138,11 +138,24 @@ private constructor(
       width: Int = this.width - (x - this.x),
       height: Int = this.height - (y - this.y),
       name: String? = null,
+      numPermanent: Int = PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS,
+      numTemporary: Int = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      extraPermanent: Int = 0,
       func: ZoneBuilder.() -> Unit = {}
   ): ExistingPlantingZoneModel {
     ++currentZoneId
 
-    val builder = ZoneBuilder(x, y, width, height, name ?: "Z$currentZoneId")
+    val builder =
+        ZoneBuilder(
+            x = x,
+            y = y,
+            width = width,
+            height = height,
+            name = name ?: "Z$currentZoneId",
+            numPermanentClusters = numPermanent,
+            numTemporaryPlots = numTemporary,
+            extraPermanentClusters = extraPermanent,
+        )
     builder.func()
 
     nextZoneX = x + width
@@ -157,12 +170,11 @@ private constructor(
       private val y: Int,
       private val width: Int,
       private val height: Int,
-      val name: String,
+      private val name: String,
+      private val numPermanentClusters: Int = PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS,
+      private val numTemporaryPlots: Int = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      private val extraPermanentClusters: Int = 0,
   ) {
-    var extraPermanentClusters: Int = 0
-    var numPermanentClusters: Int = PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS
-    var numTemporaryPlots: Int = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS
-
     private val boundary: MultiPolygon = rectangle(width, height, x, y)
     private var nextPermanentCluster = 1
     private var nextSubzoneX = x
@@ -255,7 +267,7 @@ private constructor(
         val plot =
             MonitoringPlotModel(
                 boundary = rectanglePolygon(size, size, x, y),
-                id = MonitoringPlotId(nextPlotNumber),
+                id = MonitoringPlotId(plotNumber),
                 isAdHoc = false,
                 isAvailable = isAvailable,
                 permanentCluster = cluster,
@@ -275,8 +287,9 @@ private constructor(
           y: Int = this.y,
           cluster: Int = nextPermanentCluster++,
           isAvailable: Boolean = true,
+          plotNumber: Long = nextPlotNumber,
       ): MonitoringPlotModel {
-        return plot(x, y, cluster, isAvailable = isAvailable)
+        return plot(x, y, cluster, isAvailable = isAvailable, plotNumber = plotNumber)
       }
     }
   }

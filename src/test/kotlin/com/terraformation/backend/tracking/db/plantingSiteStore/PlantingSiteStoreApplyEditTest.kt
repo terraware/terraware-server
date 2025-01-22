@@ -92,7 +92,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     @Test
     fun `creates new subzones in existing zones`() {
       runScenario(
-          initial = newSite(width = 500) { zone { numPermanentClusters = 7 } },
+          initial = newSite(width = 500) { zone(numPermanent = 7) },
           desired =
               newSite(width = 750) {
                 zone {
@@ -102,9 +102,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               },
           expected =
               newSite(width = 750) {
-                zone {
-                  extraPermanentClusters = 3
-                  numPermanentClusters = 10
+                zone(numPermanent = 10, extraPermanent = 3) {
                   subzone(width = 500)
                   subzone()
                 }
@@ -146,20 +144,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       runScenario(
           initial =
               newSite(width = 500) {
-                zone {
-                  numPermanentClusters = 7
-                  subzone { repeat(7) { cluster() } }
-                }
+                zone(numPermanent = 7) { subzone { repeat(7) { cluster() } } }
               },
           desired = newSite(width = 750),
-          expected =
-              newSite(width = 750) {
-                zone {
-                  extraPermanentClusters = 3
-                  numPermanentClusters = 10
-                  subzone()
-                }
-              },
+          expected = newSite(width = 750) { zone(numPermanent = 10, extraPermanent = 3) },
           expectedPlotCounts =
               listOf(
                   rectangle(x = 0, width = 500, height = 500) to 7,
@@ -217,8 +205,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                       nextPlotNumber =
                           identifierGenerator.generateNumericIdentifier(
                               inserted.organizationId, NumericIdentifierType.PlotNumber)
-                      zone {
-                        numPermanentClusters = 2
+                      zone(numPermanent = 2) {
                         subzone {
                           cluster()
                           cluster()
@@ -229,11 +216,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                 expected =
                     newSite(width = 1000) {
                       name = "Site $currentAttempt"
-                      zone {
-                        extraPermanentClusters = 2
-                        numPermanentClusters = 4
-                        subzone()
-                      }
+                      zone(numPermanent = 4, extraPermanent = 2)
                     },
                 expectedPlotCounts =
                     listOf(
@@ -356,8 +339,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       runScenario(
           initial =
               newSite {
-                zone {
-                  numPermanentClusters = 1
+                zone(numPermanent = 1) {
                   subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
                   subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
                 }
@@ -379,9 +361,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           },
           expected =
               newSite(height = 600) {
-                zone {
-                  extraPermanentClusters = 1
-                  numPermanentClusters = 2
+                zone(numPermanent = 2, extraPermanent = 1) {
                   subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
                   subzone(width = 250) { plantingCompletedTime = null }
                 }
@@ -394,8 +374,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       runScenario(
           initial =
               newSite {
-                zone {
-                  numPermanentClusters = 1
+                zone(numPermanent = 1) {
                   subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
                   subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
                 }
@@ -414,9 +393,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           },
           expected =
               newSite(width = 600) {
-                zone {
-                  extraPermanentClusters = 1
-                  numPermanentClusters = 2
+                zone(numPermanent = 2, extraPermanent = 1) {
                   subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
                   subzone(width = 350) { plantingCompletedTime = null }
                 }
@@ -429,22 +406,18 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       runScenario(
           initial =
               newSite(width = 1000) {
-                zone(width = 500) { subzone() }
-                zone(width = 500) { subzone() }
+                zone(width = 500)
+                zone(width = 500)
               },
           desired =
               newSite(width = 1100) {
-                zone(width = 500) { subzone() }
-                zone(width = 600) { subzone() }
+                zone(width = 500)
+                zone(width = 600)
               },
           expected =
               newSite(width = 1100) {
-                zone(width = 500) { subzone() }
-                zone(width = 600) {
-                  extraPermanentClusters = 1
-                  numPermanentClusters = 9
-                  subzone()
-                }
+                zone(width = 500)
+                zone(width = 600, numPermanent = 9, extraPermanent = 1)
               },
       )
 
@@ -460,12 +433,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           runScenario(
               newSite(),
               newSite(width = 600),
-              newSite(width = 600) {
-                zone {
-                  extraPermanentClusters = 1
-                  numPermanentClusters = 9
-                }
-              })
+              newSite(width = 600) { zone(numPermanent = 9, extraPermanent = 1) })
 
       val monitoringPlotIds =
           results.edited.plantingZones[0].plantingSubzones[0].monitoringPlots.map { it.id }.toSet()
