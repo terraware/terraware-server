@@ -929,8 +929,8 @@ class ObservationStore(
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   positionId = position,
-                  speciesId = it.species.speciesId,
-                  speciesName = it.species.scientificName,
+                  speciesId = it.speciesId,
+                  speciesName = it.speciesName,
                   abundancePercent = it.abundancePercent,
               )
             }
@@ -942,8 +942,8 @@ class ObservationStore(
             RecordedTreesRecord(
                 observationId = observationId,
                 monitoringPlotId = plotId,
-                speciesId = it.species.speciesId,
-                speciesName = it.species.scientificName,
+                speciesId = it.speciesId,
+                speciesName = it.speciesName,
                 treeNumber = it.treeNumber,
                 treeGrowthFormId = it.treeGrowthForm,
                 isDead = it.isDead,

@@ -228,18 +228,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 DSL.select(
                         POSITION_ID,
                         ABUNDANCE_PERCENT,
-                        OBSERVATION_BIOMASS_SPECIES.SPECIES_ID,
-                        OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME,
-                        OBSERVATION_BIOMASS_SPECIES.COMMON_NAME,
-                        OBSERVATION_BIOMASS_SPECIES.IS_INVASIVE,
-                        OBSERVATION_BIOMASS_SPECIES.IS_THREATENED,
+                        SPECIES_ID,
+                        SPECIES_NAME,
                     )
                     .from(this)
-                    .join(OBSERVATION_BIOMASS_SPECIES)
-                    .on(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID))
-                    .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_SPECIES.MONITORING_PLOT_ID))
-                    .and(SPECIES_ID.eq(OBSERVATION_BIOMASS_SPECIES.SPECIES_ID))
-                    .and(SPECIES_NAME.eq(OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME))
                     .where(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
                     .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
                     .orderBy(POSITION_ID, SPECIES_ID, SPECIES_NAME))
@@ -250,9 +242,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     records.map {
                       BiomassQuadratSpeciesModel(
                           abundancePercent = it[ABUNDANCE_PERCENT]!!,
-                          species = BiomassSpeciesModel.of(it),
+                          speciesId = it[SPECIES_ID],
+                          speciesName = it[SPECIES_NAME]
                       )
-                    }
+                    }.toSet()
                   }
             }
       }
@@ -298,20 +291,12 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                         IS_TRUNK,
                         POINT_OF_MEASUREMENT_M,
                         SHRUB_DIAMETER_CM,
+                        SPECIES_ID,
+                        SPECIES_NAME,
                         TREE_GROWTH_FORM_ID,
                         TREE_NUMBER,
-                        OBSERVATION_BIOMASS_SPECIES.SPECIES_ID,
-                        OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME,
-                        OBSERVATION_BIOMASS_SPECIES.COMMON_NAME,
-                        OBSERVATION_BIOMASS_SPECIES.IS_INVASIVE,
-                        OBSERVATION_BIOMASS_SPECIES.IS_THREATENED,
                     )
                     .from(this)
-                    .join(OBSERVATION_BIOMASS_SPECIES)
-                    .on(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_SPECIES.OBSERVATION_ID))
-                    .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_SPECIES.MONITORING_PLOT_ID))
-                    .and(SPECIES_ID.eq(OBSERVATION_BIOMASS_SPECIES.SPECIES_ID))
-                    .and(SPECIES_NAME.eq(OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME))
                     .where(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
                     .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
                     .orderBy(TREE_NUMBER))
@@ -327,7 +312,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     isTrunk = it[IS_TRUNK],
                     pointOfMeasurementM = it[POINT_OF_MEASUREMENT_M],
                     shrubDiameterCm = it[SHRUB_DIAMETER_CM],
-                    species = BiomassSpeciesModel.of(it),
+                    speciesId = it[SPECIES_ID],
+                    speciesName = it[SPECIES_NAME],
                     treeGrowthForm = it[TREE_GROWTH_FORM_ID]!!,
                     treeNumber = it[TREE_NUMBER]!!,
                 )
@@ -368,25 +354,15 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     ObservationPlotPosition.entries.associateWith {
                       BiomassQuadratModel(
                           description = quadratDescriptions[it],
-                          species = quadratSpecies[it] ?: emptyList(),
+                          species = quadratSpecies[it] ?: emptySet()
                       )
                     }
 
                 val allSpecies = record[biomassSpeciesMultiset]
                 val trees = record[recordedTreesMultiset]
 
-                // Additional species are not part of a recorded tree or quadrat herbaceous species
-                val additionalSpecies =
-                    allSpecies.filter { species ->
-                      val quadratHerbaceousSpecies =
-                          quadratSpecies.flatMap { it.value }.map { it.species }.toSet()
-                      val treeSpecies = trees.map { it.species }.toSet()
-
-                      !quadratHerbaceousSpecies.contains(species) && treeSpecies.contains(species)
-                    }
-
                 ExistingBiomassDetailsModel(
-                    additionalSpecies = additionalSpecies,
+                    additionalSpecies = emptySet(),
                     description = record[DESCRIPTION],
                     forestType = record[FOREST_TYPE_ID]!!,
                     herbaceousCoverPercent = record[HERBACEOUS_COVER_PERCENT]!!,

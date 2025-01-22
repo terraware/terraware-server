@@ -39,10 +39,10 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulatio
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
-import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassAdditionalSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotConditionsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
@@ -69,6 +69,7 @@ import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.BiomassAdditionalSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
+import com.terraformation.backend.tracking.model.BiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewObservationModel
@@ -2922,15 +2923,11 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val model =
           NewBiomassDetailsModel(
               additionalSpecies =
-                  listOf(
+                  setOf(
                       BiomassAdditionalSpeciesModel(
-                          isInvasive = true,
-                          isThreatened = false,
                           speciesId = speciesId3,
                       ),
                       BiomassAdditionalSpeciesModel(
-                          isInvasive = false,
-                          isThreatened = true,
                           speciesName = "Other additional species",
                       ),
                   ),
@@ -2945,28 +2942,22 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                           BiomassQuadratModel(
                               description = "NE description",
                               species =
-                                  listOf(
+                                setOf(
                                       BiomassQuadratSpeciesModel(
                                           abundancePercent = 40,
-                                          isInvasive = true,
-                                          isThreatened = false,
                                           speciesId = speciesId1,
                                       ))),
                       ObservationPlotPosition.NorthwestCorner to
                           BiomassQuadratModel(
                               description = "NW description",
                               species =
-                                  listOf(
+                                setOf(
                                       BiomassQuadratSpeciesModel(
                                           abundancePercent = 60,
-                                          isInvasive = false,
-                                          isThreatened = false,
                                           speciesId = speciesId2,
                                       ),
                                       BiomassQuadratSpeciesModel(
                                           abundancePercent = 5,
-                                          isInvasive = false,
-                                          isThreatened = true,
                                           speciesName = "Other quadrat species",
                                       ),
                                   )),
@@ -2974,17 +2965,15 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                           BiomassQuadratModel(
                               description = "SE description",
                               species =
-                                  listOf(
+                                  setOf(
                                       BiomassQuadratSpeciesModel(
                                           abundancePercent = 90,
-                                          isInvasive = true,
-                                          isThreatened = false,
                                           speciesId = speciesId1,
                                       ))),
                       ObservationPlotPosition.SouthwestCorner to
                           BiomassQuadratModel(
                               description = "SW description",
-                              species = emptyList(),
+                              species = emptySet(),
                           ),
                   ),
               salinityPpt = BigDecimal.valueOf(20),
@@ -3043,6 +3032,29 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                           treeGrowthForm = TreeGrowthForm.Tree,
                           treeNumber = 3,
                       )),
+              species = setOf(
+                  BiomassSpeciesModel(
+                      speciesId = speciesId1,
+                      isInvasive = false,
+                      isThreatened = false,
+                  ),
+                  BiomassSpeciesModel(
+                      speciesId = speciesId2,
+                      isInvasive = false,
+                      isThreatened = true,
+                  ),
+                  BiomassSpeciesModel(
+                      speciesId = speciesId3,
+                      isInvasive = true,
+                      isThreatened = false,
+                  ),
+                  BiomassSpeciesModel(
+                      scientificName = "Other additional species",
+                      commonName = "Other common species",
+                      isInvasive = false,
+                      isThreatened = true,
+                  ),
+              ),
               waterDepthCm = 2,
           )
 
@@ -3068,22 +3080,37 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertTableEquals(
           setOf(
-              ObservationBiomassAdditionalSpeciesRecord(
+              ObservationBiomassSpeciesRecord(
+                  observationId = observationId,
+                  monitoringPlotId = plotId,
+                  speciesId = speciesId1,
+                  isInvasive = false,
+                  isThreatened = false,
+              ),
+              ObservationBiomassSpeciesRecord(
+                  observationId = observationId,
+                  monitoringPlotId = plotId,
+                  speciesId = speciesId2,
+                  isInvasive = false,
+                  isThreatened = true,
+              ),
+              ObservationBiomassSpeciesRecord(
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   speciesId = speciesId3,
                   isInvasive = true,
                   isThreatened = false,
               ),
-              ObservationBiomassAdditionalSpeciesRecord(
+              ObservationBiomassSpeciesRecord(
                   observationId = observationId,
                   monitoringPlotId = plotId,
-                  speciesName = "Other additional species",
+                  scientificName = "Other additional species",
+                  commonName = "Other common species",
                   isInvasive = false,
                   isThreatened = true,
               ),
           ),
-          "Biomass additional species table")
+          "Biomass species table")
 
       assertTableEquals(
           setOf(
@@ -3117,8 +3144,6 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.NortheastCorner,
                   abundancePercent = 40,
-                  isInvasive = true,
-                  isThreatened = false,
                   speciesId = speciesId1,
               ),
               ObservationBiomassQuadratSpeciesRecord(
@@ -3126,8 +3151,6 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.NorthwestCorner,
                   abundancePercent = 60,
-                  isInvasive = false,
-                  isThreatened = false,
                   speciesId = speciesId2,
               ),
               ObservationBiomassQuadratSpeciesRecord(
@@ -3135,8 +3158,6 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.NorthwestCorner,
                   abundancePercent = 5,
-                  isInvasive = false,
-                  isThreatened = true,
                   speciesName = "Other quadrat species",
               ),
               ObservationBiomassQuadratSpeciesRecord(
@@ -3144,8 +3165,6 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.SoutheastCorner,
                   abundancePercent = 90,
-                  isInvasive = true,
-                  isThreatened = false,
                   speciesId = speciesId1,
               ),
           ),
