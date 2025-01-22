@@ -172,12 +172,26 @@ class ObservationService(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
       gpsCoordinates: Point,
-      position: ObservationPlotPosition,
+      position: ObservationPlotPosition?,
       data: InputStream,
       metadata: NewFileMetadata,
       type: ObservationPhotoType = ObservationPhotoType.Plot,
   ): FileId {
     requirePermissions { updateObservation(observationId) }
+
+    when (type) {
+      ObservationPhotoType.Plot,
+      ObservationPhotoType.Quadrat -> {
+        if (position == null) {
+          throw IllegalArgumentException("Position is required for plot photo ${type.name}")
+        }
+      }
+      ObservationPhotoType.Soil -> {
+        if (position != null) {
+          throw IllegalArgumentException("Position must be null for plot photo ${type.name}")
+        }
+      }
+    }
 
     val fileId =
         fileService.storeFile("observation", data, metadata) { fileId ->

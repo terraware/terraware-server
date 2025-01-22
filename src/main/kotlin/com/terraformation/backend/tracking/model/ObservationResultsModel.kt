@@ -26,7 +26,7 @@ import org.locationtech.jts.geom.Polygon
 data class ObservationMonitoringPlotPhotoModel(
     val fileId: FileId,
     val gpsCoordinates: Point,
-    val position: ObservationPlotPosition,
+    val position: ObservationPlotPosition?,
     val type: ObservationPhotoType,
 )
 
