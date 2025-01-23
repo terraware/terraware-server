@@ -282,6 +282,7 @@ import com.terraformation.backend.db.seedbank.tables.daos.ViabilityTestsDao
 import com.terraformation.backend.db.seedbank.tables.daos.WithdrawalsDao
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tracking.BiomassForestType
+import com.terraformation.backend.db.tracking.BiomassSpeciesId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.MangroveTide
@@ -318,6 +319,7 @@ import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotOverlaps
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationBiomassDetailsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationBiomassQuadratDetailsDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservationBiomassSpeciesDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPhotosDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
@@ -344,10 +346,10 @@ import com.terraformation.backend.db.tracking.tables.pojos.DraftPlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotOverlapsRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassAdditionalSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassDetailsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQuadratDetailsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQuadratSpeciesRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubzonesRow
@@ -368,7 +370,6 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedBranchesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_ADDITIONAL_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
@@ -540,6 +541,7 @@ abstract class DatabaseBackedTest {
       com.terraformation.backend.db.nursery.tables.daos.WithdrawalsDao by
       lazyDao()
   protected val observationBiomassDetailsDao: ObservationBiomassDetailsDao by lazyDao()
+  protected val observationBiomassSpeciesDao: ObservationBiomassSpeciesDao by lazyDao()
   protected val observationBiomassQuadratDetailsDao: ObservationBiomassQuadratDetailsDao by
       lazyDao()
   protected val observationPhotosDao: ObservationPhotosDao by lazyDao()
@@ -2373,28 +2375,6 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!.also { inserted.observationIds.add(it) }
   }
 
-  fun insertObservationBiomassAdditionalSpecies(
-      row: ObservationBiomassAdditionalSpeciesRow = ObservationBiomassAdditionalSpeciesRow(),
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      speciesId: SpeciesId? = row.speciesId,
-      speciesName: String? = row.speciesName,
-      isInvasive: Boolean = row.isInvasive ?: false,
-      isThreatened: Boolean = row.isThreatened ?: false,
-  ) {
-    with(OBSERVATION_BIOMASS_ADDITIONAL_SPECIES) {
-      dslContext
-          .insertInto(this)
-          .set(OBSERVATION_ID, observationId)
-          .set(MONITORING_PLOT_ID, monitoringPlotId)
-          .set(SPECIES_ID, speciesId)
-          .set(SPECIES_NAME, speciesName)
-          .set(IS_INVASIVE, isInvasive)
-          .set(IS_THREATENED, isThreatened)
-          .execute()
-    }
-  }
-
   fun insertObservationBiomassDetails(
       row: ObservationBiomassDetailsRow = ObservationBiomassDetailsRow(),
       observationId: ObservationId = inserted.observationId,
@@ -2431,6 +2411,32 @@ abstract class DatabaseBackedTest {
     observationBiomassDetailsDao.insert(rowWithDefaults)
   }
 
+  fun insertObservationBiomassSpecies(
+      row: ObservationBiomassSpeciesRow = ObservationBiomassSpeciesRow(),
+      observationId: ObservationId = row.observationId ?: inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      speciesId: SpeciesId? = row.speciesId,
+      scientificName: String? = row.scientificName,
+      commonName: String? = row.commonName,
+      isInvasive: Boolean = row.isInvasive ?: false,
+      isThreatened: Boolean = row.isThreatened ?: false,
+  ): BiomassSpeciesId {
+    val rowWithDefaults =
+        row.copy(
+            observationId = observationId,
+            monitoringPlotId = monitoringPlotId,
+            speciesId = speciesId,
+            scientificName = scientificName,
+            commonName = commonName,
+            isInvasive = isInvasive,
+            isThreatened = isThreatened,
+        )
+
+    observationBiomassSpeciesDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.biomassSpeciesIds.add(it) }
+  }
+
   fun insertObservationBiomassQuadratDetails(
       row: ObservationBiomassQuadratDetailsRow = ObservationBiomassQuadratDetailsRow(),
       observationId: ObservationId = row.observationId ?: inserted.observationId,
@@ -2454,35 +2460,17 @@ abstract class DatabaseBackedTest {
       observationId: ObservationId = row.observationId ?: inserted.observationId,
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.SouthwestCorner,
-      speciesId: SpeciesId? = row.speciesId,
-      speciesName: String? = row.speciesName,
-      isInvasive: Boolean = row.isInvasive ?: false,
-      isThreatened: Boolean = row.isThreatened ?: false,
+      biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId,
       abundancePercent: Int = row.abundancePercent ?: 0,
   ) {
-    val rowWithDefaults =
-        row.copy(
-            observationId = observationId,
-            monitoringPlotId = monitoringPlotId,
-            positionId = position,
-            speciesId = speciesId,
-            speciesName = speciesName,
-            isInvasive = isInvasive,
-            isThreatened = isThreatened,
-            abundancePercent = abundancePercent,
-        )
-
     with(OBSERVATION_BIOMASS_QUADRAT_SPECIES) {
       dslContext
           .insertInto(this)
-          .set(OBSERVATION_ID, rowWithDefaults.observationId)
-          .set(MONITORING_PLOT_ID, rowWithDefaults.monitoringPlotId)
-          .set(POSITION_ID, rowWithDefaults.positionId)
-          .set(SPECIES_ID, rowWithDefaults.speciesId)
-          .set(SPECIES_NAME, rowWithDefaults.speciesName)
-          .set(IS_INVASIVE, rowWithDefaults.isInvasive)
-          .set(IS_THREATENED, rowWithDefaults.isThreatened)
-          .set(ABUNDANCE_PERCENT, rowWithDefaults.abundancePercent)
+          .set(OBSERVATION_ID, observationId)
+          .set(MONITORING_PLOT_ID, monitoringPlotId)
+          .set(POSITION_ID, position)
+          .set(BIOMASS_SPECIES_ID, biomassSpeciesId)
+          .set(ABUNDANCE_PERCENT, abundancePercent)
           .execute()
     }
   }
@@ -2612,8 +2600,7 @@ abstract class DatabaseBackedTest {
       row: RecordedTreesRow = RecordedTreesRow(),
       observationId: ObservationId = row.observationId ?: inserted.observationId,
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      speciesId: SpeciesId? = row.speciesId,
-      speciesName: String? = row.speciesName,
+      biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId,
       treeNumber: Int = row.treeNumber ?: nextTreeNumber.getOrDefault(observationId, 1),
       treeGrowthForm: TreeGrowthForm = row.treeGrowthFormId ?: TreeGrowthForm.Tree,
       isDead: Boolean = row.isDead ?: false,
@@ -2628,8 +2615,7 @@ abstract class DatabaseBackedTest {
         row.copy(
             observationId = observationId,
             monitoringPlotId = monitoringPlotId,
-            speciesId = speciesId,
-            speciesName = speciesName,
+            biomassSpeciesId = biomassSpeciesId,
             treeNumber = treeNumber,
             treeGrowthFormId = treeGrowthForm,
             isDead = isDead,
@@ -3776,6 +3762,7 @@ abstract class DatabaseBackedTest {
     val applicationIds = mutableListOf<ApplicationId>()
     val automationIds = mutableListOf<AutomationId>()
     val batchIds = mutableListOf<BatchId>()
+    val biomassSpeciesIds = mutableListOf<BiomassSpeciesId>()
     val cohortIds = mutableListOf<CohortId>()
     val deliverableIds = mutableListOf<DeliverableId>()
     val deliveryIds = mutableListOf<DeliveryId>()
@@ -3834,6 +3821,9 @@ abstract class DatabaseBackedTest {
 
     val batchId
       get() = batchIds.last()
+
+    val biomassSpeciesId
+      get() = biomassSpeciesIds.last()
 
     val cohortId
       get() = cohortIds.last()

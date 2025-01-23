@@ -396,14 +396,17 @@ COMMENT ON COLUMN tracking.observations.planting_site_history_id IS 'Which versi
 COMMENT ON COLUMN tracking.observations.start_date IS 'First day of the observation. This is either the first day of the month following the end of the planting season, or 6 months after that day.';
 COMMENT ON COLUMN tracking.observations.upcoming_notification_sent_time IS 'When the notification that the observation is starting in 1 month was sent. Null if the notification has not been sent yet.';
 
-COMMENT ON TABLE tracking.observation_biomass_additional_species IS 'Additional threatened/invasive herbaceous species at a monitoring plot of a biomass observation';
-
 COMMENT ON TABLE tracking.observation_biomass_details IS 'Recorded data for a biomass observation.';
-COMMENT ON COLUMN tracking.observation_biomass_details.water_depth_cm IS 'Depth of water in centimeters (cm). Must be non-null if forest type is "Mangrove".';
-COMMENT ON COLUMN tracking.observation_biomass_details.salinity_ppt IS 'Salinity of water in parts per thousand (ppt). Must be non-null if forest type is "Mangrove".';
 COMMENT ON COLUMN tracking.observation_biomass_details.ph IS 'Acidity of water in pH. Must only exists if forest type is "Mangrove".';
+COMMENT ON COLUMN tracking.observation_biomass_details.salinity_ppt IS 'Salinity of water in parts per thousand (ppt). Must be non-null if forest type is "Mangrove".';
 COMMENT ON COLUMN tracking.observation_biomass_details.tide_id IS 'High/low tide during observation. Must be non-null if forest type is "Mangrove".';
 COMMENT ON COLUMN tracking.observation_biomass_details.tide_time IS 'Time when the tide is recorded. Must be non-null if forest type is "Mangrove".';
+COMMENT ON COLUMN tracking.observation_biomass_details.water_depth_cm IS 'Depth of water in centimeters (cm). Must be non-null if forest type is "Mangrove".';
+
+COMMENT ON TABLE tracking.observation_biomass_species IS 'Herbaceous and tree species data for a biomass observation.';
+COMMENT ON COLUMN tracking.observation_biomass_species.common_name IS 'The user-supplied common name of the plant''s species. Null if ID is known.';
+COMMENT ON COLUMN tracking.observation_biomass_species.scientific_name IS 'The user-supplied scientific name of the plant''s species. Must be provided if ID is null. Null if ID is known.';
+COMMENT ON COLUMN tracking.observation_biomass_species.species_id IS 'The ID of the plant''s species, if known.';
 
 COMMENT ON TABLE tracking.observation_biomass_quadrat_details IS 'Details of a biomass observation at each quadrat of a monitoring plot.';
 
@@ -511,7 +514,6 @@ COMMENT ON TABLE tracking.recorded_branches IS 'Recorded branches of a tree in a
 COMMENT ON COLUMN tracking.recorded_branches.tree_id IS 'Foreign key ID of the tree the branch belongs to. The tree must have growth form "Tree".';
 
 COMMENT ON COLUMN tracking.recorded_branches.branch_number IS 'A system-assigned incremental number starting at 1 for accounting branches.';
-
 
 COMMENT ON TABLE tracking.recorded_plants IS 'Information about individual plants observed in monitoring plots.';
 COMMENT ON COLUMN tracking.recorded_plants.species_id IS 'If certainty is "Known," the ID of the plant''s species. Null for other certainty values.';
