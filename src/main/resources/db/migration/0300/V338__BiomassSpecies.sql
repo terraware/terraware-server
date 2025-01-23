@@ -48,13 +48,11 @@ CREATE INDEX ON tracking.observation_biomass_tree_species(monitoring_plot_id);
 DROP TABLE tracking.observation_biomass_additional_species;
 
 ALTER TABLE tracking.observation_biomass_quadrat_species
-    DROP CONSTRAINT species_identifier,
     DROP COLUMN is_invasive,
     DROP COLUMN is_threatened,
     ADD FOREIGN KEY (observation_id, monitoring_plot_id, species_id, species_name)
         REFERENCES tracking.observation_biomass_herbaceous_species(observation_id, monitoring_plot_id, species_id, scientific_name);
 
 ALTER TABLE tracking.recorded_trees
-    DROP CONSTRAINT species_identifier,
     ADD FOREIGN KEY (observation_id, monitoring_plot_id, species_id, species_name)
         REFERENCES tracking.observation_biomass_tree_species(observation_id, monitoring_plot_id, species_id, scientific_name);
