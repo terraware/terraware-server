@@ -15,7 +15,8 @@ CREATE TABLE tracking.observation_biomass_herbaceous_species (
         REFERENCES tracking.observation_biomass_details (observation_id, monitoring_plot_id)
         ON DELETE CASCADE,
 
-    UNIQUE (observation_id, monitoring_plot_id, species_id, scientific_name)
+    UNIQUE(observation_id, monitoring_plot_id, species_id),
+    UNIQUE(observation_id, monitoring_plot_id, scientific_name)
 );
 
 CREATE INDEX ON tracking.observation_biomass_herbaceous_species(observation_id);
@@ -38,7 +39,8 @@ CREATE TABLE tracking.observation_biomass_tree_species (
          REFERENCES tracking.observation_biomass_details (observation_id, monitoring_plot_id)
          ON DELETE CASCADE,
 
-     UNIQUE (observation_id, monitoring_plot_id, species_id, scientific_name)
+     UNIQUE(observation_id, monitoring_plot_id, species_id),
+     UNIQUE(observation_id, monitoring_plot_id, scientific_name)
 );
 
 CREATE INDEX ON tracking.observation_biomass_tree_species(observation_id);
@@ -50,9 +52,13 @@ DROP TABLE tracking.observation_biomass_additional_species;
 ALTER TABLE tracking.observation_biomass_quadrat_species
     DROP COLUMN is_invasive,
     DROP COLUMN is_threatened,
-    ADD FOREIGN KEY (observation_id, monitoring_plot_id, species_id, species_name)
-        REFERENCES tracking.observation_biomass_herbaceous_species(observation_id, monitoring_plot_id, species_id, scientific_name);
+    ADD FOREIGN KEY (observation_id, monitoring_plot_id, species_id)
+        REFERENCES tracking.observation_biomass_herbaceous_species(observation_id, monitoring_plot_id, species_id),
+    ADD FOREIGN KEY (observation_id, monitoring_plot_id, species_name)
+        REFERENCES tracking.observation_biomass_herbaceous_species(observation_id, monitoring_plot_id, scientific_name);
 
 ALTER TABLE tracking.recorded_trees
-    ADD FOREIGN KEY (observation_id, monitoring_plot_id, species_id, species_name)
-        REFERENCES tracking.observation_biomass_tree_species(observation_id, monitoring_plot_id, species_id, scientific_name);
+    ADD FOREIGN KEY (observation_id, monitoring_plot_id, species_id)
+        REFERENCES tracking.observation_biomass_tree_species(observation_id, monitoring_plot_id, species_id),
+    ADD FOREIGN KEY (observation_id, monitoring_plot_id, species_name)
+        REFERENCES tracking.observation_biomass_tree_species(observation_id, monitoring_plot_id, scientific_name);
