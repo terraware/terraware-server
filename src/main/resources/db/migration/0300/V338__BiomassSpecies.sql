@@ -45,7 +45,7 @@ CREATE TABLE tracking.observation_biomass_quadrat_species (
         REFERENCES tracking.observation_biomass_species (observation_id, monitoring_plot_id, id)
         ON DELETE CASCADE,
 
-    UNIQUE (observation_id, monitoring_plot_id, position_id, biomass_species_id)
+    PRIMARY KEY (observation_id, monitoring_plot_id, position_id, biomass_species_id)
 );
 
 CREATE INDEX ON tracking.observation_biomass_quadrat_species(monitoring_plot_id);
