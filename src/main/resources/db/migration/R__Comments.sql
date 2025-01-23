@@ -403,14 +403,20 @@ COMMENT ON COLUMN tracking.observation_biomass_details.tide_id IS 'High/low tide
 COMMENT ON COLUMN tracking.observation_biomass_details.tide_time IS 'Time when the tide is recorded. Must be non-null if forest type is "Mangrove".';
 COMMENT ON COLUMN tracking.observation_biomass_details.water_depth_cm IS 'Depth of water in centimeters (cm). Must be non-null if forest type is "Mangrove".';
 
-COMMENT ON TABLE tracking.observation_biomass_species IS 'All species data for a biomass observation.';
-COMMENT ON COLUMN tracking.observation_biomass_species.common_name IS 'The user-supplied common name of the plant''s species. Null if ID is known.';
-COMMENT ON COLUMN tracking.observation_biomass_species.scientific_name IS 'The user-supplied scientific name of the plant''s species. Must be provided if ID is null. Null if ID is known.';
-COMMENT ON COLUMN tracking.observation_biomass_species.species_id IS 'The ID of the plant''s species, if known.';
+COMMENT ON TABLE tracking.observation_biomass_herbaceous_species IS 'Herbaceous species data for a biomass observation.';
+COMMENT ON COLUMN tracking.observation_biomass_herbaceous_species.common_name IS 'The user-supplied common name of the plant''s species. Null if ID is known.';
+COMMENT ON COLUMN tracking.observation_biomass_herbaceous_species.scientific_name IS 'The user-supplied scientific name of the plant''s species. Must be provided if ID is null. Null if ID is known.';
+COMMENT ON COLUMN tracking.observation_biomass_herbaceous_species.species_id IS 'The ID of the plant''s species, if known.';
 
 COMMENT ON TABLE tracking.observation_biomass_quadrat_details IS 'Details of a biomass observation at each quadrat of a monitoring plot.';
 
 COMMENT ON TABLE tracking.observation_biomass_quadrat_species IS 'Herbaceous species at each quadrat of a monitoring plot of a biomass observation';
+
+COMMENT ON TABLE tracking.observation_biomass_tree_species IS 'Tree species data for a biomass observation.';
+COMMENT ON COLUMN tracking.observation_biomass_tree_species.common_name IS 'The user-supplied common name of the plant''s species. Null if ID is known.';
+COMMENT ON COLUMN tracking.observation_biomass_tree_species.scientific_name IS 'The user-supplied scientific name of the plant''s species. Must be provided if ID is null. Null if ID is known.';
+COMMENT ON COLUMN tracking.observation_biomass_tree_species.species_id IS 'The ID of the plant''s species, if known.';
+
 
 COMMENT ON TABLE tracking.observed_plot_coordinates IS 'Observed GPS coordinates in monitoring plots. Does not include photo coordinates or coordinates of recorded plants.';
 

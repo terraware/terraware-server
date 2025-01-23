@@ -47,7 +47,6 @@ import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
-import com.terraformation.backend.tracking.model.BiomassAdditionalSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
@@ -652,25 +651,6 @@ data class AssignedPlotPayload(
   )
 }
 
-data class BiomassAdditionalSpeciesPayload(
-    val speciesId: SpeciesId?,
-    val speciesName: String?,
-) {
-  constructor(
-      model: BiomassAdditionalSpeciesModel
-  ) : this(
-      speciesId = model.speciesId,
-      speciesName = model.speciesName,
-  )
-
-  fun toModel(): BiomassAdditionalSpeciesModel {
-    return BiomassAdditionalSpeciesModel(
-        speciesId = speciesId,
-        speciesName = speciesName,
-    )
-  }
-}
-
 data class BiomassSpeciesPayload(
     val commonName: String?,
     val isInvasive: Boolean,
@@ -700,11 +680,15 @@ data class BiomassSpeciesPayload(
 }
 
 data class BiomassMeasurementPayload(
-    val additionalSpecies: List<BiomassAdditionalSpeciesPayload>,
     val description: String?,
     val forestType: BiomassForestType,
     @Schema(minimum = "0", maximum = "100") //
     val herbaceousCoverPercent: Int,
+    @Schema(
+        description =
+            "List of herbaceous species. Must include all recorded quadrat and additional species. " +
+                "Species not assigned to a quadrat will be saved as an additional herbaceous species.")
+    val herbaceousSpecies: List<BiomassSpeciesPayload>,
     @Schema(description = "Required for Mangrove forest.", minimum = "0", maximum = "14")
     val ph: BigDecimal?,
     val quadrats: List<BiomassQuadratPayload>,
@@ -713,26 +697,23 @@ data class BiomassMeasurementPayload(
     @Schema(minimum = "0") val smallTreeCountLow: Int,
     @Schema(minimum = "smallTreeCountHigh") val smallTreeCountHigh: Int,
     val soilAssessment: String,
-    @Schema(
-        description =
-            "List of species for this biomass observation. Must include all quadrat herbaceous " +
-                "species, additional herbaceous species, and recorded tree species.")
-    val species: List<BiomassSpeciesPayload>,
     @Schema(description = "Low or high tide. Required for Mangrove forest.")
     val tide: MangroveTide?,
     @Schema(description = "Time when ide is observed. Required for Mangrove forest.")
     val tideTime: Instant?,
     val trees: List<RecordedTreePayload>,
+    @Schema(description = "List of tree species. Must include all recorded tree species.")
+    val treeSpecies: List<BiomassSpeciesPayload>,
     @Schema(description = "Measured in centimeters. Required for Mangrove forest.")
     val waterDepth: Int?,
 ) {
   constructor(
       model: ExistingBiomassDetailsModel
   ) : this(
-      additionalSpecies = model.additionalSpecies.map { BiomassAdditionalSpeciesPayload(it) },
       description = model.description,
       forestType = model.forestType,
       herbaceousCoverPercent = model.herbaceousCoverPercent,
+      herbaceousSpecies = model.herbaceousSpecies.map { BiomassSpeciesPayload(it) },
       ph = model.ph,
       quadrats =
           model.quadrats.map { (position, quadrat) -> BiomassQuadratPayload(quadrat, position) },
@@ -740,29 +721,29 @@ data class BiomassMeasurementPayload(
       smallTreeCountLow = model.smallTreeCountRange.first,
       smallTreeCountHigh = model.smallTreeCountRange.second,
       soilAssessment = model.soilAssessment,
-      species = model.species.map { BiomassSpeciesPayload(it) },
       tide = model.tide,
       tideTime = model.tideTime,
+      treeSpecies = model.treeSpecies.map { BiomassSpeciesPayload(it) },
       trees = model.trees.map { RecordedTreePayload(it) },
       waterDepth = model.waterDepthCm,
   )
 
   fun toModel(): NewBiomassDetailsModel {
     return NewBiomassDetailsModel(
-        additionalSpecies = additionalSpecies.map { it.toModel() }.toSet(),
         description = description,
         forestType = forestType,
         herbaceousCoverPercent = herbaceousCoverPercent,
+        herbaceousSpecies = herbaceousSpecies.map { it.toModel() }.toSet(),
         observationId = null,
         ph = ph,
         quadrats = quadrats.associateBy { it.position }.mapValues { it.value.toModel() },
         salinityPpt = salinity,
         smallTreeCountRange = smallTreeCountLow to smallTreeCountHigh,
         soilAssessment = soilAssessment,
-        species = species.map { it.toModel() }.toSet(),
         plotId = null,
         tide = tide,
         tideTime = tideTime,
+        treeSpecies = treeSpecies.map { it.toModel() }.toSet(),
         trees = trees.mapIndexed { index, tree -> tree.toModel(index + 1) },
         waterDepthCm = waterDepth,
     )

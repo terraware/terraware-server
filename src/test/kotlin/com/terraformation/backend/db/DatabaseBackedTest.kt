@@ -345,9 +345,10 @@ import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotHistori
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotOverlapsRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassDetailsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassHerbaceousSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQuadratDetailsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQuadratSpeciesRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassSpeciesRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassTreeSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubzonesRow
@@ -369,8 +370,9 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedBranchesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_HERBACEOUS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_TREE_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
@@ -2373,30 +2375,6 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!.also { inserted.observationIds.add(it) }
   }
 
-  fun insertObservationBiomassSpecies(
-      row: ObservationBiomassSpeciesRow = ObservationBiomassSpeciesRow(),
-      observationId: ObservationId = row.observationId ?: inserted.observationId,
-      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      speciesId: SpeciesId? = row.speciesId,
-      scientificName: String? = row.scientificName,
-      commonName: String? = row.commonName,
-      isInvasive: Boolean = row.isInvasive ?: false,
-      isThreatened: Boolean = row.isThreatened ?: false,
-  ) {
-    with(OBSERVATION_BIOMASS_SPECIES) {
-      dslContext
-          .insertInto(this)
-          .set(OBSERVATION_ID, observationId)
-          .set(MONITORING_PLOT_ID, monitoringPlotId)
-          .set(SPECIES_ID, speciesId)
-          .set(SCIENTIFIC_NAME, scientificName)
-          .set(COMMON_NAME, commonName)
-          .set(IS_INVASIVE, isInvasive)
-          .set(IS_THREATENED, isThreatened)
-          .execute()
-    }
-  }
-
   fun insertObservationBiomassDetails(
       row: ObservationBiomassDetailsRow = ObservationBiomassDetailsRow(),
       observationId: ObservationId = inserted.observationId,
@@ -2431,6 +2409,30 @@ abstract class DatabaseBackedTest {
         )
 
     observationBiomassDetailsDao.insert(rowWithDefaults)
+  }
+
+  fun insertObservationBiomassHerbaceousSpecies(
+      row: ObservationBiomassHerbaceousSpeciesRow = ObservationBiomassHerbaceousSpeciesRow(),
+      observationId: ObservationId = row.observationId ?: inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      speciesId: SpeciesId? = row.speciesId,
+      scientificName: String? = row.scientificName,
+      commonName: String? = row.commonName,
+      isInvasive: Boolean = row.isInvasive ?: false,
+      isThreatened: Boolean = row.isThreatened ?: false,
+  ) {
+    with(OBSERVATION_BIOMASS_HERBACEOUS_SPECIES) {
+      dslContext
+          .insertInto(this)
+          .set(OBSERVATION_ID, observationId)
+          .set(MONITORING_PLOT_ID, monitoringPlotId)
+          .set(SPECIES_ID, speciesId)
+          .set(SCIENTIFIC_NAME, scientificName)
+          .set(COMMON_NAME, commonName)
+          .set(IS_INVASIVE, isInvasive)
+          .set(IS_THREATENED, isThreatened)
+          .execute()
+    }
   }
 
   fun insertObservationBiomassQuadratDetails(
@@ -2469,6 +2471,30 @@ abstract class DatabaseBackedTest {
           .set(SPECIES_ID, speciesId)
           .set(SPECIES_NAME, speciesName)
           .set(ABUNDANCE_PERCENT, abundancePercent)
+          .execute()
+    }
+  }
+
+  fun insertObservationBiomassTreeSpecies(
+      row: ObservationBiomassTreeSpeciesRow = ObservationBiomassTreeSpeciesRow(),
+      observationId: ObservationId = row.observationId ?: inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      speciesId: SpeciesId? = row.speciesId,
+      scientificName: String? = row.scientificName,
+      commonName: String? = row.commonName,
+      isInvasive: Boolean = row.isInvasive ?: false,
+      isThreatened: Boolean = row.isThreatened ?: false,
+  ) {
+    with(OBSERVATION_BIOMASS_TREE_SPECIES) {
+      dslContext
+          .insertInto(this)
+          .set(OBSERVATION_ID, observationId)
+          .set(MONITORING_PLOT_ID, monitoringPlotId)
+          .set(SPECIES_ID, speciesId)
+          .set(SCIENTIFIC_NAME, scientificName)
+          .set(COMMON_NAME, commonName)
+          .set(IS_INVASIVE, isInvasive)
+          .set(IS_THREATENED, isThreatened)
           .execute()
     }
   }

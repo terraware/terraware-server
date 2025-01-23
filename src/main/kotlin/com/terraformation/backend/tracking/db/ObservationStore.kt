@@ -32,9 +32,10 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassHerbaceousSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
-import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassSpeciesRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassTreeSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedBranchesRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
@@ -897,9 +898,9 @@ class ObservationStore(
             .execute()
       }
 
-      val biomassSpeciesRecords =
-          model.species.map {
-            ObservationBiomassSpeciesRecord(
+      val biomassHerbaceousSpeciesRecords =
+          model.herbaceousSpecies.map {
+            ObservationBiomassHerbaceousSpeciesRecord(
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 commonName = it.commonName,
@@ -909,7 +910,7 @@ class ObservationStore(
                 speciesId = it.speciesId,
             )
           }
-      dslContext.batchInsert(biomassSpeciesRecords).execute()
+      dslContext.batchInsert(biomassHerbaceousSpeciesRecords).execute()
 
       val quadratDetailsRecords =
           model.quadrats.map { (position, details) ->
@@ -936,6 +937,20 @@ class ObservationStore(
             }
           }
       dslContext.batchInsert(quadratSpeciesRecords).execute()
+
+      val biomassTreeSpeciesRecords =
+          model.treeSpecies.map {
+            ObservationBiomassTreeSpeciesRecord(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                commonName = it.commonName,
+                isInvasive = it.isInvasive,
+                isThreatened = it.isThreatened,
+                scientificName = it.scientificName,
+                speciesId = it.speciesId,
+            )
+          }
+      dslContext.batchInsert(biomassTreeSpeciesRecords).execute()
 
       val recordedTreesRecords =
           model.trees.map {

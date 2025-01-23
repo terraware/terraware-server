@@ -40,9 +40,10 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonePopula
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassDetailsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassHerbaceousSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
-import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassSpeciesRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassTreeSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotConditionsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
@@ -66,7 +67,6 @@ import com.terraformation.backend.tracking.db.ObservationTestHelper.ObservationP
 import com.terraformation.backend.tracking.db.ObservationTestHelper.ObservationZone
 import com.terraformation.backend.tracking.db.ObservationTestHelper.PlantTotals
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
-import com.terraformation.backend.tracking.model.BiomassAdditionalSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
@@ -2916,24 +2916,35 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `inserts biomass detail, quadrant species and details, trees and branches`() {
-      val speciesId1 = insertSpecies()
-      val speciesId2 = insertSpecies()
-      val speciesId3 = insertSpecies()
+      val herbaceousSpeciesId1 = insertSpecies()
+      val herbaceousSpeciesId2 = insertSpecies()
+      val treeSpeciesId1 = insertSpecies()
+      val treeSpeciesId2 = insertSpecies()
 
       val model =
           NewBiomassDetailsModel(
-              additionalSpecies =
-                  setOf(
-                      BiomassAdditionalSpeciesModel(
-                          speciesId = speciesId3,
-                      ),
-                      BiomassAdditionalSpeciesModel(
-                          speciesName = "Other additional species",
-                      ),
-                  ),
               description = "description",
               forestType = BiomassForestType.Mangrove,
               herbaceousCoverPercent = 10,
+              herbaceousSpecies =
+                  setOf(
+                      BiomassSpeciesModel(
+                          speciesId = herbaceousSpeciesId1,
+                          isInvasive = false,
+                          isThreatened = false,
+                      ),
+                      BiomassSpeciesModel(
+                          speciesId = herbaceousSpeciesId2,
+                          isInvasive = false,
+                          isThreatened = true,
+                      ),
+                      BiomassSpeciesModel(
+                          scientificName = "Other herbaceous species",
+                          commonName = "Common herb",
+                          isInvasive = true,
+                          isThreatened = false,
+                      ),
+                  ),
               observationId = null,
               ph = BigDecimal.valueOf(6.5),
               quadrats =
@@ -2942,23 +2953,23 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                           BiomassQuadratModel(
                               description = "NE description",
                               species =
-                                setOf(
+                                  setOf(
                                       BiomassQuadratSpeciesModel(
                                           abundancePercent = 40,
-                                          speciesId = speciesId1,
+                                          speciesId = herbaceousSpeciesId1,
                                       ))),
                       ObservationPlotPosition.NorthwestCorner to
                           BiomassQuadratModel(
                               description = "NW description",
                               species =
-                                setOf(
+                                  setOf(
                                       BiomassQuadratSpeciesModel(
                                           abundancePercent = 60,
-                                          speciesId = speciesId2,
+                                          speciesId = herbaceousSpeciesId2,
                                       ),
                                       BiomassQuadratSpeciesModel(
                                           abundancePercent = 5,
-                                          speciesName = "Other quadrat species",
+                                          speciesName = "Other herbaceous species",
                                       ),
                                   )),
                       ObservationPlotPosition.SoutheastCorner to
@@ -2968,7 +2979,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                                   setOf(
                                       BiomassQuadratSpeciesModel(
                                           abundancePercent = 90,
-                                          speciesId = speciesId1,
+                                          speciesId = herbaceousSpeciesId1,
                                       ))),
                       ObservationPlotPosition.SouthwestCorner to
                           BiomassQuadratModel(
@@ -2982,13 +2993,32 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
               plotId = null,
               tide = MangroveTide.High,
               tideTime = Instant.ofEpochSecond(123),
+              treeSpecies =
+                  setOf(
+                      BiomassSpeciesModel(
+                          speciesId = treeSpeciesId1,
+                          isInvasive = false,
+                          isThreatened = true,
+                      ),
+                      BiomassSpeciesModel(
+                          speciesId = treeSpeciesId2,
+                          isInvasive = false,
+                          isThreatened = false,
+                      ),
+                      BiomassSpeciesModel(
+                          scientificName = "Other tree species",
+                          commonName = "Common tree",
+                          isInvasive = false,
+                          isThreatened = false,
+                      ),
+                  ),
               trees =
                   listOf(
                       NewRecordedTreeModel(
                           id = null,
                           isDead = false,
                           shrubDiameterCm = 25,
-                          speciesId = speciesId1,
+                          speciesId = treeSpeciesId1,
                           treeGrowthForm = TreeGrowthForm.Shrub,
                           treeNumber = 1,
                       ),
@@ -3028,33 +3058,10 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                           heightM = BigDecimal.TEN,
                           isDead = false,
                           isTrunk = true,
-                          speciesId = speciesId2,
+                          speciesId = treeSpeciesId2,
                           treeGrowthForm = TreeGrowthForm.Tree,
                           treeNumber = 3,
                       )),
-              species = setOf(
-                  BiomassSpeciesModel(
-                      speciesId = speciesId1,
-                      isInvasive = false,
-                      isThreatened = false,
-                  ),
-                  BiomassSpeciesModel(
-                      speciesId = speciesId2,
-                      isInvasive = false,
-                      isThreatened = true,
-                  ),
-                  BiomassSpeciesModel(
-                      speciesId = speciesId3,
-                      isInvasive = true,
-                      isThreatened = false,
-                  ),
-                  BiomassSpeciesModel(
-                      scientificName = "Other additional species",
-                      commonName = "Other common species",
-                      isInvasive = false,
-                      isThreatened = true,
-                  ),
-              ),
               waterDepthCm = 2,
           )
 
@@ -3080,37 +3087,30 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertTableEquals(
           setOf(
-              ObservationBiomassSpeciesRecord(
+              ObservationBiomassHerbaceousSpeciesRecord(
                   observationId = observationId,
                   monitoringPlotId = plotId,
-                  speciesId = speciesId1,
+                  speciesId = herbaceousSpeciesId1,
                   isInvasive = false,
                   isThreatened = false,
               ),
-              ObservationBiomassSpeciesRecord(
+              ObservationBiomassHerbaceousSpeciesRecord(
                   observationId = observationId,
                   monitoringPlotId = plotId,
-                  speciesId = speciesId2,
+                  speciesId = herbaceousSpeciesId2,
                   isInvasive = false,
                   isThreatened = true,
               ),
-              ObservationBiomassSpeciesRecord(
+              ObservationBiomassHerbaceousSpeciesRecord(
                   observationId = observationId,
                   monitoringPlotId = plotId,
-                  speciesId = speciesId3,
+                  scientificName = "Other herbaceous species",
+                  commonName = "Common herb",
                   isInvasive = true,
                   isThreatened = false,
               ),
-              ObservationBiomassSpeciesRecord(
-                  observationId = observationId,
-                  monitoringPlotId = plotId,
-                  scientificName = "Other additional species",
-                  commonName = "Other common species",
-                  isInvasive = false,
-                  isThreatened = true,
-              ),
           ),
-          "Biomass species table")
+          "Biomass herbaceous species table")
 
       assertTableEquals(
           setOf(
@@ -3144,34 +3144,60 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.NortheastCorner,
                   abundancePercent = 40,
-                  speciesId = speciesId1,
+                  speciesId = herbaceousSpeciesId1,
               ),
               ObservationBiomassQuadratSpeciesRecord(
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.NorthwestCorner,
                   abundancePercent = 60,
-                  speciesId = speciesId2,
+                  speciesId = herbaceousSpeciesId2,
               ),
               ObservationBiomassQuadratSpeciesRecord(
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.NorthwestCorner,
                   abundancePercent = 5,
-                  speciesName = "Other quadrat species",
+                  speciesName = "Other herbaceous species",
               ),
               ObservationBiomassQuadratSpeciesRecord(
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   positionId = ObservationPlotPosition.SoutheastCorner,
                   abundancePercent = 90,
-                  speciesId = speciesId1,
+                  speciesId = herbaceousSpeciesId1,
               ),
           ),
           "Biomass quadrat species table")
 
-      val treeIdsByNumber = recordedTreesDao.findAll().associate { it.treeNumber to it.id }
+      assertTableEquals(
+          setOf(
+              ObservationBiomassTreeSpeciesRecord(
+                  observationId = observationId,
+                  monitoringPlotId = plotId,
+                  speciesId = treeSpeciesId1,
+                  isInvasive = false,
+                  isThreatened = true,
+              ),
+              ObservationBiomassTreeSpeciesRecord(
+                  observationId = observationId,
+                  monitoringPlotId = plotId,
+                  speciesId = treeSpeciesId2,
+                  isInvasive = false,
+                  isThreatened = false,
+              ),
+              ObservationBiomassTreeSpeciesRecord(
+                  observationId = observationId,
+                  monitoringPlotId = plotId,
+                  scientificName = "Other tree species",
+                  commonName = "Common tree",
+                  isInvasive = false,
+                  isThreatened = false,
+              ),
+          ),
+          "Biomass tree species table")
 
+      val treeIdsByNumber = recordedTreesDao.findAll().associate { it.treeNumber to it.id }
       val branchIdsByNumber = recordedBranchesDao.findAll().associate { it.branchNumber to it.id }
 
       assertTableEquals(
@@ -3182,7 +3208,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   monitoringPlotId = plotId,
                   isDead = false,
                   shrubDiameterCm = 25,
-                  speciesId = speciesId1,
+                  speciesId = treeSpeciesId1,
                   treeGrowthFormId = TreeGrowthForm.Shrub,
                   treeNumber = 1,
               ),
@@ -3207,7 +3233,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   heightM = BigDecimal.TEN,
                   isDead = false,
                   isTrunk = true,
-                  speciesId = speciesId2,
+                  speciesId = treeSpeciesId2,
                   treeGrowthFormId = TreeGrowthForm.Tree,
                   treeNumber = 3,
               ),
