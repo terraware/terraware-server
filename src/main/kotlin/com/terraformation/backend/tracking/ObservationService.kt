@@ -179,18 +179,12 @@ class ObservationService(
   ): FileId {
     requirePermissions { updateObservation(observationId) }
 
-    when (type) {
-      ObservationPhotoType.Plot,
-      ObservationPhotoType.Quadrat -> {
-        if (position == null) {
-          throw IllegalArgumentException("Position is required for photo of type ${type.name}")
-        }
-      }
-      ObservationPhotoType.Soil -> {
-        if (position != null) {
-          throw IllegalArgumentException("Position must be null for photo of type ${type.name}")
-        }
-      }
+    if (type == ObservationPhotoType.Quadrat && position == null) {
+      throw IllegalArgumentException("Position is required for a quadrat photo")
+    }
+
+    if (type == ObservationPhotoType.Soil && position != null) {
+      throw IllegalArgumentException("Position must be null for a soil photo")
     }
 
     val fileId =

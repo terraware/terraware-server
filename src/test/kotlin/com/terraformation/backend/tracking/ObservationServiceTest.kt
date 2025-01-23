@@ -751,18 +751,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
-      fun `throws exception for missing photo position for Plot and Quadrat photos`() {
-        assertThrows<IllegalArgumentException> {
-          service.storePhoto(
-              observationId,
-              plotId,
-              point(1),
-              null,
-              byteArrayOf(1).inputStream(),
-              metadata,
-              ObservationPhotoType.Plot)
-        }
-
+      fun `throws exception for missing photo position for Quadrat photos`() {
         assertThrows<IllegalArgumentException> {
           service.storePhoto(
               observationId,
