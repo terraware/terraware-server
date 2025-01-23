@@ -317,6 +317,9 @@ val ID_WRAPPERS =
             ),
         "tracking" to
             listOf(
+                IdWrapper(
+                    "BiomassSpeciesId",
+                    listOf("observation_biomass_species\\.id", ".*\\.biomass_species_id")),
                 IdWrapper("DeliveryId", listOf("deliveries\\.id", ".*\\.delivery_id")),
                 IdWrapper("DraftPlantingSiteId", listOf("draft_planting_sites\\.id")),
                 IdWrapper(

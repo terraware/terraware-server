@@ -12,6 +12,11 @@ import com.terraformation.backend.db.tracking.TreeGrowthForm
 import java.math.BigDecimal
 import java.time.Instant
 
+data class BiomassSpeciesKey(
+    val speciesId: SpeciesId? = null,
+    val scientificName: String? = null,
+)
+
 data class BiomassSpeciesModel(
     val commonName: String? = null,
     val isInvasive: Boolean,
@@ -82,17 +87,16 @@ data class BiomassDetailsModel<
     val description: String? = null,
     val forestType: BiomassForestType,
     val herbaceousCoverPercent: Int,
-    val herbaceousSpecies: Set<BiomassSpeciesModel> = emptySet(),
     val observationId: ID,
     val ph: BigDecimal? = null,
     val quadrats: Map<ObservationPlotPosition, BiomassQuadratModel> = emptyMap(),
     val salinityPpt: BigDecimal? = null,
     val smallTreeCountRange: Pair<Int, Int>,
     val soilAssessment: String,
+    val species: Set<BiomassSpeciesModel> = emptySet(),
     val plotId: PlotId,
     val tide: MangroveTide? = null,
     val tideTime: Instant? = null,
-    val treeSpecies: Set<BiomassSpeciesModel> = emptySet(),
     val trees: List<RecordedTreeModel<TreeId, BranchId>> = emptyList(),
     val waterDepthCm: Int? = null,
 ) {
