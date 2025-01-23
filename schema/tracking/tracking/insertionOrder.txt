@@ -21,6 +21,7 @@ planting_subzone_histories
 monitoring_plot_histories
 observation_plots
 observation_biomass_details
+observation_biomass_species
 deliveries
 recorded_trees
 planting_seasons
@@ -36,11 +37,10 @@ observed_plot_species_totals
 observed_site_species_totals
 observed_subzone_species_totals
 observed_zone_species_totals
-observation_biomass_additional_species
 observation_biomass_quadrat_details
-observation_biomass_quadrat_species
 observed_plot_coordinates
 observation_photos
 recorded_plants
+observation_biomass_quadrat_species
 plantings
 draft_planting_sites
