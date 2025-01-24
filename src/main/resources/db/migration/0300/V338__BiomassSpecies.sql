@@ -60,4 +60,3 @@ ALTER TABLE tracking.recorded_trees
     ADD FOREIGN KEY (observation_id, monitoring_plot_id, biomass_species_id)
         REFERENCES tracking.observation_biomass_species (observation_id, monitoring_plot_id, id)
         ON DELETE CASCADE;
-;
