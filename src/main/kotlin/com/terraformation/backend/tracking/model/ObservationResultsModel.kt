@@ -151,9 +151,9 @@ interface BaseMonitoringResult {
 
   /**
    * Estimated planting density for the region based on the observed planting densities of
-   * monitoring plots. Only present if planting is completed.
+   * monitoring plots.
    */
-  val plantingDensity: Int?
+  val plantingDensity: Int
 }
 
 data class ObservationPlantingSubzoneResultsModel(
@@ -164,7 +164,7 @@ data class ObservationPlantingSubzoneResultsModel(
     override val mortalityRateStdDev: Int?,
     val monitoringPlots: List<ObservationMonitoringPlotResultsModel>,
     override val plantingCompleted: Boolean,
-    override val plantingDensity: Int?,
+    override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
     val plantingSubzoneId: PlantingSubzoneId,
     /** List of species result used for this rollup */
@@ -189,7 +189,7 @@ data class ObservationPlantingZoneResultsModel(
     override val mortalityRate: Int,
     override val mortalityRateStdDev: Int?,
     override val plantingCompleted: Boolean,
-    override val plantingDensity: Int?,
+    override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
     val plantingZoneId: PlantingZoneId,
@@ -218,7 +218,7 @@ data class ObservationResultsModel(
     val observationId: ObservationId,
     val observationType: ObservationType,
     override val plantingCompleted: Boolean,
-    override val plantingDensity: Int?,
+    override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
     val plantingSiteId: PlantingSiteId,
     val plantingZones: List<ObservationPlantingZoneResultsModel>,
@@ -238,7 +238,7 @@ data class ObservationPlantingZoneRollupResultsModel(
     override val mortalityRate: Int,
     override val mortalityRateStdDev: Int?,
     override val plantingCompleted: Boolean,
-    override val plantingDensity: Int?,
+    override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
     /** List of subzone observation results used for this rollup */
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
@@ -278,17 +278,12 @@ data class ObservationPlantingZoneRollupResultsModel(
                 (it.totalLive + it.totalExisting) > 0
           }
 
-      val plantingDensity =
-          if (plantingCompleted) {
-            monitoringPlots.map { it.plantingDensity }.average().roundToInt()
-          } else {
-            null
-          }
+      val plantingDensity = monitoringPlots.map { it.plantingDensity }.average().roundToInt()
       val plantingDensityStdDev =
           monitoringPlots.map { it.plantingDensity }.calculateStandardDeviation()
 
       val estimatedPlants =
-          if (plantingDensity != null) {
+          if (plantingCompleted) {
             areaHa.toDouble() * plantingDensity
           } else {
             null
@@ -327,7 +322,7 @@ data class ObservationRollupResultsModel(
     override val mortalityRate: Int,
     override val mortalityRateStdDev: Int?,
     override val plantingCompleted: Boolean,
-    override val plantingDensity: Int?,
+    override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
     val plantingSiteId: PlantingSiteId,
     /** List of subzone observation results used for this rollup */
@@ -367,18 +362,13 @@ data class ObservationRollupResultsModel(
                 (it.totalLive + it.totalExisting) > 0
           }
 
-      val plantingDensity =
-          if (plantingCompleted) {
-            monitoringPlots.map { it.plantingDensity }.average().roundToInt()
-          } else {
-            null
-          }
+      val plantingDensity = monitoringPlots.map { it.plantingDensity }.average().roundToInt()
 
       val plantingDensityStdDev =
           monitoringPlots.map { it.plantingDensity }.calculateStandardDeviation()
 
       val estimatedPlants =
-          if (plantingDensity != null) {
+          if (plantingCompleted) {
             nonNullZoneResults.sumOf { it.estimatedPlants ?: 0 }
           } else {
             null
