@@ -24,9 +24,14 @@ data class Shapefile(
         // to open secondary files in the same directory as the main shapefile.
         ZipFile(zipFilePath.toFile()).use { zipFile ->
           zipFile.stream().forEach { entry ->
-            zipFile.getInputStream(entry).use { inputStream ->
-              val destinationPath = tempDir.resolve(entry.name.substringAfterLast('/'))
-              Files.copy(inputStream, destinationPath)
+            val fileName = entry.name.substringAfterLast('/')
+
+            // Ignore hidden files such as AppleDouble metadata.
+            if (!entry.isDirectory && !fileName.startsWith('.')) {
+              zipFile.getInputStream(entry).use { inputStream ->
+                val destinationPath = tempDir.resolve(fileName)
+                Files.copy(inputStream, destinationPath)
+              }
             }
           }
         }
