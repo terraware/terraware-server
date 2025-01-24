@@ -1,3 +1,5 @@
+4cc99bc8268 Ignore irrelevant entries in zipped shapefiles (#2772)
+beb602503e7 SW-6469 Always calculate planting density (#2773)
 84dae64b1eb Migrate config .github/renovate.json5 (#2765)
 7de2832d8e3 Clear recorded trees table before migration (#2771)
 ed685e6404c SW-6455 Implemented Biomass Species tables (#2770)
