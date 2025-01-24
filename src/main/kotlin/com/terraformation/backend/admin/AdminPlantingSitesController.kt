@@ -27,8 +27,14 @@ import com.terraformation.backend.tracking.db.PlantingSiteImporter
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.ShapefilesInvalidException
+import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
+import com.terraformation.backend.tracking.edit.PlantingSiteEdit
+import com.terraformation.backend.tracking.edit.PlantingSiteEditBehavior
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV1
+import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV2
+import com.terraformation.backend.tracking.edit.PlantingSubzoneEdit
+import com.terraformation.backend.tracking.edit.PlantingZoneEdit
 import com.terraformation.backend.tracking.mapbox.MapboxService
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewObservationModel
@@ -36,6 +42,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
+import com.terraformation.backend.util.nearlyCoveredBy
 import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Hidden
 import java.math.BigDecimal
@@ -470,6 +477,7 @@ class AdminPlantingSitesController(
         val calculator: PlantingSiteEditCalculator =
             when (editVersion) {
               1 -> PlantingSiteEditCalculatorV1(existing, desired, plantedSubzoneIds)
+              2 -> PlantingSiteEditCalculatorV2(existing, desired)
               else -> throw IllegalArgumentException("Unrecognized edit version $editVersion")
             }
 
@@ -477,33 +485,8 @@ class AdminPlantingSitesController(
 
         if (edit.problems.isEmpty()) {
           if (dryRun) {
-            val zoneChanges =
-                edit.plantingZoneEdits.map { zoneEdit ->
-                  zoneEdit.existingModel?.let { existingModel ->
-                    "Zone ${existingModel.name} change in plantable area: " +
-                        "${zoneEdit.areaHaDifference.toPlainString()}ha"
-                  } ?: "Create zone ${zoneEdit.desiredModel!!.name}"
-                }
-
-            val affectedObservationIds =
-                observationStore.fetchActiveObservationIds(
-                    plantingSiteId, edit.plantingZoneEdits.mapNotNull { it.existingModel?.id })
-            val affectedObservationsMessage =
-                if (affectedObservationIds.isNotEmpty()) {
-                  "Plots may be replaced in observations with these IDs: " +
-                      affectedObservationIds.joinToString(", ")
-                } else {
-                  null
-                }
-
-            val changes =
-                listOfNotNull(
-                    affectedObservationsMessage,
-                    "Total change in plantable area: ${edit.areaHaDifference.toPlainString()}ha",
-                ) + zoneChanges
-
             redirectAttributes.successMessage = "Would make the following changes:"
-            redirectAttributes.successDetails = changes
+            redirectAttributes.successDetails = describeSiteEdit(edit)
           } else {
             plantingSiteStore.applyPlantingSiteEdit(
                 edit,
@@ -742,6 +725,97 @@ class AdminPlantingSitesController(
     }
 
     return redirectToPlantingSite(plantingSiteId)
+  }
+
+  private fun describeSiteEdit(edit: PlantingSiteEdit): List<String> {
+    log.info("Site edit ${objectMapper.writeValueAsString(edit)}")
+    val zoneChanges = edit.plantingZoneEdits.flatMap { zoneEdit -> describeZoneEdit(zoneEdit) }
+
+    val affectedObservationIds =
+        observationStore.fetchActiveObservationIds(
+            edit.existingModel.id, edit.plantingZoneEdits.mapNotNull { it.existingModel?.id })
+    val affectedObservationsMessage =
+        if (affectedObservationIds.isNotEmpty()) {
+          val prefix =
+              when (edit.behavior) {
+                PlantingSiteEditBehavior.Restricted ->
+                    "Plots may be replaced in observations with these IDs: "
+                PlantingSiteEditBehavior.Flexible ->
+                    "The following observations will be abandoned because they have incomplete " +
+                        "plots in edited planting zones: "
+              }
+          prefix + affectedObservationIds.joinToString(", ")
+        } else {
+          null
+        }
+
+    return listOfNotNull(
+        affectedObservationsMessage,
+        "Total change in plantable area: ${edit.areaHaDifference.toPlainString()}ha",
+    ) + zoneChanges
+  }
+
+  private fun describeZoneEdit(zoneEdit: PlantingZoneEdit): List<String> {
+    val desiredModel = zoneEdit.desiredModel
+    val existingModel = zoneEdit.existingModel
+    val existingBoundary = existingModel?.boundary
+    val zoneName = existingModel?.name ?: desiredModel!!.name
+    val prefix = "Zone $zoneName:"
+    val monitoringPlotCreations =
+        zoneEdit.monitoringPlotEdits.map { plotEdit ->
+          val existingOrNew =
+              if (existingBoundary != null && plotEdit.region.nearlyCoveredBy(existingBoundary)) {
+                "existing"
+              } else {
+                "new"
+              }
+          "$prefix Create permanent cluster ${plotEdit.permanentCluster} in $existingOrNew area"
+        }
+    val subzoneEdits = zoneEdit.plantingSubzoneEdits.flatMap { describeSubzoneEdit(zoneEdit, it) }
+
+    return listOf(
+        if (existingModel != null) {
+          if (desiredModel != null) {
+            val overlapPercent =
+                "%.2f"
+                    .format(
+                        existingModel.boundary.intersection(desiredModel.boundary).area /
+                            desiredModel.boundary.area * 100.0)
+            val areaDifference = zoneEdit.areaHaDifference.toPlainString()
+            "$prefix Change in plantable area: ${areaDifference}ha, overlap $overlapPercent%"
+          } else {
+            "$prefix Delete"
+          }
+        } else {
+          "$prefix Create"
+        }) + monitoringPlotCreations + subzoneEdits
+  }
+
+  private fun describeSubzoneEdit(
+      zoneEdit: PlantingZoneEdit,
+      subzoneEdit: PlantingSubzoneEdit
+  ): List<String> {
+    val zoneName = zoneEdit.existingModel?.name ?: zoneEdit.desiredModel!!.name
+    val subzoneName = subzoneEdit.existingModel?.name ?: subzoneEdit.desiredModel!!.name
+    val prefix = "Zone $zoneName subzone $subzoneName:"
+    val monitoringPlotEdits =
+        subzoneEdit.monitoringPlotEdits.map { plotEdit ->
+          val permanentCluster = plotEdit.permanentCluster
+          val plotId = plotEdit.monitoringPlotId
+          when (plotEdit) {
+            is MonitoringPlotEdit.Create ->
+                "$prefix BUG! Create plot $permanentCluster (should be at zone level)"
+            is MonitoringPlotEdit.Adopt ->
+                if (permanentCluster != null) {
+                  "$prefix Adopt plot ID $plotId as cluster $permanentCluster"
+                } else {
+                  "$prefix Adopt plot ID $plotId without cluster number"
+                }
+            is MonitoringPlotEdit.Eject -> "$prefix Eject plot ID $plotId"
+          }
+        }
+
+    return monitoringPlotEdits
   }
 
   private fun redirectToOrganization(organizationId: OrganizationId) =
