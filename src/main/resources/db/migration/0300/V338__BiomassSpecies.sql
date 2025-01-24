@@ -50,6 +50,7 @@ CREATE TABLE tracking.observation_biomass_quadrat_species (
 
 CREATE INDEX ON tracking.observation_biomass_quadrat_species(monitoring_plot_id);
 
+DELETE FROM tracking.recorded_trees;
 ALTER TABLE tracking.recorded_trees
     DROP CONSTRAINT species_identifier,
     DROP COLUMN species_id,
