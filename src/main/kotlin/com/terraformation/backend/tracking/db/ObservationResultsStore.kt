@@ -682,16 +682,16 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
               val plantingCompleted = record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME] != null
               val plantingDensity =
-                  if (plantingCompleted && monitoringPlots.isNotEmpty()) {
+                  if (monitoringPlots.isNotEmpty()) {
                     monitoringPlots.map { it.plantingDensity }.average()
                   } else {
-                    null
+                    0.0
                   }
               val plantingDensityStdDev =
                   monitoringPlots.map { it.plantingDensity }.calculateStandardDeviation()
 
               val estimatedPlants =
-                  if (plantingDensity != null && areaHa != null) {
+                  if (plantingCompleted && areaHa != null) {
                     areaHa.toDouble() * plantingDensity
                   } else {
                     null
@@ -705,7 +705,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   mortalityRate = mortalityRate,
                   mortalityRateStdDev = mortalityRateStdDev,
                   plantingCompleted = plantingCompleted,
-                  plantingDensity = plantingDensity?.roundToInt(),
+                  plantingDensity = plantingDensity.roundToInt(),
                   plantingDensityStdDev = plantingDensityStdDev,
                   plantingSubzoneId = record[PLANTING_SUBZONES.ID.asNonNullable()],
                   species = species,
@@ -798,10 +798,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
               val plantingCompleted = record[zonePlantingCompletedField]
               val plantingDensity =
-                  if (plantingCompleted && monitoringPlots.isNotEmpty()) {
+                  if (monitoringPlots.isNotEmpty()) {
                     monitoringPlots.map { it.plantingDensity }.average()
                   } else {
-                    null
+                    0.0
                   }
               val plantingDensityStdDev =
                   subzones
@@ -810,7 +810,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       .calculateStandardDeviation()
 
               val estimatedPlants =
-                  if (plantingDensity != null && areaHa != null) {
+                  if (plantingCompleted && areaHa != null) {
                     areaHa.toDouble() * plantingDensity
                   } else {
                     null
@@ -823,7 +823,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   mortalityRate = mortalityRate,
                   mortalityRateStdDev = mortalityRateStdDev,
                   plantingCompleted = plantingCompleted,
-                  plantingDensity = plantingDensity?.roundToInt(),
+                  plantingDensity = plantingDensity.roundToInt(),
                   plantingDensityStdDev = plantingDensityStdDev,
                   plantingSubzones = subzones,
                   plantingZoneId = record[PLANTING_ZONES.ID.asNonNullable()],
@@ -881,10 +881,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
           val monitoringPlots = zones.flatMap { it.plantingSubzones }.flatMap { it.monitoringPlots }
           val plantingDensity =
-              if (plantingCompleted && monitoringPlots.isNotEmpty()) {
+              if (monitoringPlots.isNotEmpty()) {
                 monitoringPlots.map { it.plantingDensity }.average()
               } else {
-                null
+                0.0
               }
           val plantingDensityStdDev =
               monitoringPlots.map { it.plantingDensity }.calculateStandardDeviation()
@@ -913,7 +913,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               observationId = record[OBSERVATIONS.ID.asNonNullable()],
               observationType = record[OBSERVATIONS.OBSERVATION_TYPE_ID.asNonNullable()],
               plantingCompleted = plantingCompleted,
-              plantingDensity = plantingDensity?.roundToInt(),
+              plantingDensity = plantingDensity.roundToInt(),
               plantingDensityStdDev = plantingDensityStdDev,
               plantingSiteId = record[OBSERVATIONS.PLANTING_SITE_ID.asNonNullable()],
               plantingZones = zones,
