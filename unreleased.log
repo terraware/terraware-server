@@ -1,3 +1,7 @@
+3eff1d7f48f Update database dependencies (#2759)
+d9e8c7cebea Update dependency gradle to v8.12.1 (#2776)
+c1e999c59ac Update dependency com.google.auth:google-auth-library-oauth2-http to v1.31.0 (#2777)
+171fdb904f3 Update Spring dependencies (#2775)
 4cc99bc8268 Ignore irrelevant entries in zipped shapefiles (#2772)
 beb602503e7 SW-6469 Always calculate planting density (#2773)
 84dae64b1eb Migrate config .github/renovate.json5 (#2765)
