@@ -99,7 +99,7 @@ dependencies {
   implementation("com.squarespace.cldr-engine:cldr-engine:1.8.3")
   implementation("commons-codec:commons-codec:1.17.2")
   implementation("commons-validator:commons-validator:1.9.0")
-  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.4.1") {
+  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.5.0") {
     exclude("org.apache.tomcat")
   }
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
