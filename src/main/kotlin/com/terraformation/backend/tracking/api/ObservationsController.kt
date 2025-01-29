@@ -296,7 +296,7 @@ class ObservationsController(
 
   @GetMapping("/{observationId}/plots/{plotId}")
   @Operation(summary = "Gets one assigned observation monitoring plot")
-  fun getOneAssignedPlots(
+  fun getOneAssignedPlot(
       @PathVariable observationId: ObservationId,
       @PathVariable plotId: MonitoringPlotId,
   ): GetOneAssignedPlotsResponsePayload {
