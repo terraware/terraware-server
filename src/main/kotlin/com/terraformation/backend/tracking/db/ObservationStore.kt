@@ -341,6 +341,42 @@ class ObservationStore(
         .filter { it != null && currentUser().canManageObservation(it.id) }
   }
 
+  /**
+   * Returns the IDs of any active assigned observations of a planting site that include unobserved
+   * plots in specific planting zones.
+   */
+  fun fetchActiveObservationIds(
+      plantingSiteId: PlantingSiteId,
+      plantingZoneIds: Collection<PlantingZoneId>
+  ): List<ObservationId> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    if (plantingZoneIds.isEmpty()) {
+      return emptyList()
+    }
+
+    return with(OBSERVATIONS) {
+      dslContext
+          .select(ID)
+          .from(OBSERVATIONS)
+          .where(PLANTING_SITE_ID.eq(plantingSiteId))
+          .and(IS_AD_HOC.eq(false))
+          .and(STATE_ID.`in`(ObservationState.InProgress, ObservationState.Overdue))
+          .and(
+              ID.`in`(
+                  DSL.select(OBSERVATION_PLOTS.OBSERVATION_ID)
+                      .from(OBSERVATION_PLOTS)
+                      .where(
+                          OBSERVATION_PLOTS.monitoringPlots.plantingSubzones.PLANTING_ZONE_ID.`in`(
+                              plantingZoneIds))
+                      .and(
+                          OBSERVATION_PLOTS.STATUS_ID.`in`(
+                              ObservationPlotStatus.Claimed, ObservationPlotStatus.Unclaimed))))
+          .orderBy(ID)
+          .fetch(ID.asNonNullable())
+    }
+  }
+
   fun countPlots(
       plantingSiteId: PlantingSiteId,
       isAdHoc: Boolean = false,

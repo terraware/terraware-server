@@ -484,8 +484,21 @@ class AdminPlantingSitesController(
                         "${zoneEdit.areaHaDifference.toPlainString()}ha"
                   } ?: "Create zone ${zoneEdit.desiredModel!!.name}"
                 }
+
+            val affectedObservationIds =
+                observationStore.fetchActiveObservationIds(
+                    plantingSiteId, edit.plantingZoneEdits.mapNotNull { it.existingModel?.id })
+            val affectedObservationsMessage =
+                if (affectedObservationIds.isNotEmpty()) {
+                  "Plots may be replaced in observations with these IDs: " +
+                      affectedObservationIds.joinToString(", ")
+                } else {
+                  null
+                }
+
             val changes =
-                listOf(
+                listOfNotNull(
+                    affectedObservationsMessage,
                     "Total change in plantable area: ${edit.areaHaDifference.toPlainString()}ha",
                 ) + zoneChanges
 
