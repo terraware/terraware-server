@@ -294,6 +294,17 @@ class ObservationsController(
     return SimpleSuccessResponsePayload()
   }
 
+  @GetMapping("/{observationId}/plots/{plotId}")
+  @Operation(summary = "Gets one assigned observation monitoring plot")
+  fun getOneAssignedPlots(
+      @PathVariable observationId: ObservationId,
+      @PathVariable plotId: MonitoringPlotId,
+  ): GetOneAssignedPlotsResponsePayload {
+    val details = observationStore.fetchOneObservationPlotDetails(observationId, plotId)
+
+    return GetOneAssignedPlotsResponsePayload(AssignedPlotPayload(details))
+  }
+
   @Operation(summary = "Updates information about the observation of a plot.")
   @PutMapping("/{observationId}/plots/{plotId}")
   fun updatePlotObservation(
@@ -1376,6 +1387,10 @@ data class CompletePlotObservationRequestPayload(
 
 data class GetObservationResultsResponsePayload(val observation: ObservationResultsPayload) :
     SuccessResponsePayload
+
+data class GetOneAssignedPlotsResponsePayload(
+    val plot: AssignedPlotPayload,
+) : SuccessResponsePayload
 
 data class ListAdHocObservationsResponsePayload(
     val observations: List<ObservationPayload>,
