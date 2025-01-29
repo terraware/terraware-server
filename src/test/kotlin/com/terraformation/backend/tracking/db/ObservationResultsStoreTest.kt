@@ -14,6 +14,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPhotoType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -664,6 +665,193 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<PlantingSiteNotFoundException> {
         resultsStore.fetchByPlantingSiteId(plantingSiteId)
       }
+    }
+  }
+
+  @Nested
+  inner class IncompletePlots {
+    @Test
+    fun `planting density calculations only consider completed plots`() {
+      insertSpecies()
+      insertPlantingZone()
+      insertPlantingSubzone()
+      insertObservation()
+
+      // Plot with one plant
+      val completePlotId = insertMonitoringPlot()
+      insertObservationPlot(claimedBy = user.userId)
+
+      // Plot with no plant because it is not observed
+      val incompletePlotId = insertMonitoringPlot()
+      insertObservationPlot(claimedBy = user.userId)
+
+      observationStore.completePlot(
+          inserted.observationId,
+          completePlotId,
+          emptySet(),
+          "Notes",
+          Instant.EPOCH,
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1),
+                  observationId = inserted.observationId,
+                  monitoringPlotId = completePlotId,
+                  speciesId = inserted.speciesId,
+                  statusId = RecordedPlantStatus.Live,
+              )))
+
+      observationStore.abandonObservation(inserted.observationId)
+
+      val results = resultsStore.fetchOneById(inserted.observationId)
+      val zoneResults = results.plantingZones[0]
+      val subzoneResults = zoneResults.plantingSubzones[0]
+      val incompletePlotResults =
+          subzoneResults.monitoringPlots.first { it.monitoringPlotId == incompletePlotId }
+      val completePlotResults =
+          subzoneResults.monitoringPlots.first { it.monitoringPlotId == completePlotId }
+
+      assertEquals(ObservationState.Abandoned, results.state, "Observation state")
+      assertEquals(11, results.plantingDensity, "Site Planting Density")
+      assertEquals(null, results.plantingDensityStdDev, "Site Planting Density Standard Deviation")
+      assertEquals(11, zoneResults.plantingDensity, "Zone Planting Density")
+      assertEquals(
+          null, zoneResults.plantingDensityStdDev, "Zone Planting Density Standard Deviation")
+      assertEquals(11, subzoneResults.plantingDensity, "Subzone Planting Density")
+      assertEquals(
+          null, subzoneResults.plantingDensityStdDev, "Subzone Planting Density Standard Deviation")
+
+      assertEquals(11, completePlotResults.plantingDensity, "Completed Plot Planting Density")
+      assertEquals(
+          ObservationPlotStatus.Completed, completePlotResults.status, "Completed Plot Status")
+      assertEquals(0, incompletePlotResults.plantingDensity, "Incomplete Plot Planting Density")
+      assertEquals(
+          ObservationPlotStatus.NotObserved, incompletePlotResults.status, "Incomplete Plot Status")
+    }
+
+    @Test
+    fun `planting site summary only considers subzones with completed plots`() {
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+      insertPlantingZone()
+      val subzoneId1 = insertPlantingSubzone()
+      val subzoneId2 = insertPlantingSubzone()
+      val subzoneId3 = insertPlantingSubzone()
+
+      // Each subzone only has one plot
+      val plotId1 = insertMonitoringPlot(plantingSubzoneId = subzoneId1)
+      val plotId2 = insertMonitoringPlot(plantingSubzoneId = subzoneId2)
+      val plotId3 = insertMonitoringPlot(plantingSubzoneId = subzoneId3)
+
+      // For the first observation, plot1 and plot2 are both assigned and completed.
+      clock.instant = Instant.ofEpochSecond(300)
+      val observationId1 = insertObservation()
+      insertObservationPlot(
+          observationId = observationId1, monitoringPlotId = plotId1, claimedBy = user.userId)
+      insertObservationPlot(
+          observationId = observationId1, monitoringPlotId = plotId2, claimedBy = user.userId)
+      observationStore.populateCumulativeDead(observationId1)
+
+      observationStore.completePlot(
+          observationId1,
+          plotId1,
+          emptySet(),
+          "Notes 1",
+          clock.instant,
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1),
+                  observationId = observationId1,
+                  monitoringPlotId = plotId1,
+                  speciesId = speciesId1,
+                  statusId = RecordedPlantStatus.Live,
+              )))
+
+      observationStore.completePlot(
+          observationId1,
+          plotId2,
+          emptySet(),
+          "Notes 2",
+          clock.instant,
+          listOf(
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1),
+                  observationId = observationId1,
+                  monitoringPlotId = plotId2,
+                  speciesId = speciesId2,
+                  statusId = RecordedPlantStatus.Live,
+              ),
+              RecordedPlantsRow(
+                  certaintyId = RecordedSpeciesCertainty.Known,
+                  gpsCoordinates = point(1),
+                  observationId = observationId1,
+                  monitoringPlotId = plotId2,
+                  speciesId = speciesId2,
+                  statusId = RecordedPlantStatus.Live,
+              )))
+
+      // For the second observation, plot2 and plot3 are both assigned, only plot 3 is completed.
+      clock.instant = Instant.ofEpochSecond(600)
+      val observationId2 = insertObservation()
+      insertObservationPlot(
+          observationId = observationId2, monitoringPlotId = plotId2, claimedBy = user.userId)
+      insertObservationPlot(
+          observationId = observationId2, monitoringPlotId = plotId3, claimedBy = user.userId)
+      observationStore.populateCumulativeDead(observationId2)
+      observationStore.completePlot(
+          observationId2,
+          plotId3,
+          emptySet(),
+          "Notes 3",
+          clock.instant,
+          emptyList(),
+      )
+      observationStore.abandonObservation(observationId2)
+
+      val results1 = resultsStore.fetchOneById(observationId1)
+      val observation1Subzone1Result =
+          results1.plantingZones
+              .flatMap { it.plantingSubzones }
+              .first { it.plantingSubzoneId == subzoneId1 }
+      val observation1Subzone2Result =
+          results1.plantingZones
+              .flatMap { it.plantingSubzones }
+              .first { it.plantingSubzoneId == subzoneId2 }
+
+      val results2 = resultsStore.fetchOneById(observationId2)
+      val observation2Subzone2Result =
+          results2.plantingZones
+              .flatMap { it.plantingSubzones }
+              .first { it.plantingSubzoneId == subzoneId2 }
+      val observation2Subzone3Result =
+          results2.plantingZones
+              .flatMap { it.plantingSubzones }
+              .first { it.plantingSubzoneId == subzoneId3 }
+
+      assertEquals(
+          ObservationPlotStatus.Completed,
+          observation1Subzone1Result.monitoringPlots[0].status,
+          "Plot status in observation 1 subzone 1")
+      assertEquals(
+          ObservationPlotStatus.Completed,
+          observation1Subzone2Result.monitoringPlots[0].status,
+          "Plot status in observation 1 subzone 2")
+      assertEquals(
+          ObservationPlotStatus.NotObserved,
+          observation2Subzone2Result.monitoringPlots[0].status,
+          "Plot status in observation 2 subzone 2")
+      assertEquals(
+          ObservationPlotStatus.Completed,
+          observation2Subzone3Result.monitoringPlots[0].status,
+          "Plot status in observation 2 subzone 3")
+
+      val summary = resultsStore.fetchSummariesForPlantingSite(inserted.plantingSiteId, 1).first()
+      assertEquals(
+          setOf(observation1Subzone1Result, observation1Subzone2Result, observation2Subzone3Result),
+          summary.plantingZones.flatMap { it.plantingSubzones }.toSet(),
+          "Planting subzones used for summary did not include the Incomplete subzone result")
     }
   }
 

@@ -159,7 +159,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         completedObservations
             .flatMap { it.plantingZones }
             .flatMap { it.plantingSubzones }
-            .filter { it.completedTime != null && it.monitoringPlots.isNotEmpty() }
+            .filter { subzone ->
+              subzone.completedTime != null &&
+                  subzone.monitoringPlots.any { it.status == ObservationPlotStatus.Completed }
+            }
             .groupBy { it.plantingSubzoneId }
 
     val latestPerSubzone =
