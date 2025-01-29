@@ -65,6 +65,11 @@ class ObservationHasNoPlotsException(val observationId: ObservationId) :
 class ObservationNotFoundException(val observationId: ObservationId) :
     EntityNotFoundException("Observation $observationId not found")
 
+class ObservationPlotNotFoundException(
+    val observationId: ObservationId,
+    val plotId: MonitoringPlotId
+) : EntityNotFoundException("Observation $observationId plot $plotId not found")
+
 class PlantingNotFoundException(val plantingId: PlantingId) :
     EntityNotFoundException("Planting $plantingId not found")
 

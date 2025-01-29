@@ -162,6 +162,24 @@ class ObservationStore(
   fun fetchObservationPlotDetails(observationId: ObservationId): List<AssignedPlotDetails> {
     requirePermissions { readObservation(observationId) }
 
+    return fetchObservationPlotDetails(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+  }
+
+  fun fetchOneObservationPlotDetails(
+      observationId: ObservationId,
+      plotId: MonitoringPlotId
+  ): AssignedPlotDetails {
+    requirePermissions { readObservation(observationId) }
+
+    return fetchObservationPlotDetails(
+            DSL.and(
+                OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId),
+                OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId),
+            ))
+        .firstOrNull() ?: throw ObservationPlotNotFoundException(observationId, plotId)
+  }
+
+  private fun fetchObservationPlotDetails(condition: Condition): List<AssignedPlotDetails> {
     // Calculated field that turns a users row into a String? with the user's full name.
     val fullNameField =
         DSL.row(USERS.FIRST_NAME, USERS.LAST_NAME).convertFrom { record ->
@@ -207,7 +225,7 @@ class ObservationStore(
             isFirstObservationField,
         )
         .from(OBSERVATION_PLOTS)
-        .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+        .where(condition)
         .orderBy(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
         .fetch { record ->
           AssignedPlotDetails(
