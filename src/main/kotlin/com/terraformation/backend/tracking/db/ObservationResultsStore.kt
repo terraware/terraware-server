@@ -9,6 +9,8 @@ import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
@@ -120,7 +122,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   ): List<ObservationRollupResultsModel> {
     val completedObservations =
         fetchByPlantingSiteId(plantingSiteId, maxCompletionTime = maxCompletionTime).filter {
-          it.completedTime != null
+          (it.state == ObservationState.Completed || it.state == ObservationState.Abandoned) &&
+              it.completedTime != null
         }
 
     val numObservations = completedObservations.size
@@ -156,7 +159,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         completedObservations
             .flatMap { it.plantingZones }
             .flatMap { it.plantingSubzones }
-            .filter { it.completedTime != null }
+            .filter { subzone ->
+              subzone.completedTime != null &&
+                  subzone.monitoringPlots.any { it.status == ObservationPlotStatus.Completed }
+            }
             .groupBy { it.plantingSubzoneId }
 
     val latestPerSubzone =
@@ -681,14 +687,18 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   monitoringPlots.mapNotNull { it.mortalityRate }.calculateStandardDeviation()
 
               val plantingCompleted = record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME] != null
+              val completedPlotsPlantingDensities =
+                  monitoringPlots
+                      .filter { it.status == ObservationPlotStatus.Completed }
+                      .map { it.plantingDensity }
               val plantingDensity =
-                  if (monitoringPlots.isNotEmpty()) {
-                    monitoringPlots.map { it.plantingDensity }.average()
+                  if (completedPlotsPlantingDensities.isNotEmpty()) {
+                    completedPlotsPlantingDensities.average()
                   } else {
                     0.0
                   }
               val plantingDensityStdDev =
-                  monitoringPlots.map { it.plantingDensity }.calculateStandardDeviation()
+                  completedPlotsPlantingDensities.calculateStandardDeviation()
 
               val estimatedPlants =
                   if (plantingCompleted && areaHa != null) {
@@ -797,17 +807,18 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   monitoringPlots.mapNotNull { it.mortalityRate }.calculateStandardDeviation()
 
               val plantingCompleted = record[zonePlantingCompletedField]
+              val completedPlotsPlantingDensities =
+                  monitoringPlots
+                      .filter { it.status == ObservationPlotStatus.Completed }
+                      .map { it.plantingDensity }
               val plantingDensity =
-                  if (monitoringPlots.isNotEmpty()) {
-                    monitoringPlots.map { it.plantingDensity }.average()
+                  if (completedPlotsPlantingDensities.isNotEmpty()) {
+                    completedPlotsPlantingDensities.average()
                   } else {
                     0.0
                   }
               val plantingDensityStdDev =
-                  subzones
-                      .flatMap { it.monitoringPlots }
-                      .map { it.plantingDensity }
-                      .calculateStandardDeviation()
+                  completedPlotsPlantingDensities.calculateStandardDeviation()
 
               val estimatedPlants =
                   if (plantingCompleted && areaHa != null) {
@@ -880,14 +891,17 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
           val plantingCompleted = zones.isNotEmpty() && zones.all { it.plantingCompleted }
 
           val monitoringPlots = zones.flatMap { it.plantingSubzones }.flatMap { it.monitoringPlots }
+          val completedPlotsPlantingDensities =
+              monitoringPlots
+                  .filter { it.status == ObservationPlotStatus.Completed }
+                  .map { it.plantingDensity }
           val plantingDensity =
-              if (monitoringPlots.isNotEmpty()) {
-                monitoringPlots.map { it.plantingDensity }.average()
+              if (completedPlotsPlantingDensities.isNotEmpty()) {
+                completedPlotsPlantingDensities.average()
               } else {
                 0.0
               }
-          val plantingDensityStdDev =
-              monitoringPlots.map { it.plantingDensity }.calculateStandardDeviation()
+          val plantingDensityStdDev = completedPlotsPlantingDensities.calculateStandardDeviation()
 
           val estimatedPlants =
               if (zones.isNotEmpty() && zones.all { it.estimatedPlants != null }) {

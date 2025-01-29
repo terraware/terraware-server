@@ -278,9 +278,17 @@ data class ObservationPlantingZoneRollupResultsModel(
                 (it.totalLive + it.totalExisting) > 0
           }
 
-      val plantingDensity = monitoringPlots.map { it.plantingDensity }.average().roundToInt()
-      val plantingDensityStdDev =
-          monitoringPlots.map { it.plantingDensity }.calculateStandardDeviation()
+      val completedPlotsPlantingDensities =
+          monitoringPlots
+              .filter { it.status == ObservationPlotStatus.Completed }
+              .map { it.plantingDensity }
+      val plantingDensity =
+          if (completedPlotsPlantingDensities.isNotEmpty()) {
+            completedPlotsPlantingDensities.average().roundToInt()
+          } else {
+            0
+          }
+      val plantingDensityStdDev = completedPlotsPlantingDensities.calculateStandardDeviation()
 
       val estimatedPlants =
           if (plantingCompleted) {
@@ -362,10 +370,17 @@ data class ObservationRollupResultsModel(
                 (it.totalLive + it.totalExisting) > 0
           }
 
-      val plantingDensity = monitoringPlots.map { it.plantingDensity }.average().roundToInt()
-
-      val plantingDensityStdDev =
-          monitoringPlots.map { it.plantingDensity }.calculateStandardDeviation()
+      val completedPlotsPlantingDensities =
+          monitoringPlots
+              .filter { it.status == ObservationPlotStatus.Completed }
+              .map { it.plantingDensity }
+      val plantingDensity =
+          if (completedPlotsPlantingDensities.isNotEmpty()) {
+            completedPlotsPlantingDensities.average().roundToInt()
+          } else {
+            0
+          }
+      val plantingDensityStdDev = completedPlotsPlantingDensities.calculateStandardDeviation()
 
       val estimatedPlants =
           if (plantingCompleted) {
