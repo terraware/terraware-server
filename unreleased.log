@@ -1,3 +1,4 @@
+3864b547b73 Update dependency commons-codec:commons-codec to v1.18.0 (#2779)
 c436417bdd8 SW-6493 Added fetch one observation plot (#2781)
 dbbc95dc59b Update dependency com.google.api-client:google-api-client to v2.7.2 (#2774)
 df3952fe33c Update dependency com.google.apis:google-api-services-drive to v3-rev20250122-2.0.0 (#2778)
