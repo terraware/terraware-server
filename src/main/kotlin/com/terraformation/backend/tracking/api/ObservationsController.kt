@@ -299,10 +299,10 @@ class ObservationsController(
   fun getOneAssignedPlot(
       @PathVariable observationId: ObservationId,
       @PathVariable plotId: MonitoringPlotId,
-  ): GetOneAssignedPlotsResponsePayload {
+  ): GetOneAssignedPlotResponsePayload {
     val details = observationStore.fetchOneObservationPlotDetails(observationId, plotId)
 
-    return GetOneAssignedPlotsResponsePayload(AssignedPlotPayload(details))
+    return GetOneAssignedPlotResponsePayload(AssignedPlotPayload(details))
   }
 
   @Operation(summary = "Updates information about the observation of a plot.")
@@ -1388,7 +1388,7 @@ data class CompletePlotObservationRequestPayload(
 data class GetObservationResultsResponsePayload(val observation: ObservationResultsPayload) :
     SuccessResponsePayload
 
-data class GetOneAssignedPlotsResponsePayload(
+data class GetOneAssignedPlotResponsePayload(
     val plot: AssignedPlotPayload,
 ) : SuccessResponsePayload
 
