@@ -1,3 +1,4 @@
+e64475501ff Update geoToolsVersion to v32.2 (#2784)
 edce36f1a4e SW-6491 Updated planting densities to consider abandoned observations, and only observed plots (#2782)
 8c37518ce05 SW-6405 Show observations affected by new shapefile (#2783)
 3864b547b73 Update dependency commons-codec:commons-codec to v1.18.0 (#2779)
