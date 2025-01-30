@@ -73,6 +73,7 @@ import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
+import com.terraformation.backend.tracking.edit.PlantingSiteEditBehavior
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
@@ -2226,7 +2227,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val event =
           PlantingSiteMapEditedEvent(
               plantingSite,
-              PlantingSiteEdit(BigDecimal.ONE, plantingSite, plantingSite, listOf()),
+              PlantingSiteEdit(
+                  areaHaDifference = BigDecimal.ONE,
+                  behavior = PlantingSiteEditBehavior.Restricted,
+                  desiredModel = plantingSite,
+                  existingModel = plantingSite,
+                  plantingZoneEdits = listOf()),
               ReplacementResult(emptySet(), monitoringPlotIds))
 
       service.on(event)
@@ -2269,7 +2275,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val event =
           PlantingSiteMapEditedEvent(
               plantingSite,
-              PlantingSiteEdit(BigDecimal.ONE, plantingSite, plantingSite, listOf()),
+              PlantingSiteEdit(
+                  areaHaDifference = BigDecimal.ONE,
+                  behavior = PlantingSiteEditBehavior.Restricted,
+                  desiredModel = plantingSite,
+                  existingModel = plantingSite,
+                  plantingZoneEdits = listOf()),
               ReplacementResult(emptySet(), setOf(removedPlotId)))
 
       service.on(event)
@@ -2301,7 +2312,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val event =
           PlantingSiteMapEditedEvent(
               plantingSite,
-              PlantingSiteEdit(BigDecimal.ONE, plantingSite, plantingSite, listOf()),
+              PlantingSiteEdit(
+                  areaHaDifference = BigDecimal.ONE,
+                  behavior = PlantingSiteEditBehavior.Restricted,
+                  desiredModel = plantingSite,
+                  existingModel = plantingSite,
+                  plantingZoneEdits = listOf()),
               ReplacementResult(emptySet(), setOf(inserted.monitoringPlotId)))
 
       service.on(event)
@@ -2333,7 +2349,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val event =
           PlantingSiteMapEditedEvent(
               plantingSite,
-              PlantingSiteEdit(BigDecimal.ONE, plantingSite, plantingSite, listOf()),
+              PlantingSiteEdit(
+                  areaHaDifference = BigDecimal.ONE,
+                  behavior = PlantingSiteEditBehavior.Restricted,
+                  desiredModel = plantingSite,
+                  existingModel = plantingSite,
+                  plantingZoneEdits = listOf()),
               ReplacementResult(emptySet(), originalPermanentPlotIds))
 
       service.on(event)
@@ -2363,7 +2384,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val event =
           PlantingSiteMapEditedEvent(
               plantingSite,
-              PlantingSiteEdit(BigDecimal.ONE, plantingSite, plantingSite, listOf()),
+              PlantingSiteEdit(
+                  areaHaDifference = BigDecimal.ONE,
+                  behavior = PlantingSiteEditBehavior.Restricted,
+                  desiredModel = plantingSite,
+                  existingModel = plantingSite,
+                  plantingZoneEdits = listOf()),
               ReplacementResult(newPermanentPlotIds, emptySet()))
 
       service.on(event)
@@ -2453,7 +2479,12 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val event =
           PlantingSiteMapEditedEvent(
               plantingSite,
-              PlantingSiteEdit(BigDecimal.ONE, plantingSite, plantingSite, listOf()),
+              PlantingSiteEdit(
+                  areaHaDifference = BigDecimal.ONE,
+                  behavior = PlantingSiteEditBehavior.Restricted,
+                  desiredModel = plantingSite,
+                  existingModel = plantingSite,
+                  plantingZoneEdits = listOf()),
               ReplacementResult(emptySet(), plotIdsInRemovedArea))
 
       service.on(event)

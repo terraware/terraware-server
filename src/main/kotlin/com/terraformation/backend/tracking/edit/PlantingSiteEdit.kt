@@ -24,6 +24,12 @@ data class PlantingSiteEdit(
      */
     val areaHaDifference: BigDecimal,
 
+    /**
+     * Which map editing behavior to use. This controls things like how active observations are
+     * affected by edits.
+     */
+    val behavior: PlantingSiteEditBehavior,
+
     /** Desired planting site model. The intended end result after edits are applied. */
     val desiredModel: AnyPlantingSiteModel,
 
