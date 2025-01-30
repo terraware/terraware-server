@@ -90,6 +90,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.session:spring-session-jdbc")
 
+  implementation("ch.qos.logback.access:logback-access-tomcat:2.0.6")
   implementation("com.drewnoakes:metadata-extractor:2.19.0")
   implementation("com.dropbox.core:dropbox-core-sdk:7.0.0")
   implementation("com.google.api-client:google-api-client:2.7.2")
@@ -99,9 +100,7 @@ dependencies {
   implementation("com.squarespace.cldr-engine:cldr-engine:1.8.3")
   implementation("commons-codec:commons-codec:1.18.0")
   implementation("commons-validator:commons-validator:1.9.0")
-  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.4.1") {
-    exclude("org.apache.tomcat")
-  }
+  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.5.0")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
   implementation("io.ktor:ktor-client-java:$ktorVersion")
