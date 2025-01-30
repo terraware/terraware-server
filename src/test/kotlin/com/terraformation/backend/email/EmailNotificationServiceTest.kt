@@ -93,6 +93,7 @@ import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
+import com.terraformation.backend.tracking.edit.PlantingSiteEditBehavior
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
@@ -1275,6 +1276,7 @@ internal class EmailNotificationServiceTest {
             existingModel,
             PlantingSiteEdit(
                 areaHaDifference = BigDecimal("-13.2"),
+                behavior = PlantingSiteEditBehavior.Restricted,
                 desiredModel = PlantingSiteBuilder.newSite { name = siteName },
                 existingModel = existingModel,
                 plantingZoneEdits = emptyList()),
@@ -1309,6 +1311,7 @@ internal class EmailNotificationServiceTest {
             existingModel,
             PlantingSiteEdit(
                 areaHaDifference = BigDecimal("-13.2"),
+                behavior = PlantingSiteEditBehavior.Restricted,
                 desiredModel = PlantingSiteBuilder.newSite { name = siteName },
                 existingModel = existingModel,
                 plantingZoneEdits = emptyList()),
@@ -1345,6 +1348,7 @@ internal class EmailNotificationServiceTest {
             existingModel,
             PlantingSiteEdit(
                 areaHaDifference = BigDecimal("-13.2"),
+                behavior = PlantingSiteEditBehavior.Restricted,
                 desiredModel = PlantingSiteBuilder.newSite { name = siteName },
                 existingModel = existingModel,
                 plantingZoneEdits = emptyList()),

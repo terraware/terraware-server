@@ -39,6 +39,7 @@ class PlantingSiteEditCalculatorV1(
 
     return PlantingSiteEdit(
         areaHaDifference = calculateAreaHaDifference(existingSite.boundary, desiredSite.boundary),
+        behavior = PlantingSiteEditBehavior.Restricted,
         desiredModel = desiredSite,
         existingModel = existingSite,
         plantingZoneEdits = zoneEdits,

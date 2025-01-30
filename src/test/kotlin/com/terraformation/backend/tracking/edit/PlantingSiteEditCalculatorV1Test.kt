@@ -27,6 +27,7 @@ class PlantingSiteEditCalculatorV1Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("12.5"),
+            behavior = PlantingSiteEditBehavior.Restricted,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -58,6 +59,7 @@ class PlantingSiteEditCalculatorV1Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("12.5"),
+            behavior = PlantingSiteEditBehavior.Restricted,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -86,6 +88,7 @@ class PlantingSiteEditCalculatorV1Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("5.0"),
+            behavior = PlantingSiteEditBehavior.Restricted,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -123,6 +126,7 @@ class PlantingSiteEditCalculatorV1Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("10.0"),
+            behavior = PlantingSiteEditBehavior.Restricted,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -160,6 +164,7 @@ class PlantingSiteEditCalculatorV1Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("-12.5"),
+            behavior = PlantingSiteEditBehavior.Restricted,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -194,6 +199,7 @@ class PlantingSiteEditCalculatorV1Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("-12.5"),
+            behavior = PlantingSiteEditBehavior.Restricted,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
@@ -272,6 +278,7 @@ class PlantingSiteEditCalculatorV1Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("0.0"),
+            behavior = PlantingSiteEditBehavior.Restricted,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits = emptyList()),
@@ -298,6 +305,7 @@ class PlantingSiteEditCalculatorV1Test {
     assertEditResult(
         PlantingSiteEdit(
             areaHaDifference = BigDecimal("2.5"),
+            behavior = PlantingSiteEditBehavior.Restricted,
             desiredModel = desired,
             existingModel = existing,
             plantingZoneEdits =
