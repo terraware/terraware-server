@@ -53,6 +53,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HI
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingSubzoneEdit
 import com.terraformation.backend.tracking.edit.PlantingZoneEdit
@@ -602,6 +603,22 @@ class PlantingSiteStore(
         }
       }
 
+      // If any monitoring plots weren't edited, we still want to include them in the history too.
+      dslContext
+          .select(MONITORING_PLOTS.ID.asNonNullable(), MONITORING_PLOTS.PLANTING_SUBZONE_ID)
+          .from(MONITORING_PLOTS)
+          .where(MONITORING_PLOTS.PLANTING_SITE_ID.eq(plantingSiteId))
+          .andNotExists(
+              DSL.selectOne()
+                  .from(MONITORING_PLOT_HISTORIES)
+                  .where(
+                      MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(plantingSiteHistoryId))
+                  .and(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)))
+          .fetch()
+          .forEach { (monitoringPlotId, plantingSubzoneId) ->
+            insertMonitoringPlotHistory(monitoringPlotId, plantingSiteId, plantingSubzoneId)
+          }
+
       val edited = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
       eventPublisher.publishEvent(
@@ -754,6 +771,11 @@ class PlantingSiteStore(
         val plantingSubzoneId =
             createPlantingSubzone(edit.desiredModel.toNew(), plantingSiteId, plantingZoneId, now)
         insertPlantingSubzoneHistory(edit.desiredModel, plantingZoneHistoryId, plantingSubzoneId)
+
+        edit.monitoringPlotEdits.forEach { plotEdit ->
+          replacementResults.add(
+              applyMonitoringPlotEdit(plotEdit, plantingSiteId, plantingSubzoneId, now))
+        }
       }
       is PlantingSubzoneEdit.Delete -> {
         // Plots will be deleted by ON DELETE CASCADE. This may legitimately delete 0 rows if the
@@ -795,19 +817,44 @@ class PlantingSiteStore(
 
         insertPlantingSubzoneHistory(edit.desiredModel, plantingZoneHistoryId, plantingSubzoneId)
 
-        edit.existingModel.monitoringPlots.forEach { plot ->
-          if (plot.boundary.intersects(edit.removedRegion)) {
-            replacementResults.add(makePlotUnavailable(plot.id))
-          }
-
-          // For now, plots can't move between subzones, so we can add history for all the existing
-          // plots with the new site and subzone history IDs.
-          insertMonitoringPlotHistory(plot.id, plantingSiteId, plantingSubzoneId)
+        edit.monitoringPlotEdits.forEach { plotEdit ->
+          replacementResults.add(
+              applyMonitoringPlotEdit(plotEdit, plantingSiteId, plantingSubzoneId, now))
         }
       }
     }
 
     return ReplacementResult.merge(replacementResults)
+  }
+
+  private fun applyMonitoringPlotEdit(
+      edit: MonitoringPlotEdit,
+      plantingSiteId: PlantingSiteId,
+      plantingSubzoneId: PlantingSubzoneId,
+      now: Instant,
+  ): ReplacementResult {
+    return when (edit) {
+      is MonitoringPlotEdit.Adopt -> TODO()
+      is MonitoringPlotEdit.Create -> TODO()
+      is MonitoringPlotEdit.Eject -> {
+        with(MONITORING_PLOTS) {
+          dslContext
+              .update(MONITORING_PLOTS)
+              .set(IS_AVAILABLE, false)
+              .setNull(PERMANENT_CLUSTER)
+              .setNull(PERMANENT_CLUSTER_SUBPLOT)
+              .setNull(PLANTING_SUBZONE_ID)
+              .set(MODIFIED_BY, currentUser().userId)
+              .set(MODIFIED_TIME, now)
+              .where(ID.eq(edit.monitoringPlotId))
+              .execute()
+        }
+
+        insertMonitoringPlotHistory(edit.monitoringPlotId, plantingSiteId, null)
+
+        ReplacementResult(emptySet(), setOf(edit.monitoringPlotId))
+      }
+    }
   }
 
   fun updatePlantingSeasons(
@@ -1281,6 +1328,11 @@ class PlantingSiteStore(
     val plotsRow =
         monitoringPlotsDao.fetchOneById(monitoringPlotId)
             ?: throw PlotNotFoundException(monitoringPlotId)
+
+    if (plotsRow.isAvailable == false) {
+      return ReplacementResult(emptySet(), emptySet())
+    }
+
     val subzonesRow =
         plantingSubzonesDao.fetchOneById(plotsRow.plantingSubzoneId!!)
             ?: throw PlantingSubzoneNotFoundException(plotsRow.plantingSubzoneId!!)
@@ -1288,10 +1340,6 @@ class PlantingSiteStore(
     val plantingZoneId = subzonesRow.plantingZoneId!!
 
     requirePermissions { updatePlantingSite(subzonesRow.plantingSiteId!!) }
-
-    if (plotsRow.isAvailable == false) {
-      return ReplacementResult(emptySet(), emptySet())
-    }
 
     return dslContext.transactionResult { _ ->
       dslContext

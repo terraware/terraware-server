@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.edit
 
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
@@ -160,7 +161,7 @@ class PlantingSiteEditCalculatorV1Test {
     val existing =
         existingSite(width = 1000) {
           zone(width = 750)
-          zone(width = 250)
+          zone(width = 250) { subzone { plot() } }
         }
     val desired = newSite(width = 750)
 
@@ -178,7 +179,8 @@ class PlantingSiteEditCalculatorV1Test {
                             listOf(
                                 PlantingSubzoneEdit.Delete(
                                     existingModel = existing.plantingZones[1].plantingSubzones[0],
-                                ))))),
+                                    monitoringPlotEdits =
+                                        listOf(MonitoringPlotEdit.Eject(MonitoringPlotId(1)))))))),
         existing,
         desired)
   }
@@ -189,8 +191,8 @@ class PlantingSiteEditCalculatorV1Test {
         existingSite(width = 1000) {
           zone(width = 500)
           zone(width = 500) {
-            subzone(width = 250)
-            subzone(width = 250)
+            subzone(width = 250) { plot() }
+            subzone(width = 250) { plot() }
           }
         }
     val desired =
@@ -217,8 +219,51 @@ class PlantingSiteEditCalculatorV1Test {
                             listOf(
                                 PlantingSubzoneEdit.Delete(
                                     existingModel = existing.plantingZones[1].plantingSubzones[1],
-                                )),
+                                    monitoringPlotEdits =
+                                        listOf(MonitoringPlotEdit.Eject(MonitoringPlotId(2))))),
                         removedRegion = rectangle(x = 750, width = 250, height = 500)))),
+        existing,
+        desired)
+  }
+
+  @Test
+  fun `returns ejection of monitoring plot if subzone no longer covers it`() {
+    val existing = existingSite {
+      zone {
+        subzone {
+          plot(x = 0)
+          plot(x = 400)
+        }
+      }
+    }
+    val desired = newSite(width = 250)
+
+    val removedRegion = rectangle(x = 250, width = 250, height = 500)
+    assertEditResult(
+        PlantingSiteEdit(
+            areaHaDifference = BigDecimal("-12.5"),
+            behavior = PlantingSiteEditBehavior.Restricted,
+            desiredModel = desired,
+            existingModel = existing,
+            plantingZoneEdits =
+                listOf(
+                    PlantingZoneEdit.Update(
+                        addedRegion = rectangle(0),
+                        areaHaDifference = BigDecimal("-12.5"),
+                        desiredModel = desired.plantingZones[0],
+                        existingModel = existing.plantingZones[0],
+                        monitoringPlotEdits = emptyList(),
+                        plantingSubzoneEdits =
+                            listOf(
+                                PlantingSubzoneEdit.Update(
+                                    addedRegion = rectangle(0),
+                                    areaHaDifference = BigDecimal("-12.5"),
+                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
+                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    monitoringPlotEdits =
+                                        listOf(MonitoringPlotEdit.Eject(MonitoringPlotId(2))),
+                                    removedRegion = removedRegion)),
+                        removedRegion = removedRegion))),
         existing,
         desired)
   }

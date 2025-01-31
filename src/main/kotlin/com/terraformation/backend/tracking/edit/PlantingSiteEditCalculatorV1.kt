@@ -11,6 +11,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.coveragePercent
 import com.terraformation.backend.util.differenceNullable
+import com.terraformation.backend.util.nearlyCoveredBy
 import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -77,7 +78,9 @@ class PlantingSiteEditCalculatorV1(
         existingSite.plantingZones.toSet().minus(existingZonesInUse).map { existingZone ->
           val plantingSubzoneEdits =
               existingZone.plantingSubzones.map { existingSubzone ->
-                PlantingSubzoneEdit.Delete(existingSubzone)
+                PlantingSubzoneEdit.Delete(
+                    existingSubzone,
+                    existingSubzone.monitoringPlots.map { MonitoringPlotEdit.Eject(it.id) })
               }
 
           checkPlantedSubzoneDeletions(existingZone, plantingSubzoneEdits)
@@ -187,7 +190,9 @@ class PlantingSiteEditCalculatorV1(
 
     val deleteEdits =
         existingZone.plantingSubzones.toSet().minus(existingSubzonesInUse).map { existingSubzone ->
-          PlantingSubzoneEdit.Delete(existingSubzone)
+          PlantingSubzoneEdit.Delete(
+              existingSubzone,
+              existingSubzone.monitoringPlots.map { MonitoringPlotEdit.Eject(it.id) })
         }
 
     val updateEdits =
@@ -198,10 +203,15 @@ class PlantingSiteEditCalculatorV1(
                   desiredSubzone.boundary.differenceNullable(desiredSite.exclusion)
               val existingUsableBoundary =
                   existingSubzone!!.boundary.differenceNullable(existingSite.exclusion)
+              val ejectEdits =
+                  existingSubzone.monitoringPlots
+                      .filter { !it.boundary.nearlyCoveredBy(desiredUsableBoundary) }
+                      .map { MonitoringPlotEdit.Eject(it.id) }
 
               if (existingSubzone.name == desiredSubzone.name &&
                   existingSubzone.boundary.equalsExact(desiredSubzone.boundary, 0.00001) &&
-                  existingUsableBoundary.equalsExact(desiredUsableBoundary, 0.00001)) {
+                  existingUsableBoundary.equalsExact(desiredUsableBoundary, 0.00001) &&
+                  ejectEdits.isEmpty()) {
                 null
               } else {
                 PlantingSubzoneEdit.Update(
@@ -210,11 +220,10 @@ class PlantingSiteEditCalculatorV1(
                             .difference(existingUsableBoundary)
                             .toNormalizedMultiPolygon(),
                     areaHaDifference =
-                        calculateAreaHaDifference(
-                            existingSubzone.boundary, desiredSubzone.boundary),
+                        calculateAreaHaDifference(existingUsableBoundary, desiredUsableBoundary),
                     desiredModel = desiredSubzone,
                     existingModel = existingSubzone,
-                    monitoringPlotEdits = emptyList(),
+                    monitoringPlotEdits = ejectEdits,
                     removedRegion =
                         existingUsableBoundary
                             .difference(desiredUsableBoundary)
