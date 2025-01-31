@@ -654,6 +654,11 @@ class PlantingSiteStore(
         }
       }
       is PlantingZoneEdit.Update -> {
+        val newExtraPermanentClusters =
+            edit.monitoringPlotEdits.count { it.permanentCluster == null }
+        val totalExtraPermanentClusters =
+            edit.existingModel.extraPermanentClusters + newExtraPermanentClusters
+
         with(PLANTING_ZONES) {
           val boundaryChanged =
               !edit.existingModel.boundary.equalsOrBothNull(edit.desiredModel.boundary)
@@ -668,15 +673,13 @@ class PlantingSiteStore(
                           .set(BOUNDARY_MODIFIED_TIME, now)
                     }
                   }
-                  .set(
-                      EXTRA_PERMANENT_CLUSTERS,
-                      edit.existingModel.extraPermanentClusters + edit.numPermanentClustersToAdd)
+                  .set(EXTRA_PERMANENT_CLUSTERS, totalExtraPermanentClusters)
                   .set(MODIFIED_BY, currentUser().userId)
                   .set(MODIFIED_TIME, now)
                   .set(NAME, edit.desiredModel.name)
                   .set(
                       NUM_PERMANENT_CLUSTERS,
-                      edit.existingModel.numPermanentClusters + edit.numPermanentClustersToAdd)
+                      edit.desiredModel.numPermanentClusters + totalExtraPermanentClusters)
                   .set(TARGET_PLANTING_DENSITY, edit.desiredModel.targetPlantingDensity)
                   .where(ID.eq(edit.existingModel.id))
                   .execute()
@@ -707,14 +710,14 @@ class PlantingSiteStore(
           }
         }
 
-        if (edit.numPermanentClustersToAdd > 0) {
+        if (newExtraPermanentClusters > 0) {
           // Create the new permanent clusters at random places in the cluster list so that they
           // aren't less likely to be selected for observations if the number of permanent clusters
           // in the zone changes over time.
           val newClusterNumbers =
-              (1..edit.existingModel.numPermanentClusters + edit.numPermanentClustersToAdd)
+              (1..edit.existingModel.numPermanentClusters + newExtraPermanentClusters)
                   .shuffled()
-                  .take(edit.numPermanentClustersToAdd)
+                  .take(newExtraPermanentClusters)
                   .sorted()
           newClusterNumbers.forEach { makeRoomForClusterNumber(edit.existingModel.id, it) }
 

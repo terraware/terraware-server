@@ -147,8 +147,10 @@ class PlantingSiteEditCalculatorV1(
                     areaHaDifference = areaHaDifference,
                     desiredModel = desiredZone,
                     existingModel = existingZone,
-                    monitoringPlotEdits = emptyList(),
-                    numPermanentClustersToAdd = newClustersThatFitInAddedRegion,
+                    monitoringPlotEdits =
+                        List(newClustersThatFitInAddedRegion) {
+                          MonitoringPlotEdit.Create(addedRegion, null)
+                        },
                     plantingSubzoneEdits = subzoneEdits,
                     removedRegion = removedRegion,
                 )

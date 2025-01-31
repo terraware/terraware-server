@@ -70,9 +70,8 @@ class PlantingSiteEditCalculatorV1Test {
                         areaHaDifference = BigDecimal("12.5"),
                         desiredModel = desired.plantingZones[0],
                         existingModel = existing.plantingZones[0],
-                        monitoringPlotEdits = emptyList(),
-                        numPermanentClustersToAdd =
-                            PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * (750 - 500) / 500,
+                        monitoringPlotEdits =
+                            List(4) { MonitoringPlotEdit.Create(newSubzoneBoundary, null) },
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Create(
@@ -86,6 +85,7 @@ class PlantingSiteEditCalculatorV1Test {
   fun `returns updates with both added and removed regions if boundary change was not a simple expansion`() {
     val existing = existingSite(x = 0, width = 500, height = 500)
     val desired = newSite(x = 100, width = 600, height = 500)
+    val addedRegion = rectangle(x = 500, width = 200, height = 500)
 
     assertEditResult(
         PlantingSiteEdit(
@@ -96,13 +96,12 @@ class PlantingSiteEditCalculatorV1Test {
             plantingZoneEdits =
                 listOf(
                     PlantingZoneEdit.Update(
-                        addedRegion = rectangle(x = 500, width = 200, height = 500),
+                        addedRegion = addedRegion,
                         areaHaDifference = BigDecimal("5.0"),
                         desiredModel = desired.plantingZones[0],
                         existingModel = existing.plantingZones[0],
-                        monitoringPlotEdits = emptyList(),
-                        numPermanentClustersToAdd =
-                            PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * 200 / 500,
+                        monitoringPlotEdits =
+                            List(3) { MonitoringPlotEdit.Create(addedRegion, null) },
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Update(
@@ -125,6 +124,7 @@ class PlantingSiteEditCalculatorV1Test {
         }
     val desired =
         newSite(width = 1000, height = 500) { exclusion = rectangle(width = 100, height = 500) }
+    val addedRegion = rectangle(x = 100, width = 200, height = 500)
 
     assertEditResult(
         PlantingSiteEdit(
@@ -135,17 +135,16 @@ class PlantingSiteEditCalculatorV1Test {
             plantingZoneEdits =
                 listOf(
                     PlantingZoneEdit.Update(
-                        addedRegion = rectangle(x = 100, width = 200, height = 500),
+                        addedRegion = addedRegion,
                         areaHaDifference = BigDecimal("10.0"),
                         desiredModel = desired.plantingZones[0],
                         existingModel = existing.plantingZones[0],
-                        monitoringPlotEdits = emptyList(),
-                        numPermanentClustersToAdd =
-                            PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * 200 / 700,
+                        monitoringPlotEdits =
+                            List(2) { MonitoringPlotEdit.Create(addedRegion, null) },
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Update(
-                                    addedRegion = rectangle(x = 100, width = 200, height = 500),
+                                    addedRegion = addedRegion,
                                     areaHaDifference = BigDecimal("10.0"),
                                     desiredModel = desired.plantingZones[0].plantingSubzones[0],
                                     existingModel = existing.plantingZones[0].plantingSubzones[0],
@@ -214,7 +213,6 @@ class PlantingSiteEditCalculatorV1Test {
                         desiredModel = desired.plantingZones[1],
                         existingModel = existing.plantingZones[1],
                         monitoringPlotEdits = emptyList(),
-                        numPermanentClustersToAdd = 0,
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Delete(
@@ -234,21 +232,23 @@ class PlantingSiteEditCalculatorV1Test {
 
     assertEquals(
         PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS,
-        calculateSiteEdit(existing, doubleSize).plantingZoneEdits.first().numPermanentClustersToAdd,
+        calculateSiteEdit(existing, doubleSize).plantingZoneEdits.first().monitoringPlotEdits.size,
         "Number of permanent clusters to add when doubling zone size")
     assertEquals(
         PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS / 2,
         calculateSiteEdit(existing, halfAgainSize)
             .plantingZoneEdits
             .first()
-            .numPermanentClustersToAdd,
+            .monitoringPlotEdits
+            .size,
         "Number of permanent clusters to add when increasing zone size by half")
     assertEquals(
         1,
         calculateSiteEdit(existing, slightlyLargerSize)
             .plantingZoneEdits
             .first()
-            .numPermanentClustersToAdd,
+            .monitoringPlotEdits
+            .size,
         "Number of permanent clusters to add when increasing zone size slightly")
   }
 
@@ -259,7 +259,7 @@ class PlantingSiteEditCalculatorV1Test {
 
     assertEquals(
         0,
-        calculateSiteEdit(existing, desired).plantingZoneEdits.first().numPermanentClustersToAdd,
+        calculateSiteEdit(existing, desired).plantingZoneEdits.first().monitoringPlotEdits.size,
         "Number of permanent clusters to add")
   }
 
@@ -271,7 +271,7 @@ class PlantingSiteEditCalculatorV1Test {
 
     assertEquals(
         0,
-        calculateSiteEdit(existing, desired).plantingZoneEdits.first().numPermanentClustersToAdd,
+        calculateSiteEdit(existing, desired).plantingZoneEdits.first().monitoringPlotEdits.size,
         "Number of permanent clusters to add")
   }
 
