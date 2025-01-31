@@ -35,6 +35,12 @@ sealed interface PlantingSubzoneEdit {
   val existingModel: ExistingPlantingSubzoneModel?
 
   /**
+   * Changes to make to this subzone's monitoring plots. The mix of monitoring plot edit types
+   * depends on what change is being made to the subzone; see [MonitoringPlotEdit] for details.
+   */
+  val monitoringPlotEdits: List<MonitoringPlotEdit>
+
+  /**
    * Usable region that is being removed from this subzone. Does not include any areas that are
    * covered by the existing site's exclusion areas.
    */
@@ -46,10 +52,15 @@ sealed interface PlantingSubzoneEdit {
           areaHaDifference.equalsIgnoreScale(other.areaHaDifference) &&
           desiredModel == other.desiredModel &&
           existingModel == other.existingModel &&
+          monitoringPlotEdits.size == other.monitoringPlotEdits.size &&
+          monitoringPlotEdits.zip(other.monitoringPlotEdits).all { (edit, otherEdit) ->
+            edit.equalsExact(otherEdit, tolerance)
+          } &&
           removedRegion.equalsOrBothNull(other.removedRegion, tolerance)
 
   data class Create(
       override val desiredModel: AnyPlantingSubzoneModel,
+      override val monitoringPlotEdits: List<MonitoringPlotEdit> = emptyList(),
   ) : PlantingSubzoneEdit {
     override val addedRegion: MultiPolygon
       get() = desiredModel.boundary
@@ -66,6 +77,7 @@ sealed interface PlantingSubzoneEdit {
 
   data class Delete(
       override val existingModel: ExistingPlantingSubzoneModel,
+      override val monitoringPlotEdits: List<MonitoringPlotEdit> = emptyList(),
   ) : PlantingSubzoneEdit {
     override val addedRegion: MultiPolygon?
       get() = null
@@ -85,6 +97,7 @@ sealed interface PlantingSubzoneEdit {
       override val areaHaDifference: BigDecimal,
       override val desiredModel: AnyPlantingSubzoneModel,
       override val existingModel: ExistingPlantingSubzoneModel,
+      override val monitoringPlotEdits: List<MonitoringPlotEdit> = emptyList(),
       override val removedRegion: MultiPolygon,
   ) : PlantingSubzoneEdit
 }

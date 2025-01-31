@@ -66,6 +66,7 @@ class PlantingSiteEditCalculatorV1(
             .map { newZone ->
               PlantingZoneEdit.Create(
                   desiredModel = newZone,
+                  monitoringPlotEdits = emptyList(),
                   plantingSubzoneEdits =
                       newZone.plantingSubzones.map { newSubzone ->
                         PlantingSubzoneEdit.Create(newSubzone)
@@ -146,6 +147,7 @@ class PlantingSiteEditCalculatorV1(
                     areaHaDifference = areaHaDifference,
                     desiredModel = desiredZone,
                     existingModel = existingZone,
+                    monitoringPlotEdits = emptyList(),
                     numPermanentClustersToAdd = newClustersThatFitInAddedRegion,
                     plantingSubzoneEdits = subzoneEdits,
                     removedRegion = removedRegion,
@@ -210,6 +212,7 @@ class PlantingSiteEditCalculatorV1(
                             existingSubzone.boundary, desiredSubzone.boundary),
                     desiredModel = desiredSubzone,
                     existingModel = existingSubzone,
+                    monitoringPlotEdits = emptyList(),
                     removedRegion =
                         existingUsableBoundary
                             .difference(desiredUsableBoundary)
@@ -244,6 +247,7 @@ class PlantingSiteEditCalculatorV1(
         desiredSite.plantingZones.map { desiredZone ->
           PlantingZoneEdit.Create(
               desiredModel = desiredZone,
+              monitoringPlotEdits = emptyList(),
               plantingSubzoneEdits =
                   desiredZone.plantingSubzones.map { desiredSubzone ->
                     PlantingSubzoneEdit.Create(desiredSubzone)

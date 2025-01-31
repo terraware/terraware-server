@@ -35,6 +35,12 @@ sealed interface PlantingZoneEdit {
   val existingModel: ExistingPlantingZoneModel?
 
   /**
+   * New monitoring plots that need to be created in this zone as a result of its boundary or
+   * settings having changed.
+   */
+  val monitoringPlotEdits: List<MonitoringPlotEdit.Create>
+
+  /**
    * Number of permanent clusters to add to the zone. These clusters must all be located in
    * [addedRegion].
    */
@@ -56,6 +62,10 @@ sealed interface PlantingZoneEdit {
           desiredModel == other.desiredModel &&
           existingModel == other.existingModel &&
           numPermanentClustersToAdd == other.numPermanentClustersToAdd &&
+          monitoringPlotEdits.size == other.monitoringPlotEdits.size &&
+          monitoringPlotEdits.zip(other.monitoringPlotEdits).all { (edit, otherEdit) ->
+            edit.equalsExact(otherEdit, tolerance)
+          } &&
           plantingSubzoneEdits.size == other.plantingSubzoneEdits.size &&
           plantingSubzoneEdits.zip(other.plantingSubzoneEdits).all { (edit, otherEdit) ->
             edit.equalsExact(otherEdit, tolerance)
@@ -64,6 +74,7 @@ sealed interface PlantingZoneEdit {
 
   data class Create(
       override val desiredModel: AnyPlantingZoneModel,
+      override val monitoringPlotEdits: List<MonitoringPlotEdit.Create>,
       override val plantingSubzoneEdits: List<PlantingSubzoneEdit.Create>,
   ) : PlantingZoneEdit {
     override val addedRegion: MultiPolygon
@@ -95,6 +106,9 @@ sealed interface PlantingZoneEdit {
     override val desiredModel: AnyPlantingZoneModel?
       get() = null
 
+    override val monitoringPlotEdits: List<MonitoringPlotEdit.Create>
+      get() = emptyList()
+
     override val numPermanentClustersToAdd: Int
       get() = 0
 
@@ -107,6 +121,7 @@ sealed interface PlantingZoneEdit {
       override val areaHaDifference: BigDecimal,
       override val desiredModel: AnyPlantingZoneModel,
       override val existingModel: ExistingPlantingZoneModel,
+      override val monitoringPlotEdits: List<MonitoringPlotEdit.Create>,
       override val numPermanentClustersToAdd: Int,
       override val plantingSubzoneEdits: List<PlantingSubzoneEdit>,
       override val removedRegion: MultiPolygon,
