@@ -141,6 +141,10 @@ fun Geometry.toMultiPolygon(): MultiPolygon {
   }
 }
 
+fun MultiPolygon.orEmpty(): MultiPolygon = if (isEmpty) factory.createMultiPolygon() else this
+
+fun Geometry.toNormalizedMultiPolygon() = norm().toMultiPolygon().orEmpty()
+
 /**
  * Fixes problems with invalid geometries if possible. Geometries that are calculated using
  * operations like intersections and unions can suffer from floating-point inaccuracy which causes

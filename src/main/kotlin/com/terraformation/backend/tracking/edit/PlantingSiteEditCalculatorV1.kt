@@ -12,12 +12,11 @@ import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.coveragePercent
 import com.terraformation.backend.util.differenceNullable
 import com.terraformation.backend.util.nearlyCoveredBy
-import com.terraformation.backend.util.toMultiPolygon
+import com.terraformation.backend.util.toNormalizedMultiPolygon
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.max
 import org.locationtech.jts.geom.Geometry
-import org.locationtech.jts.geom.MultiPolygon
 
 class PlantingSiteEditCalculatorV1(
     private val existingSite: ExistingPlantingSiteModel,
@@ -337,9 +336,4 @@ class PlantingSiteEditCalculatorV1(
         .groupBy({ it.value!! }, { it.key })
         .filter { it.value.size > 1 }
   }
-
-  private fun MultiPolygon.orEmpty(): MultiPolygon =
-      if (isEmpty) factory.createMultiPolygon() else this
-
-  private fun Geometry.toNormalizedMultiPolygon() = norm().toMultiPolygon().orEmpty()
 }

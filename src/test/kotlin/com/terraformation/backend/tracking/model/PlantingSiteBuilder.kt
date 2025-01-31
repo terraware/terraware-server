@@ -253,6 +253,7 @@ private constructor(
                 lastCluster -> nextSubplot
                 else -> 1
               },
+          isAdHoc: Boolean = false,
           isAvailable: Boolean = true,
           size: Int = MONITORING_PLOT_SIZE_INT,
           plotNumber: Long = nextPlotNumber,
@@ -268,7 +269,7 @@ private constructor(
             MonitoringPlotModel(
                 boundary = rectanglePolygon(size, size, x, y),
                 id = MonitoringPlotId(plotNumber),
-                isAdHoc = false,
+                isAdHoc = isAdHoc,
                 isAvailable = isAvailable,
                 permanentCluster = cluster,
                 permanentClusterSubplot = subplot,
