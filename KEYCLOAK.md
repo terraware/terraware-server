@@ -148,7 +148,7 @@ If you're launching the server from an IDE such as IntelliJ IDEA, you can set th
 
 #### Using a profile-specific properties file for local development
 
-See the "Using a profile-specific properties file for local development" section in [README.md](README.md) to learn more about this; you can also set other values that aren't related to Keycloak. The Keycloak-related part of the properties file will be structured hierarchically, for example:
+See the "Using a profile-specific properties file for local development" section in [SETUP.md](SETUP.md) to learn more about this; you can also set other values that aren't related to Keycloak. The Keycloak-related part of the properties file will be structured hierarchically, for example:
 
 ```yaml
 spring:

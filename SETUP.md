@@ -121,6 +121,20 @@ If you're running it from IntelliJ, you can set the list of profiles in the run 
 4. Set the "Active profiles:" field to `default,dev`.
 5. Click OK.
 
+If you run into this error when trying to run:
+
+```
+Exception in thread "main" java.lang.RuntimeException: Please add -Djava.locale.providers=SPI,CLDR to the JVM's command-line arguments.
+```
+
+then perform the following:
+
+1. In the drop-down menu of run configurations in the toolbar at the top of the IntelliJ window, choose "Edit Configurations..."
+2. Select "Application"
+3. Click "Modify options" -> "Add VM options"
+4. In the VM options field, add this: `-Djava.locale.providers=SPI,CLDR`
+5. Click OK.
+
 ## Using multiple local profiles
 
 If you have more than one set of local configuration settings and you want to easily switch between them, you can create more than one properties file. Just make sure the profile name starts with `dev` so it'll be ignored by git and excluded from the application jarfile.

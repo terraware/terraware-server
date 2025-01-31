@@ -429,12 +429,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>recorded_trees_shrub_diameter_cm_check</td>
-                                    <td>(((shrub_diameter_cm)::numeric &gt;= (0)::numeric))</td>
+                                    <td>recorded_trees_point_of_measurement_m_check</td>
+                                    <td>((point_of_measurement_m &gt;= (0)::numeric))</td>
                                 </tr>
                                 <tr>
-                                    <td>height_required_dbm_threshold</td>
-                                    <td>((NOT ((diameter_at_breast_height_cm &gt; (5)::numeric) AND (height_m IS NULL))))</td>
+                                    <td>recorded_trees_tree_number_check</td>
+                                    <td>((tree_number &gt;= 1))</td>
                                 </tr>
                                 <tr>
                                     <td>growth_form_specific_data</td>
@@ -445,16 +445,16 @@
                                     <td>((diameter_at_breast_height_cm &gt;= (0)::numeric))</td>
                                 </tr>
                                 <tr>
-                                    <td>recorded_trees_point_of_measurement_m_check</td>
-                                    <td>((point_of_measurement_m &gt;= (0)::numeric))</td>
-                                </tr>
-                                <tr>
-                                    <td>recorded_trees_tree_number_check</td>
-                                    <td>((tree_number &gt;= 1))</td>
+                                    <td>height_required_dbm_threshold</td>
+                                    <td>((NOT ((diameter_at_breast_height_cm &gt; (5)::numeric) AND (height_m IS NULL))))</td>
                                 </tr>
                                 <tr>
                                     <td>recorded_trees_height_m_check</td>
                                     <td>((height_m &gt;= (0)::numeric))</td>
+                                </tr>
+                                <tr>
+                                    <td>recorded_trees_shrub_diameter_cm_check</td>
+                                    <td>(((shrub_diameter_cm)::numeric &gt;= (0)::numeric))</td>
                                 </tr>
                                 </tbody>
                             </table>
