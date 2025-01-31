@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.auth.KeycloakInfo
+import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.seedbank.db.AccessionImporterTest
 import com.terraformation.backend.util.Turtle
@@ -28,6 +29,7 @@ import org.locationtech.jts.geom.PrecisionModel
  */
 private val prettyPrintingObjectMapper: ObjectMapper by lazy {
   jacksonObjectMapper()
+      .registerModule(GeometryModule())
       .registerModule(JavaTimeModule())
       .enable(SerializationFeature.INDENT_OUTPUT)
       .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
