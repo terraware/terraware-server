@@ -1,6 +1,6 @@
 Observation ->,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3
 Plot,# Plants,# Species,Mortality Rate,Cumulative Dead Plants,Live Plants,# Live + Dead,Existing Plants,Planting Density,# Plants,# Species,Mortality Rate,Cumulative Dead Plants,Live Plants,# Live + Dead,Existing Plants,Planting Density,# Plants,# Species,Mortality Rate,Cumulative Dead Plants,Live Plants,# Live + Dead,Existing Plants,Planting Density
-111,130,4,13%,11,72,83,47,1152,130,4,13%,11,72,83,47,1152,322,3,25%,47,138,185,148,2208
+111,130,4,13%,11,72,83,47,1152,130,4,13%,11,72,83,47,1152,322,4,25%,47,138,185,148,2208
 112,114,4,31%,19,42,61,53,672,114,4,31%,19,42,61,53,672,284,4,24%,40,127,167,136,2032
 113,95,4,44%,20,25,45,50,400,95,4,44%,20,25,45,50,400,355,4,26%,60,172,232,143,2752
 211,148,4,19%,18,79,97,51,1264,148,4,19%,18,79,97,51,1264,324,4,27%,58,155,213,129,2480
