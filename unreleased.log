@@ -1,3 +1,4 @@
+dca7eaddcf8 Updated mortality rates to be null if there is no plants in permanent plots (#2792)
 90eaa696b62 Updates to readme for first-time setup (#2791)
 a785f1b98f0 Upgrade logback-access-spring-boot-starter to 4.5.0 (#2786)
 6f6469e1dec Update upstream docker image (#2787)
