@@ -135,7 +135,7 @@ interface BaseMonitoringResult {
    * from the current observation are counted. Existing plants are not counted because the intent is
    * to track the health of plants that were introduced to the site.
    */
-  val mortalityRate: Int
+  val mortalityRate: Int?
 
   /** Standard deviation of mortality rates of plots */
   val mortalityRateStdDev: Int?
@@ -160,7 +160,7 @@ data class ObservationPlantingSubzoneResultsModel(
     val areaHa: BigDecimal,
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
-    override val mortalityRate: Int,
+    override val mortalityRate: Int?,
     override val mortalityRateStdDev: Int?,
     val monitoringPlots: List<ObservationMonitoringPlotResultsModel>,
     override val plantingCompleted: Boolean,
@@ -186,7 +186,7 @@ data class ObservationPlantingZoneResultsModel(
     val areaHa: BigDecimal,
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
-    override val mortalityRate: Int,
+    override val mortalityRate: Int?,
     override val mortalityRateStdDev: Int?,
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int,
@@ -213,7 +213,7 @@ data class ObservationResultsModel(
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
     val isAdHoc: Boolean,
-    override val mortalityRate: Int,
+    override val mortalityRate: Int?,
     override val mortalityRateStdDev: Int?,
     val observationId: ObservationId,
     val observationType: ObservationType,
@@ -235,7 +235,7 @@ data class ObservationPlantingZoneRollupResultsModel(
     override val estimatedPlants: Int?,
     /** Time when the latest observation in this rollup was completed. */
     val latestCompletedTime: Instant,
-    override val mortalityRate: Int,
+    override val mortalityRate: Int?,
     override val mortalityRateStdDev: Int?,
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int,
@@ -327,7 +327,7 @@ data class ObservationRollupResultsModel(
     override val estimatedPlants: Int?,
     /** Time when the latest observation in this rollup was completed. */
     val latestCompletedTime: Instant,
-    override val mortalityRate: Int,
+    override val mortalityRate: Int?,
     override val mortalityRateStdDev: Int?,
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int,
@@ -416,14 +416,14 @@ data class ObservationRollupResultsModel(
  * Calculates the mortality rate across all non-preexisting plants of all species in permanent
  * monitoring plots.
  */
-fun List<ObservationSpeciesResultsModel>.calculateMortalityRate(): Int {
+fun List<ObservationSpeciesResultsModel>.calculateMortalityRate(): Int? {
   val numNonExistingPlants = this.sumOf { it.permanentLive + it.cumulativeDead }
   val numDeadPlants = this.sumOf { it.cumulativeDead }
 
   return if (numNonExistingPlants > 0) {
     (numDeadPlants * 100.0 / numNonExistingPlants).roundToInt()
   } else {
-    0
+    null
   }
 }
 

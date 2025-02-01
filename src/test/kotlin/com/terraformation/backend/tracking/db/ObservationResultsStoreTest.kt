@@ -230,6 +230,7 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       val observationResults = results.first()
       assertEquals(inserted.observationId, observationResults.observationId, "Observation ID")
       assertFalse(observationResults.isAdHoc, "Observation Is Ad Hoc")
+      assertNull(observationResults.mortalityRate, "Observation mortality rate with no plants")
 
       val plotResults =
           observationResults.plantingZones.first().plantingSubzones.first().monitoringPlots.first()

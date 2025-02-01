@@ -1070,7 +1070,7 @@ data class ObservationPlantingSubzoneResultsPayload(
             "Percentage of plants of all species that were dead in this subzone's permanent " +
                 "monitoring plots.")
     val monitoringPlots: List<ObservationMonitoringPlotResultsPayload>,
-    val mortalityRate: Int,
+    val mortalityRate: Int?,
     val mortalityRateStdDev: Int?,
     @Schema(
         description =
@@ -1127,7 +1127,7 @@ data class ObservationPlantingZoneResultsPayload(
         description =
             "Percentage of plants of all species that were dead in this zone's permanent " +
                 "monitoring plots.")
-    val mortalityRate: Int,
+    val mortalityRate: Int?,
     val mortalityRateStdDev: Int?,
     @Schema(
         description =
@@ -1187,7 +1187,7 @@ data class ObservationResultsPayload(
             "Percentage of plants of all species that were dead in this site's permanent " +
                 "monitoring plots.")
     val isAdHoc: Boolean,
-    val mortalityRate: Int,
+    val mortalityRate: Int?,
     val mortalityRateStdDev: Int?,
     val observationId: ObservationId,
     @Schema(
@@ -1247,7 +1247,7 @@ data class PlantingZoneObservationSummaryPayload(
         description =
             "Percentage of plants of all species that were dead in this zone's permanent " +
                 "monitoring plots.")
-    val mortalityRate: Int,
+    val mortalityRate: Int?,
     val mortalityRateStdDev: Int?,
     @Schema(
         description =
