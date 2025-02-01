@@ -48,6 +48,7 @@ import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.calculateMortalityRate
 import com.terraformation.backend.tracking.model.calculateStandardDeviation
+import com.terraformation.backend.tracking.model.calculateWeightedStandardDeviation
 import com.terraformation.backend.util.SQUARE_METERS_PER_HECTARE
 import jakarta.inject.Named
 import java.time.Instant
@@ -684,7 +685,17 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
               val mortalityRate = species.calculateMortalityRate()
               val mortalityRateStdDev =
-                  monitoringPlots.mapNotNull { it.mortalityRate }.calculateStandardDeviation()
+                  monitoringPlots
+                      .mapNotNull { plot ->
+                        plot.mortalityRate?.let {
+                          val permanentPlants =
+                              plot.species.sumOf { species ->
+                                species.permanentLive + species.cumulativeDead
+                              }
+                          it to permanentPlants
+                        }
+                      }
+                      .calculateWeightedStandardDeviation()
 
               val plantingCompleted = record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME] != null
               val completedPlotsPlantingDensities =
@@ -804,7 +815,17 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
               val mortalityRate = species.calculateMortalityRate()
               val mortalityRateStdDev =
-                  monitoringPlots.mapNotNull { it.mortalityRate }.calculateStandardDeviation()
+                  monitoringPlots
+                      .mapNotNull { plot ->
+                        plot.mortalityRate?.let {
+                          val permanentPlants =
+                              plot.species.sumOf { species ->
+                                species.permanentLive + species.cumulativeDead
+                              }
+                          it to permanentPlants
+                        }
+                      }
+                      .calculateWeightedStandardDeviation()
 
               val plantingCompleted = record[zonePlantingCompletedField]
               val completedPlotsPlantingDensities =
@@ -914,7 +935,17 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
           val mortalityRate = species.calculateMortalityRate()
           val mortalityRateStdDev =
-              monitoringPlots.mapNotNull { it.mortalityRate }.calculateStandardDeviation()
+              monitoringPlots
+                  .mapNotNull { plot ->
+                    plot.mortalityRate?.let {
+                      val permanentPlants =
+                          plot.species.sumOf { species ->
+                            species.permanentLive + species.cumulativeDead
+                          }
+                      it to permanentPlants
+                    }
+                  }
+                  .calculateWeightedStandardDeviation()
 
           ObservationResultsModel(
               adHocPlot = record[adHocMonitoringPlotMultiset].firstOrNull(),

@@ -299,7 +299,17 @@ data class ObservationPlantingZoneRollupResultsModel(
 
       val mortalityRate = species.calculateMortalityRate()
       val mortalityRateStdDev =
-          monitoringPlots.mapNotNull { it.mortalityRate }.calculateStandardDeviation()
+          monitoringPlots
+              .mapNotNull { plot ->
+                plot.mortalityRate?.let {
+                  val permanentPlants =
+                      plot.species.sumOf { species ->
+                        species.permanentLive + species.cumulativeDead
+                      }
+                  it to permanentPlants
+                }
+              }
+              .calculateWeightedStandardDeviation()
 
       return ObservationPlantingZoneRollupResultsModel(
           areaHa = areaHa,
@@ -391,7 +401,17 @@ data class ObservationRollupResultsModel(
 
       val mortalityRate = species.calculateMortalityRate()
       val mortalityRateStdDev =
-          monitoringPlots.mapNotNull { it.mortalityRate }.calculateStandardDeviation()
+          monitoringPlots
+              .mapNotNull { plot ->
+                plot.mortalityRate?.let {
+                  val permanentPlants =
+                      plot.species.sumOf { species ->
+                        species.permanentLive + species.cumulativeDead
+                      }
+                  it to permanentPlants
+                }
+              }
+              .calculateWeightedStandardDeviation()
 
       return ObservationRollupResultsModel(
           earliestCompletedTime = nonNullZoneResults.minOf { it.earliestCompletedTime },
@@ -475,6 +495,26 @@ fun Collection<Int>.calculateStandardDeviation(): Int? {
   val mean = samples.average()
   val sumSquaredDifferences = samples.sumOf { (it - mean) * (it - mean) }
   val variance = sumSquaredDifferences / (numSamples - 1)
+
+  return sqrt(variance).roundToInt()
+}
+
+/**
+ * Calculate standard deviation from a pair of (data, weight). Weight must be the number of samples,
+ * so we can correctly apply the (n-1) Bessel's correction.
+ */
+fun Collection<Pair<Int, Int>>.calculateWeightedStandardDeviation(): Int? {
+  val totalWeights = this.sumOf { it.second }
+
+  if (totalWeights <= 0) {
+    return null
+  }
+
+  val weightedMean = this.sumOf { it.first * it.second }.toDouble() / totalWeights.toDouble()
+
+  val weightedSumSquaredDifferences =
+      this.sumOf { (it.first - weightedMean) * (it.first - weightedMean) * it.second }
+  val variance = weightedSumSquaredDifferences / (totalWeights - 1)
 
   return sqrt(variance).roundToInt()
 }
