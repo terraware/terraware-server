@@ -375,11 +375,14 @@ class PlantingSiteEditCalculatorV2(
         .toMap()
   }
 
-  /** Flattened list of all the monitoring plots in all existing zones. */
+  /** Flattened list of all the site's monitoring plots. */
   private val existingMonitoringPlots: List<MonitoringPlotModel> by lazy {
-    existingSite.plantingZones
-        .flatMap { plantingZone -> plantingZone.plantingSubzones.flatMap { it.monitoringPlots } }
-        .sortedWith(compareBy({ it.permanentCluster ?: Int.MAX_VALUE }, { it.plotNumber }))
+    val plotsInSubzones =
+        existingSite.plantingZones.flatMap { plantingZone ->
+          plantingZone.plantingSubzones.flatMap { it.monitoringPlots }
+        }
+    (plotsInSubzones + existingSite.exteriorPlots).sortedWith(
+        compareBy({ it.permanentCluster ?: Int.MAX_VALUE }, { it.plotNumber }))
   }
 
   private val existingMonitoringPlotsById: Map<MonitoringPlotId, MonitoringPlotModel> by lazy {

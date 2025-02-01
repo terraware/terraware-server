@@ -840,7 +840,6 @@ class PlantingSiteStore(
         with(MONITORING_PLOTS) {
           dslContext
               .update(MONITORING_PLOTS)
-              .set(IS_AVAILABLE, false)
               .setNull(PERMANENT_CLUSTER)
               .setNull(PERMANENT_CLUSTER_SUBPLOT)
               .setNull(PLANTING_SUBZONE_ID)
