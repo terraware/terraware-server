@@ -619,6 +619,8 @@ class PlantingSiteStore(
             insertMonitoringPlotHistory(monitoringPlotId, plantingSiteId, plantingSubzoneId)
           }
 
+      sanityCheckAfterEdit(plantingSiteId)
+
       val edited = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
       eventPublisher.publishEvent(
@@ -884,6 +886,39 @@ class PlantingSiteStore(
 
         ReplacementResult(emptySet(), setOf(edit.monitoringPlotId))
       }
+    }
+  }
+
+  /**
+   * Do sanity checks after applying a planting site edit. Edits can be complex and we want to abort
+   * them rather than leaving planting sites in inconsistent or invalid states.
+   *
+   * @throws IllegalStateException A sanity check failed.
+   */
+  private fun sanityCheckAfterEdit(plantingSiteId: PlantingSiteId) {
+    // Make sure we haven't assigned the same permanent cluster number to two plots in a
+    // planting zone. We don't enforce this with a database constraint because duplicate cluster
+    // numbers are a valid intermediate state while a complex edit is being applied.
+    val zonesWithDuplicateClusterNumbers =
+        dslContext
+            .select(PLANTING_ZONES.ID, PLANTING_ZONES.NAME, MONITORING_PLOTS.PERMANENT_CLUSTER)
+            .from(PLANTING_ZONES)
+            .join(PLANTING_SUBZONES)
+            .on(PLANTING_ZONES.ID.eq(PLANTING_SUBZONES.PLANTING_ZONE_ID))
+            .join(MONITORING_PLOTS)
+            .on(PLANTING_SUBZONES.ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
+            .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+            .and(MONITORING_PLOTS.PERMANENT_CLUSTER.isNotNull)
+            .groupBy(PLANTING_ZONES.ID, PLANTING_ZONES.NAME, MONITORING_PLOTS.PERMANENT_CLUSTER)
+            .having(DSL.count().gt(1))
+            .fetch { record ->
+              "planting zone ${record[PLANTING_ZONES.ID]} (${record[PLANTING_ZONES.NAME]}) " +
+                  "cluster ${record[MONITORING_PLOTS.PERMANENT_CLUSTER]}"
+            }
+    if (zonesWithDuplicateClusterNumbers.isNotEmpty()) {
+      val details = zonesWithDuplicateClusterNumbers.joinToString()
+      throw IllegalStateException(
+          "BUG! Edit resulted in duplicate permanent cluster numbers: $details")
     }
   }
 
