@@ -22,7 +22,7 @@ plugins {
   // kotlin("kapt")
 
   id("dev.monosoul.jooq-docker") version "6.1.17"
-  id("com.diffplug.spotless") version "7.0.0.BETA4"
+  id("com.diffplug.spotless") version "7.0.2"
   id("org.springframework.boot") version "3.4.2"
   id("io.spring.dependency-management") version "1.1.7"
 
