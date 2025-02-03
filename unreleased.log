@@ -1,3 +1,4 @@
+81d67440136 Used weighted standard deviation for mortality rate (#2797)
 61b605ab905 Update plugin com.diffplug.spotless to v7.0.2 (#2801)
 9c7d826a8f5 Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.4 (#2798)
 3fdfbe23547 Update dependency software.amazon.awssdk:bom to v2.30.10 (#2800)
