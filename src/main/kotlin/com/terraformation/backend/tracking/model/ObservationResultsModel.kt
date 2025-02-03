@@ -301,12 +301,12 @@ data class ObservationPlantingZoneRollupResultsModel(
       val mortalityRateStdDev =
           monitoringPlots
               .mapNotNull { plot ->
-                plot.mortalityRate?.let {
+                plot.mortalityRate?.let { mortalityRate ->
                   val permanentPlants =
                       plot.species.sumOf { species ->
                         species.permanentLive + species.cumulativeDead
                       }
-                  it to permanentPlants
+                  mortalityRate to permanentPlants
                 }
               }
               .calculateWeightedStandardDeviation()
@@ -403,12 +403,12 @@ data class ObservationRollupResultsModel(
       val mortalityRateStdDev =
           monitoringPlots
               .mapNotNull { plot ->
-                plot.mortalityRate?.let {
+                plot.mortalityRate?.let { mortalityRate ->
                   val permanentPlants =
                       plot.species.sumOf { species ->
                         species.permanentLive + species.cumulativeDead
                       }
-                  it to permanentPlants
+                  mortalityRate to permanentPlants
                 }
               }
               .calculateWeightedStandardDeviation()
