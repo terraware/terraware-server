@@ -1,3 +1,6 @@
+61b605ab905 Update plugin com.diffplug.spotless to v7.0.2 (#2801)
+9c7d826a8f5 Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.4 (#2798)
+3fdfbe23547 Update dependency software.amazon.awssdk:bom to v2.30.10 (#2800)
 75ac5106e3d Update dependency org.apache.tika:tika-core to v3.1.0 (#2795)
 cdc17e8845a Update dependency black to v25 (#2802)
 c705aa61d04 Update database dependencies (#2799)
