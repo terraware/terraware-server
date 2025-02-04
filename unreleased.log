@@ -1,3 +1,4 @@
+70e7e36e76f SW-6344 Flexible planting site edit calculator (#2793)
 0a4e83193d0 SW-6344 Eject monitoring plots outside of site after edit (#2790)
 f40e005da57 SW-6344 Use MonitoringPlotEdit.Create in zone edits (#2789)
 afd1969810f SW-6344 Add monitoring plot edits to PlantingSiteEdit (#2788)
