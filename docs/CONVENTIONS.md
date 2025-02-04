@@ -10,8 +10,7 @@ Currently, the build targets the Java 23 JVM. We use the Amazon Corretto JVM and
 
 All Kotlin code must be formatted with [ktfmt](https://github.com/facebookincubator/ktfmt). You can run ktfmt in a couple different ways:
 
-* Install the [ktfmt IntelliJ plugin](https://plugins.jetbrains.com/plugin/14912-ktfmt) (recommended). This will cause IntelliJ's "Reformat Code" action to use ktfmt (Default Code Style is fine).
-  * You can also enable this to run automatically on saving of the file if you want. To do this: Preferences -> Tools -> Actions on Save, enable Reformat Code (optionally limit file type) -> OK.
+* Install the [ktfmt IntelliJ plugin](https://plugins.jetbrains.com/plugin/14912-ktfmt) (recommended). This will cause IntelliJ's "Reformat Code" action to use ktfmt.
 * Invoke it from the command line. The project's Gradle configuration has a task for that purpose. On Mac/Linux, run `./gradlew spotlessApply` and on Windows, run `gradlew.bat spotlessApply`.
 
 There isn't currently a way to make IntelliJ's real-time formatting adhere strictly to ktfmt's formatting rules, but the supplied `.editorconfig` file is an approximation. IntelliJ should detect it and use it automatically.
