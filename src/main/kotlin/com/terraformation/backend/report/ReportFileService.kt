@@ -3,12 +3,12 @@ package com.terraformation.backend.report
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
-import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
-import com.terraformation.backend.db.default_schema.tables.daos.ReportFilesDao
-import com.terraformation.backend.db.default_schema.tables.daos.ReportPhotosDao
-import com.terraformation.backend.db.default_schema.tables.pojos.ReportFilesRow
-import com.terraformation.backend.db.default_schema.tables.pojos.ReportPhotosRow
+import com.terraformation.backend.db.default_schema.tables.daos.SeedFundReportFilesDao
+import com.terraformation.backend.db.default_schema.tables.daos.SeedFundReportPhotosDao
+import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportFilesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportPhotosRow
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.model.NewFileMetadata
@@ -25,31 +25,31 @@ import org.springframework.context.event.EventListener
 class ReportFileService(
     private val filesDao: FilesDao,
     private val fileService: FileService,
-    private val reportFilesDao: ReportFilesDao,
-    private val reportPhotosDao: ReportPhotosDao,
+    private val reportFilesDao: SeedFundReportFilesDao,
+    private val reportPhotosDao: SeedFundReportPhotosDao,
     private val reportStore: ReportStore,
 ) {
   private val log = perClassLogger()
 
-  fun storeFile(reportId: ReportId, data: InputStream, metadata: NewFileMetadata): FileId {
+  fun storeFile(reportId: SeedFundReportId, data: InputStream, metadata: NewFileMetadata): FileId {
     return store(reportId, data, metadata) { fileId ->
-      reportFilesDao.insert(ReportFilesRow(fileId = fileId, reportId = reportId))
+      reportFilesDao.insert(SeedFundReportFilesRow(fileId = fileId, reportId = reportId))
     }
   }
 
-  fun storePhoto(reportId: ReportId, data: InputStream, metadata: NewFileMetadata): FileId {
+  fun storePhoto(reportId: SeedFundReportId, data: InputStream, metadata: NewFileMetadata): FileId {
     return store(reportId, data, metadata) { fileId ->
-      reportPhotosDao.insert(ReportPhotosRow(fileId = fileId, reportId = reportId))
+      reportPhotosDao.insert(SeedFundReportPhotosRow(fileId = fileId, reportId = reportId))
     }
   }
 
   fun readPhoto(
-      reportId: ReportId,
+      reportId: SeedFundReportId,
       fileId: FileId,
       maxWidth: Int? = null,
       maxHeight: Int? = null
   ): SizedInputStream {
-    requirePermissions { readReport(reportId) }
+    requirePermissions { readSeedFundReport(reportId) }
 
     // Make sure the photo is owned by the report.
     fetchPhotosRow(reportId, fileId)
@@ -57,8 +57,8 @@ class ReportFileService(
     return fileService.readFile(fileId, maxWidth, maxHeight)
   }
 
-  fun readFile(reportId: ReportId, fileId: FileId): SizedInputStream {
-    requirePermissions { readReport(reportId) }
+  fun readFile(reportId: SeedFundReportId, fileId: FileId): SizedInputStream {
+    requirePermissions { readSeedFundReport(reportId) }
 
     // Make sure the file is owned by the report.
     fetchFilesRow(reportId, fileId)
@@ -66,8 +66,8 @@ class ReportFileService(
     return fileService.readFile(fileId)
   }
 
-  fun listPhotos(reportId: ReportId): List<ReportPhotoModel> {
-    requirePermissions { readReport(reportId) }
+  fun listPhotos(reportId: SeedFundReportId): List<ReportPhotoModel> {
+    requirePermissions { readSeedFundReport(reportId) }
 
     val photosRows = reportPhotosDao.fetchByReportId(reportId)
     if (photosRows.isEmpty()) {
@@ -83,15 +83,15 @@ class ReportFileService(
         .sortedBy { it.metadata.id }
   }
 
-  fun listFiles(reportId: ReportId): List<ReportFileModel> {
+  fun listFiles(reportId: SeedFundReportId): List<ReportFileModel> {
     return reportStore.fetchFilesByReportId(reportId)
   }
 
-  fun getFileModel(reportId: ReportId, fileId: FileId): ReportFileModel {
+  fun getFileModel(reportId: SeedFundReportId, fileId: FileId): ReportFileModel {
     return reportStore.fetchFileById(reportId, fileId)
   }
 
-  fun getPhotoModel(reportId: ReportId, fileId: FileId): ReportPhotoModel {
+  fun getPhotoModel(reportId: SeedFundReportId, fileId: FileId): ReportPhotoModel {
     val photosRow = fetchPhotosRow(reportId, fileId)
     val filesRow = filesDao.fetchOneById(fileId) ?: throw FileNotFoundException(fileId)
 
@@ -99,23 +99,23 @@ class ReportFileService(
   }
 
   fun updatePhoto(model: ReportPhotoModel) {
-    requirePermissions { updateReport(model.reportId) }
+    requirePermissions { updateSeedFundReport(model.reportId) }
 
     val row = fetchPhotosRow(model.reportId, model.metadata.id)
 
     reportPhotosDao.update(row.copy(caption = model.caption))
   }
 
-  fun deletePhoto(reportId: ReportId, fileId: FileId) {
-    requirePermissions { updateReport(reportId) }
+  fun deletePhoto(reportId: SeedFundReportId, fileId: FileId) {
+    requirePermissions { updateSeedFundReport(reportId) }
 
     val row = fetchPhotosRow(reportId, fileId)
 
     fileService.deleteFile(fileId) { reportPhotosDao.delete(row) }
   }
 
-  fun deleteFile(reportId: ReportId, fileId: FileId) {
-    requirePermissions { updateReport(reportId) }
+  fun deleteFile(reportId: SeedFundReportId, fileId: FileId) {
+    requirePermissions { updateSeedFundReport(reportId) }
 
     val row = fetchFilesRow(reportId, fileId)
 
@@ -131,12 +131,12 @@ class ReportFileService(
   }
 
   /**
-   * Returns the [ReportPhotosRow] for a specific photo on a specific report.
+   * Returns the [SeedFundReportPhotosRow] for a specific photo on a specific report.
    *
    * @throws FileNotFoundException The photo with the requested file ID was not associated with the
    *   requested report.
    */
-  private fun fetchPhotosRow(reportId: ReportId, fileId: FileId): ReportPhotosRow {
+  private fun fetchPhotosRow(reportId: SeedFundReportId, fileId: FileId): SeedFundReportPhotosRow {
     val row = reportPhotosDao.fetchOneByFileId(fileId)
     if (row?.reportId != reportId) {
       throw FileNotFoundException(fileId)
@@ -146,12 +146,12 @@ class ReportFileService(
   }
 
   /**
-   * Returns the [ReportFilesRow] for a specific file on a specific report.
+   * Returns the [SeedFundReportFilesRow] for a specific file on a specific report.
    *
    * @throws FileNotFoundException The file with the requested file ID was not associated with the
    *   requested report.
    */
-  private fun fetchFilesRow(reportId: ReportId, fileId: FileId): ReportFilesRow {
+  private fun fetchFilesRow(reportId: SeedFundReportId, fileId: FileId): SeedFundReportFilesRow {
     val row = reportFilesDao.fetchOneByFileId(fileId)
     if (row?.reportId != reportId) {
       throw FileNotFoundException(fileId)
@@ -161,12 +161,12 @@ class ReportFileService(
   }
 
   private fun store(
-      reportId: ReportId,
+      reportId: SeedFundReportId,
       data: InputStream,
       metadata: NewFileMetadata,
       insertChildRow: (FileId) -> Unit
   ): FileId {
-    requirePermissions { updateReport(reportId) }
+    requirePermissions { updateSeedFundReport(reportId) }
 
     val fileId = fileService.storeFile("report", data, metadata, null, insertChildRow)
 

@@ -105,8 +105,8 @@ val ENUM_TABLES =
                     listOf(
                         "accelerator\\.default_project_leads\\.region_id",
                         "countries\\.region_id")),
-                EnumTable("report_statuses", listOf("reports\\.status_id")),
                 EnumTable("roles"),
+                EnumTable("seed_fund_report_statuses", listOf("seed_fund_reports\\.status_id")),
                 EnumTable("seed_storage_behaviors"),
                 EnumTable("seed_treatments", listOf(".*\\.treatment_id")),
                 EnumTable("species_problem_fields", listOf("species_problems\\.field_id")),
@@ -280,7 +280,7 @@ val ID_WRAPPERS =
                 IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
                 IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),
                 IdWrapper("ProjectId", listOf("projects\\.id", ".*\\.project_id")),
-                IdWrapper("ReportId", listOf("reports\\.id", ".*\\.report_id")),
+                IdWrapper("SeedFundReportId", listOf("public\\.seed_fund_reports\\.id", "public\\..*\\.report_id")),
                 IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),
                 IdWrapper("SpeciesProblemId", listOf("species_problems\\.id")),
                 IdWrapper("SubLocationId", listOf("sub_locations\\.id", ".*\\.sub_location_id")),

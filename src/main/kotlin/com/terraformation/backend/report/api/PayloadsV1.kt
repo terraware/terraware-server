@@ -3,8 +3,8 @@ package com.terraformation.backend.report.api
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.ReportStatus
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -103,7 +103,7 @@ interface EditableReportFieldsV1 : EditableReportFields {
 @JsonTypeName("1")
 data class GetReportPayloadV1(
     override val annualDetails: AnnualDetailsPayloadV1?,
-    override val id: ReportId,
+    override val id: SeedFundReportId,
     val isAnnual: Boolean,
     override val lockedByName: String?,
     override val lockedByUserId: UserId?,
@@ -119,7 +119,7 @@ data class GetReportPayloadV1(
     override val projectName: String?,
     override val quarter: Int,
     override val seedBanks: List<GetSeedBankV1>,
-    override val status: ReportStatus,
+    override val status: SeedFundReportStatus,
     override val submittedByName: String?,
     override val submittedByUserId: UserId?,
     override val submittedTime: Instant?,

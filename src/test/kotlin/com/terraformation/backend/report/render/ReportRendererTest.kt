@@ -2,8 +2,8 @@ package com.terraformation.backend.report.render
 
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.ReportStatus
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.report.db.ReportStore
@@ -19,14 +19,14 @@ class ReportRendererTest {
   private val reportStore: ReportStore = mockk()
   private val renderer = ReportRenderer(mockk(), mockk(), reportStore, mockk())
 
-  private val reportId = ReportId(1)
+  private val reportId = SeedFundReportId(1)
   private val metadata =
       ReportMetadata(
           id = reportId,
           quarter = 4,
           year = 2023,
           organizationId = OrganizationId(1),
-          status = ReportStatus.Submitted)
+          status = SeedFundReportStatus.Submitted)
 
   private val csvHeader =
       "Deal ID" +

@@ -20,18 +20,18 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
-import com.terraformation.backend.db.ReportAlreadySubmittedException
-import com.terraformation.backend.db.ReportLockedException
-import com.terraformation.backend.db.ReportNotLockedException
+import com.terraformation.backend.db.SeedFundReportAlreadySubmittedException
+import com.terraformation.backend.db.SeedFundReportLockedException
+import com.terraformation.backend.db.SeedFundReportNotLockedException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.default_schema.tables.references.REPORTS
+import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORTS
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
@@ -85,7 +85,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
         objectMapper,
         parentStore,
         projectsDao,
-        reportsDao,
+        seedFundReportsDao,
     )
   }
   private val scheduler: JobScheduler = mockk()
@@ -167,15 +167,15 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     organizationId = insertOrganization()
 
-    every { user.canCreateReport(any()) } returns true
-    every { user.canDeleteReport(any()) } returns true
-    every { user.canListReports(any()) } returns true
+    every { user.canCreateSeedFundReport(any()) } returns true
+    every { user.canDeleteSeedFundReport(any()) } returns true
+    every { user.canListSeedFundReports(any()) } returns true
     every { user.canReadFacility(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
     every { user.canReadProject(any()) } returns true
-    every { user.canReadReport(any()) } returns true
-    every { user.canUpdateReport(any()) } returns true
+    every { user.canReadSeedFundReport(any()) } returns true
+    every { user.canUpdateSeedFundReport(any()) } returns true
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
 
     insertOrganizationUser(user.userId, organizationId, Role.Admin)
@@ -273,7 +273,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                   created.id,
                   organizationId = organizationId,
                   quarter = 4,
-                  status = ReportStatus.New,
+                  status = SeedFundReportStatus.New,
                   year = 1969,
               ),
           )
@@ -436,7 +436,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId,
                   projectName = "Test Project",
                   quarter = 4,
-                  status = ReportStatus.New,
+                  status = SeedFundReportStatus.New,
                   year = 1969,
               ),
           )
@@ -517,11 +517,11 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           1,
-          reportsDao.fetchByProjectId(reportsEnabledProject).size,
+          seedFundReportsDao.fetchByProjectId(reportsEnabledProject).size,
           "Should have created report for project with no existing reports and reports enabled")
       assertEquals(
           2,
-          reportsDao.fetchByProjectId(projectWithOlderReport).size,
+          seedFundReportsDao.fetchByProjectId(projectWithOlderReport).size,
           "Should have created current-quarter report for project with older report")
     }
 
@@ -535,7 +535,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           1,
-          reportsDao.fetchByProjectId(projectId).size,
+          seedFundReportsDao.fetchByProjectId(projectId).size,
           "Number of reports for project with no existing reports and no settings")
     }
 
@@ -551,7 +551,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           emptyList<Any>(),
-          reportsDao.fetchByProjectId(projectId),
+          seedFundReportsDao.fetchByProjectId(projectId),
           "Should not have created report for project with reports disabled")
     }
 
@@ -567,7 +567,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(reportId),
-          reportsDao.fetchByProjectId(projectId).map { it.id },
+          seedFundReportsDao.fetchByProjectId(projectId).map { it.id },
           "Should not have created additional report when one was already in progress")
     }
 
@@ -580,7 +580,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       service.createMissingReports(DailyTaskTimeArrivedEvent())
 
-      assertTableEmpty(REPORTS)
+      assertTableEmpty(SEED_FUND_REPORTS)
     }
   }
 
@@ -595,7 +595,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       service.on(OrganizationDeletionStartedEvent(organizationId))
 
-      assertEquals(listOf(otherOrgReportId), reportsDao.findAll().map { it.id }, "Report IDs")
+      assertEquals(
+          listOf(otherOrgReportId), seedFundReportsDao.findAll().map { it.id }, "Report IDs")
 
       assertIsEventListener<OrganizationDeletionStartedEvent>(service)
     }
@@ -616,13 +617,14 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       projectsDao.deleteById(deletedProjectId)
 
       assertFalse(
-          reportsDao.existsById(deletedProjectReportId),
+          seedFundReportsDao.existsById(deletedProjectReportId),
           "Should have deleted report for deleted project")
       assertTrue(
-          reportsDao.existsById(keptProjectReportId),
+          seedFundReportsDao.existsById(keptProjectReportId),
           "Should not have deleted report for non-deleted project")
       assertTrue(
-          reportsDao.existsById(orgLevelReportId), "Should not have deleted org-level report")
+          seedFundReportsDao.existsById(orgLevelReportId),
+          "Should not have deleted org-level report")
     }
 
     @Test
@@ -636,7 +638,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       projectsDao.deleteById(projectId)
 
-      val reportsRow = reportsDao.fetchOneById(submittedReportId)
+      val reportsRow = seedFundReportsDao.fetchOneById(submittedReportId)
       assertNotNull(reportsRow, "Should not have deleted submitted report")
       assertNull(reportsRow?.projectId, "Should have cleared project ID from submitted report")
       assertEquals(
@@ -644,7 +646,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
           reportsRow?.projectName,
           "Should have kept project name on submitted report")
       assertNotNull(
-          reportsDao.fetchOneById(orgLevelReportId), "Should not have deleted org-level report")
+          seedFundReportsDao.fetchOneById(orgLevelReportId),
+          "Should not have deleted org-level report")
     }
 
     @Test
@@ -919,7 +922,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if report is not locked`() {
       val reportId = insertReport()
 
-      assertThrows<ReportNotLockedException> { service.update(reportId) { it } }
+      assertThrows<SeedFundReportNotLockedException> { service.update(reportId) { it } }
     }
 
     @Test
@@ -927,14 +930,14 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val otherUserId = insertUser()
       val reportId = insertReport(lockedBy = otherUserId)
 
-      assertThrows<ReportLockedException> { service.update(reportId) { it } }
+      assertThrows<SeedFundReportLockedException> { service.update(reportId) { it } }
     }
 
     @Test
     fun `throws exception if report is already submitted`() {
       val reportId = insertReport(submittedBy = user.userId)
 
-      assertThrows<ReportAlreadySubmittedException> { service.update(reportId) { it } }
+      assertThrows<SeedFundReportAlreadySubmittedException> { service.update(reportId) { it } }
     }
   }
 
@@ -955,17 +958,18 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               year = 1990,
               submittedBy = user.userId,
-              status = ReportStatus.Submitted)
+              status = SeedFundReportStatus.Submitted)
       val lockedReportId =
           insertReport(
               projectId = projectId,
               year = 1991,
               lockedBy = user.userId,
-              status = ReportStatus.Locked)
-      val newReportId = insertReport(projectId = projectId, year = 1992, status = ReportStatus.New)
+              status = SeedFundReportStatus.Locked)
+      val newReportId =
+          insertReport(projectId = projectId, year = 1992, status = SeedFundReportStatus.New)
       val otherProjectReportId =
-          insertReport(projectId = otherProjectId, year = 1993, status = ReportStatus.New)
-      val orgReportId = insertReport(status = ReportStatus.New, year = 1994)
+          insertReport(projectId = otherProjectId, year = 1993, status = SeedFundReportStatus.New)
+      val orgReportId = insertReport(status = SeedFundReportStatus.New, year = 1994)
 
       service.on(ProjectRenamedEvent(projectId, "Old Name", "New Name"))
 
@@ -977,7 +981,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
               otherProjectReportId to "Other",
               orgReportId to null,
           ),
-          reportsDao.findAll().associate { it.id to it.projectName })
+          seedFundReportsDao.findAll().associate { it.id to it.projectName })
     }
   }
 

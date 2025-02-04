@@ -20,8 +20,8 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.ReportStatus
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
@@ -85,7 +85,7 @@ class ReportsController(
 
   @GetMapping("/{id}")
   @Operation(summary = "Retrieves the contents of a report.")
-  fun getReport(@PathVariable("id") id: ReportId): GetReportResponsePayload {
+  fun getReport(@PathVariable("id") id: SeedFundReportId): GetReportResponsePayload {
     val model = reportService.fetchOneById(id)
     val reportPayload = GetReportPayload.of(model, userStore::fetchFullNameById)
 
@@ -100,7 +100,7 @@ class ReportsController(
           "Only succeeds if the report is not currently locked or if it is locked by the " +
               "current user.")
   @PostMapping("/{id}/lock")
-  fun lockReport(@PathVariable("id") id: ReportId): SimpleSuccessResponsePayload {
+  fun lockReport(@PathVariable("id") id: SeedFundReportId): SimpleSuccessResponsePayload {
     reportStore.lock(id)
 
     return SimpleSuccessResponsePayload()
@@ -109,7 +109,7 @@ class ReportsController(
   @ApiResponse200("The report is now locked by the current user.")
   @Operation(summary = "Locks a report even if it is locked by another user already.")
   @PostMapping("/{id}/lock/force")
-  fun forceLockReport(@PathVariable("id") id: ReportId): SimpleSuccessResponsePayload {
+  fun forceLockReport(@PathVariable("id") id: SeedFundReportId): SimpleSuccessResponsePayload {
     reportStore.lock(id, true)
 
     return SimpleSuccessResponsePayload()
@@ -119,7 +119,7 @@ class ReportsController(
   @ApiResponse409("The report is locked by another user.")
   @Operation(summary = "Releases the lock on a report.")
   @PostMapping("/{id}/unlock")
-  fun unlockReport(@PathVariable("id") id: ReportId): SimpleSuccessResponsePayload {
+  fun unlockReport(@PathVariable("id") id: SeedFundReportId): SimpleSuccessResponsePayload {
     reportStore.unlock(id)
 
     return SimpleSuccessResponsePayload()
@@ -133,7 +133,7 @@ class ReportsController(
   )
   @PutMapping("/{id}")
   fun updateReport(
-      @PathVariable("id") id: ReportId,
+      @PathVariable("id") id: SeedFundReportId,
       @RequestBody payload: PutReportRequestPayload
   ): SimpleSuccessResponsePayload {
     reportService.update(id) { payload.report.copyTo(it) }
@@ -150,7 +150,7 @@ class ReportsController(
           "The report must be locked by the current user. Submitting a report releases the lock. " +
               "Once a report is submitted, it may no longer be locked or updated.")
   @PostMapping("/{id}/submit")
-  fun submitReport(@PathVariable("id") id: ReportId): SimpleSuccessResponsePayload {
+  fun submitReport(@PathVariable("id") id: SeedFundReportId): SimpleSuccessResponsePayload {
     try {
       reportStore.submit(id)
     } catch (e: ReportNotCompleteException) {
@@ -162,7 +162,7 @@ class ReportsController(
 
   @GetMapping("/{id}/photos")
   @Operation(summary = "Lists the photos associated with a report.")
-  fun listReportPhotos(@PathVariable("id") id: ReportId): ListReportPhotosResponsePayload {
+  fun listReportPhotos(@PathVariable("id") id: SeedFundReportId): ListReportPhotosResponsePayload {
     val photos = reportFileService.listPhotos(id)
 
     return ListReportPhotosResponsePayload(photos.map { ListReportPhotosResponseElement(it) })
@@ -172,7 +172,7 @@ class ReportsController(
   @GetMapping("/{reportId}/photos/{photoId}")
   @Operation(summary = "Gets the contents of a photo.", description = PHOTO_OPERATION_DESCRIPTION)
   fun getReportPhoto(
-      @PathVariable("reportId") reportId: ReportId,
+      @PathVariable("reportId") reportId: SeedFundReportId,
       @PathVariable("photoId") photoId: FileId,
       @QueryParam("maxWidth")
       @Schema(description = PHOTO_MAXWIDTH_DESCRIPTION)
@@ -191,7 +191,7 @@ class ReportsController(
   @Operation(summary = "Updates a photo's caption.")
   @PutMapping("/{reportId}/photos/{photoId}")
   fun updateReportPhoto(
-      @PathVariable("reportId") reportId: ReportId,
+      @PathVariable("reportId") reportId: SeedFundReportId,
       @PathVariable("photoId") photoId: FileId,
       @RequestBody payload: UpdateReportPhotoRequestPayload
   ): SimpleSuccessResponsePayload {
@@ -207,7 +207,7 @@ class ReportsController(
   @PostMapping("/{reportId}/photos", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @RequestBodyPhotoFile
   fun uploadReportPhoto(
-      @PathVariable("reportId") reportId: ReportId,
+      @PathVariable("reportId") reportId: SeedFundReportId,
       @RequestPart("file") file: MultipartFile
   ): UploadReportFileResponsePayload {
     val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
@@ -224,7 +224,7 @@ class ReportsController(
   @Operation(summary = "Deletes a photo from a report.")
   @DeleteMapping("/{reportId}/photos/{photoId}")
   fun deleteReportPhoto(
-      @PathVariable("reportId") reportId: ReportId,
+      @PathVariable("reportId") reportId: SeedFundReportId,
       @PathVariable("photoId") photoId: FileId
   ): SimpleSuccessResponsePayload {
     reportFileService.deletePhoto(reportId, photoId)
@@ -234,7 +234,7 @@ class ReportsController(
 
   @GetMapping("/{id}/files")
   @Operation(summary = "Lists the files associated with a report.")
-  fun listReportFiles(@PathVariable("id") id: ReportId): ListReportFilesResponsePayload {
+  fun listReportFiles(@PathVariable("id") id: SeedFundReportId): ListReportFilesResponsePayload {
     val files = reportFileService.listFiles(id)
 
     return ListReportFilesResponsePayload(files.map { ListReportFilesResponseElement(it) })
@@ -252,7 +252,7 @@ class ReportsController(
   @Operation(summary = "Downloads a file associated with a report.")
   @Produces
   fun downloadReportFile(
-      @PathVariable("reportId") reportId: ReportId,
+      @PathVariable("reportId") reportId: SeedFundReportId,
       @PathVariable("fileId") fileId: FileId,
   ): ResponseEntity<InputStreamResource> {
     return try {
@@ -272,7 +272,7 @@ class ReportsController(
   @io.swagger.v3.oas.annotations.parameters.RequestBody(
       content = [Content(encoding = [Encoding(name = "file", contentType = MediaType.ALL_VALUE)])])
   fun uploadReportFile(
-      @PathVariable("reportId") reportId: ReportId,
+      @PathVariable("reportId") reportId: SeedFundReportId,
       @RequestPart("file") file: MultipartFile
   ): UploadReportFileResponsePayload {
     val contentType = file.getPlainContentType() ?: MediaType.APPLICATION_OCTET_STREAM_VALUE
@@ -289,7 +289,7 @@ class ReportsController(
   @Operation(summary = "Deletes a file from a report.")
   @DeleteMapping("/{reportId}/files/{fileId}")
   fun deleteReportFile(
-      @PathVariable("reportId") reportId: ReportId,
+      @PathVariable("reportId") reportId: SeedFundReportId,
       @PathVariable("fileId") fileId: FileId
   ): SimpleSuccessResponsePayload {
     reportFileService.deleteFile(reportId, fileId)
@@ -300,7 +300,7 @@ class ReportsController(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class ListReportsResponseElement(
-    override val id: ReportId,
+    override val id: SeedFundReportId,
     override val lockedByName: String?,
     override val lockedByUserId: UserId?,
     override val lockedTime: Instant?,
@@ -310,7 +310,7 @@ data class ListReportsResponseElement(
     override val projectId: ProjectId?,
     override val projectName: String?,
     override val quarter: Int,
-    override val status: ReportStatus,
+    override val status: SeedFundReportStatus,
     override val submittedByName: String?,
     override val submittedByUserId: UserId?,
     override val submittedTime: Instant?,

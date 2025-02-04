@@ -109,9 +109,9 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.PlantMaterialSourcingMethod
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Region
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
@@ -143,9 +143,9 @@ import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectLandUseModelTypesDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectReportSettingsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
-import com.terraformation.backend.db.default_schema.tables.daos.ReportFilesDao
-import com.terraformation.backend.db.default_schema.tables.daos.ReportPhotosDao
-import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
+import com.terraformation.backend.db.default_schema.tables.daos.SeedFundReportFilesDao
+import com.terraformation.backend.db.default_schema.tables.daos.SeedFundReportPhotosDao
+import com.terraformation.backend.db.default_schema.tables.daos.SeedFundReportsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesEcosystemTypesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesGrowthFormsDao
@@ -169,7 +169,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationRep
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectLandUseModelTypesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSettingsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
-import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
@@ -581,9 +581,9 @@ abstract class DatabaseBackedTest {
   protected val recordedBranchesDao: RecordedBranchesDao by lazyDao()
   protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()
   protected val recordedTreesDao: RecordedTreesDao by lazyDao()
-  protected val reportFilesDao: ReportFilesDao by lazyDao()
-  protected val reportPhotosDao: ReportPhotosDao by lazyDao()
-  protected val reportsDao: ReportsDao by lazyDao()
+  protected val seedFundReportFilesDao: SeedFundReportFilesDao by lazyDao()
+  protected val seedFundReportPhotosDao: SeedFundReportPhotosDao by lazyDao()
+  protected val seedFundReportsDao: SeedFundReportsDao by lazyDao()
   protected val speciesDao: SpeciesDao by lazyDao()
   protected val speciesEcosystemTypesDao: SpeciesEcosystemTypesDao by lazyDao()
   protected val speciesGrowthFormsDao: SpeciesGrowthFormsDao by lazyDao()
@@ -2263,7 +2263,7 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertReport(
-      row: ReportsRow = ReportsRow(),
+      row: SeedFundReportsRow = SeedFundReportsRow(),
       body: String = row.body?.data() ?: """{"version":"1","organizationName":"org"}""",
       lockedBy: UserId? = row.lockedBy,
       lockedTime: Instant? = row.lockedTime ?: lockedBy?.let { Instant.EPOCH },
@@ -2273,15 +2273,15 @@ abstract class DatabaseBackedTest {
       quarter: Int = row.quarter ?: 1,
       submittedBy: UserId? = row.submittedBy,
       submittedTime: Instant? = row.submittedTime ?: submittedBy?.let { Instant.EPOCH },
-      status: ReportStatus =
+      status: SeedFundReportStatus =
           row.statusId
               ?: when {
-                lockedBy != null -> ReportStatus.Locked
-                submittedBy != null -> ReportStatus.Submitted
-                else -> ReportStatus.New
+                lockedBy != null -> SeedFundReportStatus.Locked
+                submittedBy != null -> SeedFundReportStatus.Submitted
+                else -> SeedFundReportStatus.New
               },
       year: Int = row.year ?: 1970,
-  ): ReportId {
+  ): SeedFundReportId {
     val projectNameWithDefault =
         projectName ?: projectId?.let { projectsDao.fetchOneById(it)?.name }
 
@@ -2300,9 +2300,9 @@ abstract class DatabaseBackedTest {
             year = year,
         )
 
-    reportsDao.insert(rowWithDefaults)
+    seedFundReportsDao.insert(rowWithDefaults)
 
-    return rowWithDefaults.id!!.also { inserted.reportIds.add(it) }
+    return rowWithDefaults.id!!.also { inserted.seedFundReportIds.add(it) }
   }
 
   fun insertOrganizationReportSettings(
@@ -3793,7 +3793,7 @@ abstract class DatabaseBackedTest {
     val plantingZoneIds = mutableListOf<PlantingZoneId>()
     val projectIds = mutableListOf<ProjectId>()
     val recordedTreeIds = mutableListOf<RecordedTreeId>()
-    val reportIds = mutableListOf<ReportId>()
+    val seedFundReportIds = mutableListOf<SeedFundReportId>()
     val speciesIds = mutableListOf<SpeciesId>()
     val subLocationIds = mutableListOf<SubLocationId>()
     val submissionDocumentIds = mutableListOf<SubmissionDocumentId>()
@@ -3915,8 +3915,8 @@ abstract class DatabaseBackedTest {
     val recordedTreeId
       get() = recordedTreeIds.last()
 
-    val reportId
-      get() = reportIds.last()
+    val seedFundReportId
+      get() = seedFundReportIds.last()
 
     val speciesId
       get() = speciesIds.last()

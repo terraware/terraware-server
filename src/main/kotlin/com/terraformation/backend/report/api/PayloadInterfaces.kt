@@ -3,8 +3,8 @@ package com.terraformation.backend.report.api
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.ReportStatus
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.report.model.LatestReportBodyModel
 import com.terraformation.backend.report.model.ReportBodyModelV1
@@ -26,7 +26,7 @@ interface EditableReportFields
 
 /** Version-independent metadata fields that are included in all GET response payloads. */
 interface ReportMetadataFields {
-  val id: ReportId
+  val id: SeedFundReportId
   val lockedByName: String?
   val lockedByUserId: UserId?
   val lockedTime: Instant?
@@ -36,7 +36,7 @@ interface ReportMetadataFields {
   val projectId: ProjectId?
   val projectName: String?
   val quarter: Int
-  val status: ReportStatus
+  val status: SeedFundReportStatus
   val submittedByName: String?
   val submittedByUserId: UserId?
   val submittedTime: Instant?

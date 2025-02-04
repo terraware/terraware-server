@@ -52,9 +52,9 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
@@ -561,10 +561,10 @@ internal class EmailNotificationServiceTest {
     service.on(
         ReportCreatedEvent(
             ReportMetadata(
-                ReportId(1),
+                SeedFundReportId(1),
                 organizationId = organization.id,
                 quarter = 3,
-                status = ReportStatus.New,
+                status = SeedFundReportStatus.New,
                 year = 2023)))
 
     val englishMessage = sentMessageFor("admin1@x.com")

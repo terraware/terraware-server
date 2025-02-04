@@ -4,7 +4,7 @@ import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.ReportService
 import com.terraformation.backend.report.db.ReportStore
@@ -35,13 +35,13 @@ class AdminReportsController(
 
   @GetMapping("/report/{id}/index.html")
   @Produces("text/html")
-  fun getReportHtml(@PathVariable("id") reportId: ReportId): ResponseEntity<String> {
+  fun getReportHtml(@PathVariable("id") reportId: SeedFundReportId): ResponseEntity<String> {
     return ResponseEntity.ok(reportRenderer.renderReportHtml(reportId))
   }
 
   @GetMapping("/report/{id}/report.csv")
   @Produces("text/csv")
-  fun getReportCsv(@PathVariable("id") reportId: ReportId): ResponseEntity<String> {
+  fun getReportCsv(@PathVariable("id") reportId: SeedFundReportId): ResponseEntity<String> {
     return ResponseEntity.ok()
         .contentType(MediaType("text", "csv", StandardCharsets.UTF_8))
         .body(reportRenderer.renderReportCsv(reportId))
@@ -66,10 +66,10 @@ class AdminReportsController(
   @PostMapping("/deleteReport")
   fun deleteReport(
       @RequestParam organizationId: OrganizationId,
-      @RequestParam reportId: ReportId,
+      @RequestParam reportId: SeedFundReportId,
       redirectAttributes: RedirectAttributes
   ): String {
-    requirePermissions { deleteReport(reportId) }
+    requirePermissions { deleteSeedFundReport(reportId) }
 
     try {
       reportStore.delete(reportId)
@@ -85,10 +85,10 @@ class AdminReportsController(
   @PostMapping("/exportReport")
   fun exportReport(
       @RequestParam organizationId: OrganizationId,
-      @RequestParam reportId: ReportId,
+      @RequestParam reportId: SeedFundReportId,
       redirectAttributes: RedirectAttributes
   ): String {
-    requirePermissions { createReport(organizationId) }
+    requirePermissions { createSeedFundReport(organizationId) }
 
     try {
       reportService.exportToGoogleDrive(reportId)

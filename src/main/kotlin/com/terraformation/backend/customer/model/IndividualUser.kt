@@ -22,8 +22,8 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
@@ -259,7 +259,7 @@ data class IndividualUser(
   override fun canCreateProject(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
 
   // Reports are normally created by the system, but can be created manually by super-admins.
-  override fun canCreateReport(organizationId: OrganizationId) = isSuperAdmin()
+  override fun canCreateSeedFundReport(organizationId: OrganizationId) = isSuperAdmin()
 
   override fun canCreateSavedVersion(documentId: DocumentId) = isTFExpertOrHigher()
 
@@ -314,7 +314,7 @@ data class IndividualUser(
   override fun canDeleteProject(projectId: ProjectId) =
       isAdminOrHigher(parentStore.getOrganizationId(projectId))
 
-  override fun canDeleteReport(reportId: ReportId): Boolean =
+  override fun canDeleteSeedFundReport(reportId: SeedFundReportId): Boolean =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))
 
   override fun canDeleteSelf() = true
@@ -350,7 +350,8 @@ data class IndividualUser(
   override fun canListOrganizationUsers(organizationId: OrganizationId) =
       isMember(organizationId) || isGlobalReader(organizationId)
 
-  override fun canListReports(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
+  override fun canListSeedFundReports(organizationId: OrganizationId) =
+      isAdminOrHigher(organizationId)
 
   override fun canManageDefaultProjectLeads() = isAcceleratorAdmin()
 
@@ -504,7 +505,7 @@ data class IndividualUser(
 
   override fun canReadProjectVotes(projectId: ProjectId) = isReadOnlyOrHigher()
 
-  override fun canReadReport(reportId: ReportId) =
+  override fun canReadSeedFundReport(reportId: SeedFundReportId) =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))
 
   // If this logic changes, make sure to also change code that bakes this rule into SQL queries
@@ -685,7 +686,7 @@ data class IndividualUser(
 
   override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = isTFExpertOrHigher()
 
-  override fun canUpdateReport(reportId: ReportId) =
+  override fun canUpdateSeedFundReport(reportId: SeedFundReportId) =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))
 
   override fun canUpdateSpecies(speciesId: SpeciesId) =

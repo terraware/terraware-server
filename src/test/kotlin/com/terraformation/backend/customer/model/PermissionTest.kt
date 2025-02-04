@@ -25,8 +25,8 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UserId
@@ -39,7 +39,7 @@ import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
-import com.terraformation.backend.db.default_schema.tables.references.REPORTS
+import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORTS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES
@@ -142,7 +142,7 @@ internal class PermissionTest : DatabaseTest() {
       listOf(org1Id, OrganizationId(2), OrganizationId(3), OrganizationId(4))
 
   // Org 2 is empty (no reports or species)
-  private val reportIds = listOf(ReportId(1), ReportId(3))
+  private val reportIds = listOf(SeedFundReportId(1), SeedFundReportId(3))
   private val speciesIds = listOf(SpeciesId(1), SpeciesId(3), SpeciesId(4))
 
   private val facilityIds = listOf(1000, 1001, 3000).map { FacilityId(it.toLong()) }
@@ -2474,7 +2474,7 @@ internal class PermissionTest : DatabaseTest() {
 
     givenRole(org1Id, Role.Owner)
 
-    dslContext.deleteFrom(REPORTS).execute()
+    dslContext.deleteFrom(SEED_FUND_REPORTS).execute()
     dslContext.deleteFrom(WITHDRAWALS).execute()
     dslContext.deleteFrom(BATCHES).execute()
     dslContext.deleteFrom(VIABILITY_TESTS).execute()
@@ -2584,7 +2584,7 @@ internal class PermissionTest : DatabaseTest() {
             "Can create project in organization $organizationId")
         assertEquals(
             createReport,
-            user.canCreateReport(idInDatabase),
+            user.canCreateSeedFundReport(idInDatabase),
             "Can create report in organization $organizationId")
         assertEquals(
             createSpecies,
@@ -2604,7 +2604,7 @@ internal class PermissionTest : DatabaseTest() {
             "Can list users in organization $organizationId")
         assertEquals(
             listReports,
-            user.canListReports(idInDatabase),
+            user.canListSeedFundReports(idInDatabase),
             "Can list reports in organization $organizationId")
         assertEquals(
             readOrganization,
@@ -3212,7 +3212,7 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun expect(
-        vararg reportIds: ReportId,
+        vararg reportIds: SeedFundReportId,
         deleteReport: Boolean = false,
         readReport: Boolean = false,
         updateReport: Boolean = false,
@@ -3221,10 +3221,11 @@ internal class PermissionTest : DatabaseTest() {
         val idInDatabase = getDatabaseId(reportId)
 
         assertEquals(
-            deleteReport, user.canDeleteReport(idInDatabase), "Can delete report $reportId")
-        assertEquals(readReport, user.canReadReport(idInDatabase), "Can read report $reportId")
+            deleteReport, user.canDeleteSeedFundReport(idInDatabase), "Can delete report $reportId")
         assertEquals(
-            updateReport, user.canUpdateReport(idInDatabase), "Can update report $reportId")
+            readReport, user.canReadSeedFundReport(idInDatabase), "Can read report $reportId")
+        assertEquals(
+            updateReport, user.canUpdateSeedFundReport(idInDatabase), "Can update report $reportId")
 
         uncheckedReports.remove(reportId)
       }

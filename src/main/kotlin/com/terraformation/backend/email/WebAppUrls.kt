@@ -9,7 +9,7 @@ import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
 import com.terraformation.backend.db.docprod.DocumentId
@@ -155,9 +155,9 @@ class WebAppUrls(
         .build()
   }
 
-  fun fullReport(reportId: ReportId, organizationId: OrganizationId): URI {
+  fun fullReport(seedFundReportId: SeedFundReportId, organizationId: OrganizationId): URI {
     return UriBuilder.fromUri(config.webAppUrl)
-        .path("/reports/$reportId")
+        .path("/reports/$seedFundReportId")
         .queryParam("organizationId", organizationId)
         .build()
   }
@@ -173,8 +173,8 @@ class WebAppUrls(
         .build()
   }
 
-  fun report(reportId: ReportId): URI {
-    return UriBuilder.fromPath("/reports/$reportId").build()
+  fun report(seedFundReportId: SeedFundReportId): URI {
+    return UriBuilder.fromPath("/reports/$seedFundReportId").build()
   }
 
   fun fullPlantingSite(organizationId: OrganizationId, plantingSiteId: PlantingSiteId): URI {

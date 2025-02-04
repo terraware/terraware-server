@@ -8,13 +8,13 @@ import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
-import com.terraformation.backend.db.ReportNotFoundException
+import com.terraformation.backend.db.SeedFundReportNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.tables.pojos.ReportFilesRow
-import com.terraformation.backend.db.default_schema.tables.pojos.ReportPhotosRow
-import com.terraformation.backend.db.default_schema.tables.references.REPORT_FILES
-import com.terraformation.backend.db.default_schema.tables.references.REPORT_PHOTOS
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportFilesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportPhotosRow
+import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORT_FILES
+import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORT_PHOTOS
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
@@ -61,28 +61,29 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
         jacksonObjectMapper(),
         ParentStore(dslContext),
         projectsDao,
-        reportsDao,
+        seedFundReportsDao,
     )
   }
   private val service: ReportFileService by lazy {
-    ReportFileService(filesDao, fileService, reportFilesDao, reportPhotosDao, reportStore)
+    ReportFileService(
+        filesDao, fileService, seedFundReportFilesDao, seedFundReportPhotosDao, reportStore)
   }
 
   private val excelContentType = "application/vnd.ms-excel"
-  private lateinit var reportId: ReportId
+  private lateinit var SeedFundReportId: SeedFundReportId
   private var storageUrlCount = 0
 
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    reportId = insertReport()
+    SeedFundReportId = insertReport()
 
     every { fileStore.delete(any()) } just Runs
     every { fileStore.newUrl(any(), any(), any()) } answers { URI("${++storageUrlCount}") }
     every { fileStore.write(any(), any()) } just Runs
     every { thumbnailStore.deleteThumbnails(any()) } just Runs
-    every { user.canReadReport(any()) } returns true
-    every { user.canUpdateReport(any()) } returns true
+    every { user.canReadSeedFundReport(any()) } returns true
+    every { user.canUpdateSeedFundReport(any()) } returns true
   }
 
   @Nested
@@ -99,10 +100,10 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       val storageUrls = filesDao.findAll().map { it.storageUrl!! }
 
-      service.on(ReportDeletionStartedEvent(reportId))
+      service.on(ReportDeletionStartedEvent(SeedFundReportId))
 
-      assertTableEmpty(REPORT_PHOTOS)
-      assertTableEmpty(REPORT_FILES)
+      assertTableEmpty(SEED_FUND_REPORT_PHOTOS)
+      assertTableEmpty(SEED_FUND_REPORT_FILES)
 
       storageUrls.forEach { verify { fileStore.delete(it) } }
       confirmVerified(fileStore)
@@ -124,22 +125,22 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
           listOf(
               ReportFileModel(
                   ExistingFileMetadata(excelContentType, "file1.xls", fileId1, 0, URI("1")),
-                  reportId),
+                  SeedFundReportId),
               ReportFileModel(
                   ExistingFileMetadata(excelContentType, "file2.xls", fileId2, 3, URI("2")),
-                  reportId),
+                  SeedFundReportId),
           )
 
-      val actual = service.listFiles(reportId)
+      val actual = service.listFiles(SeedFundReportId)
 
       assertEquals(expected, actual)
     }
 
     @Test
     fun `throws exception if no permission to read report`() {
-      every { user.canReadReport(any()) } returns false
+      every { user.canReadSeedFundReport(any()) } returns false
 
-      assertThrows<ReportNotFoundException> { service.listFiles(reportId) }
+      assertThrows<SeedFundReportNotFoundException> { service.listFiles(SeedFundReportId) }
     }
   }
 
@@ -152,7 +153,8 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
       // Shouldn't include photos from other reports
       storePhoto(insertReport(year = 1990))
 
-      reportPhotosDao.update(reportPhotosDao.fetchOneByFileId(fileId2)!!.copy(caption = "caption"))
+      seedFundReportPhotosDao.update(
+          seedFundReportPhotosDao.fetchOneByFileId(fileId2)!!.copy(caption = "caption"))
 
       val expected =
           listOf(
@@ -160,24 +162,24 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
                   null,
                   ExistingFileMetadata(
                       MediaType.IMAGE_JPEG_VALUE, "photo1.jpg", fileId1, 0, URI("1")),
-                  reportId),
+                  SeedFundReportId),
               ReportPhotoModel(
                   "caption",
                   ExistingFileMetadata(
                       MediaType.IMAGE_PNG_VALUE, "photo2.png", fileId2, 0, URI("2")),
-                  reportId),
+                  SeedFundReportId),
           )
 
-      val actual = service.listPhotos(reportId)
+      val actual = service.listPhotos(SeedFundReportId)
 
       assertEquals(expected, actual)
     }
 
     @Test
     fun `throws exception if no permission to read report`() {
-      every { user.canReadReport(any()) } returns false
+      every { user.canReadSeedFundReport(any()) } returns false
 
-      assertThrows<ReportNotFoundException> { service.listPhotos(reportId) }
+      assertThrows<SeedFundReportNotFoundException> { service.listPhotos(SeedFundReportId) }
     }
   }
 
@@ -190,25 +192,25 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       every { fileStore.read(URI("1")) } returns SizedInputStream(content.inputStream(), 10L)
 
-      val inputStream = service.readFile(reportId, fileId)
+      val inputStream = service.readFile(SeedFundReportId, fileId)
       assertArrayEquals(content, inputStream.readAllBytes(), "File content")
     }
 
     @Test
     fun `throws exception if file is on a different report`() {
-      val otherReportId = insertReport(year = 1990)
+      val otherSeedFundReportId = insertReport(year = 1990)
       val fileId = storeFile()
 
-      assertThrows<FileNotFoundException> { service.readFile(otherReportId, fileId) }
+      assertThrows<FileNotFoundException> { service.readFile(otherSeedFundReportId, fileId) }
     }
 
     @Test
     fun `throws exception if no permission to read report`() {
       val fileId = storeFile()
 
-      every { user.canReadReport(any()) } returns false
+      every { user.canReadSeedFundReport(any()) } returns false
 
-      assertThrows<ReportNotFoundException> { service.readFile(reportId, fileId) }
+      assertThrows<SeedFundReportNotFoundException> { service.readFile(SeedFundReportId, fileId) }
     }
   }
 
@@ -221,7 +223,7 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       every { fileStore.read(URI("1")) } returns SizedInputStream(content.inputStream(), 10L)
 
-      val inputStream = service.readPhoto(reportId, fileId)
+      val inputStream = service.readPhoto(SeedFundReportId, fileId)
       assertArrayEquals(content, inputStream.readAllBytes(), "File content")
     }
 
@@ -235,25 +237,25 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
       every { thumbnailStore.getThumbnailData(fileId, maxWidth, maxHeight) } returns
           SizedInputStream(content.inputStream(), 10L)
 
-      val inputStream = service.readPhoto(reportId, fileId, maxWidth, maxHeight)
+      val inputStream = service.readPhoto(SeedFundReportId, fileId, maxWidth, maxHeight)
       assertArrayEquals(content, inputStream.readAllBytes(), "Thumbnail content")
     }
 
     @Test
     fun `throws exception if photo is on a different report`() {
-      val otherReportId = insertReport(year = 1990)
+      val otherSeedFundReportId = insertReport(year = 1990)
       val fileId = storePhoto()
 
-      assertThrows<FileNotFoundException> { service.readPhoto(otherReportId, fileId) }
+      assertThrows<FileNotFoundException> { service.readPhoto(otherSeedFundReportId, fileId) }
     }
 
     @Test
     fun `throws exception if no permission to read report`() {
       val fileId = storePhoto()
 
-      every { user.canReadReport(any()) } returns false
+      every { user.canReadSeedFundReport(any()) } returns false
 
-      assertThrows<ReportNotFoundException> { service.readPhoto(reportId, fileId) }
+      assertThrows<SeedFundReportNotFoundException> { service.readPhoto(SeedFundReportId, fileId) }
     }
   }
 
@@ -263,12 +265,14 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
     fun `associates file with report`() {
       val fileId = storeFile()
 
-      assertEquals(listOf(ReportFilesRow(fileId, reportId)), reportFilesDao.findAll())
+      assertEquals(
+          listOf(SeedFundReportFilesRow(fileId, SeedFundReportId)),
+          seedFundReportFilesDao.findAll())
     }
 
     @Test
     fun `throws exception if no permission to update report`() {
-      every { user.canUpdateReport(any()) } returns false
+      every { user.canUpdateSeedFundReport(any()) } returns false
 
       assertThrows<AccessDeniedException> { storeFile() }
     }
@@ -280,12 +284,14 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
     fun `associates photo with report`() {
       val fileId = storePhoto()
 
-      assertEquals(listOf(ReportPhotosRow(reportId, fileId)), reportPhotosDao.findAll())
+      assertEquals(
+          listOf(SeedFundReportPhotosRow(SeedFundReportId, fileId)),
+          seedFundReportPhotosDao.findAll())
     }
 
     @Test
     fun `throws exception if no permission to update report`() {
-      every { user.canUpdateReport(any()) } returns false
+      every { user.canUpdateSeedFundReport(any()) } returns false
 
       assertThrows<AccessDeniedException> { storePhoto() }
     }
@@ -302,9 +308,9 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
           ReportPhotoModel(
               newCaption,
               ExistingFileMetadata(MediaType.IMAGE_JPEG_VALUE, "upload.jpg", fileId, 0, URI("/")),
-              reportId))
+              SeedFundReportId))
 
-      val row = reportPhotosDao.fetchOneByFileId(fileId)
+      val row = seedFundReportPhotosDao.fetchOneByFileId(fileId)
 
       assertEquals(newCaption, row?.caption)
     }
@@ -313,38 +319,38 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if no permission to update report`() {
       val fileId = storePhoto()
 
-      every { user.canUpdateReport(any()) } returns false
+      every { user.canUpdateSeedFundReport(any()) } returns false
 
       assertThrows<AccessDeniedException> {
         service.updatePhoto(
             ReportPhotoModel(
                 "caption",
                 ExistingFileMetadata(MediaType.IMAGE_JPEG_VALUE, "upload.jpg", fileId, 0, URI("/")),
-                reportId))
+                SeedFundReportId))
       }
     }
   }
 
   private fun storeFile(
-      reportId: ReportId = this.reportId,
+      SeedFundReportId: SeedFundReportId = this.SeedFundReportId,
       content: ByteArray = ByteArray(0),
       contentType: String = excelContentType,
       filename: String = "file.xls",
   ): FileId {
     return service.storeFile(
-        reportId,
+        SeedFundReportId,
         content.inputStream(),
         FileMetadata.of(contentType, filename, content.size.toLong()))
   }
 
   private fun storePhoto(
-      reportId: ReportId = this.reportId,
+      SeedFundReportId: SeedFundReportId = this.SeedFundReportId,
       content: ByteArray = ByteArray(0),
       contentType: String = MediaType.IMAGE_JPEG_VALUE,
       filename: String = "upload.jpg",
   ): FileId {
     return service.storePhoto(
-        reportId,
+        SeedFundReportId,
         content.inputStream(),
         FileMetadata.of(contentType, filename, content.size.toLong()))
   }

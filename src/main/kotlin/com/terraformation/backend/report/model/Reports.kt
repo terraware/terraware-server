@@ -6,11 +6,11 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.ReportStatus
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
-import com.terraformation.backend.db.default_schema.tables.references.REPORTS
+import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportsRow
+import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORTS
 import com.terraformation.backend.report.ReportNotCompleteException
 import java.time.Instant
 import org.jooq.Record
@@ -25,7 +25,7 @@ data class ReportModel(
 }
 
 data class ReportMetadata(
-    val id: ReportId,
+    val id: SeedFundReportId,
     val lockedBy: UserId? = null,
     val lockedTime: Instant? = null,
     val modifiedBy: UserId? = null,
@@ -34,13 +34,13 @@ data class ReportMetadata(
     val projectId: ProjectId? = null,
     val projectName: String? = null,
     val quarter: Int,
-    val status: ReportStatus,
+    val status: SeedFundReportStatus,
     val submittedBy: UserId? = null,
     val submittedTime: Instant? = null,
     val year: Int,
 ) {
   constructor(
-      row: ReportsRow
+      row: SeedFundReportsRow
   ) : this(
       id = row.id!!,
       lockedBy = row.lockedBy,
@@ -60,19 +60,19 @@ data class ReportMetadata(
   constructor(
       record: Record
   ) : this(
-      id = record[REPORTS.ID.asNonNullable()],
-      lockedBy = record[REPORTS.LOCKED_BY],
-      lockedTime = record[REPORTS.LOCKED_TIME],
-      modifiedBy = record[REPORTS.MODIFIED_BY],
-      modifiedTime = record[REPORTS.MODIFIED_TIME],
-      organizationId = record[REPORTS.ORGANIZATION_ID.asNonNullable()],
-      projectId = record[REPORTS.PROJECT_ID],
-      projectName = record[REPORTS.PROJECT_NAME],
-      quarter = record[REPORTS.QUARTER.asNonNullable()],
-      status = record[REPORTS.STATUS_ID.asNonNullable()],
-      submittedBy = record[REPORTS.SUBMITTED_BY],
-      submittedTime = record[REPORTS.SUBMITTED_TIME],
-      year = record[REPORTS.YEAR.asNonNullable()],
+      id = record[SEED_FUND_REPORTS.ID.asNonNullable()],
+      lockedBy = record[SEED_FUND_REPORTS.LOCKED_BY],
+      lockedTime = record[SEED_FUND_REPORTS.LOCKED_TIME],
+      modifiedBy = record[SEED_FUND_REPORTS.MODIFIED_BY],
+      modifiedTime = record[SEED_FUND_REPORTS.MODIFIED_TIME],
+      organizationId = record[SEED_FUND_REPORTS.ORGANIZATION_ID.asNonNullable()],
+      projectId = record[SEED_FUND_REPORTS.PROJECT_ID],
+      projectName = record[SEED_FUND_REPORTS.PROJECT_NAME],
+      quarter = record[SEED_FUND_REPORTS.QUARTER.asNonNullable()],
+      status = record[SEED_FUND_REPORTS.STATUS_ID.asNonNullable()],
+      submittedBy = record[SEED_FUND_REPORTS.SUBMITTED_BY],
+      submittedTime = record[SEED_FUND_REPORTS.SUBMITTED_TIME],
+      year = record[SEED_FUND_REPORTS.YEAR.asNonNullable()],
   )
 
   @get:JsonIgnore

@@ -12,8 +12,8 @@ import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.ReportStatus
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.BatchStore
@@ -65,7 +65,7 @@ class ReportService(
    * body will use whatever version was the latest one at the time it was submitted, and the
    * server-generated fields will have whatever values they had when the report was submitted.
    */
-  fun fetchOneById(reportId: ReportId): ReportModel {
+  fun fetchOneById(reportId: SeedFundReportId): ReportModel {
     val report = reportStore.fetchOneById(reportId)
 
     // Never refresh server-generated values in reports once they're submitted.
@@ -96,7 +96,7 @@ class ReportService(
    * (latest body version, all server-generated fields refreshed) and should return a copy with its
    * edits applied.
    */
-  fun update(reportId: ReportId, modify: (LatestReportBodyModel) -> LatestReportBodyModel) {
+  fun update(reportId: SeedFundReportId, modify: (LatestReportBodyModel) -> LatestReportBodyModel) {
     val modifiedBody = modify(fetchOneById(reportId).body.toLatestVersion())
 
     reportStore.update(reportId, modifiedBody)
@@ -129,7 +129,7 @@ class ReportService(
   fun on(event: ProjectDeletionStartedEvent) {
     reportStore
         .fetchMetadataByProject(event.projectId)
-        .filter { it.status != ReportStatus.Submitted }
+        .filter { it.status != SeedFundReportStatus.Submitted }
         .forEach { reportStore.delete(it.id) }
   }
 
@@ -161,7 +161,7 @@ class ReportService(
    * If the export fails, throws an exception. If the export was triggered by a report being
    * submitted, the exception will cause JobRunr to retry the export after a delay.
    */
-  fun exportToGoogleDrive(reportId: ReportId) {
+  fun exportToGoogleDrive(reportId: SeedFundReportId) {
     val driveId = config.report.googleDriveId
     if (config.report.exportEnabled && driveId != null) {
       systemUser.run {

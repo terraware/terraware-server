@@ -11,7 +11,7 @@ import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.report.event.ReportSubmittedEvent
 import com.terraformation.backend.report.model.ReportBodyModelV1
 import io.mockk.Runs
@@ -117,7 +117,7 @@ class FacilityServiceTest {
 
     val event =
         ReportSubmittedEvent(
-            ReportId(1),
+            SeedFundReportId(1),
             ReportBodyModelV1(
                 nurseries =
                     listOf(

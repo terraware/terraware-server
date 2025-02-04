@@ -7,8 +7,8 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
@@ -104,7 +104,7 @@ class SystemUser(
    * should only be performed manually by a system administrator.
    */
 
-  override fun canDeleteReport(reportId: ReportId): Boolean = false
+  override fun canDeleteSeedFundReport(reportId: SeedFundReportId): Boolean = false
 
   override fun canDeleteSelf(): Boolean = false
 

@@ -9,22 +9,22 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.ReportAlreadySubmittedException
-import com.terraformation.backend.db.ReportLockedException
-import com.terraformation.backend.db.ReportNotFoundException
-import com.terraformation.backend.db.ReportNotLockedException
-import com.terraformation.backend.db.ReportSubmittedException
+import com.terraformation.backend.db.SeedFundReportAlreadySubmittedException
+import com.terraformation.backend.db.SeedFundReportLockedException
+import com.terraformation.backend.db.SeedFundReportNotFoundException
+import com.terraformation.backend.db.SeedFundReportNotLockedException
+import com.terraformation.backend.db.SeedFundReportSubmittedException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.ReportStatus
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
-import com.terraformation.backend.db.default_schema.tables.daos.ReportsDao
-import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
+import com.terraformation.backend.db.default_schema.tables.daos.SeedFundReportsDao
+import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportsRow
 import com.terraformation.backend.db.default_schema.tables.records.ProjectReportSettingsRecord
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.FILES
@@ -32,9 +32,9 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_REPORT_SETTINGS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_REPORT_SETTINGS
-import com.terraformation.backend.db.default_schema.tables.references.REPORTS
-import com.terraformation.backend.db.default_schema.tables.references.REPORT_FILES
-import com.terraformation.backend.db.default_schema.tables.references.REPORT_PHOTOS
+import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORTS
+import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORT_FILES
+import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORT_PHOTOS
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.report.ReportService
@@ -68,7 +68,7 @@ class ReportStore(
     private val objectMapper: ObjectMapper,
     private val parentStore: ParentStore,
     private val projectsDao: ProjectsDao,
-    private val reportsDao: ReportsDao,
+    private val seedFundReportsDao: SeedFundReportsDao,
 ) {
   private val log = perClassLogger()
 
@@ -77,32 +77,33 @@ class ReportStore(
    *
    * You probably want [ReportService.fetchOneById] instead of this.
    */
-  fun fetchOneById(reportId: ReportId): ReportModel {
-    requirePermissions { readReport(reportId) }
+  fun fetchOneById(reportId: SeedFundReportId): ReportModel {
+    requirePermissions { readSeedFundReport(reportId) }
 
-    val row = reportsDao.fetchOneById(reportId) ?: throw ReportNotFoundException(reportId)
+    val row =
+        seedFundReportsDao.fetchOneById(reportId) ?: throw SeedFundReportNotFoundException(reportId)
     val body = objectMapper.readValue<ReportBodyModel>(row.body!!.data())
 
     return ReportModel(body, ReportMetadata(row))
   }
 
   fun fetchMetadataByOrganization(organizationId: OrganizationId): List<ReportMetadata> {
-    requirePermissions { listReports(organizationId) }
+    requirePermissions { listSeedFundReports(organizationId) }
 
-    return fetchMetadata(REPORTS.ORGANIZATION_ID.eq(organizationId))
+    return fetchMetadata(SEED_FUND_REPORTS.ORGANIZATION_ID.eq(organizationId))
   }
 
   fun fetchMetadataByProject(projectId: ProjectId): List<ReportMetadata> {
     val organizationId =
         parentStore.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
 
-    requirePermissions { listReports(organizationId) }
+    requirePermissions { listSeedFundReports(organizationId) }
 
-    return fetchMetadata(REPORTS.PROJECT_ID.eq(projectId))
+    return fetchMetadata(SEED_FUND_REPORTS.PROJECT_ID.eq(projectId))
   }
 
   private fun fetchMetadata(condition: Condition): MutableList<ReportMetadata> {
-    return with(REPORTS) {
+    return with(SEED_FUND_REPORTS) {
       dslContext
           .select(
               ID,
@@ -119,7 +120,7 @@ class ReportStore(
               SUBMITTED_TIME,
               YEAR,
           )
-          .from(REPORTS)
+          .from(this)
           .where(condition)
           .orderBy(YEAR.desc(), QUARTER.desc())
           .fetch { ReportMetadata(it) }
@@ -162,82 +163,95 @@ class ReportStore(
     )
   }
 
-  fun lock(reportId: ReportId, force: Boolean = false) {
-    requirePermissions { updateReport(reportId) }
+  fun lock(reportId: SeedFundReportId, force: Boolean = false) {
+    requirePermissions { updateSeedFundReport(reportId) }
 
     val userId = currentUser().userId
     val conditions =
         listOfNotNull(
-            REPORTS.ID.eq(reportId),
-            REPORTS.STATUS_ID.notEqual(ReportStatus.Submitted),
-            if (force) null else REPORTS.LOCKED_TIME.isNull.or(REPORTS.LOCKED_BY.eq(userId)),
+            SEED_FUND_REPORTS.ID.eq(reportId),
+            SEED_FUND_REPORTS.STATUS_ID.notEqual(SeedFundReportStatus.Submitted),
+            if (force) null
+            else SEED_FUND_REPORTS.LOCKED_TIME.isNull.or(SEED_FUND_REPORTS.LOCKED_BY.eq(userId)),
         )
 
     val rowsUpdated =
         dslContext
-            .update(REPORTS)
-            .set(REPORTS.LOCKED_BY, userId)
-            .set(REPORTS.LOCKED_TIME, clock.instant())
-            .set(REPORTS.STATUS_ID, ReportStatus.Locked)
+            .update(SEED_FUND_REPORTS)
+            .set(SEED_FUND_REPORTS.LOCKED_BY, userId)
+            .set(SEED_FUND_REPORTS.LOCKED_TIME, clock.instant())
+            .set(SEED_FUND_REPORTS.STATUS_ID, SeedFundReportStatus.Locked)
             .where(conditions)
             .execute()
 
     if (rowsUpdated != 1) {
       if (isSubmitted(reportId)) {
-        throw ReportSubmittedException(reportId)
+        throw SeedFundReportSubmittedException(reportId)
       }
 
       val reportExists =
-          dslContext.selectOne().from(REPORTS).where(REPORTS.ID.eq(reportId)).fetch().isNotEmpty
+          dslContext
+              .selectOne()
+              .from(SEED_FUND_REPORTS)
+              .where(SEED_FUND_REPORTS.ID.eq(reportId))
+              .fetch()
+              .isNotEmpty
       if (reportExists) {
-        throw ReportLockedException(reportId)
+        throw SeedFundReportLockedException(reportId)
       } else {
-        throw ReportNotFoundException(reportId)
+        throw SeedFundReportNotFoundException(reportId)
       }
     }
   }
 
-  fun unlock(reportId: ReportId) {
-    requirePermissions { updateReport(reportId) }
+  fun unlock(reportId: SeedFundReportId) {
+    requirePermissions { updateSeedFundReport(reportId) }
 
     val rowsUpdated =
         dslContext
-            .update(REPORTS)
-            .setNull(REPORTS.LOCKED_BY)
-            .setNull(REPORTS.LOCKED_TIME)
-            .set(REPORTS.STATUS_ID, ReportStatus.InProgress)
-            .where(REPORTS.ID.eq(reportId))
-            .and(REPORTS.LOCKED_BY.eq(currentUser().userId).or(REPORTS.LOCKED_BY.isNull))
-            .and(REPORTS.STATUS_ID.notEqual(ReportStatus.Submitted))
+            .update(SEED_FUND_REPORTS)
+            .setNull(SEED_FUND_REPORTS.LOCKED_BY)
+            .setNull(SEED_FUND_REPORTS.LOCKED_TIME)
+            .set(SEED_FUND_REPORTS.STATUS_ID, SeedFundReportStatus.InProgress)
+            .where(SEED_FUND_REPORTS.ID.eq(reportId))
+            .and(
+                SEED_FUND_REPORTS.LOCKED_BY.eq(currentUser().userId)
+                    .or(SEED_FUND_REPORTS.LOCKED_BY.isNull))
+            .and(SEED_FUND_REPORTS.STATUS_ID.notEqual(SeedFundReportStatus.Submitted))
             .execute()
 
     if (rowsUpdated != 1) {
       if (isSubmitted(reportId)) {
-        throw ReportSubmittedException(reportId)
+        throw SeedFundReportSubmittedException(reportId)
       }
 
       val reportExists =
-          dslContext.selectOne().from(REPORTS).where(REPORTS.ID.eq(reportId)).fetch().isNotEmpty
+          dslContext
+              .selectOne()
+              .from(SEED_FUND_REPORTS)
+              .where(SEED_FUND_REPORTS.ID.eq(reportId))
+              .fetch()
+              .isNotEmpty
       if (reportExists) {
-        throw ReportLockedException(reportId)
+        throw SeedFundReportLockedException(reportId)
       } else {
-        throw ReportNotFoundException(reportId)
+        throw SeedFundReportNotFoundException(reportId)
       }
     }
   }
 
-  fun update(reportId: ReportId, body: ReportBodyModel) {
-    requirePermissions { updateReport(reportId) }
+  fun update(reportId: SeedFundReportId, body: ReportBodyModel) {
+    requirePermissions { updateSeedFundReport(reportId) }
 
     val json = objectMapper.writeValueAsString(body)
 
     ifLocked(reportId) {
       dslContext
-          .update(REPORTS)
-          .set(REPORTS.BODY, JSONB.valueOf(json))
-          .set(REPORTS.MODIFIED_BY, currentUser().userId)
-          .set(REPORTS.MODIFIED_TIME, clock.instant())
-          .where(REPORTS.ID.eq(reportId))
+          .update(SEED_FUND_REPORTS)
+          .set(SEED_FUND_REPORTS.BODY, JSONB.valueOf(json))
+          .set(SEED_FUND_REPORTS.MODIFIED_BY, currentUser().userId)
+          .set(SEED_FUND_REPORTS.MODIFIED_TIME, clock.instant())
+          .where(SEED_FUND_REPORTS.ID.eq(reportId))
           .execute()
     }
   }
@@ -245,10 +259,10 @@ class ReportStore(
   /** Updates the name of a project on any project-level reports that haven't been submitted yet. */
   fun updateProjectName(projectId: ProjectId, newName: String) {
     dslContext
-        .update(REPORTS)
-        .set(REPORTS.PROJECT_NAME, newName)
-        .where(REPORTS.PROJECT_ID.eq(projectId))
-        .and(REPORTS.STATUS_ID.notEqual(ReportStatus.Submitted))
+        .update(SEED_FUND_REPORTS)
+        .set(SEED_FUND_REPORTS.PROJECT_NAME, newName)
+        .where(SEED_FUND_REPORTS.PROJECT_ID.eq(projectId))
+        .and(SEED_FUND_REPORTS.STATUS_ID.notEqual(SeedFundReportStatus.Submitted))
         .execute()
   }
 
@@ -267,23 +281,23 @@ class ReportStore(
       throw ProjectInDifferentOrganizationException()
     }
 
-    requirePermissions { createReport(organizationId) }
+    requirePermissions { createSeedFundReport(organizationId) }
 
     val lastQuarter = getLastQuarter()
 
     val row =
-        ReportsRow(
+        SeedFundReportsRow(
             organizationId = organizationId,
             projectId = project?.id,
             projectName = project?.name,
             quarter = lastQuarter.quarter,
             year = lastQuarter.year,
-            statusId = ReportStatus.New,
+            statusId = SeedFundReportStatus.New,
             body = JSONB.jsonb(objectMapper.writeValueAsString(body)),
         )
 
     return dslContext.transactionResult { _ ->
-      reportsDao.insert(row)
+      seedFundReportsDao.insert(row)
       val metadata = ReportMetadata(row)
 
       log.info(
@@ -295,30 +309,30 @@ class ReportStore(
     }
   }
 
-  fun submit(reportId: ReportId) {
-    requirePermissions { updateReport(reportId) }
+  fun submit(reportId: SeedFundReportId) {
+    requirePermissions { updateSeedFundReport(reportId) }
 
     try {
       ifLocked(reportId) {
         val body =
             dslContext
-                .select(REPORTS.BODY)
-                .from(REPORTS)
-                .where(REPORTS.ID.eq(reportId))
-                .fetchOne(REPORTS.BODY)!!
+                .select(SEED_FUND_REPORTS.BODY)
+                .from(SEED_FUND_REPORTS)
+                .where(SEED_FUND_REPORTS.ID.eq(reportId))
+                .fetchOne(SEED_FUND_REPORTS.BODY)!!
                 .let { objectMapper.readValue<ReportBodyModel>(it.data()) }
                 .toLatestVersion()
 
         body.validate()
 
         dslContext
-            .update(REPORTS)
-            .setNull(REPORTS.LOCKED_BY)
-            .setNull(REPORTS.LOCKED_TIME)
-            .set(REPORTS.STATUS_ID, ReportStatus.Submitted)
-            .set(REPORTS.SUBMITTED_BY, currentUser().userId)
-            .set(REPORTS.SUBMITTED_TIME, clock.instant())
-            .where(REPORTS.ID.eq(reportId))
+            .update(SEED_FUND_REPORTS)
+            .setNull(SEED_FUND_REPORTS.LOCKED_BY)
+            .setNull(SEED_FUND_REPORTS.LOCKED_TIME)
+            .set(SEED_FUND_REPORTS.STATUS_ID, SeedFundReportStatus.Submitted)
+            .set(SEED_FUND_REPORTS.SUBMITTED_BY, currentUser().userId)
+            .set(SEED_FUND_REPORTS.SUBMITTED_TIME, clock.instant())
+            .where(SEED_FUND_REPORTS.ID.eq(reportId))
             .execute()
 
         saveSeedBankInfo(body)
@@ -332,8 +346,8 @@ class ReportStore(
     }
   }
 
-  fun delete(reportId: ReportId) {
-    requirePermissions { deleteReport(reportId) }
+  fun delete(reportId: SeedFundReportId) {
+    requirePermissions { deleteSeedFundReport(reportId) }
 
     // Inform the system that we're about to delete the report and that any external resources tied
     // to it should be cleaned up.
@@ -348,7 +362,7 @@ class ReportStore(
     // partially deleted.
     eventPublisher.publishEvent(ReportDeletionStartedEvent(reportId))
 
-    reportsDao.deleteById(reportId)
+    seedFundReportsDao.deleteById(reportId)
   }
 
   fun updateSettings(model: ReportSettingsModel) {
@@ -406,10 +420,12 @@ class ReportStore(
         .where(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Reporter))
         .andNotExists(
             DSL.selectOne()
-                .from(REPORTS)
-                .where(REPORTS.ORGANIZATION_ID.eq(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID))
-                .and(REPORTS.QUARTER.eq(lastQuarter.quarter))
-                .and(REPORTS.YEAR.eq(lastQuarter.year)))
+                .from(SEED_FUND_REPORTS)
+                .where(
+                    SEED_FUND_REPORTS.ORGANIZATION_ID.eq(
+                        ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID))
+                .and(SEED_FUND_REPORTS.QUARTER.eq(lastQuarter.quarter))
+                .and(SEED_FUND_REPORTS.YEAR.eq(lastQuarter.year)))
         .andNotExists(
             DSL.selectOne()
                 .from(ORGANIZATION_REPORT_SETTINGS)
@@ -419,7 +435,7 @@ class ReportStore(
                 .and(ORGANIZATION_REPORT_SETTINGS.IS_ENABLED.isFalse))
         .orderBy(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID)
         .fetch(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.asNonNullable())
-        .filter { currentUser().canCreateReport(it) }
+        .filter { currentUser().canCreateSeedFundReport(it) }
   }
 
   /**
@@ -438,10 +454,10 @@ class ReportStore(
         .where(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Reporter))
         .andNotExists(
             DSL.selectOne()
-                .from(REPORTS)
-                .where(REPORTS.PROJECT_ID.eq(PROJECTS.ID))
-                .and(REPORTS.QUARTER.eq(lastQuarter.quarter))
-                .and(REPORTS.YEAR.eq(lastQuarter.year)))
+                .from(SEED_FUND_REPORTS)
+                .where(SEED_FUND_REPORTS.PROJECT_ID.eq(PROJECTS.ID))
+                .and(SEED_FUND_REPORTS.QUARTER.eq(lastQuarter.quarter))
+                .and(SEED_FUND_REPORTS.YEAR.eq(lastQuarter.year)))
         .andNotExists(
             DSL.selectOne()
                 .from(PROJECT_REPORT_SETTINGS)
@@ -449,12 +465,14 @@ class ReportStore(
                 .and(PROJECT_REPORT_SETTINGS.IS_ENABLED.isFalse))
         .orderBy(PROJECTS.ID)
         .fetch()
-        .filter { currentUser().canCreateReport(it[PROJECTS.ORGANIZATION_ID.asNonNullable()]) }
+        .filter {
+          currentUser().canCreateSeedFundReport(it[PROJECTS.ORGANIZATION_ID.asNonNullable()])
+        }
         .map { it[PROJECTS.ID.asNonNullable()] }
   }
 
-  fun fetchFilesByReportId(reportId: ReportId): List<ReportFileModel> {
-    requirePermissions { readReport(reportId) }
+  fun fetchFilesByReportId(reportId: SeedFundReportId): List<ReportFileModel> {
+    requirePermissions { readSeedFundReport(reportId) }
 
     return dslContext
         .select(
@@ -464,10 +482,10 @@ class ReportStore(
             FILES.SIZE,
             FILES.STORAGE_URL,
         )
-        .from(REPORT_FILES)
+        .from(SEED_FUND_REPORT_FILES)
         .join(FILES)
-        .on(REPORT_FILES.FILE_ID.eq(FILES.ID))
-        .where(REPORT_FILES.REPORT_ID.eq(reportId))
+        .on(SEED_FUND_REPORT_FILES.FILE_ID.eq(FILES.ID))
+        .where(SEED_FUND_REPORT_FILES.REPORT_ID.eq(reportId))
         .orderBy(FILES.ID)
         .fetch { record ->
           ReportFileModel(
@@ -477,8 +495,8 @@ class ReportStore(
         }
   }
 
-  fun fetchPhotosByReportId(reportId: ReportId): List<ReportPhotoModel> {
-    requirePermissions { readReport(reportId) }
+  fun fetchPhotosByReportId(reportId: SeedFundReportId): List<ReportPhotoModel> {
+    requirePermissions { readSeedFundReport(reportId) }
 
     return dslContext
         .select(
@@ -487,24 +505,24 @@ class ReportStore(
             FILES.ID,
             FILES.SIZE,
             FILES.STORAGE_URL,
-            REPORT_PHOTOS.CAPTION,
+            SEED_FUND_REPORT_PHOTOS.CAPTION,
         )
-        .from(REPORT_PHOTOS)
+        .from(SEED_FUND_REPORT_PHOTOS)
         .join(FILES)
-        .on(REPORT_PHOTOS.FILE_ID.eq(FILES.ID))
-        .where(REPORT_PHOTOS.REPORT_ID.eq(reportId))
+        .on(SEED_FUND_REPORT_PHOTOS.FILE_ID.eq(FILES.ID))
+        .where(SEED_FUND_REPORT_PHOTOS.REPORT_ID.eq(reportId))
         .orderBy(FILES.ID)
         .fetch { record ->
           ReportPhotoModel(
-              caption = record[REPORT_PHOTOS.CAPTION],
+              caption = record[SEED_FUND_REPORT_PHOTOS.CAPTION],
               metadata = FileMetadata.of(record),
               reportId = reportId,
           )
         }
   }
 
-  fun fetchFileById(reportId: ReportId, fileId: FileId): ReportFileModel {
-    requirePermissions { readReport(reportId) }
+  fun fetchFileById(reportId: SeedFundReportId, fileId: FileId): ReportFileModel {
+    requirePermissions { readSeedFundReport(reportId) }
 
     return dslContext
         .select(
@@ -514,11 +532,11 @@ class ReportStore(
             FILES.SIZE,
             FILES.STORAGE_URL,
         )
-        .from(REPORT_FILES)
+        .from(SEED_FUND_REPORT_FILES)
         .join(FILES)
-        .on(REPORT_FILES.FILE_ID.eq(FILES.ID))
-        .where(REPORT_FILES.REPORT_ID.eq(reportId))
-        .and(REPORT_FILES.FILE_ID.eq(fileId))
+        .on(SEED_FUND_REPORT_FILES.FILE_ID.eq(FILES.ID))
+        .where(SEED_FUND_REPORT_FILES.REPORT_ID.eq(reportId))
+        .and(SEED_FUND_REPORT_FILES.FILE_ID.eq(fileId))
         .fetchOne { record ->
           ReportFileModel(
               metadata = FileMetadata.of(record),
@@ -531,27 +549,27 @@ class ReportStore(
    * Calls a function if the current user holds the lock on a report, or throws an appropriate
    * exception if not. The function is called in a transaction with a row lock held on the report.
    *
-   * @throws ReportAlreadySubmittedException The report was already submitted.
-   * @throws ReportLockedException Another user holds the lock on the report.
-   * @throws ReportNotFoundException The report does not exist.
-   * @throws ReportNotLockedException The report is not locked by anyone.
+   * @throws SeedFundReportAlreadySubmittedException The report was already submitted.
+   * @throws SeedFundReportLockedException Another user holds the lock on the report.
+   * @throws SeedFundReportNotFoundException The report does not exist.
+   * @throws SeedFundReportNotLockedException The report is not locked by anyone.
    */
-  private fun <T> ifLocked(reportId: ReportId, func: () -> T) {
+  private fun <T> ifLocked(reportId: SeedFundReportId, func: () -> T) {
     return dslContext.transactionResult { _ ->
       val currentMetadata =
           dslContext
-              .select(REPORTS.LOCKED_BY, REPORTS.STATUS_ID)
-              .from(REPORTS)
-              .where(REPORTS.ID.eq(reportId))
+              .select(SEED_FUND_REPORTS.LOCKED_BY, SEED_FUND_REPORTS.STATUS_ID)
+              .from(SEED_FUND_REPORTS)
+              .where(SEED_FUND_REPORTS.ID.eq(reportId))
               .forUpdate()
-              .fetchOne() ?: throw ReportNotFoundException(reportId)
+              .fetchOne() ?: throw SeedFundReportNotFoundException(reportId)
 
-      if (currentMetadata[REPORTS.STATUS_ID] == ReportStatus.Submitted) {
-        throw ReportAlreadySubmittedException(reportId)
-      } else if (currentMetadata[REPORTS.LOCKED_BY] == null) {
-        throw ReportNotLockedException(reportId)
-      } else if (currentMetadata[REPORTS.LOCKED_BY] != currentUser().userId) {
-        throw ReportLockedException(reportId)
+      if (currentMetadata[SEED_FUND_REPORTS.STATUS_ID] == SeedFundReportStatus.Submitted) {
+        throw SeedFundReportAlreadySubmittedException(reportId)
+      } else if (currentMetadata[SEED_FUND_REPORTS.LOCKED_BY] == null) {
+        throw SeedFundReportNotLockedException(reportId)
+      } else if (currentMetadata[SEED_FUND_REPORTS.LOCKED_BY] != currentUser().userId) {
+        throw SeedFundReportLockedException(reportId)
       }
 
       func()
@@ -615,12 +633,12 @@ class ReportStore(
   }
 
   /** Returns whether a report corresponding to a given reportId has been submitted. */
-  private fun isSubmitted(reportId: ReportId): Boolean {
+  private fun isSubmitted(reportId: SeedFundReportId): Boolean {
     return dslContext
         .selectOne()
-        .from(REPORTS)
-        .where(REPORTS.ID.eq(reportId))
-        .and(REPORTS.STATUS_ID.eq(ReportStatus.Submitted))
+        .from(SEED_FUND_REPORTS)
+        .where(SEED_FUND_REPORTS.ID.eq(reportId))
+        .and(SEED_FUND_REPORTS.STATUS_ID.eq(SeedFundReportStatus.Submitted))
         .fetch()
         .isNotEmpty
   }

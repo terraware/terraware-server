@@ -3,7 +3,7 @@ package com.terraformation.backend.report.render
 import com.opencsv.CSVWriter
 import com.terraformation.backend.api.writeNext
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.report.ReportFileService
 import com.terraformation.backend.report.db.ReportStore
 import com.terraformation.backend.report.model.ReportBodyModel
@@ -24,7 +24,7 @@ class ReportRenderer(
     private val reportStore: ReportStore,
     private val templateEngine: SpringTemplateEngine,
 ) {
-  fun renderReportHtml(reportId: ReportId): String {
+  fun renderReportHtml(reportId: SeedFundReportId): String {
     val report = reportStore.fetchOneById(reportId)
 
     return renderReportHtml(report)
@@ -66,7 +66,7 @@ class ReportRenderer(
     }
   }
 
-  fun renderReportCsv(reportId: ReportId): String {
+  fun renderReportCsv(reportId: SeedFundReportId): String {
     val report = reportStore.fetchOneById(reportId)
 
     return renderReportCsv(report)
