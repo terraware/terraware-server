@@ -458,7 +458,10 @@ VALUES (1, 'Orthodox'),
        (7, 'Likely Intermediate'),
        (8, 'Intermediate - Cool Temperature Sensitive'),
        (9, 'Intermediate - Partial Desiccation Tolerant'),
-       (10, 'Intermediate - Short Lived')
+       (10, 'Intermediate - Short Lived'),
+       (11, 'Likely Intermediate - Cool Temperature Sensitive'),
+       (12, 'Likely Intermediate - Partial Desiccation Tolerant'),
+       (13, 'Likely Intermediate - Short Lived')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO seed_treatments (id, name)
