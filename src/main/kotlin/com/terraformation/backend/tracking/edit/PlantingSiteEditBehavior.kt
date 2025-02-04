@@ -6,5 +6,10 @@ enum class PlantingSiteEditBehavior {
    * Original behavior with restrictions on which boundaries can be edited once a site has
    * observations.
    */
-  Restricted
+  Restricted,
+  /**
+   * New behavior that allows arbitrary map edits including changing boundaries between planting
+   * zones, even on sites with observations.
+   */
+  Flexible
 }
