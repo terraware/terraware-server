@@ -79,6 +79,8 @@ import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotEmpty
 import jakarta.ws.rs.BadRequestException
 import java.math.BigDecimal
 import java.time.Instant
@@ -518,7 +520,7 @@ class ObservationsController(
   @Operation(summary = "Schedules a new observation.")
   @PostMapping
   fun scheduleObservation(
-      @RequestBody payload: ScheduleObservationRequestPayload
+      @RequestBody @Valid payload: ScheduleObservationRequestPayload
   ): ScheduleObservationResponsePayload {
     val id = observationService.scheduleObservation(payload.toModel())
 
@@ -1473,11 +1475,12 @@ data class ScheduleObservationRequestPayload(
     val endDate: LocalDate,
     @Schema(description = "Which planting site this observation needs to be scheduled for.")
     val plantingSiteId: PlantingSiteId,
-    @Schema(
-        description =
-            "If this observation should only cover specific parts of the planting site, the IDs " +
-                "of the subzones it should include.")
-    val requestedSubzoneIds: Set<PlantingSubzoneId>? = null,
+    @field:NotEmpty
+    @ArraySchema(
+        arraySchema =
+            Schema(description = "The IDs of the subzones this observation should cover."),
+        minItems = 1)
+    val requestedSubzoneIds: Set<PlantingSubzoneId>,
     @Schema(
         description =
             "The start date for this observation, can be up to a year from the date this " +
@@ -1491,7 +1494,7 @@ data class ScheduleObservationRequestPayload(
           isAdHoc = false,
           observationType = ObservationType.Monitoring,
           plantingSiteId = plantingSiteId,
-          requestedSubzoneIds = requestedSubzoneIds ?: emptySet(),
+          requestedSubzoneIds = requestedSubzoneIds,
           startDate = startDate,
           state = ObservationState.Upcoming)
 }
