@@ -40,12 +40,6 @@ sealed interface PlantingZoneEdit {
    */
   val monitoringPlotEdits: List<MonitoringPlotEdit.Create>
 
-  /**
-   * Number of permanent clusters to add to the zone. These clusters must all be located in
-   * [addedRegion].
-   */
-  val numPermanentClustersToAdd: Int
-
   /** Edits to this zone's subzones. */
   val plantingSubzoneEdits: List<PlantingSubzoneEdit>
 
@@ -61,7 +55,6 @@ sealed interface PlantingZoneEdit {
           areaHaDifference.equalsIgnoreScale(other.areaHaDifference) &&
           desiredModel == other.desiredModel &&
           existingModel == other.existingModel &&
-          numPermanentClustersToAdd == other.numPermanentClustersToAdd &&
           monitoringPlotEdits.size == other.monitoringPlotEdits.size &&
           monitoringPlotEdits.zip(other.monitoringPlotEdits).all { (edit, otherEdit) ->
             edit.equalsExact(otherEdit, tolerance)
@@ -86,9 +79,6 @@ sealed interface PlantingZoneEdit {
     override val existingModel: ExistingPlantingZoneModel?
       get() = null
 
-    override val numPermanentClustersToAdd: Int
-      get() = 0
-
     override val removedRegion: MultiPolygon?
       get() = null
   }
@@ -109,9 +99,6 @@ sealed interface PlantingZoneEdit {
     override val monitoringPlotEdits: List<MonitoringPlotEdit.Create>
       get() = emptyList()
 
-    override val numPermanentClustersToAdd: Int
-      get() = 0
-
     override val removedRegion: MultiPolygon
       get() = existingModel.boundary
   }
@@ -122,7 +109,6 @@ sealed interface PlantingZoneEdit {
       override val desiredModel: AnyPlantingZoneModel,
       override val existingModel: ExistingPlantingZoneModel,
       override val monitoringPlotEdits: List<MonitoringPlotEdit.Create>,
-      override val numPermanentClustersToAdd: Int,
       override val plantingSubzoneEdits: List<PlantingSubzoneEdit>,
       override val removedRegion: MultiPolygon,
   ) : PlantingZoneEdit

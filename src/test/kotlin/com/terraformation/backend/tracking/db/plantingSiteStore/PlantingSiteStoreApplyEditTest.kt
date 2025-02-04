@@ -95,7 +95,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           initial = newSite(width = 500) { zone(numPermanent = 7) },
           desired =
               newSite(width = 750) {
-                zone {
+                zone(numPermanent = 7) {
                   subzone(width = 500)
                   subzone()
                 }
@@ -146,7 +146,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               newSite(width = 500) {
                 zone(numPermanent = 7) { subzone { repeat(7) { cluster() } } }
               },
-          desired = newSite(width = 750),
+          desired = newSite(width = 750) { zone(numPermanent = 7) },
           expected = newSite(width = 750) { zone(numPermanent = 10, extraPermanent = 3) },
           expectedPlotCounts =
               listOf(
@@ -212,7 +212,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                         }
                       }
                     },
-                desired = newSite(width = 1000),
+                desired = newSite(width = 1000) { zone(numPermanent = 2) },
                 expected =
                     newSite(width = 1000) {
                       name = "Site $currentAttempt"
@@ -346,7 +346,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               },
           desired =
               newSite(height = 600) {
-                zone {
+                zone(numPermanent = 1) {
                   subzone(width = 250)
                   subzone(width = 250)
                 }
@@ -381,7 +381,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               },
           desired =
               newSite(width = 600) {
-                zone {
+                zone(numPermanent = 1) {
                   subzone(width = 250)
                   subzone(width = 350)
                 }
@@ -482,7 +482,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
      * 3. Applies the edit
      * 4. Compares the result to an expected configuration
      *
-     * Since monitoring plots can be created at random locations, we can't compare them to a fix
+     * Since monitoring plots can be created at random locations, we can't compare them to a fixed
      * list of expected values. Instead, we assert that there are the expected number of plots in
      * specific regions.
      */
