@@ -8,7 +8,4 @@ import org.jooq.DSLContext
 class ReportStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
-) {
-
-
-}
+) {}
