@@ -6,7 +6,7 @@ import com.terraformation.backend.customer.event.FacilityTimeZoneChangedEvent
 import com.terraformation.backend.customer.event.OrganizationTimeZoneChangedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.report.event.ReportSubmittedEvent
+import com.terraformation.backend.report.event.SeedFundReportSubmittedEvent
 import jakarta.inject.Named
 import org.jobrunr.jobs.annotations.Job
 import org.jobrunr.jobs.annotations.Recurring
@@ -46,7 +46,7 @@ class FacilityService(
   }
 
   @EventListener
-  fun on(event: ReportSubmittedEvent) {
+  fun on(event: SeedFundReportSubmittedEvent) {
     event.body.nurseries.forEach { nurseryBody ->
       val existing = facilityStore.fetchOneById(nurseryBody.id)
       val updated =

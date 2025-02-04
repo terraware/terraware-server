@@ -143,17 +143,17 @@ COMMENT ON COLUMN rate_limited_events.event_class IS 'Fully-qualified class name
 
 COMMENT ON TABLE regions IS '(Enum) Parts of the world where countries are located.';
 
-COMMENT ON TABLE report_files IS 'Linking table between `reports` and `files` for non-photo files.';
-
-COMMENT ON TABLE report_photos IS 'Linking table between `reports` and `files` for photos.';
-
-COMMENT ON TABLE report_statuses IS '(Enum) Describes where in the workflow each partner report is.';
-
-COMMENT ON TABLE reports IS 'Partner-submitted reports about their organizations and projects.';
-COMMENT ON COLUMN reports.project_id IS 'If this report is for a specific project and the project still exists, the project ID. If the project has been deleted, this will be null but `project_name` will still be populated.';
-COMMENT ON COLUMN reports.project_name IS 'If this report is for a specific project, the name of the project as of the time the report was submitted.';
-
 COMMENT ON TABLE roles IS '(Enum) Roles a user is allowed to have in an organization.';
+
+COMMENT ON TABLE seed_fund_report_files IS 'Linking table between `reports` and `files` for non-photo files.';
+
+COMMENT ON TABLE seed_fund_report_photos IS 'Linking table between `reports` and `files` for photos.';
+
+COMMENT ON TABLE seed_fund_report_statuses IS '(Enum) Describes where in the workflow each partner report is.';
+
+COMMENT ON TABLE seed_fund_reports IS 'Partner-submitted reports about their organizations and projects.';
+COMMENT ON COLUMN seed_fund_reports.project_id IS 'If this report is for a specific project and the project still exists, the project ID. If the project has been deleted, this will be null but `project_name` will still be populated.';
+COMMENT ON COLUMN seed_fund_reports.project_name IS 'If this report is for a specific project, the name of the project as of the time the report was submitted.';
 
 COMMENT ON TABLE seedbank.seed_quantity_units IS '(Enum) Available units in which seeds can be measured. For weight-based units, includes unit conversion information.';
 

@@ -3,12 +3,12 @@ package com.terraformation.backend.report.render
 import com.opencsv.CSVWriter
 import com.terraformation.backend.api.writeNext
 import com.terraformation.backend.customer.db.OrganizationStore
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.report.ReportFileService
-import com.terraformation.backend.report.db.ReportStore
-import com.terraformation.backend.report.model.ReportBodyModel
-import com.terraformation.backend.report.model.ReportBodyModelV1
-import com.terraformation.backend.report.model.ReportModel
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.report.SeedFundReportFileService
+import com.terraformation.backend.report.db.SeedFundReportStore
+import com.terraformation.backend.report.model.SeedFundReportBodyModel
+import com.terraformation.backend.report.model.SeedFundReportBodyModelV1
+import com.terraformation.backend.report.model.SeedFundReportModel
 import jakarta.inject.Named
 import java.io.StringWriter
 import java.time.Month
@@ -18,23 +18,23 @@ import org.thymeleaf.context.Context
 import org.thymeleaf.spring6.SpringTemplateEngine
 
 @Named
-class ReportRenderer(
+class SeedFundReportRenderer(
     private val organizationStore: OrganizationStore,
-    private val reportFileService: ReportFileService,
-    private val reportStore: ReportStore,
+    private val seedFundReportFileService: SeedFundReportFileService,
+    private val seedFundReportStore: SeedFundReportStore,
     private val templateEngine: SpringTemplateEngine,
 ) {
-  fun renderReportHtml(reportId: ReportId): String {
-    val report = reportStore.fetchOneById(reportId)
+  fun renderReportHtml(reportId: SeedFundReportId): String {
+    val report = seedFundReportStore.fetchOneById(reportId)
 
     return renderReportHtml(report)
   }
 
-  fun renderReportHtml(report: ReportModel): String {
+  fun renderReportHtml(report: SeedFundReportModel): String {
     val reportId = report.metadata.id
 
-    val files = reportFileService.listFiles(reportId)
-    val photos = reportFileService.listPhotos(reportId)
+    val files = seedFundReportFileService.listFiles(reportId)
+    val photos = seedFundReportFileService.listPhotos(reportId)
     val organization = organizationStore.fetchOneById(report.metadata.organizationId)
     val context = Context()
 
@@ -54,7 +54,7 @@ class ReportRenderer(
     context.setVariable("photos", photos)
 
     return when (report.body) {
-      is ReportBodyModelV1 -> {
+      is SeedFundReportBodyModelV1 -> {
         // Render best months as a list of English month names.
         context.setVariable(
             "bestMonths",
@@ -66,17 +66,17 @@ class ReportRenderer(
     }
   }
 
-  fun renderReportCsv(reportId: ReportId): String {
-    val report = reportStore.fetchOneById(reportId)
+  fun renderReportCsv(reportId: SeedFundReportId): String {
+    val report = seedFundReportStore.fetchOneById(reportId)
 
     return renderReportCsv(report)
   }
 
-  fun renderReportCsv(report: ReportModel): String {
-    val body: ReportBodyModel = report.body
+  fun renderReportCsv(report: SeedFundReportModel): String {
+    val body: SeedFundReportBodyModel = report.body
     val columnValues: List<Pair<String, Any?>> =
         when (body) {
-          is ReportBodyModelV1 -> {
+          is SeedFundReportBodyModelV1 -> {
             val nurseries = body.nurseries.filter { it.selected }
             val plantingSites = body.plantingSites.filter { it.selected }
             val seedBanks = body.seedBanks.filter { it.selected }

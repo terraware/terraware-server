@@ -52,9 +52,9 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
@@ -86,8 +86,8 @@ import com.terraformation.backend.email.model.ObservationNotScheduled
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.multiPolygon
-import com.terraformation.backend.report.event.ReportCreatedEvent
-import com.terraformation.backend.report.model.ReportMetadata
+import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
+import com.terraformation.backend.report.model.SeedFundReportMetadata
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
@@ -559,12 +559,12 @@ internal class EmailNotificationServiceTest {
     } returns admins.map { userForEmail(it) }
 
     service.on(
-        ReportCreatedEvent(
-            ReportMetadata(
-                ReportId(1),
+        SeedFundReportCreatedEvent(
+            SeedFundReportMetadata(
+                SeedFundReportId(1),
                 organizationId = organization.id,
                 quarter = 3,
-                status = ReportStatus.New,
+                status = SeedFundReportStatus.New,
                 year = 2023)))
 
     val englishMessage = sentMessageFor("admin1@x.com")

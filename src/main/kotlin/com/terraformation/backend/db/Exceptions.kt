@@ -11,7 +11,7 @@ import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesProblemId
 import com.terraformation.backend.db.default_schema.SubLocationId
@@ -152,20 +152,21 @@ class ProjectInDifferentOrganizationException :
 class ProjectNotFoundException(val projectId: ProjectId) :
     EntityNotFoundException("Project $projectId not found")
 
-class ReportAlreadySubmittedException(val reportId: ReportId) :
-    MismatchedStateException("Report $reportId has already been submitted and cannot be modified")
+class SeedFundReportAlreadySubmittedException(val reportId: SeedFundReportId) :
+    MismatchedStateException(
+        "Seed Fund Report $reportId has already been submitted and cannot be modified")
 
-class ReportLockedException(val reportId: ReportId) :
-    MismatchedStateException("Report $reportId is locked by another user")
+class SeedFundReportLockedException(val reportId: SeedFundReportId) :
+    MismatchedStateException("Seed Fund Report $reportId is locked by another user")
 
-class ReportSubmittedException(val reportId: ReportId) :
-    MismatchedStateException("Report $reportId has been submitted")
+class SeedFundReportSubmittedException(val reportId: SeedFundReportId) :
+    MismatchedStateException("Seed Fund Report $reportId has been submitted")
 
-class ReportNotFoundException(val reportId: ReportId) :
-    EntityNotFoundException("Report $reportId not found")
+class SeedFundReportNotFoundException(val reportId: SeedFundReportId) :
+    EntityNotFoundException("Seed Fund Report $reportId not found")
 
-class ReportNotLockedException(val reportId: ReportId) :
-    MismatchedStateException("Report $reportId is not locked")
+class SeedFundReportNotLockedException(val reportId: SeedFundReportId) :
+    MismatchedStateException("Seed Fund Report $reportId is not locked")
 
 class SpeciesInUseException(val speciesId: SpeciesId) :
     MismatchedStateException("Species $speciesId is in use")

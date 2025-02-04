@@ -6,26 +6,26 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.ReportStatus
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.db.default_schema.tables.pojos.ReportsRow
-import com.terraformation.backend.db.default_schema.tables.references.REPORTS
-import com.terraformation.backend.report.ReportNotCompleteException
+import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportsRow
+import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORTS
+import com.terraformation.backend.report.SeedFundReportNotCompleteException
 import java.time.Instant
 import org.jooq.Record
 
 /** A report consists of a fixed set of metadata and a variable-format body. */
-data class ReportModel(
-    val body: ReportBodyModel,
-    val metadata: ReportMetadata,
+data class SeedFundReportModel(
+    val body: SeedFundReportBodyModel,
+    val metadata: SeedFundReportMetadata,
 ) {
   val isSubmitted: Boolean
     get() = metadata.isSubmitted
 }
 
-data class ReportMetadata(
-    val id: ReportId,
+data class SeedFundReportMetadata(
+    val id: SeedFundReportId,
     val lockedBy: UserId? = null,
     val lockedTime: Instant? = null,
     val modifiedBy: UserId? = null,
@@ -34,13 +34,13 @@ data class ReportMetadata(
     val projectId: ProjectId? = null,
     val projectName: String? = null,
     val quarter: Int,
-    val status: ReportStatus,
+    val status: SeedFundReportStatus,
     val submittedBy: UserId? = null,
     val submittedTime: Instant? = null,
     val year: Int,
 ) {
   constructor(
-      row: ReportsRow
+      row: SeedFundReportsRow
   ) : this(
       id = row.id!!,
       lockedBy = row.lockedBy,
@@ -60,19 +60,19 @@ data class ReportMetadata(
   constructor(
       record: Record
   ) : this(
-      id = record[REPORTS.ID.asNonNullable()],
-      lockedBy = record[REPORTS.LOCKED_BY],
-      lockedTime = record[REPORTS.LOCKED_TIME],
-      modifiedBy = record[REPORTS.MODIFIED_BY],
-      modifiedTime = record[REPORTS.MODIFIED_TIME],
-      organizationId = record[REPORTS.ORGANIZATION_ID.asNonNullable()],
-      projectId = record[REPORTS.PROJECT_ID],
-      projectName = record[REPORTS.PROJECT_NAME],
-      quarter = record[REPORTS.QUARTER.asNonNullable()],
-      status = record[REPORTS.STATUS_ID.asNonNullable()],
-      submittedBy = record[REPORTS.SUBMITTED_BY],
-      submittedTime = record[REPORTS.SUBMITTED_TIME],
-      year = record[REPORTS.YEAR.asNonNullable()],
+      id = record[SEED_FUND_REPORTS.ID.asNonNullable()],
+      lockedBy = record[SEED_FUND_REPORTS.LOCKED_BY],
+      lockedTime = record[SEED_FUND_REPORTS.LOCKED_TIME],
+      modifiedBy = record[SEED_FUND_REPORTS.MODIFIED_BY],
+      modifiedTime = record[SEED_FUND_REPORTS.MODIFIED_TIME],
+      organizationId = record[SEED_FUND_REPORTS.ORGANIZATION_ID.asNonNullable()],
+      projectId = record[SEED_FUND_REPORTS.PROJECT_ID],
+      projectName = record[SEED_FUND_REPORTS.PROJECT_NAME],
+      quarter = record[SEED_FUND_REPORTS.QUARTER.asNonNullable()],
+      status = record[SEED_FUND_REPORTS.STATUS_ID.asNonNullable()],
+      submittedBy = record[SEED_FUND_REPORTS.SUBMITTED_BY],
+      submittedTime = record[SEED_FUND_REPORTS.SUBMITTED_TIME],
+      year = record[SEED_FUND_REPORTS.YEAR.asNonNullable()],
   )
 
   @get:JsonIgnore
@@ -87,7 +87,7 @@ data class ReportMetadata(
  * we introduce new versions. This will automatically update the type signatures of all the internal
  * functions that are supposed to accept whatever the latest version is.
  */
-typealias LatestReportBodyModel = ReportBodyModelV1
+typealias LatestSeedFundReportBodyModel = SeedFundReportBodyModelV1
 
 /**
  * Top-level interface for all versions of report bodies. Defines how versions are tagged by the
@@ -95,16 +95,16 @@ typealias LatestReportBodyModel = ReportBodyModelV1
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "version")
 @JsonSubTypes(
-    JsonSubTypes.Type(ReportBodyModelV1::class),
+    JsonSubTypes.Type(SeedFundReportBodyModelV1::class),
 )
-sealed interface ReportBodyModel {
+sealed interface SeedFundReportBodyModel {
   /** Transforms a report from an earlier version to the latest one. */
-  fun toLatestVersion(): LatestReportBodyModel
+  fun toLatestVersion(): LatestSeedFundReportBodyModel
 
   /**
    * Validates that the report is complete and ready for submission.
    *
-   * @throws ReportNotCompleteException The report is missing required information.
+   * @throws SeedFundReportNotCompleteException The report is missing required information.
    */
   fun validate()
 }

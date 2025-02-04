@@ -17,7 +17,7 @@ import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.ReportNotFoundException
+import com.terraformation.backend.db.SeedFundReportNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.SubLocationNotFoundException
 import com.terraformation.backend.db.UploadNotFoundException
@@ -38,8 +38,8 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
@@ -164,7 +164,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(PlantingZoneNotFoundException::class) { canReadPlantingZone(it) }
   private val projectId: ProjectId by
       readableId(ProjectNotFoundException::class) { canReadProject(it) }
-  private val reportId: ReportId by readableId(ReportNotFoundException::class) { canReadReport(it) }
+  private val reportId: SeedFundReportId by
+      readableId(SeedFundReportNotFoundException::class) { canReadSeedFundReport(it) }
   private val role = Role.Contributor
   private val speciesId: SpeciesId by
       readableId(SpeciesNotFoundException::class) { canReadSpecies(it) }
@@ -403,7 +404,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun createReport() =
-      allow { createReport(organizationId) } ifUser { canCreateReport(organizationId) }
+      allow { createSeedFundReport(organizationId) } ifUser
+          {
+            canCreateSeedFundReport(organizationId)
+          }
 
   @Test
   fun createSpecies() =
@@ -483,7 +487,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun deleteProject() = allow { deleteProject(projectId) } ifUser { canDeleteProject(projectId) }
 
-  @Test fun deleteReport() = allow { deleteReport(reportId) } ifUser { canDeleteReport(reportId) }
+  @Test
+  fun deleteReport() =
+      allow { deleteSeedFundReport(reportId) } ifUser { canDeleteSeedFundReport(reportId) }
 
   @Test fun deleteSelf() = allow { deleteSelf() } ifUser { canDeleteSelf() }
 
@@ -525,7 +531,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun listReports() =
-      allow { listReports(organizationId) } ifUser { canListReports(organizationId) }
+      allow { listSeedFundReports(organizationId) } ifUser
+          {
+            canListSeedFundReports(organizationId)
+          }
 
   @Test
   fun manageDefaultProjectLeads() =
@@ -739,7 +748,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
     requirements.readProjectScores(projectId)
   }
 
-  @Test fun readReport() = testRead { readReport(reportId) }
+  @Test fun readReport() = testRead { readSeedFundReport(reportId) }
 
   @Test fun readSpecies() = testRead { readSpecies(speciesId) }
 
@@ -1004,7 +1013,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun updateProjectVotes() =
       allow { updateProjectVotes(projectId) } ifUser { canUpdateProjectVotes(projectId) }
 
-  @Test fun updateReport() = allow { updateReport(reportId) } ifUser { canUpdateReport(reportId) }
+  @Test
+  fun updateReport() =
+      allow { updateSeedFundReport(reportId) } ifUser { canUpdateSeedFundReport(reportId) }
 
   @Test
   fun updateSpecies() = allow { updateSpecies(speciesId) } ifUser { canUpdateSpecies(speciesId) }

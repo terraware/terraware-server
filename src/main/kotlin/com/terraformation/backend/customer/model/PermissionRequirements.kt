@@ -17,7 +17,7 @@ import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.ReportNotFoundException
+import com.terraformation.backend.db.SeedFundReportNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.SubLocationNotFoundException
 import com.terraformation.backend.db.TimeseriesNotFoundException
@@ -41,8 +41,8 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
@@ -349,20 +349,20 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun createReport(organizationId: OrganizationId) {
-    user.recordPermissionChecks {
-      if (!user.canCreateReport(organizationId)) {
-        readOrganization(organizationId)
-        throw AccessDeniedException(
-            "No permission to create reports in organization $organizationId")
-      }
-    }
-  }
-
   fun createSavedVersion(documentId: DocumentId) {
     user.recordPermissionChecks {
       if (!user.canCreateSavedVersion(documentId)) {
         throw AccessDeniedException("No permission to create saved versions")
+      }
+    }
+  }
+
+  fun createSeedFundReport(organizationId: OrganizationId) {
+    user.recordPermissionChecks {
+      if (!user.canCreateSeedFundReport(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException(
+            "No permission to create seed fund reports in organization $organizationId")
       }
     }
   }
@@ -533,11 +533,11 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun deleteReport(reportId: ReportId) {
+  fun deleteSeedFundReport(reportId: SeedFundReportId) {
     user.recordPermissionChecks {
-      if (!user.canDeleteReport(reportId)) {
-        readReport(reportId)
-        throw AccessDeniedException("No permission to delete report $reportId")
+      if (!user.canDeleteSeedFundReport(reportId)) {
+        readSeedFundReport(reportId)
+        throw AccessDeniedException("No permission to delete seed fund report $reportId")
       }
     }
   }
@@ -630,11 +630,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun listReports(organizationId: OrganizationId) {
+  fun listSeedFundReports(organizationId: OrganizationId) {
     user.recordPermissionChecks {
-      if (!user.canListReports(organizationId)) {
+      if (!user.canListSeedFundReports(organizationId)) {
         readOrganization(organizationId)
-        throw AccessDeniedException("No permission to list reports in organization $organizationId")
+        throw AccessDeniedException(
+            "No permission to list seed fund reports in organization $organizationId")
       }
     }
   }
@@ -1062,10 +1063,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun readReport(reportId: ReportId) {
+  fun readSeedFundReport(reportId: SeedFundReportId) {
     user.recordPermissionChecks {
-      if (!user.canReadReport(reportId)) {
-        throw ReportNotFoundException(reportId)
+      if (!user.canReadSeedFundReport(reportId)) {
+        throw SeedFundReportNotFoundException(reportId)
       }
     }
   }
@@ -1591,11 +1592,11 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun updateReport(reportId: ReportId) {
+  fun updateSeedFundReport(reportId: SeedFundReportId) {
     user.recordPermissionChecks {
-      if (!user.canUpdateReport(reportId)) {
-        readReport(reportId)
-        throw AccessDeniedException("No permission to update report $reportId")
+      if (!user.canUpdateSeedFundReport(reportId)) {
+        readSeedFundReport(reportId)
+        throw AccessDeniedException("No permission to update seed fund report $reportId")
       }
     }
   }

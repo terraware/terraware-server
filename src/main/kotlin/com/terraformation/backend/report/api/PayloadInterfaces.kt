@@ -3,12 +3,12 @@ package com.terraformation.backend.report.api
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.ReportStatus
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.report.model.LatestReportBodyModel
-import com.terraformation.backend.report.model.ReportBodyModelV1
-import com.terraformation.backend.report.model.ReportModel
+import com.terraformation.backend.report.model.LatestSeedFundReportBodyModel
+import com.terraformation.backend.report.model.SeedFundReportBodyModelV1
+import com.terraformation.backend.report.model.SeedFundReportModel
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
@@ -26,7 +26,7 @@ interface EditableReportFields
 
 /** Version-independent metadata fields that are included in all GET response payloads. */
 interface ReportMetadataFields {
-  val id: ReportId
+  val id: SeedFundReportId
   val lockedByName: String?
   val lockedByUserId: UserId?
   val lockedTime: Instant?
@@ -36,7 +36,7 @@ interface ReportMetadataFields {
   val projectId: ProjectId?
   val projectName: String?
   val quarter: Int
-  val status: ReportStatus
+  val status: SeedFundReportStatus
   val submittedByName: String?
   val submittedByUserId: UserId?
   val submittedTime: Instant?
@@ -66,9 +66,9 @@ interface ReportMetadataFields {
         ])
 sealed interface GetReportPayload : ReportMetadataFields {
   companion object {
-    fun of(model: ReportModel, getFullName: (UserId) -> String?): GetReportPayload {
+    fun of(model: SeedFundReportModel, getFullName: (UserId) -> String?): GetReportPayload {
       return when (model.body) {
-        is ReportBodyModelV1 -> GetReportPayloadV1(model.metadata, model.body, getFullName)
+        is SeedFundReportBodyModelV1 -> GetReportPayloadV1(model.metadata, model.body, getFullName)
       }
     }
   }
@@ -96,9 +96,9 @@ sealed interface GetReportPayload : ReportMetadataFields {
 sealed interface PutReportPayload : EditableReportFields {
   /**
    * Overwrites the fields in a report body with the values from this payload. Note that
-   * [LatestReportBodyModel] is a type alias. When we introduce a new report version, we update
-   * [LatestReportBodyModel] to point to its model class, and the implementations of this method
-   * need to be updated accordingly.
+   * [LatestSeedFundReportBodyModel] is a type alias. When we introduce a new report version, we
+   * update [LatestSeedFundReportBodyModel] to point to its model class, and the implementations of
+   * this method need to be updated accordingly.
    */
-  fun copyTo(model: LatestReportBodyModel): LatestReportBodyModel
+  fun copyTo(model: LatestSeedFundReportBodyModel): LatestSeedFundReportBodyModel
 }

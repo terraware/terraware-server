@@ -46,9 +46,9 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.NotificationsRow
 import com.terraformation.backend.db.docprod.VariableType
@@ -72,8 +72,8 @@ import com.terraformation.backend.i18n.NotificationMessage
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
-import com.terraformation.backend.report.event.ReportCreatedEvent
-import com.terraformation.backend.report.model.ReportMetadata
+import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
+import com.terraformation.backend.report.model.SeedFundReportMetadata
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.BagStore
 import com.terraformation.backend.seedbank.db.GeolocationStore
@@ -473,18 +473,18 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         NotificationMessage("report title", "report body")
 
     service.on(
-        ReportCreatedEvent(
-            ReportMetadata(
-                ReportId(1),
+        SeedFundReportCreatedEvent(
+            SeedFundReportMetadata(
+                SeedFundReportId(1),
                 organizationId = organizationId,
                 quarter = 3,
-                status = ReportStatus.New,
+                status = SeedFundReportStatus.New,
                 year = 2023)))
 
     val commonValues =
         NotificationsRow(
             body = "report body",
-            localUrl = webAppUrls.report(ReportId(1)),
+            localUrl = webAppUrls.report(SeedFundReportId(1)),
             notificationTypeId = NotificationType.ReportCreated,
             organizationId = organizationId,
             title = "report title",

@@ -18,8 +18,8 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
@@ -189,9 +189,9 @@ interface TerrawareUser : Principal {
 
   fun canCreateProject(organizationId: OrganizationId): Boolean = defaultPermission
 
-  fun canCreateReport(organizationId: OrganizationId): Boolean = defaultPermission
-
   fun canCreateSavedVersion(documentId: DocumentId): Boolean = defaultPermission
+
+  fun canCreateSeedFundReport(organizationId: OrganizationId): Boolean = defaultPermission
 
   fun canCreateSpecies(organizationId: OrganizationId): Boolean = defaultPermission
 
@@ -234,7 +234,7 @@ interface TerrawareUser : Principal {
 
   fun canDeleteProject(projectId: ProjectId): Boolean = defaultPermission
 
-  fun canDeleteReport(reportId: ReportId): Boolean = defaultPermission
+  fun canDeleteSeedFundReport(reportId: SeedFundReportId): Boolean = defaultPermission
 
   fun canDeleteSelf(): Boolean = defaultPermission
 
@@ -258,7 +258,7 @@ interface TerrawareUser : Principal {
 
   fun canListOrganizationUsers(organizationId: OrganizationId): Boolean = defaultPermission
 
-  fun canListReports(organizationId: OrganizationId): Boolean = defaultPermission
+  fun canListSeedFundReports(organizationId: OrganizationId): Boolean = defaultPermission
 
   fun canManageDefaultProjectLeads(): Boolean = defaultPermission
 
@@ -368,7 +368,7 @@ interface TerrawareUser : Principal {
 
   fun canReadProjectVotes(projectId: ProjectId): Boolean = defaultPermission
 
-  fun canReadReport(reportId: ReportId): Boolean = defaultPermission
+  fun canReadSeedFundReport(reportId: SeedFundReportId): Boolean = defaultPermission
 
   fun canReadSpecies(speciesId: SpeciesId): Boolean = defaultPermission
 
@@ -494,7 +494,7 @@ interface TerrawareUser : Principal {
 
   fun canUpdateProjectVotes(projectId: ProjectId): Boolean = defaultPermission
 
-  fun canUpdateReport(reportId: ReportId): Boolean = defaultPermission
+  fun canUpdateSeedFundReport(reportId: SeedFundReportId): Boolean = defaultPermission
 
   fun canUpdateSpecies(speciesId: SpeciesId): Boolean = defaultPermission
 

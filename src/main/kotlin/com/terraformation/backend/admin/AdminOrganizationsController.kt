@@ -12,7 +12,7 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.report.db.ReportStore
+import com.terraformation.backend.report.db.SeedFundReportStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.mapbox.MapboxService
 import jakarta.validation.constraints.NotBlank
@@ -37,7 +37,7 @@ class AdminOrganizationsController(
     private val organizationService: OrganizationService,
     private val organizationStore: OrganizationStore,
     private val plantingSiteStore: PlantingSiteStore,
-    private val reportStore: ReportStore,
+    private val seedFundReportStore: SeedFundReportStore,
     private val userStore: UserStore,
 ) {
   private val log = perClassLogger()
@@ -47,7 +47,7 @@ class AdminOrganizationsController(
     val organization = organizationStore.fetchOneById(organizationId)
     val facilities = facilityStore.fetchByOrganizationId(organizationId)
     val plantingSites = plantingSiteStore.fetchSitesByOrganizationId(organizationId)
-    val reports = reportStore.fetchMetadataByOrganization(organizationId)
+    val reports = seedFundReportStore.fetchMetadataByOrganization(organizationId)
     val tfContactUserId = organizationStore.fetchTerraformationContact(organizationId)
     val tfContact = if (tfContactUserId != null) userStore.fetchOneById(tfContactUserId) else null
     val isSuperAdmin = GlobalRole.SuperAdmin in currentUser().globalRoles

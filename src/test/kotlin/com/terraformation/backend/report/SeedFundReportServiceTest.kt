@@ -20,18 +20,18 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
-import com.terraformation.backend.db.ReportAlreadySubmittedException
-import com.terraformation.backend.db.ReportLockedException
-import com.terraformation.backend.db.ReportNotLockedException
+import com.terraformation.backend.db.SeedFundReportAlreadySubmittedException
+import com.terraformation.backend.db.SeedFundReportLockedException
+import com.terraformation.backend.db.SeedFundReportNotLockedException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportStatus
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.default_schema.tables.references.REPORTS
+import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORTS
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
@@ -40,12 +40,12 @@ import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
-import com.terraformation.backend.report.db.ReportStore
-import com.terraformation.backend.report.model.ReportBodyModelV1
-import com.terraformation.backend.report.model.ReportMetadata
-import com.terraformation.backend.report.model.ReportModel
+import com.terraformation.backend.report.db.SeedFundReportStore
+import com.terraformation.backend.report.model.SeedFundReportBodyModelV1
+import com.terraformation.backend.report.model.SeedFundReportMetadata
+import com.terraformation.backend.report.model.SeedFundReportModel
 import com.terraformation.backend.report.model.SustainableDevelopmentGoal
-import com.terraformation.backend.report.render.ReportRenderer
+import com.terraformation.backend.report.render.SeedFundReportRenderer
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -66,7 +66,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class ReportServiceTest : DatabaseTest(), RunsAsUser {
+class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
@@ -75,9 +75,9 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
   private val publisher = TestEventPublisher()
   private val parentStore by lazy { ParentStore(dslContext) }
-  private val reportRenderer: ReportRenderer = mockk()
-  private val reportStore by lazy {
-    ReportStore(
+  private val seedFundReportRenderer: SeedFundReportRenderer = mockk()
+  private val seedFundReportStore by lazy {
+    SeedFundReportStore(
         clock,
         dslContext,
         publisher,
@@ -85,13 +85,13 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
         objectMapper,
         parentStore,
         projectsDao,
-        reportsDao,
+        seedFundReportsDao,
     )
   }
   private val scheduler: JobScheduler = mockk()
 
   private val service by lazy {
-    ReportService(
+    SeedFundReportService(
         AccessionStore(
             dslContext,
             mockk(),
@@ -147,8 +147,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             plantingSubzonesDao,
             plantingZonesDao),
         ProjectStore(clock, dslContext, publisher, projectsDao),
-        reportRenderer,
-        reportStore,
+        seedFundReportRenderer,
+        seedFundReportStore,
         scheduler,
         SpeciesStore(
             clock,
@@ -167,15 +167,15 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     organizationId = insertOrganization()
 
-    every { user.canCreateReport(any()) } returns true
-    every { user.canDeleteReport(any()) } returns true
-    every { user.canListReports(any()) } returns true
+    every { user.canCreateSeedFundReport(any()) } returns true
+    every { user.canDeleteSeedFundReport(any()) } returns true
+    every { user.canListSeedFundReports(any()) } returns true
     every { user.canReadFacility(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
     every { user.canReadProject(any()) } returns true
-    every { user.canReadReport(any()) } returns true
-    every { user.canUpdateReport(any()) } returns true
+    every { user.canReadSeedFundReport(any()) } returns true
+    every { user.canUpdateSeedFundReport(any()) } returns true
     every { user.organizationRoles } returns mapOf(organizationId to Role.Admin)
 
     insertOrganizationUser(user.userId, organizationId, Role.Admin)
@@ -218,13 +218,13 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val created = service.create(organizationId)
 
       val expected =
-          ReportModel(
-              ReportBodyModelV1(
-                  annualDetails = ReportBodyModelV1.AnnualDetails(),
+          SeedFundReportModel(
+              SeedFundReportBodyModelV1(
+                  annualDetails = SeedFundReportBodyModelV1.AnnualDetails(),
                   isAnnual = true,
                   nurseries =
                       listOf(
-                          ReportBodyModelV1.Nursery(
+                          SeedFundReportBodyModelV1.Nursery(
                               buildCompletedDate = LocalDate.of(2023, 3, 1),
                               buildCompletedDateEditable = false,
                               buildStartedDate = LocalDate.of(2023, 2, 1),
@@ -242,12 +242,12 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                   organizationName = "Organization 1",
                   plantingSites =
                       listOf(
-                          ReportBodyModelV1.PlantingSite(
+                          SeedFundReportBodyModelV1.PlantingSite(
                               id = plantingSiteId,
                               name = "Site 1",
                               species =
                                   listOf(
-                                      ReportBodyModelV1.PlantingSite.Species(
+                                      SeedFundReportBodyModelV1.PlantingSite.Species(
                                           growthForms = setOf(GrowthForm.Shrub),
                                           id = speciesId,
                                           scientificName = "My species",
@@ -257,7 +257,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                       ),
                   seedBanks =
                       listOf(
-                          ReportBodyModelV1.SeedBank(
+                          SeedFundReportBodyModelV1.SeedBank(
                               id = seedBankId,
                               name = "Seed Bank",
                               operationStartedDate = LocalDate.of(2023, 4, 1),
@@ -269,16 +269,16 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                   totalPlantingSites = 1,
                   totalSeedBanks = 1,
               ),
-              ReportMetadata(
+              SeedFundReportMetadata(
                   created.id,
                   organizationId = organizationId,
                   quarter = 4,
-                  status = ReportStatus.New,
+                  status = SeedFundReportStatus.New,
                   year = 1969,
               ),
           )
 
-      val actual = reportStore.fetchOneById(created.id)
+      val actual = seedFundReportStore.fetchOneById(created.id)
 
       assertJsonEquals(expected, actual)
     }
@@ -367,13 +367,13 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val created = service.create(organizationId, projectId)
 
       val expected =
-          ReportModel(
-              ReportBodyModelV1(
-                  annualDetails = ReportBodyModelV1.AnnualDetails(),
+          SeedFundReportModel(
+              SeedFundReportBodyModelV1(
+                  annualDetails = SeedFundReportBodyModelV1.AnnualDetails(),
                   isAnnual = true,
                   nurseries =
                       listOf(
-                          ReportBodyModelV1.Nursery(
+                          SeedFundReportBodyModelV1.Nursery(
                               buildCompletedDate = LocalDate.of(2023, 3, 1),
                               buildCompletedDateEditable = false,
                               buildStartedDate = LocalDate.of(2023, 2, 1),
@@ -395,12 +395,12 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                   organizationName = "Organization 1",
                   plantingSites =
                       listOf(
-                          ReportBodyModelV1.PlantingSite(
+                          SeedFundReportBodyModelV1.PlantingSite(
                               id = projectPlantingSiteId,
                               name = "Site 3",
                               species =
                                   listOf(
-                                      ReportBodyModelV1.PlantingSite.Species(
+                                      SeedFundReportBodyModelV1.PlantingSite.Species(
                                           growthForms = setOf(GrowthForm.Shrub),
                                           id = speciesId,
                                           scientificName = "My species",
@@ -410,7 +410,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                       ),
                   seedBanks =
                       listOf(
-                          ReportBodyModelV1.SeedBank(
+                          SeedFundReportBodyModelV1.SeedBank(
                               id = projectSeedBankId,
                               name = "Facility 2",
                               operationStartedDate = LocalDate.of(2023, 4, 1),
@@ -418,7 +418,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               totalSeedsStored = 7,
                               totalSeedsStoredForProject = 1,
                           ),
-                          ReportBodyModelV1.SeedBank(
+                          SeedFundReportBodyModelV1.SeedBank(
                               id = nonProjectSeedBankId,
                               name = "Facility 4",
                               operationStartedDateEditable = true,
@@ -430,18 +430,18 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                   totalPlantingSites = 1,
                   totalSeedBanks = 2,
               ),
-              ReportMetadata(
+              SeedFundReportMetadata(
                   created.id,
                   organizationId = organizationId,
                   projectId = projectId,
                   projectName = "Test Project",
                   quarter = 4,
-                  status = ReportStatus.New,
+                  status = SeedFundReportStatus.New,
                   year = 1969,
               ),
           )
 
-      val actual = reportStore.fetchOneById(created.id)
+      val actual = seedFundReportStore.fetchOneById(created.id)
 
       assertJsonEquals(expected, actual)
     }
@@ -452,7 +452,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       val created = service.create(organizationId)
 
-      val body = reportStore.fetchOneById(created.id).body.toLatestVersion()
+      val body = seedFundReportStore.fetchOneById(created.id).body.toLatestVersion()
 
       assertFalse(body.isAnnual, "Is annual")
       assertNull(body.annualDetails, "Annual details")
@@ -464,7 +464,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       val created = service.create(organizationId)
 
-      val body = reportStore.fetchOneById(created.id).body.toLatestVersion()
+      val body = seedFundReportStore.fetchOneById(created.id).body.toLatestVersion()
 
       assertTrue(body.isAnnual, "Is annual")
       assertNotNull(body.annualDetails, "Annual details")
@@ -489,7 +489,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       service.createMissingReports(DailyTaskTimeArrivedEvent())
 
-      assertNotNull(reportStore.fetchMetadataByOrganization(organizationId).firstOrNull())
+      assertNotNull(seedFundReportStore.fetchMetadataByOrganization(organizationId).firstOrNull())
     }
 
     @Test
@@ -499,7 +499,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       service.createMissingReports(DailyTaskTimeArrivedEvent())
 
-      assertEquals(emptyList<Any>(), reportStore.fetchMetadataByOrganization(organizationId))
+      assertEquals(
+          emptyList<Any>(), seedFundReportStore.fetchMetadataByOrganization(organizationId))
     }
 
     @Test
@@ -517,11 +518,11 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           1,
-          reportsDao.fetchByProjectId(reportsEnabledProject).size,
+          seedFundReportsDao.fetchByProjectId(reportsEnabledProject).size,
           "Should have created report for project with no existing reports and reports enabled")
       assertEquals(
           2,
-          reportsDao.fetchByProjectId(projectWithOlderReport).size,
+          seedFundReportsDao.fetchByProjectId(projectWithOlderReport).size,
           "Should have created current-quarter report for project with older report")
     }
 
@@ -535,7 +536,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           1,
-          reportsDao.fetchByProjectId(projectId).size,
+          seedFundReportsDao.fetchByProjectId(projectId).size,
           "Number of reports for project with no existing reports and no settings")
     }
 
@@ -551,7 +552,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           emptyList<Any>(),
-          reportsDao.fetchByProjectId(projectId),
+          seedFundReportsDao.fetchByProjectId(projectId),
           "Should not have created report for project with reports disabled")
     }
 
@@ -567,7 +568,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           listOf(reportId),
-          reportsDao.fetchByProjectId(projectId).map { it.id },
+          seedFundReportsDao.fetchByProjectId(projectId).map { it.id },
           "Should not have created additional report when one was already in progress")
     }
 
@@ -580,7 +581,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       service.createMissingReports(DailyTaskTimeArrivedEvent())
 
-      assertTableEmpty(REPORTS)
+      assertTableEmpty(SEED_FUND_REPORTS)
     }
   }
 
@@ -595,7 +596,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       service.on(OrganizationDeletionStartedEvent(organizationId))
 
-      assertEquals(listOf(otherOrgReportId), reportsDao.findAll().map { it.id }, "Report IDs")
+      assertEquals(
+          listOf(otherOrgReportId), seedFundReportsDao.findAll().map { it.id }, "Report IDs")
 
       assertIsEventListener<OrganizationDeletionStartedEvent>(service)
     }
@@ -616,13 +618,14 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       projectsDao.deleteById(deletedProjectId)
 
       assertFalse(
-          reportsDao.existsById(deletedProjectReportId),
+          seedFundReportsDao.existsById(deletedProjectReportId),
           "Should have deleted report for deleted project")
       assertTrue(
-          reportsDao.existsById(keptProjectReportId),
+          seedFundReportsDao.existsById(keptProjectReportId),
           "Should not have deleted report for non-deleted project")
       assertTrue(
-          reportsDao.existsById(orgLevelReportId), "Should not have deleted org-level report")
+          seedFundReportsDao.existsById(orgLevelReportId),
+          "Should not have deleted org-level report")
     }
 
     @Test
@@ -636,7 +639,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       projectsDao.deleteById(projectId)
 
-      val reportsRow = reportsDao.fetchOneById(submittedReportId)
+      val reportsRow = seedFundReportsDao.fetchOneById(submittedReportId)
       assertNotNull(reportsRow, "Should not have deleted submitted report")
       assertNull(reportsRow?.projectId, "Should have cleared project ID from submitted report")
       assertEquals(
@@ -644,7 +647,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
           reportsRow?.projectName,
           "Should have kept project name on submitted report")
       assertNotNull(
-          reportsDao.fetchOneById(orgLevelReportId), "Should not have deleted org-level report")
+          seedFundReportsDao.fetchOneById(orgLevelReportId),
+          "Should not have deleted org-level report")
     }
 
     @Test
@@ -688,9 +692,9 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       insertPlanting(deliveryId = deliveryId, speciesId = speciesId)
 
       val initialBody =
-          ReportBodyModelV1(
+          SeedFundReportBodyModelV1(
               annualDetails =
-                  ReportBodyModelV1.AnnualDetails(
+                  SeedFundReportBodyModelV1.AnnualDetails(
                       bestMonthsForObservation = setOf(1, 2, 3),
                       budgetNarrativeSummary = "budget narrative",
                       catalyticDetail = "catalytic detail",
@@ -704,7 +708,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                       successStories = "success stories",
                       sustainableDevelopmentGoals =
                           listOf(
-                              ReportBodyModelV1.AnnualDetails.GoalProgress(
+                              SeedFundReportBodyModelV1.AnnualDetails.GoalProgress(
                                   SustainableDevelopmentGoal.CleanWater,
                                   "clean water progress",
                               ),
@@ -713,7 +717,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
               isAnnual = true,
               nurseries =
                   listOf(
-                      ReportBodyModelV1.Nursery(
+                      SeedFundReportBodyModelV1.Nursery(
                           buildCompletedDate = LocalDate.of(2023, 1, 2),
                           buildStartedDate = LocalDate.of(2023, 1, 1),
                           capacity = 1,
@@ -722,21 +726,21 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                           name = "old nursery name",
                           notes = "nursery notes",
                           totalPlantsPropagated = 130,
-                          workers = ReportBodyModelV1.Workers(1, 2, 3),
+                          workers = SeedFundReportBodyModelV1.Workers(1, 2, 3),
                       ),
                   ),
               notes = "top-level notes",
               organizationName = "old org name",
               plantingSites =
                   listOf(
-                      ReportBodyModelV1.PlantingSite(
+                      SeedFundReportBodyModelV1.PlantingSite(
                           id = firstPlantingSite,
                           mortalityRate = 10,
                           name = "old planting site name",
                           selected = false,
                           species =
                               listOf(
-                                  ReportBodyModelV1.PlantingSite.Species(
+                                  SeedFundReportBodyModelV1.PlantingSite.Species(
                                       growthForms = setOf(GrowthForm.Forb),
                                       id = speciesId,
                                       mortalityRateInField = 9,
@@ -748,12 +752,12 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                           totalPlantingSiteArea = 11,
                           totalPlantsPlanted = 12,
                           totalTreesPlanted = 13,
-                          workers = ReportBodyModelV1.Workers(4, 5, 6),
+                          workers = SeedFundReportBodyModelV1.Workers(4, 5, 6),
                       ),
                   ),
               seedBanks =
                   listOf(
-                      ReportBodyModelV1.SeedBank(
+                      SeedFundReportBodyModelV1.SeedBank(
                           buildCompletedDate = LocalDate.of(2023, 2, 2),
                           buildCompletedDateEditable = false,
                           buildStartedDate = LocalDate.of(2023, 3, 1),
@@ -762,7 +766,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                           notes = "seedbank notes",
                           operationStartedDate = LocalDate.of(2023, 4, 1),
                           totalSeedsStored = 1000L,
-                          workers = ReportBodyModelV1.Workers(7, 8, 9),
+                          workers = SeedFundReportBodyModelV1.Workers(7, 8, 9),
                       ),
                   ),
               summaryOfProgress = "summary of progress",
@@ -793,7 +797,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       insertSampleWithdrawals(speciesId, firstNursery, secondPlantingSite)
 
       val expected =
-          ReportModel(
+          SeedFundReportModel(
               body =
                   initialBody.copy(
                       nurseries =
@@ -809,7 +813,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                                   // outplanting withdrawals (20 not-ready, 30 ready)
                                   totalPlantsPropagated = 680,
                               ),
-                              ReportBodyModelV1.Nursery(
+                              SeedFundReportBodyModelV1.Nursery(
                                   id = secondNursery,
                                   mortalityRate = 0,
                                   name = "Facility 4",
@@ -830,12 +834,12 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                                               ),
                                       ),
                               ),
-                              ReportBodyModelV1.PlantingSite(
+                              SeedFundReportBodyModelV1.PlantingSite(
                                   id = secondPlantingSite,
                                   name = "Site 2",
                                   species =
                                       listOf(
-                                          ReportBodyModelV1.PlantingSite.Species(
+                                          SeedFundReportBodyModelV1.PlantingSite.Species(
                                               growthForms = setOf(GrowthForm.Forb),
                                               id = speciesId,
                                               scientificName = "New species",
@@ -849,7 +853,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                                   name = "Facility 1",
                                   totalSeedsStored = 10L,
                               ),
-                              ReportBodyModelV1.SeedBank(
+                              SeedFundReportBodyModelV1.SeedBank(
                                   buildStartedDate = LocalDate.EPOCH,
                                   buildStartedDateEditable = false,
                                   id = secondSeedBank,
@@ -866,7 +870,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val actual = service.fetchOneById(reportId)
 
       assertJsonEquals(expected, actual)
-      assertFalse((actual.body as ReportBodyModelV1).seedBanks[1].buildStartedDateEditable)
+      assertFalse((actual.body as SeedFundReportBodyModelV1).seedBanks[1].buildStartedDateEditable)
     }
 
     @Test
@@ -896,7 +900,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val seedBankId = insertFacility()
 
       val newNotes = "new notes"
-      var calledWithSeedBanks: List<ReportBodyModelV1.SeedBank>? = null
+      var calledWithSeedBanks: List<SeedFundReportBodyModelV1.SeedBank>? = null
 
       service.update(reportId) {
         calledWithSeedBanks = it.seedBanks
@@ -919,7 +923,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if report is not locked`() {
       val reportId = insertReport()
 
-      assertThrows<ReportNotLockedException> { service.update(reportId) { it } }
+      assertThrows<SeedFundReportNotLockedException> { service.update(reportId) { it } }
     }
 
     @Test
@@ -927,14 +931,14 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val otherUserId = insertUser()
       val reportId = insertReport(lockedBy = otherUserId)
 
-      assertThrows<ReportLockedException> { service.update(reportId) { it } }
+      assertThrows<SeedFundReportLockedException> { service.update(reportId) { it } }
     }
 
     @Test
     fun `throws exception if report is already submitted`() {
       val reportId = insertReport(submittedBy = user.userId)
 
-      assertThrows<ReportAlreadySubmittedException> { service.update(reportId) { it } }
+      assertThrows<SeedFundReportAlreadySubmittedException> { service.update(reportId) { it } }
     }
   }
 
@@ -955,17 +959,18 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
               year = 1990,
               submittedBy = user.userId,
-              status = ReportStatus.Submitted)
+              status = SeedFundReportStatus.Submitted)
       val lockedReportId =
           insertReport(
               projectId = projectId,
               year = 1991,
               lockedBy = user.userId,
-              status = ReportStatus.Locked)
-      val newReportId = insertReport(projectId = projectId, year = 1992, status = ReportStatus.New)
+              status = SeedFundReportStatus.Locked)
+      val newReportId =
+          insertReport(projectId = projectId, year = 1992, status = SeedFundReportStatus.New)
       val otherProjectReportId =
-          insertReport(projectId = otherProjectId, year = 1993, status = ReportStatus.New)
-      val orgReportId = insertReport(status = ReportStatus.New, year = 1994)
+          insertReport(projectId = otherProjectId, year = 1993, status = SeedFundReportStatus.New)
+      val orgReportId = insertReport(status = SeedFundReportStatus.New, year = 1994)
 
       service.on(ProjectRenamedEvent(projectId, "Old Name", "New Name"))
 
@@ -977,7 +982,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
               otherProjectReportId to "Other",
               orgReportId to null,
           ),
-          reportsDao.findAll().associate { it.id to it.projectName })
+          seedFundReportsDao.findAll().associate { it.id to it.projectName })
     }
   }
 

@@ -3,14 +3,14 @@ package com.terraformation.backend.report.api
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.db.default_schema.ReportStatus
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.report.model.LatestReportBodyModel
-import com.terraformation.backend.report.model.ReportBodyModelV1
-import com.terraformation.backend.report.model.ReportMetadata
+import com.terraformation.backend.report.model.LatestSeedFundReportBodyModel
+import com.terraformation.backend.report.model.SeedFundReportBodyModelV1
+import com.terraformation.backend.report.model.SeedFundReportMetadata
 import com.terraformation.backend.report.model.SustainableDevelopmentGoal
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
@@ -103,7 +103,7 @@ interface EditableReportFieldsV1 : EditableReportFields {
 @JsonTypeName("1")
 data class GetReportPayloadV1(
     override val annualDetails: AnnualDetailsPayloadV1?,
-    override val id: ReportId,
+    override val id: SeedFundReportId,
     val isAnnual: Boolean,
     override val lockedByName: String?,
     override val lockedByUserId: UserId?,
@@ -119,7 +119,7 @@ data class GetReportPayloadV1(
     override val projectName: String?,
     override val quarter: Int,
     override val seedBanks: List<GetSeedBankV1>,
-    override val status: ReportStatus,
+    override val status: SeedFundReportStatus,
     override val submittedByName: String?,
     override val submittedByUserId: UserId?,
     override val submittedTime: Instant?,
@@ -130,8 +130,8 @@ data class GetReportPayloadV1(
     override val year: Int,
 ) : EditableReportFieldsV1, GetReportPayload {
   constructor(
-      metadata: ReportMetadata,
-      body: ReportBodyModelV1,
+      metadata: SeedFundReportMetadata,
+      body: SeedFundReportBodyModelV1,
       getFullName: (UserId) -> String?,
   ) : this(
       annualDetails = body.annualDetails?.let { AnnualDetailsPayloadV1(it) },
@@ -180,7 +180,7 @@ data class GetReportPayloadV1(
       override val workers: WorkersPayloadV1,
   ) : EditableReportFieldsV1.Nursery {
     constructor(
-        model: ReportBodyModelV1.Nursery
+        model: SeedFundReportBodyModelV1.Nursery
     ) : this(
         buildCompletedDate = model.buildCompletedDate,
         buildCompletedDateEditable = model.buildCompletedDateEditable,
@@ -214,7 +214,7 @@ data class GetReportPayloadV1(
       override val workers: WorkersPayloadV1
   ) : EditableReportFieldsV1.PlantingSite {
     constructor(
-        model: ReportBodyModelV1.PlantingSite
+        model: SeedFundReportBodyModelV1.PlantingSite
     ) : this(
         id = model.id,
         mortalityRate = model.mortalityRate,
@@ -235,7 +235,7 @@ data class GetReportPayloadV1(
         override val totalPlanted: Int?,
     ) : EditableReportFieldsV1.PlantingSite.Species {
       constructor(
-          model: ReportBodyModelV1.PlantingSite.Species
+          model: SeedFundReportBodyModelV1.PlantingSite.Species
       ) : this(
           id = model.id,
           mortalityRateInField = model.mortalityRateInField,
@@ -260,7 +260,7 @@ data class GetReportPayloadV1(
       override val workers: WorkersPayloadV1,
   ) : EditableReportFieldsV1.SeedBank {
     constructor(
-        model: ReportBodyModelV1.SeedBank
+        model: SeedFundReportBodyModelV1.SeedBank
     ) : this(
         buildCompletedDate = model.buildCompletedDate,
         buildCompletedDateEditable = model.buildCompletedDateEditable,
@@ -288,7 +288,7 @@ data class PutReportPayloadV1(
     override val seedBanks: List<PutSeedBankV1>,
     override val summaryOfProgress: String?,
 ) : EditableReportFieldsV1, PutReportPayload {
-  override fun copyTo(model: LatestReportBodyModel) =
+  override fun copyTo(model: LatestSeedFundReportBodyModel) =
       model.copy(
           annualDetails = annualDetails?.toModel(),
           notes = notes,
@@ -318,7 +318,7 @@ data class PutReportPayloadV1(
       override val selected: Boolean,
       override val workers: WorkersPayloadV1,
   ) : EditableReportFieldsV1.Nursery {
-    fun copyTo(model: ReportBodyModelV1.Nursery) =
+    fun copyTo(model: SeedFundReportBodyModelV1.Nursery) =
         model.copy(
             buildCompletedDate = buildCompletedDate,
             buildStartedDate = buildStartedDate,
@@ -342,7 +342,7 @@ data class PutReportPayloadV1(
       override val totalTreesPlanted: Int?,
       override val workers: WorkersPayloadV1,
   ) : EditableReportFieldsV1.PlantingSite {
-    fun copyTo(model: ReportBodyModelV1.PlantingSite) =
+    fun copyTo(model: SeedFundReportBodyModelV1.PlantingSite) =
         model.copy(
             mortalityRate = mortalityRate,
             selected = selected,
@@ -362,7 +362,7 @@ data class PutReportPayloadV1(
         override val mortalityRateInField: Int?,
         override val totalPlanted: Int?,
     ) : EditableReportFieldsV1.PlantingSite.Species {
-      fun copyTo(model: ReportBodyModelV1.PlantingSite.Species) =
+      fun copyTo(model: SeedFundReportBodyModelV1.PlantingSite.Species) =
           model.copy(
               mortalityRateInField = mortalityRateInField,
               totalPlanted = totalPlanted,
@@ -379,7 +379,7 @@ data class PutReportPayloadV1(
       override val selected: Boolean,
       override val workers: WorkersPayloadV1,
   ) : EditableReportFieldsV1.SeedBank {
-    fun copyTo(model: ReportBodyModelV1.SeedBank) =
+    fun copyTo(model: SeedFundReportBodyModelV1.SeedBank) =
         model.copy(
             buildCompletedDate = buildCompletedDate,
             buildStartedDate = buildStartedDate,
@@ -397,14 +397,14 @@ data class WorkersPayloadV1(
     override val volunteers: Int?,
 ) : EditableReportFieldsV1.Workers {
   constructor(
-      model: ReportBodyModelV1.Workers
+      model: SeedFundReportBodyModelV1.Workers
   ) : this(
       femalePaidWorkers = model.femalePaidWorkers,
       paidWorkers = model.paidWorkers,
       volunteers = model.volunteers)
 
   fun toModel() =
-      ReportBodyModelV1.Workers(
+      SeedFundReportBodyModelV1.Workers(
           femalePaidWorkers = femalePaidWorkers,
           paidWorkers = paidWorkers,
           volunteers = volunteers,
@@ -428,7 +428,7 @@ data class AnnualDetailsPayloadV1(
     override val sustainableDevelopmentGoals: List<GoalProgressPayloadV1>,
 ) : EditableReportFieldsV1.AnnualDetails {
   constructor(
-      model: ReportBodyModelV1.AnnualDetails
+      model: SeedFundReportBodyModelV1.AnnualDetails
   ) : this(
       bestMonthsForObservation = model.bestMonthsForObservation,
       budgetNarrativeSummary = model.budgetNarrativeSummary,
@@ -447,7 +447,7 @@ data class AnnualDetailsPayloadV1(
   )
 
   fun toModel() =
-      ReportBodyModelV1.AnnualDetails(
+      SeedFundReportBodyModelV1.AnnualDetails(
           bestMonthsForObservation = bestMonthsForObservation,
           budgetNarrativeSummary = budgetNarrativeSummary,
           catalyticDetail = catalyticDetail,
@@ -468,12 +468,12 @@ data class AnnualDetailsPayloadV1(
       override val progress: String?,
   ) : EditableReportFieldsV1.AnnualDetails.GoalProgress {
     constructor(
-        model: ReportBodyModelV1.AnnualDetails.GoalProgress
+        model: SeedFundReportBodyModelV1.AnnualDetails.GoalProgress
     ) : this(
         goal = model.goal,
         progress = model.progress,
     )
 
-    fun toModel() = ReportBodyModelV1.AnnualDetails.GoalProgress(goal, progress)
+    fun toModel() = SeedFundReportBodyModelV1.AnnualDetails.GoalProgress(goal, progress)
   }
 }

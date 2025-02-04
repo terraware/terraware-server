@@ -5,9 +5,9 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.report.db.ReportStore
-import com.terraformation.backend.report.model.ReportProjectSettingsModel
-import com.terraformation.backend.report.model.ReportSettingsModel
+import com.terraformation.backend.report.db.SeedFundReportStore
+import com.terraformation.backend.report.model.SeedFundReportProjectSettingsModel
+import com.terraformation.backend.report.model.SeedFundReportSettingsModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
@@ -22,14 +22,14 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/reports/settings")
 @RestController
 class ReportsSettingsController(
-    private val reportStore: ReportStore,
+    private val seedFundReportStore: SeedFundReportStore,
 ) {
   @GetMapping
   @Operation(summary = "Gets the report settings for an organization.")
   fun getReportSettings(
       @RequestParam organizationId: OrganizationId
   ): GetReportSettingsResponsePayload {
-    val settings = reportStore.fetchSettingsByOrganization(organizationId)
+    val settings = seedFundReportStore.fetchSettingsByOrganization(organizationId)
 
     return GetReportSettingsResponsePayload(settings)
   }
@@ -39,7 +39,7 @@ class ReportsSettingsController(
   fun updateReportSettings(
       @RequestBody payload: UpdateReportSettingsRequestPayload
   ): SimpleSuccessResponsePayload {
-    reportStore.updateSettings(payload.toModel())
+    seedFundReportStore.updateSettings(payload.toModel())
 
     return SimpleSuccessResponsePayload()
   }
@@ -52,10 +52,10 @@ data class ProjectReportSettingsPayload(
     )
     val isEnabled: Boolean,
 ) {
-  constructor(model: ReportProjectSettingsModel) : this(model.projectId, model.isEnabled)
+  constructor(model: SeedFundReportProjectSettingsModel) : this(model.projectId, model.isEnabled)
 
   fun toModel() =
-      ReportProjectSettingsModel(
+      SeedFundReportProjectSettingsModel(
           projectId = projectId,
           isEnabled = isEnabled,
       )
@@ -73,7 +73,7 @@ data class GetReportSettingsResponsePayload(
     val projects: List<ProjectReportSettingsPayload>,
 ) : SuccessResponsePayload {
   constructor(
-      model: ReportSettingsModel
+      model: SeedFundReportSettingsModel
   ) : this(
       isConfigured = model.isConfigured,
       organizationEnabled = model.organizationEnabled,
@@ -94,7 +94,7 @@ data class UpdateReportSettingsRequestPayload(
     val projects: List<ProjectReportSettingsPayload>,
 ) {
   fun toModel() =
-      ReportSettingsModel(
+      SeedFundReportSettingsModel(
           isConfigured = true,
           organizationId = organizationId,
           organizationEnabled = organizationEnabled,

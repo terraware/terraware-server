@@ -409,13 +409,6 @@ VALUES (1, 'Antarctica'),
        (9, 'Sub-Saharan Africa')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO report_statuses (id, name)
-VALUES (1, 'New'),
-       (2, 'In Progress'),
-       (3, 'Locked'),
-       (4, 'Submitted')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
 INSERT INTO roles (id, name)
 VALUES (1, 'Contributor'),
        (2, 'Manager'),
@@ -437,6 +430,13 @@ VALUES (1, 'Carbon'),
        (10, 'Operational Capacity'),
        (11, 'Responsiveness and Attention to Detail'),
        (12, 'Values Alignment')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO seed_fund_report_statuses (id, name)
+VALUES (1, 'New'),
+       (2, 'In Progress'),
+       (3, 'Locked'),
+       (4, 'Submitted')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO seedbank.seed_quantity_units (id, name)
@@ -493,18 +493,6 @@ VALUES (1, 'Pioneer'),
        (2, 'Early secondary'),
        (3, 'Late secondary'),
        (4, 'Mature')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO regions (id, name)
-VALUES (1, 'Antarctica'),
-       (2, 'East Asia & Pacific'),
-       (3, 'Europe & Central Asia'),
-       (4, 'Latin America & Caribbean'),
-       (5, 'Middle East & North Africa'),
-       (6, 'North America'),
-       (7, 'Oceania'),
-       (8, 'South Asia'),
-       (9, 'Sub-Saharan Africa')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.submission_statuses (id, name)

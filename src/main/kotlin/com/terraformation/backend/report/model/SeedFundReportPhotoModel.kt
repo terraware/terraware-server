@@ -1,18 +1,18 @@
 package com.terraformation.backend.report.model
 
-import com.terraformation.backend.db.default_schema.ReportId
+import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
-import com.terraformation.backend.db.default_schema.tables.pojos.ReportPhotosRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportPhotosRow
 import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.file.model.FileMetadata
 
-data class ReportPhotoModel(
+data class SeedFundReportPhotoModel(
     val caption: String? = null,
     val metadata: ExistingFileMetadata,
-    val reportId: ReportId,
+    val reportId: SeedFundReportId,
 ) {
   constructor(
-      photosRow: ReportPhotosRow,
+      photosRow: SeedFundReportPhotosRow,
       filesRow: FilesRow,
   ) : this(photosRow.caption, FileMetadata.of(filesRow), photosRow.reportId!!)
 }

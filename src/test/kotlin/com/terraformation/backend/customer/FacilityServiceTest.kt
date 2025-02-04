@@ -11,9 +11,9 @@ import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.ReportId
-import com.terraformation.backend.report.event.ReportSubmittedEvent
-import com.terraformation.backend.report.model.ReportBodyModelV1
+import com.terraformation.backend.db.default_schema.SeedFundReportId
+import com.terraformation.backend.report.event.SeedFundReportSubmittedEvent
+import com.terraformation.backend.report.model.SeedFundReportBodyModelV1
 import io.mockk.Runs
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -116,12 +116,12 @@ class FacilityServiceTest {
         )
 
     val event =
-        ReportSubmittedEvent(
-            ReportId(1),
-            ReportBodyModelV1(
+        SeedFundReportSubmittedEvent(
+            SeedFundReportId(1),
+            SeedFundReportBodyModelV1(
                 nurseries =
                     listOf(
-                        ReportBodyModelV1.Nursery(
+                        SeedFundReportBodyModelV1.Nursery(
                             buildCompletedDate = LocalDate.of(2023, 3, 2),
                             buildStartedDate = LocalDate.of(2023, 3, 1),
                             capacity = 123,
@@ -131,7 +131,7 @@ class FacilityServiceTest {
                             operationStartedDate = LocalDate.of(2023, 3, 3),
                             totalPlantsPropagated = 0,
                         ),
-                        ReportBodyModelV1.Nursery(
+                        SeedFundReportBodyModelV1.Nursery(
                             buildCompletedDate = LocalDate.of(2023, 4, 2),
                             buildStartedDate = LocalDate.of(2023, 4, 1),
                             capacity = 123,
@@ -145,14 +145,14 @@ class FacilityServiceTest {
                 organizationName = "org",
                 seedBanks =
                     listOf(
-                        ReportBodyModelV1.SeedBank(
+                        SeedFundReportBodyModelV1.SeedBank(
                             buildCompletedDate = LocalDate.of(2023, 5, 2),
                             buildStartedDate = LocalDate.of(2023, 5, 1),
                             id = unpopulatedSeedBankId,
                             name = "name",
                             operationStartedDate = LocalDate.of(2023, 5, 3),
                         ),
-                        ReportBodyModelV1.SeedBank(
+                        SeedFundReportBodyModelV1.SeedBank(
                             buildCompletedDate = LocalDate.of(2023, 6, 2),
                             buildStartedDate = LocalDate.of(2023, 6, 1),
                             id = populatedSeedBankId,
@@ -191,6 +191,6 @@ class FacilityServiceTest {
     // Shouldn't attempt to update the other facilities.
     confirmVerified(facilityStore)
 
-    assertIsEventListener<ReportSubmittedEvent>(service)
+    assertIsEventListener<SeedFundReportSubmittedEvent>(service)
   }
 }

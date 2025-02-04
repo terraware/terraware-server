@@ -7,14 +7,14 @@ import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.nursery.model.NurseryStats
-import com.terraformation.backend.report.ReportNotCompleteException
+import com.terraformation.backend.report.SeedFundReportNotCompleteException
 import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import java.time.LocalDate
 
 @JsonTypeName("1")
-data class ReportBodyModelV1(
+data class SeedFundReportBodyModelV1(
     val annualDetails: AnnualDetails? = null,
     val isAnnual: Boolean = false,
     val notes: String? = null,
@@ -26,7 +26,7 @@ data class ReportBodyModelV1(
     val totalNurseries: Int = 0,
     val totalPlantingSites: Int = 0,
     val totalSeedBanks: Int = 0,
-) : ReportBodyModel {
+) : SeedFundReportBodyModel {
   override fun toLatestVersion() = this
 
   override fun validate() {
@@ -35,7 +35,8 @@ data class ReportBodyModelV1(
     seedBanks.filter { it.selected }.forEach { it.validate() }
 
     if (isAnnual) {
-      annualDetails?.validate() ?: throw ReportNotCompleteException("Missing annual report details")
+      annualDetails?.validate()
+          ?: throw SeedFundReportNotCompleteException("Missing annual report details")
     }
   }
 
@@ -299,7 +300,7 @@ data class ReportBodyModelV1(
   internal class Validator(val context: String) {
     fun failIf(condition: Boolean, message: String) {
       if (condition) {
-        throw ReportNotCompleteException("$context $message")
+        throw SeedFundReportNotCompleteException("$context $message")
       }
     }
 
