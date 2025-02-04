@@ -280,7 +280,9 @@ val ID_WRAPPERS =
                 IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
                 IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),
                 IdWrapper("ProjectId", listOf("projects\\.id", ".*\\.project_id")),
-                IdWrapper("SeedFundReportId", listOf("public\\.seed_fund_reports\\.id", "public\\..*\\.report_id")),
+                IdWrapper(
+                    "SeedFundReportId",
+                    listOf("public\\.seed_fund_reports\\.id", "public\\..*\\.report_id")),
                 IdWrapper("SpeciesId", listOf("species\\.id", ".*\\.species_id")),
                 IdWrapper("SpeciesProblemId", listOf("species_problems\\.id")),
                 IdWrapper("SubLocationId", listOf("sub_locations\\.id", ".*\\.sub_location_id")),

@@ -20,15 +20,15 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.report.ReportNotCompleteException
-import com.terraformation.backend.report.event.ReportCreatedEvent
-import com.terraformation.backend.report.event.ReportDeletionStartedEvent
-import com.terraformation.backend.report.event.ReportSubmittedEvent
-import com.terraformation.backend.report.model.ReportBodyModelV1
-import com.terraformation.backend.report.model.ReportMetadata
-import com.terraformation.backend.report.model.ReportModel
-import com.terraformation.backend.report.model.ReportProjectSettingsModel
-import com.terraformation.backend.report.model.ReportSettingsModel
+import com.terraformation.backend.report.SeedFundReportNotCompleteException
+import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
+import com.terraformation.backend.report.event.SeedFundReportDeletionStartedEvent
+import com.terraformation.backend.report.event.SeedFundReportSubmittedEvent
+import com.terraformation.backend.report.model.SeedFundReportBodyModelV1
+import com.terraformation.backend.report.model.SeedFundReportMetadata
+import com.terraformation.backend.report.model.SeedFundReportModel
+import com.terraformation.backend.report.model.SeedFundReportProjectSettingsModel
+import com.terraformation.backend.report.model.SeedFundReportSettingsModel
 import com.terraformation.backend.time.quarter
 import io.mockk.every
 import java.time.Instant
@@ -43,7 +43,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-class ReportStoreTest : DatabaseTest(), RunsAsUser {
+class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val defaultTime = ZonedDateTime.of(2023, 7, 3, 2, 1, 0, 0, ZoneOffset.UTC)
@@ -52,7 +52,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
   private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
   private val publisher = TestEventPublisher()
   private val store by lazy {
-    ReportStore(
+    SeedFundReportStore(
         clock,
         dslContext,
         publisher,
@@ -85,10 +85,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
   inner class Create {
     @Test
     fun `sets defaults for metadata fields`() {
-      val actual = store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
+      val actual =
+          store.create(organizationId, body = SeedFundReportBodyModelV1(organizationName = "org"))
 
       val expected =
-          ReportMetadata(
+          SeedFundReportMetadata(
               id = actual.id,
               organizationId = organizationId,
               quarter = 2,
@@ -102,19 +103,20 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `publishes ReportCreatedEvent`() {
       val metadata =
-          store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
+          store.create(organizationId, body = SeedFundReportBodyModelV1(organizationName = "org"))
 
-      publisher.assertEventPublished(ReportCreatedEvent(metadata))
+      publisher.assertEventPublished(SeedFundReportCreatedEvent(metadata))
     }
 
     @Test
     fun `uses previous year if current date is in Q1`() {
       clock.instant = ZonedDateTime.of(2022, 3, 15, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
 
-      val actual = store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
+      val actual =
+          store.create(organizationId, body = SeedFundReportBodyModelV1(organizationName = "org"))
 
       val expected =
-          ReportMetadata(
+          SeedFundReportMetadata(
               id = actual.id,
               organizationId = organizationId,
               quarter = 4,
@@ -129,10 +131,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     fun `creates Q4 report on December 1`() {
       clock.instant = ZonedDateTime.of(2023, 12, 1, 0, 0, 0, 0, ZoneOffset.UTC).toInstant()
 
-      val actual = store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
+      val actual =
+          store.create(organizationId, body = SeedFundReportBodyModelV1(organizationName = "org"))
 
       val expected =
-          ReportMetadata(
+          SeedFundReportMetadata(
               id = actual.id,
               organizationId = organizationId,
               quarter = 4,
@@ -148,10 +151,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       val projectId = insertProject(name = "Test Project")
 
       val actual =
-          store.create(organizationId, projectId, ReportBodyModelV1(organizationName = "org"))
+          store.create(
+              organizationId, projectId, SeedFundReportBodyModelV1(organizationName = "org"))
 
       val expected =
-          ReportMetadata(
+          SeedFundReportMetadata(
               id = actual.id,
               organizationId = organizationId,
               projectId = projectId,
@@ -169,7 +173,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canCreateSeedFundReport(organizationId) } returns false
 
       assertThrows<AccessDeniedException> {
-        store.create(organizationId, body = ReportBodyModelV1(organizationName = "org"))
+        store.create(organizationId, body = SeedFundReportBodyModelV1(organizationName = "org"))
       }
     }
   }
@@ -195,7 +199,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       store.delete(reportId)
 
-      publisher.assertEventPublished(ReportDeletionStartedEvent(reportId))
+      publisher.assertEventPublished(SeedFundReportDeletionStartedEvent(reportId))
     }
 
     @Test
@@ -212,15 +216,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchOneById {
     @Test
     fun `returns report with deserialized body`() {
-      val body = ReportBodyModelV1(organizationName = "org")
+      val body = SeedFundReportBodyModelV1(organizationName = "org")
 
       val projectId = insertProject(name = "Test Project")
       val reportId = insertReport(projectId = projectId)
 
       val expected =
-          ReportModel(
+          SeedFundReportModel(
               body,
-              ReportMetadata(
+              SeedFundReportMetadata(
                   id = reportId,
                   organizationId = organizationId,
                   projectId = projectId,
@@ -379,12 +383,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       val reportId = insertReport(lockedBy = currentUser().userId)
 
       val newBody =
-          ReportBodyModelV1(
+          SeedFundReportBodyModelV1(
               notes = "notes",
               organizationName = "new name",
               seedBanks =
                   listOf(
-                      ReportBodyModelV1.SeedBank(
+                      SeedFundReportBodyModelV1.SeedBank(
                           buildCompletedDate = null,
                           buildCompletedDateEditable = true,
                           buildStartedDate = null,
@@ -395,14 +399,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
                           operationStartedDate = null,
                           operationStartedDateEditable = true,
                           totalSeedsStored = 123L,
-                          workers = ReportBodyModelV1.Workers(1, 2, 3))))
+                          workers = SeedFundReportBodyModelV1.Workers(1, 2, 3))))
 
       store.update(reportId, newBody)
 
       val expected =
-          ReportModel(
+          SeedFundReportModel(
               newBody,
-              ReportMetadata(
+              SeedFundReportMetadata(
                   id = reportId,
                   lockedBy = currentUser().userId,
                   lockedTime = Instant.EPOCH,
@@ -427,7 +431,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
           insertReport(status = SeedFundReportStatus.Submitted, submittedBy = otherUserId)
 
       assertThrows<SeedFundReportAlreadySubmittedException> {
-        store.update(reportId, ReportBodyModelV1(organizationName = "org"))
+        store.update(reportId, SeedFundReportBodyModelV1(organizationName = "org"))
       }
     }
 
@@ -436,7 +440,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       val reportId = insertReport()
 
       assertThrows<SeedFundReportNotLockedException> {
-        store.update(reportId, ReportBodyModelV1(organizationName = "org"))
+        store.update(reportId, SeedFundReportBodyModelV1(organizationName = "org"))
       }
     }
 
@@ -447,7 +451,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       val reportId = insertReport(lockedBy = otherUserId)
 
       assertThrows<SeedFundReportLockedException> {
-        store.update(reportId, ReportBodyModelV1(organizationName = "org"))
+        store.update(reportId, SeedFundReportBodyModelV1(organizationName = "org"))
       }
     }
 
@@ -458,7 +462,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canUpdateSeedFundReport(reportId) } returns false
 
       assertThrows<AccessDeniedException> {
-        store.update(reportId, ReportBodyModelV1(organizationName = "org"))
+        store.update(reportId, SeedFundReportBodyModelV1(organizationName = "org"))
       }
     }
   }
@@ -467,13 +471,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
   inner class Submit {
     @Test
     fun `marks report as submitted and publishes event`() {
-      val body = ReportBodyModelV1(organizationName = "org")
+      val body = SeedFundReportBodyModelV1(organizationName = "org")
       val reportId = insertReport(lockedBy = user.userId)
 
       store.submit(reportId)
 
       val expectedMetadata =
-          ReportMetadata(
+          SeedFundReportMetadata(
               id = reportId,
               organizationId = organizationId,
               quarter = 1,
@@ -483,7 +487,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
               year = 1970,
           )
 
-      publisher.assertEventPublished(ReportSubmittedEvent(reportId, body))
+      publisher.assertEventPublished(SeedFundReportSubmittedEvent(reportId, body))
       assertEquals(expectedMetadata, store.fetchOneById(reportId).metadata)
     }
 
@@ -493,32 +497,32 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       val facilityId2 = insertFacility()
       val facilityId3 = insertFacility(type = FacilityType.Nursery)
       val body =
-          ReportBodyModelV1(
+          SeedFundReportBodyModelV1(
               organizationName = "org",
               summaryOfProgress = "All's well",
               seedBanks =
                   listOf(
-                      ReportBodyModelV1.SeedBank(
+                      SeedFundReportBodyModelV1.SeedBank(
                           id = facilityId1,
                           name = "bank",
                           buildStartedDate = LocalDate.EPOCH,
                           buildCompletedDate = LocalDate.EPOCH,
                           operationStartedDate = LocalDate.EPOCH,
-                          workers = ReportBodyModelV1.Workers(1, 1, 1),
+                          workers = SeedFundReportBodyModelV1.Workers(1, 1, 1),
                       ),
-                      ReportBodyModelV1.SeedBank(
+                      SeedFundReportBodyModelV1.SeedBank(
                           id = facilityId2,
                           selected = false,
                           name = "bank",
                           buildStartedDate = LocalDate.EPOCH,
                           buildCompletedDate = LocalDate.EPOCH,
                           operationStartedDate = LocalDate.EPOCH,
-                          workers = ReportBodyModelV1.Workers(1, 1, 1),
+                          workers = SeedFundReportBodyModelV1.Workers(1, 1, 1),
                       ),
                   ),
               nurseries =
                   listOf(
-                      ReportBodyModelV1.Nursery(
+                      SeedFundReportBodyModelV1.Nursery(
                           id = facilityId3,
                           name = "nursery",
                           buildStartedDate = LocalDate.EPOCH,
@@ -526,7 +530,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
                           operationStartedDate = LocalDate.EPOCH,
                           capacity = 100,
                           mortalityRate = 10,
-                          workers = ReportBodyModelV1.Workers(1, 1, 1),
+                          workers = SeedFundReportBodyModelV1.Workers(1, 1, 1),
                           totalPlantsPropagated = 100,
                       ),
                   ),
@@ -557,13 +561,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if report is incomplete`() {
       val facilityId = insertFacility()
       val body =
-          ReportBodyModelV1(
+          SeedFundReportBodyModelV1(
               organizationName = "org",
-              seedBanks = listOf(ReportBodyModelV1.SeedBank(id = facilityId, name = "bank")))
+              seedBanks =
+                  listOf(SeedFundReportBodyModelV1.SeedBank(id = facilityId, name = "bank")))
       val reportId =
           insertReport(lockedBy = user.userId, body = objectMapper.writeValueAsString(body))
 
-      assertThrows<ReportNotCompleteException> { store.submit(reportId) }
+      assertThrows<SeedFundReportNotCompleteException> { store.submit(reportId) }
     }
 
     @Test
@@ -646,7 +651,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns defaults if no settings have been saved`() {
       assertEquals(
-          ReportSettingsModel(
+          SeedFundReportSettingsModel(
               isConfigured = false,
               organizationId = organizationId,
               organizationEnabled = true,
@@ -657,13 +662,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       val projectId = insertProject()
 
       assertEquals(
-          ReportSettingsModel(
+          SeedFundReportSettingsModel(
               isConfigured = false,
               organizationId = organizationId,
               organizationEnabled = true,
               projects =
                   listOf(
-                      ReportProjectSettingsModel(
+                      SeedFundReportProjectSettingsModel(
                           projectId = projectId, isConfigured = false, isEnabled = true))),
           store.fetchSettingsByOrganization(organizationId),
           "Result with unconfigured project")
@@ -674,7 +679,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       insertOrganizationReportSettings(isEnabled = false)
 
       assertEquals(
-          ReportSettingsModel(
+          SeedFundReportSettingsModel(
               isConfigured = true,
               organizationId = organizationId,
               organizationEnabled = false,
@@ -687,7 +692,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       insertOrganizationReportSettings(isEnabled = true)
 
       assertEquals(
-          ReportSettingsModel(
+          SeedFundReportSettingsModel(
               isConfigured = true,
               organizationId = otherOrganizationId,
               organizationEnabled = true,
@@ -706,19 +711,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       insertProjectReportSettings(projectId = projectId2, isEnabled = false)
 
       assertEquals(
-          ReportSettingsModel(
+          SeedFundReportSettingsModel(
               isConfigured = true,
               organizationId = organizationId,
               organizationEnabled = false,
               projects =
                   listOf(
-                      ReportProjectSettingsModel(
+                      SeedFundReportProjectSettingsModel(
                           projectId = unconfiguredProjectId,
                           isConfigured = false,
                           isEnabled = true),
-                      ReportProjectSettingsModel(
+                      SeedFundReportProjectSettingsModel(
                           projectId = projectId1, isConfigured = true, isEnabled = true),
-                      ReportProjectSettingsModel(
+                      SeedFundReportProjectSettingsModel(
                           projectId = projectId2, isConfigured = true, isEnabled = false),
                   )),
           store.fetchSettingsByOrganization(organizationId),
@@ -730,19 +735,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
               .copy(isEnabled = true))
 
       assertEquals(
-          ReportSettingsModel(
+          SeedFundReportSettingsModel(
               isConfigured = true,
               organizationId = organizationId,
               organizationEnabled = true,
               projects =
                   listOf(
-                      ReportProjectSettingsModel(
+                      SeedFundReportProjectSettingsModel(
                           projectId = unconfiguredProjectId,
                           isConfigured = false,
                           isEnabled = true),
-                      ReportProjectSettingsModel(
+                      SeedFundReportProjectSettingsModel(
                           projectId = projectId1, isConfigured = true, isEnabled = true),
-                      ReportProjectSettingsModel(
+                      SeedFundReportProjectSettingsModel(
                           projectId = projectId2, isConfigured = true, isEnabled = false),
                   )),
           store.fetchSettingsByOrganization(organizationId),
@@ -764,7 +769,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `supports enabling organization-level reports`() {
       val settings =
-          ReportSettingsModel(
+          SeedFundReportSettingsModel(
               isConfigured = true,
               organizationId = organizationId,
               organizationEnabled = true,
@@ -780,7 +785,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
       insertOrganizationReportSettings(isEnabled = true)
 
       val settings =
-          ReportSettingsModel(
+          SeedFundReportSettingsModel(
               isConfigured = true,
               organizationId = organizationId,
               organizationEnabled = false,
@@ -798,13 +803,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<ProjectInDifferentOrganizationException> {
         store.updateSettings(
-            ReportSettingsModel(
+            SeedFundReportSettingsModel(
                 isConfigured = true,
                 organizationId = organizationId,
                 organizationEnabled = true,
                 projects =
                     listOf(
-                        ReportProjectSettingsModel(projectId = otherProjectId, isEnabled = true))))
+                        SeedFundReportProjectSettingsModel(
+                            projectId = otherProjectId, isEnabled = true))))
       }
     }
 
@@ -814,7 +820,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<AccessDeniedException> {
         store.updateSettings(
-            ReportSettingsModel(
+            SeedFundReportSettingsModel(
                 isConfigured = true,
                 organizationId = organizationId,
                 organizationEnabled = true,

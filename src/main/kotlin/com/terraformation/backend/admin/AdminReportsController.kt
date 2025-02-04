@@ -6,9 +6,9 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.report.ReportService
-import com.terraformation.backend.report.db.ReportStore
-import com.terraformation.backend.report.render.ReportRenderer
+import com.terraformation.backend.report.SeedFundReportService
+import com.terraformation.backend.report.db.SeedFundReportStore
+import com.terraformation.backend.report.render.SeedFundReportRenderer
 import jakarta.ws.rs.Produces
 import java.nio.charset.StandardCharsets
 import org.springframework.http.MediaType
@@ -27,16 +27,16 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequireGlobalRole([GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin])
 @Validated
 class AdminReportsController(
-    private val reportRenderer: ReportRenderer,
-    private val reportService: ReportService,
-    private val reportStore: ReportStore,
+    private val seedFundReportRenderer: SeedFundReportRenderer,
+    private val seedFundReportService: SeedFundReportService,
+    private val seedFundReportStore: SeedFundReportStore,
 ) {
   private val log = perClassLogger()
 
   @GetMapping("/report/{id}/index.html")
   @Produces("text/html")
   fun getReportHtml(@PathVariable("id") reportId: SeedFundReportId): ResponseEntity<String> {
-    return ResponseEntity.ok(reportRenderer.renderReportHtml(reportId))
+    return ResponseEntity.ok(seedFundReportRenderer.renderReportHtml(reportId))
   }
 
   @GetMapping("/report/{id}/report.csv")
@@ -44,7 +44,7 @@ class AdminReportsController(
   fun getReportCsv(@PathVariable("id") reportId: SeedFundReportId): ResponseEntity<String> {
     return ResponseEntity.ok()
         .contentType(MediaType("text", "csv", StandardCharsets.UTF_8))
-        .body(reportRenderer.renderReportCsv(reportId))
+        .body(seedFundReportRenderer.renderReportCsv(reportId))
   }
 
   @PostMapping("/createReport")
@@ -53,7 +53,7 @@ class AdminReportsController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      val metadata = reportService.create(organizationId)
+      val metadata = seedFundReportService.create(organizationId)
       redirectAttributes.successMessage = "Report ${metadata.id} created."
     } catch (e: Exception) {
       log.warn("Report creation failed", e)
@@ -72,7 +72,7 @@ class AdminReportsController(
     requirePermissions { deleteSeedFundReport(reportId) }
 
     try {
-      reportStore.delete(reportId)
+      seedFundReportStore.delete(reportId)
       redirectAttributes.successMessage = "Deleted report."
     } catch (e: Exception) {
       log.warn("Report deletion failed", e)
@@ -91,7 +91,7 @@ class AdminReportsController(
     requirePermissions { createSeedFundReport(organizationId) }
 
     try {
-      reportService.exportToGoogleDrive(reportId)
+      seedFundReportService.exportToGoogleDrive(reportId)
       redirectAttributes.successMessage = "Exported report to Google Drive."
     } catch (e: Exception) {
       log.warn("Report export failed", e)

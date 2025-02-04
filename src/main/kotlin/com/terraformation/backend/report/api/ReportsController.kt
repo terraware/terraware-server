@@ -25,13 +25,13 @@ import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
-import com.terraformation.backend.report.ReportFileService
-import com.terraformation.backend.report.ReportNotCompleteException
-import com.terraformation.backend.report.ReportService
-import com.terraformation.backend.report.db.ReportStore
-import com.terraformation.backend.report.model.ReportFileModel
-import com.terraformation.backend.report.model.ReportMetadata
-import com.terraformation.backend.report.model.ReportPhotoModel
+import com.terraformation.backend.report.SeedFundReportFileService
+import com.terraformation.backend.report.SeedFundReportNotCompleteException
+import com.terraformation.backend.report.SeedFundReportService
+import com.terraformation.backend.report.db.SeedFundReportStore
+import com.terraformation.backend.report.model.SeedFundReportFileModel
+import com.terraformation.backend.report.model.SeedFundReportMetadata
+import com.terraformation.backend.report.model.SeedFundReportPhotoModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Encoding
@@ -63,9 +63,9 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/reports")
 @RestController
 class ReportsController(
-    private val reportFileService: ReportFileService,
-    private val reportService: ReportService,
-    private val reportStore: ReportStore,
+    private val seedFundReportFileService: SeedFundReportFileService,
+    private val seedFundReportService: SeedFundReportService,
+    private val seedFundReportStore: SeedFundReportStore,
     private val userStore: UserStore,
 ) {
   @GetMapping
@@ -74,7 +74,7 @@ class ReportsController(
     val names = mutableMapOf<UserId, String?>()
 
     val reports =
-        reportStore.fetchMetadataByOrganization(organizationId).map { metadata ->
+        seedFundReportStore.fetchMetadataByOrganization(organizationId).map { metadata ->
           ListReportsResponseElement(metadata) { userId ->
             names.getOrPut(userId) { userStore.fetchFullNameById(userId) }
           }
@@ -86,7 +86,7 @@ class ReportsController(
   @GetMapping("/{id}")
   @Operation(summary = "Retrieves the contents of a report.")
   fun getReport(@PathVariable("id") id: SeedFundReportId): GetReportResponsePayload {
-    val model = reportService.fetchOneById(id)
+    val model = seedFundReportService.fetchOneById(id)
     val reportPayload = GetReportPayload.of(model, userStore::fetchFullNameById)
 
     return GetReportResponsePayload(reportPayload)
@@ -101,7 +101,7 @@ class ReportsController(
               "current user.")
   @PostMapping("/{id}/lock")
   fun lockReport(@PathVariable("id") id: SeedFundReportId): SimpleSuccessResponsePayload {
-    reportStore.lock(id)
+    seedFundReportStore.lock(id)
 
     return SimpleSuccessResponsePayload()
   }
@@ -110,7 +110,7 @@ class ReportsController(
   @Operation(summary = "Locks a report even if it is locked by another user already.")
   @PostMapping("/{id}/lock/force")
   fun forceLockReport(@PathVariable("id") id: SeedFundReportId): SimpleSuccessResponsePayload {
-    reportStore.lock(id, true)
+    seedFundReportStore.lock(id, true)
 
     return SimpleSuccessResponsePayload()
   }
@@ -120,7 +120,7 @@ class ReportsController(
   @Operation(summary = "Releases the lock on a report.")
   @PostMapping("/{id}/unlock")
   fun unlockReport(@PathVariable("id") id: SeedFundReportId): SimpleSuccessResponsePayload {
-    reportStore.unlock(id)
+    seedFundReportStore.unlock(id)
 
     return SimpleSuccessResponsePayload()
   }
@@ -136,7 +136,7 @@ class ReportsController(
       @PathVariable("id") id: SeedFundReportId,
       @RequestBody payload: PutReportRequestPayload
   ): SimpleSuccessResponsePayload {
-    reportService.update(id) { payload.report.copyTo(it) }
+    seedFundReportService.update(id) { payload.report.copyTo(it) }
 
     return SimpleSuccessResponsePayload()
   }
@@ -152,8 +152,8 @@ class ReportsController(
   @PostMapping("/{id}/submit")
   fun submitReport(@PathVariable("id") id: SeedFundReportId): SimpleSuccessResponsePayload {
     try {
-      reportStore.submit(id)
-    } catch (e: ReportNotCompleteException) {
+      seedFundReportStore.submit(id)
+    } catch (e: SeedFundReportNotCompleteException) {
       throw BadRequestException(e.message)
     }
 
@@ -163,7 +163,7 @@ class ReportsController(
   @GetMapping("/{id}/photos")
   @Operation(summary = "Lists the photos associated with a report.")
   fun listReportPhotos(@PathVariable("id") id: SeedFundReportId): ListReportPhotosResponsePayload {
-    val photos = reportFileService.listPhotos(id)
+    val photos = seedFundReportFileService.listPhotos(id)
 
     return ListReportPhotosResponsePayload(photos.map { ListReportPhotosResponseElement(it) })
   }
@@ -182,7 +182,7 @@ class ReportsController(
       maxHeight: Int? = null,
   ): ResponseEntity<InputStreamResource> {
     return try {
-      reportFileService.readPhoto(reportId, photoId, maxWidth, maxHeight).toResponseEntity()
+      seedFundReportFileService.readPhoto(reportId, photoId, maxWidth, maxHeight).toResponseEntity()
     } catch (e: NoSuchFileException) {
       throw NotFoundException()
     }
@@ -195,10 +195,10 @@ class ReportsController(
       @PathVariable("photoId") photoId: FileId,
       @RequestBody payload: UpdateReportPhotoRequestPayload
   ): SimpleSuccessResponsePayload {
-    val existing = reportFileService.getPhotoModel(reportId, photoId)
+    val existing = seedFundReportFileService.getPhotoModel(reportId, photoId)
     val model = payload.applyTo(existing)
 
-    reportFileService.updatePhoto(model)
+    seedFundReportFileService.updatePhoto(model)
 
     return SimpleSuccessResponsePayload()
   }
@@ -214,7 +214,7 @@ class ReportsController(
     val filename = file.getFilename()
 
     val fileId =
-        reportFileService.storePhoto(
+        seedFundReportFileService.storePhoto(
             reportId, file.inputStream, FileMetadata.of(contentType, filename, file.size))
 
     return UploadReportFileResponsePayload(fileId)
@@ -227,7 +227,7 @@ class ReportsController(
       @PathVariable("reportId") reportId: SeedFundReportId,
       @PathVariable("photoId") photoId: FileId
   ): SimpleSuccessResponsePayload {
-    reportFileService.deletePhoto(reportId, photoId)
+    seedFundReportFileService.deletePhoto(reportId, photoId)
 
     return SimpleSuccessResponsePayload()
   }
@@ -235,7 +235,7 @@ class ReportsController(
   @GetMapping("/{id}/files")
   @Operation(summary = "Lists the files associated with a report.")
   fun listReportFiles(@PathVariable("id") id: SeedFundReportId): ListReportFilesResponsePayload {
-    val files = reportFileService.listFiles(id)
+    val files = seedFundReportFileService.listFiles(id)
 
     return ListReportFilesResponsePayload(files.map { ListReportFilesResponseElement(it) })
   }
@@ -256,9 +256,9 @@ class ReportsController(
       @PathVariable("fileId") fileId: FileId,
   ): ResponseEntity<InputStreamResource> {
     return try {
-      val model = reportFileService.getFileModel(reportId, fileId)
+      val model = seedFundReportFileService.getFileModel(reportId, fileId)
 
-      reportFileService.readFile(reportId, fileId).toResponseEntity {
+      seedFundReportFileService.readFile(reportId, fileId).toResponseEntity {
         contentDisposition =
             ContentDisposition.attachment().filename(model.metadata.filenameWithoutPath).build()
       }
@@ -279,7 +279,7 @@ class ReportsController(
     val filename = file.getFilename()
 
     val fileId =
-        reportFileService.storeFile(
+        seedFundReportFileService.storeFile(
             reportId, file.inputStream, FileMetadata.of(contentType, filename, file.size))
 
     return UploadReportFileResponsePayload(fileId)
@@ -292,7 +292,7 @@ class ReportsController(
       @PathVariable("reportId") reportId: SeedFundReportId,
       @PathVariable("fileId") fileId: FileId
   ): SimpleSuccessResponsePayload {
-    reportFileService.deleteFile(reportId, fileId)
+    seedFundReportFileService.deleteFile(reportId, fileId)
 
     return SimpleSuccessResponsePayload()
   }
@@ -317,7 +317,7 @@ data class ListReportsResponseElement(
     override val year: Int,
 ) : ReportMetadataFields {
   constructor(
-      metadata: ReportMetadata,
+      metadata: SeedFundReportMetadata,
       getFullName: (UserId) -> String?,
   ) : this(
       id = metadata.id,
@@ -344,7 +344,7 @@ data class ListReportPhotosResponseElement(
     val id: FileId,
 ) {
   constructor(
-      model: ReportPhotoModel
+      model: SeedFundReportPhotoModel
   ) : this(model.caption, model.metadata.filename, model.metadata.id)
 }
 
@@ -352,7 +352,7 @@ data class ListReportFilesResponseElement(
     val filename: String,
     val id: FileId,
 ) {
-  constructor(model: ReportFileModel) : this(model.metadata.filename, model.metadata.id)
+  constructor(model: SeedFundReportFileModel) : this(model.metadata.filename, model.metadata.id)
 }
 
 data class GetReportResponsePayload(
@@ -372,7 +372,7 @@ data class ListReportPhotosResponsePayload(
 ) : SuccessResponsePayload
 
 data class UpdateReportPhotoRequestPayload(val caption: String?) {
-  fun applyTo(model: ReportPhotoModel) = model.copy(caption = caption)
+  fun applyTo(model: SeedFundReportPhotoModel) = model.copy(caption = caption)
 }
 
 data class UploadReportFileResponsePayload(val id: FileId) : SuccessResponsePayload

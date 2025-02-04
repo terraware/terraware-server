@@ -86,8 +86,8 @@ import com.terraformation.backend.email.model.ObservationNotScheduled
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.multiPolygon
-import com.terraformation.backend.report.event.ReportCreatedEvent
-import com.terraformation.backend.report.model.ReportMetadata
+import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
+import com.terraformation.backend.report.model.SeedFundReportMetadata
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
@@ -559,8 +559,8 @@ internal class EmailNotificationServiceTest {
     } returns admins.map { userForEmail(it) }
 
     service.on(
-        ReportCreatedEvent(
-            ReportMetadata(
+        SeedFundReportCreatedEvent(
+            SeedFundReportMetadata(
                 SeedFundReportId(1),
                 organizationId = organization.id,
                 quarter = 3,

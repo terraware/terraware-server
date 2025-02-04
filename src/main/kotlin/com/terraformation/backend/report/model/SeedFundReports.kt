@@ -11,20 +11,20 @@ import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportsRow
 import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORTS
-import com.terraformation.backend.report.ReportNotCompleteException
+import com.terraformation.backend.report.SeedFundReportNotCompleteException
 import java.time.Instant
 import org.jooq.Record
 
 /** A report consists of a fixed set of metadata and a variable-format body. */
-data class ReportModel(
-    val body: ReportBodyModel,
-    val metadata: ReportMetadata,
+data class SeedFundReportModel(
+    val body: SeedFundReportBodyModel,
+    val metadata: SeedFundReportMetadata,
 ) {
   val isSubmitted: Boolean
     get() = metadata.isSubmitted
 }
 
-data class ReportMetadata(
+data class SeedFundReportMetadata(
     val id: SeedFundReportId,
     val lockedBy: UserId? = null,
     val lockedTime: Instant? = null,
@@ -87,7 +87,7 @@ data class ReportMetadata(
  * we introduce new versions. This will automatically update the type signatures of all the internal
  * functions that are supposed to accept whatever the latest version is.
  */
-typealias LatestReportBodyModel = ReportBodyModelV1
+typealias LatestSeedFundReportBodyModel = SeedFundReportBodyModelV1
 
 /**
  * Top-level interface for all versions of report bodies. Defines how versions are tagged by the
@@ -95,16 +95,16 @@ typealias LatestReportBodyModel = ReportBodyModelV1
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "version")
 @JsonSubTypes(
-    JsonSubTypes.Type(ReportBodyModelV1::class),
+    JsonSubTypes.Type(SeedFundReportBodyModelV1::class),
 )
-sealed interface ReportBodyModel {
+sealed interface SeedFundReportBodyModel {
   /** Transforms a report from an earlier version to the latest one. */
-  fun toLatestVersion(): LatestReportBodyModel
+  fun toLatestVersion(): LatestSeedFundReportBodyModel
 
   /**
    * Validates that the report is complete and ready for submission.
    *
-   * @throws ReportNotCompleteException The report is missing required information.
+   * @throws SeedFundReportNotCompleteException The report is missing required information.
    */
   fun validate()
 }

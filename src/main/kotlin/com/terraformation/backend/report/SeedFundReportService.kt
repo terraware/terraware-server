@@ -17,13 +17,13 @@ import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.BatchStore
-import com.terraformation.backend.report.db.ReportStore
-import com.terraformation.backend.report.event.ReportSubmittedEvent
-import com.terraformation.backend.report.model.LatestReportBodyModel
-import com.terraformation.backend.report.model.ReportBodyModelV1
-import com.terraformation.backend.report.model.ReportMetadata
-import com.terraformation.backend.report.model.ReportModel
-import com.terraformation.backend.report.render.ReportRenderer
+import com.terraformation.backend.report.db.SeedFundReportStore
+import com.terraformation.backend.report.event.SeedFundReportSubmittedEvent
+import com.terraformation.backend.report.model.LatestSeedFundReportBodyModel
+import com.terraformation.backend.report.model.SeedFundReportBodyModelV1
+import com.terraformation.backend.report.model.SeedFundReportMetadata
+import com.terraformation.backend.report.model.SeedFundReportModel
+import com.terraformation.backend.report.render.SeedFundReportRenderer
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.time.quarter
@@ -36,7 +36,7 @@ import org.springframework.context.event.EventListener
 import org.springframework.http.MediaType
 
 @Named
-class ReportService(
+class SeedFundReportService(
     private val accessionStore: AccessionStore,
     private val batchStore: BatchStore,
     private val clock: Clock,
@@ -46,8 +46,8 @@ class ReportService(
     private val organizationStore: OrganizationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val projectStore: ProjectStore,
-    private val reportRenderer: ReportRenderer,
-    private val reportStore: ReportStore,
+    private val seedFundReportRenderer: SeedFundReportRenderer,
+    private val seedFundReportStore: SeedFundReportStore,
     @Lazy private val scheduler: JobScheduler,
     private val speciesStore: SpeciesStore,
     private val systemUser: SystemUser,
@@ -60,13 +60,13 @@ class ReportService(
    * Fetches a report using the correct model version for the body and with server-supplied fields
    * filled in.
    *
-   * If the report is not submitted yet, the body will always be [LatestReportBodyModel] and the
-   * server-generated fields will have the most recent data. If the report is already submitted, the
-   * body will use whatever version was the latest one at the time it was submitted, and the
+   * If the report is not submitted yet, the body will always be [LatestSeedFundReportBodyModel] and
+   * the server-generated fields will have the most recent data. If the report is already submitted,
+   * the body will use whatever version was the latest one at the time it was submitted, and the
    * server-generated fields will have whatever values they had when the report was submitted.
    */
-  fun fetchOneById(reportId: SeedFundReportId): ReportModel {
-    val report = reportStore.fetchOneById(reportId)
+  fun fetchOneById(reportId: SeedFundReportId): SeedFundReportModel {
+    val report = seedFundReportStore.fetchOneById(reportId)
 
     // Never refresh server-generated values in reports once they're submitted.
     return if (report.isSubmitted) {
@@ -87,8 +87,9 @@ class ReportService(
    *
    * This will generally be called by a scheduled job, not in response to a user action.
    */
-  fun create(organizationId: OrganizationId, projectId: ProjectId? = null): ReportMetadata {
-    return reportStore.create(organizationId, projectId, populateBody(organizationId, projectId))
+  fun create(organizationId: OrganizationId, projectId: ProjectId? = null): SeedFundReportMetadata {
+    return seedFundReportStore.create(
+        organizationId, projectId, populateBody(organizationId, projectId))
   }
 
   /**
@@ -96,19 +97,22 @@ class ReportService(
    * (latest body version, all server-generated fields refreshed) and should return a copy with its
    * edits applied.
    */
-  fun update(reportId: SeedFundReportId, modify: (LatestReportBodyModel) -> LatestReportBodyModel) {
+  fun update(
+      reportId: SeedFundReportId,
+      modify: (LatestSeedFundReportBodyModel) -> LatestSeedFundReportBodyModel
+  ) {
     val modifiedBody = modify(fetchOneById(reportId).body.toLatestVersion())
 
-    reportStore.update(reportId, modifiedBody)
+    seedFundReportStore.update(reportId, modifiedBody)
   }
 
   @EventListener
   fun createMissingReports(@Suppress("UNUSED_PARAMETER") event: DailyTaskTimeArrivedEvent) {
     try {
       systemUser.run {
-        reportStore.findOrganizationsForCreate().forEach { create(it) }
+        seedFundReportStore.findOrganizationsForCreate().forEach { create(it) }
 
-        reportStore
+        seedFundReportStore
             .findProjectsForCreate()
             .map { projectStore.fetchOneById(it) }
             .forEach { create(it.organizationId, it.id) }
@@ -120,29 +124,29 @@ class ReportService(
 
   @EventListener
   fun on(event: OrganizationDeletionStartedEvent) {
-    reportStore.fetchMetadataByOrganization(event.organizationId).forEach { report ->
-      reportStore.delete(report.id)
+    seedFundReportStore.fetchMetadataByOrganization(event.organizationId).forEach { report ->
+      seedFundReportStore.delete(report.id)
     }
   }
 
   @EventListener
   fun on(event: ProjectDeletionStartedEvent) {
-    reportStore
+    seedFundReportStore
         .fetchMetadataByProject(event.projectId)
         .filter { it.status != SeedFundReportStatus.Submitted }
-        .forEach { reportStore.delete(it.id) }
+        .forEach { seedFundReportStore.delete(it.id) }
   }
 
   @EventListener
   fun on(event: ProjectRenamedEvent) {
-    reportStore.updateProjectName(event.projectId, event.newName)
+    seedFundReportStore.updateProjectName(event.projectId, event.newName)
   }
 
   @EventListener
-  fun on(event: ReportSubmittedEvent) {
+  fun on(event: SeedFundReportSubmittedEvent) {
     if (config.report.exportEnabled && config.report.googleDriveId != null) {
       val reportId = event.reportId
-      val jobId = scheduler.enqueue<ReportService> { exportToGoogleDrive(reportId) }
+      val jobId = scheduler.enqueue<SeedFundReportService> { exportToGoogleDrive(reportId) }
 
       log.debug("Enqueued job $jobId to export report $reportId to Google Drive")
     }
@@ -165,7 +169,7 @@ class ReportService(
     val driveId = config.report.googleDriveId
     if (config.report.exportEnabled && driveId != null) {
       systemUser.run {
-        val report = reportStore.fetchOneById(reportId)
+        val report = seedFundReportStore.fetchOneById(reportId)
         val organization = organizationStore.fetchOneById(report.metadata.organizationId)
         val folderId =
             googleDriveWriter.findOrCreateFolders(
@@ -177,7 +181,7 @@ class ReportService(
         val baseFilename =
             "${organization.name} ${report.metadata.year}-Q${report.metadata.quarter}"
 
-        val html = reportRenderer.renderReportHtml(report)
+        val html = seedFundReportRenderer.renderReportHtml(report)
         googleDriveWriter.uploadFile(
             parentFolderId = folderId,
             filename = "$baseFilename Report",
@@ -187,7 +191,7 @@ class ReportService(
             driveId = driveId,
             inputStreamContentType = MediaType.TEXT_HTML_VALUE)
 
-        val csv = reportRenderer.renderReportCsv(report)
+        val csv = seedFundReportRenderer.renderReportCsv(report)
         googleDriveWriter.uploadFile(
             parentFolderId = folderId,
             filename = "$baseFilename.csv",
@@ -195,11 +199,11 @@ class ReportService(
             inputStream = csv.byteInputStream(),
             driveId = driveId)
 
-        reportStore.fetchFilesByReportId(reportId).forEach { model ->
+        seedFundReportStore.fetchFilesByReportId(reportId).forEach { model ->
           googleDriveWriter.copyFile(driveId, folderId, model.metadata)
         }
 
-        reportStore.fetchPhotosByReportId(reportId).forEach { model ->
+        seedFundReportStore.fetchPhotosByReportId(reportId).forEach { model ->
           googleDriveWriter.copyFile(driveId, folderId, model.metadata, model.caption)
         }
       }
@@ -210,10 +214,10 @@ class ReportService(
   private fun populateBody(
       organizationId: OrganizationId,
       projectId: ProjectId? = null,
-      body: LatestReportBodyModel? = null
-  ): LatestReportBodyModel {
+      body: LatestSeedFundReportBodyModel? = null
+  ): LatestSeedFundReportBodyModel {
     val organization = organizationStore.fetchOneById(organizationId)
-    val isAnnual = body?.isAnnual ?: (reportStore.getLastQuarter().quarter == 4)
+    val isAnnual = body?.isAnnual ?: (seedFundReportStore.getLastQuarter().quarter == 4)
     val facilities =
         if (projectId != null) {
           facilityStore.fetchByProjectId(projectId)
@@ -231,7 +235,7 @@ class ReportService(
     val seedBankModels = facilities.filter { it.type == FacilityType.SeedBank }
 
     val annualDetails =
-        if (isAnnual) body?.annualDetails ?: ReportBodyModelV1.AnnualDetails() else null
+        if (isAnnual) body?.annualDetails ?: SeedFundReportBodyModelV1.AnnualDetails() else null
 
     val nurseryBodies =
         nurseryModels
@@ -243,7 +247,7 @@ class ReportService(
                   ?.nurseries
                   ?.find { it.id == facility.id }
                   ?.populate(facility, orgStats, projectStats)
-                  ?: ReportBodyModelV1.Nursery(facility, orgStats, projectStats)
+                  ?: SeedFundReportBodyModelV1.Nursery(facility, orgStats, projectStats)
             }
             .sortedBy { it.id }
 
@@ -256,7 +260,7 @@ class ReportService(
                   ?.plantingSites
                   ?.find { it.id == plantingSiteModel.id }
                   ?.populate(plantingSiteModel, speciesModels)
-                  ?: ReportBodyModelV1.PlantingSite(plantingSiteModel, speciesModels)
+                  ?: SeedFundReportBodyModelV1.PlantingSite(plantingSiteModel, speciesModels)
             }
             .sortedBy { it.id }
 
@@ -271,7 +275,7 @@ class ReportService(
                   ?.seedBanks
                   ?.find { it.id == facility.id }
                   ?.populate(facility, orgStats, projectStats)
-                  ?: ReportBodyModelV1.SeedBank(facility, orgStats, projectStats)
+                  ?: SeedFundReportBodyModelV1.SeedBank(facility, orgStats, projectStats)
             }
             .sortedBy { it.id }
 
@@ -286,7 +290,7 @@ class ReportService(
         totalPlantingSites = plantingSiteModels.size,
         totalSeedBanks = seedBankModels.size,
     )
-        ?: ReportBodyModelV1(
+        ?: SeedFundReportBodyModelV1(
             annualDetails = annualDetails,
             isAnnual = isAnnual,
             nurseries = nurseryBodies,

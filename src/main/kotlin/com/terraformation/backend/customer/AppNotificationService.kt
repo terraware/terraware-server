@@ -49,7 +49,7 @@ import com.terraformation.backend.i18n.NotificationMessage
 import com.terraformation.backend.i18n.use
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
-import com.terraformation.backend.report.event.ReportCreatedEvent
+import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -193,7 +193,7 @@ class AppNotificationService(
   }
 
   @EventListener
-  fun on(event: ReportCreatedEvent) {
+  fun on(event: SeedFundReportCreatedEvent) {
     val reportUrl = webAppUrls.report(event.metadata.id)
     val renderMessage = { messages.reportCreated(event.metadata.year, event.metadata.quarter) }
 

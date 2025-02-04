@@ -81,7 +81,7 @@ import com.terraformation.backend.email.model.UserAddedToOrganization
 import com.terraformation.backend.email.model.UserAddedToTerraware
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
-import com.terraformation.backend.report.event.ReportCreatedEvent
+import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -292,7 +292,7 @@ class EmailNotificationService(
   }
 
   @EventListener
-  fun on(event: ReportCreatedEvent) {
+  fun on(event: SeedFundReportCreatedEvent) {
     val reportUrl =
         webAppUrls.fullReport(event.metadata.id, event.metadata.organizationId).toString()
 

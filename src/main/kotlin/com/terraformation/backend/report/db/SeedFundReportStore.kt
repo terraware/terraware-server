@@ -37,17 +37,17 @@ import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_
 import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORT_PHOTOS
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.log.perClassLogger
-import com.terraformation.backend.report.ReportService
-import com.terraformation.backend.report.event.ReportCreatedEvent
-import com.terraformation.backend.report.event.ReportDeletionStartedEvent
-import com.terraformation.backend.report.event.ReportSubmittedEvent
-import com.terraformation.backend.report.model.ReportBodyModel
-import com.terraformation.backend.report.model.ReportFileModel
-import com.terraformation.backend.report.model.ReportMetadata
-import com.terraformation.backend.report.model.ReportModel
-import com.terraformation.backend.report.model.ReportPhotoModel
-import com.terraformation.backend.report.model.ReportProjectSettingsModel
-import com.terraformation.backend.report.model.ReportSettingsModel
+import com.terraformation.backend.report.SeedFundReportService
+import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
+import com.terraformation.backend.report.event.SeedFundReportDeletionStartedEvent
+import com.terraformation.backend.report.event.SeedFundReportSubmittedEvent
+import com.terraformation.backend.report.model.SeedFundReportBodyModel
+import com.terraformation.backend.report.model.SeedFundReportFileModel
+import com.terraformation.backend.report.model.SeedFundReportMetadata
+import com.terraformation.backend.report.model.SeedFundReportModel
+import com.terraformation.backend.report.model.SeedFundReportPhotoModel
+import com.terraformation.backend.report.model.SeedFundReportProjectSettingsModel
+import com.terraformation.backend.report.model.SeedFundReportSettingsModel
 import com.terraformation.backend.time.quarter
 import jakarta.inject.Named
 import java.time.Clock
@@ -60,7 +60,7 @@ import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
 
 @Named
-class ReportStore(
+class SeedFundReportStore(
     private val clock: Clock,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
@@ -75,25 +75,25 @@ class ReportStore(
   /**
    * Fetches a report in whatever format it was written to the database.
    *
-   * You probably want [ReportService.fetchOneById] instead of this.
+   * You probably want [SeedFundReportService.fetchOneById] instead of this.
    */
-  fun fetchOneById(reportId: SeedFundReportId): ReportModel {
+  fun fetchOneById(reportId: SeedFundReportId): SeedFundReportModel {
     requirePermissions { readSeedFundReport(reportId) }
 
     val row =
         seedFundReportsDao.fetchOneById(reportId) ?: throw SeedFundReportNotFoundException(reportId)
-    val body = objectMapper.readValue<ReportBodyModel>(row.body!!.data())
+    val body = objectMapper.readValue<SeedFundReportBodyModel>(row.body!!.data())
 
-    return ReportModel(body, ReportMetadata(row))
+    return SeedFundReportModel(body, SeedFundReportMetadata(row))
   }
 
-  fun fetchMetadataByOrganization(organizationId: OrganizationId): List<ReportMetadata> {
+  fun fetchMetadataByOrganization(organizationId: OrganizationId): List<SeedFundReportMetadata> {
     requirePermissions { listSeedFundReports(organizationId) }
 
     return fetchMetadata(SEED_FUND_REPORTS.ORGANIZATION_ID.eq(organizationId))
   }
 
-  fun fetchMetadataByProject(projectId: ProjectId): List<ReportMetadata> {
+  fun fetchMetadataByProject(projectId: ProjectId): List<SeedFundReportMetadata> {
     val organizationId =
         parentStore.getOrganizationId(projectId) ?: throw ProjectNotFoundException(projectId)
 
@@ -102,7 +102,7 @@ class ReportStore(
     return fetchMetadata(SEED_FUND_REPORTS.PROJECT_ID.eq(projectId))
   }
 
-  private fun fetchMetadata(condition: Condition): MutableList<ReportMetadata> {
+  private fun fetchMetadata(condition: Condition): MutableList<SeedFundReportMetadata> {
     return with(SEED_FUND_REPORTS) {
       dslContext
           .select(
@@ -123,11 +123,11 @@ class ReportStore(
           .from(this)
           .where(condition)
           .orderBy(YEAR.desc(), QUARTER.desc())
-          .fetch { ReportMetadata(it) }
+          .fetch { SeedFundReportMetadata(it) }
     }
   }
 
-  fun fetchSettingsByOrganization(organizationId: OrganizationId): ReportSettingsModel {
+  fun fetchSettingsByOrganization(organizationId: OrganizationId): SeedFundReportSettingsModel {
     requirePermissions { readOrganization(organizationId) }
 
     val organizationSettings =
@@ -151,10 +151,10 @@ class ReportStore(
           val projectId = record[PROJECTS.ID.asNonNullable()]
           val isEnabled = record[PROJECT_REPORT_SETTINGS.IS_ENABLED]
 
-          ReportProjectSettingsModel(projectId, isEnabled != null, isEnabled ?: true)
+          SeedFundReportProjectSettingsModel(projectId, isEnabled != null, isEnabled ?: true)
         }
 
-    return ReportSettingsModel(
+    return SeedFundReportSettingsModel(
         isConfigured = organizationSettings != null,
         organizationId = organizationId,
         organizationEnabled =
@@ -240,7 +240,7 @@ class ReportStore(
     }
   }
 
-  fun update(reportId: SeedFundReportId, body: ReportBodyModel) {
+  fun update(reportId: SeedFundReportId, body: SeedFundReportBodyModel) {
     requirePermissions { updateSeedFundReport(reportId) }
 
     val json = objectMapper.writeValueAsString(body)
@@ -273,8 +273,8 @@ class ReportStore(
   fun create(
       organizationId: OrganizationId,
       projectId: ProjectId? = null,
-      body: ReportBodyModel,
-  ): ReportMetadata {
+      body: SeedFundReportBodyModel,
+  ): SeedFundReportMetadata {
     val project =
         projectId?.let { projectsDao.fetchOneById(it) ?: throw ProjectNotFoundException(it) }
     if (project != null && project.organizationId != organizationId) {
@@ -298,12 +298,12 @@ class ReportStore(
 
     return dslContext.transactionResult { _ ->
       seedFundReportsDao.insert(row)
-      val metadata = ReportMetadata(row)
+      val metadata = SeedFundReportMetadata(row)
 
       log.info(
           "Created ${row.year}-Q${row.quarter} report ${row.id} for organization $organizationId")
 
-      eventPublisher.publishEvent(ReportCreatedEvent(metadata))
+      eventPublisher.publishEvent(SeedFundReportCreatedEvent(metadata))
 
       metadata
     }
@@ -320,7 +320,7 @@ class ReportStore(
                 .from(SEED_FUND_REPORTS)
                 .where(SEED_FUND_REPORTS.ID.eq(reportId))
                 .fetchOne(SEED_FUND_REPORTS.BODY)!!
-                .let { objectMapper.readValue<ReportBodyModel>(it.data()) }
+                .let { objectMapper.readValue<SeedFundReportBodyModel>(it.data()) }
                 .toLatestVersion()
 
         body.validate()
@@ -338,7 +338,7 @@ class ReportStore(
         saveSeedBankInfo(body)
         saveNurseryInfo(body)
 
-        eventPublisher.publishEvent(ReportSubmittedEvent(reportId, body))
+        eventPublisher.publishEvent(SeedFundReportSubmittedEvent(reportId, body))
       }
     } catch (e: Exception) {
       log.info("Report $reportId cannot be submitted: ${e.message}")
@@ -360,12 +360,12 @@ class ReportStore(
     //
     // There's an unavoidable tradeoff here: if a listener fails, the report data will end up
     // partially deleted.
-    eventPublisher.publishEvent(ReportDeletionStartedEvent(reportId))
+    eventPublisher.publishEvent(SeedFundReportDeletionStartedEvent(reportId))
 
     seedFundReportsDao.deleteById(reportId)
   }
 
-  fun updateSettings(model: ReportSettingsModel) {
+  fun updateSettings(model: SeedFundReportSettingsModel) {
     requirePermissions { updateOrganization(model.organizationId) }
 
     model.projects.forEach { project ->
@@ -471,7 +471,7 @@ class ReportStore(
         .map { it[PROJECTS.ID.asNonNullable()] }
   }
 
-  fun fetchFilesByReportId(reportId: SeedFundReportId): List<ReportFileModel> {
+  fun fetchFilesByReportId(reportId: SeedFundReportId): List<SeedFundReportFileModel> {
     requirePermissions { readSeedFundReport(reportId) }
 
     return dslContext
@@ -488,14 +488,14 @@ class ReportStore(
         .where(SEED_FUND_REPORT_FILES.REPORT_ID.eq(reportId))
         .orderBy(FILES.ID)
         .fetch { record ->
-          ReportFileModel(
+          SeedFundReportFileModel(
               metadata = FileMetadata.of(record),
               reportId = reportId,
           )
         }
   }
 
-  fun fetchPhotosByReportId(reportId: SeedFundReportId): List<ReportPhotoModel> {
+  fun fetchPhotosByReportId(reportId: SeedFundReportId): List<SeedFundReportPhotoModel> {
     requirePermissions { readSeedFundReport(reportId) }
 
     return dslContext
@@ -513,7 +513,7 @@ class ReportStore(
         .where(SEED_FUND_REPORT_PHOTOS.REPORT_ID.eq(reportId))
         .orderBy(FILES.ID)
         .fetch { record ->
-          ReportPhotoModel(
+          SeedFundReportPhotoModel(
               caption = record[SEED_FUND_REPORT_PHOTOS.CAPTION],
               metadata = FileMetadata.of(record),
               reportId = reportId,
@@ -521,7 +521,7 @@ class ReportStore(
         }
   }
 
-  fun fetchFileById(reportId: SeedFundReportId, fileId: FileId): ReportFileModel {
+  fun fetchFileById(reportId: SeedFundReportId, fileId: FileId): SeedFundReportFileModel {
     requirePermissions { readSeedFundReport(reportId) }
 
     return dslContext
@@ -538,7 +538,7 @@ class ReportStore(
         .where(SEED_FUND_REPORT_FILES.REPORT_ID.eq(reportId))
         .and(SEED_FUND_REPORT_FILES.FILE_ID.eq(fileId))
         .fetchOne { record ->
-          ReportFileModel(
+          SeedFundReportFileModel(
               metadata = FileMetadata.of(record),
               reportId = reportId,
           )
@@ -577,7 +577,7 @@ class ReportStore(
   }
 
   /** Save the seed bank buildStartDate, buildCompletedDate, and operationStartDate */
-  private fun saveSeedBankInfo(body: ReportBodyModel) {
+  private fun saveSeedBankInfo(body: SeedFundReportBodyModel) {
     val reportBody = body.toLatestVersion()
     reportBody.seedBanks
         .filter { it.selected }
@@ -604,7 +604,7 @@ class ReportStore(
   }
 
   /** Save the nursery buildStartDate, buildCompletedDate, operationStartDate, and capacity */
-  private fun saveNurseryInfo(body: ReportBodyModel) {
+  private fun saveNurseryInfo(body: SeedFundReportBodyModel) {
     val reportBody = body.toLatestVersion()
     reportBody.nurseries
         .filter { it.selected }

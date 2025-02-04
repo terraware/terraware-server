@@ -3,13 +3,13 @@ package com.terraformation.backend.report.model
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 
-data class ReportProjectSettingsModel(
+data class SeedFundReportProjectSettingsModel(
     val projectId: ProjectId,
     val isConfigured: Boolean = true,
     val isEnabled: Boolean,
 )
 
-data class ReportSettingsModel(
+data class SeedFundReportSettingsModel(
     /**
      * Whether or not the organization's settings have been configured. If false, settings are the
      * defaults.
@@ -21,5 +21,5 @@ data class ReportSettingsModel(
      */
     val organizationEnabled: Boolean,
     val organizationId: OrganizationId,
-    val projects: List<ReportProjectSettingsModel>,
+    val projects: List<SeedFundReportProjectSettingsModel>,
 )

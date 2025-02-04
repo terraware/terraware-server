@@ -22,10 +22,10 @@ import com.terraformation.backend.file.ThumbnailStore
 import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.report.db.ReportStore
-import com.terraformation.backend.report.event.ReportDeletionStartedEvent
-import com.terraformation.backend.report.model.ReportFileModel
-import com.terraformation.backend.report.model.ReportPhotoModel
+import com.terraformation.backend.report.db.SeedFundReportStore
+import com.terraformation.backend.report.event.SeedFundReportDeletionStartedEvent
+import com.terraformation.backend.report.model.SeedFundReportFileModel
+import com.terraformation.backend.report.model.SeedFundReportPhotoModel
 import io.mockk.Runs
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -43,7 +43,7 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
-class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
+class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
@@ -52,8 +52,8 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
   private val fileService: FileService by lazy {
     FileService(dslContext, clock, mockk(), filesDao, fileStore, thumbnailStore)
   }
-  private val reportStore: ReportStore by lazy {
-    ReportStore(
+  private val seedFundReportStore: SeedFundReportStore by lazy {
+    SeedFundReportStore(
         clock,
         dslContext,
         TestEventPublisher(),
@@ -64,10 +64,9 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
         seedFundReportsDao,
     )
   }
-  private val service: ReportFileService by lazy {
-    ReportFileService(
-        filesDao, fileService, reportStore, seedFundReportFilesDao, seedFundReportPhotosDao
-    )
+  private val service: SeedFundReportFileService by lazy {
+    SeedFundReportFileService(
+        filesDao, fileService, seedFundReportStore, seedFundReportFilesDao, seedFundReportPhotosDao)
   }
 
   private val excelContentType = "application/vnd.ms-excel"
@@ -101,7 +100,7 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       val storageUrls = filesDao.findAll().map { it.storageUrl!! }
 
-      service.on(ReportDeletionStartedEvent(SeedFundReportId))
+      service.on(SeedFundReportDeletionStartedEvent(SeedFundReportId))
 
       assertTableEmpty(SEED_FUND_REPORT_PHOTOS)
       assertTableEmpty(SEED_FUND_REPORT_FILES)
@@ -109,7 +108,7 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
       storageUrls.forEach { verify { fileStore.delete(it) } }
       confirmVerified(fileStore)
 
-      assertIsEventListener<ReportDeletionStartedEvent>(service)
+      assertIsEventListener<SeedFundReportDeletionStartedEvent>(service)
     }
   }
 
@@ -124,10 +123,10 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       val expected =
           listOf(
-              ReportFileModel(
+              SeedFundReportFileModel(
                   ExistingFileMetadata(excelContentType, "file1.xls", fileId1, 0, URI("1")),
                   SeedFundReportId),
-              ReportFileModel(
+              SeedFundReportFileModel(
                   ExistingFileMetadata(excelContentType, "file2.xls", fileId2, 3, URI("2")),
                   SeedFundReportId),
           )
@@ -159,12 +158,12 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       val expected =
           listOf(
-              ReportPhotoModel(
+              SeedFundReportPhotoModel(
                   null,
                   ExistingFileMetadata(
                       MediaType.IMAGE_JPEG_VALUE, "photo1.jpg", fileId1, 0, URI("1")),
                   SeedFundReportId),
-              ReportPhotoModel(
+              SeedFundReportPhotoModel(
                   "caption",
                   ExistingFileMetadata(
                       MediaType.IMAGE_PNG_VALUE, "photo2.png", fileId2, 0, URI("2")),
@@ -306,7 +305,7 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
       val newCaption = "new caption"
 
       service.updatePhoto(
-          ReportPhotoModel(
+          SeedFundReportPhotoModel(
               newCaption,
               ExistingFileMetadata(MediaType.IMAGE_JPEG_VALUE, "upload.jpg", fileId, 0, URI("/")),
               SeedFundReportId))
@@ -324,7 +323,7 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<AccessDeniedException> {
         service.updatePhoto(
-            ReportPhotoModel(
+            SeedFundReportPhotoModel(
                 "caption",
                 ExistingFileMetadata(MediaType.IMAGE_JPEG_VALUE, "upload.jpg", fileId, 0, URI("/")),
                 SeedFundReportId))

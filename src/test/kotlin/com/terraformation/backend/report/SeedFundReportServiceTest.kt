@@ -40,12 +40,12 @@ import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
-import com.terraformation.backend.report.db.ReportStore
-import com.terraformation.backend.report.model.ReportBodyModelV1
-import com.terraformation.backend.report.model.ReportMetadata
-import com.terraformation.backend.report.model.ReportModel
+import com.terraformation.backend.report.db.SeedFundReportStore
+import com.terraformation.backend.report.model.SeedFundReportBodyModelV1
+import com.terraformation.backend.report.model.SeedFundReportMetadata
+import com.terraformation.backend.report.model.SeedFundReportModel
 import com.terraformation.backend.report.model.SustainableDevelopmentGoal
-import com.terraformation.backend.report.render.ReportRenderer
+import com.terraformation.backend.report.render.SeedFundReportRenderer
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -66,7 +66,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class ReportServiceTest : DatabaseTest(), RunsAsUser {
+class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val clock = TestClock()
@@ -75,9 +75,9 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
   private val publisher = TestEventPublisher()
   private val parentStore by lazy { ParentStore(dslContext) }
-  private val reportRenderer: ReportRenderer = mockk()
-  private val reportStore by lazy {
-    ReportStore(
+  private val seedFundReportRenderer: SeedFundReportRenderer = mockk()
+  private val seedFundReportStore by lazy {
+    SeedFundReportStore(
         clock,
         dslContext,
         publisher,
@@ -91,7 +91,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
   private val scheduler: JobScheduler = mockk()
 
   private val service by lazy {
-    ReportService(
+    SeedFundReportService(
         AccessionStore(
             dslContext,
             mockk(),
@@ -147,8 +147,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
             plantingSubzonesDao,
             plantingZonesDao),
         ProjectStore(clock, dslContext, publisher, projectsDao),
-        reportRenderer,
-        reportStore,
+        seedFundReportRenderer,
+        seedFundReportStore,
         scheduler,
         SpeciesStore(
             clock,
@@ -218,13 +218,13 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val created = service.create(organizationId)
 
       val expected =
-          ReportModel(
-              ReportBodyModelV1(
-                  annualDetails = ReportBodyModelV1.AnnualDetails(),
+          SeedFundReportModel(
+              SeedFundReportBodyModelV1(
+                  annualDetails = SeedFundReportBodyModelV1.AnnualDetails(),
                   isAnnual = true,
                   nurseries =
                       listOf(
-                          ReportBodyModelV1.Nursery(
+                          SeedFundReportBodyModelV1.Nursery(
                               buildCompletedDate = LocalDate.of(2023, 3, 1),
                               buildCompletedDateEditable = false,
                               buildStartedDate = LocalDate.of(2023, 2, 1),
@@ -242,12 +242,12 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                   organizationName = "Organization 1",
                   plantingSites =
                       listOf(
-                          ReportBodyModelV1.PlantingSite(
+                          SeedFundReportBodyModelV1.PlantingSite(
                               id = plantingSiteId,
                               name = "Site 1",
                               species =
                                   listOf(
-                                      ReportBodyModelV1.PlantingSite.Species(
+                                      SeedFundReportBodyModelV1.PlantingSite.Species(
                                           growthForms = setOf(GrowthForm.Shrub),
                                           id = speciesId,
                                           scientificName = "My species",
@@ -257,7 +257,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                       ),
                   seedBanks =
                       listOf(
-                          ReportBodyModelV1.SeedBank(
+                          SeedFundReportBodyModelV1.SeedBank(
                               id = seedBankId,
                               name = "Seed Bank",
                               operationStartedDate = LocalDate.of(2023, 4, 1),
@@ -269,7 +269,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                   totalPlantingSites = 1,
                   totalSeedBanks = 1,
               ),
-              ReportMetadata(
+              SeedFundReportMetadata(
                   created.id,
                   organizationId = organizationId,
                   quarter = 4,
@@ -278,7 +278,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
               ),
           )
 
-      val actual = reportStore.fetchOneById(created.id)
+      val actual = seedFundReportStore.fetchOneById(created.id)
 
       assertJsonEquals(expected, actual)
     }
@@ -367,13 +367,13 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val created = service.create(organizationId, projectId)
 
       val expected =
-          ReportModel(
-              ReportBodyModelV1(
-                  annualDetails = ReportBodyModelV1.AnnualDetails(),
+          SeedFundReportModel(
+              SeedFundReportBodyModelV1(
+                  annualDetails = SeedFundReportBodyModelV1.AnnualDetails(),
                   isAnnual = true,
                   nurseries =
                       listOf(
-                          ReportBodyModelV1.Nursery(
+                          SeedFundReportBodyModelV1.Nursery(
                               buildCompletedDate = LocalDate.of(2023, 3, 1),
                               buildCompletedDateEditable = false,
                               buildStartedDate = LocalDate.of(2023, 2, 1),
@@ -395,12 +395,12 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                   organizationName = "Organization 1",
                   plantingSites =
                       listOf(
-                          ReportBodyModelV1.PlantingSite(
+                          SeedFundReportBodyModelV1.PlantingSite(
                               id = projectPlantingSiteId,
                               name = "Site 3",
                               species =
                                   listOf(
-                                      ReportBodyModelV1.PlantingSite.Species(
+                                      SeedFundReportBodyModelV1.PlantingSite.Species(
                                           growthForms = setOf(GrowthForm.Shrub),
                                           id = speciesId,
                                           scientificName = "My species",
@@ -410,7 +410,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                       ),
                   seedBanks =
                       listOf(
-                          ReportBodyModelV1.SeedBank(
+                          SeedFundReportBodyModelV1.SeedBank(
                               id = projectSeedBankId,
                               name = "Facility 2",
                               operationStartedDate = LocalDate.of(2023, 4, 1),
@@ -418,7 +418,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                               totalSeedsStored = 7,
                               totalSeedsStoredForProject = 1,
                           ),
-                          ReportBodyModelV1.SeedBank(
+                          SeedFundReportBodyModelV1.SeedBank(
                               id = nonProjectSeedBankId,
                               name = "Facility 4",
                               operationStartedDateEditable = true,
@@ -430,7 +430,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                   totalPlantingSites = 1,
                   totalSeedBanks = 2,
               ),
-              ReportMetadata(
+              SeedFundReportMetadata(
                   created.id,
                   organizationId = organizationId,
                   projectId = projectId,
@@ -441,7 +441,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
               ),
           )
 
-      val actual = reportStore.fetchOneById(created.id)
+      val actual = seedFundReportStore.fetchOneById(created.id)
 
       assertJsonEquals(expected, actual)
     }
@@ -452,7 +452,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       val created = service.create(organizationId)
 
-      val body = reportStore.fetchOneById(created.id).body.toLatestVersion()
+      val body = seedFundReportStore.fetchOneById(created.id).body.toLatestVersion()
 
       assertFalse(body.isAnnual, "Is annual")
       assertNull(body.annualDetails, "Annual details")
@@ -464,7 +464,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       val created = service.create(organizationId)
 
-      val body = reportStore.fetchOneById(created.id).body.toLatestVersion()
+      val body = seedFundReportStore.fetchOneById(created.id).body.toLatestVersion()
 
       assertTrue(body.isAnnual, "Is annual")
       assertNotNull(body.annualDetails, "Annual details")
@@ -489,7 +489,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       service.createMissingReports(DailyTaskTimeArrivedEvent())
 
-      assertNotNull(reportStore.fetchMetadataByOrganization(organizationId).firstOrNull())
+      assertNotNull(seedFundReportStore.fetchMetadataByOrganization(organizationId).firstOrNull())
     }
 
     @Test
@@ -499,7 +499,8 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
 
       service.createMissingReports(DailyTaskTimeArrivedEvent())
 
-      assertEquals(emptyList<Any>(), reportStore.fetchMetadataByOrganization(organizationId))
+      assertEquals(
+          emptyList<Any>(), seedFundReportStore.fetchMetadataByOrganization(organizationId))
     }
 
     @Test
@@ -691,9 +692,9 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       insertPlanting(deliveryId = deliveryId, speciesId = speciesId)
 
       val initialBody =
-          ReportBodyModelV1(
+          SeedFundReportBodyModelV1(
               annualDetails =
-                  ReportBodyModelV1.AnnualDetails(
+                  SeedFundReportBodyModelV1.AnnualDetails(
                       bestMonthsForObservation = setOf(1, 2, 3),
                       budgetNarrativeSummary = "budget narrative",
                       catalyticDetail = "catalytic detail",
@@ -707,7 +708,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                       successStories = "success stories",
                       sustainableDevelopmentGoals =
                           listOf(
-                              ReportBodyModelV1.AnnualDetails.GoalProgress(
+                              SeedFundReportBodyModelV1.AnnualDetails.GoalProgress(
                                   SustainableDevelopmentGoal.CleanWater,
                                   "clean water progress",
                               ),
@@ -716,7 +717,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
               isAnnual = true,
               nurseries =
                   listOf(
-                      ReportBodyModelV1.Nursery(
+                      SeedFundReportBodyModelV1.Nursery(
                           buildCompletedDate = LocalDate.of(2023, 1, 2),
                           buildStartedDate = LocalDate.of(2023, 1, 1),
                           capacity = 1,
@@ -725,21 +726,21 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                           name = "old nursery name",
                           notes = "nursery notes",
                           totalPlantsPropagated = 130,
-                          workers = ReportBodyModelV1.Workers(1, 2, 3),
+                          workers = SeedFundReportBodyModelV1.Workers(1, 2, 3),
                       ),
                   ),
               notes = "top-level notes",
               organizationName = "old org name",
               plantingSites =
                   listOf(
-                      ReportBodyModelV1.PlantingSite(
+                      SeedFundReportBodyModelV1.PlantingSite(
                           id = firstPlantingSite,
                           mortalityRate = 10,
                           name = "old planting site name",
                           selected = false,
                           species =
                               listOf(
-                                  ReportBodyModelV1.PlantingSite.Species(
+                                  SeedFundReportBodyModelV1.PlantingSite.Species(
                                       growthForms = setOf(GrowthForm.Forb),
                                       id = speciesId,
                                       mortalityRateInField = 9,
@@ -751,12 +752,12 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                           totalPlantingSiteArea = 11,
                           totalPlantsPlanted = 12,
                           totalTreesPlanted = 13,
-                          workers = ReportBodyModelV1.Workers(4, 5, 6),
+                          workers = SeedFundReportBodyModelV1.Workers(4, 5, 6),
                       ),
                   ),
               seedBanks =
                   listOf(
-                      ReportBodyModelV1.SeedBank(
+                      SeedFundReportBodyModelV1.SeedBank(
                           buildCompletedDate = LocalDate.of(2023, 2, 2),
                           buildCompletedDateEditable = false,
                           buildStartedDate = LocalDate.of(2023, 3, 1),
@@ -765,7 +766,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                           notes = "seedbank notes",
                           operationStartedDate = LocalDate.of(2023, 4, 1),
                           totalSeedsStored = 1000L,
-                          workers = ReportBodyModelV1.Workers(7, 8, 9),
+                          workers = SeedFundReportBodyModelV1.Workers(7, 8, 9),
                       ),
                   ),
               summaryOfProgress = "summary of progress",
@@ -796,7 +797,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       insertSampleWithdrawals(speciesId, firstNursery, secondPlantingSite)
 
       val expected =
-          ReportModel(
+          SeedFundReportModel(
               body =
                   initialBody.copy(
                       nurseries =
@@ -812,7 +813,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                                   // outplanting withdrawals (20 not-ready, 30 ready)
                                   totalPlantsPropagated = 680,
                               ),
-                              ReportBodyModelV1.Nursery(
+                              SeedFundReportBodyModelV1.Nursery(
                                   id = secondNursery,
                                   mortalityRate = 0,
                                   name = "Facility 4",
@@ -833,12 +834,12 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                                               ),
                                       ),
                               ),
-                              ReportBodyModelV1.PlantingSite(
+                              SeedFundReportBodyModelV1.PlantingSite(
                                   id = secondPlantingSite,
                                   name = "Site 2",
                                   species =
                                       listOf(
-                                          ReportBodyModelV1.PlantingSite.Species(
+                                          SeedFundReportBodyModelV1.PlantingSite.Species(
                                               growthForms = setOf(GrowthForm.Forb),
                                               id = speciesId,
                                               scientificName = "New species",
@@ -852,7 +853,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
                                   name = "Facility 1",
                                   totalSeedsStored = 10L,
                               ),
-                              ReportBodyModelV1.SeedBank(
+                              SeedFundReportBodyModelV1.SeedBank(
                                   buildStartedDate = LocalDate.EPOCH,
                                   buildStartedDateEditable = false,
                                   id = secondSeedBank,
@@ -869,7 +870,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val actual = service.fetchOneById(reportId)
 
       assertJsonEquals(expected, actual)
-      assertFalse((actual.body as ReportBodyModelV1).seedBanks[1].buildStartedDateEditable)
+      assertFalse((actual.body as SeedFundReportBodyModelV1).seedBanks[1].buildStartedDateEditable)
     }
 
     @Test
@@ -899,7 +900,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsUser {
       val seedBankId = insertFacility()
 
       val newNotes = "new notes"
-      var calledWithSeedBanks: List<ReportBodyModelV1.SeedBank>? = null
+      var calledWithSeedBanks: List<SeedFundReportBodyModelV1.SeedBank>? = null
 
       service.update(reportId) {
         calledWithSeedBanks = it.seedBanks

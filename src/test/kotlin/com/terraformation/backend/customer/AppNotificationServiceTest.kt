@@ -72,8 +72,8 @@ import com.terraformation.backend.i18n.NotificationMessage
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
-import com.terraformation.backend.report.event.ReportCreatedEvent
-import com.terraformation.backend.report.model.ReportMetadata
+import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
+import com.terraformation.backend.report.model.SeedFundReportMetadata
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.BagStore
 import com.terraformation.backend.seedbank.db.GeolocationStore
@@ -473,8 +473,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         NotificationMessage("report title", "report body")
 
     service.on(
-        ReportCreatedEvent(
-            ReportMetadata(
+        SeedFundReportCreatedEvent(
+            SeedFundReportMetadata(
                 SeedFundReportId(1),
                 organizationId = organizationId,
                 quarter = 3,

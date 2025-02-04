@@ -6,22 +6,22 @@ import com.terraformation.backend.db.default_schema.SeedFundReportId
 import com.terraformation.backend.db.default_schema.SeedFundReportStatus
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.report.db.ReportStore
-import com.terraformation.backend.report.model.ReportBodyModelV1
-import com.terraformation.backend.report.model.ReportMetadata
-import com.terraformation.backend.report.model.ReportModel
+import com.terraformation.backend.report.db.SeedFundReportStore
+import com.terraformation.backend.report.model.SeedFundReportBodyModelV1
+import com.terraformation.backend.report.model.SeedFundReportMetadata
+import com.terraformation.backend.report.model.SeedFundReportModel
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-class ReportRendererTest {
-  private val reportStore: ReportStore = mockk()
-  private val renderer = ReportRenderer(mockk(), mockk(), reportStore, mockk())
+class SeedFundReportRendererTest {
+  private val seedFundReportStore: SeedFundReportStore = mockk()
+  private val renderer = SeedFundReportRenderer(mockk(), mockk(), seedFundReportStore, mockk())
 
   private val reportId = SeedFundReportId(1)
   private val metadata =
-      ReportMetadata(
+      SeedFundReportMetadata(
           id = reportId,
           quarter = 4,
           year = 2023,
@@ -52,51 +52,51 @@ class ReportRendererTest {
   @Test
   fun `renderReportCsv correctly aggregates data`() {
     val reportBody =
-        ReportBodyModelV1(
+        SeedFundReportBodyModelV1(
             annualDetails =
-                ReportBodyModelV1.AnnualDetails(
+                SeedFundReportBodyModelV1.AnnualDetails(
                     bestMonthsForObservation = setOf(1, 2, 3),
                 ),
             isAnnual = true,
             nurseries =
                 listOf(
-                    ReportBodyModelV1.Nursery(
+                    SeedFundReportBodyModelV1.Nursery(
                         id = FacilityId(1),
                         mortalityRate = 25,
                         name = "selected nursery 1",
                         totalPlantsPropagated = 100,
-                        workers = ReportBodyModelV1.Workers(1, 2, 3),
+                        workers = SeedFundReportBodyModelV1.Workers(1, 2, 3),
                     ),
-                    ReportBodyModelV1.Nursery(
+                    SeedFundReportBodyModelV1.Nursery(
                         id = FacilityId(2),
                         mortalityRate = 50,
                         name = "selected nursery 2",
                         totalPlantsPropagated = 50,
-                        workers = ReportBodyModelV1.Workers(4, 5, 6),
+                        workers = SeedFundReportBodyModelV1.Workers(4, 5, 6),
                     ),
-                    ReportBodyModelV1.Nursery(
+                    SeedFundReportBodyModelV1.Nursery(
                         id = FacilityId(3),
                         mortalityRate = 75,
                         name = "non-selected nursery",
                         totalPlantsPropagated = 1000,
                         selected = false,
-                        workers = ReportBodyModelV1.Workers(7, 8, 9),
+                        workers = SeedFundReportBodyModelV1.Workers(7, 8, 9),
                     ),
                 ),
             organizationName = "org name",
             plantingSites =
                 listOf(
-                    ReportBodyModelV1.PlantingSite(
+                    SeedFundReportBodyModelV1.PlantingSite(
                         id = PlantingSiteId(1),
                         mortalityRate = 10,
                         name = "planting site",
                         species =
                             listOf(
-                                ReportBodyModelV1.PlantingSite.Species(
+                                SeedFundReportBodyModelV1.PlantingSite.Species(
                                     id = SpeciesId(1),
                                     scientificName = "Species b",
                                 ),
-                                ReportBodyModelV1.PlantingSite.Species(
+                                SeedFundReportBodyModelV1.PlantingSite.Species(
                                     id = SpeciesId(2),
                                     scientificName = "Species a",
                                 ),
@@ -105,16 +105,16 @@ class ReportRendererTest {
                         totalPlantingSiteArea = 11,
                         totalPlantsPlanted = 12,
                         totalTreesPlanted = 13,
-                        workers = ReportBodyModelV1.Workers(10, 11, 12),
+                        workers = SeedFundReportBodyModelV1.Workers(10, 11, 12),
                     ),
                 ),
             seedBanks =
                 listOf(
-                    ReportBodyModelV1.SeedBank(
+                    SeedFundReportBodyModelV1.SeedBank(
                         id = FacilityId(4),
                         name = "seed bank",
                         totalSeedsStored = 1000L,
-                        workers = ReportBodyModelV1.Workers(13, 14, 15),
+                        workers = SeedFundReportBodyModelV1.Workers(13, 14, 15),
                     ),
                 ),
             summaryOfProgress = "summary of progress",
@@ -123,7 +123,8 @@ class ReportRendererTest {
             totalSeedBanks = 1,
         )
 
-    every { reportStore.fetchOneById(reportId) } returns ReportModel(reportBody, metadata)
+    every { seedFundReportStore.fetchOneById(reportId) } returns
+        SeedFundReportModel(reportBody, metadata)
 
     val dataRow =
         "" +
@@ -156,7 +157,7 @@ class ReportRendererTest {
   @Test
   fun `renderReportCsv outputs default values for missing data`() {
     val reportBody =
-        ReportBodyModelV1(
+        SeedFundReportBodyModelV1(
             isAnnual = false,
             nurseries = emptyList(),
             organizationName = "org name",
@@ -167,7 +168,8 @@ class ReportRendererTest {
             totalSeedBanks = 0,
         )
 
-    every { reportStore.fetchOneById(reportId) } returns ReportModel(reportBody, metadata)
+    every { seedFundReportStore.fetchOneById(reportId) } returns
+        SeedFundReportModel(reportBody, metadata)
 
     val dataRow =
         "" +

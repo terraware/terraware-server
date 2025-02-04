@@ -6,7 +6,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportP
 import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.file.model.FileMetadata
 
-data class ReportPhotoModel(
+data class SeedFundReportPhotoModel(
     val caption: String? = null,
     val metadata: ExistingFileMetadata,
     val reportId: SeedFundReportId,
