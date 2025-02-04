@@ -259,57 +259,47 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     fun `marks existing temporary plots as unavailable if they are outside the new usable area`() {
       val exclusionAreaPlotNumber = 1L
       val plantableAreaPlotNumber = 2L
-      val (edited) =
-          runScenario(
-              newSite {
-                zone {
-                  subzone {
-                    plot(plotNumber = exclusionAreaPlotNumber)
-                    plot(plotNumber = plantableAreaPlotNumber)
-                  }
-                }
-              },
-              newSite {
-                exclusion = rectangle(10)
-                zone()
-              })
+      runScenario(
+          newSite {
+            zone {
+              subzone {
+                plot(plotNumber = exclusionAreaPlotNumber)
+                plot(plotNumber = plantableAreaPlotNumber)
+              }
+            }
+          },
+          newSite {
+            exclusion = rectangle(10)
+            zone()
+          })
 
       assertEquals(
           mapOf(exclusionAreaPlotNumber to false, plantableAreaPlotNumber to true),
-          edited.plantingZones[0].plantingSubzones[0].monitoringPlots.associate {
-            it.plotNumber to it.isAvailable
-          },
+          monitoringPlotsDao.findAll().associate { it.plotNumber to it.isAvailable },
           "isAvailable flags")
     }
 
     @Test
-    fun `destroys permanent plot if no longer in plantable area`() {
-      val (edited) =
-          runScenario(
-              newSite {
-                zone {
-                  subzone {
-                    cluster()
-                    cluster()
-                  }
-                }
-              },
-              newSite {
-                exclusion = rectangle(10)
-                zone()
-              })
+    fun `ejects permanent plot if no longer in plantable area`() {
+      runScenario(
+          newSite {
+            zone {
+              subzone {
+                cluster()
+                cluster()
+              }
+            }
+          },
+          newSite { exclusion = rectangle(10) })
 
+      val allPlots = monitoringPlotsDao.findAll()
       assertEquals(
           mapOf(1L to null, 2L to 2),
-          edited.plantingZones[0].plantingSubzones[0].monitoringPlots.associate {
-            it.plotNumber to it.permanentCluster
-          },
+          allPlots.associate { it.plotNumber to it.permanentCluster },
           "Cluster numbers of monitoring plots")
       assertEquals(
           mapOf(1L to false, 2L to true),
-          edited.plantingZones[0].plantingSubzones[0].monitoringPlots.associate {
-            it.plotNumber to it.isAvailable
-          },
+          allPlots.associate { it.plotNumber to it.isAvailable },
           "isAvailable flags")
     }
 
@@ -677,7 +667,31 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               PLANTING_SUBZONE_HISTORIES.plantingZoneHistories.PLANTING_SITE_HISTORY_ID.eq(
                   editedSiteHistory.id))
 
-      val expectedPlotHistories =
+      val subzonePlotIds =
+          edited.plantingZones
+              .flatMap { zone ->
+                zone.plantingSubzones.flatMap { subzone -> subzone.monitoringPlots.map { it.id } }
+              }
+              .toSet()
+
+      val ejectedPlotHistories =
+          existing.plantingZones.flatMap { zone ->
+            zone.plantingSubzones.flatMap { subzone ->
+              subzone.monitoringPlots
+                  .filter { it.id !in subzonePlotIds }
+                  .map { plot ->
+                    MonitoringPlotHistoriesRecord(
+                        createdBy = user.userId,
+                        createdTime = editTime,
+                        monitoringPlotId = plot.id,
+                        plantingSiteHistoryId = editedSiteHistory.id,
+                        plantingSiteId = edited.id,
+                    )
+                  }
+            }
+          }
+
+      val subzonePlotHistories =
           edited.plantingZones.flatMap { zone ->
             zone.plantingSubzones.flatMap { subzone ->
               val plantingSubzoneHistoryId =
@@ -695,6 +709,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               }
             }
           }
+
+      val expectedPlotHistories = ejectedPlotHistories + subzonePlotHistories
 
       if (expectedPlotHistories.isNotEmpty()) {
         assertTableEquals(
