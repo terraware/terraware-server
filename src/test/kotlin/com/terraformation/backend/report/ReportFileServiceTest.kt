@@ -66,7 +66,8 @@ class ReportFileServiceTest : DatabaseTest(), RunsAsUser {
   }
   private val service: ReportFileService by lazy {
     ReportFileService(
-        filesDao, fileService, seedFundReportFilesDao, seedFundReportPhotosDao, reportStore)
+        filesDao, fileService, reportStore, seedFundReportFilesDao, seedFundReportPhotosDao
+    )
   }
 
   private val excelContentType = "application/vnd.ms-excel"

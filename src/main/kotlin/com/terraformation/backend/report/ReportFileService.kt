@@ -23,23 +23,23 @@ import org.springframework.context.event.EventListener
 
 @Named
 class ReportFileService(
-    private val filesDao: FilesDao,
-    private val fileService: FileService,
-    private val reportFilesDao: SeedFundReportFilesDao,
-    private val reportPhotosDao: SeedFundReportPhotosDao,
-    private val reportStore: ReportStore,
+  private val filesDao: FilesDao,
+  private val fileService: FileService,
+  private val reportStore: ReportStore,
+  private val seedFundReportFilesDao: SeedFundReportFilesDao,
+  private val seedFundReportPhotosDao: SeedFundReportPhotosDao,
 ) {
   private val log = perClassLogger()
 
   fun storeFile(reportId: SeedFundReportId, data: InputStream, metadata: NewFileMetadata): FileId {
     return store(reportId, data, metadata) { fileId ->
-      reportFilesDao.insert(SeedFundReportFilesRow(fileId = fileId, reportId = reportId))
+      seedFundReportFilesDao.insert(SeedFundReportFilesRow(fileId = fileId, reportId = reportId))
     }
   }
 
   fun storePhoto(reportId: SeedFundReportId, data: InputStream, metadata: NewFileMetadata): FileId {
     return store(reportId, data, metadata) { fileId ->
-      reportPhotosDao.insert(SeedFundReportPhotosRow(fileId = fileId, reportId = reportId))
+      seedFundReportPhotosDao.insert(SeedFundReportPhotosRow(fileId = fileId, reportId = reportId))
     }
   }
 
@@ -69,7 +69,7 @@ class ReportFileService(
   fun listPhotos(reportId: SeedFundReportId): List<ReportPhotoModel> {
     requirePermissions { readSeedFundReport(reportId) }
 
-    val photosRows = reportPhotosDao.fetchByReportId(reportId)
+    val photosRows = seedFundReportPhotosDao.fetchByReportId(reportId)
     if (photosRows.isEmpty()) {
       return emptyList()
     }
@@ -77,7 +77,7 @@ class ReportFileService(
     val fileIds = photosRows.mapNotNull { it.fileId }
     val filesRows = filesDao.fetchById(*fileIds.toTypedArray()).associateBy { it.id }
 
-    return reportPhotosDao
+    return seedFundReportPhotosDao
         .fetchByReportId(reportId)
         .map { ReportPhotoModel(it, filesRows[it.fileId]!!) }
         .sortedBy { it.metadata.id }
@@ -103,7 +103,7 @@ class ReportFileService(
 
     val row = fetchPhotosRow(model.reportId, model.metadata.id)
 
-    reportPhotosDao.update(row.copy(caption = model.caption))
+    seedFundReportPhotosDao.update(row.copy(caption = model.caption))
   }
 
   fun deletePhoto(reportId: SeedFundReportId, fileId: FileId) {
@@ -111,7 +111,7 @@ class ReportFileService(
 
     val row = fetchPhotosRow(reportId, fileId)
 
-    fileService.deleteFile(fileId) { reportPhotosDao.delete(row) }
+    fileService.deleteFile(fileId) { seedFundReportPhotosDao.delete(row) }
   }
 
   fun deleteFile(reportId: SeedFundReportId, fileId: FileId) {
@@ -119,7 +119,7 @@ class ReportFileService(
 
     val row = fetchFilesRow(reportId, fileId)
 
-    fileService.deleteFile(fileId) { reportFilesDao.delete(row) }
+    fileService.deleteFile(fileId) { seedFundReportFilesDao.delete(row) }
   }
 
   @EventListener
@@ -137,7 +137,7 @@ class ReportFileService(
    *   requested report.
    */
   private fun fetchPhotosRow(reportId: SeedFundReportId, fileId: FileId): SeedFundReportPhotosRow {
-    val row = reportPhotosDao.fetchOneByFileId(fileId)
+    val row = seedFundReportPhotosDao.fetchOneByFileId(fileId)
     if (row?.reportId != reportId) {
       throw FileNotFoundException(fileId)
     }
@@ -152,7 +152,7 @@ class ReportFileService(
    *   requested report.
    */
   private fun fetchFilesRow(reportId: SeedFundReportId, fileId: FileId): SeedFundReportFilesRow {
-    val row = reportFilesDao.fetchOneByFileId(fileId)
+    val row = seedFundReportFilesDao.fetchOneByFileId(fileId)
     if (row?.reportId != reportId) {
       throw FileNotFoundException(fileId)
     }
