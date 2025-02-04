@@ -1,3 +1,4 @@
+980fbec65c8 Update Conventions.md (#2808)
 d197a8915c3 SW-6197 Add Likely Intermediate values to Seed Storage Behavior field (#2807)
 e6883ab45d5 Make assertJsonEquals support geometry objects (#2794)
 81d67440136 Used weighted standard deviation for mortality rate (#2797)
