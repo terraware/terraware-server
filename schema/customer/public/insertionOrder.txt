@@ -6,8 +6,8 @@ land_use_model_types
 managed_location_types
 notification_criticalities
 organization_types
-report_statuses
 roles
+seed_fund_report_statuses
 upload_problem_types
 upload_statuses
 upload_types
@@ -20,7 +20,7 @@ organizations
 files
 projects
 facilities
-reports
+seed_fund_reports
 internal_tags
 uploads
 organization_report_settings
@@ -28,8 +28,8 @@ project_report_settings
 device_managers
 organization_managed_location_types
 project_land_use_model_types
-report_files
-report_photos
+seed_fund_report_files
+seed_fund_report_photos
 upload_problems
 user_global_roles
 user_preferences

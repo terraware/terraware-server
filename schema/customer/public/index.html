@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware</h4>
-                                <p>Generated on Tue Feb 04 18:52 GMT 2025</p>
+                                <p>Generated on Tue Feb 04 20:39 GMT 2025</p>
                             </div>
                         </div>
                     </div>
@@ -236,6 +236,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of notifications in the application.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/seed_fund_report_files.html">seed_fund_report_files</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Linking table between <code>reports</code> and <code>files</code> for non-photo files.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/upload_statuses.html">upload_statuses</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -263,6 +272,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Client-defined preferences that should persist across browser sessions.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/seed_fund_reports.html">seed_fund_reports</a></td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">6</td>
+                                        <td class="detail" align="right">14</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Partner-submitted reports about their organizations and projects.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/notification_criticalities.html">notification_criticalities</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -270,6 +288,15 @@
                                         <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Criticality information of notifications in the application.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/seed_fund_report_statuses.html">seed_fund_report_statuses</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Describes where in the workflow each partner report is.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/organization_report_settings.html">organization_report_settings</a></td>
@@ -326,15 +353,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Top-level information about organizations.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/reports.html">reports</a></td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">6</td>
-                                        <td class="detail" align="right">14</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Partner-submitted reports about their organizations and projects.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/regions.html">regions</a></td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">0</td>
@@ -342,15 +360,6 @@
                                         <td class="detail" align="right">9</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Parts of the world where countries are located.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/report_statuses.html">report_statuses</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Describes where in the workflow each partner report is.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/notifications.html">notifications</a></td>
@@ -443,24 +452,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Generic information about individual files. Files are associated with application entities using linking tables such as <code>accession_photos</code>.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/report_files.html">report_files</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Linking table between <code>reports</code> and <code>files</code> for non-photo files.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/report_photos.html">report_photos</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Linking table between <code>reports</code> and <code>files</code> for photos.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/roles.html">roles</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -513,6 +504,15 @@
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Information about the status of files uploaded by users. This is used to track the progress of file processing such as importing datafiles; contents of this table may expire and be deleted after a certain amount of time.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/seed_fund_report_photos.html">seed_fund_report_photos</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Linking table between <code>reports</code> and <code>files</code> for photos.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/users.html">users</a></td>

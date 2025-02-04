@@ -13,8 +13,8 @@ species_successional_groups
 species_plant_material_sourcing_methods
 species_growth_forms
 species_ecosystem_types
-report_photos
-report_files
+seed_fund_report_photos
+seed_fund_report_files
 project_land_use_model_types
 organization_managed_location_types
 device_managers
@@ -27,7 +27,7 @@ device_templates
 uploads
 timeseries
 internal_tags
-reports
+seed_fund_reports
 devices
 projects
 sub_locations
@@ -50,8 +50,8 @@ species_problem_types
 species_problem_fields
 species_native_categories
 seed_storage_behaviors
+seed_fund_report_statuses
 roles
-report_statuses
 plant_material_sourcing_methods
 organization_types
 notification_criticalities

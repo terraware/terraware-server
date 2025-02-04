@@ -5,8 +5,8 @@ notifications
 user_preferences
 user_global_roles
 upload_problems
-report_photos
-report_files
+seed_fund_report_photos
+seed_fund_report_files
 project_land_use_model_types
 organization_managed_location_types
 device_managers
@@ -14,7 +14,7 @@ project_report_settings
 organization_report_settings
 uploads
 internal_tags
-reports
+seed_fund_reports
 facilities
 projects
 files
@@ -27,8 +27,8 @@ user_types
 upload_types
 upload_statuses
 upload_problem_types
+seed_fund_report_statuses
 roles
-report_statuses
 organization_types
 notification_criticalities
 managed_location_types

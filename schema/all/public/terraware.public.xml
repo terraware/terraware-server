@@ -328,8 +328,8 @@
             <child column="file_id" foreignKey="variable_image_values_file_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="variable_image_values"/>
             <child column="file_id" foreignKey="batch_photos_file_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_photos"/>
             <child column="file_id" foreignKey="withdrawal_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="withdrawal_photos"/>
-            <child column="file_id" foreignKey="report_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="report_files"/>
-            <child column="file_id" foreignKey="report_photos_photo_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="report_photos"/>
+            <child column="file_id" foreignKey="report_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="seed_fund_report_files"/>
+            <child column="file_id" foreignKey="report_photos_photo_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="seed_fund_report_photos"/>
             <child column="file_id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="thumbnails"/>
             <child column="file_id" foreignKey="accession_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_photos"/>
             <child column="file_id" foreignKey="observation_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_photos"/>
@@ -580,7 +580,7 @@
             <child column="organization_id" foreignKey="organization_report_settings_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_report_settings"/>
             <child column="organization_id" foreignKey="organization_users_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organization_users"/>
             <child column="organization_id" foreignKey="projects_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
-            <child column="organization_id" foreignKey="reports_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>
+            <child column="organization_id" foreignKey="reports_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
             <child column="organization_id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="species"/>
             <child column="organization_id" foreignKey="uploads_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="uploads"/>
             <child column="organization_id" foreignKey="user_preferences_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="user_preferences"/>
@@ -679,7 +679,7 @@
             <child column="project_id" foreignKey="batches_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
             <child column="project_id" foreignKey="project_land_use_model_types_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_land_use_model_types"/>
             <child column="project_id" foreignKey="project_report_settings_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_report_settings"/>
-            <child column="project_id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>
+            <child column="project_id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
             <child column="project_id" foreignKey="accessions_project_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accessions"/>
             <child column="project_id" foreignKey="draft_planting_sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="draft_planting_sites"/>
             <child column="project_id" foreignKey="planting_sites_project_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
@@ -752,12 +752,25 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="report_files" numRows="0" remarks="Linking table between `reports` and `files` for non-photo files." schema="public" type="TABLE">
+      <table name="roles" numRows="5" remarks="(Enum) Roles a user is allowed to have in an organization." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="role_id" foreignKey="organization_users_role_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="roles_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="roles_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="seed_fund_report_files" numRows="0" remarks="Linking table between `reports` and `files` for non-photo files." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="report_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="report_files_report_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>
+            <parent column="id" foreignKey="report_files_report_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
          </column>
          <primaryKey column="file_id" sequenceNumberInPK="1"/>
          <index name="report_files_pkey" unique="true">
@@ -767,9 +780,9 @@
             <column ascending="true" name="report_id"/>
          </index>
       </table>
-      <table name="report_photos" numRows="0" remarks="Linking table between `reports` and `files` for photos." schema="public" type="TABLE">
+      <table name="seed_fund_report_photos" numRows="0" remarks="Linking table between `reports` and `files` for photos." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="report_photos_report_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>
+            <parent column="id" foreignKey="report_photos_report_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="report_photos_photo_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
@@ -785,9 +798,9 @@
             <column ascending="true" name="file_id"/>
          </index>
       </table>
-      <table name="report_statuses" numRows="4" remarks="(Enum) Describes where in the workflow each partner report is." schema="public" type="TABLE">
+      <table name="seed_fund_report_statuses" numRows="4" remarks="(Enum) Describes where in the workflow each partner report is." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="status_id" foreignKey="reports_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>
+            <child column="status_id" foreignKey="reports_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -798,10 +811,10 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="reports" numRows="0" remarks="Partner-submitted reports about their organizations and projects." schema="public" type="TABLE">
+      <table name="seed_fund_reports" numRows="0" remarks="Partner-submitted reports about their organizations and projects." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="report_id" foreignKey="report_files_report_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="report_files"/>
-            <child column="report_id" foreignKey="report_photos_report_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="report_photos"/>
+            <child column="report_id" foreignKey="report_files_report_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_report_files"/>
+            <child column="report_id" foreignKey="report_photos_report_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_report_photos"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="reports_organization_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
@@ -821,7 +834,7 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="9" name="submitted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="reports_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="report_statuses"/>
+            <parent column="id" foreignKey="reports_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_report_statuses"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="body" nullable="false" remarks="" size="2147483647" type="jsonb" typeCode="1111"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="project_id" nullable="true" remarks="If this report is for a specific project and the project still exists, the project ID. If the project has been deleted, this will be null but `project_name` will still be populated." size="19" type="int8" typeCode="-5">
@@ -852,19 +865,6 @@
          <checkConstraint constraint="((((locked_by IS NULL) AND (status_id &lt;&gt; 3)) OR ((locked_by IS NOT NULL) AND (status_id = 3))))" name="status_reflects_locked"/>
          <checkConstraint constraint="((((submitted_by IS NULL) AND (status_id &lt;&gt; 4)) OR ((submitted_by IS NOT NULL) AND (status_id = 4))))" name="status_reflects_submitted"/>
          <checkConstraint constraint="((((submitted_by IS NULL) AND (submitted_time IS NULL)) OR ((submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL))))" name="submitted_by_and_time_both_set"/>
-      </table>
-      <table name="roles" numRows="5" remarks="(Enum) Roles a user is allowed to have in an organization." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="role_id" foreignKey="organization_users_role_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="organization_users"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="roles_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="roles_name_key" unique="true">
-            <column ascending="true" name="name"/>
-         </index>
       </table>
       <table name="seed_storage_behaviors" numRows="13" remarks="(Enum) How seeds of a particular species behave in storage." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -1422,9 +1422,9 @@
             <child column="modified_by" foreignKey="organizations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
             <child column="created_by" foreignKey="projects_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="modified_by" foreignKey="projects_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
-            <child column="locked_by" foreignKey="reports_locked_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>
-            <child column="modified_by" foreignKey="reports_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>
-            <child column="submitted_by" foreignKey="reports_submitted_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="reports"/>
+            <child column="locked_by" foreignKey="reports_locked_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
+            <child column="modified_by" foreignKey="reports_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
+            <child column="submitted_by" foreignKey="reports_submitted_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="seed_fund_reports"/>
             <child column="created_by" foreignKey="species_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
             <child column="deleted_by" foreignKey="species_deleted_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
             <child column="modified_by" foreignKey="species_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>

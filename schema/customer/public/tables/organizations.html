@@ -157,7 +157,7 @@
                                                 <td class="constraint detail">projects_organization_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="reports.organization_id references organizations.id via reports_organization_id_fkey"><a href='reports.html'>reports</a><span class='relatedKey'>.organization_id</span></td>
+                                                <td title="seed_fund_reports.organization_id references organizations.id via reports_organization_id_fkey"><a href='seed_fund_reports.html'>seed_fund_reports</a><span class='relatedKey'>.organization_id</span></td>
                                                 <td class="constraint detail">reports_organization_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
@@ -482,28 +482,28 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>country_code_matches_subdivision</td>
-                                    <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
+                                    <td>other_type_details_null_or_not_empty</td>
+                                    <td>(((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text)))</td>
                                 </tr>
                                 <tr>
-                                    <td>organizations_country_subdivision_code_check</td>
-                                    <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    <td>organizations_country_code_check</td>
+                                    <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
                                     <td>organizations_description_check</td>
                                     <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                 </tr>
                                 <tr>
-                                    <td>other_type_details_null_or_not_empty</td>
-                                    <td>(((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text)))</td>
-                                </tr>
-                                <tr>
                                     <td>other_type_details_only_for_other</td>
                                     <td>((((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id = 6))))</td>
                                 </tr>
                                 <tr>
-                                    <td>organizations_country_code_check</td>
-                                    <td>((country_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                    <td>organizations_country_subdivision_code_check</td>
+                                    <td>((country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text)))</td>
+                                </tr>
+                                <tr>
+                                    <td>country_code_matches_subdivision</td>
+                                    <td>(((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code)))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -541,7 +541,7 @@
 <area shape="rect" id="node10" href="../../tables/organization_managed_location_types.html" target="_top" title="organization_managed_location_types" alt="" coords="963,1049,1336,1172">
 <area shape="rect" id="node11" href="../../tables/organization_report_settings.html" target="_top" title="organization_report_settings" alt="" coords="998,915,1301,1032">
 <area shape="rect" id="node12" href="../../tables/organization_users.html" target="_top" title="organization_users" alt="" coords="1036,1297,1263,1532">
-<area shape="rect" id="node14" href="../../tables/reports.html" target="_top" title="reports" alt="" coords="1470,2325,1645,2677">
+<area shape="rect" id="node14" href="../../tables/seed_fund_reports.html" target="_top" title="seed_fund_reports" alt="" coords="1445,2325,1670,2677">
 <area shape="rect" id="node15" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="1472,551,1643,815">
 <area shape="rect" id="node16" href="../../tables/user_preferences.html" target="_top" title="user_preferences" alt="" coords="1041,1743,1257,1889">
 <area shape="rect" id="node17" href="../../../tracking/tables/draft_planting_sites.html" target="_top" title="tracking.draft_planting_sites" alt="" coords="1406,1995,1709,2200">
@@ -607,11 +607,11 @@
 <area shape="rect" id="node51" href="../../tables/roles.html" target="_top" title="roles" alt="" coords="852,4961,977,5049">
 <area shape="rect" id="node53" href="../../tables/project_land_use_model_types.html" target="_top" title="project_land_use_model_types" alt="" coords="1620,2035,1935,2123">
 <area shape="rect" id="node54" href="../../tables/project_report_settings.html" target="_top" title="project_report_settings" alt="" coords="1646,2140,1909,2228">
-<area shape="rect" id="node55" href="../../tables/report_files.html" target="_top" title="report_files" alt="" coords="2048,5165,2220,5253">
-<area shape="rect" id="node56" href="../../tables/reports.html" target="_top" title="reports" alt="" coords="1690,5297,1865,5649">
-<area shape="rect" id="node58" href="../../tables/report_statuses.html" target="_top" title="report_statuses" alt="" coords="1241,5615,1445,5703">
-<area shape="rect" id="node57" href="../../tables/report_photos.html" target="_top" title="report_photos" alt="" coords="2037,5436,2231,5524">
-<area shape="rect" id="node59" href="../../tables/upload_problems.html" target="_top" title="upload_problems" alt="" coords="2025,8,2243,96">
+<area shape="rect" id="node55" href="../../tables/seed_fund_report_files.html" target="_top" title="seed_fund_report_files" alt="" coords="2036,5165,2291,5253">
+<area shape="rect" id="node56" href="../../tables/seed_fund_reports.html" target="_top" title="seed_fund_reports" alt="" coords="1665,5297,1890,5649">
+<area shape="rect" id="node58" href="../../tables/seed_fund_report_statuses.html" target="_top" title="seed_fund_report_statuses" alt="" coords="1199,5615,1486,5703">
+<area shape="rect" id="node57" href="../../tables/seed_fund_report_photos.html" target="_top" title="seed_fund_report_photos" alt="" coords="2025,5436,2301,5524">
+<area shape="rect" id="node59" href="../../tables/upload_problems.html" target="_top" title="upload_problems" alt="" coords="2055,8,2272,96">
 <area shape="rect" id="node60" href="../../tables/uploads.html" target="_top" title="uploads" alt="" coords="1692,5,1863,269">
 <area shape="rect" id="node61" href="../../tables/upload_statuses.html" target="_top" title="upload_statuses" alt="" coords="1239,167,1447,255">
 <area shape="rect" id="node62" href="../../tables/upload_types.html" target="_top" title="upload_types" alt="" coords="1249,61,1436,149">
