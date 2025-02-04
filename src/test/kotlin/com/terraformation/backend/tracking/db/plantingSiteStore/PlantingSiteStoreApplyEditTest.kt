@@ -256,15 +256,17 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     }
 
     @Test
-    fun `marks existing temporary plots as unavailable if they are outside the new usable area`() {
+    fun `retains availability of existing temporary plots even if they are outside the new usable area`() {
       val exclusionAreaPlotNumber = 1L
       val plantableAreaPlotNumber = 2L
+      val unavailablePlotNumber = 3L
       runScenario(
           newSite {
             zone {
               subzone {
                 plot(plotNumber = exclusionAreaPlotNumber)
                 plot(plotNumber = plantableAreaPlotNumber)
+                plot(plotNumber = unavailablePlotNumber, isAvailable = false)
               }
             }
           },
@@ -274,7 +276,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           })
 
       assertEquals(
-          mapOf(exclusionAreaPlotNumber to false, plantableAreaPlotNumber to true),
+          mapOf(
+              exclusionAreaPlotNumber to true,
+              plantableAreaPlotNumber to true,
+              unavailablePlotNumber to false),
           monitoringPlotsDao.findAll().associate { it.plotNumber to it.isAvailable },
           "isAvailable flags")
     }
@@ -298,7 +303,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           allPlots.associate { it.plotNumber to it.permanentCluster },
           "Cluster numbers of monitoring plots")
       assertEquals(
-          mapOf(1L to false, 2L to true),
+          mapOf(1L to true, 2L to true),
           allPlots.associate { it.plotNumber to it.isAvailable },
           "isAvailable flags")
     }

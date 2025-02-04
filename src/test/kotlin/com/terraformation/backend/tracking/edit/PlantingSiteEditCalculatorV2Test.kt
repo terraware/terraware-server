@@ -399,6 +399,42 @@ class PlantingSiteEditCalculatorV2Test {
   }
 
   @Test
+  fun `adopts existing exterior plots when site expands to cover them`() {
+    val existing = existingSite(width = 100) { exteriorPlot(x = 500) }
+    val desired = newSite(width = 600) { zone(numPermanent = 1) }
+
+    assertEditResult(
+        PlantingSiteEdit(
+            areaHaDifference = BigDecimal(25),
+            behavior = PlantingSiteEditBehavior.Flexible,
+            desiredModel = desired,
+            existingModel = existing,
+            plantingZoneEdits =
+                listOf(
+                    PlantingZoneEdit.Update(
+                        addedRegion = rectangle(x = 100, width = 500, height = 500),
+                        areaHaDifference = BigDecimal(25),
+                        desiredModel = desired.plantingZones[0],
+                        existingModel = existing.plantingZones[0],
+                        monitoringPlotEdits = emptyList(),
+                        plantingSubzoneEdits =
+                            listOf(
+                                PlantingSubzoneEdit.Update(
+                                    addedRegion = rectangle(x = 100, width = 500, height = 500),
+                                    areaHaDifference = BigDecimal(25),
+                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
+                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    monitoringPlotEdits =
+                                        listOf(
+                                            MonitoringPlotEdit.Adopt(
+                                                MonitoringPlotId(1), permanentCluster = 1)),
+                                    removedRegion = rectangle(0))),
+                        removedRegion = rectangle(0)))),
+        existing,
+        desired)
+  }
+
+  @Test
   fun `does not adopt 25-meter, ad-hoc, or unavailable plots as new permanent plots`() {
     val existing =
         existingSite(width = 400) {

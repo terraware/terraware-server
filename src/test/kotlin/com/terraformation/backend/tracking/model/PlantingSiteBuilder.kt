@@ -116,6 +116,8 @@ private constructor(
   private var currentSubzoneId: Long = 0
   private var currentZoneId: Long = 0
   private var nextZoneX = x
+  private var nextMonitoringPlotX: Int = x + width
+  private val exteriorPlots = mutableListOf<MonitoringPlotModel>()
   private val plantingZones = mutableListOf<ExistingPlantingZoneModel>()
 
   fun build(): ExistingPlantingSiteModel {
@@ -124,6 +126,7 @@ private constructor(
         boundary = boundary,
         countryCode = countryCode,
         exclusion = exclusion,
+        exteriorPlots = exteriorPlots,
         gridOrigin = gridOrigin,
         id = PlantingSiteId(1),
         name = name,
@@ -163,6 +166,34 @@ private constructor(
     val newZone = builder.build()
     plantingZones.add(newZone)
     return newZone
+  }
+
+  fun exteriorPlot(
+      x: Int = nextMonitoringPlotX,
+      y: Int = this.y,
+      isAdHoc: Boolean = false,
+      isAvailable: Boolean = true,
+      size: Int = MONITORING_PLOT_SIZE_INT,
+      plotNumber: Long = nextPlotNumber,
+  ): MonitoringPlotModel {
+    nextMonitoringPlotX = x + size
+
+    val plot =
+        MonitoringPlotModel(
+            boundary = rectanglePolygon(size, size, x, y),
+            id = MonitoringPlotId(plotNumber),
+            isAdHoc = isAdHoc,
+            isAvailable = isAvailable,
+            permanentCluster = null,
+            permanentClusterSubplot = null,
+            plotNumber = plotNumber,
+            sizeMeters = size,
+        )
+
+    nextPlotNumber++
+
+    exteriorPlots.add(plot)
+    return plot
   }
 
   inner class ZoneBuilder(
