@@ -1,3 +1,4 @@
+f40e005da57 SW-6344 Use MonitoringPlotEdit.Create in zone edits (#2789)
 afd1969810f SW-6344 Add monitoring plot edits to PlantingSiteEdit (#2788)
 980fbec65c8 Update Conventions.md (#2808)
 d197a8915c3 SW-6197 Add Likely Intermediate values to Seed Storage Behavior field (#2807)
