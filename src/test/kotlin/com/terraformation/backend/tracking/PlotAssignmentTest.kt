@@ -8,7 +8,6 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
-import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.mockUser
@@ -83,8 +82,6 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     organizationId = insertOrganization()
-    insertFacility(type = FacilityType.Nursery)
-    insertSpecies()
 
     every { user.canCreatePlantingSite(any()) } returns true
     every { user.canManageObservation(any()) } returns true
@@ -109,7 +106,6 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     //     +-------------------------------------|-------------+
     //     |                    |                |             |
     //     | Subzone 1          | Subzone 2      | Subzone 3   | 100m tall
-    //     | (planted)          | (no plants)    | (no plants) |
     //     |                    |                |             |
     //     +-------------------------------------|-------------+
     //     |   |   |   |   |   |   |   |   |   |   |   |   |   | (plot borders)
@@ -132,12 +128,9 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
             .plantingSubzones
             .first { it.name == "S1" }
 
-    insertWithdrawal()
-    insertDelivery()
-    insertPlanting(plantingSubzoneId = subzone1.id)
-
     val observationId =
         insertObservation(plantingSiteId = plantingSite.id, state = ObservationState.Upcoming)
+    insertObservationRequestedSubzone(plantingSubzoneId = subzone1.id)
     observationService.startObservation(observationId)
 
     val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
@@ -159,13 +152,13 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     when (numPermanentClusters) {
       0 -> {
         // Subzone 1 has no clusters, so it should get the extra plot; either subzone 2 has more
-        // clusters or all the clusters were disqualified for being partially in an unplanted
-        // subzone, in which case subzone 1 gets the extra plot because it's planted.
+        // clusters or all the clusters were disqualified for being partially in an unrequested
+        // subzone, in which case subzone 1 gets the extra plot because it's requested.
         assertEquals(2, numTemporaryPlots, "Temporary plots with 0 clusters")
       }
       1 -> {
         // Subzone 1 has one cluster, but we can't tell if the other cluster would have been in
-        // subzone 2 (in which case the extra plot would go to subzone 1 since it's planted) or
+        // subzone 2 (in which case the extra plot would go to subzone 1 since it's requested) or
         // straddles the subzone boundary (in which case it'd be eliminated and the extra plot
         // would go to subzone 2 for having fewer clusters).
         if (numTemporaryPlots < 1 || numTemporaryPlots > 2) {

@@ -44,16 +44,12 @@ data class PlantingZoneModel<
    * plots than configured, or none at all. If particular subzones have been requested for the
    * observation, only clusters whose plots are all in those subzones are returned.
    */
-  fun choosePermanentPlots(
-      plantedSubzoneIds: Set<PlantingSubzoneId>,
-      requestedSubzoneIds: Set<PlantingSubzoneId>
-  ): Set<MonitoringPlotId> {
+  fun choosePermanentPlots(requestedSubzoneIds: Set<PlantingSubzoneId>): Set<MonitoringPlotId> {
     if (plantingSubzones.isEmpty()) {
       throw IllegalArgumentException("No subzones found for planting zone $id (wrong fetch depth?)")
     }
 
-    val eligibleSubzoneIds = getEligibleSubzoneIds(plantedSubzoneIds, requestedSubzoneIds)
-    val plantedSubzones = plantingSubzones.filter { it.id != null && it.id in eligibleSubzoneIds }
+    val plantedSubzones = plantingSubzones.filter { it.id != null && it.id in requestedSubzoneIds }
     val plotsInPlantedSubzones =
         plantedSubzones.flatMap { subzone ->
           subzone.monitoringPlots.filter { plot ->
@@ -81,8 +77,7 @@ data class PlantingZoneModel<
    * This follows some rules:
    * - Plots that are already selected as permanent plots aren't eligible.
    * - Plots that span subzone boundaries aren't eligible.
-   * - If specific subzones have been requested for the observation, plots in subzones other than
-   *   the requested ones aren't eligible.
+   * - Plots in subzones that were not requested for the observation aren't eligible.
    * - Plots must be spread across subzones as evenly as possible: the number of temporary plots
    *   can't vary by more than 1 between subzones. This even spreading doesn't take eligibility into
    *   account.
@@ -91,19 +86,16 @@ data class PlantingZoneModel<
    *   using the following criteria in order (with the later criteria used as a tiebreaker if more
    *   than one subzone matches the earlier ones):
    *     - Subzones with the fewest number of permanent plots.
-   *     - If specific subzones were requested for the observation: subzones that appear on the
-   *       requested list AND have plants.
-   *     - If no specific subzones were requested for the observation, that is, it's an observation
-   *       of the whole zone: subzones that have plants.
-   *     - Subzones with the lowest subzone IDs. Note that it is possible for unplanted or
-   *       unrequested subzones to still be high enough on the priority list to have plots allocated
-   *       to them; see the next point.
-   * - Only subzones that have been planted and requested (if there are requested subzones) should
-   *   have temporary plots. However, they should be excluded only after all the preceding rules
-   *   have been followed. That is, we want to choose plots based on the rules above, and then
-   *   filter out plots in unplanted subzones, as opposed to only spreading plots across planted
-   *   subzones. Otherwise, for a new project with a small number of planted subzones, we would end
-   *   up piling the entire planting zone's worth of temporary plots into a handful of subzones.
+   *     - Subzones that were requested for the observation.
+   *     - Subzones with the lowest subzone IDs. Note that it is possible for unrequested subzones
+   *       to still be high enough on the priority list to have plots allocated to them; see the
+   *       next point.
+   * - Only subzones that have been requested should have temporary plots. However, they should be
+   *   excluded only after all the preceding rules have been followed. That is, we want to choose
+   *   plots based on the rules above, and then filter out plots in unrequested subzones, as opposed
+   *   to only spreading plots across requested subzones. Otherwise, for an observation with a small
+   *   number of requested subzones, we would end up piling the entire planting zone's worth of
+   *   temporary plots into a handful of subzones.
    *
    * @return A collection of plot boundaries. These may or may not be the boundaries of plots that
    *   already exist in the database; callers can use [findMonitoringPlot] to check whether they
@@ -114,23 +106,20 @@ data class PlantingZoneModel<
    *   to choose the required number.
    */
   fun chooseTemporaryPlots(
-      plantedSubzoneIds: Set<PlantingSubzoneId>,
+      requestedSubzoneIds: Set<PlantingSubzoneId>,
       gridOrigin: Point,
       exclusion: MultiPolygon? = null,
-      requestedSubzoneIds: Set<PlantingSubzoneId> = emptySet(),
   ): Collection<Polygon> {
     if (plantingSubzones.isEmpty()) {
       throw IllegalArgumentException("No subzones found for planting zone $id (wrong fetch depth?)")
     }
-
-    val eligibleSubzoneIds = getEligibleSubzoneIds(plantedSubzoneIds, requestedSubzoneIds)
 
     // We will assign as many plots as possible evenly across all subzones, eligible or not.
     val numEvenlySpreadPlotsPerSubzone = numTemporaryPlots / plantingSubzones.size
     val numExcessPlots = numTemporaryPlots.rem(plantingSubzones.size)
 
     // Any plots that can't be spread evenly will be placed in the subzones with the smallest
-    // number of permanent plots, with priority given to subzones that are eligible, and subzone ID
+    // number of permanent plots, with priority given to subzones that are requested, and subzone ID
     // used as a tie-breaker.
     //
     // If we sort the subzones by those criteria, this means we can assign one extra plot each to
@@ -142,10 +131,10 @@ data class PlantingZoneModel<
                     plot.permanentCluster != null && plot.permanentCluster <= numPermanentClusters
                   }
                 }
-                .thenBy { if (it.id != null && it.id in eligibleSubzoneIds) 0 else 1 }
+                .thenBy { if (it.id != null && it.id in requestedSubzoneIds) 0 else 1 }
                 .thenBy { it.id?.value ?: 0L })
         .flatMapIndexed { index, subzone ->
-          if (subzone.id != null && subzone.id in eligibleSubzoneIds) {
+          if (subzone.id != null && subzone.id in requestedSubzoneIds) {
             val numPlots =
                 if (index < numExcessPlots) {
                   numEvenlySpreadPlotsPerSubzone + 1
@@ -385,21 +374,6 @@ data class PlantingZoneModel<
         .map { middleTriangle(it) }
         .reduce { acc: Geometry, polygon: Geometry -> acc.union(polygon) }
         .toMultiPolygon()
-  }
-
-  /**
-   * Returns the set of subzone IDs that are planted and, if the observation has a list of requested
-   * subzones, that are on the requested list.
-   */
-  private fun getEligibleSubzoneIds(
-      plantedSubzoneIds: Set<PlantingSubzoneId>,
-      requestedSubzoneIds: Set<PlantingSubzoneId>
-  ): Set<PlantingSubzoneId> {
-    return if (requestedSubzoneIds.isEmpty()) {
-      plantedSubzoneIds
-    } else {
-      plantedSubzoneIds.intersect(requestedSubzoneIds)
-    }
   }
 
   fun equals(other: Any?, tolerance: Double): Boolean {

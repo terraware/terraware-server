@@ -50,7 +50,6 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
@@ -243,22 +242,12 @@ class ObservationStore(
         }
   }
 
-  /**
-   * Evaluates to true if an observation's planting site has subzones with any plantings.
-   *
-   * When we test whether a specific subzone is planted, we need to account for reassignments by
-   * totaling the number of plants in the plantings in the subzone, so we don't count a subzone as
-   * planted if all its deliveries were reassigned. But here, it is sufficient to just check for the
-   * existence of any planting; reassignments can only move plants between subzones within a single
-   * planting site, which means there's no way for a reassignment to lower a site's plant count to
-   * zero.
-   */
-  private val plantingSiteHasPlantings: Condition =
+  /** Evaluates to true if an observation has requested subzones. */
+  private val observationHasRequestedSubzones: Condition =
       DSL.exists(
           DSL.selectOne()
-              .from(PLANTINGS)
-              .where(PLANTINGS.PLANTING_SITE_ID.eq(OBSERVATIONS.PLANTING_SITE_ID))
-              .and(PLANTINGS.PLANTING_SUBZONE_ID.isNotNull))
+              .from(OBSERVATION_REQUESTED_SUBZONES)
+              .where(OBSERVATION_REQUESTED_SUBZONES.OBSERVATION_ID.eq(OBSERVATIONS.ID)))
 
   /**
    * Returns a list of observations that are starting in 1 month or less and for which we have yet
@@ -273,7 +262,7 @@ class ObservationStore(
             OBSERVATIONS.STATE_ID.eq(ObservationState.Upcoming),
             OBSERVATIONS.START_DATE.le(maxStartDate),
             OBSERVATIONS.UPCOMING_NOTIFICATION_SENT_TIME.isNull,
-            plantingSiteHasPlantings,
+            observationHasRequestedSubzones,
         )) { todayAtSite, record ->
           record[OBSERVATIONS.START_DATE]!! <= todayAtSite.plusMonths(1)
         }
@@ -288,7 +277,7 @@ class ObservationStore(
         listOfNotNull(
             OBSERVATIONS.STATE_ID.eq(ObservationState.Upcoming),
             OBSERVATIONS.START_DATE.le(maxStartDate),
-            plantingSiteHasPlantings,
+            observationHasRequestedSubzones,
             plantingSiteId?.let { OBSERVATIONS.PLANTING_SITE_ID.eq(it) },
         )) { todayAtSite, record ->
           record[OBSERVATIONS.START_DATE]!! <= todayAtSite
