@@ -34,6 +34,7 @@ class PlantingSiteEditCalculatorV1Test {
                 listOf(
                     PlantingZoneEdit.Create(
                         desiredModel = desired.plantingZones[1],
+                        monitoringPlotEdits = emptyList(),
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Create(
@@ -69,6 +70,7 @@ class PlantingSiteEditCalculatorV1Test {
                         areaHaDifference = BigDecimal("12.5"),
                         desiredModel = desired.plantingZones[0],
                         existingModel = existing.plantingZones[0],
+                        monitoringPlotEdits = emptyList(),
                         numPermanentClustersToAdd =
                             PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * (750 - 500) / 500,
                         plantingSubzoneEdits =
@@ -98,6 +100,7 @@ class PlantingSiteEditCalculatorV1Test {
                         areaHaDifference = BigDecimal("5.0"),
                         desiredModel = desired.plantingZones[0],
                         existingModel = existing.plantingZones[0],
+                        monitoringPlotEdits = emptyList(),
                         numPermanentClustersToAdd =
                             PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * 200 / 500,
                         plantingSubzoneEdits =
@@ -136,6 +139,7 @@ class PlantingSiteEditCalculatorV1Test {
                         areaHaDifference = BigDecimal("10.0"),
                         desiredModel = desired.plantingZones[0],
                         existingModel = existing.plantingZones[0],
+                        monitoringPlotEdits = emptyList(),
                         numPermanentClustersToAdd =
                             PlantingZoneModel.DEFAULT_NUM_PERMANENT_CLUSTERS * 200 / 700,
                         plantingSubzoneEdits =
@@ -209,6 +213,7 @@ class PlantingSiteEditCalculatorV1Test {
                         areaHaDifference = BigDecimal("-12.5"),
                         desiredModel = desired.plantingZones[1],
                         existingModel = existing.plantingZones[1],
+                        monitoringPlotEdits = emptyList(),
                         numPermanentClustersToAdd = 0,
                         plantingSubzoneEdits =
                             listOf(
@@ -326,18 +331,21 @@ class PlantingSiteEditCalculatorV1Test {
                     ),
                     PlantingZoneEdit.Create(
                         desiredModel = desired.plantingZones[0],
+                        monitoringPlotEdits = emptyList(),
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Create(
                                     desired.plantingZones[0].plantingSubzones[0]))),
                     PlantingZoneEdit.Create(
                         desiredModel = desired.plantingZones[1],
+                        monitoringPlotEdits = emptyList(),
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Create(
                                     desired.plantingZones[1].plantingSubzones[0]))),
                     PlantingZoneEdit.Create(
                         desiredModel = desired.plantingZones[2],
+                        monitoringPlotEdits = emptyList(),
                         plantingSubzoneEdits =
                             listOf(
                                 PlantingSubzoneEdit.Create(
