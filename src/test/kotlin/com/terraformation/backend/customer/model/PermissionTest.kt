@@ -611,6 +611,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
+        readProjectReports = true,
         updateProject = true,
     )
 
@@ -870,6 +871,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
+        readProjectReports = true,
         updateProject = true,
     )
 
@@ -1047,6 +1049,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
+        readProjectReports = true,
     )
 
     permissions.expect(
@@ -1401,6 +1404,8 @@ internal class PermissionTest : DatabaseTest() {
         readModuleEventParticipants = true,
         readInternalTags = true,
         readParticipant = true,
+        readReportInternalComments = true,
+        reviewReports = true,
         setTestClock = true,
         updateAppVersions = true,
         updateCohort = true,
@@ -1497,12 +1502,14 @@ internal class PermissionTest : DatabaseTest() {
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
+        manageProjectReportConfigs = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateDefaultVoters = true,
@@ -1632,12 +1639,14 @@ internal class PermissionTest : DatabaseTest() {
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
+        manageProjectReportConfigs = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateDefaultVoters = true,
@@ -1669,12 +1678,14 @@ internal class PermissionTest : DatabaseTest() {
         ProjectId(4000),
         createParticipantProjectSpecies = true,
         createSubmission = true,
+        manageProjectReportConfigs = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateDefaultVoters = true,
@@ -1776,7 +1787,9 @@ internal class PermissionTest : DatabaseTest() {
         readInternalTags = true,
         readModuleEventParticipants = true,
         readParticipant = true,
+        readReportInternalComments = true,
         regenerateAllDeviceManagerTokens = true,
+        reviewReports = true,
         setTestClock = true,
         updateAppVersions = true,
         updateCohort = true,
@@ -1858,12 +1871,14 @@ internal class PermissionTest : DatabaseTest() {
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
+        manageProjectReportConfigs = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateInternalVariableWorkflowDetails = true,
@@ -1902,12 +1917,14 @@ internal class PermissionTest : DatabaseTest() {
         ProjectId(3000),
         createParticipantProjectSpecies = true,
         createSubmission = true,
+        manageProjectReportConfigs = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateInternalVariableWorkflowDetails = true,
@@ -2006,7 +2023,9 @@ internal class PermissionTest : DatabaseTest() {
         readInternalTags = true,
         readModuleEventParticipants = true,
         readParticipant = true,
+        readReportInternalComments = true,
         regenerateAllDeviceManagerTokens = false,
+        reviewReports = true,
         setTestClock = false,
         updateAppVersions = false,
         updateCohort = true,
@@ -2100,6 +2119,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateInternalVariableWorkflowDetails = true,
@@ -2131,6 +2151,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateInternalVariableWorkflowDetails = true,
@@ -2223,7 +2244,9 @@ internal class PermissionTest : DatabaseTest() {
         readModuleEventParticipants = true,
         readInternalTags = true,
         readParticipant = true,
+        readReportInternalComments = true,
         regenerateAllDeviceManagerTokens = false,
+        reviewReports = true,
         setTestClock = false,
         updateAppVersions = false,
         updateCohort = false,
@@ -2333,6 +2356,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
     )
@@ -2346,6 +2370,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
     )
@@ -2385,6 +2410,7 @@ internal class PermissionTest : DatabaseTest() {
         readModuleEventParticipants = true,
         readInternalTags = true,
         readParticipant = true,
+        readReportInternalComments = true,
         regenerateAllDeviceManagerTokens = false,
         setTestClock = false,
         updateAppVersions = false,
@@ -2890,7 +2916,9 @@ internal class PermissionTest : DatabaseTest() {
         readInternalTags: Boolean = false,
         readModuleEventParticipants: Boolean = false,
         readParticipant: Boolean = false,
+        readReportInternalComments: Boolean = false,
         regenerateAllDeviceManagerTokens: Boolean = false,
+        reviewReports: Boolean = false,
         setTestClock: Boolean = false,
         updateAppVersions: Boolean = false,
         updateCohort: Boolean = false,
@@ -2967,9 +2995,14 @@ internal class PermissionTest : DatabaseTest() {
           "Can read module event participants")
       assertEquals(readParticipant, user.canReadParticipant(participantId), "Can read participant")
       assertEquals(
+          readReportInternalComments,
+          user.canReadReportInternalComments(),
+          "Can read report internal comment")
+      assertEquals(
           regenerateAllDeviceManagerTokens,
           user.canRegenerateAllDeviceManagerTokens(),
           "Can regenerate all device manager tokens")
+      assertEquals(reviewReports, user.canReviewReports(), "Can review reports")
       assertEquals(setTestClock, user.canSetTestClock(), "Can set test clock")
       assertEquals(updateAppVersions, user.canUpdateAppVersions(), "Can update app versions")
       assertEquals(updateCohort, user.canUpdateCohort(cohortId), "Can update cohort")
@@ -3273,12 +3306,14 @@ internal class PermissionTest : DatabaseTest() {
         createParticipantProjectSpecies: Boolean = false,
         createSubmission: Boolean = false,
         deleteProject: Boolean = false,
+        manageProjectReportConfigs: Boolean = false,
         readDefaultVoters: Boolean = false,
         readInternalVariableWorkflowDetails: Boolean = false,
         readProject: Boolean = false,
         readProjectAcceleratorDetails: Boolean = false,
         readProjectDeliverables: Boolean = false,
         readProjectModules: Boolean = false,
+        readProjectReports: Boolean = false,
         readProjectScores: Boolean = false,
         readProjectVotes: Boolean = false,
         updateDefaultVoters: Boolean = false,
@@ -3307,6 +3342,10 @@ internal class PermissionTest : DatabaseTest() {
             "Can create participant project species for project $projectId")
         assertEquals(
             deleteProject, user.canDeleteProject(idInDatabase), "Can delete project $projectId")
+        assertEquals(
+            manageProjectReportConfigs,
+            user.canManageProjectReportConfigs(idInDatabase),
+            "Can maange report configs for project $projectId")
         assertEquals(readDefaultVoters, user.canReadDefaultVoters(), "Can read default voters")
         assertEquals(
             readInternalVariableWorkflowDetails,
@@ -3325,6 +3364,10 @@ internal class PermissionTest : DatabaseTest() {
             readProjectDeliverables,
             user.canReadProjectDeliverables(idInDatabase),
             "Can read deliverables for project $projectId")
+        assertEquals(
+            readProjectReports,
+            user.canReadProjectReports(idInDatabase),
+            "Can read reports for project $projectId")
         assertEquals(
             readProjectScores,
             user.canReadProjectScores(idInDatabase),

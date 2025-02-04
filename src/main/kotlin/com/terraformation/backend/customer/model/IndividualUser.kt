@@ -373,6 +373,8 @@ data class IndividualUser(
       isSuperAdmin() &&
           parentStore.getPlantingSiteId(observationId)?.let { canUpdatePlantingSite(it) } == true
 
+  override fun canManageProjectReportConfigs(projectId: ProjectId) = isAcceleratorAdmin()
+
   override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId) =
       canUpdatePlantingSite(plantingSiteId) && isSuperAdmin()
 
@@ -501,9 +503,14 @@ data class IndividualUser(
     return isMember(organizationId) || isGlobalReader(organizationId)
   }
 
+  override fun canReadProjectReports(projectId: ProjectId) =
+      isReadOnlyOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
+
   override fun canReadProjectScores(projectId: ProjectId) = isReadOnlyOrHigher()
 
   override fun canReadProjectVotes(projectId: ProjectId) = isReadOnlyOrHigher()
+
+  override fun canReadReportInternalComments() = isReadOnlyOrHigher()
 
   override fun canReadSeedFundReport(reportId: SeedFundReportId) =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))
@@ -685,6 +692,8 @@ data class IndividualUser(
   override fun canUpdateProjectScores(projectId: ProjectId): Boolean = isTFExpertOrHigher()
 
   override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = isTFExpertOrHigher()
+
+  override fun canReviewReports(): Boolean = isTFExpertOrHigher()
 
   override fun canUpdateSeedFundReport(reportId: SeedFundReportId) =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))

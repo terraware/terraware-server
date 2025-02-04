@@ -555,6 +555,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { manageObservation(observationId) } ifUser { canManageObservation(observationId) }
 
   @Test
+  fun manageProjectReportConfigs() {
+    assertThrows<ProjectNotFoundException> { requirements.manageProjectReportConfigs(projectId) }
+
+    grant { user.canReadProject(projectId) }
+    assertThrows<AccessDeniedException> { requirements.manageProjectReportConfigs(projectId) }
+
+    grant { user.canManageProjectReportConfigs(projectId) }
+    requirements.manageProjectReportConfigs(projectId)
+  }
+
+  @Test
   fun movePlantingSite() {
     assertThrows<PlantingSiteNotFoundException> {
       requirements.movePlantingSiteToAnyOrg(plantingSiteId)
@@ -735,6 +746,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
     grant { user.canReadProjectModules(projectId) }
     requirements.readProjectModules(projectId)
+  }
+
+  @Test
+  fun readProjectReports() {
+    assertThrows<ProjectNotFoundException> { requirements.readProjectReports(projectId) }
+
+    grant { user.canReadProject(projectId) }
+    assertThrows<AccessDeniedException> { requirements.readProjectReports(projectId) }
+
+    grant { user.canReadProjectReports(projectId) }
+    requirements.readProjectReports(projectId)
   }
 
   @Test
