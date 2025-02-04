@@ -409,6 +409,19 @@ VALUES (1, 'Antarctica'),
        (9, 'Sub-Saharan Africa')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO accelerator.report_frequencies (id, name)
+VALUES (1, 'Quarterly'),
+       (2, 'Annually')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO accelerator.report_statuses (id, name)
+VALUES (1, 'Not Submitted'),
+       (2, 'Submitted'),
+       (3, 'Approved'),
+       (4, 'Needs Update'),
+       (5, 'Not Needed')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO roles (id, name)
 VALUES (1, 'Contributor'),
        (2, 'Manager'),
