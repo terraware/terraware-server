@@ -287,11 +287,11 @@
         "comments": ""
     },
     {
-        "tableName": "upload_types",
+        "tableName": "global_roles",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "name",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
@@ -614,15 +614,15 @@
     {
         "tableName": "upload_statuses",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "finished",
-        "type": "bool",
-        "length": 1,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>If true, this status means that the system is finished processing the file.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "user_preferences",
@@ -742,13 +742,13 @@
         "comments": ""
     },
     {
-        "tableName": "seed_fund_report_files",
+        "tableName": "upload_statuses",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>file_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "name",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -846,17 +846,17 @@
         "comments": ""
     },
     {
-        "tableName": "seed_fund_report_files",
+        "tableName": "upload_statuses",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>report_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "finished",
+        "type": "bool",
+        "length": 1,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>If true, this status means that the system is finished processing the file.<\/p>"
     },
     {
         "tableName": "users",
@@ -872,13 +872,13 @@
         "comments": "<p>If true, the user wants to receive notifications via email.<\/p>"
     },
     {
-        "tableName": "global_roles",
+        "tableName": "upload_types",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "name",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -1210,7 +1210,7 @@
         "comments": ""
     },
     {
-        "tableName": "upload_types",
+        "tableName": "global_roles",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
@@ -1938,17 +1938,17 @@
         "comments": ""
     },
     {
-        "tableName": "global_roles",
+        "tableName": "upload_types",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
-        "type": "text",
-        "length": 2147483647,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "expire_files",
+        "type": "bool",
+        "length": 1,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Old rows are automatically deleted from the uploads table. If this value is true, files will also be removed from the file store for old uploads of this type.<\/p>"
     },
     {
         "tableName": "uploads",
@@ -2107,13 +2107,13 @@
         "comments": ""
     },
     {
-        "tableName": "upload_statuses",
+        "tableName": "seed_fund_report_files",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int4",
-        "length": 10,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>file_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -2198,13 +2198,13 @@
         "comments": "<p>If the problem pertains to a specific field, its name. Null if the problem affects an entire record or the entire file.<\/p>"
     },
     {
-        "tableName": "upload_statuses",
+        "tableName": "seed_fund_report_files",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "name",
-        "type": "text",
-        "length": 2147483647,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>report_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -2798,15 +2798,15 @@
     {
         "tableName": "upload_types",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "expire_files",
-        "type": "bool",
-        "length": 1,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Old rows are automatically deleted from the uploads table. If this value is true, files will also be removed from the file store for old uploads of this type.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "land_use_model_types",
