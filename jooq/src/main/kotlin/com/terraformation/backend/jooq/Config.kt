@@ -40,6 +40,8 @@ val ENUM_TABLES =
                 EnumTable("event_types"),
                 EnumTable("internal_interests"),
                 EnumTable("pipelines", isLocalizable = false),
+                EnumTable("report_frequencies"),
+                EnumTable("report_statuses", listOf("reports\\.status_id")),
                 EnumTable("score_categories", isLocalizable = false),
                 EnumTable("submission_statuses"),
                 EnumTable("vote_options", isLocalizable = false),
@@ -205,6 +207,10 @@ val ID_WRAPPERS =
                 IdWrapper("ParticipantId", listOf("participants\\.id", ".*\\.participant_id")),
                 IdWrapper(
                     "ParticipantProjectSpeciesId", listOf("participant_project_species\\.id")),
+                IdWrapper(
+                    "ProjectReportConfigId",
+                    listOf("project_report_configs\\.id", ".*\\.config_id")),
+                IdWrapper("ReportId", listOf("reports\\.id", ".*\\report_id")),
                 IdWrapper("SubmissionDocumentId", listOf("submission_documents\\.id")),
                 IdWrapper("SubmissionId", listOf("submissions\\.id", ".*\\.submission_id")),
                 IdWrapper("SubmissionSnapshotId", listOf("submission_snapshots\\.id")),

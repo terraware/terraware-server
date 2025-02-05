@@ -182,8 +182,8 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
   inner class Delete {
     @Test
     fun `deletes report from database`() {
-      val reportId1 = insertReport(year = 2000)
-      val reportId2 = insertReport(year = 2001)
+      val reportId1 = insertSeedFundReport(year = 2000)
+      val reportId2 = insertSeedFundReport(year = 2001)
 
       store.delete(reportId1)
 
@@ -195,7 +195,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `publishes event`() {
-      val reportId = insertReport()
+      val reportId = insertSeedFundReport()
 
       store.delete(reportId)
 
@@ -206,7 +206,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if no permission`() {
       every { user.canDeleteSeedFundReport(any()) } returns false
 
-      val reportId = insertReport()
+      val reportId = insertSeedFundReport()
 
       assertThrows<AccessDeniedException> { store.delete(reportId) }
     }
@@ -219,7 +219,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
       val body = SeedFundReportBodyModelV1(organizationName = "org")
 
       val projectId = insertProject(name = "Test Project")
-      val reportId = insertReport(projectId = projectId)
+      val reportId = insertSeedFundReport(projectId = projectId)
 
       val expected =
           SeedFundReportModel(
@@ -241,7 +241,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if user has no permission to read report`() {
-      val reportId = insertReport()
+      val reportId = insertSeedFundReport()
 
       every { user.canReadSeedFundReport(reportId) } returns false
 
@@ -253,7 +253,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
   inner class Lock {
     @Test
     fun `acquires lock if report not locked`() {
-      val reportId = insertReport()
+      val reportId = insertSeedFundReport()
 
       store.lock(reportId)
 
@@ -268,7 +268,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
     fun `overwrites existing lock if force is true`() {
       val otherUserId = insertUser()
 
-      val reportId = insertReport(lockedBy = otherUserId, lockedTime = Instant.EPOCH)
+      val reportId = insertSeedFundReport(lockedBy = otherUserId, lockedTime = Instant.EPOCH)
 
       store.lock(reportId, true)
 
@@ -281,7 +281,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `updates locked time if current user holds lock`() {
-      val reportId = insertReport(lockedBy = user.userId)
+      val reportId = insertSeedFundReport(lockedBy = user.userId)
 
       store.lock(reportId)
 
@@ -294,7 +294,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if report already locked and force is not true`() {
       val otherUserId = insertUser()
 
-      val reportId = insertReport(lockedBy = otherUserId)
+      val reportId = insertSeedFundReport(lockedBy = otherUserId)
 
       assertThrows<SeedFundReportLockedException> { store.lock(reportId) }
     }
@@ -304,14 +304,14 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
       val otherUserId = insertUser()
 
       val reportId =
-          insertReport(status = SeedFundReportStatus.Submitted, submittedBy = otherUserId)
+          insertSeedFundReport(status = SeedFundReportStatus.Submitted, submittedBy = otherUserId)
 
       assertThrows<SeedFundReportSubmittedException> { store.lock(reportId) }
     }
 
     @Test
     fun `throws exception if no permission to update report`() {
-      val reportId = insertReport()
+      val reportId = insertSeedFundReport()
 
       every { user.canUpdateSeedFundReport(reportId) } returns false
 
@@ -323,7 +323,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
   inner class Unlock {
     @Test
     fun `releases lock`() {
-      val reportId = insertReport(lockedBy = user.userId)
+      val reportId = insertSeedFundReport(lockedBy = user.userId)
 
       store.unlock(reportId)
 
@@ -336,7 +336,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `is a no-op if report is not locked`() {
-      val reportId = insertReport()
+      val reportId = insertSeedFundReport()
 
       store.unlock(reportId)
 
@@ -351,7 +351,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if report is locked by someone else`() {
       val otherUserId = insertUser()
 
-      val reportId = insertReport(lockedBy = otherUserId)
+      val reportId = insertSeedFundReport(lockedBy = otherUserId)
 
       assertThrows<SeedFundReportLockedException> { store.unlock(reportId) }
     }
@@ -361,14 +361,14 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
       val otherUserId = insertUser()
 
       val reportId =
-          insertReport(status = SeedFundReportStatus.Submitted, submittedBy = otherUserId)
+          insertSeedFundReport(status = SeedFundReportStatus.Submitted, submittedBy = otherUserId)
 
       assertThrows<SeedFundReportSubmittedException> { store.unlock(reportId) }
     }
 
     @Test
     fun `throws exception if no permission to update report`() {
-      val reportId = insertReport()
+      val reportId = insertSeedFundReport()
 
       every { user.canUpdateSeedFundReport(reportId) } returns false
 
@@ -380,7 +380,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
   inner class Update {
     @Test
     fun `updates report body and metadata`() {
-      val reportId = insertReport(lockedBy = currentUser().userId)
+      val reportId = insertSeedFundReport(lockedBy = currentUser().userId)
 
       val newBody =
           SeedFundReportBodyModelV1(
@@ -428,7 +428,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
       val otherUserId = insertUser()
 
       val reportId =
-          insertReport(status = SeedFundReportStatus.Submitted, submittedBy = otherUserId)
+          insertSeedFundReport(status = SeedFundReportStatus.Submitted, submittedBy = otherUserId)
 
       assertThrows<SeedFundReportAlreadySubmittedException> {
         store.update(reportId, SeedFundReportBodyModelV1(organizationName = "org"))
@@ -437,7 +437,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if report is not locked`() {
-      val reportId = insertReport()
+      val reportId = insertSeedFundReport()
 
       assertThrows<SeedFundReportNotLockedException> {
         store.update(reportId, SeedFundReportBodyModelV1(organizationName = "org"))
@@ -448,7 +448,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if report is locked by someone else`() {
       val otherUserId = insertUser()
 
-      val reportId = insertReport(lockedBy = otherUserId)
+      val reportId = insertSeedFundReport(lockedBy = otherUserId)
 
       assertThrows<SeedFundReportLockedException> {
         store.update(reportId, SeedFundReportBodyModelV1(organizationName = "org"))
@@ -457,7 +457,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to update report`() {
-      val reportId = insertReport()
+      val reportId = insertSeedFundReport()
 
       every { user.canUpdateSeedFundReport(reportId) } returns false
 
@@ -472,7 +472,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `marks report as submitted and publishes event`() {
       val body = SeedFundReportBodyModelV1(organizationName = "org")
-      val reportId = insertReport(lockedBy = user.userId)
+      val reportId = insertSeedFundReport(lockedBy = user.userId)
 
       store.submit(reportId)
 
@@ -536,7 +536,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
                   ),
           )
       val reportId =
-          insertReport(lockedBy = user.userId, body = objectMapper.writeValueAsString(body))
+          insertSeedFundReport(lockedBy = user.userId, body = objectMapper.writeValueAsString(body))
 
       store.submit(reportId)
 
@@ -566,14 +566,14 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
               seedBanks =
                   listOf(SeedFundReportBodyModelV1.SeedBank(id = facilityId, name = "bank")))
       val reportId =
-          insertReport(lockedBy = user.userId, body = objectMapper.writeValueAsString(body))
+          insertSeedFundReport(lockedBy = user.userId, body = objectMapper.writeValueAsString(body))
 
       assertThrows<SeedFundReportNotCompleteException> { store.submit(reportId) }
     }
 
     @Test
     fun `throws exception if report is not locked`() {
-      val reportId = insertReport()
+      val reportId = insertSeedFundReport()
 
       assertThrows<SeedFundReportNotLockedException> { store.submit(reportId) }
     }
@@ -581,21 +581,21 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `throws exception if report is locked by another user`() {
       val otherUserId = insertUser()
-      val reportId = insertReport(lockedBy = otherUserId)
+      val reportId = insertSeedFundReport(lockedBy = otherUserId)
 
       assertThrows<SeedFundReportLockedException> { store.submit(reportId) }
     }
 
     @Test
     fun `throws exception if report is already submitted`() {
-      val reportId = insertReport(submittedBy = user.userId)
+      val reportId = insertSeedFundReport(submittedBy = user.userId)
 
       assertThrows<SeedFundReportAlreadySubmittedException> { store.submit(reportId) }
     }
 
     @Test
     fun `throws exception if no permission to update report`() {
-      val reportId = insertReport(lockedBy = user.userId)
+      val reportId = insertSeedFundReport(lockedBy = user.userId)
 
       every { user.canUpdateSeedFundReport(any()) } returns false
 
@@ -619,7 +619,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `ignores reports from earlier quarters`() {
       val twoQuartersAgo = defaultTime.minusMonths(6)
-      insertReport(
+      insertSeedFundReport(
           organizationId = organizationId,
           quarter = twoQuartersAgo.quarter,
           year = twoQuartersAgo.year)
@@ -630,7 +630,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `only includes organizations without existing reports`() {
-      insertReport(
+      insertSeedFundReport(
           organizationId = organizationId,
           quarter = defaultTime.quarter - 1,
           year = defaultTime.year)

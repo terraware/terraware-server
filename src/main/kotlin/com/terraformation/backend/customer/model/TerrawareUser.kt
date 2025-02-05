@@ -278,6 +278,8 @@ interface TerrawareUser : Principal {
 
   fun canManageObservation(observationId: ObservationId): Boolean = defaultPermission
 
+  fun canManageProjectReportConfigs(): Boolean = defaultPermission
+
   fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 
   fun canReadAccession(accessionId: AccessionId): Boolean = defaultPermission
@@ -364,9 +366,13 @@ interface TerrawareUser : Principal {
 
   fun canReadProjectModules(projectId: ProjectId): Boolean = defaultPermission
 
+  fun canReadProjectReports(projectId: ProjectId): Boolean = defaultPermission
+
   fun canReadProjectScores(projectId: ProjectId): Boolean = defaultPermission
 
   fun canReadProjectVotes(projectId: ProjectId): Boolean = defaultPermission
+
+  fun canReadReportInternalComments(): Boolean = defaultPermission
 
   fun canReadSeedFundReport(reportId: SeedFundReportId): Boolean = defaultPermission
 
@@ -402,6 +408,8 @@ interface TerrawareUser : Principal {
   fun canRescheduleObservation(observationId: ObservationId): Boolean = defaultPermission
 
   fun canReviewApplication(applicationId: ApplicationId): Boolean = defaultPermission
+
+  fun canReviewReports(): Boolean = defaultPermission
 
   fun canScheduleAdHocObservation(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 

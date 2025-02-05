@@ -1,0 +1,54 @@
+package com.terraformation.backend.accelerator.model
+
+import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.accelerator.ProjectReportConfigId
+import com.terraformation.backend.db.accelerator.ReportId
+import com.terraformation.backend.db.accelerator.ReportStatus
+import com.terraformation.backend.db.accelerator.tables.references.REPORTS
+import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.UserId
+import java.time.Instant
+import java.time.LocalDate
+import org.jooq.Record
+
+data class ReportModel(
+    val id: ReportId,
+    val configId: ProjectReportConfigId,
+    val projectId: ProjectId,
+    val status: ReportStatus,
+    val startDate: LocalDate,
+    val endDate: LocalDate,
+    val internalComment: String? = null,
+    val feedback: String? = null,
+    val createdBy: UserId,
+    val createdTime: Instant,
+    val modifiedBy: UserId,
+    val modifiedTime: Instant,
+    val submittedBy: UserId? = null,
+    val submittedTime: Instant? = null,
+) {
+  companion object {
+    fun of(record: Record): ReportModel {
+      return with(REPORTS) {
+        ReportModel(
+            id = record[ID]!!,
+            configId = record[CONFIG_ID]!!,
+            projectId = record[PROJECT_ID]!!,
+            status = record[STATUS_ID]!!,
+            startDate = record[START_DATE]!!,
+            endDate = record[END_DATE]!!,
+            internalComment =
+                if (currentUser().canReadReportInternalComments()) record[INTERNAL_COMMENT]
+                else null,
+            feedback = record[FEEDBACK],
+            createdBy = record[CREATED_BY]!!,
+            createdTime = record[CREATED_TIME]!!,
+            modifiedBy = record[MODIFIED_BY]!!,
+            modifiedTime = record[MODIFIED_TIME]!!,
+            submittedBy = record[SUBMITTED_BY],
+            submittedTime = record[SUBMITTED_TIME],
+        )
+      }
+    }
+  }
+}

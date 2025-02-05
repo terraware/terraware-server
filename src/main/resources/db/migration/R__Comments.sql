@@ -596,6 +596,8 @@ COMMENT ON VIEW accelerator.project_deliverables IS 'Deliverable information for
 
 COMMENT ON TABLE accelerator.project_overall_scores IS 'Overall scores assigned to project by scorers.';
 
+COMMENT ON TABLE accelerator.project_report_configs IS 'Configurations for accelerator project reports, including reporting dates and reporting frequencies.';
+
 COMMENT ON TABLE accelerator.project_scores IS 'Scores assigned to project by scorers.';
 COMMENT ON COLUMN accelerator.project_scores.score IS 'Integer score between -2 to 2. The score can be null to represent not yet scored. ';
 
@@ -603,6 +605,12 @@ COMMENT ON TABLE accelerator.project_votes IS 'Vote selected by voters.';
 COMMENT ON COLUMN accelerator.project_votes.vote_option_id IS 'Vote option can be Yes/No/Conditional. The vote can be null to represent not yet voted. ';
 
 COMMENT ON TABLE accelerator.project_vote_decisions IS 'Calculated vote decisions for project.';
+
+COMMENT ON TABLE accelerator.report_frequencies IS '(Enum) Frequencies of accelerator project reports.';
+
+COMMENT ON TABLE accelerator.report_statuses IS '(Enum) Statuses of accelerator project reports.';
+
+COMMENT ON TABLE accelerator.reports IS 'Accelerator project reports.';
 
 COMMENT ON TABLE accelerator.score_categories IS '(Enum) Project score categories.';
 

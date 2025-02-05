@@ -705,6 +705,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun manageProjectReportConfigs() {
+    user.recordPermissionChecks {
+      if (!user.canManageProjectReportConfigs()) {
+        throw AccessDeniedException("No permission to manage project report configurations")
+      }
+    }
+  }
+
   fun movePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId) {
     user.recordPermissionChecks {
       if (!user.canMovePlantingSiteToAnyOrg(plantingSiteId)) {
@@ -1035,6 +1043,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readProjectReports(projectId: ProjectId) {
+    user.recordPermissionChecks {
+      if (!user.canReadProjectReports(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to read project reports")
+      }
+    }
+  }
+
   fun readProjectScores(projectId: ProjectId) {
     user.recordPermissionChecks {
       if (!user.canReadProjectScores(projectId)) {
@@ -1203,6 +1220,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canReviewApplication(applicationId)) {
         readApplication(applicationId)
         throw AccessDeniedException("No permission to review application $applicationId")
+      }
+    }
+  }
+
+  fun reviewReports() {
+    user.recordPermissionChecks {
+      if (!user.canReviewReports()) {
+        throw AccessDeniedException("No permission to review reports")
       }
     }
   }
