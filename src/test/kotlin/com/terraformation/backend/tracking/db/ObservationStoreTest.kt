@@ -579,7 +579,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `only returns observations whose planting sites have plants`() {
+    fun `only returns observations with requested subzones`() {
       val timeZone = ZoneId.of("America/Denver")
       val startDate = LocalDate.of(2023, 4, 1)
       val endDate = LocalDate.of(2023, 4, 30)
@@ -591,8 +591,9 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val startableObservationId =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+      insertObservationRequestedSubzone()
 
-      // Another planting site with no plants.
+      // Another planting site with no requested subzone.
       insertPlantingSite(timeZone = timeZone)
       insertPlantingZone()
       insertPlantingSubzone()
@@ -628,26 +629,31 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val observationId1 =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+      insertObservationRequestedSubzone()
 
       // Start date is an hour ago.
       helper.insertPlantedSite(timeZone = zone3)
       val observationId2 =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+      insertObservationRequestedSubzone()
 
       // Start date hasn't arrived yet in the site's time zone.
       helper.insertPlantedSite(timeZone = zone1)
       insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+      insertObservationRequestedSubzone()
 
       // Observation already in progress; shouldn't be started
       helper.insertPlantedSite(timeZone = zone3)
       insertObservation(
           endDate = endDate, startDate = startDate, state = ObservationState.InProgress)
+      insertObservationRequestedSubzone()
 
       // Start date is still in the future.
       helper.insertPlantedSite(timeZone = zone3)
       insertObservation(
           endDate = endDate, startDate = startDate.plusDays(1), state = ObservationState.Upcoming)
+      insertObservationRequestedSubzone()
 
       val expected = setOf(observationId1, observationId2)
       val actual = store.fetchStartableObservations().map { it.id }.toSet()
@@ -669,9 +675,13 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val observationId =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+      insertObservationRequestedSubzone()
 
       insertPlantingSite(timeZone = timeZone)
+      insertPlantingZone()
+      insertPlantingSubzone()
       insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+      insertObservationRequestedSubzone()
 
       val expected = setOf(observationId)
       val actual = store.fetchStartableObservations(plantingSiteId).map { it.id }.toSet()
@@ -711,7 +721,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `does not returns observations whose planting sites have no planted subzones`() {
+    fun `does not returns observations with no requested subzones`() {
       val timeZone = ZoneId.of("America/Denver")
       val startDate = LocalDate.of(2023, 4, 1)
       val endDate = LocalDate.of(2023, 4, 30)
@@ -730,7 +740,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `only returns observations whose planting sites have plants`() {
+    fun `only returns observations with requested subzones`() {
       val timeZone = ZoneId.of("America/Denver")
       val startDate = LocalDate.of(2023, 4, 1)
       val endDate = LocalDate.of(2023, 4, 30)
@@ -742,8 +752,9 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val startableObservationId =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+      insertObservationRequestedSubzone()
 
-      // Another planting site with no plants.
+      // Another planting site with no requested subzones.
       insertPlantingSite(timeZone = timeZone)
       insertPlantingZone()
       insertPlantingSubzone()
@@ -779,16 +790,19 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val observationId1 =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+      insertObservationRequestedSubzone()
 
       // Start date plus 1 month is an hour ago.
       helper.insertPlantedSite(timeZone = zone3)
       val observationId2 =
           insertObservation(
               endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+      insertObservationRequestedSubzone()
 
       // Start date plus 1 month hasn't arrived yet in the site's time zone.
       helper.insertPlantedSite(timeZone = zone1)
       insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
+      insertObservationRequestedSubzone()
 
       val expected = setOf(observationId1, observationId2)
       val actual = store.fetchNonNotifiedUpcomingObservations().map { it.id }.toSet()

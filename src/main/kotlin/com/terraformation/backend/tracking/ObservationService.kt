@@ -27,7 +27,7 @@ import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
-import com.terraformation.backend.tracking.db.ObservationHasNoPlotsException
+import com.terraformation.backend.tracking.db.ObservationHasNoSubzonesException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -94,35 +94,29 @@ class ObservationService(
           throw ObservationAlreadyStartedException(observationId)
         }
 
+        if (observation.requestedSubzoneIds.isEmpty()) {
+          throw ObservationHasNoSubzonesException(observationId)
+        }
+
         plantingSiteStore.ensurePermanentClustersExist(observation.plantingSiteId)
 
         val plantingSite =
             plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Plot)
-        val plantedSubzoneIds =
-            plantingSiteStore.countReportedPlantsInSubzones(plantingSite.id).keys
         val gridOrigin =
             plantingSite.gridOrigin
                 ?: throw IllegalStateException("Planting site has no grid origin")
-
-        if (plantedSubzoneIds.isEmpty()) {
-          throw ObservationHasNoPlotsException(observationId)
-        }
 
         log.info("Starting observation")
 
         plantingSite.plantingZones.forEach { plantingZone ->
           log.withMDC("plantingZoneId" to plantingZone.id) {
-            if (plantingZone.plantingSubzones.any { it.id in plantedSubzoneIds }) {
+            if (plantingZone.plantingSubzones.any { it.id in observation.requestedSubzoneIds }) {
               val permanentPlotIds =
-                  plantingZone.choosePermanentPlots(
-                      plantedSubzoneIds, observation.requestedSubzoneIds)
+                  plantingZone.choosePermanentPlots(observation.requestedSubzoneIds)
               val temporaryPlotIds =
                   plantingZone
                       .chooseTemporaryPlots(
-                          plantedSubzoneIds,
-                          gridOrigin,
-                          plantingSite.exclusion,
-                          observation.requestedSubzoneIds)
+                          observation.requestedSubzoneIds, gridOrigin, plantingSite.exclusion)
                       .map { plotBoundary ->
                         plantingSiteStore.createTemporaryPlot(
                             plantingSite.id, plantingZone.id, plotBoundary)
@@ -312,8 +306,6 @@ class ObservationService(
       val observationPlot =
           observationPlots.firstOrNull { it.model.monitoringPlotId == monitoringPlotId }
               ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
-      val plantedSubzoneIds =
-          plantingSiteStore.countReportedPlantsInSubzones(observation.plantingSiteId).keys
       val monitoringPlotsRow =
           monitoringPlotsDao.fetchOneById(observationPlot.model.monitoringPlotId)
 
@@ -351,7 +343,7 @@ class ObservationService(
           // during initial permanent cluster selection: the cluster is excluded from the
           // observation even if that means the observation has fewer than the configured number of
           // permanent clusters.
-          val addedPlotsInPlantedSubzones =
+          val addedPlotsInRequestedSubzones =
               if (replacementResult.addedMonitoringPlotIds.isNotEmpty()) {
                 val subzones =
                     plantingZone.plantingSubzones.filter { subzone ->
@@ -359,7 +351,7 @@ class ObservationService(
                         it.id in replacementResult.addedMonitoringPlotIds
                       }
                     }
-                if (subzones.all { it.id in plantedSubzoneIds }) {
+                if (subzones.all { it.id in observation.requestedSubzoneIds }) {
                   log.info(
                       "Replacement permanent cluster's plots are all in subzones that have " +
                           "completed planting; including the cluster in this observation.")
@@ -378,10 +370,10 @@ class ObservationService(
               observationId, replacementResult.removedMonitoringPlotIds)
           removedPlotIds.addAll(replacementResult.removedMonitoringPlotIds)
 
-          if (addedPlotsInPlantedSubzones.isNotEmpty()) {
+          if (addedPlotsInRequestedSubzones.isNotEmpty()) {
             observationStore.addPlotsToObservation(
-                observationId, addedPlotsInPlantedSubzones, isPermanent = true)
-            addedPlotIds.addAll(addedPlotsInPlantedSubzones)
+                observationId, addedPlotsInRequestedSubzones, isPermanent = true)
+            addedPlotIds.addAll(addedPlotsInRequestedSubzones)
           }
         } else {
           log.info(
@@ -531,7 +523,6 @@ class ObservationService(
           observationStore.fetchInProgressObservation(plantingSiteId) ?: return@transaction
       val observationId = observation.id
       val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
-      val plantedSubzoneIds = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId).keys
 
       val existingPermanentPlotIds =
           observationPlots.filter { it.model.isPermanent }.map { it.model.monitoringPlotId }
@@ -559,13 +550,13 @@ class ObservationService(
       val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
       plantingSite.plantingZones.forEach { zone ->
-        val clusterNumbersWithPlotsInUnplantedSubzones =
+        val clusterNumbersWithPlotsInUnrequestedSubzones =
             zone.plantingSubzones
-                .filterNot { it.id in plantedSubzoneIds }
+                .filterNot { it.id in observation.requestedSubzoneIds }
                 .flatMap { subzone -> subzone.monitoringPlots.mapNotNull { it.permanentCluster } }
                 .toSet()
 
-        val newPermanentPlotsInClustersWithoutPlotsInUnplantedSubzones =
+        val newPermanentPlotsInClustersWithoutPlotsInUnrequestedSubzones =
             zone.plantingSubzones
                 .flatMap { subzone ->
                   subzone.monitoringPlots.filter { plot ->
@@ -573,19 +564,19 @@ class ObservationService(
                     val clusterNumberIsCandidateForObservation =
                         plot.permanentCluster != null &&
                             plot.permanentCluster <= zone.numPermanentClusters
-                    val allPlotsInClusterAreInPlantedSubzones =
-                        plot.permanentCluster !in clusterNumbersWithPlotsInUnplantedSubzones
+                    val allPlotsInClusterAreInRequestedSubzones =
+                        plot.permanentCluster !in clusterNumbersWithPlotsInUnrequestedSubzones
 
                     plot.isAvailable &&
                         plotNotAlreadyInObservation &&
                         clusterNumberIsCandidateForObservation &&
-                        allPlotsInClusterAreInPlantedSubzones
+                        allPlotsInClusterAreInRequestedSubzones
                   }
                 }
                 .map { it.id }
 
         observationStore.addPlotsToObservation(
-            observationId, newPermanentPlotsInClustersWithoutPlotsInUnplantedSubzones, true)
+            observationId, newPermanentPlotsInClustersWithoutPlotsInUnrequestedSubzones, true)
       }
     }
   }

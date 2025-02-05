@@ -203,9 +203,8 @@ class AdminPlantingSitesController(
   @ResponseBody
   fun getMonitoringPlots(@PathVariable plantingSiteId: PlantingSiteId): Map<String, Any> {
     val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
-    val plantedSubzoneIds = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId).keys
 
-    return plotsToGeoJson(site, plantedSubzoneIds)
+    return plotsToGeoJson(site)
   }
 
   private fun zonesToGeoJson(site: ExistingPlantingSiteModel) =
@@ -236,10 +235,7 @@ class AdminPlantingSitesController(
               },
       )
 
-  private fun plotsToGeoJson(
-      site: ExistingPlantingSiteModel,
-      plantedSubzoneIds: Set<PlantingSubzoneId>
-  ) =
+  private fun plotsToGeoJson(site: ExistingPlantingSiteModel) =
       mapOf(
           "type" to "FeatureCollection",
           "features" to
@@ -248,7 +244,12 @@ class AdminPlantingSitesController(
 
                 val temporaryPlotsAndIds: List<Pair<Polygon, MonitoringPlotId?>> =
                     zone
-                        .chooseTemporaryPlots(plantedSubzoneIds, site.gridOrigin!!, site.exclusion)
+                        .chooseTemporaryPlots(
+                            site.plantingZones
+                                .flatMap { zone -> zone.plantingSubzones.map { it.id } }
+                                .toSet(),
+                            gridOrigin = site.gridOrigin!!,
+                            exclusion = site.exclusion)
                         .map { boundary -> boundary to zone.findMonitoringPlot(boundary)?.id }
                 val temporaryPlotIds = temporaryPlotsAndIds.mapNotNull { (_, id) -> id }.toSet()
 
@@ -684,7 +685,7 @@ class AdminPlantingSitesController(
       @RequestParam plantingSiteId: PlantingSiteId,
       @RequestParam startDate: String,
       @RequestParam endDate: String,
-      @RequestParam requestedSubzoneIds: Set<PlantingSubzoneId>? = null,
+      @RequestParam requestedSubzoneIds: Set<PlantingSubzoneId>,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
@@ -696,7 +697,7 @@ class AdminPlantingSitesController(
                   isAdHoc = false,
                   observationType = ObservationType.Monitoring,
                   plantingSiteId = plantingSiteId,
-                  requestedSubzoneIds = requestedSubzoneIds ?: emptySet(),
+                  requestedSubzoneIds = requestedSubzoneIds,
                   startDate = LocalDate.parse(startDate),
                   state = ObservationState.Upcoming,
               ),
