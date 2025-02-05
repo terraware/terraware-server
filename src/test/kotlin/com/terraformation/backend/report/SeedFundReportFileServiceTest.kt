@@ -70,13 +70,13 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   private val excelContentType = "application/vnd.ms-excel"
-  private lateinit var SeedFundReportId: SeedFundReportId
+  private lateinit var seedFundReportId: SeedFundReportId
   private var storageUrlCount = 0
 
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    SeedFundReportId = insertReport()
+    seedFundReportId = insertSeedFundReport()
 
     every { fileStore.delete(any()) } just Runs
     every { fileStore.newUrl(any(), any(), any()) } answers { URI("${++storageUrlCount}") }
@@ -100,7 +100,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       val storageUrls = filesDao.findAll().map { it.storageUrl!! }
 
-      service.on(SeedFundReportDeletionStartedEvent(SeedFundReportId))
+      service.on(SeedFundReportDeletionStartedEvent(seedFundReportId))
 
       assertTableEmpty(SEED_FUND_REPORT_PHOTOS)
       assertTableEmpty(SEED_FUND_REPORT_FILES)
@@ -119,19 +119,19 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
       val fileId1 = storeFile(filename = "file1.xls")
       val fileId2 = storeFile(filename = "file2.xls", content = byteArrayOf(1, 2, 3))
       // Shouldn't include photos from other reports
-      storeFile(insertReport(year = 1990), filename = "file3.xls")
+      storeFile(insertSeedFundReport(year = 1990), filename = "file3.xls")
 
       val expected =
           listOf(
               SeedFundReportFileModel(
                   ExistingFileMetadata(excelContentType, "file1.xls", fileId1, 0, URI("1")),
-                  SeedFundReportId),
+                  seedFundReportId),
               SeedFundReportFileModel(
                   ExistingFileMetadata(excelContentType, "file2.xls", fileId2, 3, URI("2")),
-                  SeedFundReportId),
+                  seedFundReportId),
           )
 
-      val actual = service.listFiles(SeedFundReportId)
+      val actual = service.listFiles(seedFundReportId)
 
       assertEquals(expected, actual)
     }
@@ -140,7 +140,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if no permission to read report`() {
       every { user.canReadSeedFundReport(any()) } returns false
 
-      assertThrows<SeedFundReportNotFoundException> { service.listFiles(SeedFundReportId) }
+      assertThrows<SeedFundReportNotFoundException> { service.listFiles(seedFundReportId) }
     }
   }
 
@@ -151,7 +151,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
       val fileId1 = storePhoto(filename = "photo1.jpg")
       val fileId2 = storePhoto(filename = "photo2.png", contentType = MediaType.IMAGE_PNG_VALUE)
       // Shouldn't include photos from other reports
-      storePhoto(insertReport(year = 1990))
+      storePhoto(insertSeedFundReport(year = 1990))
 
       seedFundReportPhotosDao.update(
           seedFundReportPhotosDao.fetchOneByFileId(fileId2)!!.copy(caption = "caption"))
@@ -162,15 +162,15 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
                   null,
                   ExistingFileMetadata(
                       MediaType.IMAGE_JPEG_VALUE, "photo1.jpg", fileId1, 0, URI("1")),
-                  SeedFundReportId),
+                  seedFundReportId),
               SeedFundReportPhotoModel(
                   "caption",
                   ExistingFileMetadata(
                       MediaType.IMAGE_PNG_VALUE, "photo2.png", fileId2, 0, URI("2")),
-                  SeedFundReportId),
+                  seedFundReportId),
           )
 
-      val actual = service.listPhotos(SeedFundReportId)
+      val actual = service.listPhotos(seedFundReportId)
 
       assertEquals(expected, actual)
     }
@@ -179,7 +179,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if no permission to read report`() {
       every { user.canReadSeedFundReport(any()) } returns false
 
-      assertThrows<SeedFundReportNotFoundException> { service.listPhotos(SeedFundReportId) }
+      assertThrows<SeedFundReportNotFoundException> { service.listPhotos(seedFundReportId) }
     }
   }
 
@@ -192,13 +192,13 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       every { fileStore.read(URI("1")) } returns SizedInputStream(content.inputStream(), 10L)
 
-      val inputStream = service.readFile(SeedFundReportId, fileId)
+      val inputStream = service.readFile(seedFundReportId, fileId)
       assertArrayEquals(content, inputStream.readAllBytes(), "File content")
     }
 
     @Test
     fun `throws exception if file is on a different report`() {
-      val otherSeedFundReportId = insertReport(year = 1990)
+      val otherSeedFundReportId = insertSeedFundReport(year = 1990)
       val fileId = storeFile()
 
       assertThrows<FileNotFoundException> { service.readFile(otherSeedFundReportId, fileId) }
@@ -210,7 +210,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       every { user.canReadSeedFundReport(any()) } returns false
 
-      assertThrows<SeedFundReportNotFoundException> { service.readFile(SeedFundReportId, fileId) }
+      assertThrows<SeedFundReportNotFoundException> { service.readFile(seedFundReportId, fileId) }
     }
   }
 
@@ -223,7 +223,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       every { fileStore.read(URI("1")) } returns SizedInputStream(content.inputStream(), 10L)
 
-      val inputStream = service.readPhoto(SeedFundReportId, fileId)
+      val inputStream = service.readPhoto(seedFundReportId, fileId)
       assertArrayEquals(content, inputStream.readAllBytes(), "File content")
     }
 
@@ -237,13 +237,13 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
       every { thumbnailStore.getThumbnailData(fileId, maxWidth, maxHeight) } returns
           SizedInputStream(content.inputStream(), 10L)
 
-      val inputStream = service.readPhoto(SeedFundReportId, fileId, maxWidth, maxHeight)
+      val inputStream = service.readPhoto(seedFundReportId, fileId, maxWidth, maxHeight)
       assertArrayEquals(content, inputStream.readAllBytes(), "Thumbnail content")
     }
 
     @Test
     fun `throws exception if photo is on a different report`() {
-      val otherSeedFundReportId = insertReport(year = 1990)
+      val otherSeedFundReportId = insertSeedFundReport(year = 1990)
       val fileId = storePhoto()
 
       assertThrows<FileNotFoundException> { service.readPhoto(otherSeedFundReportId, fileId) }
@@ -255,7 +255,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
 
       every { user.canReadSeedFundReport(any()) } returns false
 
-      assertThrows<SeedFundReportNotFoundException> { service.readPhoto(SeedFundReportId, fileId) }
+      assertThrows<SeedFundReportNotFoundException> { service.readPhoto(seedFundReportId, fileId) }
     }
   }
 
@@ -266,7 +266,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
       val fileId = storeFile()
 
       assertEquals(
-          listOf(SeedFundReportFilesRow(fileId, SeedFundReportId)),
+          listOf(SeedFundReportFilesRow(fileId, seedFundReportId)),
           seedFundReportFilesDao.findAll())
     }
 
@@ -285,7 +285,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
       val fileId = storePhoto()
 
       assertEquals(
-          listOf(SeedFundReportPhotosRow(SeedFundReportId, fileId)),
+          listOf(SeedFundReportPhotosRow(seedFundReportId, fileId)),
           seedFundReportPhotosDao.findAll())
     }
 
@@ -308,7 +308,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
           SeedFundReportPhotoModel(
               newCaption,
               ExistingFileMetadata(MediaType.IMAGE_JPEG_VALUE, "upload.jpg", fileId, 0, URI("/")),
-              SeedFundReportId))
+              seedFundReportId))
 
       val row = seedFundReportPhotosDao.fetchOneByFileId(fileId)
 
@@ -326,13 +326,13 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
             SeedFundReportPhotoModel(
                 "caption",
                 ExistingFileMetadata(MediaType.IMAGE_JPEG_VALUE, "upload.jpg", fileId, 0, URI("/")),
-                SeedFundReportId))
+                seedFundReportId))
       }
     }
   }
 
   private fun storeFile(
-      SeedFundReportId: SeedFundReportId = this.SeedFundReportId,
+      SeedFundReportId: SeedFundReportId = this.seedFundReportId,
       content: ByteArray = ByteArray(0),
       contentType: String = excelContentType,
       filename: String = "file.xls",
@@ -344,7 +344,7 @@ class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   private fun storePhoto(
-      SeedFundReportId: SeedFundReportId = this.SeedFundReportId,
+      SeedFundReportId: SeedFundReportId = this.seedFundReportId,
       content: ByteArray = ByteArray(0),
       contentType: String = MediaType.IMAGE_JPEG_VALUE,
       filename: String = "upload.jpg",

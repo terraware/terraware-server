@@ -278,7 +278,7 @@ interface TerrawareUser : Principal {
 
   fun canManageObservation(observationId: ObservationId): Boolean = defaultPermission
 
-  fun canManageProjectReportConfigs(projectId: ProjectId): Boolean = defaultPermission
+  fun canManageProjectReportConfigs(): Boolean = defaultPermission
 
   fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 

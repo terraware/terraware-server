@@ -485,7 +485,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
 
       insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
       insertOrganizationInternalTag(alreadyInProgressOrganization, InternalTagIds.Reporter)
-      insertReport(organizationId = alreadyInProgressOrganization, quarter = 4, year = 1969)
+      insertSeedFundReport(organizationId = alreadyInProgressOrganization, quarter = 4, year = 1969)
 
       service.createMissingReports(DailyTaskTimeArrivedEvent())
 
@@ -512,7 +512,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
       insertProjectReportSettings(projectId = projectWithOlderReport)
       insertProjectReportSettings(projectId = reportsEnabledProject, isEnabled = true)
 
-      insertReport(projectId = projectWithOlderReport, quarter = 3, year = 1969)
+      insertSeedFundReport(projectId = projectWithOlderReport, quarter = 3, year = 1969)
 
       service.createMissingReports(DailyTaskTimeArrivedEvent())
 
@@ -559,7 +559,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `does not create reports for projects that already have them`() {
       val projectId = insertProject()
-      val reportId = insertReport(projectId = projectId, quarter = 4, year = 1969)
+      val reportId = insertSeedFundReport(projectId = projectId, quarter = 4, year = 1969)
 
       insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
       insertProjectReportSettings(projectId = projectId, isEnabled = true)
@@ -589,10 +589,10 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
   inner class DeleteOrganization {
     @Test
     fun `deletes all reports for organization when organization deletion starts`() {
-      insertReport(year = 2000)
-      insertReport(year = 2001)
+      insertSeedFundReport(year = 2000)
+      insertSeedFundReport(year = 2001)
       val otherOrganizationId = insertOrganization()
-      val otherOrgReportId = insertReport(organizationId = otherOrganizationId)
+      val otherOrgReportId = insertSeedFundReport(organizationId = otherOrganizationId)
 
       service.on(OrganizationDeletionStartedEvent(organizationId))
 
@@ -609,9 +609,9 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
     fun `deletes unsubmitted project-level reports when project is deleted`() {
       val deletedProjectId = insertProject()
       val keptProjectId = insertProject()
-      val orgLevelReportId = insertReport()
-      val keptProjectReportId = insertReport(projectId = keptProjectId)
-      val deletedProjectReportId = insertReport(projectId = deletedProjectId)
+      val orgLevelReportId = insertSeedFundReport()
+      val keptProjectReportId = insertSeedFundReport(projectId = keptProjectId)
+      val deletedProjectReportId = insertSeedFundReport(projectId = deletedProjectId)
 
       service.on(ProjectDeletionStartedEvent(deletedProjectId))
 
@@ -631,9 +631,9 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `keeps submitted project-level reports for deleted projects`() {
       val projectId = insertProject(name = "Test Project")
-      val orgLevelReportId = insertReport(year = 1990)
+      val orgLevelReportId = insertSeedFundReport(year = 1990)
       val submittedReportId =
-          insertReport(projectId = projectId, year = 1990, submittedBy = user.userId)
+          insertSeedFundReport(projectId = projectId, year = 1990, submittedBy = user.userId)
 
       service.on(ProjectDeletionStartedEvent(projectId))
 
@@ -775,7 +775,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
               totalSeedBanks = 1,
           )
 
-      val reportId = insertReport(body = objectMapper.writeValueAsString(initialBody))
+      val reportId = insertSeedFundReport(body = objectMapper.writeValueAsString(initialBody))
       val initialMetadata = service.fetchOneById(reportId).metadata
 
       val secondSeedBank =
@@ -875,7 +875,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not refresh server-generated fields if report was already submitted`() {
-      val reportId = insertReport(submittedBy = user.userId)
+      val reportId = insertSeedFundReport(submittedBy = user.userId)
 
       val expected = service.fetchOneById(reportId)
 
@@ -896,7 +896,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
   inner class Update {
     @Test
     fun `calls modify function with up-to-date report body`() {
-      val reportId = insertReport(lockedBy = user.userId)
+      val reportId = insertSeedFundReport(lockedBy = user.userId)
       val seedBankId = insertFacility()
 
       val newNotes = "new notes"
@@ -921,7 +921,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if report is not locked`() {
-      val reportId = insertReport()
+      val reportId = insertSeedFundReport()
 
       assertThrows<SeedFundReportNotLockedException> { service.update(reportId) { it } }
     }
@@ -929,14 +929,14 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `throws exception if report is locked by another user`() {
       val otherUserId = insertUser()
-      val reportId = insertReport(lockedBy = otherUserId)
+      val reportId = insertSeedFundReport(lockedBy = otherUserId)
 
       assertThrows<SeedFundReportLockedException> { service.update(reportId) { it } }
     }
 
     @Test
     fun `throws exception if report is already submitted`() {
-      val reportId = insertReport(submittedBy = user.userId)
+      val reportId = insertSeedFundReport(submittedBy = user.userId)
 
       assertThrows<SeedFundReportAlreadySubmittedException> { service.update(reportId) { it } }
     }
@@ -955,22 +955,24 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
       val otherProjectId = insertProject(name = "Other")
 
       val submittedReportId =
-          insertReport(
+          insertSeedFundReport(
               projectId = projectId,
               year = 1990,
               submittedBy = user.userId,
               status = SeedFundReportStatus.Submitted)
       val lockedReportId =
-          insertReport(
+          insertSeedFundReport(
               projectId = projectId,
               year = 1991,
               lockedBy = user.userId,
               status = SeedFundReportStatus.Locked)
       val newReportId =
-          insertReport(projectId = projectId, year = 1992, status = SeedFundReportStatus.New)
+          insertSeedFundReport(
+              projectId = projectId, year = 1992, status = SeedFundReportStatus.New)
       val otherProjectReportId =
-          insertReport(projectId = otherProjectId, year = 1993, status = SeedFundReportStatus.New)
-      val orgReportId = insertReport(status = SeedFundReportStatus.New, year = 1994)
+          insertSeedFundReport(
+              projectId = otherProjectId, year = 1993, status = SeedFundReportStatus.New)
+      val orgReportId = insertSeedFundReport(status = SeedFundReportStatus.New, year = 1994)
 
       service.on(ProjectRenamedEvent(projectId, "Old Name", "New Name"))
 

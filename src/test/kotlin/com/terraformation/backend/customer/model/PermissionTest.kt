@@ -142,7 +142,7 @@ internal class PermissionTest : DatabaseTest() {
       listOf(org1Id, OrganizationId(2), OrganizationId(3), OrganizationId(4))
 
   // Org 2 is empty (no reports or species)
-  private val reportIds = listOf(SeedFundReportId(1), SeedFundReportId(3))
+  private val seedFundReportIds = listOf(SeedFundReportId(1), SeedFundReportId(3))
   private val speciesIds = listOf(SpeciesId(1), SpeciesId(3), SpeciesId(4))
 
   private val facilityIds = listOf(1000, 1001, 3000).map { FacilityId(it.toLong()) }
@@ -343,9 +343,10 @@ internal class PermissionTest : DatabaseTest() {
               organizationId = getDatabaseId(OrganizationId(draftPlantingSiteId.value / 1000))))
     }
 
-    reportIds.forEach { reportId ->
+    seedFundReportIds.forEach { reportId ->
       putDatabaseId(
-          reportId, insertReport(organizationId = getDatabaseId(OrganizationId(reportId.value))))
+          reportId,
+          insertSeedFundReport(organizationId = getDatabaseId(OrganizationId(reportId.value))))
     }
 
     observationIds.forEach { observationId ->
@@ -571,7 +572,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *reportIds.forOrg1(),
+        *seedFundReportIds.forOrg1(),
         deleteReport = true,
         readReport = true,
         updateReport = true,
@@ -841,7 +842,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *reportIds.forOrg1(),
+        *seedFundReportIds.forOrg1(),
         deleteReport = true,
         readReport = true,
         updateReport = true,
@@ -1395,6 +1396,7 @@ internal class PermissionTest : DatabaseTest() {
         manageDefaultProjectLeads = true,
         manageModuleEventStatuses = true,
         manageNotifications = true,
+        manageProjectReportConfigs = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
@@ -1464,7 +1466,7 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *reportIds.toTypedArray(),
+        *seedFundReportIds.toTypedArray(),
         readReport = true,
         updateReport = true,
     )
@@ -1502,7 +1504,6 @@ internal class PermissionTest : DatabaseTest() {
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
-        manageProjectReportConfigs = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -1639,7 +1640,6 @@ internal class PermissionTest : DatabaseTest() {
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
-        manageProjectReportConfigs = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -1678,7 +1678,6 @@ internal class PermissionTest : DatabaseTest() {
         ProjectId(4000),
         createParticipantProjectSpecies = true,
         createSubmission = true,
-        manageProjectReportConfigs = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -1778,6 +1777,7 @@ internal class PermissionTest : DatabaseTest() {
         manageInternalTags = true,
         manageModuleEvents = true,
         manageModules = true,
+        manageProjectReportConfigs = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
@@ -1871,7 +1871,6 @@ internal class PermissionTest : DatabaseTest() {
         createParticipantProjectSpecies = true,
         createSubmission = true,
         deleteProject = true,
-        manageProjectReportConfigs = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -1917,7 +1916,6 @@ internal class PermissionTest : DatabaseTest() {
         ProjectId(3000),
         createParticipantProjectSpecies = true,
         createSubmission = true,
-        manageProjectReportConfigs = true,
         readDefaultVoters = true,
         readInternalVariableWorkflowDetails = true,
         readProject = true,
@@ -2014,6 +2012,7 @@ internal class PermissionTest : DatabaseTest() {
         manageInternalTags = false,
         manageModuleEvents = true,
         manageModules = true,
+        manageProjectReportConfigs = true,
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
@@ -2548,7 +2547,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedPlantingSubzones = plantingSubzoneIds.toMutableSet()
     private val uncheckedPlantingZones = plantingZoneIds.toMutableSet()
     private val uncheckedProjects = projectIds.toMutableSet()
-    private val uncheckedReports = reportIds.toMutableSet()
+    private val uncheckedReports = seedFundReportIds.toMutableSet()
     private val uncheckedSpecies = speciesIds.toMutableSet()
     private val uncheckedSubLocations = subLocationIds.toMutableSet()
     private val uncheckedSubmissionDocuments = submissionDocumentIds.toMutableSet()
@@ -2900,13 +2899,14 @@ internal class PermissionTest : DatabaseTest() {
         deleteSupportIssue: Boolean = false,
         deleteUsers: Boolean = false,
         importGlobalSpeciesData: Boolean = false,
+        manageDefaultProjectLeads: Boolean = false,
         manageDeliverables: Boolean = false,
         manageInternalTags: Boolean = false,
         manageModuleEvents: Boolean = false,
         manageModuleEventStatuses: Boolean = false,
         manageModules: Boolean = false,
         manageNotifications: Boolean = false,
-        manageDefaultProjectLeads: Boolean = false,
+        manageProjectReportConfigs: Boolean = false,
         readAllAcceleratorDetails: Boolean = false,
         readAllDeliverables: Boolean = false,
         readCohort: Boolean = false,
@@ -2976,6 +2976,10 @@ internal class PermissionTest : DatabaseTest() {
           "Can manage module event statuses")
       assertEquals(manageModules, user.canManageModules(), "Can manage modules")
       assertEquals(manageNotifications, user.canManageNotifications(), "Can manage notifications")
+      assertEquals(
+          manageProjectReportConfigs,
+          user.canManageProjectReportConfigs(),
+          "Can manage project report configs")
       assertEquals(
           readAllAcceleratorDetails,
           user.canReadAllAcceleratorDetails(),
@@ -3306,7 +3310,6 @@ internal class PermissionTest : DatabaseTest() {
         createParticipantProjectSpecies: Boolean = false,
         createSubmission: Boolean = false,
         deleteProject: Boolean = false,
-        manageProjectReportConfigs: Boolean = false,
         readDefaultVoters: Boolean = false,
         readInternalVariableWorkflowDetails: Boolean = false,
         readProject: Boolean = false,
@@ -3342,10 +3345,6 @@ internal class PermissionTest : DatabaseTest() {
             "Can create participant project species for project $projectId")
         assertEquals(
             deleteProject, user.canDeleteProject(idInDatabase), "Can delete project $projectId")
-        assertEquals(
-            manageProjectReportConfigs,
-            user.canManageProjectReportConfigs(idInDatabase),
-            "Can maange report configs for project $projectId")
         assertEquals(readDefaultVoters, user.canReadDefaultVoters(), "Can read default voters")
         assertEquals(
             readInternalVariableWorkflowDetails,

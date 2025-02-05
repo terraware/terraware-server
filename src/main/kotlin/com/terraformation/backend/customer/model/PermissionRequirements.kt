@@ -705,12 +705,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun manageProjectReportConfigs(projectId: ProjectId) {
+  fun manageProjectReportConfigs() {
     user.recordPermissionChecks {
-      if (!user.canManageProjectReportConfigs(projectId)) {
-        readProject(projectId)
-        throw AccessDeniedException(
-            "No permission to manage report configurations for project $projectId")
+      if (!user.canManageProjectReportConfigs()) {
+        throw AccessDeniedException("No permission to manage project report configurations")
       }
     }
   }

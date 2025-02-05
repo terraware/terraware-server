@@ -373,7 +373,7 @@ data class IndividualUser(
       isSuperAdmin() &&
           parentStore.getPlantingSiteId(observationId)?.let { canUpdatePlantingSite(it) } == true
 
-  override fun canManageProjectReportConfigs(projectId: ProjectId) = isAcceleratorAdmin()
+  override fun canManageProjectReportConfigs() = isAcceleratorAdmin()
 
   override fun canMovePlantingSiteToAnyOrg(plantingSiteId: PlantingSiteId) =
       canUpdatePlantingSite(plantingSiteId) && isSuperAdmin()

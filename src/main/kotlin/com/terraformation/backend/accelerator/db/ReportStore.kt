@@ -2,6 +2,9 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
+import com.terraformation.backend.accelerator.model.ProjectReportConfigModel
+import com.terraformation.backend.accelerator.model.ReportModel
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.ReportFrequency
@@ -9,12 +12,16 @@ import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.tables.daos.ReportsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
+import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.ProjectId
 import jakarta.inject.Named
 import java.time.InstantSource
 import java.time.LocalDate
 import java.time.Month
+import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 
 @Named
 class ReportStore(
@@ -23,8 +30,16 @@ class ReportStore(
     private val reportsDao: ReportsDao,
     private val systemUser: SystemUser,
 ) {
+  fun fetch(projectId: ProjectId? = null, year: Int? = null): List<ReportModel> {
+    return fetchByCondition(
+        DSL.and(
+            listOfNotNull(
+                projectId?.let { REPORTS.PROJECT_ID.eq(it) },
+                year?.let { DSL.year(REPORTS.END_DATE).eq(it) })))
+  }
+
   fun insertProjectReportConfig(newModel: NewProjectReportConfigModel) {
-    requirePermissions { manageProjectReportConfigs(newModel.projectId) }
+    requirePermissions { manageProjectReportConfigs() }
 
     dslContext.transaction { _ ->
       val config =
@@ -40,10 +55,18 @@ class ReportStore(
                   ExistingProjectReportConfigModel.of(newModel, record[ID.asNonNullable()])
                 } ?: throw IllegalStateException("Failed to insert project report config. ")
           }
-
       val reportRows = createReportRows(config)
       reportsDao.insert(reportRows)
     }
+  }
+
+  fun fetchProjectReportConfigs(
+      projectId: ProjectId? = null
+  ): List<ExistingProjectReportConfigModel> {
+    requirePermissions { manageProjectReportConfigs() }
+
+    return fetchConfigsByCondition(
+        projectId?.let { PROJECT_REPORT_CONFIGS.PROJECT_ID.eq(it) } ?: DSL.trueCondition())
   }
 
   private fun createReportRows(config: ExistingProjectReportConfigModel): List<ReportsRow> {
@@ -54,14 +77,14 @@ class ReportStore(
     val durationMonths =
         when (config.frequency) {
           ReportFrequency.Quarterly -> 3L
-          ReportFrequency.Annually -> 12L
+          ReportFrequency.Annual -> 12L
         }
 
     val startYear = config.reportingStartDate.year
     val startMonth =
         when (config.frequency) {
           ReportFrequency.Quarterly -> config.reportingStartDate.month.firstMonthOfQuarter()
-          ReportFrequency.Annually -> Month.JANUARY
+          ReportFrequency.Annual -> Month.JANUARY
         }
 
     var startDate = LocalDate.of(startYear, startMonth, 1)
@@ -89,5 +112,20 @@ class ReportStore(
     } while (!startDate.isAfter(config.reportingEndDate))
 
     return rows
+  }
+
+  private fun fetchByCondition(condition: Condition): List<ReportModel> {
+    return with(REPORTS) {
+          dslContext.selectFrom(this).where(condition).fetch { ReportModel.of(it) }
+        }
+        .filter { currentUser().canReadProjectReports(it.projectId) }
+  }
+
+  private fun fetchConfigsByCondition(
+      condition: Condition
+  ): List<ExistingProjectReportConfigModel> {
+    return with(PROJECT_REPORT_CONFIGS) {
+      dslContext.selectFrom(this).where(condition).fetch { ProjectReportConfigModel.of(it) }
+    }
   }
 }

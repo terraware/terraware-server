@@ -555,15 +555,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { manageObservation(observationId) } ifUser { canManageObservation(observationId) }
 
   @Test
-  fun manageProjectReportConfigs() {
-    assertThrows<ProjectNotFoundException> { requirements.manageProjectReportConfigs(projectId) }
-
-    grant { user.canReadProject(projectId) }
-    assertThrows<AccessDeniedException> { requirements.manageProjectReportConfigs(projectId) }
-
-    grant { user.canManageProjectReportConfigs(projectId) }
-    requirements.manageProjectReportConfigs(projectId)
-  }
+  fun manageProjectReportConfigs() =
+      allow { manageProjectReportConfigs() } ifUser { canManageProjectReportConfigs() }
 
   @Test
   fun movePlantingSite() {

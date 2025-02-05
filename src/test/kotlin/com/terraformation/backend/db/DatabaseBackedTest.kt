@@ -31,6 +31,10 @@ import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.Pipeline
+import com.terraformation.backend.db.accelerator.ProjectReportConfigId
+import com.terraformation.backend.db.accelerator.ReportFrequency
+import com.terraformation.backend.db.accelerator.ReportId
+import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.ScoreCategory
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -57,9 +61,11 @@ import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectS
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectAcceleratorDetailsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectOverallScoresDao
+import com.terraformation.backend.db.accelerator.tables.daos.ProjectReportConfigsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectScoresDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVoteDecisionsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
+import com.terraformation.backend.db.accelerator.tables.daos.ReportsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshotsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
@@ -83,9 +89,11 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProject
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectAcceleratorDetailsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectOverallScoresRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ProjectReportConfigsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectScoresRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVoteDecisionsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionDocumentsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
@@ -573,6 +581,7 @@ abstract class DatabaseBackedTest {
   protected val projectAcceleratorDetailsDao: ProjectAcceleratorDetailsDao by lazyDao()
   protected val projectLandUseModelTypesDao: ProjectLandUseModelTypesDao by lazyDao()
   protected val projectOverallScoresDao: ProjectOverallScoresDao by lazyDao()
+  protected val projectReportConfigsDao: ProjectReportConfigsDao by lazyDao()
   protected val projectReportSettingsDao: ProjectReportSettingsDao by lazyDao()
   protected val projectScoresDao: ProjectScoresDao by lazyDao()
   protected val projectsDao: ProjectsDao by lazyDao()
@@ -581,6 +590,7 @@ abstract class DatabaseBackedTest {
   protected val recordedBranchesDao: RecordedBranchesDao by lazyDao()
   protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()
   protected val recordedTreesDao: RecordedTreesDao by lazyDao()
+  protected val reportsDao: ReportsDao by lazyDao()
   protected val seedFundReportFilesDao: SeedFundReportFilesDao by lazyDao()
   protected val seedFundReportPhotosDao: SeedFundReportPhotosDao by lazyDao()
   protected val seedFundReportsDao: SeedFundReportsDao by lazyDao()
@@ -2262,7 +2272,7 @@ abstract class DatabaseBackedTest {
     }
   }
 
-  fun insertReport(
+  fun insertSeedFundReport(
       row: SeedFundReportsRow = SeedFundReportsRow(),
       body: String = row.body?.data() ?: """{"version":"1","organizationName":"org"}""",
       lockedBy: UserId? = row.lockedBy,
@@ -2316,6 +2326,25 @@ abstract class DatabaseBackedTest {
         )
 
     organizationReportSettingsDao.insert(row)
+  }
+
+  fun insertProjectReportConfig(
+      row: ProjectReportConfigsRow = ProjectReportConfigsRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      frequency: ReportFrequency = row.reportFrequencyId ?: ReportFrequency.Quarterly,
+      reportingStartDate: LocalDate = row.reportingStartDate ?: LocalDate.EPOCH,
+      reportingEndDate: LocalDate = row.reportingEndDate ?: reportingStartDate.plusDays(1),
+  ): ProjectReportConfigId {
+    val rowWithDefaults =
+        row.copy(
+            projectId = projectId,
+            reportFrequencyId = frequency,
+            reportingStartDate = reportingStartDate,
+            reportingEndDate = reportingEndDate,
+        )
+    projectReportConfigsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.projectReportConfigIds.add(it) }
   }
 
   fun insertProjectReportSettings(
@@ -2663,6 +2692,44 @@ abstract class DatabaseBackedTest {
     recordedPlantsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!
+  }
+
+  protected fun insertReport(
+      row: ReportsRow = ReportsRow(),
+      configId: ProjectReportConfigId = row.configId ?: inserted.projectReportConfigId,
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      status: ReportStatus = row.statusId ?: ReportStatus.NotSubmitted,
+      startDate: LocalDate = row.startDate ?: LocalDate.EPOCH,
+      endDate: LocalDate = row.endDate ?: LocalDate.EPOCH.plusDays(1),
+      internalComment: String? = row.internalComment,
+      feedback: String? = row.feedback,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
+      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
+      submittedBy: UserId? = row.submittedBy,
+      submittedTime: Instant? = row.submittedTime,
+  ): ReportId {
+    val rowWithDefaults =
+        row.copy(
+            configId = configId,
+            projectId = projectId,
+            statusId = status,
+            startDate = startDate,
+            endDate = endDate,
+            internalComment = internalComment,
+            feedback = feedback,
+            createdBy = createdBy,
+            createdTime = createdTime,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            submittedBy = submittedBy,
+            submittedTime = submittedTime,
+        )
+
+    reportsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.reportIds.add(it) }
   }
 
   private var nextInternalTagNumber = 1
@@ -3792,7 +3859,9 @@ abstract class DatabaseBackedTest {
     val plantingZoneHistoryIds = mutableListOf<PlantingZoneHistoryId>()
     val plantingZoneIds = mutableListOf<PlantingZoneId>()
     val projectIds = mutableListOf<ProjectId>()
+    val projectReportConfigIds = mutableListOf<ProjectReportConfigId>()
     val recordedTreeIds = mutableListOf<RecordedTreeId>()
+    val reportIds = mutableListOf<ReportId>()
     val seedFundReportIds = mutableListOf<SeedFundReportId>()
     val speciesIds = mutableListOf<SpeciesId>()
     val subLocationIds = mutableListOf<SubLocationId>()
@@ -3912,8 +3981,14 @@ abstract class DatabaseBackedTest {
     val projectId
       get() = projectIds.last()
 
+    val projectReportConfigId
+      get() = projectReportConfigIds.last()
+
     val recordedTreeId
       get() = recordedTreeIds.last()
+
+    val reportId
+      get() = reportIds.last()
 
     val seedFundReportId
       get() = seedFundReportIds.last()
