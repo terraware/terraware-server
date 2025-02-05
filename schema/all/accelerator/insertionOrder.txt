@@ -9,12 +9,15 @@ application_module_statuses
 document_stores
 event_statuses
 event_types
+report_frequencies
+report_statuses
 score_categories
 deliverable_categories
 cohorts
 participants
 modules
 deliverables
+project_report_configs
 applications
 submissions
 deal_stages
@@ -38,4 +41,5 @@ submission_documents
 project_scores
 participant_project_species
 project_votes
+reports
 hubspot_token

@@ -1,3 +1,4 @@
+850f175f40d SW-6481 Implemented accelerator report config store and report fetch (#2814)
 dbe8890042b SW-6321 Require subzone IDs when scheduling observation (#2810)
 4bdae3e2e09 SW-6321 Allow unplanted subzones to be observed (#2809)
 8ad828686a9 SW-6405 Support flexible site edits in admin UI (#2806)

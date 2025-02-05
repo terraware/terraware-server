@@ -486,9 +486,11 @@
             <child column="project_id" foreignKey="participant_project_species_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="participant_project_species"/>
             <child column="project_id" foreignKey="project_accelerator_details_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_accelerator_details"/>
             <child column="project_id" foreignKey="project_overall_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_overall_scores"/>
+            <child column="project_id" foreignKey="project_report_configs_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_report_configs"/>
             <child column="project_id" foreignKey="project_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_scores"/>
             <child column="project_id" foreignKey="project_vote_decisions_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_vote_decisions"/>
             <child column="project_id" foreignKey="project_votes_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_votes"/>
+            <child column="project_id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="reports"/>
             <child column="project_id" foreignKey="submission_documents_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_documents"/>
             <child column="project_id" foreignKey="submissions_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="submissions"/>
             <child column="project_id" foreignKey="documents_project_id_fkey" implied="false" onDeleteCascade="false" schema="docprod" table="documents"/>
@@ -831,6 +833,9 @@
             <child column="created_by" foreignKey="project_votes_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_votes"/>
             <child column="modified_by" foreignKey="project_votes_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_votes"/>
             <child column="user_id" foreignKey="project_votes_user_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_votes"/>
+            <child column="created_by" foreignKey="reports_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
+            <child column="modified_by" foreignKey="reports_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
+            <child column="submitted_by" foreignKey="reports_submitted_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
             <child column="created_by" foreignKey="submission_documents_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_documents"/>
             <child column="created_by" foreignKey="submissions_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>
             <child column="modified_by" foreignKey="submissions_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submissions"/>

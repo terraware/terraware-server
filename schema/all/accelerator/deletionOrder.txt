@@ -1,4 +1,5 @@
 hubspot_token
+reports
 project_votes
 participant_project_species
 project_scores
@@ -22,12 +23,15 @@ events
 deal_stages
 submissions
 applications
+project_report_configs
 deliverables
 modules
 participants
 cohorts
 deliverable_categories
 score_categories
+report_statuses
+report_frequencies
 event_types
 event_statuses
 document_stores

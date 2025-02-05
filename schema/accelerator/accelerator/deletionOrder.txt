@@ -1,6 +1,7 @@
 hubspot_token
 default_voters
 default_project_leads
+reports
 deliverable_documents
 submission_documents
 project_votes
@@ -22,12 +23,15 @@ events
 deal_stages
 submissions
 applications
+project_report_configs
 deliverables
 participants
 deliverable_categories
 cohorts
 modules
 score_categories
+report_statuses
+report_frequencies
 event_types
 event_statuses
 document_stores
