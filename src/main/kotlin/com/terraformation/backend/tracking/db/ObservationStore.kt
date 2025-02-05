@@ -1394,11 +1394,13 @@ class ObservationStore(
 
     if (hasCompletedPlots) {
       dslContext.transaction { _ ->
+        log.info("Marking observation $observationId as abandoned")
         abandonPlots(observationId)
         updateObservationState(observationId, ObservationState.Abandoned)
         resetPlantPopulationSinceLastObservation(observation.plantingSiteId)
       }
     } else {
+      log.info("Deleting abandoned observation $observationId since it has no completed plots")
       deleteObservation(observationId)
     }
   }

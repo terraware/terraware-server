@@ -36,6 +36,7 @@ import com.terraformation.backend.tracking.db.PlotNotFoundException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
+import com.terraformation.backend.tracking.edit.PlantingSiteEditBehavior
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
@@ -510,6 +511,13 @@ class ObservationService(
   /** Updates observations, if any, when a site's map is edited. */
   @EventListener
   fun on(event: PlantingSiteMapEditedEvent) {
+    when (event.plantingSiteEdit.behavior) {
+      PlantingSiteEditBehavior.Restricted -> onRestrictedSiteEdit(event)
+      PlantingSiteEditBehavior.Flexible -> onFlexibleSiteEdit(event)
+    }
+  }
+
+  private fun onRestrictedSiteEdit(event: PlantingSiteMapEditedEvent) {
     dslContext.transaction { _ ->
       // We no longer want plants from past observations of the removed plots to show up in the
       // per-species totals.
@@ -578,6 +586,21 @@ class ObservationService(
 
         observationStore.addPlotsToObservation(
             observationId, newPermanentPlotsInClustersWithoutPlotsInUnplantedSubzones, true)
+      }
+    }
+  }
+
+  private fun onFlexibleSiteEdit(event: PlantingSiteMapEditedEvent) {
+    dslContext.transaction { _ ->
+      // Abandon any active observations with incomplete plots in planting zones that are affected
+      // by the edit.
+      val affectedPlantingZoneIds =
+          event.plantingSiteEdit.plantingZoneEdits.mapNotNull { it.existingModel?.id }
+      val affectedObservationIds =
+          observationStore.fetchActiveObservationIds(event.edited.id, affectedPlantingZoneIds)
+
+      affectedObservationIds.forEach { observationId ->
+        observationStore.abandonObservation(observationId)
       }
     }
   }

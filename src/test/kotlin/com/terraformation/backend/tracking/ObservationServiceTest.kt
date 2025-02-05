@@ -74,6 +74,7 @@ import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEditBehavior
+import com.terraformation.backend.tracking.edit.PlantingZoneEdit
 import com.terraformation.backend.tracking.event.ObservationPlotReplacedEvent
 import com.terraformation.backend.tracking.event.ObservationRescheduledEvent
 import com.terraformation.backend.tracking.event.ObservationScheduledEvent
@@ -2203,6 +2204,64 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertDelivery()
 
       insertPlantingZone(numPermanentClusters = 1, numTemporaryPlots = 1, width = 2, height = 7)
+    }
+
+    @Test
+    fun `abandons in-progress observations in edited zones`() {
+      insertPlantingSubzone()
+      val plotInEditedZone = insertMonitoringPlot(permanentCluster = 1)
+      insertPlantingZone()
+      insertPlantingSubzone()
+      val plotInNonEditedZone = insertMonitoringPlot(permanentCluster = 1)
+
+      val completedObservation = insertObservation(completedTime = Instant.EPOCH)
+      insertObservationPlot(
+          monitoringPlotId = plotInEditedZone, isPermanent = true, completedBy = user.userId)
+      insertObservationPlot(
+          monitoringPlotId = plotInNonEditedZone, isPermanent = true, completedBy = user.userId)
+      val activeObservationWithCompletedPlotInEditedZone = insertObservation()
+      insertObservationPlot(
+          monitoringPlotId = plotInEditedZone, isPermanent = true, completedBy = user.userId)
+      insertObservationPlot(monitoringPlotId = plotInNonEditedZone, isPermanent = true)
+      val activeObservationWithCompletedPlotInNonEditedZone = insertObservation()
+      insertObservationPlot(monitoringPlotId = plotInEditedZone, isPermanent = true)
+      insertObservationPlot(
+          monitoringPlotId = plotInNonEditedZone, isPermanent = true, completedBy = user.userId)
+      // Active observation with no completed plots; should be deleted
+      insertObservation()
+      insertObservationPlot(monitoringPlotId = plotInEditedZone, isPermanent = true)
+      insertObservationPlot(monitoringPlotId = plotInNonEditedZone, isPermanent = true)
+
+      val event =
+          PlantingSiteMapEditedEvent(
+              plantingSite,
+              PlantingSiteEdit(
+                  areaHaDifference = BigDecimal.ONE,
+                  behavior = PlantingSiteEditBehavior.Flexible,
+                  desiredModel = plantingSite,
+                  existingModel = plantingSite,
+                  plantingZoneEdits =
+                      listOf(
+                          PlantingZoneEdit.Update(
+                              addedRegion = rectangle(0),
+                              areaHaDifference = BigDecimal.ONE,
+                              desiredModel = plantingSite.plantingZones[0],
+                              existingModel = plantingSite.plantingZones[0],
+                              monitoringPlotEdits = emptyList(),
+                              plantingSubzoneEdits = emptyList(),
+                              removedRegion = rectangle(0)))),
+              ReplacementResult(emptySet(), emptySet()))
+
+      service.on(event)
+
+      assertEquals(
+          mapOf(
+              completedObservation to ObservationState.Completed,
+              activeObservationWithCompletedPlotInEditedZone to ObservationState.InProgress,
+              activeObservationWithCompletedPlotInNonEditedZone to ObservationState.Abandoned,
+          ),
+          observationsDao.findAll().associate { it.id!! to it.stateId!! },
+          "Observation states")
     }
 
     @Test
