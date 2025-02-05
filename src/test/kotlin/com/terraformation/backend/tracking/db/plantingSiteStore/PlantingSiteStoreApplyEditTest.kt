@@ -12,10 +12,13 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
+import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
+import com.terraformation.backend.tracking.edit.PlantingSiteEditBehavior
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV1
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV1Test
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV2
+import com.terraformation.backend.tracking.edit.PlantingZoneEdit
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -457,6 +460,38 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               zone(width = 250)
               zone()
             })
+      }
+    }
+
+    @Test
+    fun `throws exception if edit results in duplicate permanent cluster numbers`() {
+      val existing = createSite(newSite())
+
+      assertThrows<IllegalStateException> {
+        store.applyPlantingSiteEdit(
+            PlantingSiteEdit(
+                areaHaDifference = BigDecimal.ZERO,
+                behavior = PlantingSiteEditBehavior.Flexible,
+                desiredModel = existing,
+                existingModel = existing,
+                plantingZoneEdits =
+                    listOf(
+                        PlantingZoneEdit.Update(
+                            addedRegion = rectangle(0),
+                            areaHaDifference = BigDecimal.ZERO,
+                            desiredModel = existing.plantingZones[0],
+                            existingModel = existing.plantingZones[0],
+                            monitoringPlotEdits =
+                                listOf(
+                                    MonitoringPlotEdit.Create(existing.boundary!!, 1),
+                                    MonitoringPlotEdit.Create(existing.boundary!!, 1),
+                                    MonitoringPlotEdit.Create(existing.boundary!!, 2),
+                                    MonitoringPlotEdit.Create(existing.boundary!!, 2),
+                                ),
+                            plantingSubzoneEdits = emptyList(),
+                            removedRegion = rectangle(0),
+                        )),
+            ))
       }
     }
 
