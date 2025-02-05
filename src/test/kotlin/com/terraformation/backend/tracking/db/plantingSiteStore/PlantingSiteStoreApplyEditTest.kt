@@ -15,6 +15,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV1
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV1Test
+import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorV2
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -140,7 +141,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     }
 
     @Test
-    fun `creates new permanent clusters in added area`() {
+    fun `v1 edit creates extra permanent clusters in added area`() {
       runScenario(
           initial =
               newSite(width = 500) {
@@ -466,33 +467,137 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       every { user.canUpdatePlantingSite(any()) } returns false
 
       assertThrows<AccessDeniedException> {
-        store.applyPlantingSiteEdit(calculateSiteEdit(existing, newSite(width = 600)))
+        store.applyPlantingSiteEdit(
+            calculateSiteEdit(existing, newSite(width = 600), emptySet(), false))
       }
     }
 
-    /**
-     * Runs a scenario and asserts that the results are correct.
-     * 1. Creates a new site with an initial configuration
-     * 2. Calculates the edit to turn it into a desired configuration
-     * 3. Applies the edit
-     * 4. Compares the result to an expected configuration
-     *
-     * Since monitoring plots can be created at random locations, we can't compare them to a fixed
-     * list of expected values. Instead, we assert that there are the expected number of plots in
-     * specific regions.
-     */
-    private fun runScenario(
-        initial: NewPlantingSiteModel,
-        desired: NewPlantingSiteModel,
-        expected: NewPlantingSiteModel = desired,
-        expectedPlotCounts: List<Pair<Geometry, Int>>? = null,
-        getPlantedSubzoneIds: (ExistingPlantingSiteModel) -> Set<PlantingSubzoneId> = { existing ->
-          existing.plantingZones.flatMap { zone -> zone.plantingSubzones.map { it.id } }.toSet()
-        },
-        getSubzonesToMarkIncomplete: (ExistingPlantingSiteModel) -> Set<PlantingSubzoneId> = {
-          emptySet()
-        },
-    ): ScenarioResults {
+    @Test
+    fun `creates new monitoring plots in requested regions`() {
+      val initial = newSite(width = 501)
+      val expected = newSite(width = 1000) { zone(numPermanent = 4) }
+      val existingArea = initial.boundary!!
+      val newArea = rectangle(x = 500, width = 500, height = 500)
+
+      val (edited) =
+          runScenario(
+              initial = initial,
+              desired = expected,
+              useV2Calculator = true,
+              expectedPlotCounts = listOf(existingArea to 2, newArea to 2))
+
+      assertClusterRegions(
+          edited,
+          mapOf(
+              1 to existingArea,
+              2 to newArea,
+              3 to existingArea,
+              4 to newArea,
+          ))
+    }
+
+    @Test
+    fun `moves existing monitoring plots between subzones`() {
+      val initial = newSite {
+        zone {
+          subzone {
+            cluster(x = 0)
+            cluster(x = 300)
+            cluster(x = 30)
+            cluster(x = 330)
+          }
+        }
+      }
+      val expected = newSite {
+        zone(numPermanent = 4) {
+          subzone(width = 250)
+          subzone(width = 250)
+        }
+      }
+
+      val (edited) = runScenario(initial = initial, desired = expected, useV2Calculator = true)
+
+      assertSubzoneClusters(edited, mapOf("S1" to listOf(1, 3), "S2" to listOf(2, 4)))
+    }
+
+    @Test
+    fun `creates and adopts monitoring plots with permanent cluster renumbering`() {
+      // This scenario is from the PRD and the edit calculation is covered in
+      // PlantingSiteEditCalculatorV2Test.
+      val initial =
+          newSite(x = 0, width = 1000) {
+            zone(name = "A", x = 0, width = 500) {
+              subzone {
+                cluster(plotNumber = 1, x = 300, y = 0)
+                cluster(plotNumber = 2, x = 300, y = 30)
+                cluster(plotNumber = 4, x = 300, y = 60)
+                cluster(plotNumber = 7, x = 300, y = 90)
+              }
+            }
+            zone(name = "B", x = 500, width = 500) {
+              subzone {
+                cluster(plotNumber = 16, x = 600, y = 0)
+                cluster(plotNumber = 18, x = 600, y = 30)
+                cluster(plotNumber = 19, x = 600, y = 60)
+                cluster(plotNumber = 23, x = 600, y = 90)
+                cluster(plotNumber = 25, x = 600, y = 120)
+                cluster(plotNumber = 26, x = 600, y = 150)
+                cluster(plotNumber = 27, x = 600, y = 180)
+              }
+            }
+          }
+
+      // 44% overlaps with old zone A, 56% doesn't.
+      val desired =
+          newSite(x = 280, width = 500) {
+            gridOrigin = point(1)
+            zone(name = "A", numPermanent = 11, numTemporary = 3) {}
+          }
+
+      runScenario(initial = initial, desired = desired, useV2Calculator = true)
+
+      assertEquals(
+          mapOf(
+              16L to 1,
+              1L to 2,
+              18L to 3,
+              2L to 4,
+              19L to 5,
+              4L to 6,
+              23L to 7,
+              25L to 8,
+              7L to 9,
+              26L to 10,
+              29L to 11, // Newly-created plot
+              27L to null,
+          ),
+          monitoringPlotsDao.findAll().associate { it.plotNumber to it.permanentCluster },
+          "Permanent cluster numbers for each plot number")
+    }
+
+    @Test
+    fun `moves existing monitoring plots between planting zones`() {
+      val initial = newSite {
+        zone(name = "A") {
+          subzone {
+            cluster(plotNumber = 1, x = 100)
+            cluster(plotNumber = 2, x = 400)
+          }
+        }
+      }
+
+      val desired = newSite {
+        zone(width = 300, name = "A", numPermanent = 1)
+        zone(name = "B", numPermanent = 1)
+      }
+
+      val (edited) = runScenario(initial = initial, desired = desired, useV2Calculator = true)
+
+      assertSubzoneClusters(edited, mapOf("S1" to listOf(1), "S2" to listOf(1)))
+      assertSubzonePlotNumbers(edited, mapOf("S1" to listOf(1L), "S2" to listOf(2L)))
+    }
+
+    private fun createSite(initial: NewPlantingSiteModel): ExistingPlantingSiteModel {
       clock.instant = Instant.EPOCH
 
       // createPlantingSite doesn't create monitoring plots since they are expected to be created
@@ -534,10 +639,40 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       } while (nextPlotNumber <= maxPlotNumber)
 
       val existing = store.fetchSiteById(existingWithoutPlots.id, PlantingSiteDepth.Plot)
-      val subzonesToMarkIncomplete = getSubzonesToMarkIncomplete(existing)
+      return existing
+    }
+
+    /**
+     * Runs a scenario and asserts that the results are correct.
+     * 1. Creates a new site with an initial configuration
+     * 2. Calculates the edit to turn it into a desired configuration
+     * 3. Applies the edit
+     * 4. Compares the result to an expected configuration
+     *
+     * Since monitoring plots can be created at random locations, we can't compare them to a fixed
+     * list of expected values. Instead, we assert that there are the expected number of plots in
+     * specific regions.
+     */
+    private fun runScenario(
+        initial: NewPlantingSiteModel,
+        desired: NewPlantingSiteModel,
+        expected: NewPlantingSiteModel = desired,
+        useV2Calculator: Boolean = false,
+        expectedPlotCounts: List<Pair<Geometry, Int>>? = null,
+        getPlantedSubzoneIds: (ExistingPlantingSiteModel) -> Set<PlantingSubzoneId> = { existing ->
+          existing.plantingZones.flatMap { zone -> zone.plantingSubzones.map { it.id } }.toSet()
+        },
+        getSubzonesToMarkIncomplete: (ExistingPlantingSiteModel) -> Set<PlantingSubzoneId> = {
+          emptySet()
+        },
+    ): ScenarioResults {
+      val existing = createSite(initial)
+
+      val plantingSiteEdit =
+          calculateSiteEdit(existing, desired, getPlantedSubzoneIds(existing), useV2Calculator)
 
       clock.instant = editTime
-      val plantingSiteEdit = calculateSiteEdit(existing, desired, getPlantedSubzoneIds(existing))
+      val subzonesToMarkIncomplete = getSubzonesToMarkIncomplete(existing)
       val edited = store.applyPlantingSiteEdit(plantingSiteEdit, subzonesToMarkIncomplete)
 
       fun NewPlantingSiteModel.withoutMonitoringPlots() =
@@ -551,33 +686,34 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                             })
                   })
 
-      if (!expected
-          .withoutMonitoringPlots()
-          .equals(edited.toNew().withoutMonitoringPlots(), 0.00001)) {
-        assertEquals(expected, edited.toNew(), "Planting site after edit")
+      val expectedWithoutMonitoringPlots = expected.withoutMonitoringPlots()
+      val editedWithoutMonitoringPlots = edited.toNew().withoutMonitoringPlots()
+      if (!expectedWithoutMonitoringPlots.equals(editedWithoutMonitoringPlots, 0.00001)) {
+        assertEquals(
+            expectedWithoutMonitoringPlots,
+            editedWithoutMonitoringPlots,
+            "Planting site after edit")
       }
 
-      if (plantingSiteEdit.plantingZoneEdits.isNotEmpty()) {
-        assertHistories(existing, edited)
-      }
+      val editedMonitoringPlots =
+          edited.plantingZones.flatMap { zone ->
+            zone.plantingSubzones.flatMap { subzone -> subzone.monitoringPlots }
+          }
 
       if (expectedPlotCounts != null) {
         val actualPlotCounts =
             expectedPlotCounts.map { (boundary, _) ->
-              boundary to
-                  edited.plantingZones.sumOf { zone ->
-                    zone.plantingSubzones.sumOf { subzone ->
-                      subzone.monitoringPlots.count { plot ->
-                        plot.boundary.nearlyCoveredBy(boundary)
-                      }
-                    }
-                  }
+              boundary to editedMonitoringPlots.count { it.boundary.nearlyCoveredBy(boundary) }
             }
 
         assertEquals(
             expectedPlotCounts,
             actualPlotCounts,
             "Number of monitoring plots in regions of edited site")
+      }
+
+      if (plantingSiteEdit.plantingZoneEdits.isNotEmpty()) {
+        assertHistories(existing, edited)
       }
 
       return ScenarioResults(edited, existing, plantingSiteEdit)
@@ -587,8 +723,16 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         existing: ExistingPlantingSiteModel,
         desired: AnyPlantingSiteModel,
         plantedSubzoneIds: Set<PlantingSubzoneId> = emptySet(),
-    ): PlantingSiteEdit =
-        PlantingSiteEditCalculatorV1(existing, desired, plantedSubzoneIds).calculateSiteEdit()
+        useV2Calculator: Boolean,
+    ): PlantingSiteEdit {
+      val calculator =
+          if (useV2Calculator) {
+            PlantingSiteEditCalculatorV2(existing, desired)
+          } else {
+            PlantingSiteEditCalculatorV1(existing, desired, plantedSubzoneIds)
+          }
+      return calculator.calculateSiteEdit()
+    }
 
     private fun assertHistories(
         existing: ExistingPlantingSiteModel,
@@ -724,6 +868,82 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
             where = MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(editedSiteHistory.id))
       }
     }
+  }
+
+  /**
+   * Asserts that each permanent cluster is located somewhere in a particular region. This is used
+   * to test random cluster placement.
+   *
+   * @param expected Map of permanent cluster numbers to expected regions.
+   */
+  private fun assertClusterRegions(
+      edited: ExistingPlantingSiteModel,
+      expected: Map<Int, Geometry>
+  ) {
+    val editedMonitoringPlots =
+        edited.plantingZones.flatMap { zone ->
+          zone.plantingSubzones.flatMap { subzone -> subzone.monitoringPlots }
+        }
+    val editedClusterNumbers = editedMonitoringPlots.mapNotNull { it.permanentCluster }.sorted()
+    val expectedClusterNumbers = expected.keys.sorted()
+    assertEquals(
+        expectedClusterNumbers, editedClusterNumbers, "Permanent cluster numbers after edit")
+
+    val clustersNotInExpectedRegions =
+        editedMonitoringPlots
+            .filter { plot ->
+              plot.permanentCluster != null &&
+                  !plot.boundary.nearlyCoveredBy(expected[plot.permanentCluster]!!)
+            }
+            .map { it.permanentCluster!! }
+            .sorted()
+
+    assertEquals(emptyList<Int>(), clustersNotInExpectedRegions, "Clusters not in expected regions")
+  }
+
+  /**
+   * Asserts that each subzone contains the expected list of permanent cluster numbers and
+   * non-permanent plots. Requires that subzone names be unique across zones.
+   *
+   * @param expected Map of subzone names to sorted lists of expected permanent cluster numbers. Use
+   *   nulls to expect non-permanent plots.
+   */
+  private fun assertSubzoneClusters(site: AnyPlantingSiteModel, expected: Map<String, List<Int?>>) {
+    val actual =
+        site.plantingZones
+            .flatMap { zone ->
+              zone.plantingSubzones.map { subzone ->
+                subzone.name to
+                    subzone.monitoringPlots
+                        .map { it.permanentCluster }
+                        .sortedBy { it ?: Int.MAX_VALUE }
+              }
+            }
+            .toMap()
+
+    assertEquals(expected, actual, "Cluster numbers in each subzone")
+  }
+
+  /**
+   * Asserts that each subzone contains the expected list of plot numbers. Requires that subzone
+   * names be unique across zones.
+   *
+   * @param expected Map of subzone names to sorted lists of expected plot numbers.
+   */
+  private fun assertSubzonePlotNumbers(
+      site: AnyPlantingSiteModel,
+      expected: Map<String, List<Long>>
+  ) {
+    val actual =
+        site.plantingZones
+            .flatMap { zone ->
+              zone.plantingSubzones.map { subzone ->
+                subzone.name to subzone.monitoringPlots.map { it.plotNumber }.sorted()
+              }
+            }
+            .toMap()
+
+    assertEquals(expected, actual, "Plot numbers in each subzone")
   }
 
   private data class ScenarioResults(

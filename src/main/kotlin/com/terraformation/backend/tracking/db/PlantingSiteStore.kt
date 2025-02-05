@@ -727,6 +727,20 @@ class PlantingSiteStore(
           }
         }
 
+        // Need to create permanent clusters using the updated subzones since we need their IDs.
+        val updatedSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
+        val updatedZone = updatedSite.plantingZones.single { it.id == edit.existingModel.id }
+
+        edit.monitoringPlotEdits
+            .filter { it.permanentCluster != null }
+            .groupBy { it.region }
+            .forEach { (region, plotEdits) ->
+              val newPlotIds =
+                  createPermanentClusters(
+                      updatedSite, updatedZone, plotEdits.map { it.permanentCluster!! }, region)
+              replacementResults.add(ReplacementResult(newPlotIds.toSet(), emptySet()))
+            }
+
         if (newExtraPermanentClusters > 0) {
           // Create the new permanent clusters at random places in the cluster list so that they
           // aren't less likely to be selected for observations if the number of permanent clusters
@@ -738,9 +752,6 @@ class PlantingSiteStore(
                   .sorted()
           newClusterNumbers.forEach { makeRoomForClusterNumber(edit.existingModel.id, it) }
 
-          // Need to create permanent clusters using the updated subzones since we need their IDs.
-          val updatedSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
-          val updatedZone = updatedSite.plantingZones.single { it.id == edit.existingModel.id }
           val newPlotIds =
               createPermanentClusters(updatedSite, updatedZone, newClusterNumbers, edit.addedRegion)
 
@@ -834,8 +845,28 @@ class PlantingSiteStore(
       now: Instant,
   ): ReplacementResult {
     return when (edit) {
-      is MonitoringPlotEdit.Adopt -> TODO()
-      is MonitoringPlotEdit.Create -> TODO()
+      is MonitoringPlotEdit.Adopt -> {
+        with(MONITORING_PLOTS) {
+          dslContext
+              .update(MONITORING_PLOTS)
+              .set(PERMANENT_CLUSTER, edit.permanentCluster)
+              .set(PERMANENT_CLUSTER_SUBPLOT, if (edit.permanentCluster != null) 1 else null)
+              .set(PLANTING_SUBZONE_ID, plantingSubzoneId)
+              .set(MODIFIED_BY, currentUser().userId)
+              .set(MODIFIED_TIME, now)
+              .where(ID.eq(edit.monitoringPlotId))
+              .execute()
+        }
+
+        insertMonitoringPlotHistory(edit.monitoringPlotId, plantingSiteId, plantingSubzoneId)
+
+        ReplacementResult(emptySet(), emptySet())
+      }
+
+      is MonitoringPlotEdit.Create ->
+          throw IllegalStateException(
+              "BUG! Monitoring plot creation should be handled at zone level")
+
       is MonitoringPlotEdit.Eject -> {
         with(MONITORING_PLOTS) {
           dslContext
