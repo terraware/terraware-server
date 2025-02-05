@@ -16,9 +16,11 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.time.toInstant
 import java.time.Instant
 import java.time.LocalDate
 import java.time.Month
+import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -53,8 +55,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val reportId =
           insertReport(
               status = ReportStatus.NeedsUpdate,
-              startDate = LocalDate.of(2030, 1, 1),
-              endDate = LocalDate.of(2030, 12, 31),
+              startDate = LocalDate.of(2030, Month.JANUARY, 1),
+              endDate = LocalDate.of(2030, Month.DECEMBER, 31),
               internalComment = "internal comment",
               feedback = "feedback",
               createdBy = systemUser.userId,
@@ -71,8 +73,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               configId = configId,
               projectId = projectId,
               status = ReportStatus.NeedsUpdate,
-              startDate = LocalDate.of(2030, 1, 1),
-              endDate = LocalDate.of(2030, 12, 31),
+              startDate = LocalDate.of(2030, Month.JANUARY, 1),
+              endDate = LocalDate.of(2030, Month.DECEMBER, 31),
               internalComment = "internal comment",
               feedback = "feedback",
               createdBy = systemUser.userId,
@@ -83,7 +85,57 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               submittedTime = Instant.ofEpochSecond(6000),
           )
 
+      clock.instant = LocalDate.of(2031, Month.JANUARY, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
       assertEquals(listOf(reportModel), store.fetch())
+    }
+
+    @Test
+    fun `hides Not Needed reports by default`() {
+      val configId = insertProjectReportConfig()
+      val reportId = insertReport(status = ReportStatus.NotNeeded)
+
+      val reportModel =
+          ReportModel(
+              id = reportId,
+              configId = configId,
+              projectId = projectId,
+              status = ReportStatus.NotNeeded,
+              startDate = LocalDate.EPOCH,
+              endDate = LocalDate.EPOCH.plusDays(1),
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = Instant.EPOCH)
+
+      assertEquals(emptyList<ReportModel>(), store.fetch())
+
+      assertEquals(listOf(reportModel), store.fetch(includeArchived = true))
+    }
+
+    @Test
+    fun `hides reports ending more than 30 days into the future by default`() {
+      val today = LocalDate.of(2025, Month.FEBRUARY, 15)
+      clock.instant = today.atStartOfDay().toInstant(ZoneOffset.UTC)
+
+      val configId = insertProjectReportConfig()
+      val reportId = insertReport(startDate = today, endDate = today.plusDays(31))
+
+      val reportModel =
+          ReportModel(
+              id = reportId,
+              configId = configId,
+              projectId = projectId,
+              status = ReportStatus.NotSubmitted,
+              startDate = today,
+              endDate = today.plusDays(31),
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = Instant.EPOCH)
+
+      assertEquals(emptyList<ReportModel>(), store.fetch())
+
+      assertEquals(listOf(reportModel), store.fetch(includeFuture = true))
     }
 
     @Test
@@ -161,6 +213,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = otherReportId2,
               endDate = LocalDate.of(2040, Month.DECEMBER, 31),
           )
+
+      clock.instant = LocalDate.of(2041, Month.JANUARY, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
 
       assertEquals(
           setOf(reportModel1, reportModel2, otherReportModel1, otherReportModel2),

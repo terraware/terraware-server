@@ -34,12 +34,17 @@ class ReportsController(
   @GetMapping
   @Operation(
       summary = "List accelerator reports.",
-      description = "List all reports, optionally filtered by project ID, and/or by year.")
+      description =
+          "Optionally query by project ID or year. By default, reports more than 30 " +
+              "days in the future, or marked as Unneeded will be omitted.")
   fun listAcceleratorReports(
-      @RequestParam("projectId") projectId: ProjectId? = null,
-      @RequestParam("year") year: Int? = null,
+      @RequestParam projectId: ProjectId? = null,
+      @RequestParam year: Int? = null,
+      @RequestParam includeFuture: Boolean? = null,
+      @RequestParam includeArchived: Boolean? = null,
   ): ListAcceleratorReportsResponsePayload {
-    val reports = reportStore.fetch(projectId, year)
+    val reports =
+        reportStore.fetch(projectId, year, includeFuture ?: false, includeArchived ?: false)
     return ListAcceleratorReportsResponsePayload(reports.map { AcceleratorReportPayload(it) })
   }
 
@@ -47,7 +52,7 @@ class ReportsController(
   @GetMapping("/configs")
   @Operation(summary = "List accelerator report configurations.")
   fun listAcceleratorReportConfig(
-      @RequestParam("projectId") projectId: ProjectId? = null,
+      @RequestParam projectId: ProjectId? = null,
   ): ListAcceleratorReportConfigResponsePayload {
     val configs = reportStore.fetchProjectReportConfigs(projectId)
     return ListAcceleratorReportConfigResponsePayload(

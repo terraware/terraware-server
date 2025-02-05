@@ -19,6 +19,7 @@ import jakarta.inject.Named
 import java.time.InstantSource
 import java.time.LocalDate
 import java.time.Month
+import java.time.ZoneId
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
@@ -30,12 +31,37 @@ class ReportStore(
     private val reportsDao: ReportsDao,
     private val systemUser: SystemUser,
 ) {
-  fun fetch(projectId: ProjectId? = null, year: Int? = null): List<ReportModel> {
+  fun fetch(
+      projectId: ProjectId? = null,
+      year: Int? = null,
+      includeFuture: Boolean = false,
+      includeArchived: Boolean = false,
+  ): List<ReportModel> {
+    val today = LocalDate.ofInstant(clock.instant(), ZoneId.systemDefault())
+
+    // By default, omits every report more than 30 days in the future.
+    val futureCondition =
+        if (!includeFuture) {
+          REPORTS.END_DATE.lessOrEqual(today.plusDays(30))
+        } else {
+          null
+        }
+
+    val archivedCondition =
+        if (!includeArchived) {
+          REPORTS.STATUS_ID.notEqual(ReportStatus.NotNeeded)
+        } else {
+          null
+        }
+
     return fetchByCondition(
         DSL.and(
             listOfNotNull(
                 projectId?.let { REPORTS.PROJECT_ID.eq(it) },
-                year?.let { DSL.year(REPORTS.END_DATE).eq(it) })))
+                year?.let { DSL.year(REPORTS.END_DATE).eq(it) },
+                futureCondition,
+                archivedCondition,
+            )))
   }
 
   fun insertProjectReportConfig(newModel: NewProjectReportConfigModel) {
