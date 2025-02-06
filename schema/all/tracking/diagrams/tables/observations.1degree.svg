@@ -946,7 +946,7 @@
 <!-- recorded_trees -->
 <g id="node20" class="node"><title>recorded_trees</title>
 <g id="a_node20"><a xlink:href="../../tables/recorded_trees.html" xlink:title="recorded_trees" target="_top">
-<polygon fill="#ffffff" stroke="none" points="1669,-1126 1669,-1316 1872,-1316 1872,-1126 1669,-1126"/>
+<polygon fill="#ffffff" stroke="none" points="1669,-1104 1669,-1316 1872,-1316 1872,-1104 1669,-1104"/>
 <polygon fill="#f5f5f5" stroke="none" points="1669.5,-1294 1669.5,-1316 1872.5,-1316 1872.5,-1294 1669.5,-1294"/>
 <polygon fill="none" stroke="black" points="1669.5,-1294 1669.5,-1316 1872.5,-1316 1872.5,-1294 1669.5,-1294"/>
 <text text-anchor="start" x="1674.5" y="-1303.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">recorded_trees</text>
@@ -958,30 +958,32 @@
 <polygon fill="none" stroke="black" points="1669.5,-1250 1669.5,-1272 1872.5,-1272 1872.5,-1250 1669.5,-1250"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1674.5" y="-1267"/>
 <text text-anchor="start" x="1689.5" y="-1258.2" font-family="Helvetica,sans-Serif" font-size="11.00">observation_id</text>
-<polygon fill="#ffffff" stroke="none" points="1669.5,-1228 1669.5,-1250 1872.5,-1250 1872.5,-1228 1669.5,-1228"/>
 <polygon fill="none" stroke="black" points="1669.5,-1228 1669.5,-1250 1872.5,-1250 1872.5,-1228 1669.5,-1228"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1674.5" y="-1245"/>
 <text text-anchor="start" x="1689.5" y="-1236.2" font-family="Helvetica,sans-Serif" font-size="11.00">monitoring_plot_id</text>
-<polygon fill="#ffffff" stroke="none" points="1669.5,-1206 1669.5,-1228 1872.5,-1228 1872.5,-1206 1669.5,-1206"/>
 <polygon fill="none" stroke="black" points="1669.5,-1206 1669.5,-1228 1872.5,-1228 1872.5,-1206 1669.5,-1206"/>
-<text text-anchor="start" x="1689.5" y="-1214.2" font-family="Helvetica,sans-Serif" font-size="11.00">tree_number</text>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1674.5" y="-1223"/>
+<text text-anchor="start" x="1689.5" y="-1214.2" font-family="Helvetica,sans-Serif" font-size="11.00">biomass_species_id</text>
+<polygon fill="#ffffff" stroke="none" points="1669.5,-1184 1669.5,-1206 1872.5,-1206 1872.5,-1184 1669.5,-1184"/>
 <polygon fill="none" stroke="black" points="1669.5,-1184 1669.5,-1206 1872.5,-1206 1872.5,-1184 1669.5,-1184"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1674.5" y="-1201"/>
-<text text-anchor="start" x="1689.5" y="-1192.2" font-family="Helvetica,sans-Serif" font-size="11.00">tree_growth_form_id</text>
+<text text-anchor="start" x="1689.5" y="-1192.2" font-family="Helvetica,sans-Serif" font-size="11.00">tree_number</text>
+<polygon fill="#ffffff" stroke="none" points="1669.5,-1162 1669.5,-1184 1872.5,-1184 1872.5,-1162 1669.5,-1162"/>
 <polygon fill="none" stroke="black" points="1669.5,-1162 1669.5,-1184 1872.5,-1184 1872.5,-1162 1669.5,-1162"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1674.5" y="-1179"/>
-<text text-anchor="start" x="1689.5" y="-1170.2" font-family="Helvetica,sans-Serif" font-size="11.00">biomass_species_id</text>
-<polygon fill="none" stroke="black" points="1669.5,-1144 1669.5,-1162 1872.5,-1162 1872.5,-1144 1669.5,-1144"/>
-<text text-anchor="start" x="1672.5" y="-1150.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="none" points="1669.5,-1126 1669.5,-1144 1749.5,-1144 1749.5,-1126 1669.5,-1126"/>
-<polygon fill="none" stroke="black" points="1669.5,-1126 1669.5,-1144 1749.5,-1144 1749.5,-1126 1669.5,-1126"/>
-<text text-anchor="start" x="1672.5" y="-1132.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 6</text>
-<polygon fill="#ffffff" stroke="none" points="1749.5,-1126 1749.5,-1144 1820.5,-1144 1820.5,-1126 1749.5,-1126"/>
-<polygon fill="none" stroke="black" points="1749.5,-1126 1749.5,-1144 1820.5,-1144 1820.5,-1126 1749.5,-1126"/>
-<text text-anchor="start" x="1781.5" y="-1132.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="none" points="1820.5,-1126 1820.5,-1144 1872.5,-1144 1872.5,-1126 1820.5,-1126"/>
-<polygon fill="none" stroke="black" points="1820.5,-1126 1820.5,-1144 1872.5,-1144 1872.5,-1126 1820.5,-1126"/>
-<text text-anchor="start" x="1852.5" y="-1132.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<text text-anchor="start" x="1689.5" y="-1170.2" font-family="Helvetica,sans-Serif" font-size="11.00">trunk_number</text>
+<polygon fill="none" stroke="black" points="1669.5,-1140 1669.5,-1162 1872.5,-1162 1872.5,-1140 1669.5,-1140"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1674.5" y="-1157"/>
+<text text-anchor="start" x="1689.5" y="-1148.2" font-family="Helvetica,sans-Serif" font-size="11.00">tree_growth_form_id</text>
+<polygon fill="none" stroke="black" points="1669.5,-1122 1669.5,-1140 1872.5,-1140 1872.5,-1122 1669.5,-1122"/>
+<text text-anchor="start" x="1672.5" y="-1128.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="none" points="1669.5,-1104 1669.5,-1122 1754.5,-1122 1754.5,-1104 1669.5,-1104"/>
+<polygon fill="none" stroke="black" points="1669.5,-1104 1669.5,-1122 1754.5,-1122 1754.5,-1104 1669.5,-1104"/>
+<text text-anchor="start" x="1672.5" y="-1110.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 6</text>
+<polygon fill="#ffffff" stroke="none" points="1754.5,-1104 1754.5,-1122 1827.5,-1122 1827.5,-1104 1754.5,-1104"/>
+<polygon fill="none" stroke="black" points="1754.5,-1104 1754.5,-1122 1827.5,-1122 1827.5,-1104 1754.5,-1104"/>
+<text text-anchor="start" x="1788.5" y="-1110.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="none" points="1827.5,-1104 1827.5,-1122 1872.5,-1122 1872.5,-1104 1827.5,-1104"/>
+<polygon fill="none" stroke="black" points="1827.5,-1104 1827.5,-1122 1872.5,-1122 1872.5,-1104 1827.5,-1104"/>
+<text text-anchor="start" x="1862.5" y="-1110.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
@@ -993,9 +995,9 @@
 </g>
 <!-- recorded_trees&#45;&gt;observation_biomass_species -->
 <g id="edge36" class="edge"><title>recorded_trees:biomass_species_id:w&#45;&gt;observation_biomass_species:id:e</title>
-<path fill="none" stroke="black" d="M1654.08,-1174.59C1573.82,-1194.08 1665.72,-1386 1566,-1386"/>
-<polygon fill="black" stroke="black" points="1660.55,-1173.88 1668.9,-1176.58 1664.52,-1173.44 1668.5,-1173 1668.5,-1173 1668.5,-1173 1664.52,-1173.44 1668.1,-1169.42 1660.55,-1173.88 1660.55,-1173.88"/>
-<ellipse fill="none" stroke="black" cx="1657.37" cy="-1174.23" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1653.84,-1218.9C1589.17,-1237.46 1648.36,-1386 1566,-1386"/>
+<polygon fill="black" stroke="black" points="1660.57,-1218.03 1668.96,-1220.57 1664.53,-1217.51 1668.5,-1217 1668.5,-1217 1668.5,-1217 1664.53,-1217.51 1668.04,-1213.43 1660.57,-1218.03 1660.57,-1218.03"/>
+<ellipse fill="none" stroke="black" cx="1657.39" cy="-1218.44" rx="3.2" ry="3.2"/>
 </g>
 <!-- recorded_trees&#45;&gt;observation_biomass_species -->
 <g id="edge37" class="edge"><title>recorded_trees:monitoring_plot_id:w&#45;&gt;observation_biomass_species:monitoring_plot_id:e</title>

@@ -162,12 +162,12 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="observation_biomass_species.observation_id references observations.id via observation_biomass_species_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">observation_biomass_species_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="observation_biomass_species.[observation_id, monitoring_plot_id] references observation_biomass_details.[observation_id, monitoring_plot_id] via observation_biomass_species_observation_id_monitoring_plot_fkey"><a href='observation_biomass_details.html'>observation_biomass_details</a><span class='relatedKey'>.observation_id</span></td>
                                                 <td class="constraint detail">observation_biomass_species_observation_id_monitoring_plot_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="observation_biomass_species.observation_id references observations.id via observation_biomass_species_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">observation_biomass_species_observation_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -195,12 +195,12 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="observation_biomass_species.monitoring_plot_id references monitoring_plots.id via observation_biomass_species_monitoring_plot_id_fkey"><a href='monitoring_plots.html'>monitoring_plots</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">observation_biomass_species_monitoring_plot_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="observation_biomass_species.[observation_id, monitoring_plot_id] references observation_biomass_details.[observation_id, monitoring_plot_id] via observation_biomass_species_observation_id_monitoring_plot_fkey"><a href='observation_biomass_details.html'>observation_biomass_details</a><span class='relatedKey'>.monitoring_plot_id</span></td>
                                                 <td class="constraint detail">observation_biomass_species_observation_id_monitoring_plot_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="observation_biomass_species.monitoring_plot_id references monitoring_plots.id via observation_biomass_species_monitoring_plot_id_fkey"><a href='monitoring_plots.html'>monitoring_plots</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">observation_biomass_species_monitoring_plot_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -400,22 +400,22 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/observation_biomass_details.html" target="_top" title="observation_biomass_details" alt="" coords="361,200,664,405">
-<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="28,361,295,596">
-<area shape="rect" id="node3" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="5,71,317,305">
-<area shape="rect" id="node4" href="../../tables/observation_biomass_quadrat_species.html" target="_top" title="observation_biomass_quadrat_species" alt="" coords="1173,287,1548,492">
-<area shape="rect" id="node5" href="../../tables/observation_biomass_species.html" target="_top" title="observation_biomass_species" alt="" coords="708,168,1129,472">
-<area shape="rect" id="node6" href="../../tables/recorded_trees.html" target="_top" title="recorded_trees" alt="" coords="1215,5,1507,269">
+<area shape="rect" id="node1" href="../../tables/observation_biomass_details.html" target="_top" title="observation_biomass_details" alt="" coords="361,195,664,400">
+<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="28,356,295,591">
+<area shape="rect" id="node3" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="5,65,317,300">
+<area shape="rect" id="node4" href="../../tables/observation_biomass_quadrat_species.html" target="_top" title="observation_biomass_quadrat_species" alt="" coords="1173,316,1548,521">
+<area shape="rect" id="node5" href="../../tables/observation_biomass_species.html" target="_top" title="observation_biomass_species" alt="" coords="708,163,1129,467">
+<area shape="rect" id="node6" href="../../tables/recorded_trees.html" target="_top" title="recorded_trees" alt="" coords="1215,5,1507,299">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/observation_biomass_species.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/monitoring_plot_histories.html" target="_top" title="monitoring_plot_histories" alt="" coords="836,901,1116,989">
-<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="509,528,776,763">
+<area shape="rect" id="node1" href="../../tables/monitoring_plot_histories.html" target="_top" title="monitoring_plot_histories" alt="" coords="836,900,1116,988">
+<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="509,527,776,761">
 <area shape="rect" id="node3" href="../../tables/planting_site_histories.html" target="_top" title="planting_site_histories" alt="" coords="515,1083,771,1171">
 <area shape="rect" id="node4" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="5,1019,196,1107">
-<area shape="rect" id="node5" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="240,975,465,1063">
+<area shape="rect" id="node5" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="240,973,465,1061">
 <area shape="rect" id="node6" href="../../tables/monitoring_plot_overlaps.html" target="_top" title="monitoring_plot_overlaps" alt="" coords="837,89,1115,177">
 <area shape="rect" id="node7" href="../../tables/observation_biomass_details.html" target="_top" title="observation_biomass_details" alt="" coords="1556,288,1859,493">
 <area shape="rect" id="node8" href="../../tables/biomass_forest_types.html" target="_top" title="biomass_forest_types" alt="" coords="1221,267,1467,355">
@@ -436,10 +436,9 @@
 <area shape="rect" id="node23" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="1193,1683,1495,1771">
 <area shape="rect" id="node24" href="../../tables/observed_subzone_species_totals.html" target="_top" title="observed_subzone_species_totals" alt="" coords="1177,1079,1511,1167">
 <area shape="rect" id="node25" href="../../tables/observed_zone_species_totals.html" target="_top" title="observed_zone_species_totals" alt="" coords="1190,1577,1498,1665">
-<area shape="rect" id="node26" href="../../tables/recorded_branches.html" target="_top" title="recorded_branches" alt="" coords="2787,1353,3017,1441">
-<area shape="rect" id="node27" href="../../tables/recorded_trees.html" target="_top" title="recorded_trees" alt="" coords="2409,1351,2701,1615">
-<area shape="rect" id="node29" href="../../tables/tree_growth_forms.html" target="_top" title="tree_growth_forms" alt="" coords="1999,1577,2227,1665">
-<area shape="rect" id="node28" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1603,616,1812,704">
+<area shape="rect" id="node26" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1603,616,1812,704">
+<area shape="rect" id="node27" href="../../tables/recorded_trees.html" target="_top" title="recorded_trees" alt="" coords="2409,1347,2701,1640">
+<area shape="rect" id="node28" href="../../tables/tree_growth_forms.html" target="_top" title="tree_growth_forms" alt="" coords="1999,1577,2227,1665">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/observation_biomass_species.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

@@ -1,4 +1,5 @@
 plantings
+recorded_trees
 recorded_plants
 observation_photos
 observation_biomass_quadrat_species
@@ -16,9 +17,7 @@ planting_site_populations
 planting_site_notifications
 observation_requested_subzones
 monitoring_plot_overlaps
-recorded_branches
 planting_seasons
-recorded_trees
 deliveries
 observation_biomass_species
 observation_biomass_details

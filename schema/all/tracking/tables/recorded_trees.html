@@ -124,10 +124,6 @@
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
-                                            <tr>
-                                                <td title="recorded_branches.tree_id references recorded_trees.id via recorded_branches_tree_id_fkey"><a href='recorded_branches.html'>recorded_branches</a><span class='relatedKey'>.tree_id</span></td>
-                                                <td class="constraint detail">recorded_branches_tree_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -175,11 +171,32 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="recorded_trees.[observation_id, monitoring_plot_id, biomass_species_id] references observation_biomass_species.[observation_id, monitoring_plot_id, id] via recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey"><a href='observation_biomass_species.html'>observation_biomass_species</a><span class='relatedKey'>.monitoring_plot_id</span></td>
+                                                <td class="constraint detail">recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="recorded_trees.monitoring_plot_id references monitoring_plots.id via recorded_trees_monitoring_plot_id_fkey"><a href='monitoring_plots.html'>monitoring_plots</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">recorded_trees_monitoring_plot_id_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="biomass_species_id">biomass_species_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="recorded_trees.[observation_id, monitoring_plot_id, biomass_species_id] references observation_biomass_species.[observation_id, monitoring_plot_id, id] via recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey"><a href='observation_biomass_species.html'>observation_biomass_species</a><span class='relatedKey'>.monitoring_plot_id</span></td>
+                                                <td title="recorded_trees.[observation_id, monitoring_plot_id, biomass_species_id] references observation_biomass_species.[observation_id, monitoring_plot_id, id] via recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey"><a href='observation_biomass_species.html'>observation_biomass_species</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
@@ -201,7 +218,24 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>A system-assigned incremental number starting at 1 for accounting trees at a biomass observation</p></td>
+                                    <td><p>A unique incremental number starting at 1 for accounting trunks at a biomass observation. Defaults to 1 for Trees/Shrubs.</p></td>
+                                </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="trunk_number">trunk_number</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td></td>
                                 </tr>
                                 <tr>
                                     <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="tree_growth_form_id">tree_growth_form_id</span></td>
@@ -229,23 +263,6 @@
                                     <td>bool</td>
                                     <td>1</td>
                                     <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="is_trunk">is_trunk</span></td>
-                                    <td>bool</td>
-                                    <td>1</td>
-                                    <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
                                     <td>
@@ -343,27 +360,6 @@
                                     </td>
                                     <td></td>
                                 </tr>
-                                <tr>
-                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="biomass_species_id">biomass_species_id</span></td>
-                                    <td>int8</td>
-                                    <td>19</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                            <tr>
-                                                <td title="recorded_trees.[observation_id, monitoring_plot_id, biomass_species_id] references observation_biomass_species.[observation_id, monitoring_plot_id, id] via recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey"><a href='observation_biomass_species.html'>observation_biomass_species</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -395,16 +391,10 @@
                                     <td>id</td>
                                 </tr>
                                 <tr>
-                                    <td title='Indexed'>recorded_trees_monitoring_plot_id_idx</td>
-                                    <td>Performance</td>
-                                    <td><span title='Ascending'>Asc</span></td>
-                                    <td>monitoring_plot_id</td>
-                                </tr>
-                                <tr>
-                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> recorded_trees_observation_id_tree_number_key</td>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> recorded_trees_observation_id_tree_number_trunk_number_key</td>
                                     <td>Must be unique</td>
-                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
-                                    <td>observation_id + tree_number</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>observation_id + tree_number + trunk_number</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -429,8 +419,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>recorded_trees_height_m_check</td>
-                                    <td>((height_m &gt;= (0)::numeric))</td>
+                                    <td>recorded_trees_point_of_measurement_m_check</td>
+                                    <td>((point_of_measurement_m &gt;= (0)::numeric))</td>
+                                </tr>
+                                <tr>
+                                    <td>recorded_trees_diameter_at_breast_height_cm_check</td>
+                                    <td>((diameter_at_breast_height_cm &gt;= (0)::numeric))</td>
+                                </tr>
+                                <tr>
+                                    <td>recorded_trees_shrub_diameter_cm_check</td>
+                                    <td>((shrub_diameter_cm &gt;= 0))</td>
                                 </tr>
                                 <tr>
                                     <td>recorded_trees_tree_number_check</td>
@@ -438,23 +436,15 @@
                                 </tr>
                                 <tr>
                                     <td>growth_form_specific_data</td>
-                                    <td>((((tree_growth_form_id = 1) AND (is_trunk IS NOT NULL) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (shrub_diameter_cm IS NULL)) OR ((tree_growth_form_id = 2) AND (is_trunk IS NULL) AND (diameter_at_breast_height_cm IS NULL) AND (point_of_measurement_m IS NULL) AND (height_m IS NULL) AND (shrub_diameter_cm IS NOT NULL))))</td>
+                                    <td>((((tree_growth_form_id = 1) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (height_m IS NOT NULL) AND (shrub_diameter_cm IS NULL) AND (trunk_number = 1)) OR ((tree_growth_form_id = 2) AND (diameter_at_breast_height_cm IS NULL) AND (point_of_measurement_m IS NULL) AND (height_m IS NULL) AND (shrub_diameter_cm IS NOT NULL) AND (trunk_number = 1)) OR ((tree_growth_form_id = 3) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (height_m IS NULL) AND (shrub_diameter_cm IS NULL))))</td>
                                 </tr>
                                 <tr>
-                                    <td>recorded_trees_point_of_measurement_m_check</td>
-                                    <td>((point_of_measurement_m &gt;= (0)::numeric))</td>
+                                    <td>recorded_trees_trunk_number_check</td>
+                                    <td>((trunk_number &gt;= 1))</td>
                                 </tr>
                                 <tr>
-                                    <td>recorded_trees_shrub_diameter_cm_check</td>
-                                    <td>(((shrub_diameter_cm)::numeric &gt;= (0)::numeric))</td>
-                                </tr>
-                                <tr>
-                                    <td>height_required_dbm_threshold</td>
-                                    <td>((NOT ((diameter_at_breast_height_cm &gt; (5)::numeric) AND (height_m IS NULL))))</td>
-                                </tr>
-                                <tr>
-                                    <td>recorded_trees_diameter_at_breast_height_cm_check</td>
-                                    <td>((diameter_at_breast_height_cm &gt;= (0)::numeric))</td>
+                                    <td>recorded_trees_height_m_check</td>
+                                    <td>((height_m &gt;= (0)::numeric))</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -480,45 +470,43 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/observation_biomass_species.html" target="_top" title="observation_biomass_species" alt="" coords="361,72,668,307">
-<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="28,267,295,560">
+<area shape="rect" id="node2" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="28,275,295,568">
 <area shape="rect" id="node3" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="5,5,317,240">
-<area shape="rect" id="node4" href="../../tables/recorded_branches.html" target="_top" title="recorded_branches" alt="" coords="1188,43,1480,219">
-<area shape="rect" id="node5" href="../../tables/recorded_trees.html" target="_top" title="recorded_trees" alt="" coords="712,69,1144,520">
-<area shape="rect" id="node6" href="../../tables/tree_growth_forms.html" target="_top" title="tree_growth_forms" alt="" coords="401,360,629,483">
+<area shape="rect" id="node4" href="../../tables/recorded_trees.html" target="_top" title="recorded_trees" alt="" coords="712,69,1144,520">
+<area shape="rect" id="node5" href="../../tables/tree_growth_forms.html" target="_top" title="tree_growth_forms" alt="" coords="401,360,629,483">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/recorded_trees.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="../../tables/monitoring_plot_histories.html" target="_top" title="monitoring_plot_histories" alt="" coords="1151,120,1431,208">
-<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="36,191,215,279">
-<area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="824,364,1091,657">
-<area shape="rect" id="node4" href="../../tables/planting_site_histories.html" target="_top" title="planting_site_histories" alt="" coords="524,711,780,799">
-<area shape="rect" id="node5" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="289,484,480,572">
-<area shape="rect" id="node6" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="539,191,765,279">
-<area shape="rect" id="node8" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="5,869,245,957">
-<area shape="rect" id="node7" href="../../tables/monitoring_plot_overlaps.html" target="_top" title="monitoring_plot_overlaps" alt="" coords="1151,369,1430,457">
-<area shape="rect" id="node9" href="../../tables/observation_biomass_details.html" target="_top" title="observation_biomass_details" alt="" coords="1871,469,2173,557">
-<area shape="rect" id="node10" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="1548,260,1769,348">
-<area shape="rect" id="node11" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="1135,649,1447,884">
-<area shape="rect" id="node19" href="../../tables/observation_types.html" target="_top" title="observation_types" alt="" coords="845,852,1070,940">
-<area shape="rect" id="node20" href="../../tables/observation_states.html" target="_top" title="observation_states" alt="" coords="843,711,1072,799">
-<area shape="rect" id="node12" href="../../tables/observation_biomass_quadrat_details.html" target="_top" title="observation_biomass_quadrat_details" alt="" coords="2217,689,2588,777">
-<area shape="rect" id="node13" href="../../tables/observation_biomass_quadrat_species.html" target="_top" title="observation_biomass_quadrat_species" alt="" coords="2661,499,3035,587">
-<area shape="rect" id="node14" href="../../tables/observation_biomass_species.html" target="_top" title="observation_biomass_species" alt="" coords="2249,437,2556,672">
-<area shape="rect" id="node15" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="1194,1000,1387,1088">
-<area shape="rect" id="node16" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="1905,241,2139,329">
-<area shape="rect" id="node17" href="../../tables/observation_plot_conditions.html" target="_top" title="observation_plot_conditions" alt="" coords="1509,473,1809,561">
-<area shape="rect" id="node18" href="../../tables/observation_requested_subzones.html" target="_top" title="observation_requested_subzones" alt="" coords="1491,5,1827,93">
-<area shape="rect" id="node21" href="../../tables/observed_plot_coordinates.html" target="_top" title="observed_plot_coordinates" alt="" coords="1877,347,2167,435">
-<area shape="rect" id="node22" href="../../tables/observed_plot_species_totals.html" target="_top" title="observed_plot_species_totals" alt="" coords="1507,1077,1811,1165">
-<area shape="rect" id="node23" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="1508,1219,1809,1307">
-<area shape="rect" id="node24" href="../../tables/observed_subzone_species_totals.html" target="_top" title="observed_subzone_species_totals" alt="" coords="1491,972,1826,1060">
-<area shape="rect" id="node25" href="../../tables/observed_zone_species_totals.html" target="_top" title="observed_zone_species_totals" alt="" coords="1505,867,1813,955">
-<area shape="rect" id="node26" href="../../tables/recorded_branches.html" target="_top" title="recorded_branches" alt="" coords="3108,655,3400,831">
-<area shape="rect" id="node27" href="../../tables/recorded_trees.html" target="_top" title="recorded_trees" alt="" coords="2632,681,3064,1132">
-<area shape="rect" id="node29" href="../../tables/tree_growth_forms.html" target="_top" title="tree_growth_forms" alt="" coords="2289,1432,2517,1555">
-<area shape="rect" id="node28" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1917,575,2127,663">
+<area shape="rect" id="node1" href="../../tables/monitoring_plot_histories.html" target="_top" title="monitoring_plot_histories" alt="" coords="1151,148,1431,236">
+<area shape="rect" id="node2" href="../../../public/tables/users.html" target="_top" title="public.users" alt="" coords="36,175,215,263">
+<area shape="rect" id="node3" href="../../tables/monitoring_plots.html" target="_top" title="monitoring_plots" alt="" coords="824,395,1091,688">
+<area shape="rect" id="node4" href="../../tables/planting_site_histories.html" target="_top" title="planting_site_histories" alt="" coords="524,352,780,440">
+<area shape="rect" id="node5" href="../../tables/planting_sites.html" target="_top" title="planting_sites" alt="" coords="289,420,480,508">
+<area shape="rect" id="node6" href="../../tables/planting_subzones.html" target="_top" title="planting_subzones" alt="" coords="539,175,765,263">
+<area shape="rect" id="node8" href="../../../public/tables/organizations.html" target="_top" title="public.organizations" alt="" coords="5,561,245,649">
+<area shape="rect" id="node7" href="../../tables/monitoring_plot_overlaps.html" target="_top" title="monitoring_plot_overlaps" alt="" coords="1151,397,1430,485">
+<area shape="rect" id="node9" href="../../tables/observation_biomass_details.html" target="_top" title="observation_biomass_details" alt="" coords="1871,977,2173,1065">
+<area shape="rect" id="node10" href="../../tables/observation_plots.html" target="_top" title="observation_plots" alt="" coords="1548,76,1769,164">
+<area shape="rect" id="node11" href="../../tables/observations.html" target="_top" title="observations" alt="" coords="1135,812,1447,1047">
+<area shape="rect" id="node19" href="../../tables/observation_types.html" target="_top" title="observation_types" alt="" coords="845,955,1070,1043">
+<area shape="rect" id="node20" href="../../tables/observation_states.html" target="_top" title="observation_states" alt="" coords="843,813,1072,901">
+<area shape="rect" id="node12" href="../../tables/observation_biomass_quadrat_details.html" target="_top" title="observation_biomass_quadrat_details" alt="" coords="2217,1140,2588,1228">
+<area shape="rect" id="node13" href="../../tables/observation_biomass_quadrat_species.html" target="_top" title="observation_biomass_quadrat_species" alt="" coords="2661,949,3035,1037">
+<area shape="rect" id="node14" href="../../tables/observation_biomass_species.html" target="_top" title="observation_biomass_species" alt="" coords="2249,888,2556,1123">
+<area shape="rect" id="node15" href="../../../public/tables/species.html" target="_top" title="public.species" alt="" coords="1194,503,1387,591">
+<area shape="rect" id="node16" href="../../tables/observation_photos.html" target="_top" title="observation_photos" alt="" coords="1905,5,2139,93">
+<area shape="rect" id="node17" href="../../tables/observation_plot_conditions.html" target="_top" title="observation_plot_conditions" alt="" coords="1509,747,1809,835">
+<area shape="rect" id="node18" href="../../tables/observation_requested_subzones.html" target="_top" title="observation_requested_subzones" alt="" coords="1491,325,1827,413">
+<area shape="rect" id="node21" href="../../tables/observed_plot_coordinates.html" target="_top" title="observed_plot_coordinates" alt="" coords="1877,111,2167,199">
+<area shape="rect" id="node22" href="../../tables/observed_plot_species_totals.html" target="_top" title="observed_plot_species_totals" alt="" coords="1507,536,1811,624">
+<area shape="rect" id="node23" href="../../tables/observed_site_species_totals.html" target="_top" title="observed_site_species_totals" alt="" coords="1508,888,1809,976">
+<area shape="rect" id="node24" href="../../tables/observed_subzone_species_totals.html" target="_top" title="observed_subzone_species_totals" alt="" coords="1491,431,1826,519">
+<area shape="rect" id="node25" href="../../tables/observed_zone_species_totals.html" target="_top" title="observed_zone_species_totals" alt="" coords="1505,641,1813,729">
+<area shape="rect" id="node26" href="../../tables/recorded_plants.html" target="_top" title="recorded_plants" alt="" coords="1917,216,2127,304">
+<area shape="rect" id="node27" href="../../tables/recorded_trees.html" target="_top" title="recorded_trees" alt="" coords="2632,1132,3064,1583">
+<area shape="rect" id="node28" href="../../tables/tree_growth_forms.html" target="_top" title="tree_growth_forms" alt="" coords="2289,1425,2517,1548">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/recorded_trees.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

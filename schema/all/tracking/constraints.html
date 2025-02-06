@@ -80,7 +80,7 @@
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="ion ion-key"></i>
-                            <h3 class="box-title">135 Foreign Key Constraints</h3>
+                            <h3 class="box-title">134 Foreign Key Constraints</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -518,42 +518,6 @@
                                         <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>planting_subzone_histories_planting_subzone_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/planting_subzone_histories.html'>planting_subzone_histories</a><span>.planting_subzone_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/planting_subzones.html'>planting_subzones</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>planting_subzone_histories_planting_zone_history_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/planting_subzone_histories.html'>planting_subzone_histories</a><span>.planting_zone_history_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/planting_zone_histories.html'>planting_zone_histories</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
                                         <td>plantings_planting_site_id_plot_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -710,18 +674,36 @@
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>recorded_branches_tree_id_fkey</td>
+                                        <td>planting_subzone_histories_planting_subzone_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/recorded_branches.html'>recorded_branches</a><span>.tree_id</span></td>
+                                                    <td><a href='tables/planting_subzone_histories.html'>planting_subzone_histories</a><span>.planting_subzone_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
-                                                    <td><a href='tables/recorded_trees.html'>recorded_trees</a><span>.id</span></td>
+                                                    <td><a href='tables/planting_subzones.html'>planting_subzones</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>planting_subzone_histories_planting_zone_history_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_subzone_histories.html'>planting_subzone_histories</a><span>.planting_zone_history_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_zone_histories.html'>planting_zone_histories</a><span>.id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -1118,6 +1100,42 @@
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
+                                        <td>monitoring_plot_overlaps_overlaps_plot_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/monitoring_plot_overlaps.html'>monitoring_plot_overlaps</a><span>.overlaps_plot_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/monitoring_plots.html'>monitoring_plots</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>monitoring_plot_overlaps_monitoring_plot_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/monitoring_plot_overlaps.html'>monitoring_plot_overlaps</a><span>.monitoring_plot_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/monitoring_plots.html'>monitoring_plots</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
                                         <td>observation_biomass_quadrat_species_monitoring_plot_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -1214,42 +1232,6 @@
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
                                                     <td><a href='tables/observations.html'>observations</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>monitoring_plot_overlaps_overlaps_plot_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/monitoring_plot_overlaps.html'>monitoring_plot_overlaps</a><span>.overlaps_plot_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/monitoring_plots.html'>monitoring_plots</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>monitoring_plot_overlaps_monitoring_plot_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/monitoring_plot_overlaps.html'>monitoring_plot_overlaps</a><span>.monitoring_plot_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/monitoring_plots.html'>monitoring_plots</a><span>.id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -2665,21 +2647,6 @@
                                         <td>((notes !~ similar_to_escape(&#39; *&#39;::text)))</td>
                                     </tr>
                                     <tr>
-                                        <td><a href='tables/recorded_branches.html'>recorded_branches</a></td>
-                                        <td>recorded_branches_branch_number_check</td>
-                                        <td>((branch_number &gt;= 1))</td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href='tables/recorded_branches.html'>recorded_branches</a></td>
-                                        <td>recorded_branches_diameter_at_breast_height_cm_check</td>
-                                        <td>((diameter_at_breast_height_cm &gt;= (0)::numeric))</td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href='tables/recorded_branches.html'>recorded_branches</a></td>
-                                        <td>recorded_branches_point_of_measurement_m_check</td>
-                                        <td>((point_of_measurement_m &gt;= (0)::numeric))</td>
-                                    </tr>
-                                    <tr>
                                         <td><a href='tables/observed_plot_species_totals.html'>observed_plot_species_totals</a></td>
                                         <td>species_identifier_for_certainty</td>
                                         <td>((((certainty_id = 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id = 2) AND (species_id IS NULL) AND (species_name IS NOT NULL)) OR ((certainty_id = 3) AND (species_id IS NULL) AND (species_name IS NULL))))</td>
@@ -2740,14 +2707,14 @@
                                         <td>((area_ha &gt; (0)::numeric))</td>
                                     </tr>
                                     <tr>
-                                        <td><a href='tables/observation_biomass_quadrat_species.html'>observation_biomass_quadrat_species</a></td>
-                                        <td>observation_biomass_quadrat_species_abundance_percent_check</td>
-                                        <td>(((abundance_percent &gt;= 0) AND (abundance_percent &lt;= 100)))</td>
-                                    </tr>
-                                    <tr>
                                         <td><a href='tables/monitoring_plot_overlaps.html'>monitoring_plot_overlaps</a></td>
                                         <td>newer_overlaps_older</td>
                                         <td>((overlaps_plot_id &lt; monitoring_plot_id))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/observation_biomass_quadrat_species.html'>observation_biomass_quadrat_species</a></td>
+                                        <td>observation_biomass_quadrat_species_abundance_percent_check</td>
+                                        <td>(((abundance_percent &gt;= 0) AND (abundance_percent &lt;= 100)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/planting_sites.html'>planting_sites</a></td>
@@ -2812,12 +2779,7 @@
                                     <tr>
                                         <td><a href='tables/recorded_trees.html'>recorded_trees</a></td>
                                         <td>growth_form_specific_data</td>
-                                        <td>((((tree_growth_form_id = 1) AND (is_trunk IS NOT NULL) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (shrub_diameter_cm IS NULL)) OR ((tree_growth_form_id = 2) AND (is_trunk IS NULL) AND (diameter_at_breast_height_cm IS NULL) AND (point_of_measurement_m IS NULL) AND (height_m IS NULL) AND (shrub_diameter_cm IS NOT NULL))))</td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href='tables/recorded_trees.html'>recorded_trees</a></td>
-                                        <td>height_required_dbm_threshold</td>
-                                        <td>((NOT ((diameter_at_breast_height_cm &gt; (5)::numeric) AND (height_m IS NULL))))</td>
+                                        <td>((((tree_growth_form_id = 1) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (height_m IS NOT NULL) AND (shrub_diameter_cm IS NULL) AND (trunk_number = 1)) OR ((tree_growth_form_id = 2) AND (diameter_at_breast_height_cm IS NULL) AND (point_of_measurement_m IS NULL) AND (height_m IS NULL) AND (shrub_diameter_cm IS NOT NULL) AND (trunk_number = 1)) OR ((tree_growth_form_id = 3) AND (diameter_at_breast_height_cm IS NOT NULL) AND (point_of_measurement_m IS NOT NULL) AND (height_m IS NULL) AND (shrub_diameter_cm IS NULL))))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/recorded_trees.html'>recorded_trees</a></td>
@@ -2837,12 +2799,17 @@
                                     <tr>
                                         <td><a href='tables/recorded_trees.html'>recorded_trees</a></td>
                                         <td>recorded_trees_shrub_diameter_cm_check</td>
-                                        <td>(((shrub_diameter_cm)::numeric &gt;= (0)::numeric))</td>
+                                        <td>((shrub_diameter_cm &gt;= 0))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/recorded_trees.html'>recorded_trees</a></td>
                                         <td>recorded_trees_tree_number_check</td>
                                         <td>((tree_number &gt;= 1))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/recorded_trees.html'>recorded_trees</a></td>
+                                        <td>recorded_trees_trunk_number_check</td>
+                                        <td>((trunk_number &gt;= 1))</td>
                                     </tr>
                                 </tbody>
                             </table>

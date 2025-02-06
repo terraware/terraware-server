@@ -1,3 +1,4 @@
+8f2e692ff95 SW-6538 Reworked Biomass tables and APIs (#2815)
 850f175f40d SW-6481 Implemented accelerator report config store and report fetch (#2814)
 dbe8890042b SW-6321 Require subzone IDs when scheduling observation (#2810)
 4bdae3e2e09 SW-6321 Allow unplanted subzones to be observed (#2809)
