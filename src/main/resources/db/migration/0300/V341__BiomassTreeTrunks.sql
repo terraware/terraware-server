@@ -7,13 +7,13 @@ CREATE TABLE tracking.recorded_trees (
     monitoring_plot_id BIGINT NOT NULL REFERENCES tracking.monitoring_plots ON DELETE CASCADE,
     biomass_species_id BIGINT NOT NULL REFERENCES tracking.observation_biomass_species ON DELETE CASCADE,
     tree_number INTEGER NOT NULL CHECK ( tree_number >= 1 ),
-    trunk_number INTEGER NOT NULL CHECK ( tree_number >= 1 ),
+    trunk_number INTEGER NOT NULL CHECK ( trunk_number >= 1 ),
     tree_growth_form_id INTEGER NOT NULL REFERENCES tracking.tree_growth_forms,
     is_dead BOOLEAN NOT NULL,
-    diameter_at_breast_height_cm INTEGER CHECK ( diameter_at_breast_height_cm >= 0 ),
+    diameter_at_breast_height_cm NUMERIC CHECK ( diameter_at_breast_height_cm >= 0 ),
     point_of_measurement_m NUMERIC CHECK ( point_of_measurement_m >= 0 ),
     height_m NUMERIC CHECK ( height_m >= 0 ),
-    shrub_diameter_cm NUMERIC CHECK ( shrub_diameter_cm >= 0 ),
+    shrub_diameter_cm INTEGER CHECK ( shrub_diameter_cm >= 0 ),
     description TEXT,
 
     CONSTRAINT growth_form_specific_data
@@ -22,12 +22,14 @@ CREATE TABLE tracking.recorded_trees (
              AND diameter_at_breast_height_cm IS NOT NULL
              AND point_of_measurement_m IS NOT NULL
              AND height_m IS NOT NULL
-             AND shrub_diameter_cm IS NULL) OR
+             AND shrub_diameter_cm IS NULL
+             AND trunk_number = 1) OR
         (tree_growth_form_id = 2
              AND diameter_at_breast_height_cm IS NULL
              AND point_of_measurement_m IS NULL
              AND height_m IS NULL
-             AND shrub_diameter_cm IS NOT NULL) OR
+             AND shrub_diameter_cm IS NOT NULL
+             AND trunk_number = 1) OR
         (tree_growth_form_id = 3
              AND diameter_at_breast_height_cm IS NOT NULL
              AND point_of_measurement_m IS NOT NULL

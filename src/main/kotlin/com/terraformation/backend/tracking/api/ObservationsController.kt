@@ -53,12 +53,10 @@ import com.terraformation.backend.tracking.model.BiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
-import com.terraformation.backend.tracking.model.ExistingRecordedBranchModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
-import com.terraformation.backend.tracking.model.NewRecordedBranchModel
 import com.terraformation.backend.tracking.model.NewRecordedTreeModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
@@ -754,7 +752,7 @@ data class BiomassMeasurementPayload(
         plotId = null,
         tide = tide,
         tideTime = tideTime,
-        trees = trees.mapIndexed { index, tree -> tree.toModel(index + 1) },
+        trees = trees.map { it.toModel() },
         waterDepthCm = waterDepth,
     )
   }
@@ -805,34 +803,6 @@ data class BiomassQuadratSpeciesPayload(
   }
 }
 
-data class RecordedBranchPayload(
-    val description: String?,
-    @Schema(description = "Measured in centimeters.", minimum = "0")
-    val diameterAtBreastHeight: BigDecimal,
-    val isDead: Boolean,
-    @Schema(description = "Measured in meters.", minimum = "0") val pointOfMeasurement: BigDecimal,
-) {
-  constructor(
-      model: ExistingRecordedBranchModel
-  ) : this(
-      description = model.description,
-      diameterAtBreastHeight = model.diameterAtBreastHeightCm,
-      isDead = model.isDead,
-      pointOfMeasurement = model.pointOfMeasurementM,
-  )
-
-  fun toModel(branchNumber: Int): NewRecordedBranchModel {
-    return NewRecordedBranchModel(
-        id = null,
-        branchNumber = branchNumber,
-        description = description,
-        diameterAtBreastHeightCm = diameterAtBreastHeight,
-        isDead = isDead,
-        pointOfMeasurementM = pointOfMeasurement,
-    )
-  }
-}
-
 data class RecordedPlantPayload(
     val certainty: RecordedSpeciesCertainty,
     @Schema(description = "GPS coordinates where plant was observed.") //
@@ -859,56 +829,56 @@ data class RecordedPlantPayload(
 }
 
 data class RecordedTreePayload(
-    val branches: List<RecordedBranchPayload>,
     val description: String?,
-    @Schema(description = "Measured in centimeters, required if growth form is Tree.")
+    @Schema(description = "Measured in centimeters, required if growth form is Tree or Trunk.")
     val diameterAtBreastHeight: BigDecimal?,
-    @Schema(description = "Measured in meters, required if diameter at breast height is above 5cm.")
+    @Schema(description = "Measured in meters, required if growth form is Tree.")
     val height: BigDecimal?,
     val isDead: Boolean,
-    @Schema(description = "Required if growth form is Tree.") //
-    val isTrunk: Boolean?,
-    @Schema(description = "Measured in meters, required if growth form is Tree.")
+    @Schema(description = "Measured in meters, required if growth form is Tree or Trunk.")
     val pointOfMeasurement: BigDecimal?,
     @Schema(description = "Measured in centimeters, required if growth form is Shrub.")
     val shrubDiameter: Int?,
     val speciesId: SpeciesId?,
     val speciesName: String?,
     val treeGrowthForm: TreeGrowthForm,
+    @Schema(description = "Tree identifier number. Must be unique if growth form is not Trunk.")
+    val treeNumber: Int,
+    @Schema(
+        description =
+            "Trunk identifier number. Must be unique. Must be 1 if growth form " + "is not Trunk.")
+    val trunkNumber: Int
 ) {
   constructor(
       model: ExistingRecordedTreeModel
   ) : this(
-      branches = model.branches.map { RecordedBranchPayload(it) },
       description = model.description,
       diameterAtBreastHeight = model.diameterAtBreastHeightCm,
       height = model.heightM,
       isDead = model.isDead,
-      isTrunk = model.isTrunk,
       pointOfMeasurement = model.pointOfMeasurementM,
       shrubDiameter = model.shrubDiameterCm,
       speciesId = model.speciesId,
       speciesName = model.speciesName,
       treeGrowthForm = model.treeGrowthForm,
+      treeNumber = model.treeNumber,
+      trunkNumber = model.trunkNumber,
   )
 
-  fun toModel(
-      treeNumber: Int,
-  ): NewRecordedTreeModel {
+  fun toModel(): NewRecordedTreeModel {
     return NewRecordedTreeModel(
         id = null,
-        branches = branches.mapIndexed { index, branch -> branch.toModel(index + 1) },
         description = description,
         diameterAtBreastHeightCm = diameterAtBreastHeight,
         heightM = height,
         isDead = isDead,
-        isTrunk = isTrunk,
         pointOfMeasurementM = pointOfMeasurement,
         shrubDiameterCm = shrubDiameter,
         speciesId = speciesId,
         speciesName = speciesName,
         treeGrowthForm = treeGrowthForm,
         treeNumber = treeNumber,
+        trunkNumber = trunkNumber,
     )
   }
 }

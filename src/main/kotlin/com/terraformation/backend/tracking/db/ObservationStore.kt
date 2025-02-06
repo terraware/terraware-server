@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesIdConverter
 import com.terraformation.backend.db.default_schema.tables.references.USERS
+import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
@@ -22,6 +23,7 @@ import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertaintyConverter
+import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationRequestedSubzonesDao
@@ -32,16 +34,15 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
-import com.terraformation.backend.db.tracking.tables.records.RecordedBranchesRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBZONES
@@ -58,7 +59,6 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
-import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
@@ -923,24 +923,26 @@ class ObservationStore(
     model.validate()
 
     dslContext.transaction { _ ->
-      with(OBSERVATION_BIOMASS_DETAILS) {
-        dslContext
-            .insertInto(this)
-            .set(OBSERVATION_ID, observationId)
-            .set(MONITORING_PLOT_ID, plotId)
-            .set(DESCRIPTION, model.description)
-            .set(FOREST_TYPE_ID, model.forestType)
-            .set(SMALL_TREES_COUNT_LOW, model.smallTreeCountRange.first)
-            .set(SMALL_TREES_COUNT_HIGH, model.smallTreeCountRange.second)
-            .set(HERBACEOUS_COVER_PERCENT, model.herbaceousCoverPercent)
-            .set(SOIL_ASSESSMENT, model.soilAssessment)
-            .set(WATER_DEPTH_CM, model.waterDepthCm)
-            .set(SALINITY_PPT, model.salinityPpt)
-            .set(PH, model.ph)
-            .set(TIDE_ID, model.tide)
-            .set(TIDE_TIME, model.tideTime)
-            .execute()
-      }
+      val observationBiomassDetailsRecord =
+          ObservationBiomassDetailsRecord(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              description = model.description,
+              forestTypeId = model.forestType,
+              smallTreesCountLow = model.smallTreeCountRange.first,
+              smallTreesCountHigh = model.smallTreeCountRange.second,
+              herbaceousCoverPercent = model.herbaceousCoverPercent,
+              soilAssessment = model.soilAssessment,
+              waterDepthCm =
+                  if (model.forestType == BiomassForestType.Mangrove) model.waterDepthCm else null,
+              salinityPpt =
+                  if (model.forestType == BiomassForestType.Mangrove) model.salinityPpt else null,
+              ph = if (model.forestType == BiomassForestType.Mangrove) model.ph else null,
+              tideId = if (model.forestType == BiomassForestType.Mangrove) model.tide else null,
+              tideTime =
+                  if (model.forestType == BiomassForestType.Mangrove) model.tideTime else null,
+          )
+      dslContext.batchInsert(observationBiomassDetailsRecord).execute()
 
       val biomassSpeciesRecords =
           model.species.map {
@@ -1008,42 +1010,26 @@ class ObservationStore(
                         ?: throw IllegalArgumentException(
                             "Biomass species ${it.speciesName ?: "#${it.speciesId}"} not found."),
                 treeNumber = it.treeNumber,
+                trunkNumber = it.trunkNumber,
                 treeGrowthFormId = it.treeGrowthForm,
                 isDead = it.isDead,
-                isTrunk = it.isTrunk,
-                diameterAtBreastHeightCm = it.diameterAtBreastHeightCm,
-                pointOfMeasurementM = it.pointOfMeasurementM,
-                heightM = it.heightM,
-                shrubDiameterCm = it.shrubDiameterCm,
+                diameterAtBreastHeightCm =
+                    if (it.treeGrowthForm == TreeGrowthForm.Tree ||
+                        it.treeGrowthForm == TreeGrowthForm.Trunk)
+                        it.diameterAtBreastHeightCm
+                    else null,
+                pointOfMeasurementM =
+                    if (it.treeGrowthForm == TreeGrowthForm.Tree ||
+                        it.treeGrowthForm == TreeGrowthForm.Trunk)
+                        it.pointOfMeasurementM
+                    else null,
+                heightM = if (it.treeGrowthForm == TreeGrowthForm.Tree) it.heightM else null,
+                shrubDiameterCm =
+                    if (it.treeGrowthForm == TreeGrowthForm.Shrub) it.shrubDiameterCm else null,
                 description = it.description,
             )
           }
       dslContext.batchInsert(recordedTreesRecords).execute()
-
-      val treeIdsByTreeNumber =
-          with(RECORDED_TREES) {
-            dslContext
-                .select(ID.asNonNullable(), TREE_NUMBER.asNonNullable())
-                .from(this)
-                .where(OBSERVATION_ID.eq(observationId))
-                .fetch()
-                .associate { it[TREE_NUMBER.asNonNullable()] to it[ID.asNonNullable()] }
-          }
-
-      val recordedBranchesRecords =
-          model.trees.flatMap { tree ->
-            tree.branches.map {
-              RecordedBranchesRecord(
-                  treeId = treeIdsByTreeNumber[tree.treeNumber],
-                  branchNumber = it.branchNumber,
-                  diameterAtBreastHeightCm = it.diameterAtBreastHeightCm,
-                  pointOfMeasurementM = it.pointOfMeasurementM,
-                  isDead = it.isDead,
-                  description = it.description,
-              )
-            }
-          }
-      dslContext.batchInsert(recordedBranchesRecords).execute()
     }
   }
 
