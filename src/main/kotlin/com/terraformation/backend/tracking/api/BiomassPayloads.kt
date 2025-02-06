@@ -92,24 +92,19 @@ data class BiomassSpeciesPayload(
 
 data class ExistingTreePayload(
     val description: String?,
-    @Schema(description = "Measured in centimeters, required if growth form is Tree or Trunk.")
+    @Schema(description = "Measured in centimeters.") //
     val diameterAtBreastHeight: BigDecimal?,
-    @Schema(description = "Measured in meters, required if growth form is Tree.")
+    @Schema(description = "Measured in meters.") //
     val height: BigDecimal?,
     val isDead: Boolean,
-    @Schema(description = "Measured in meters, required if growth form is Tree or Trunk.")
+    @Schema(description = "Measured in meters.") //
     val pointOfMeasurement: BigDecimal?,
-    @Schema(description = "Measured in centimeters, required if growth form is Shrub.")
     val shrubDiameter: Int?,
     val speciesId: SpeciesId?,
     val speciesName: String?,
     val treeGrowthForm: TreeGrowthForm,
-    @Schema(description = "Tree identifier number. Must be unique if growth form is not Trunk.")
     val treeNumber: Int,
-    @Schema(
-        description =
-            "Trunk identifier number. Must be unique. Must be 1 if growth form " + "is not Trunk.")
-    val trunkNumber: Int
+    val trunkNumber: Int,
 ) {
   constructor(
       model: ExistingRecordedTreeModel
