@@ -233,15 +233,19 @@ data class ExistingBiomassMeasurementPayload(
     val herbaceousCoverPercent: Int,
     val ph: BigDecimal?,
     val quadrats: List<BiomassQuadratPayload>,
-    @Schema(description = "Measured in ppt") val salinity: BigDecimal?,
+    @Schema(description = "Measured in ppt") //
+    val salinity: BigDecimal?,
     val smallTreeCountLow: Int,
     val smallTreeCountHigh: Int,
     val soilAssessment: String,
-    @Schema(description = "Low or high tide.") val tide: MangroveTide?,
-    @Schema(description = "Time when ide is observed.") val tideTime: Instant?,
+    @Schema(description = "Low or high tide.") //
+    val tide: MangroveTide?,
+    @Schema(description = "Time when ide is observed.") //
+    val tideTime: Instant?,
     val trees: List<ExistingTreePayload>,
     val species: List<BiomassSpeciesPayload>,
-    @Schema(description = "Measured in centimeters.") val waterDepth: Int?,
+    @Schema(description = "Measured in centimeters.") //
+    val waterDepth: Int?,
 ) {
   constructor(
       model: ExistingBiomassDetailsModel
