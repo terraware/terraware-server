@@ -1,5 +1,7 @@
 package com.terraformation.backend.tracking.api
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.BiomassForestType
@@ -13,6 +15,7 @@ import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewRecordedTreeModel
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.Instant
@@ -123,6 +126,25 @@ data class ExistingTreePayload(
   )
 }
 
+@JsonSubTypes(
+    JsonSubTypes.Type(name = "shrub", value = NewShrubPayload::class),
+    JsonSubTypes.Type(name = "singleTrunk", value = NewSingleTrunkTreePayload::class),
+    JsonSubTypes.Type(name = "multiTrunks", value = NewMultiTrunksTreePayload::class),
+)
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "growthForm")
+@Schema(
+    oneOf =
+        [
+            NewShrubPayload::class,
+            NewSingleTrunkTreePayload::class,
+            NewMultiTrunksTreePayload::class],
+    discriminatorMapping =
+        [
+            DiscriminatorMapping(value = "shrub", schema = NewShrubPayload::class),
+            DiscriminatorMapping(value = "singleTrunk", schema = NewSingleTrunkTreePayload::class),
+            DiscriminatorMapping(value = "multiTrunks", schema = NewMultiTrunksTreePayload::class),
+        ])
 interface NewTreePayload {
   val description: String?
   val isDead: Boolean?
