@@ -525,7 +525,8 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO tracking.tree_growth_forms (id, name)
 VALUES (1, 'Tree'),
-       (2, 'Shrub')
+       (2, 'Shrub'),
+       (3, 'Trunk')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO upload_problem_types (id, name)

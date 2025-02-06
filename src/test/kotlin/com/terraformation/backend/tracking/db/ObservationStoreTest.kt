@@ -51,7 +51,6 @@ import com.terraformation.backend.db.tracking.tables.records.ObservedZoneSpecies
 import com.terraformation.backend.db.tracking.tables.records.PlantingSitePopulationsRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingSubzonePopulationsRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingZonePopulationsRecord
-import com.terraformation.backend.db.tracking.tables.records.RecordedBranchesRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedPlantsRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedTreesRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
@@ -74,7 +73,6 @@ import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
-import com.terraformation.backend.tracking.model.NewRecordedBranchModel
 import com.terraformation.backend.tracking.model.NewRecordedTreeModel
 import com.terraformation.backend.tracking.model.ObservationPlotCounts
 import com.terraformation.backend.tracking.model.ObservationPlotModel
@@ -3155,7 +3153,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `inserts biomass detail, quadrant species and details, trees and branches`() {
+    fun `inserts required biomass detail, quadrant species and details, trees and branches`() {
       val herbaceousSpeciesId1 = insertSpecies()
       val herbaceousSpeciesId2 = insertSpecies()
 
@@ -3255,50 +3253,46 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                       NewRecordedTreeModel(
                           id = null,
                           isDead = false,
+                          diameterAtBreastHeightCm = BigDecimal.TWO, // this value is ignored
+                          pointOfMeasurementM = BigDecimal.valueOf(1.3), // ignored
                           shrubDiameterCm = 25,
                           speciesId = treeSpeciesId1,
                           treeGrowthForm = TreeGrowthForm.Shrub,
                           treeNumber = 1,
+                          trunkNumber = 1,
+                      ),
+                      NewRecordedTreeModel(
+                          id = null,
+                          isDead = true,
+                          diameterAtBreastHeightCm = BigDecimal.TWO,
+                          pointOfMeasurementM = BigDecimal.valueOf(1.3),
+                          heightM = BigDecimal.TEN,
+                          shrubDiameterCm = 1, // ignored
+                          speciesName = "Other tree species",
+                          treeGrowthForm = TreeGrowthForm.Tree,
+                          treeNumber = 2,
+                          trunkNumber = 1,
+                      ),
+                      NewRecordedTreeModel(
+                          id = null,
+                          isDead = false,
+                          diameterAtBreastHeightCm = BigDecimal.TEN,
+                          pointOfMeasurementM = BigDecimal.valueOf(1.5),
+                          heightM = BigDecimal.TEN, // ignored
+                          speciesId = treeSpeciesId2,
+                          treeGrowthForm = TreeGrowthForm.Trunk,
+                          treeNumber = 3,
+                          trunkNumber = 1,
                       ),
                       NewRecordedTreeModel(
                           id = null,
                           diameterAtBreastHeightCm = BigDecimal.TWO,
-                          pointOfMeasurementM = BigDecimal.valueOf(1.3),
-                          isDead = true,
-                          isTrunk = false,
-                          speciesName = "Other tree species",
-                          treeGrowthForm = TreeGrowthForm.Tree,
-                          treeNumber = 2,
-                      ),
-                      NewRecordedTreeModel(
-                          id = null,
-                          branches =
-                              listOf(
-                                  NewRecordedBranchModel(
-                                      id = null,
-                                      branchNumber = 1,
-                                      description = "branch 1 description",
-                                      diameterAtBreastHeightCm = BigDecimal.valueOf(4),
-                                      isDead = false,
-                                      pointOfMeasurementM = BigDecimal.valueOf(1.3),
-                                  ),
-                                  NewRecordedBranchModel(
-                                      id = null,
-                                      branchNumber = 2,
-                                      description = "branch 2 description",
-                                      diameterAtBreastHeightCm = BigDecimal.valueOf(2),
-                                      isDead = true,
-                                      pointOfMeasurementM = BigDecimal.valueOf(1.4),
-                                  ),
-                              ),
-                          diameterAtBreastHeightCm = BigDecimal.TEN,
-                          pointOfMeasurementM = BigDecimal.valueOf(1.5),
-                          heightM = BigDecimal.TEN,
+                          pointOfMeasurementM = BigDecimal.valueOf(1.1),
                           isDead = false,
-                          isTrunk = true,
                           speciesId = treeSpeciesId2,
-                          treeGrowthForm = TreeGrowthForm.Tree,
+                          treeGrowthForm = TreeGrowthForm.Trunk,
                           treeNumber = 3,
+                          trunkNumber = 2,
                       )),
               waterDepthCm = 2,
           )
@@ -3455,13 +3449,9 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           ),
           "Biomass quadrat species table")
 
-      val treeIdsByNumber = recordedTreesDao.findAll().associate { it.treeNumber to it.id }
-      val branchIdsByNumber = recordedBranchesDao.findAll().associate { it.branchNumber to it.id }
-
       assertTableEquals(
           listOf(
               RecordedTreesRecord(
-                  id = treeIdsByNumber[1],
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   biomassSpeciesId = biomassTreeSpeciesId1,
@@ -3469,57 +3459,44 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
                   shrubDiameterCm = 25,
                   treeGrowthFormId = TreeGrowthForm.Shrub,
                   treeNumber = 1,
+                  trunkNumber = 1,
               ),
               RecordedTreesRecord(
-                  id = treeIdsByNumber[2],
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   biomassSpeciesId = biomassTreeSpeciesId3,
                   diameterAtBreastHeightCm = BigDecimal.TWO,
+                  heightM = BigDecimal.TEN,
                   pointOfMeasurementM = BigDecimal.valueOf(1.3),
                   isDead = true,
-                  isTrunk = false,
                   treeGrowthFormId = TreeGrowthForm.Tree,
                   treeNumber = 2,
+                  trunkNumber = 1,
               ),
               RecordedTreesRecord(
-                  id = treeIdsByNumber[3],
                   observationId = observationId,
                   monitoringPlotId = plotId,
                   biomassSpeciesId = biomassTreeSpeciesId2,
                   diameterAtBreastHeightCm = BigDecimal.TEN,
                   pointOfMeasurementM = BigDecimal.valueOf(1.5),
-                  heightM = BigDecimal.TEN,
                   isDead = false,
-                  isTrunk = true,
-                  treeGrowthFormId = TreeGrowthForm.Tree,
+                  treeGrowthFormId = TreeGrowthForm.Trunk,
                   treeNumber = 3,
+                  trunkNumber = 1,
+              ),
+              RecordedTreesRecord(
+                  observationId = observationId,
+                  monitoringPlotId = plotId,
+                  biomassSpeciesId = biomassTreeSpeciesId2,
+                  diameterAtBreastHeightCm = BigDecimal.TWO,
+                  pointOfMeasurementM = BigDecimal.valueOf(1.1),
+                  isDead = false,
+                  treeGrowthFormId = TreeGrowthForm.Trunk,
+                  treeNumber = 3,
+                  trunkNumber = 2,
               ),
           ),
           "Recorded trees table")
-
-      assertTableEquals(
-          listOf(
-              RecordedBranchesRecord(
-                  id = branchIdsByNumber[1],
-                  treeId = treeIdsByNumber[3],
-                  branchNumber = 1,
-                  description = "branch 1 description",
-                  diameterAtBreastHeightCm = BigDecimal.valueOf(4),
-                  isDead = false,
-                  pointOfMeasurementM = BigDecimal.valueOf(1.3),
-              ),
-              RecordedBranchesRecord(
-                  id = branchIdsByNumber[2],
-                  treeId = treeIdsByNumber[3],
-                  branchNumber = 2,
-                  description = "branch 2 description",
-                  diameterAtBreastHeightCm = BigDecimal.valueOf(2),
-                  isDead = true,
-                  pointOfMeasurementM = BigDecimal.valueOf(1.4),
-              ),
-          ),
-          "Recorded branches table")
     }
 
     @Test

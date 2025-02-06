@@ -21,8 +21,6 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.db.tracking.BiomassForestType
-import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
@@ -37,7 +35,6 @@ import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
-import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
@@ -47,19 +44,10 @@ import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
-import com.terraformation.backend.tracking.model.BiomassQuadratModel
-import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
-import com.terraformation.backend.tracking.model.BiomassSpeciesModel
-import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
-import com.terraformation.backend.tracking.model.ExistingRecordedBranchModel
-import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
-import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
-import com.terraformation.backend.tracking.model.NewRecordedBranchModel
-import com.terraformation.backend.tracking.model.NewRecordedTreeModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
 import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsModel
@@ -664,175 +652,6 @@ data class AssignedPlotPayload(
   )
 }
 
-data class BiomassSpeciesPayload(
-    val commonName: String?,
-    val isInvasive: Boolean,
-    val isThreatened: Boolean,
-    val scientificName: String?,
-    val speciesId: SpeciesId?,
-) {
-  constructor(
-      model: BiomassSpeciesModel
-  ) : this(
-      isInvasive = model.isInvasive,
-      isThreatened = model.isThreatened,
-      speciesId = model.speciesId,
-      scientificName = model.scientificName,
-      commonName = model.commonName,
-  )
-
-  fun toModel(): BiomassSpeciesModel {
-    return BiomassSpeciesModel(
-        commonName = commonName,
-        isInvasive = isInvasive,
-        isThreatened = isThreatened,
-        scientificName = scientificName,
-        speciesId = speciesId,
-    )
-  }
-}
-
-data class BiomassMeasurementPayload(
-    val description: String?,
-    val forestType: BiomassForestType,
-    @Schema(minimum = "0", maximum = "100") //
-    val herbaceousCoverPercent: Int,
-    @Schema(description = "Required for Mangrove forest.", minimum = "0", maximum = "14")
-    val ph: BigDecimal?,
-    val quadrats: List<BiomassQuadratPayload>,
-    @Schema(description = "Measured in ppt Required for Mangrove forest.", minimum = "0")
-    val salinity: BigDecimal?,
-    @Schema(minimum = "0") val smallTreeCountLow: Int,
-    @Schema(minimum = "smallTreeCountHigh") val smallTreeCountHigh: Int,
-    val soilAssessment: String,
-    @Schema(description = "Low or high tide. Required for Mangrove forest.")
-    val tide: MangroveTide?,
-    @Schema(description = "Time when ide is observed. Required for Mangrove forest.")
-    val tideTime: Instant?,
-    val trees: List<RecordedTreePayload>,
-    @Schema(
-        description =
-            "List of herbaceous and tree species. Includes all recorded quadrat and additional " +
-                "herbaceous species and recorded tree species. Species not assigned to a quadrat or " +
-                "recorded trees will be saved as an additional herbaceous species.")
-    val species: List<BiomassSpeciesPayload>,
-    @Schema(description = "Measured in centimeters. Required for Mangrove forest.")
-    val waterDepth: Int?,
-) {
-  constructor(
-      model: ExistingBiomassDetailsModel
-  ) : this(
-      description = model.description,
-      forestType = model.forestType,
-      herbaceousCoverPercent = model.herbaceousCoverPercent,
-      ph = model.ph,
-      quadrats =
-          model.quadrats.map { (position, quadrat) -> BiomassQuadratPayload(quadrat, position) },
-      salinity = model.salinityPpt,
-      smallTreeCountLow = model.smallTreeCountRange.first,
-      smallTreeCountHigh = model.smallTreeCountRange.second,
-      soilAssessment = model.soilAssessment,
-      species = model.species.map { BiomassSpeciesPayload(it) },
-      tide = model.tide,
-      tideTime = model.tideTime,
-      trees = model.trees.map { RecordedTreePayload(it) },
-      waterDepth = model.waterDepthCm,
-  )
-
-  fun toModel(): NewBiomassDetailsModel {
-    return NewBiomassDetailsModel(
-        description = description,
-        forestType = forestType,
-        herbaceousCoverPercent = herbaceousCoverPercent,
-        observationId = null,
-        ph = ph,
-        quadrats = quadrats.associateBy { it.position }.mapValues { it.value.toModel() },
-        salinityPpt = salinity,
-        smallTreeCountRange = smallTreeCountLow to smallTreeCountHigh,
-        soilAssessment = soilAssessment,
-        species = species.map { it.toModel() }.toSet(),
-        plotId = null,
-        tide = tide,
-        tideTime = tideTime,
-        trees = trees.mapIndexed { index, tree -> tree.toModel(index + 1) },
-        waterDepthCm = waterDepth,
-    )
-  }
-}
-
-data class BiomassQuadratPayload(
-    val description: String?,
-    val position: ObservationPlotPosition,
-    val species: List<BiomassQuadratSpeciesPayload>,
-) {
-  constructor(
-      model: BiomassQuadratModel,
-      position: ObservationPlotPosition
-  ) : this(
-      description = model.description,
-      position = position,
-      species = model.species.map { BiomassQuadratSpeciesPayload(it) },
-  )
-
-  fun toModel(): BiomassQuadratModel {
-    return BiomassQuadratModel(
-        description = description,
-        species = species.map { it.toModel() }.toSet(),
-    )
-  }
-}
-
-data class BiomassQuadratSpeciesPayload(
-    @Schema(minimum = "0", maximum = "100") //
-    val abundancePercent: Int,
-    val speciesId: SpeciesId?,
-    val speciesName: String?,
-) {
-  constructor(
-      model: BiomassQuadratSpeciesModel,
-  ) : this(
-      abundancePercent = model.abundancePercent,
-      speciesId = model.speciesId,
-      speciesName = model.speciesName,
-  )
-
-  fun toModel(): BiomassQuadratSpeciesModel {
-    return BiomassQuadratSpeciesModel(
-        abundancePercent = abundancePercent,
-        speciesId = speciesId,
-        speciesName = speciesName,
-    )
-  }
-}
-
-data class RecordedBranchPayload(
-    val description: String?,
-    @Schema(description = "Measured in centimeters.", minimum = "0")
-    val diameterAtBreastHeight: BigDecimal,
-    val isDead: Boolean,
-    @Schema(description = "Measured in meters.", minimum = "0") val pointOfMeasurement: BigDecimal,
-) {
-  constructor(
-      model: ExistingRecordedBranchModel
-  ) : this(
-      description = model.description,
-      diameterAtBreastHeight = model.diameterAtBreastHeightCm,
-      isDead = model.isDead,
-      pointOfMeasurement = model.pointOfMeasurementM,
-  )
-
-  fun toModel(branchNumber: Int): NewRecordedBranchModel {
-    return NewRecordedBranchModel(
-        id = null,
-        branchNumber = branchNumber,
-        description = description,
-        diameterAtBreastHeightCm = diameterAtBreastHeight,
-        isDead = isDead,
-        pointOfMeasurementM = pointOfMeasurement,
-    )
-  }
-}
-
 data class RecordedPlantPayload(
     val certainty: RecordedSpeciesCertainty,
     @Schema(description = "GPS coordinates where plant was observed.") //
@@ -854,61 +673,6 @@ data class RecordedPlantPayload(
         speciesId = if (certainty == RecordedSpeciesCertainty.Known) speciesId else null,
         speciesName = if (certainty == RecordedSpeciesCertainty.Other) speciesName else null,
         statusId = status,
-    )
-  }
-}
-
-data class RecordedTreePayload(
-    val branches: List<RecordedBranchPayload>,
-    val description: String?,
-    @Schema(description = "Measured in centimeters, required if growth form is Tree.")
-    val diameterAtBreastHeight: BigDecimal?,
-    @Schema(description = "Measured in meters, required if diameter at breast height is above 5cm.")
-    val height: BigDecimal?,
-    val isDead: Boolean,
-    @Schema(description = "Required if growth form is Tree.") //
-    val isTrunk: Boolean?,
-    @Schema(description = "Measured in meters, required if growth form is Tree.")
-    val pointOfMeasurement: BigDecimal?,
-    @Schema(description = "Measured in centimeters, required if growth form is Shrub.")
-    val shrubDiameter: Int?,
-    val speciesId: SpeciesId?,
-    val speciesName: String?,
-    val treeGrowthForm: TreeGrowthForm,
-) {
-  constructor(
-      model: ExistingRecordedTreeModel
-  ) : this(
-      branches = model.branches.map { RecordedBranchPayload(it) },
-      description = model.description,
-      diameterAtBreastHeight = model.diameterAtBreastHeightCm,
-      height = model.heightM,
-      isDead = model.isDead,
-      isTrunk = model.isTrunk,
-      pointOfMeasurement = model.pointOfMeasurementM,
-      shrubDiameter = model.shrubDiameterCm,
-      speciesId = model.speciesId,
-      speciesName = model.speciesName,
-      treeGrowthForm = model.treeGrowthForm,
-  )
-
-  fun toModel(
-      treeNumber: Int,
-  ): NewRecordedTreeModel {
-    return NewRecordedTreeModel(
-        id = null,
-        branches = branches.mapIndexed { index, branch -> branch.toModel(index + 1) },
-        description = description,
-        diameterAtBreastHeightCm = diameterAtBreastHeight,
-        heightM = height,
-        isDead = isDead,
-        isTrunk = isTrunk,
-        pointOfMeasurementM = pointOfMeasurement,
-        shrubDiameterCm = shrubDiameter,
-        speciesId = speciesId,
-        speciesName = speciesName,
-        treeGrowthForm = treeGrowthForm,
-        treeNumber = treeNumber,
     )
   }
 }
@@ -1176,7 +940,7 @@ data class ObservationPlantingZoneResultsPayload(
 
 data class ObservationResultsPayload(
     val adHocPlot: ObservationMonitoringPlotResultsPayload?,
-    val biomassMeasurements: BiomassMeasurementPayload?,
+    val biomassMeasurements: ExistingBiomassMeasurementPayload?,
     val completedTime: Instant?,
     @Schema(
         description =
@@ -1210,7 +974,7 @@ data class ObservationResultsPayload(
       model: ObservationResultsModel
   ) : this(
       adHocPlot = model.adHocPlot?.let { ObservationMonitoringPlotResultsPayload(it) },
-      biomassMeasurements = model.biomassDetails?.let { BiomassMeasurementPayload(it) },
+      biomassMeasurements = model.biomassDetails?.let { ExistingBiomassMeasurementPayload(it) },
       completedTime = model.completedTime,
       estimatedPlants = model.estimatedPlants,
       isAdHoc = model.isAdHoc,
@@ -1359,7 +1123,7 @@ data class PlantingSiteObservationSummaryPayload(
 
 data class CompleteAdHocObservationRequestPayload(
     @Schema(description = "Biomass Measurements. Required for biomass measurement observations")
-    val biomassMeasurements: BiomassMeasurementPayload?,
+    val biomassMeasurements: NewBiomassMeasurementPayload?,
     val conditions: Set<ObservableCondition>,
     val notes: String?,
     @Schema(description = "Date and time the observation was performed in the field.")

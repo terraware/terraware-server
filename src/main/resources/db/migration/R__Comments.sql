@@ -510,17 +510,13 @@ COMMENT ON COLUMN tracking.plantings.species_id IS 'Which species was planted.';
 
 COMMENT ON TABLE tracking.recorded_plant_statuses IS '(Enum) Possible statuses of a plant recorded during observation of a monitoring plot.';
 
-COMMENT ON TABLE tracking.recorded_branches IS 'Recorded branches of a tree in a biomass observation.';
-COMMENT ON COLUMN tracking.recorded_branches.tree_id IS 'Foreign key ID of the tree the branch belongs to. The tree must have growth form "Tree".';
-
-COMMENT ON COLUMN tracking.recorded_branches.branch_number IS 'A system-assigned incremental number starting at 1 for accounting branches.';
-
 COMMENT ON TABLE tracking.recorded_plants IS 'Information about individual plants observed in monitoring plots.';
 COMMENT ON COLUMN tracking.recorded_plants.species_id IS 'If certainty is "Known," the ID of the plant''s species. Null for other certainty values.';
 COMMENT ON COLUMN tracking.recorded_plants.species_name IS 'If certainty is "Other," the user-supplied name of the plant''s species. Null for other certainty values.';
 
 COMMENT ON TABLE tracking.recorded_trees IS 'Recorded trees or shrubs of a biomass observation.';
-COMMENT ON COLUMN tracking.recorded_trees.tree_number IS 'A system-assigned incremental number starting at 1 for accounting trees at a biomass observation';
+COMMENT ON COLUMN tracking.recorded_trees.tree_number IS 'A unique incremental number per observation starting at 1 for accounting trees at a biomass observation.';
+COMMENT ON COLUMN tracking.recorded_trees.tree_number IS 'A unique incremental number starting at 1 for accounting trunks at a biomass observation. Defaults to 1 for Trees/Shrubs.';
 
 COMMENT ON TABLE tracking.recorded_species_certainties IS '(Enum) Levels of certainty about the identity of a species recorded in a monitoring plot observation.';
 

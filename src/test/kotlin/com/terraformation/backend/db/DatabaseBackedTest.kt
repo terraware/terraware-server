@@ -313,7 +313,6 @@ import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.PlantingZoneHistoryId
 import com.terraformation.backend.db.tracking.PlantingZoneId
-import com.terraformation.backend.db.tracking.RecordedBranchId
 import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
@@ -346,7 +345,6 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingZoneHistoriesD
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonePopulationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
-import com.terraformation.backend.db.tracking.tables.daos.RecordedBranchesDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedTreesDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
@@ -375,7 +373,6 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingZoneHistories
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
-import com.terraformation.backend.db.tracking.tables.pojos.RecordedBranchesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
@@ -587,7 +584,6 @@ abstract class DatabaseBackedTest {
   protected val projectsDao: ProjectsDao by lazyDao()
   protected val projectVoteDecisionDao: ProjectVoteDecisionsDao by lazyDao()
   protected val projectVotesDao: ProjectVotesDao by lazyDao()
-  protected val recordedBranchesDao: RecordedBranchesDao by lazyDao()
   protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()
   protected val recordedTreesDao: RecordedTreesDao by lazyDao()
   protected val reportsDao: ReportsDao by lazyDao()
@@ -2596,34 +2592,8 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!
   }
 
-  private val nextBranchNumber = mutableMapOf<RecordedTreeId, Int>()
-
-  fun insertRecordedBranch(
-      row: RecordedBranchesRow = RecordedBranchesRow(),
-      treeId: RecordedTreeId = row.treeId ?: inserted.recordedTreeId,
-      branchNumber: Int = row.branchNumber ?: nextBranchNumber.getOrDefault(treeId, 1),
-      diameterAtBreastHeightCm: BigDecimal = row.diameterAtBreastHeightCm ?: BigDecimal.ZERO,
-      pointOfMeasurementM: BigDecimal = row.pointOfMeasurementM ?: BigDecimal.valueOf(1.3),
-      isDead: Boolean = row.isDead ?: false,
-      description: String? = row.description
-  ): RecordedBranchId {
-    val rowWithDefaults =
-        row.copy(
-            treeId = treeId,
-            branchNumber = branchNumber,
-            diameterAtBreastHeightCm = diameterAtBreastHeightCm,
-            pointOfMeasurementM = pointOfMeasurementM,
-            isDead = isDead,
-            description = description,
-        )
-
-    recordedBranchesDao.insert(rowWithDefaults)
-    nextBranchNumber[treeId] = branchNumber + 1
-
-    return rowWithDefaults.id!!
-  }
-
   private val nextTreeNumber = mutableMapOf<ObservationId, Int>()
+  private val nextTrunkNumber = mutableMapOf<Pair<ObservationId, Int>, Int>()
 
   fun insertRecordedTree(
       row: RecordedTreesRow = RecordedTreesRow(),
@@ -2631,9 +2601,10 @@ abstract class DatabaseBackedTest {
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId,
       treeNumber: Int = row.treeNumber ?: nextTreeNumber.getOrDefault(observationId, 1),
+      trunkNumber: Int =
+          row.trunkNumber ?: nextTrunkNumber.getOrDefault(observationId to treeNumber, 1),
       treeGrowthForm: TreeGrowthForm = row.treeGrowthFormId ?: TreeGrowthForm.Tree,
       isDead: Boolean = row.isDead ?: false,
-      isTrunk: Boolean? = row.isTrunk,
       diameterAtBreastHeightCm: BigDecimal? = row.diameterAtBreastHeightCm,
       pointOfMeasurementM: BigDecimal? = row.pointOfMeasurementM,
       heightM: BigDecimal? = row.heightM,
@@ -2646,9 +2617,9 @@ abstract class DatabaseBackedTest {
             monitoringPlotId = monitoringPlotId,
             biomassSpeciesId = biomassSpeciesId,
             treeNumber = treeNumber,
+            trunkNumber = trunkNumber,
             treeGrowthFormId = treeGrowthForm,
             isDead = isDead,
-            isTrunk = isTrunk,
             diameterAtBreastHeightCm = diameterAtBreastHeightCm,
             pointOfMeasurementM = pointOfMeasurementM,
             heightM = heightM,
@@ -2658,6 +2629,7 @@ abstract class DatabaseBackedTest {
 
     recordedTreesDao.insert(rowWithDefaults)
     nextTreeNumber[observationId] = treeNumber + 1
+    nextTrunkNumber[observationId to treeNumber] = trunkNumber + 1
 
     return rowWithDefaults.id!!.also { inserted.recordedTreeIds.add(it) }
   }

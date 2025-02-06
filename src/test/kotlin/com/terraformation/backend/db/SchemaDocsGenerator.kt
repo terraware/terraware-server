@@ -365,7 +365,6 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "planting_subzone_populations" to setOf(ALL, TRACKING),
                   "planting_subzones" to setOf(ALL, TRACKING),
                   "plantings" to setOf(ALL, TRACKING),
-                  "recorded_branches" to setOf(ALL, TRACKING),
                   "recorded_plant_statuses" to setOf(ALL, TRACKING),
                   "recorded_plants" to setOf(ALL, TRACKING),
                   "recorded_species_certainties" to setOf(ALL, TRACKING),

@@ -29,13 +29,11 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
-import com.terraformation.backend.db.tracking.tables.references.RECORDED_BRANCHES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
-import com.terraformation.backend.tracking.model.ExistingRecordedBranchModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotPhotoModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
@@ -257,74 +255,44 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             }
       }
 
-  private val recordedBranchesMultiset =
-      with(RECORDED_BRANCHES) {
-        DSL.multiset(
-                DSL.select(
-                        ID,
-                        BRANCH_NUMBER,
-                        DESCRIPTION,
-                        DIAMETER_AT_BREAST_HEIGHT_CM,
-                        IS_DEAD,
-                        POINT_OF_MEASUREMENT_M,
-                    )
-                    .from(this)
-                    .where(TREE_ID.eq(RECORDED_TREES.ID))
-                    .orderBy(BRANCH_NUMBER))
-            .convertFrom { result ->
-              result.map {
-                ExistingRecordedBranchModel(
-                    id = it[ID]!!,
-                    branchNumber = it[BRANCH_NUMBER]!!,
-                    description = it[DESCRIPTION],
-                    diameterAtBreastHeightCm = it[DIAMETER_AT_BREAST_HEIGHT_CM]!!,
-                    isDead = it[IS_DEAD]!!,
-                    pointOfMeasurementM = it[POINT_OF_MEASUREMENT_M]!!,
-                )
-              }
-            }
-      }
-
   private val recordedTreesMultiset =
       with(RECORDED_TREES) {
         DSL.multiset(
                 DSL.select(
                         ID,
-                        recordedBranchesMultiset,
                         DESCRIPTION,
                         DIAMETER_AT_BREAST_HEIGHT_CM,
                         HEIGHT_M,
                         IS_DEAD,
-                        IS_TRUNK,
                         POINT_OF_MEASUREMENT_M,
                         SHRUB_DIAMETER_CM,
                         OBSERVATION_BIOMASS_SPECIES.SPECIES_ID,
                         OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME,
                         TREE_GROWTH_FORM_ID,
                         TREE_NUMBER,
+                        TRUNK_NUMBER,
                     )
                     .from(this)
                     .join(OBSERVATION_BIOMASS_SPECIES)
                     .on(BIOMASS_SPECIES_ID.eq(OBSERVATION_BIOMASS_SPECIES.ID))
                     .where(OBSERVATION_ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID))
                     .and(MONITORING_PLOT_ID.eq(OBSERVATION_BIOMASS_DETAILS.MONITORING_PLOT_ID))
-                    .orderBy(TREE_NUMBER))
+                    .orderBy(TREE_NUMBER, TRUNK_NUMBER))
             .convertFrom { result ->
               result.map {
                 ExistingRecordedTreeModel(
                     id = it[ID]!!,
-                    branches = it[recordedBranchesMultiset],
                     description = it[DESCRIPTION],
                     diameterAtBreastHeightCm = it[DIAMETER_AT_BREAST_HEIGHT_CM],
                     heightM = it[HEIGHT_M],
                     isDead = it[IS_DEAD]!!,
-                    isTrunk = it[IS_TRUNK],
                     pointOfMeasurementM = it[POINT_OF_MEASUREMENT_M],
                     shrubDiameterCm = it[SHRUB_DIAMETER_CM],
                     speciesId = it[OBSERVATION_BIOMASS_SPECIES.SPECIES_ID],
                     speciesName = it[OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME],
                     treeGrowthForm = it[TREE_GROWTH_FORM_ID]!!,
                     treeNumber = it[TREE_NUMBER]!!,
+                    trunkNumber = it[TRUNK_NUMBER]!!,
                 )
               }
             }

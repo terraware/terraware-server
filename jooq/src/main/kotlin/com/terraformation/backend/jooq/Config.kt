@@ -361,10 +361,8 @@ val ID_WRAPPERS =
                     "PlantingZoneHistoryId",
                     listOf("planting_zone_histories\\.id", ".*\\.planting_zone_history_id")),
                 IdWrapper("PlantingZoneId", listOf("planting_zones\\.id", ".*\\.planting_zone_id")),
-                IdWrapper("RecordedBranchId", listOf("recorded_branches\\.id")),
                 IdWrapper("RecordedPlantId", listOf("recorded_plants\\.id")),
-                IdWrapper(
-                    "RecordedTreeId", listOf("recorded_trees\\.id", "recorded_branches\\.tree_id")),
+                IdWrapper("RecordedTreeId", listOf("recorded_trees\\.id")),
             ),
     )
 
