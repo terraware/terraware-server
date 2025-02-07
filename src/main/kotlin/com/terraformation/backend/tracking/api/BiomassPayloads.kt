@@ -128,8 +128,7 @@ data class ExistingTreePayload(
 
 @JsonSubTypes(
     JsonSubTypes.Type(name = "shrub", value = NewShrubPayload::class),
-    JsonSubTypes.Type(name = "singleTrunk", value = NewSingleTrunkTreePayload::class),
-    JsonSubTypes.Type(name = "multiTrunks", value = NewMultiTrunksTreePayload::class),
+    JsonSubTypes.Type(name = "tree", value = NewTreeWithTrunksPayload::class),
 )
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "growthForm")
@@ -137,8 +136,7 @@ data class ExistingTreePayload(
     discriminatorMapping =
         [
             DiscriminatorMapping(value = "shrub", schema = NewShrubPayload::class),
-            DiscriminatorMapping(value = "singleTrunk", schema = NewSingleTrunkTreePayload::class),
-            DiscriminatorMapping(value = "multiTrunks", schema = NewMultiTrunksTreePayload::class),
+            DiscriminatorMapping(value = "tree", schema = NewTreeWithTrunksPayload::class),
         ])
 sealed interface NewTreePayload {
   val speciesId: SpeciesId?
@@ -174,45 +172,20 @@ data class NewShrubPayload(
   }
 }
 
-@JsonTypeName("singleTrunk")
-data class NewSingleTrunkTreePayload(
-    val description: String?,
-    @Schema(description = "Measured in centimeters.") val diameterAtBreastHeight: BigDecimal,
-    val isDead: Boolean,
-    override val speciesId: SpeciesId?,
-    override val speciesName: String?,
-    @Schema(description = "Measured in meters.") val height: BigDecimal,
-    @Schema(description = "Measured in meters.") val pointOfMeasurement: BigDecimal,
-) : NewTreePayload {
-  override fun toTreeModels(treeNumber: Int): List<NewRecordedTreeModel> {
-    return listOf(
-        NewRecordedTreeModel(
-            id = null,
-            description = description,
-            diameterAtBreastHeightCm = diameterAtBreastHeight,
-            heightM = height,
-            isDead = isDead,
-            pointOfMeasurementM = pointOfMeasurement,
-            shrubDiameterCm = null,
-            speciesId = speciesId,
-            speciesName = speciesName,
-            treeGrowthForm = TreeGrowthForm.Shrub,
-            treeNumber = treeNumber,
-            trunkNumber = 1,
-        ))
-  }
-}
-
 data class NewTrunkPayload(
     @Schema(description = "Measured in centimeters.") //
     val diameterAtBreastHeight: BigDecimal,
+    @Schema(description = "Measured in meters.") //
+    val height: BigDecimal?,
     @Schema(description = "Measured in meters.") //
     val pointOfMeasurement: BigDecimal,
     val description: String?,
     val isDead: Boolean,
 ) {
   fun toTreeModel(
-      parent: NewMultiTrunksTreePayload,
+      growthFrom: TreeGrowthForm,
+      speciesId: SpeciesId?,
+      speciesName: String?,
       treeNumber: Int,
       trunkNumber: Int
   ): NewRecordedTreeModel {
@@ -220,28 +193,40 @@ data class NewTrunkPayload(
         id = null,
         description = description,
         diameterAtBreastHeightCm = diameterAtBreastHeight,
-        heightM = null,
+        heightM = height,
         isDead = isDead,
         pointOfMeasurementM = pointOfMeasurement,
         shrubDiameterCm = null,
-        speciesId = parent.speciesId,
-        speciesName = parent.speciesName,
-        treeGrowthForm = TreeGrowthForm.Shrub,
+        speciesId = speciesId,
+        speciesName = speciesName,
+        treeGrowthForm = growthFrom,
         treeNumber = treeNumber,
         trunkNumber = trunkNumber,
     )
   }
 }
 
-@JsonTypeName("multiTrunks")
-@Schema(allOf = [])
-data class NewMultiTrunksTreePayload(
+@JsonTypeName("tree")
+data class NewTreeWithTrunksPayload(
     override val speciesId: SpeciesId?,
     override val speciesName: String?,
     val trunks: List<NewTrunkPayload>,
 ) : NewTreePayload {
   override fun toTreeModels(treeNumber: Int): List<NewRecordedTreeModel> {
-    return trunks.mapIndexed { index, trunk -> trunk.toTreeModel(this, treeNumber, index + 1) }
+    if (trunks.isEmpty()) {
+      throw IllegalArgumentException("Tree $treeNumber has no trunks.")
+    }
+
+    val growthForm =
+        if (trunks.size > 1) {
+          TreeGrowthForm.Trunk
+        } else {
+          TreeGrowthForm.Tree
+        }
+
+    return trunks.mapIndexed { index, trunk ->
+      trunk.toTreeModel(growthForm, speciesId, speciesName, treeNumber, index + 1)
+    }
   }
 }
 
