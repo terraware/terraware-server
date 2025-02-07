@@ -634,6 +634,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         body = "An Application has been submitted for Organization 1",
         localUrl = webAppUrls.acceleratorConsoleApplication(applicationId),
         organizationId = null)
+
+    assertIsEventListener<ApplicationSubmittedEvent>(service)
   }
 
   @Test
