@@ -377,6 +377,7 @@ class AppNotificationService(
         setOf(Role.Owner, Role.Admin, Role.Manager))
   }
 
+  @EventListener
   fun on(event: ApplicationSubmittedEvent) {
     systemUser.run {
       val organizationId = parentStore.getOrganizationId(event.applicationId)

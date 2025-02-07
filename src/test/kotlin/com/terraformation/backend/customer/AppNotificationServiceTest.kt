@@ -288,11 +288,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `should have event listener for User Added To Organization event`() {
-    assertIsEventListener<UserAddedToOrganizationEvent>(service)
-  }
-
-  @Test
   fun `should store a notification of type User Added To Organization`() {
     insertOrganizationUser(otherUserId)
 
@@ -305,6 +300,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "You've been added to a new organization!",
         body = "You are now a member of Organization 1. Welcome!",
         localUrl = webAppUrls.organizationHome(organizationId))
+
+    assertIsEventListener<UserAddedToOrganizationEvent>(service)
   }
 
   @Test
@@ -320,6 +317,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "You've been added to a new organization!",
         body = "You are now a member of Organization 1. Welcome!",
         localUrl = webAppUrls.organizationHome(organizationId))
+
+    assertIsEventListener<UserAddedToTerrawareEvent>(service)
   }
 
   @Test
@@ -337,6 +336,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "An accession has dried",
         body = "${accessionModel.accessionNumber} has finished drying.",
         localUrl = webAppUrls.accession(accessionModel.id!!))
+
+    assertIsEventListener<AccessionDryingEndEvent>(service)
   }
 
   @Test
@@ -361,6 +362,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         body =
             "$batchNumber (located in $nurseryName) has reached its scheduled ready by date. Check on your plants and update their status if needed.",
         localUrl = webAppUrls.batch(batchId, speciesId))
+
+    assertIsEventListener<NurserySeedlingBatchReadyEvent>(service)
   }
 
   @Test
@@ -375,6 +378,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "Device manager cannot be detected.",
         body = "Device manager is disconnected. Please check on it.",
         localUrl = webAppUrls.facilityMonitoring(facilityId))
+
+    assertIsEventListener<FacilityIdleEvent>(service)
   }
 
   @Test
@@ -393,6 +398,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "device 1 is out of range.",
         body = "$timeseriesName on device 1 is $badValue, which is out of threshold.",
         localUrl = webAppUrls.facilityMonitoring(facilityId))
+
+    assertIsEventListener<SensorBoundsAlertTriggeredEvent>(service)
   }
 
   @Test
@@ -413,6 +420,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "$automationName triggered at $facilityName",
         body = message,
         localUrl = webAppUrls.facilityMonitoring(facilityId))
+
+    assertIsEventListener<UnknownAutomationTriggeredEvent>(service)
   }
 
   @Test
@@ -431,6 +440,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "$deviceName cannot be detected.",
         body = "$deviceName cannot be detected. Please check on it.",
         localUrl = webAppUrls.facilityMonitoring(facilityId, device))
+
+    assertIsEventListener<DeviceUnresponsiveEvent>(service)
   }
 
   @Test
@@ -465,6 +476,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     assertNotifications(
         listOf(commonValues.copy(userId = admin), commonValues.copy(userId = owner)))
+
+    assertIsEventListener<SeedFundReportCreatedEvent>(service)
   }
 
   @Test
@@ -527,6 +540,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             .format(startDate)}.",
         localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
     )
+
+    assertIsEventListener<ObservationUpcomingNotificationDueEvent>(service)
   }
 
   @Test
@@ -543,6 +558,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "Schedule an observation",
         body = "It's time to schedule an observation for your planting site",
         localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId))
+
+    assertIsEventListener<ScheduleObservationNotificationEvent>(service)
   }
 
   @Test
@@ -559,6 +576,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "Reminder: Schedule an observation",
         body = "Remember to schedule an observation for your planting site",
         localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId))
+
+    assertIsEventListener<ScheduleObservationReminderNotificationEvent>(service)
   }
 
   @Test
@@ -577,6 +596,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         body =
             "Planting season has begun at planting site $plantingSiteName. To begin planting in the field, make sure that your nursery inventory is up-to-date and that you log your nursery withdrawals as you begin planting.",
         localUrl = webAppUrls.nurseryInventory())
+
+    assertIsEventListener<PlantingSeasonStartedEvent>(service)
   }
 
   @Test
@@ -594,6 +615,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "Add your next planting season",
         body = "It's time to schedule your next planting season",
         localUrl = webAppUrls.plantingSite(inserted.plantingSiteId))
+
+    assertIsEventListener<PlantingSeasonNotScheduledNotificationEvent>(service)
   }
 
   @Test
@@ -602,13 +625,17 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val projectId = insertProject()
     val applicationId = insertApplication(projectId = projectId)
     insertUserInternalInterest(InternalInterest.Sourcing, user.userId)
+
     service.on(ApplicationSubmittedEvent(applicationId))
+
     assertNotification(
         type = NotificationType.ApplicationSubmitted,
         title = "Application Submitted",
         body = "An Application has been submitted for Organization 1",
         localUrl = webAppUrls.acceleratorConsoleApplication(applicationId),
         organizationId = null)
+
+    assertIsEventListener<ApplicationSubmittedEvent>(service)
   }
 
   @Test
@@ -631,6 +658,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         body = "A deliverable from participant1 is ready for review for approval.",
         localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
         organizationId = null)
+
+    assertIsEventListener<DeliverableReadyForReviewEvent>(service)
   }
 
   @Test
@@ -745,6 +774,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "View a deliverable's status",
         body = "A submitted deliverable was reviewed and its status was updated.",
         localUrl = webAppUrls.deliverable(deliverableId, projectId))
+
+    assertIsEventListener<DeliverableStatusUpdatedEvent>(service)
   }
 
   @Test
@@ -778,6 +809,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         title = "View a deliverable's status",
         body = "A submitted deliverable was reviewed and its status was updated.",
         localUrl = webAppUrls.deliverable(deliverableId, projectId))
+
+    assertIsEventListener<QuestionsDeliverableStatusUpdatedEvent>(service)
   }
 
   @Test
@@ -804,6 +837,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
         userId = user.userId,
         organizationId = null)
+
+    assertIsEventListener<ParticipantProjectSpeciesAddedToProjectNotificationDueEvent>(service)
   }
 
   @Test
@@ -830,6 +865,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
         userId = user.userId,
         organizationId = null)
+
+    assertIsEventListener<ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent>(
+        service)
   }
 
   @Test
@@ -937,6 +975,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         webAppUrls.organizationHome(organizationId),
         organizationId = null,
         userId = gibberishUserId)
+
+    assertIsEventListener<UserAddedToOrganizationEvent>(service)
   }
 
   /**
