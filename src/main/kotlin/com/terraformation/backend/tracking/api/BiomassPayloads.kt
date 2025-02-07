@@ -183,7 +183,7 @@ data class NewTrunkPayload(
     val isDead: Boolean,
 ) {
   fun toTreeModel(
-      growthFrom: TreeGrowthForm,
+      growthForm: TreeGrowthForm,
       speciesId: SpeciesId?,
       speciesName: String?,
       treeNumber: Int,
@@ -199,7 +199,7 @@ data class NewTrunkPayload(
         shrubDiameterCm = null,
         speciesId = speciesId,
         speciesName = speciesName,
-        treeGrowthForm = growthFrom,
+        treeGrowthForm = growthForm,
         treeNumber = treeNumber,
         trunkNumber = trunkNumber,
     )
