@@ -134,20 +134,13 @@ data class ExistingTreePayload(
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "growthForm")
 @Schema(
-    oneOf =
-        [
-            NewShrubPayload::class,
-            NewSingleTrunkTreePayload::class,
-            NewMultiTrunksTreePayload::class],
     discriminatorMapping =
         [
             DiscriminatorMapping(value = "shrub", schema = NewShrubPayload::class),
             DiscriminatorMapping(value = "singleTrunk", schema = NewSingleTrunkTreePayload::class),
             DiscriminatorMapping(value = "multiTrunks", schema = NewMultiTrunksTreePayload::class),
         ])
-interface NewTreePayload {
-  val description: String?
-  val isDead: Boolean?
+sealed interface NewTreePayload {
   val speciesId: SpeciesId?
   val speciesName: String?
 
@@ -156,8 +149,8 @@ interface NewTreePayload {
 
 @JsonTypeName("shrub")
 data class NewShrubPayload(
-    override val description: String?,
-    override val isDead: Boolean,
+    val description: String?,
+    val isDead: Boolean,
     override val speciesId: SpeciesId?,
     override val speciesName: String?,
     @Schema(description = "Measured in centimeters.") val shrubDiameter: Int,
@@ -183,9 +176,9 @@ data class NewShrubPayload(
 
 @JsonTypeName("singleTrunk")
 data class NewSingleTrunkTreePayload(
-    override val description: String?,
+    val description: String?,
     @Schema(description = "Measured in centimeters.") val diameterAtBreastHeight: BigDecimal,
-    override val isDead: Boolean,
+    val isDead: Boolean,
     override val speciesId: SpeciesId?,
     override val speciesName: String?,
     @Schema(description = "Measured in meters.") val height: BigDecimal,
@@ -211,8 +204,12 @@ data class NewSingleTrunkTreePayload(
 }
 
 data class NewTrunkPayload(
-    @Schema(description = "Measured in centimeters.") val diameterAtBreastHeight: BigDecimal,
-    @Schema(description = "Measured in meters.") val pointOfMeasurement: BigDecimal,
+    @Schema(description = "Measured in centimeters.") //
+    val diameterAtBreastHeight: BigDecimal,
+    @Schema(description = "Measured in meters.") //
+    val pointOfMeasurement: BigDecimal,
+    val description: String?,
+    val isDead: Boolean,
 ) {
   fun toTreeModel(
       parent: NewMultiTrunksTreePayload,
@@ -221,10 +218,10 @@ data class NewTrunkPayload(
   ): NewRecordedTreeModel {
     return NewRecordedTreeModel(
         id = null,
-        description = parent.description,
+        description = description,
         diameterAtBreastHeightCm = diameterAtBreastHeight,
         heightM = null,
-        isDead = parent.isDead,
+        isDead = isDead,
         pointOfMeasurementM = pointOfMeasurement,
         shrubDiameterCm = null,
         speciesId = parent.speciesId,
@@ -237,9 +234,8 @@ data class NewTrunkPayload(
 }
 
 @JsonTypeName("multiTrunks")
+@Schema(allOf = [])
 data class NewMultiTrunksTreePayload(
-    override val description: String?,
-    override val isDead: Boolean,
     override val speciesId: SpeciesId?,
     override val speciesName: String?,
     val trunks: List<NewTrunkPayload>,
