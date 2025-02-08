@@ -289,7 +289,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store a notification of type User Added To Organization`() {
-    insertOrganizationUser(otherUserId)
     testEventNotification(
         UserAddedToOrganizationEvent(otherUserId, organizationId, user.userId),
         type = NotificationType.UserAddedToOrganization,
@@ -302,7 +301,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store a notification of type User Added To Organization when user is added to Terraware`() {
-    insertOrganizationUser(otherUserId)
     testEventNotification(
         UserAddedToTerrawareEvent(otherUserId, organizationId, user.userId),
         type = NotificationType.UserAddedToOrganization,
@@ -319,7 +317,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         accessionStore.create(AccessionModel(clock = clock, facilityId = facilityId))
     assertNotNull(accessionModel)
 
-    insertOrganizationUser()
     testEventNotification(
         AccessionDryingEndEvent(accessionModel.accessionNumber!!, accessionModel.id!!),
         type = NotificationType.AccessionScheduledToEndDrying,
@@ -330,7 +327,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store nursery seedling batch ready notification`() {
-
     val nurseryName = "my nursery"
     val batchNumber = "22-2-001"
 
@@ -340,7 +336,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         insertBatch(
             BatchesRow(batchNumber = batchNumber, speciesId = speciesId, facilityId = facilityId))
 
-    insertOrganizationUser()
     testEventNotification(
         NurserySeedlingBatchReadyEvent(batchId, batchNumber, speciesId, nurseryName),
         type = NotificationType.NurserySeedlingBatchReady,
@@ -353,7 +348,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should store facility idle notification`() {
-    insertOrganizationUser()
     testEventNotification(
         FacilityIdleEvent(facilityId),
         type = NotificationType.FacilityIdle,
@@ -370,8 +364,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     insertDevice()
     val automationId = insertAutomation(timeseriesName = timeseriesName)
-
-    insertOrganizationUser()
 
     testEventNotification(
         SensorBoundsAlertTriggeredEvent(automationId, badValue),
@@ -391,7 +383,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val automationId =
         insertAutomation(name = automationName, type = automationType, deviceId = null)
 
-    insertOrganizationUser()
     testEventNotification(
         UnknownAutomationTriggeredEvent(automationId, automationType, message),
         type = NotificationType.UnknownAutomationTriggered,
@@ -406,7 +397,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val deviceId = insertDevice(name = deviceName, type = "sensor")
     val device = deviceStore.fetchOneById(deviceId)
 
-    insertOrganizationUser()
     testEventNotification(
         DeviceUnresponsiveEvent(deviceId, Instant.EPOCH, Duration.ofSeconds(1)),
         type = NotificationType.DeviceUnresponsive,
@@ -459,7 +449,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertPlantingSite()
     insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
 
-    insertOrganizationUser()
     testEventNotification(
         ObservationStartedEvent(
             ExistingObservationModel(
@@ -485,7 +474,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertPlantingSite(name = plantingSiteName)
     insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
 
-    insertOrganizationUser()
     testEventNotification(
         ObservationUpcomingNotificationDueEvent(
             ExistingObservationModel(
@@ -513,13 +501,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     insertPlantingSite(name = plantingSiteName)
 
-    insertOrganizationUser(role = Role.Admin)
     testEventNotification(
         ScheduleObservationNotificationEvent(inserted.plantingSiteId),
         type = NotificationType.ScheduleObservation,
         title = "Schedule an observation",
         body = "It's time to schedule an observation for your planting site",
-        localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId))
+        localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
+        role = Role.Admin)
   }
 
   @Test
@@ -528,13 +516,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     insertPlantingSite(name = plantingSiteName)
 
-    insertOrganizationUser(role = Role.Admin)
     testEventNotification(
         ScheduleObservationReminderNotificationEvent(inserted.plantingSiteId),
         type = NotificationType.ScheduleObservationReminder,
         title = "Reminder: Schedule an observation",
         body = "Remember to schedule an observation for your planting site",
-        localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId))
+        localUrl = webAppUrls.observations(organizationId, inserted.plantingSiteId),
+        role = Role.Admin)
   }
 
   @Test
@@ -544,14 +532,14 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertPlantingSite(name = plantingSiteName)
     insertPlantingSeason()
 
-    insertOrganizationUser(role = Role.Manager)
     testEventNotification(
         PlantingSeasonStartedEvent(inserted.plantingSiteId, inserted.plantingSeasonId),
         type = NotificationType.PlantingSeasonStarted,
         title = "It's planting season!",
         body =
             "Planting season has begun at planting site $plantingSiteName. To begin planting in the field, make sure that your nursery inventory is up-to-date and that you log your nursery withdrawals as you begin planting.",
-        localUrl = webAppUrls.nurseryInventory())
+        localUrl = webAppUrls.nurseryInventory(),
+        role = Role.Manager)
   }
 
   @Test
@@ -561,13 +549,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertPlantingSite(name = plantingSiteName)
     insertPlantingSeason()
 
-    insertOrganizationUser(role = Role.Manager)
     testEventNotification(
         PlantingSeasonNotScheduledNotificationEvent(inserted.plantingSiteId, 1),
         type = NotificationType.SchedulePlantingSeason,
         title = "Add your next planting season",
         body = "It's time to schedule your next planting season",
-        localUrl = webAppUrls.plantingSite(inserted.plantingSiteId))
+        localUrl = webAppUrls.plantingSite(inserted.plantingSiteId),
+        role = Role.Manager)
   }
 
   @Test
@@ -705,7 +693,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val deliverableId = DeliverableId(1)
     val submissionId = SubmissionId(1)
 
-    insertOrganizationUser(role = Role.Admin)
     testEventNotification(
         DeliverableStatusUpdatedEvent(
             deliverableId,
@@ -716,7 +703,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         type = NotificationType.DeliverableStatusUpdated,
         title = "View a deliverable's status",
         body = "A submitted deliverable was reviewed and its status was updated.",
-        localUrl = webAppUrls.deliverable(deliverableId, projectId))
+        localUrl = webAppUrls.deliverable(deliverableId, projectId),
+        role = Role.Admin)
   }
 
   @Test
@@ -742,13 +730,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val projectId = insertProject()
     val deliverableId = DeliverableId(1)
 
-    insertOrganizationUser(role = Role.Admin)
     testEventNotification(
         QuestionsDeliverableStatusUpdatedEvent(deliverableId, projectId),
         type = NotificationType.DeliverableStatusUpdated,
         title = "View a deliverable's status",
         body = "A submitted deliverable was reviewed and its status was updated.",
-        localUrl = webAppUrls.deliverable(deliverableId, projectId))
+        localUrl = webAppUrls.deliverable(deliverableId, projectId),
+        role = Role.Admin)
   }
 
   @Test
@@ -871,7 +859,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `should use alternate notification text for recorded session events`() {
-    insertOrganizationUser(role = Role.Admin)
     val moduleId = insertModule()
     val eventId = insertEvent(moduleId = moduleId, eventType = EventType.RecordedSession)
     val projectId = insertProject()
@@ -879,17 +866,17 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     testEventNotification(
         ModuleEventStartingEvent(eventId),
-        NotificationType.EventReminder,
-        "Your Recorded Session is ready to view",
-        "Click the View button to view the recorded session for Module 1",
-        webAppUrls.moduleEvent(moduleId, eventId, organizationId, projectId))
+        type = NotificationType.EventReminder,
+        title = "Your Recorded Session is ready to view",
+        body = "Click the View button to view the recorded session for Module 1",
+        localUrl = webAppUrls.moduleEvent(moduleId, eventId, organizationId, projectId),
+        role = Role.Admin)
   }
 
   @Test
   fun `should render notifications in locale of user`() {
     val gibberishUserId = insertUser(locale = Locale.forLanguageTag("es"))
 
-    insertOrganizationUser(gibberishUserId)
     testEventNotification(
         UserAddedToOrganizationEvent(gibberishUserId, organizationId, user.userId),
         type = NotificationType.UserAddedToOrganization,
@@ -940,6 +927,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 userId = userId)))
   }
 
+  // todo add common method here for tests that check multiple notifications
+
   private inline fun <reified T> testEventNotification(
       event: T,
       type: NotificationType,
@@ -947,9 +936,16 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
       body: String,
       localUrl: URI,
       organizationId: OrganizationId? = this.organizationId,
-      userId: UserId = user.userId,
+      userId: UserId? = user.userId,
+      role: Role = Role.Contributor,
   ) {
-    // todo could insert org user here if wanted
+    userId?.let {
+      insertOrganizationUser(
+          userId = userId,
+          role = role,
+      )
+    }
+
     val method =
         service::class.members.find {
           it.name == "on" && it.parameters.size == 2 && it.parameters[1].type.classifier == T::class
@@ -957,7 +953,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     method.call(service, event)
 
-    assertNotification(type, title, body, localUrl, organizationId, userId)
+    assertNotification(type, title, body, localUrl, organizationId, userId!!)
 
     assertIsEventListener<T>(service)
   }
