@@ -936,15 +936,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
       body: String,
       localUrl: URI,
       organizationId: OrganizationId? = this.organizationId,
-      userId: UserId? = user.userId,
+      userId: UserId = user.userId,
       role: Role = Role.Contributor,
   ) {
-    userId?.let {
-      insertOrganizationUser(
-          userId = userId,
-          role = role,
-      )
-    }
+    insertOrganizationUser(
+        userId = userId,
+        role = role,
+    )
 
     val method =
         service::class.members.find {
@@ -953,7 +951,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     method.call(service, event)
 
-    assertNotification(type, title, body, localUrl, organizationId, userId!!)
+    assertNotification(type, title, body, localUrl, organizationId, userId)
 
     assertIsEventListener<T>(service)
   }
