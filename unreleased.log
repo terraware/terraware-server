@@ -1,3 +1,4 @@
+d2305e5b3d0 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.32.0 (#2823)
 bc94b5d1e33 Update database dependencies (#2825)
 1414275685d Update dependency mypy to v1.15.0 (#2826)
 7bcfa96e684 Combined single-trunk and multi-trunks payloads; make height per-trunk and optional (#2821)
