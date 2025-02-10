@@ -1,3 +1,4 @@
+cae59870696 SW-6554 Used observation plot completed time for observation summaries (#2828)
 7111d03e803 SW-6533 Remove redundant observation test (#2827)
 d2305e5b3d0 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.32.0 (#2823)
 bc94b5d1e33 Update database dependencies (#2825)
