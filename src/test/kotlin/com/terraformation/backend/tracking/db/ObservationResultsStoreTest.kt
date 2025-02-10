@@ -843,13 +843,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class Scenarios {
     @Test
-    fun `site with two observations, 25m plots`() {
-      runScenario("/tracking/observation/TwoObservations", numObservations = 2, sizeMeters = 25)
-    }
-
-    @Test
-    fun `site with two observations, 30m plots`() {
-      runScenario("/tracking/observation/TwoObservations30m", numObservations = 2, sizeMeters = 30)
+    fun `site with two observations`() {
+      runScenario("/tracking/observation/TwoObservations", numObservations = 2, sizeMeters = 30)
     }
 
     @Test

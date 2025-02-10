@@ -1,6 +1,6 @@
 Observation ->,1,1,1,1,1,2,2,2,2,2
 Subzone,# Plants (excluding existing),Planting Density,# Live Species,Mortality Rate,Est Plants,# Plants (excluding existing),Planting Density,# Live Species,Mortality Rate,Est Plants
-Alpha-1,,,,,,4,48,2,,48
-Alpha-2,14,29,6,42%,29,12,32,7,44%,32
-Beta-1,10,22,2,22%,22,9,22,3,44%,22
-Beta-2,2,32,1,,32,,,,,
+Alpha-1,,,,,,4,33,2,,33
+Alpha-2,14,20,6,42%,20,12,22,7,44%,22
+Beta-1,10,15,2,22%,15,9,15,3,44%,15
+Beta-2,2,22,1,,22,,,,,
