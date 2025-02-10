@@ -154,18 +154,22 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             .where(PLANTING_ZONES.ID.`in`(allSubzoneIdsByZoneIds.keys))
             .associate { it[PLANTING_ZONES.ID]!! to it[PLANTING_ZONES.AREA_HA]!! }
 
-    val observationsBySubzone =
+    val resultsBySubzone =
         completedObservations
             .flatMap { it.plantingZones }
             .flatMap { it.plantingSubzones }
             .filter { subzone ->
-              subzone.completedTime != null &&
-                  subzone.monitoringPlots.any { it.status == ObservationPlotStatus.Completed }
+              subzone.monitoringPlots.any { it.status == ObservationPlotStatus.Completed }
             }
             .groupBy { it.plantingSubzoneId }
 
     val latestPerSubzone =
-        observationsBySubzone.mapValues { entry -> entry.value.maxBy { it.completedTime!! } }
+        resultsBySubzone.mapValues { (_, results) ->
+          results.maxBy { result ->
+            // Completed time should have at least one non-nulls by filtering by Completed.
+            result.monitoringPlots.maxOf { it.completedTime ?: Instant.EPOCH }
+          }
+        }
 
     val plantingZoneResults =
         allSubzoneIdsByZoneIds

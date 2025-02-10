@@ -266,7 +266,10 @@ data class ObservationPlantingZoneRollupResultsModel(
 
       val plantingCompleted = subzoneResults.values.none { it == null || !it.plantingCompleted }
 
-      val monitoringPlots = nonNullSubzoneResults.flatMap { it.monitoringPlots }
+      val completedMonitoringPlots =
+          nonNullSubzoneResults
+              .flatMap { it.monitoringPlots }
+              .filter { it.status == ObservationPlotStatus.Completed }
       val species =
           nonNullSubzoneResults
               .map { it.species }
@@ -278,10 +281,7 @@ data class ObservationPlantingZoneRollupResultsModel(
                 (it.totalLive + it.totalExisting) > 0
           }
 
-      val completedPlotsPlantingDensities =
-          monitoringPlots
-              .filter { it.status == ObservationPlotStatus.Completed }
-              .map { it.plantingDensity }
+      val completedPlotsPlantingDensities = completedMonitoringPlots.map { it.plantingDensity }
       val plantingDensity =
           if (completedPlotsPlantingDensities.isNotEmpty()) {
             completedPlotsPlantingDensities.average().roundToInt()
@@ -299,7 +299,7 @@ data class ObservationPlantingZoneRollupResultsModel(
 
       val mortalityRate = species.calculateMortalityRate()
       val mortalityRateStdDev =
-          monitoringPlots
+          completedMonitoringPlots
               .mapNotNull { plot ->
                 plot.mortalityRate?.let { mortalityRate ->
                   val permanentPlants =
@@ -313,9 +313,9 @@ data class ObservationPlantingZoneRollupResultsModel(
 
       return ObservationPlantingZoneRollupResultsModel(
           areaHa = areaHa,
-          earliestCompletedTime = nonNullSubzoneResults.minOf { it.completedTime!! },
+          earliestCompletedTime = completedMonitoringPlots.minOf { it.completedTime!! },
           estimatedPlants = estimatedPlants?.roundToInt(),
-          latestCompletedTime = nonNullSubzoneResults.maxOf { it.completedTime!! },
+          latestCompletedTime = completedMonitoringPlots.maxOf { it.completedTime!! },
           mortalityRate = mortalityRate,
           mortalityRateStdDev = mortalityRateStdDev,
           plantingCompleted = plantingCompleted,

@@ -728,6 +728,8 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       val plotId2 = insertMonitoringPlot(plantingSubzoneId = subzoneId2)
       val plotId3 = insertMonitoringPlot(plantingSubzoneId = subzoneId3)
 
+      val neverObservedPlotId = insertMonitoringPlot(plantingSubzoneId = subzoneId3)
+
       // For the first observation, plot1 and plot2 are both assigned and completed.
       clock.instant = Instant.ofEpochSecond(300)
       val observationId1 = insertObservation()
@@ -784,6 +786,10 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           observationId = observationId2, monitoringPlotId = plotId2, claimedBy = user.userId)
       insertObservationPlot(
           observationId = observationId2, monitoringPlotId = plotId3, claimedBy = user.userId)
+
+      // Add a second plot to subzone 3, to test for if subzone has no completed time yet.
+      insertObservationPlot(observationId = observationId2, monitoringPlotId = neverObservedPlotId)
+
       observationStore.populateCumulativeDead(observationId2)
       observationStore.completePlot(
           observationId2,
@@ -829,7 +835,15 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
           "Plot status in observation 2 subzone 2")
       assertEquals(
           ObservationPlotStatus.Completed,
-          observation2Subzone3Result.monitoringPlots[0].status,
+          observation2Subzone3Result.monitoringPlots
+              .first { it.monitoringPlotId == plotId3 }
+              .status,
+          "Plot status in observation 2 subzone 3")
+      assertEquals(
+          ObservationPlotStatus.NotObserved,
+          observation2Subzone3Result.monitoringPlots
+              .first { it.monitoringPlotId == neverObservedPlotId }
+              .status,
           "Plot status in observation 2 subzone 3")
 
       val summary = resultsStore.fetchSummariesForPlantingSite(inserted.plantingSiteId, 1).first()
