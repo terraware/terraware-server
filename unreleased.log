@@ -1,3 +1,5 @@
+bc94b5d1e33 Update database dependencies (#2825)
+1414275685d Update dependency mypy to v1.15.0 (#2826)
 7bcfa96e684 Combined single-trunk and multi-trunks payloads; make height per-trunk and optional (#2821)
 a63065720cb SW-4477 Check Event Listeners in AppNotificationServiceTest (#2820)
 30b7317982f SW-4476 Stop stubbing out string lookups in AppNotificationServiceTest (#2818)
