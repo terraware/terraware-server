@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -728,6 +729,26 @@ class AdminPlantingSitesController(
     return redirectToPlantingSite(plantingSiteId)
   }
 
+  @PostMapping("/recalculateMortalityRates")
+  fun recalculateMortalityRates(
+      @RequestParam observationId: ObservationId,
+      @RequestParam plantingSiteId: PlantingSiteId,
+      redirectAttributes: RedirectAttributes
+  ): String {
+    requirePermissions { manageObservation(observationId) }
+
+    try {
+      observationStore.recalculateMortalityRates(observationId, plantingSiteId)
+      redirectAttributes.successMessage =
+          "Recalculated mortality rates for observation $observationId."
+    } catch (e: Exception) {
+      log.warn("Mortality rate recalculation failed", e)
+      redirectAttributes.failureMessage = "Failed to recalculate mortality rates: ${e.message}"
+    }
+
+    return redirectToAdminHome()
+  }
+
   private fun describeSiteEdit(edit: PlantingSiteEdit): List<String> {
     log.info("Site edit ${objectMapper.writeValueAsString(edit)}")
     val zoneChanges = edit.plantingZoneEdits.flatMap { zoneEdit -> describeZoneEdit(zoneEdit) }
@@ -818,6 +839,8 @@ class AdminPlantingSitesController(
 
     return monitoringPlotEdits
   }
+
+  private fun redirectToAdminHome() = "redirect:/admin/"
 
   private fun redirectToOrganization(organizationId: OrganizationId) =
       "redirect:/admin/organization/$organizationId"
