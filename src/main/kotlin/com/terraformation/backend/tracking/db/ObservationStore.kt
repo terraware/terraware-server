@@ -1441,6 +1441,7 @@ class ObservationStore(
                           DSL.select(OBSERVATIONS.COMPLETED_TIME)
                               .from(OBSERVATIONS)
                               .where(OBSERVATIONS.ID.eq(observationId))))
+                  .and(OBSERVATIONS.IS_AD_HOC.isFalse)
                   .orderBy(
                       // Prefer results from this observation if any. True is considered
                       // greater than false, so sorting by an "=" expression in descending
