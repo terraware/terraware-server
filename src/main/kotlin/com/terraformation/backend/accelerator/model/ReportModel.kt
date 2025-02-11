@@ -7,6 +7,8 @@ import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.tracking.model.ObservationModel
 import java.time.Instant
 import java.time.LocalDate
 import org.jooq.Field
@@ -30,6 +32,13 @@ data class ReportModel(
     val standardMetrics: List<ReportStandardMetricModel> = emptyList(),
 ) {
   companion object {
+    val submittedStatuses =
+        setOf(
+            ReportStatus.Submitted,
+            ReportStatus.Approved,
+            ReportStatus.NeedsUpdate,
+        )
+
     fun of(
         record: Record,
         standardMetricsField: Field<List<ReportStandardMetricModel>>?

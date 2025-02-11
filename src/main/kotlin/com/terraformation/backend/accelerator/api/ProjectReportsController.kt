@@ -22,6 +22,7 @@ import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
@@ -80,6 +81,26 @@ class ProjectReportsController(private val reportStore: ReportStore) {
         }
 
     reportStore.updateReportStandardMetrics(reportId, standardMetricUpdates)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400
+  @ApiResponse404
+  @PostMapping("/{reportId}/review")
+  @Operation(summary = "Review a report")
+  fun reviewAcceleratorReport(
+    @PathVariable projectId: ProjectId,
+    @PathVariable reportId: ReportId,
+    @RequestBody payload: ReviewAcceleratorReportRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    reportStore.reviewReport(
+        reportId = reportId,
+        status = payload.review.status,
+        feedback = payload.review.feedback,
+        internalComment = payload.review.internalComment,
+    )
 
     return SimpleSuccessResponsePayload()
   }
@@ -179,27 +200,27 @@ data class AcceleratorReportPayload(
       standardMetrics = model.standardMetrics.map { ReportStandardMetricPayload(it) })
 }
 
-data class UpdateReportStandardMetricEntriesPayload(
-    val id: StandardMetricId,
-    val target: Int?,
-    val value: Int?,
-    val notes: String?,
+data class ReportReviewPayload(
+  @Schema(description = "Must be unchanged if a report has not been submitted yet.")
+  val status: ReportStatus,
+  val feedback: String?,
+  val internalComment: String?,
 )
 
 data class ReportStandardMetricPayload(
-    val id: StandardMetricId,
-    val name: String,
-    val description: String?,
-    val component: MetricComponent,
-    val type: MetricType,
-    val reference: String,
-    val target: Int?,
-    val value: Int?,
-    val notes: String?,
-    val internalComment: String?
+  val id: StandardMetricId,
+  val name: String,
+  val description: String?,
+  val component: MetricComponent,
+  val type: MetricType,
+  val reference: String,
+  val target: Int?,
+  val value: Int?,
+  val notes: String?,
+  val internalComment: String?
 ) {
   constructor(
-      model: ReportStandardMetricModel
+    model: ReportStandardMetricModel
   ) : this(
       id = model.metric.id,
       name = model.metric.name,
@@ -213,8 +234,19 @@ data class ReportStandardMetricPayload(
       internalComment = model.entry.internalComment)
 }
 
+data class UpdateReportStandardMetricEntriesPayload(
+    val id: StandardMetricId,
+    val target: Int?,
+    val value: Int?,
+    val notes: String?,
+)
+
 data class CreateAcceleratorReportConfigRequestPayload(
     val config: NewAcceleratorReportConfigPayload
+)
+
+data class ReviewAcceleratorReportRequestPayload(
+  val review: ReportReviewPayload,
 )
 
 data class UpdateAcceleratorReportMetricsRequestPayload(
