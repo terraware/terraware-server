@@ -576,6 +576,10 @@ COMMENT ON TABLE accelerator.hubspot_token IS 'If the server has been authorized
 
 COMMENT ON TABLE accelerator.internal_interests IS '(Enum) Types of notification categories for internal users.';
 
+COMMENT ON TABLE accelerator.metric_components IS '(Enum) Components of metrics for reports.';
+
+COMMENT ON TABLE accelerator.metric_types IS '(Enum) Types of metrics for reports.';
+
 COMMENT ON TABLE accelerator.modules IS 'Possible steps in the workflow of a cohort phase.';
 COMMENT ON COLUMN accelerator.modules.position IS 'This model''s ordinal position in the modules spreadsheet. This can be used to present modules in the same order they appear in the spreadsheet.';
 
@@ -604,11 +608,15 @@ COMMENT ON TABLE accelerator.project_vote_decisions IS 'Calculated vote decision
 
 COMMENT ON TABLE accelerator.report_frequencies IS '(Enum) Frequencies of accelerator project reports.';
 
+COMMENT ON TABLE accelerator.report_standard_metrics IS 'Report entries of targets and values for standard metrics.';
+
 COMMENT ON TABLE accelerator.report_statuses IS '(Enum) Statuses of accelerator project reports.';
 
 COMMENT ON TABLE accelerator.reports IS 'Accelerator project reports.';
 
 COMMENT ON TABLE accelerator.score_categories IS '(Enum) Project score categories.';
+
+COMMENT ON TABLE accelerator.standard_metrics IS 'Standard non-system metrics for every projects to measure in accelerator reports.';
 
 COMMENT ON TABLE accelerator.submission_documents IS 'Information about documents uploaded by users to satisfy deliverables. A deliverable can have multiple documents.';
 COMMENT ON COLUMN accelerator.submission_documents.name IS 'System-generated filename. The file is stored using this name in the document store. This includes several elements such as the date and description.';
