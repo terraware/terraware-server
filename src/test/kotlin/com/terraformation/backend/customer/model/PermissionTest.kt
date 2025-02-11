@@ -14,6 +14,7 @@ import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
+import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
@@ -157,6 +158,7 @@ internal class PermissionTest : DatabaseTest() {
   private val moduleEventIds = listOf(1000, 1001, 3000, 4000).map { EventId(it.toLong()) }
   private val documentIds = projectIds.map { DocumentId(it.value) }
   private val submissionDocumentIds = projectIds.map { SubmissionDocumentId(it.value) }
+  private val reportIds = listOf(1000, 1001, 3000, 4000).map { ReportId(it.toLong()) }
 
   private val accessionIds = facilityIds.map { AccessionId(it.value) }
   private val automationIds = facilityIds.map { AutomationId(it.value) }
@@ -395,6 +397,12 @@ internal class PermissionTest : DatabaseTest() {
       }
     }
 
+    reportIds.forEach { reportId ->
+      val projectId = getDatabaseId(ProjectId(reportId.value))
+      val configId = insertProjectReportConfig(projectId = projectId)
+      putDatabaseId(reportId, insertReport(configId = configId, projectId = projectId))
+    }
+
     moduleEventIds.forEach { eventId ->
       putDatabaseId(
           eventId,
@@ -612,7 +620,6 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
-        readProjectReports = true,
         updateProject = true,
     )
 
@@ -627,6 +634,12 @@ internal class PermissionTest : DatabaseTest() {
         updateApplicationBoundary = true,
         updateApplicationCountry = true,
         updateApplicationSubmissionStatus = true,
+    )
+
+    permissions.expect(
+        *reportIds.forOrg1(),
+        readReport = true,
+        updateReport = true,
     )
 
     permissions.expect(
@@ -872,7 +885,6 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
-        readProjectReports = true,
         updateProject = true,
     )
 
@@ -887,6 +899,12 @@ internal class PermissionTest : DatabaseTest() {
         updateApplicationBoundary = true,
         updateApplicationCountry = true,
         updateApplicationSubmissionStatus = true,
+    )
+
+    permissions.expect(
+        *reportIds.forOrg1(),
+        readReport = true,
+        updateReport = true,
     )
 
     permissions.expect(
@@ -1050,12 +1068,17 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
-        readProjectReports = true,
     )
 
     permissions.expect(
         *submissionIds.forOrg1(),
         readSubmission = true,
+    )
+
+    permissions.expect(
+        *reportIds.forOrg1(),
+        readReport = true,
+        updateReport = true,
     )
 
     permissions.expect(
@@ -1510,7 +1533,6 @@ internal class PermissionTest : DatabaseTest() {
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
-        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateDefaultVoters = true,
@@ -1545,6 +1567,12 @@ internal class PermissionTest : DatabaseTest() {
         updateApplicationBoundary = true,
         updateApplicationCountry = true,
         updateApplicationSubmissionStatus = true,
+    )
+
+    permissions.expect(
+        *reportIds.toTypedArray(),
+        readReport = true,
+        updateReport = true,
     )
 
     permissions.expect(
@@ -1646,7 +1674,6 @@ internal class PermissionTest : DatabaseTest() {
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
-        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateDefaultVoters = true,
@@ -1684,7 +1711,6 @@ internal class PermissionTest : DatabaseTest() {
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
-        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateDefaultVoters = true,
@@ -1695,6 +1721,17 @@ internal class PermissionTest : DatabaseTest() {
         updateProjectScores = true,
         updateProjectVotes = true,
         updateSubmissionStatus = true,
+    )
+
+    permissions.expect(
+        *reportIds.forOrg1(),
+        readReport = true,
+        updateReport = true,
+    )
+
+    permissions.expect(
+        *reportIds.toTypedArray(),
+        readReport = true,
     )
 
     permissions.expect(
@@ -1877,7 +1914,6 @@ internal class PermissionTest : DatabaseTest() {
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
-        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateInternalVariableWorkflowDetails = true,
@@ -1922,7 +1958,6 @@ internal class PermissionTest : DatabaseTest() {
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
-        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateInternalVariableWorkflowDetails = true,
@@ -1958,6 +1993,17 @@ internal class PermissionTest : DatabaseTest() {
         updateApplicationBoundary = true,
         updateApplicationCountry = true,
         updateApplicationSubmissionStatus = true,
+    )
+
+    permissions.expect(
+        *reportIds.forOrg1(),
+        readReport = true,
+        updateReport = true,
+    )
+
+    permissions.expect(
+        *reportIds.toTypedArray(),
+        readReport = true,
     )
 
     // Can read all submissions even those outside of this org
@@ -2118,7 +2164,6 @@ internal class PermissionTest : DatabaseTest() {
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
-        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateInternalVariableWorkflowDetails = true,
@@ -2150,7 +2195,6 @@ internal class PermissionTest : DatabaseTest() {
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
-        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         updateInternalVariableWorkflowDetails = true,
@@ -2211,6 +2255,17 @@ internal class PermissionTest : DatabaseTest() {
         reviewApplication = true,
         updateApplicationBoundary = true,
         updateApplicationCountry = true,
+    )
+
+    permissions.expect(
+        *reportIds.forOrg1(),
+        readReport = true,
+        updateReport = true,
+    )
+
+    permissions.expect(
+        *reportIds.toTypedArray(),
+        readReport = true,
     )
 
     permissions.expect(
@@ -2355,7 +2410,6 @@ internal class PermissionTest : DatabaseTest() {
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
-        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
     )
@@ -2369,9 +2423,13 @@ internal class PermissionTest : DatabaseTest() {
         readProjectAcceleratorDetails = true,
         readProjectDeliverables = true,
         readProjectModules = true,
-        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
+    )
+
+    permissions.expect(
+        *reportIds.toTypedArray(),
+        readReport = true,
     )
 
     permissions.expect(
@@ -2547,7 +2605,8 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedPlantingSubzones = plantingSubzoneIds.toMutableSet()
     private val uncheckedPlantingZones = plantingZoneIds.toMutableSet()
     private val uncheckedProjects = projectIds.toMutableSet()
-    private val uncheckedReports = seedFundReportIds.toMutableSet()
+    private val uncheckedReports = reportIds.toMutableSet()
+    private val uncheckedSeedFundReports = seedFundReportIds.toMutableSet()
     private val uncheckedSpecies = speciesIds.toMutableSet()
     private val uncheckedSubLocations = subLocationIds.toMutableSet()
     private val uncheckedSubmissionDocuments = submissionDocumentIds.toMutableSet()
@@ -3264,7 +3323,7 @@ internal class PermissionTest : DatabaseTest() {
         assertEquals(
             updateReport, user.canUpdateSeedFundReport(idInDatabase), "Can update report $reportId")
 
-        uncheckedReports.remove(reportId)
+        uncheckedSeedFundReports.remove(reportId)
       }
     }
 
@@ -3316,7 +3375,6 @@ internal class PermissionTest : DatabaseTest() {
         readProjectAcceleratorDetails: Boolean = false,
         readProjectDeliverables: Boolean = false,
         readProjectModules: Boolean = false,
-        readProjectReports: Boolean = false,
         readProjectScores: Boolean = false,
         readProjectVotes: Boolean = false,
         updateDefaultVoters: Boolean = false,
@@ -3363,10 +3421,6 @@ internal class PermissionTest : DatabaseTest() {
             readProjectDeliverables,
             user.canReadProjectDeliverables(idInDatabase),
             "Can read deliverables for project $projectId")
-        assertEquals(
-            readProjectReports,
-            user.canReadProjectReports(idInDatabase),
-            "Can read reports for project $projectId")
         assertEquals(
             readProjectScores,
             user.canReadProjectScores(idInDatabase),
@@ -3585,6 +3639,24 @@ internal class PermissionTest : DatabaseTest() {
           }
     }
 
+    fun expect(
+        vararg reportIds: ReportId,
+        readReport: Boolean = false,
+        updateReport: Boolean = false,
+    ) {
+      reportIds
+          .filter { it in uncheckedReports }
+          .forEach { reportId ->
+            val idInDatabase = getDatabaseId(reportId)
+
+            assertEquals(readReport, user.canReadReport(idInDatabase), "Can read report $reportId")
+            assertEquals(
+                updateReport, user.canUpdateReport(idInDatabase), "Can update report $reportId")
+
+            uncheckedReports.remove(reportId)
+          }
+    }
+
     fun andNothingElse() {
       expect(*uncheckedAccessions.toTypedArray())
       expect(*uncheckedApplications.toTypedArray())
@@ -3608,6 +3680,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedPlantingZones.toTypedArray())
       expect(*uncheckedProjects.toTypedArray())
       expect(*uncheckedReports.toTypedArray())
+      expect(*uncheckedSeedFundReports.toTypedArray())
       expect(*uncheckedSpecies.toTypedArray())
       expect(*uncheckedSubLocations.toTypedArray())
       expect(*uncheckedSubmissionDocuments.toTypedArray())

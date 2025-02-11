@@ -10,6 +10,7 @@ import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
+import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_MODULES
@@ -18,6 +19,7 @@ import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULE
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
+import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
@@ -165,8 +167,11 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getOrganizationId(projectId: ProjectId): OrganizationId? =
       fetchFieldById(projectId, PROJECTS.ID, PROJECTS.ORGANIZATION_ID)
 
-  fun getOrganizationId(reportId: SeedFundReportId): OrganizationId? =
-      fetchFieldById(reportId, SEED_FUND_REPORTS.ID, SEED_FUND_REPORTS.ORGANIZATION_ID)
+  fun getOrganizationId(reportId: ReportId): OrganizationId? =
+      fetchFieldById(reportId, REPORTS.ID, REPORTS.projects.ORGANIZATION_ID)
+
+  fun getOrganizationId(seedFundReportId: SeedFundReportId): OrganizationId? =
+      fetchFieldById(seedFundReportId, SEED_FUND_REPORTS.ID, SEED_FUND_REPORTS.ORGANIZATION_ID)
 
   fun getOrganizationId(speciesId: SpeciesId): OrganizationId? =
       fetchFieldById(speciesId, SPECIES.ID, SPECIES.ORGANIZATION_ID)
@@ -187,6 +192,9 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getUserId(notificationId: NotificationId): UserId? =
       fetchFieldById(notificationId, NOTIFICATIONS.ID, NOTIFICATIONS.USER_ID)
+
+  fun getProjectId(reportId: ReportId): ProjectId? =
+      fetchFieldById(reportId, REPORTS.ID, REPORTS.PROJECT_ID)
 
   fun getProjectId(submissionId: SubmissionId): ProjectId? =
       fetchFieldById(submissionId, SUBMISSIONS.ID, SUBMISSIONS.PROJECT_ID)
