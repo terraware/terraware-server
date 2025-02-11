@@ -1423,10 +1423,7 @@ class ObservationStore(
    * observation finishes, rather than when it starts, means we can include data from observations
    * that weren't done yet at the time the current one started.
    */
-  private fun recalculateMortalityRates(
-      observationId: ObservationId,
-      plantingSiteId: PlantingSiteId
-  ) {
+  fun recalculateMortalityRates(observationId: ObservationId, plantingSiteId: PlantingSiteId) {
     val liveAndDeadTotals: Map<RecordedSpeciesKey, Map<PlantingZoneId, List<Pair<Int, Int>>>> =
         with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
           val observationIdForSubzoneField =

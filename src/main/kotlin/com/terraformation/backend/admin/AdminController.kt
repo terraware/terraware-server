@@ -63,6 +63,8 @@ class AdminController(
     model.addAttribute("canManageParticipants", currentUser().canCreateParticipant())
     model.addAttribute("canReadCohorts", currentUser().canReadCohorts())
     model.addAttribute(
+        "canRecalculateMortalityRates", GlobalRole.SuperAdmin in currentUser().globalRoles)
+    model.addAttribute(
         "canSendTestEmail",
         config.email.enabled && GlobalRole.SuperAdmin in currentUser().globalRoles)
     model.addAttribute("canSetTestClock", config.useTestClock && currentUser().canSetTestClock())
