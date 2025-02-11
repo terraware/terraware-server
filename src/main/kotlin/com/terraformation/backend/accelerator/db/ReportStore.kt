@@ -247,7 +247,7 @@ class ReportStore(
                   .leftJoin(REPORT_STANDARD_METRICS)
                   .on(STANDARD_METRICS.ID.eq(REPORT_STANDARD_METRICS.STANDARD_METRIC_ID))
                   .and(REPORTS.ID.eq(REPORT_STANDARD_METRICS.REPORT_ID))
-                  .orderBy(STANDARD_METRICS.REFERENCE))
+                  .orderBy(STANDARD_METRICS.REFERENCE, STANDARD_METRICS.ID))
           .convertFrom { result -> result.map { ReportStandardMetricModel.of(it) } }
     }
 }
