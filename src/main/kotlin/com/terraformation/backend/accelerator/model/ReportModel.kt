@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import java.time.Instant
 import java.time.LocalDate
+import org.jooq.Field
 import org.jooq.Record
 
 data class ReportModel(
@@ -26,9 +27,13 @@ data class ReportModel(
     val modifiedTime: Instant,
     val submittedBy: UserId? = null,
     val submittedTime: Instant? = null,
+    val standardMetrics: List<ReportStandardMetricModel> = emptyList(),
 ) {
   companion object {
-    fun of(record: Record): ReportModel {
+    fun of(
+        record: Record,
+        standardMetricsField: Field<List<ReportStandardMetricModel>>?
+    ): ReportModel {
       return with(REPORTS) {
         ReportModel(
             id = record[ID]!!,
@@ -38,8 +43,11 @@ data class ReportModel(
             startDate = record[START_DATE]!!,
             endDate = record[END_DATE]!!,
             internalComment =
-                if (currentUser().canReadReportInternalComments()) record[INTERNAL_COMMENT]
-                else null,
+                if (currentUser().canReadReportInternalComments()) {
+                  record[INTERNAL_COMMENT]
+                } else {
+                  null
+                },
             feedback = record[FEEDBACK],
             createdBy = record[CREATED_BY]!!,
             createdTime = record[CREATED_TIME]!!,
@@ -47,7 +55,7 @@ data class ReportModel(
             modifiedTime = record[MODIFIED_TIME]!!,
             submittedBy = record[SUBMITTED_BY],
             submittedTime = record[SUBMITTED_TIME],
-        )
+            standardMetrics = standardMetricsField?.let { record[it] } ?: emptyList())
       }
     }
   }

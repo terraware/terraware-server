@@ -5,17 +5,24 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ReportModel
+import com.terraformation.backend.accelerator.model.ReportStandardMetricEntryModel
+import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
+import com.terraformation.backend.accelerator.model.StandardMetricModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.MetricComponent
+import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.tables.records.ProjectReportConfigsRecord
+import com.terraformation.backend.db.accelerator.tables.records.ReportStandardMetricsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportsRecord
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.time.toInstant
 import java.time.Instant
 import java.time.LocalDate
@@ -87,6 +94,124 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       clock.instant = LocalDate.of(2031, Month.JANUARY, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
       assertEquals(listOf(reportModel), store.fetch())
+    }
+
+    @Test
+    fun `includes current metrics for Not Submitted, and recorded metrics for Submitted`() {
+      val standardMetricId1 =
+          insertStandardMetric(
+              component = MetricComponent.Climate,
+              description = "Climate standard metric description",
+              name = "Climate Standard Metric",
+              reference = "3.0",
+              type = MetricType.Activity,
+          )
+
+      val standardMetricId2 =
+          insertStandardMetric(
+              component = MetricComponent.Community,
+              description = "Community metric description",
+              name = "Community Metric",
+              reference = "5.0",
+              type = MetricType.Outcome,
+          )
+
+      val standardMetricId3 =
+          insertStandardMetric(
+              component = MetricComponent.ProjectObjectives,
+              description = "Project objectives metric description",
+              name = "Project Objectives Metric",
+              reference = "1.0",
+              type = MetricType.Impact,
+          )
+
+      val configId = insertProjectReportConfig()
+      val reportId = insertReport(status = ReportStatus.NotSubmitted)
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricId1,
+          target = 55,
+          value = 45,
+          notes = "Almost at target",
+          internalComment = "Not quite there yet",
+          modifiedTime = Instant.ofEpochSecond(3000),
+          modifiedBy = user.userId,
+      )
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricId2,
+          target = 25,
+          modifiedTime = Instant.ofEpochSecond(1500),
+          modifiedBy = user.userId,
+      )
+
+      val reportModel =
+          ReportModel(
+              id = reportId,
+              configId = configId,
+              projectId = projectId,
+              status = ReportStatus.NotSubmitted,
+              startDate = LocalDate.EPOCH,
+              endDate = LocalDate.EPOCH.plusDays(1),
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = Instant.EPOCH,
+              standardMetrics =
+                  listOf(
+                      // ordered by reference
+                      ReportStandardMetricModel(
+                          metric =
+                              StandardMetricModel(
+                                  id = standardMetricId3,
+                                  component = MetricComponent.ProjectObjectives,
+                                  description = "Project objectives metric description",
+                                  name = "Project Objectives Metric",
+                                  reference = "1.0",
+                                  type = MetricType.Impact,
+                              ),
+                          // all fields are null because no target/value have been set yet
+                          entry = ReportStandardMetricEntryModel()),
+                      ReportStandardMetricModel(
+                          metric =
+                              StandardMetricModel(
+                                  id = standardMetricId1,
+                                  component = MetricComponent.Climate,
+                                  description = "Climate standard metric description",
+                                  name = "Climate Standard Metric",
+                                  reference = "3.0",
+                                  type = MetricType.Activity,
+                              ),
+                          entry =
+                              ReportStandardMetricEntryModel(
+                                  target = 55,
+                                  value = 45,
+                                  notes = "Almost at target",
+                                  internalComment = "Not quite there yet",
+                                  modifiedTime = Instant.ofEpochSecond(3000),
+                                  modifiedBy = user.userId,
+                              )),
+                      ReportStandardMetricModel(
+                          metric =
+                              StandardMetricModel(
+                                  id = standardMetricId2,
+                                  component = MetricComponent.Community,
+                                  description = "Community metric description",
+                                  name = "Community Metric",
+                                  reference = "5.0",
+                                  type = MetricType.Outcome,
+                              ),
+                          entry =
+                              ReportStandardMetricEntryModel(
+                                  target = 25,
+                                  modifiedTime = Instant.ofEpochSecond(1500),
+                                  modifiedBy = user.userId,
+                              )),
+                  ))
+
+      assertEquals(listOf(reportModel), store.fetch(includeMetrics = true))
     }
 
     @Test
@@ -301,6 +426,183 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           setOf(reportModel, secondReportModel, otherReportModel),
           store.fetch().toSet(),
           "Read-only admin user can see all project reports")
+    }
+  }
+
+  @Nested
+  inner class UpdateReportStandardMetrics {
+    @Test
+    fun `throws exception for non-organization users`() {
+      insertProjectReportConfig()
+      val reportId = insertReport(status = ReportStatus.NotSubmitted)
+      deleteOrganizationUser()
+      assertThrows<AccessDeniedException> {
+        store.updateReportStandardMetrics(reportId, emptyMap())
+      }
+    }
+
+    @Test
+    fun `throws exception for reports not in NotSubmitted`() {
+      insertProjectReportConfig()
+      val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
+      val submittedReportId = insertReport(status = ReportStatus.Submitted)
+      val needsUpdateReportId = insertReport(status = ReportStatus.NeedsUpdate)
+      val approvedReportId = insertReport(status = ReportStatus.Approved)
+
+      assertThrows<IllegalStateException> {
+        store.updateReportStandardMetrics(notNeededReportId, emptyMap())
+      }
+      assertThrows<IllegalStateException> {
+        store.updateReportStandardMetrics(submittedReportId, emptyMap())
+      }
+      assertThrows<IllegalStateException> {
+        store.updateReportStandardMetrics(needsUpdateReportId, emptyMap())
+      }
+      assertThrows<IllegalStateException> {
+        store.updateReportStandardMetrics(approvedReportId, emptyMap())
+      }
+    }
+
+    @Test
+    fun `upserts values and targets for existing and non-existing report metric rows`() {
+      val otherUserId = insertUser()
+
+      val standardMetricId1 =
+          insertStandardMetric(
+              component = MetricComponent.Climate,
+              description = "Climate standard metric description",
+              name = "Climate Standard Metric",
+              reference = "3.0",
+              type = MetricType.Activity,
+          )
+
+      val standardMetricId2 =
+          insertStandardMetric(
+              component = MetricComponent.Community,
+              description = "Community metric description",
+              name = "Community Metric",
+              reference = "5.0",
+              type = MetricType.Outcome,
+          )
+
+      val standardMetricId3 =
+          insertStandardMetric(
+              component = MetricComponent.ProjectObjectives,
+              description = "Project objectives metric description",
+              name = "Project Objectives Metric",
+              reference = "1.0",
+              type = MetricType.Impact,
+          )
+
+      // This has no entry and will not have any updates
+      insertStandardMetric(
+          component = MetricComponent.Biodiversity,
+          description = "Biodiversity metric description",
+          name = "Biodiversity Metric",
+          reference = "7.0",
+          type = MetricType.Impact,
+      )
+
+      val configId = insertProjectReportConfig()
+      val reportId = insertReport(status = ReportStatus.NotSubmitted, createdBy = otherUserId)
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricId1,
+          target = 55,
+          value = 45,
+          notes = "Existing metric 1 notes",
+          modifiedTime = Instant.ofEpochSecond(3000),
+          modifiedBy = otherUserId,
+      )
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricId2,
+          target = 30,
+          value = null,
+          notes = "Existing metric 2 notes",
+          internalComment = "Existing metric 2 internal comments",
+          modifiedTime = Instant.ofEpochSecond(3000),
+          modifiedBy = user.userId,
+      )
+
+      // At this point, the report has entries for metric 1 and 2, no entry for metric 3 and 4
+
+      clock.instant = Instant.ofEpochSecond(9000)
+
+      // We add new entries for metric 2 and 3. Metric 1 and 4 are not modified
+
+      store.updateReportStandardMetrics(
+          reportId,
+          mapOf(
+              standardMetricId2 to
+                  ReportStandardMetricEntryModel(
+                      target = 99,
+                      value = 88,
+                      notes = "New metric 2 notes",
+
+                      // These fields are ignored
+                      internalComment = "Not permitted to write internal comment",
+                      modifiedTime = Instant.EPOCH,
+                      modifiedBy = UserId(99),
+                  ),
+              standardMetricId3 to
+                  ReportStandardMetricEntryModel(
+                      target = 50,
+                      value = null,
+                      notes = "New metric 3 notes",
+                  ),
+          ))
+
+      assertTableEquals(
+          listOf(
+              ReportStandardMetricsRecord(
+                  reportId = reportId,
+                  standardMetricId = standardMetricId1,
+                  target = 55,
+                  value = 45,
+                  notes = "Existing metric 1 notes",
+                  modifiedTime = Instant.ofEpochSecond(3000),
+                  modifiedBy = otherUserId,
+              ),
+              ReportStandardMetricsRecord(
+                  reportId = reportId,
+                  standardMetricId = standardMetricId2,
+                  target = 99,
+                  value = 88,
+                  notes = "New metric 2 notes",
+                  internalComment = "Existing metric 2 internal comments",
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+              ReportStandardMetricsRecord(
+                  reportId = reportId,
+                  standardMetricId = standardMetricId3,
+                  target = 50,
+                  notes = "New metric 3 notes",
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+              // Standard metric 4 is not inserted since there was no updates
+          ),
+          "Reports standard metrics table")
+
+      assertTableEquals(
+          ReportsRecord(
+              id = reportId,
+              configId = configId,
+              projectId = projectId,
+              statusId = ReportStatus.NotSubmitted,
+              startDate = LocalDate.EPOCH,
+              endDate = LocalDate.EPOCH.plusDays(1),
+              createdBy = otherUserId,
+              createdTime = Instant.EPOCH,
+              // Modified time and modified by are updated
+              modifiedBy = user.userId,
+              modifiedTime = Instant.ofEpochSecond(9000),
+          ),
+          "Reports table")
     }
   }
 
