@@ -150,6 +150,17 @@ class ReportStore(
     }
   }
 
+  fun reviewReportStandardMetrics(
+    reportId: ReportId,
+    entries: Map<StandardMetricId, ReportStandardMetricEntryModel>
+  ) {
+    requirePermissions { reviewReports() }
+
+    reportsDao.fetchOneById(reportId) ?: throw ReportNotFoundException(reportId)
+
+    upsertReportStandardMetrics(reportId, entries)
+  }
+
   fun updateReportStandardMetrics(
       reportId: ReportId,
       entries: Map<StandardMetricId, ReportStandardMetricEntryModel>
@@ -165,47 +176,7 @@ class ReportStore(
           "Cannot update metrics for report $reportId of status ${report.status.name}")
     }
 
-    dslContext.transaction { _ ->
-      val rowsUpdated =
-          dslContext
-              .insertInto(
-                  REPORT_STANDARD_METRICS,
-                  REPORT_STANDARD_METRICS.REPORT_ID,
-                  REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
-                  REPORT_STANDARD_METRICS.TARGET,
-                  REPORT_STANDARD_METRICS.VALUE,
-                  REPORT_STANDARD_METRICS.NOTES,
-                  REPORT_STANDARD_METRICS.MODIFIED_BY,
-                  REPORT_STANDARD_METRICS.MODIFIED_TIME,
-              )
-              .apply {
-                entries.forEach { (metricId, entry) ->
-                  this.values(
-                      reportId,
-                      metricId,
-                      entry.target,
-                      entry.value,
-                      entry.notes,
-                      currentUser().userId,
-                      clock.instant(),
-                  )
-                }
-              }
-              .onConflict(
-                  REPORT_STANDARD_METRICS.REPORT_ID, REPORT_STANDARD_METRICS.STANDARD_METRIC_ID)
-              .doUpdate()
-              .setAllToExcluded()
-              .execute()
-
-      if (rowsUpdated > 0) {
-        dslContext
-            .update(REPORTS)
-            .set(REPORTS.MODIFIED_BY, currentUser().userId)
-            .set(REPORTS.MODIFIED_TIME, clock.instant())
-            .where(REPORTS.ID.eq(reportId))
-            .execute()
-      }
-    }
+    upsertReportStandardMetrics(reportId, entries)
   }
 
   private fun createReportRows(config: ExistingProjectReportConfigModel): List<ReportsRow> {
@@ -277,6 +248,83 @@ class ReportStore(
   ): List<ExistingProjectReportConfigModel> {
     return with(PROJECT_REPORT_CONFIGS) {
       dslContext.selectFrom(this).where(condition).fetch { ProjectReportConfigModel.of(it) }
+    }
+  }
+
+  private fun upsertReportStandardMetrics(
+    reportId: ReportId,
+    entries: Map<StandardMetricId, ReportStandardMetricEntryModel>
+  ) {
+    val columns = if (currentUser().canReviewReports()) {
+        listOf(
+            REPORT_STANDARD_METRICS.REPORT_ID,
+            REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
+            REPORT_STANDARD_METRICS.TARGET,
+            REPORT_STANDARD_METRICS.VALUE,
+            REPORT_STANDARD_METRICS.NOTES,
+            REPORT_STANDARD_METRICS.INTERNAL_COMMENT,
+            REPORT_STANDARD_METRICS.MODIFIED_BY,
+            REPORT_STANDARD_METRICS.MODIFIED_TIME,
+        )
+      } else {
+        listOf(
+            REPORT_STANDARD_METRICS.REPORT_ID,
+            REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
+            REPORT_STANDARD_METRICS.TARGET,
+            REPORT_STANDARD_METRICS.VALUE,
+            REPORT_STANDARD_METRICS.NOTES,
+            REPORT_STANDARD_METRICS.MODIFIED_BY,
+            REPORT_STANDARD_METRICS.MODIFIED_TIME,
+        )
+      }
+
+    dslContext.transaction { _ ->
+      val rowsUpdated =
+          dslContext
+              .insertInto(
+                  REPORT_STANDARD_METRICS,
+                  columns,
+              )
+              .apply {
+                entries.forEach { (metricId, entry) ->
+                  if (currentUser().canReviewReports()) {
+                    this.values(
+                        reportId,
+                        metricId,
+                        entry.target,
+                        entry.value,
+                        entry.notes,
+                        currentUser().userId,
+                        clock.instant(),
+                    )
+                  } else {
+                    this.values(
+                        reportId,
+                        metricId,
+                        entry.target,
+                        entry.value,
+                        entry.notes,
+                        entry.internalComment,
+                        currentUser().userId,
+                        clock.instant(),
+                    )
+                  }
+                }
+              }
+              .onConflict(
+                  REPORT_STANDARD_METRICS.REPORT_ID, REPORT_STANDARD_METRICS.STANDARD_METRIC_ID)
+              .doUpdate()
+              .setAllToExcluded()
+              .execute()
+
+      if (rowsUpdated > 0) {
+        dslContext
+            .update(REPORTS)
+            .set(REPORTS.MODIFIED_BY, currentUser().userId)
+            .set(REPORTS.MODIFIED_TIME, clock.instant())
+            .where(REPORTS.ID.eq(reportId))
+            .execute()
+      }
     }
   }
 

@@ -534,6 +534,172 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
+  inner class ReviewReportStandardMetrics {
+    @Test
+    fun `throws exception for non-TFExpert users`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      insertProjectReportConfig()
+      val reportId = insertReport(status = ReportStatus.Submitted)
+
+      assertThrows<AccessDeniedException> {
+        store.reviewReportStandardMetrics(reportId = reportId, emptyMap())
+      }
+
+      insertUserGlobalRole(role = GlobalRole.TFExpert)
+
+      assertDoesNotThrow {
+        store.reviewReportStandardMetrics(reportId = reportId, emptyMap())
+      }
+    }
+
+    @Test
+    fun `upserts values and internalComment for existing and non-existing report metric rows`() {
+      val otherUserId = insertUser()
+
+      val standardMetricId1 =
+          insertStandardMetric(
+              component = MetricComponent.Climate,
+              description = "Climate standard metric description",
+              name = "Climate Standard Metric",
+              reference = "3.0",
+              type = MetricType.Activity,
+          )
+
+      val standardMetricId2 =
+          insertStandardMetric(
+              component = MetricComponent.Community,
+              description = "Community metric description",
+              name = "Community Metric",
+              reference = "5.0",
+              type = MetricType.Outcome,
+          )
+
+      val standardMetricId3 =
+          insertStandardMetric(
+              component = MetricComponent.ProjectObjectives,
+              description = "Project objectives metric description",
+              name = "Project Objectives Metric",
+              reference = "1.0",
+              type = MetricType.Impact,
+          )
+
+      // This has no entry and will not have any updates
+      insertStandardMetric(
+          component = MetricComponent.Biodiversity,
+          description = "Biodiversity metric description",
+          name = "Biodiversity Metric",
+          reference = "7.0",
+          type = MetricType.Impact,
+      )
+
+      val configId = insertProjectReportConfig()
+      val reportId = insertReport(status = ReportStatus.Submitted, createdBy = otherUserId)
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricId1,
+          target = 55,
+          value = 45,
+          notes = "Existing metric 1 notes",
+          modifiedTime = Instant.ofEpochSecond(3000),
+          modifiedBy = otherUserId,
+      )
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricId2,
+          target = 30,
+          value = null,
+          notes = "Existing metric 2 notes",
+          internalComment = "Existing metric 2 internal comments",
+          modifiedTime = Instant.ofEpochSecond(3000),
+          modifiedBy = user.userId,
+      )
+
+      // At this point, the report has entries for metric 1 and 2, no entry for metric 3 and 4
+
+      clock.instant = Instant.ofEpochSecond(9000)
+
+      // We add new entries for metric 2 and 3. Metric 1 and 4 are not modified
+
+      store.updateReportStandardMetrics(
+          reportId,
+          mapOf(
+              standardMetricId2 to
+                  ReportStandardMetricEntryModel(
+                      target = 99,
+                      value = 88,
+                      notes = "New metric 2 notes",
+                      internalComment = "New metric 2 internal comment",
+
+                      // These fields are ignored
+                      modifiedTime = Instant.EPOCH,
+                      modifiedBy = UserId(99),
+                  ),
+              standardMetricId3 to
+                  ReportStandardMetricEntryModel(
+                      target = 50,
+                      value = 45,
+                      notes = "New metric 3 notes",
+                      internalComment = "New metric 3 internal comment",
+                  ),
+          ))
+
+      assertTableEquals(
+          listOf(
+              ReportStandardMetricsRecord(
+                  reportId = reportId,
+                  standardMetricId = standardMetricId1,
+                  target = 55,
+                  value = 45,
+                  notes = "Existing metric 1 notes",
+                  modifiedTime = Instant.ofEpochSecond(3000),
+                  modifiedBy = otherUserId,
+              ),
+              ReportStandardMetricsRecord(
+                  reportId = reportId,
+                  standardMetricId = standardMetricId2,
+                  target = 99,
+                  value = 88,
+                  notes = "New metric 2 notes",
+                  internalComment = "New metric 2 internal comment",
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+              ReportStandardMetricsRecord(
+                  reportId = reportId,
+                  standardMetricId = standardMetricId3,
+                  target = 50,
+                  value = 45,
+                  notes = "New metric 3 notes",
+                  internalComment = "New metric 3 internal comment",
+                  modifiedTime = Instant.ofEpochSecond(9000),
+                  modifiedBy = user.userId,
+              ),
+              // Standard metric 4 is not inserted since there was no updates
+          ),
+          "Reports standard metrics table")
+
+      assertTableEquals(
+          ReportsRecord(
+              id = reportId,
+              configId = configId,
+              projectId = projectId,
+              statusId = ReportStatus.Submitted,
+              startDate = LocalDate.EPOCH,
+              endDate = LocalDate.EPOCH.plusDays(1),
+              createdBy = otherUserId,
+              createdTime = Instant.EPOCH,
+              // Modified time and modified by are updated
+              modifiedBy = user.userId,
+              modifiedTime = Instant.ofEpochSecond(9000),
+          ),
+          "Reports table")
+    }
+  }
+
+  @Nested
   inner class UpdateReportStandardMetrics {
     @Test
     fun `throws exception for non-organization users`() {
