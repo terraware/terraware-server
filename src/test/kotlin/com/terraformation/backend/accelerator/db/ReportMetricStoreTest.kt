@@ -83,7 +83,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class FetchAllStandardMetrics {
     @Test
-    fun `returns one standard metric`() {
+    fun `returns all standard metrics`() {
       val standardMetricId1 =
           insertStandardMetric(
               component = MetricComponent.Climate,
