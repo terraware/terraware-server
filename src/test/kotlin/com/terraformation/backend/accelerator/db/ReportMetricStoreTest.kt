@@ -127,7 +127,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   component = MetricComponent.ProjectObjectives,
                   description = "Project objectives metric description",
                   name = "Project Objectives Metric",
-                  reference = "1.0",
+                  reference = "3.0",
                   type = MetricType.Impact,
               ),
               ExistingStandardMetricModel(
