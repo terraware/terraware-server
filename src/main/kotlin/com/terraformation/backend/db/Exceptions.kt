@@ -188,9 +188,8 @@ class SpeciesProblemNotFoundException(val speciesProblemId: SpeciesProblemId) :
 class SpeciesProblemHasNoSuggestionException(val speciesProblemId: SpeciesProblemId) :
     MismatchedStateException("Species problem $speciesProblemId has no suggested value")
 
-
 class StandardMetricNotFoundException(val metricId: StandardMetricId) :
-  EntityNotFoundException("Standard Metric $metricId not found")
+    EntityNotFoundException("Standard Metric $metricId not found")
 
 class SubLocationNameExistsException(val name: String) :
     DuplicateEntityException("Sub-location $name already exists at facility")
