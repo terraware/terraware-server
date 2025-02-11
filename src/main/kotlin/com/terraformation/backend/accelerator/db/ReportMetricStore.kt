@@ -71,7 +71,7 @@ class ReportMetricStore(
     return dslContext
         .selectFrom(STANDARD_METRICS)
         .where(condition)
-        .orderBy(STANDARD_METRICS.REFERENCE)
+        .orderBy(STANDARD_METRICS.REFERENCE, STANDARD_METRICS.ID)
         .fetch { StandardMetricModel.of(it) }
   }
 }
