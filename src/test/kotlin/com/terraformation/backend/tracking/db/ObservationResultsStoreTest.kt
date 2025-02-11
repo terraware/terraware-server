@@ -28,6 +28,8 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQua
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQuadratSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBZONES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
@@ -47,6 +49,7 @@ import java.io.InputStreamReader
 import java.math.BigDecimal
 import java.nio.file.NoSuchFileException
 import java.time.Instant
+import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -862,6 +865,11 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `partial observations of disjoint subzone lists`() {
+      runScenario("/tracking/observation/DisjointSubzones", numObservations = 3, sizeMeters = 30)
+    }
+
+    @Test
     fun `permanent plots being added and removed`() {
       runScenario(
           "/tracking/observation/PermanentPlotChanges", numObservations = 3, sizeMeters = 25)
@@ -1465,6 +1473,17 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
                   statusId = status,
               )
             }
+
+        with(OBSERVATION_REQUESTED_SUBZONES) {
+          dslContext
+              .insertInto(OBSERVATION_REQUESTED_SUBZONES, OBSERVATION_ID, PLANTING_SUBZONE_ID)
+              .select(
+                  DSL.selectDistinct(DSL.value(observationId), MONITORING_PLOTS.PLANTING_SUBZONE_ID)
+                      .from(MONITORING_PLOTS)
+                      .where(
+                          MONITORING_PLOTS.PLOT_NUMBER.`in`(observedPlotNames.map { it.toLong() })))
+              .execute()
+        }
 
         // This would normally happen in ObservationService.startObservation after plot selection;
         // do it explicitly since we're specifying our own plots in the test data.
