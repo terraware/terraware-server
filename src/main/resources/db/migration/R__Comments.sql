@@ -616,7 +616,7 @@ COMMENT ON TABLE accelerator.reports IS 'Accelerator project reports.';
 
 COMMENT ON TABLE accelerator.score_categories IS '(Enum) Project score categories.';
 
-COMMENT ON TABLE accelerator.standard_metrics IS 'Standard non-system metrics for every projects to measure in accelerator reports.';
+COMMENT ON TABLE accelerator.standard_metrics IS 'Standard non-system metrics for every project to measure in accelerator reports.';
 
 COMMENT ON TABLE accelerator.submission_documents IS 'Information about documents uploaded by users to satisfy deliverables. A deliverable can have multiple documents.';
 COMMENT ON COLUMN accelerator.submission_documents.name IS 'System-generated filename. The file is stored using this name in the document store. This includes several elements such as the date and description.';
