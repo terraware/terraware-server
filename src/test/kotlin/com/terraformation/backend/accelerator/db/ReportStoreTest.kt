@@ -616,12 +616,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       // At this point, the report has entries for metric 1 and 2, no entry for metric 3 and 4
-
       clock.instant = Instant.ofEpochSecond(9000)
 
       // We add new entries for metric 2 and 3. Metric 1 and 4 are not modified
-
-      store.updateReportStandardMetrics(
+      store.reviewReportStandardMetrics(
           reportId,
           mapOf(
               standardMetricId2 to
