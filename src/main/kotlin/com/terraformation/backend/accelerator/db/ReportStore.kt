@@ -151,8 +151,8 @@ class ReportStore(
   }
 
   fun reviewReportStandardMetrics(
-    reportId: ReportId,
-    entries: Map<StandardMetricId, ReportStandardMetricEntryModel>
+      reportId: ReportId,
+      entries: Map<StandardMetricId, ReportStandardMetricEntryModel>
   ) {
     requirePermissions { reviewReports() }
 
@@ -252,31 +252,32 @@ class ReportStore(
   }
 
   private fun upsertReportStandardMetrics(
-    reportId: ReportId,
-    entries: Map<StandardMetricId, ReportStandardMetricEntryModel>
+      reportId: ReportId,
+      entries: Map<StandardMetricId, ReportStandardMetricEntryModel>
   ) {
-    val columns = if (currentUser().canReviewReports()) {
-        listOf(
-            REPORT_STANDARD_METRICS.REPORT_ID,
-            REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
-            REPORT_STANDARD_METRICS.TARGET,
-            REPORT_STANDARD_METRICS.VALUE,
-            REPORT_STANDARD_METRICS.NOTES,
-            REPORT_STANDARD_METRICS.INTERNAL_COMMENT,
-            REPORT_STANDARD_METRICS.MODIFIED_BY,
-            REPORT_STANDARD_METRICS.MODIFIED_TIME,
-        )
-      } else {
-        listOf(
-            REPORT_STANDARD_METRICS.REPORT_ID,
-            REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
-            REPORT_STANDARD_METRICS.TARGET,
-            REPORT_STANDARD_METRICS.VALUE,
-            REPORT_STANDARD_METRICS.NOTES,
-            REPORT_STANDARD_METRICS.MODIFIED_BY,
-            REPORT_STANDARD_METRICS.MODIFIED_TIME,
-        )
-      }
+    val columns =
+        if (currentUser().canReviewReports()) {
+          listOf(
+              REPORT_STANDARD_METRICS.REPORT_ID,
+              REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
+              REPORT_STANDARD_METRICS.TARGET,
+              REPORT_STANDARD_METRICS.VALUE,
+              REPORT_STANDARD_METRICS.NOTES,
+              REPORT_STANDARD_METRICS.INTERNAL_COMMENT,
+              REPORT_STANDARD_METRICS.MODIFIED_BY,
+              REPORT_STANDARD_METRICS.MODIFIED_TIME,
+          )
+        } else {
+          listOf(
+              REPORT_STANDARD_METRICS.REPORT_ID,
+              REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
+              REPORT_STANDARD_METRICS.TARGET,
+              REPORT_STANDARD_METRICS.VALUE,
+              REPORT_STANDARD_METRICS.NOTES,
+              REPORT_STANDARD_METRICS.MODIFIED_BY,
+              REPORT_STANDARD_METRICS.MODIFIED_TIME,
+          )
+        }
 
     dslContext.transaction { _ ->
       val rowsUpdated =

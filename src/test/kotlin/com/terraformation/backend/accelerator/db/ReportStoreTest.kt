@@ -548,9 +548,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
-      assertDoesNotThrow {
-        store.reviewReportStandardMetrics(reportId = reportId, emptyMap())
-      }
+      assertDoesNotThrow { store.reviewReportStandardMetrics(reportId = reportId, emptyMap()) }
     }
 
     @Test

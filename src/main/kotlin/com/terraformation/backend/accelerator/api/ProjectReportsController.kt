@@ -111,9 +111,9 @@ class ProjectReportsController(private val reportStore: ReportStore) {
   @PostMapping("/{reportId}/metrics/review")
   @Operation(summary = "Review metric entries for a report")
   fun reviewAcceleratorReport(
-    @PathVariable projectId: ProjectId,
-    @PathVariable reportId: ReportId,
-    @RequestBody payload: ReviewAcceleratorReportMetricsRequestPayload,
+      @PathVariable projectId: ProjectId,
+      @PathVariable reportId: ReportId,
+      @RequestBody payload: ReviewAcceleratorReportMetricsRequestPayload,
   ): SimpleSuccessResponsePayload {
 
     val standardMetricUpdates =
@@ -262,11 +262,11 @@ data class ReportStandardMetricPayload(
 }
 
 data class ReportStandardMetricEntriesPayload(
-  val id: StandardMetricId,
-  val target: Int?,
-  val value: Int?,
-  val notes: String?,
-  val internalComment: String?,
+    val id: StandardMetricId,
+    val target: Int?,
+    val value: Int?,
+    val notes: String?,
+    val internalComment: String?,
 )
 
 data class CreateAcceleratorReportConfigRequestPayload(
@@ -278,7 +278,7 @@ data class ReviewAcceleratorReportRequestPayload(
 )
 
 data class ReviewAcceleratorReportMetricsRequestPayload(
-  val standardMetrics: List<ReportStandardMetricEntriesPayload>,
+    val standardMetrics: List<ReportStandardMetricEntriesPayload>,
 )
 
 data class UpdateAcceleratorReportMetricsRequestPayload(
