@@ -12,6 +12,7 @@ import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
+import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -503,12 +504,12 @@ data class IndividualUser(
     return isMember(organizationId) || isGlobalReader(organizationId)
   }
 
-  override fun canReadProjectReports(projectId: ProjectId) =
-      isReadOnlyOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
-
   override fun canReadProjectScores(projectId: ProjectId) = isReadOnlyOrHigher()
 
   override fun canReadProjectVotes(projectId: ProjectId) = isReadOnlyOrHigher()
+
+  override fun canReadReport(reportId: ReportId) =
+      isReadOnlyOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(reportId))
 
   override fun canReadReportInternalComments() = isReadOnlyOrHigher()
 
@@ -559,6 +560,8 @@ data class IndividualUser(
       isSuperAdmin() || isAdminOrHigher(parentStore.getOrganizationId(observationId))
 
   override fun canReviewApplication(applicationId: ApplicationId) = isTFExpertOrHigher()
+
+  override fun canReviewReports(): Boolean = isTFExpertOrHigher()
 
   override fun canScheduleAdHocObservation(plantingSiteId: PlantingSiteId) =
       isSuperAdmin() || isMember(parentStore.getOrganizationId(plantingSiteId))
@@ -693,7 +696,8 @@ data class IndividualUser(
 
   override fun canUpdateProjectVotes(projectId: ProjectId): Boolean = isTFExpertOrHigher()
 
-  override fun canReviewReports(): Boolean = isTFExpertOrHigher()
+  override fun canUpdateReport(reportId: ReportId): Boolean =
+      isManagerOrHigher(parentStore.getOrganizationId(reportId))
 
   override fun canUpdateSeedFundReport(reportId: SeedFundReportId) =
       isAdminOrHigher(parentStore.getOrganizationId(reportId))

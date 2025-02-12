@@ -1,6 +1,7 @@
 package com.terraformation.backend.db
 
 import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
@@ -152,6 +153,12 @@ class ProjectInDifferentOrganizationException :
 class ProjectNotFoundException(val projectId: ProjectId) :
     EntityNotFoundException("Project $projectId not found")
 
+class ReportNotFoundException(val reportId: ReportId) :
+    EntityNotFoundException("Report $reportId not found")
+
+class ScientificNameExistsException(val name: String?) :
+    DuplicateEntityException("Scientific name $name already exists")
+
 class SeedFundReportAlreadySubmittedException(val reportId: SeedFundReportId) :
     MismatchedStateException(
         "Seed Fund Report $reportId has already been submitted and cannot be modified")
@@ -170,9 +177,6 @@ class SeedFundReportNotLockedException(val reportId: SeedFundReportId) :
 
 class SpeciesInUseException(val speciesId: SpeciesId) :
     MismatchedStateException("Species $speciesId is in use")
-
-class ScientificNameExistsException(val name: String?) :
-    DuplicateEntityException("Scientific name $name already exists")
 
 class SpeciesNotFoundException(val speciesId: SpeciesId) :
     EntityNotFoundException("Species $speciesId not found")

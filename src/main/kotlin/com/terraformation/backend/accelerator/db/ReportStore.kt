@@ -144,7 +144,7 @@ class ReportStore(
     return with(REPORTS) {
           dslContext.selectFrom(this).where(condition).fetch { ReportModel.of(it) }
         }
-        .filter { currentUser().canReadProjectReports(it.projectId) }
+        .filter { currentUser().canReadReport(it.id) }
   }
 
   private fun fetchConfigsByCondition(

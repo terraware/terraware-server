@@ -17,6 +17,7 @@ import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.SeedFundReportNotFoundException
 import com.terraformation.backend.db.SpeciesNotFoundException
 import com.terraformation.backend.db.SubLocationNotFoundException
@@ -31,6 +32,7 @@ import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
+import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -1043,11 +1045,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun readProjectReports(projectId: ProjectId) {
+  fun readReport(reportId: ReportId) {
     user.recordPermissionChecks {
-      if (!user.canReadProjectReports(projectId)) {
-        readProject(projectId)
-        throw AccessDeniedException("No permission to read project reports")
+      if (!user.canReadReport(reportId)) {
+        throw ReportNotFoundException(reportId)
       }
     }
   }
@@ -1613,6 +1614,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateProjectVotes(projectId)) {
         readProject(projectId)
         throw AccessDeniedException("No permission to update votes for project $projectId")
+      }
+    }
+  }
+
+  fun updateReport(reportId: ReportId) {
+    user.recordPermissionChecks {
+      if (!user.canUpdateReport(reportId)) {
+        readReport(reportId)
+        throw AccessDeniedException("No permission to update report $reportId")
       }
     }
   }

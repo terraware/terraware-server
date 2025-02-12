@@ -8,6 +8,7 @@ import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
+import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -366,11 +367,11 @@ interface TerrawareUser : Principal {
 
   fun canReadProjectModules(projectId: ProjectId): Boolean = defaultPermission
 
-  fun canReadProjectReports(projectId: ProjectId): Boolean = defaultPermission
-
   fun canReadProjectScores(projectId: ProjectId): Boolean = defaultPermission
 
   fun canReadProjectVotes(projectId: ProjectId): Boolean = defaultPermission
+
+  fun canReadReport(reportId: ReportId): Boolean = defaultPermission
 
   fun canReadReportInternalComments(): Boolean = defaultPermission
 
@@ -501,6 +502,8 @@ interface TerrawareUser : Principal {
   fun canUpdateProjectScores(projectId: ProjectId): Boolean = defaultPermission
 
   fun canUpdateProjectVotes(projectId: ProjectId): Boolean = defaultPermission
+
+  fun canUpdateReport(reportId: ReportId): Boolean = defaultPermission
 
   fun canUpdateSeedFundReport(reportId: SeedFundReportId): Boolean = defaultPermission
 
