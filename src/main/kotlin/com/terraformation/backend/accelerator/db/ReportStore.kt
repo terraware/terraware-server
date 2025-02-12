@@ -295,6 +295,7 @@ class ReportStore(
                         entry.target,
                         entry.value,
                         entry.notes,
+                        entry.internalComment,
                         currentUser().userId,
                         clock.instant(),
                     )
@@ -305,7 +306,6 @@ class ReportStore(
                         entry.target,
                         entry.value,
                         entry.notes,
-                        entry.internalComment,
                         currentUser().userId,
                         clock.instant(),
                     )
