@@ -4,15 +4,22 @@ import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigM
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ReportModel
+import com.terraformation.backend.accelerator.model.ReportStandardMetricEntryModel
+import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.ReportFrequency
+import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportStatus
+import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.tables.daos.ReportsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import jakarta.inject.Named
@@ -22,8 +29,10 @@ import java.time.Month
 import java.time.ZoneId
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.Field
 import org.jooq.impl.DSL
 
+/** Store class intended for accelerator-admin to configure reports and metrics. */
 @Named
 class ReportStore(
     private val clock: InstantSource,
@@ -34,8 +43,9 @@ class ReportStore(
   fun fetch(
       projectId: ProjectId? = null,
       year: Int? = null,
-      includeFuture: Boolean = false,
       includeArchived: Boolean = false,
+      includeFuture: Boolean = false,
+      includeMetrics: Boolean = false,
   ): List<ReportModel> {
     val today = LocalDate.ofInstant(clock.instant(), ZoneId.systemDefault())
 
@@ -55,13 +65,15 @@ class ReportStore(
         }
 
     return fetchByCondition(
-        DSL.and(
-            listOfNotNull(
-                projectId?.let { REPORTS.PROJECT_ID.eq(it) },
-                year?.let { DSL.year(REPORTS.END_DATE).eq(it) },
-                futureCondition,
-                archivedCondition,
-            )))
+        condition =
+            DSL.and(
+                listOfNotNull(
+                    projectId?.let { REPORTS.PROJECT_ID.eq(it) },
+                    year?.let { DSL.year(REPORTS.END_DATE).eq(it) },
+                    futureCondition,
+                    archivedCondition,
+                )),
+        includeMetrics = includeMetrics)
   }
 
   fun insertProjectReportConfig(newModel: NewProjectReportConfigModel) {
@@ -93,6 +105,64 @@ class ReportStore(
 
     return fetchConfigsByCondition(
         projectId?.let { PROJECT_REPORT_CONFIGS.PROJECT_ID.eq(it) } ?: DSL.trueCondition())
+  }
+
+  fun updateReportStandardMetrics(
+      reportId: ReportId,
+      entries: Map<StandardMetricId, ReportStandardMetricEntryModel>
+  ) {
+    requirePermissions { updateReport(reportId) }
+
+    val report =
+        fetchByCondition(REPORTS.ID.eq(reportId)).firstOrNull()
+            ?: throw ReportNotFoundException(reportId)
+
+    if (report.status != ReportStatus.NotSubmitted) {
+      throw IllegalStateException(
+          "Cannot update metrics for report $reportId of status ${report.status.name}")
+    }
+
+    dslContext.transaction { _ ->
+      val rowsUpdated =
+          dslContext
+              .insertInto(
+                  REPORT_STANDARD_METRICS,
+                  REPORT_STANDARD_METRICS.REPORT_ID,
+                  REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
+                  REPORT_STANDARD_METRICS.TARGET,
+                  REPORT_STANDARD_METRICS.VALUE,
+                  REPORT_STANDARD_METRICS.NOTES,
+                  REPORT_STANDARD_METRICS.MODIFIED_BY,
+                  REPORT_STANDARD_METRICS.MODIFIED_TIME,
+              )
+              .apply {
+                entries.forEach { (metricId, entry) ->
+                  this.values(
+                      reportId,
+                      metricId,
+                      entry.target,
+                      entry.value,
+                      entry.notes,
+                      currentUser().userId,
+                      clock.instant(),
+                  )
+                }
+              }
+              .onConflict(
+                  REPORT_STANDARD_METRICS.REPORT_ID, REPORT_STANDARD_METRICS.STANDARD_METRIC_ID)
+              .doUpdate()
+              .setAllToExcluded()
+              .execute()
+
+      if (rowsUpdated > 0) {
+        dslContext
+            .update(REPORTS)
+            .set(REPORTS.MODIFIED_BY, currentUser().userId)
+            .set(REPORTS.MODIFIED_TIME, clock.instant())
+            .where(REPORTS.ID.eq(reportId))
+            .execute()
+      }
+    }
   }
 
   private fun createReportRows(config: ExistingProjectReportConfigModel): List<ReportsRow> {
@@ -140,10 +210,22 @@ class ReportStore(
     return rows
   }
 
-  private fun fetchByCondition(condition: Condition): List<ReportModel> {
-    return with(REPORTS) {
-          dslContext.selectFrom(this).where(condition).fetch { ReportModel.of(it) }
+  private fun fetchByCondition(
+      condition: Condition,
+      includeMetrics: Boolean = false
+  ): List<ReportModel> {
+    val standardMetricsField =
+        if (includeMetrics) {
+          standardMetricsMultiset
+        } else {
+          null
         }
+
+    return dslContext
+        .select(REPORTS.asterisk(), standardMetricsField)
+        .from(REPORTS)
+        .where(condition)
+        .fetch { ReportModel.of(it, standardMetricsField) }
         .filter { currentUser().canReadReport(it.id) }
   }
 
@@ -154,4 +236,19 @@ class ReportStore(
       dslContext.selectFrom(this).where(condition).fetch { ProjectReportConfigModel.of(it) }
     }
   }
+
+  private val standardMetricsMultiset: Field<List<ReportStandardMetricModel>>
+    get() {
+      return DSL.multiset(
+              DSL.select(
+                      STANDARD_METRICS.asterisk(),
+                      REPORT_STANDARD_METRICS.asterisk(),
+                  )
+                  .from(STANDARD_METRICS)
+                  .leftJoin(REPORT_STANDARD_METRICS)
+                  .on(STANDARD_METRICS.ID.eq(REPORT_STANDARD_METRICS.STANDARD_METRIC_ID))
+                  .and(REPORTS.ID.eq(REPORT_STANDARD_METRICS.REPORT_ID))
+                  .orderBy(STANDARD_METRICS.REFERENCE, STANDARD_METRICS.ID))
+          .convertFrom { result -> result.map { ReportStandardMetricModel.of(it) } }
+    }
 }
