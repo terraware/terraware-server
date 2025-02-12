@@ -159,6 +159,7 @@ class ReportStore(
             .update(REPORTS)
             .set(REPORTS.MODIFIED_BY, currentUser().userId)
             .set(REPORTS.MODIFIED_TIME, clock.instant())
+            .where(REPORTS.ID.eq(reportId))
             .execute()
       }
     }
