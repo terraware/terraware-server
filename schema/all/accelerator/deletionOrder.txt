@@ -1,11 +1,11 @@
 hubspot_token
-reports
 project_votes
 participant_project_species
 project_scores
 submission_documents
 deliverable_documents
 user_internal_interests
+report_standard_metrics
 project_vote_decisions
 project_overall_scores
 project_accelerator_details
@@ -19,7 +19,9 @@ deliverable_cohort_due_dates
 cohort_modules
 default_voters
 default_project_leads
+reports
 events
+standard_metrics
 deal_stages
 submissions
 applications
@@ -32,6 +34,8 @@ deliverable_categories
 score_categories
 report_statuses
 report_frequencies
+metric_types
+metric_components
 event_types
 event_statuses
 document_stores
