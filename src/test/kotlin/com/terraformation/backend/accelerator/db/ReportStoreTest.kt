@@ -430,6 +430,110 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
+  inner class ReviewReport {
+    @Test
+    fun `throws Access Denied Exception for non-TFExpert users`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      insertProjectReportConfig()
+      val reportId = insertReport(status = ReportStatus.Submitted)
+
+      assertThrows<AccessDeniedException> {
+        store.reviewReport(
+            reportId = reportId,
+            status = ReportStatus.Approved,
+            feedback = "feedback",
+            internalComment = "internal comment",
+        )
+      }
+
+      insertUserGlobalRole(role = GlobalRole.TFExpert)
+
+      assertDoesNotThrow {
+        store.reviewReport(
+            reportId = reportId,
+            status = ReportStatus.Approved,
+            feedback = "feedback",
+            internalComment = "internal comment",
+        )
+      }
+    }
+
+    @Test
+    fun `throws Illegal State Exception if updating status of NotSubmitted or NotNeeded Reports`() {
+      insertProjectReportConfig()
+      val notSubmittedReportId = insertReport(status = ReportStatus.NotSubmitted)
+      val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
+
+      assertThrows<IllegalStateException> {
+        store.reviewReport(
+            reportId = notSubmittedReportId,
+            status = ReportStatus.Approved,
+            feedback = "feedback",
+            internalComment = "internal comment",
+        )
+      }
+      assertThrows<IllegalStateException> {
+        store.reviewReport(
+            reportId = notNeededReportId,
+            status = ReportStatus.Approved,
+            feedback = "feedback",
+            internalComment = "internal comment",
+        )
+      }
+      assertDoesNotThrow {
+        store.reviewReport(
+            reportId = notSubmittedReportId,
+            status = ReportStatus.NotSubmitted,
+            feedback = "feedback",
+            internalComment = "internal comment",
+        )
+        store.reviewReport(
+            reportId = notNeededReportId,
+            status = ReportStatus.NotNeeded,
+            feedback = "feedback",
+            internalComment = "internal comment",
+        )
+      }
+    }
+
+    @Test
+    fun `updates relevant columns`() {
+      val otherUserId = insertUser()
+
+      insertProjectReportConfig()
+      val reportId =
+          insertReport(
+              status = ReportStatus.Submitted,
+              modifiedBy = otherUserId,
+              modifiedTime = Instant.ofEpochSecond(3000),
+          )
+
+      val existingReport = reportsDao.fetchOneById(reportId)!!
+
+      clock.instant = Instant.ofEpochSecond(20000)
+
+      store.reviewReport(
+          reportId = reportId,
+          status = ReportStatus.NeedsUpdate,
+          feedback = "feedback",
+          internalComment = "internal comment",
+      )
+
+      val updatedReport =
+          existingReport.copy(
+              statusId = ReportStatus.NeedsUpdate,
+              feedback = "feedback",
+              internalComment = "internal comment",
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
+
+      assertTableEquals(ReportsRecord(updatedReport))
+    }
+  }
+
+  @Nested
   inner class UpdateReportStandardMetrics {
     @Test
     fun `throws exception for non-organization users`() {

@@ -2739,7 +2739,7 @@ abstract class DatabaseBackedTest {
       submittedBy: UserId? =
           row.submittedBy
               ?: if (status != ReportStatus.NotSubmitted && status != ReportStatus.NotNeeded) {
-                currentUser().userId
+                inserted.userId
               } else {
                 null
               },

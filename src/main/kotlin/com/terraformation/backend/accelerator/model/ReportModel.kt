@@ -30,6 +30,13 @@ data class ReportModel(
     val standardMetrics: List<ReportStandardMetricModel> = emptyList(),
 ) {
   companion object {
+    val submittedStatuses =
+        setOf(
+            ReportStatus.Submitted,
+            ReportStatus.Approved,
+            ReportStatus.NeedsUpdate,
+        )
+
     fun of(
         record: Record,
         standardMetricsField: Field<List<ReportStandardMetricModel>>?
