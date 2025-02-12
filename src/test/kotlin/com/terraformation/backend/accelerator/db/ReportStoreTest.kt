@@ -592,7 +592,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       val configId = insertProjectReportConfig()
-      val reportId = insertReport(status = ReportStatus.Submitted, createdBy = otherUserId)
+      val reportId =
+          insertReport(
+              status = ReportStatus.Submitted,
+              createdBy = otherUserId,
+              createdTime = Instant.ofEpochSecond(1500),
+              submittedBy = otherUserId,
+              submittedTime = Instant.ofEpochSecond(3000),
+          )
 
       insertReportStandardMetric(
           reportId = reportId,
@@ -686,7 +693,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = LocalDate.EPOCH,
               endDate = LocalDate.EPOCH.plusDays(1),
               createdBy = otherUserId,
-              createdTime = Instant.EPOCH,
+              createdTime = Instant.ofEpochSecond(1500),
+              submittedBy = otherUserId,
+              submittedTime = Instant.ofEpochSecond(3000),
               // Modified time and modified by are updated
               modifiedBy = user.userId,
               modifiedTime = Instant.ofEpochSecond(9000),

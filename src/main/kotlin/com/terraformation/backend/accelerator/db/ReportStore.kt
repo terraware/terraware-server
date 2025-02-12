@@ -158,7 +158,7 @@ class ReportStore(
 
     reportsDao.fetchOneById(reportId) ?: throw ReportNotFoundException(reportId)
 
-    upsertReportStandardMetrics(reportId, entries)
+    upsertReportStandardMetrics(reportId, entries, true)
   }
 
   fun updateReportStandardMetrics(
@@ -176,7 +176,7 @@ class ReportStore(
           "Cannot update metrics for report $reportId of status ${report.status.name}")
     }
 
-    upsertReportStandardMetrics(reportId, entries)
+    upsertReportStandardMetrics(reportId, entries, false)
   }
 
   private fun createReportRows(config: ExistingProjectReportConfigModel): List<ReportsRow> {
@@ -253,10 +253,11 @@ class ReportStore(
 
   private fun upsertReportStandardMetrics(
       reportId: ReportId,
-      entries: Map<StandardMetricId, ReportStandardMetricEntryModel>
+      entries: Map<StandardMetricId, ReportStandardMetricEntryModel>,
+      updateInternalComment: Boolean,
   ) {
     val columns =
-        if (currentUser().canReviewReports()) {
+        if (updateInternalComment) {
           listOf(
               REPORT_STANDARD_METRICS.REPORT_ID,
               REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
@@ -288,7 +289,7 @@ class ReportStore(
               )
               .apply {
                 entries.forEach { (metricId, entry) ->
-                  if (currentUser().canReviewReports()) {
+                  if (updateInternalComment) {
                     this.values(
                         reportId,
                         metricId,
