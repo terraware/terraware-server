@@ -256,63 +256,36 @@ class ReportStore(
       entries: Map<StandardMetricId, ReportStandardMetricEntryModel>,
       updateInternalComment: Boolean,
   ) {
-    val columns =
-        if (updateInternalComment) {
-          listOf(
-              REPORT_STANDARD_METRICS.REPORT_ID,
-              REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
-              REPORT_STANDARD_METRICS.TARGET,
-              REPORT_STANDARD_METRICS.VALUE,
-              REPORT_STANDARD_METRICS.NOTES,
-              REPORT_STANDARD_METRICS.INTERNAL_COMMENT,
-              REPORT_STANDARD_METRICS.MODIFIED_BY,
-              REPORT_STANDARD_METRICS.MODIFIED_TIME,
-          )
-        } else {
-          listOf(
-              REPORT_STANDARD_METRICS.REPORT_ID,
-              REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
-              REPORT_STANDARD_METRICS.TARGET,
-              REPORT_STANDARD_METRICS.VALUE,
-              REPORT_STANDARD_METRICS.NOTES,
-              REPORT_STANDARD_METRICS.MODIFIED_BY,
-              REPORT_STANDARD_METRICS.MODIFIED_TIME,
-          )
-        }
-
     dslContext.transaction { _ ->
-      val rowsUpdated =
-          dslContext
-              .insertInto(
-                  REPORT_STANDARD_METRICS,
-                  columns,
-              )
-              .apply {
-                entries.forEach { (metricId, entry) ->
+      var insertQuery = dslContext.insertInto(REPORT_STANDARD_METRICS).set()
+
+      val iterator = entries.iterator()
+
+      while (iterator.hasNext()) {
+        val (metricId, entry) = iterator.next()
+        insertQuery =
+            insertQuery
+                .set(REPORT_STANDARD_METRICS.REPORT_ID, reportId)
+                .set(REPORT_STANDARD_METRICS.STANDARD_METRIC_ID, metricId)
+                .set(REPORT_STANDARD_METRICS.TARGET, entry.target)
+                .set(REPORT_STANDARD_METRICS.VALUE, entry.value)
+                .set(REPORT_STANDARD_METRICS.NOTES, entry.notes)
+                .set(REPORT_STANDARD_METRICS.MODIFIED_BY, currentUser().userId)
+                .set(REPORT_STANDARD_METRICS.MODIFIED_TIME, clock.instant())
+                .apply {
                   if (updateInternalComment) {
-                    this.values(
-                        reportId,
-                        metricId,
-                        entry.target,
-                        entry.value,
-                        entry.notes,
-                        entry.internalComment,
-                        currentUser().userId,
-                        clock.instant(),
-                    )
-                  } else {
-                    this.values(
-                        reportId,
-                        metricId,
-                        entry.target,
-                        entry.value,
-                        entry.notes,
-                        currentUser().userId,
-                        clock.instant(),
-                    )
+                    this.set(REPORT_STANDARD_METRICS.INTERNAL_COMMENT, entry.internalComment)
                   }
                 }
-              }
+                .apply {
+                  if (iterator.hasNext()) {
+                    this.newRecord()
+                  }
+                }
+      }
+
+      val rowsUpdated =
+          insertQuery
               .onConflict(
                   REPORT_STANDARD_METRICS.REPORT_ID, REPORT_STANDARD_METRICS.STANDARD_METRIC_ID)
               .doUpdate()
