@@ -1,3 +1,4 @@
+bfd6b4a4861 SW-6521 Implemented feature for reports to update metric targets and values (#2830)
 e4eb5b0c160 Implemented ReportMetricStore for CRU operations on Standard Metrics (#2833)
 dcdc7b39a6f Added tables for metric enums and standard metrics (#2832)
 de60d99d116 Updated project report permissions to reference reports (#2831)
