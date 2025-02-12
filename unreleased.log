@@ -1,3 +1,4 @@
+06bb71b8d58 SW-6560 Implemented review report endpoint (#2835)
 80c922a7aeb Implemented API endpoints for reports and metrics (#2834)
 bfd6b4a4861 SW-6521 Implemented feature for reports to update metric targets and values (#2830)
 e4eb5b0c160 Implemented ReportMetricStore for CRU operations on Standard Metrics (#2833)
