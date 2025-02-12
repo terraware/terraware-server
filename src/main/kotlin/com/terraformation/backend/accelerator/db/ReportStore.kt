@@ -108,39 +108,42 @@ class ReportStore(
   }
 
   fun reviewReport(
-    reportId: ReportId,
-    status: ReportStatus,
-    feedback: String? = null,
-    internalComment: String? = null,
+      reportId: ReportId,
+      status: ReportStatus,
+      feedback: String? = null,
+      internalComment: String? = null,
   ) {
     requirePermissions { reviewReports() }
 
     val report =
         fetchByCondition(REPORTS.ID.eq(reportId)).firstOrNull()
-          ?: throw ReportNotFoundException(reportId)
+            ?: throw ReportNotFoundException(reportId)
 
     if (report.status != status) {
       if (report.status !in ReportModel.submittedStatuses) {
-        throw IllegalStateException("Cannot change the status of report $reportId because it has " +
-            "not been submitted. Current status: ${report.status.name}.")
+        throw IllegalStateException(
+            "Cannot change the status of report $reportId because it has " +
+                "not been submitted. Current status: ${report.status.name}.")
       }
       if (status !in ReportModel.submittedStatuses) {
-        throw IllegalStateException("Cannot update the status of a report to ${status.name} " +
-            "because it is not a submitted status.")
+        throw IllegalStateException(
+            "Cannot update the status of a report to ${status.name} " +
+                "because it is not a submitted status.")
       }
     }
 
-    val rowsUpdated = with(REPORTS) {
-      dslContext
-          .update(this)
-          .set(STATUS_ID, status)
-          .set(FEEDBACK, feedback)
-          .set(INTERNAL_COMMENT, internalComment)
-          .set(MODIFIED_BY, currentUser().userId)
-          .set(MODIFIED_TIME, clock.instant())
-          .where(ID.eq(reportId))
-          .execute()
-    }
+    val rowsUpdated =
+        with(REPORTS) {
+          dslContext
+              .update(this)
+              .set(STATUS_ID, status)
+              .set(FEEDBACK, feedback)
+              .set(INTERNAL_COMMENT, internalComment)
+              .set(MODIFIED_BY, currentUser().userId)
+              .set(MODIFIED_TIME, clock.instant())
+              .where(ID.eq(reportId))
+              .execute()
+        }
 
     if (rowsUpdated == 0) {
       throw IllegalStateException("Failed to update report $reportId")

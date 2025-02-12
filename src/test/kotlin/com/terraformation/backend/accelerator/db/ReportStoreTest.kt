@@ -471,7 +471,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             status = ReportStatus.Approved,
             feedback = "feedback",
             internalComment = "internal comment",
-            )
+        )
       }
       assertThrows<IllegalStateException> {
         store.reviewReport(
@@ -479,7 +479,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             status = ReportStatus.Approved,
             feedback = "feedback",
             internalComment = "internal comment",
-            )
+        )
       }
       assertDoesNotThrow {
         store.reviewReport(
@@ -487,13 +487,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             status = ReportStatus.NotSubmitted,
             feedback = "feedback",
             internalComment = "internal comment",
-            )
+        )
         store.reviewReport(
             reportId = notNeededReportId,
             status = ReportStatus.NotNeeded,
             feedback = "feedback",
             internalComment = "internal comment",
-            )
+        )
       }
     }
 
@@ -502,11 +502,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val otherUserId = insertUser()
 
       insertProjectReportConfig()
-      val reportId = insertReport(
-          status = ReportStatus.Submitted,
-          modifiedBy = otherUserId,
-          modifiedTime = Instant.ofEpochSecond(3000),
-      )
+      val reportId =
+          insertReport(
+              status = ReportStatus.Submitted,
+              modifiedBy = otherUserId,
+              modifiedTime = Instant.ofEpochSecond(3000),
+          )
 
       val existingReport = reportsDao.fetchOneById(reportId)!!
 
@@ -519,13 +520,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           internalComment = "internal comment",
       )
 
-      val updatedReport = existingReport.copy(
-          statusId = ReportStatus.NeedsUpdate,
-          feedback = "feedback",
-          internalComment = "internal comment",
-          modifiedBy = user.userId,
-          modifiedTime = clock.instant,
-      )
+      val updatedReport =
+          existingReport.copy(
+              statusId = ReportStatus.NeedsUpdate,
+              feedback = "feedback",
+              internalComment = "internal comment",
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
 
       assertTableEquals(ReportsRecord(updatedReport))
     }

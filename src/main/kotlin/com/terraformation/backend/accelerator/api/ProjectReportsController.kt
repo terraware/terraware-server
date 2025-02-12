@@ -91,9 +91,9 @@ class ProjectReportsController(private val reportStore: ReportStore) {
   @PostMapping("/{reportId}/review")
   @Operation(summary = "Review a report")
   fun reviewAcceleratorReport(
-    @PathVariable projectId: ProjectId,
-    @PathVariable reportId: ReportId,
-    @RequestBody payload: ReviewAcceleratorReportRequestPayload,
+      @PathVariable projectId: ProjectId,
+      @PathVariable reportId: ReportId,
+      @RequestBody payload: ReviewAcceleratorReportRequestPayload,
   ): SimpleSuccessResponsePayload {
     reportStore.reviewReport(
         reportId = reportId,
@@ -201,26 +201,26 @@ data class AcceleratorReportPayload(
 }
 
 data class ReportReviewPayload(
-  @Schema(description = "Must be unchanged if a report has not been submitted yet.")
-  val status: ReportStatus,
-  val feedback: String?,
-  val internalComment: String?,
+    @Schema(description = "Must be unchanged if a report has not been submitted yet.")
+    val status: ReportStatus,
+    val feedback: String?,
+    val internalComment: String?,
 )
 
 data class ReportStandardMetricPayload(
-  val id: StandardMetricId,
-  val name: String,
-  val description: String?,
-  val component: MetricComponent,
-  val type: MetricType,
-  val reference: String,
-  val target: Int?,
-  val value: Int?,
-  val notes: String?,
-  val internalComment: String?
+    val id: StandardMetricId,
+    val name: String,
+    val description: String?,
+    val component: MetricComponent,
+    val type: MetricType,
+    val reference: String,
+    val target: Int?,
+    val value: Int?,
+    val notes: String?,
+    val internalComment: String?
 ) {
   constructor(
-    model: ReportStandardMetricModel
+      model: ReportStandardMetricModel
   ) : this(
       id = model.metric.id,
       name = model.metric.name,
@@ -246,7 +246,7 @@ data class CreateAcceleratorReportConfigRequestPayload(
 )
 
 data class ReviewAcceleratorReportRequestPayload(
-  val review: ReportReviewPayload,
+    val review: ReportReviewPayload,
 )
 
 data class UpdateAcceleratorReportMetricsRequestPayload(
