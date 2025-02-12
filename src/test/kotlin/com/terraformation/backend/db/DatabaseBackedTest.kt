@@ -27,6 +27,8 @@ import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.InternalInterest
+import com.terraformation.backend.db.accelerator.MetricComponent
+import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
@@ -36,6 +38,7 @@ import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.ScoreCategory
+import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionSnapshotId
@@ -65,7 +68,9 @@ import com.terraformation.backend.db.accelerator.tables.daos.ProjectReportConfig
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectScoresDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVoteDecisionsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
+import com.terraformation.backend.db.accelerator.tables.daos.ReportStandardMetricsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportsDao
+import com.terraformation.backend.db.accelerator.tables.daos.StandardMetricsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionSnapshotsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionsDao
@@ -93,7 +98,9 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ProjectReportConfi
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectScoresRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVoteDecisionsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ReportStandardMetricsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.StandardMetricsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionDocumentsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
@@ -586,6 +593,7 @@ abstract class DatabaseBackedTest {
   protected val projectVotesDao: ProjectVotesDao by lazyDao()
   protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()
   protected val recordedTreesDao: RecordedTreesDao by lazyDao()
+  protected val reportStandardMetricsDao: ReportStandardMetricsDao by lazyDao()
   protected val reportsDao: ReportsDao by lazyDao()
   protected val seedFundReportFilesDao: SeedFundReportFilesDao by lazyDao()
   protected val seedFundReportPhotosDao: SeedFundReportPhotosDao by lazyDao()
@@ -597,6 +605,7 @@ abstract class DatabaseBackedTest {
       lazyDao()
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
   protected val speciesSuccessionalGroupsDao: SpeciesSuccessionalGroupsDao by lazyDao()
+  protected val standardMetricsDao: StandardMetricsDao by lazyDao()
   protected val subLocationsDao: SubLocationsDao by lazyDao()
   protected val submissionsDao: SubmissionsDao by lazyDao()
   protected val submissionDocumentsDao: SubmissionDocumentsDao by lazyDao()
@@ -2311,6 +2320,28 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!.also { inserted.seedFundReportIds.add(it) }
   }
 
+  fun insertStandardMetric(
+      row: StandardMetricsRow = StandardMetricsRow(),
+      component: MetricComponent = row.componentId ?: MetricComponent.ProjectObjectives,
+      description: String? = row.description,
+      name: String = row.name ?: "Metric name",
+      reference: String = row.reference ?: "1.1",
+      type: MetricType = row.typeId ?: MetricType.Impact,
+  ): StandardMetricId {
+    val rowWithDefaults =
+        row.copy(
+            componentId = component,
+            description = description,
+            name = name,
+            reference = reference,
+            typeId = type,
+        )
+
+    standardMetricsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.standardMetricIds.add(it) }
+  }
+
   fun insertOrganizationReportSettings(
       organizationId: OrganizationId = inserted.organizationId,
       isEnabled: Boolean = true,
@@ -2666,6 +2697,32 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!
   }
 
+  protected fun insertReportStandardMetric(
+      row: ReportStandardMetricsRow = ReportStandardMetricsRow(),
+      reportId: ReportId = row.reportId ?: inserted.reportId,
+      metricId: StandardMetricId = row.standardMetricId ?: inserted.standardMetricId,
+      target: Int? = row.target,
+      value: Int? = row.value,
+      notes: String? = row.notes,
+      internalComment: String? = row.internalComment,
+      modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
+      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            reportId = reportId,
+            standardMetricId = metricId,
+            target = target,
+            value = value,
+            notes = notes,
+            internalComment = internalComment,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+        )
+
+    reportStandardMetricsDao.insert(rowWithDefaults)
+  }
+
   protected fun insertReport(
       row: ReportsRow = ReportsRow(),
       configId: ProjectReportConfigId = row.configId ?: inserted.projectReportConfigId,
@@ -2679,8 +2736,14 @@ abstract class DatabaseBackedTest {
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
-      submittedBy: UserId? = row.submittedBy,
-      submittedTime: Instant? = row.submittedTime,
+      submittedBy: UserId? =
+          row.submittedBy
+              ?: if (status != ReportStatus.NotSubmitted && status != ReportStatus.NotNeeded) {
+                currentUser().userId
+              } else {
+                null
+              },
+      submittedTime: Instant? = row.submittedTime ?: submittedBy?.let { Instant.EPOCH }
   ): ReportId {
     val rowWithDefaults =
         row.copy(
@@ -3836,6 +3899,7 @@ abstract class DatabaseBackedTest {
     val reportIds = mutableListOf<ReportId>()
     val seedFundReportIds = mutableListOf<SeedFundReportId>()
     val speciesIds = mutableListOf<SpeciesId>()
+    val standardMetricIds = mutableListOf<StandardMetricId>()
     val subLocationIds = mutableListOf<SubLocationId>()
     val submissionDocumentIds = mutableListOf<SubmissionDocumentId>()
     val submissionIds = mutableListOf<SubmissionId>()
@@ -3967,6 +4031,9 @@ abstract class DatabaseBackedTest {
 
     val speciesId
       get() = speciesIds.last()
+
+    val standardMetricId
+      get() = standardMetricIds.last()
 
     val subLocationId
       get() = subLocationIds.last()

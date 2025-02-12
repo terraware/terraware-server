@@ -275,6 +275,20 @@ VALUES (1, 'Low'),
        (2, 'High')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO accelerator.metric_components (id, name)
+VALUES (1, 'Project Objectives'),
+       (2, 'Climate'),
+       (3, 'Community'),
+       (4, 'Biodiversity')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO accelerator.metric_types (id, name)
+VALUES (1, 'Activity'),
+       (2, 'Output'),
+       (3, 'Outcome'),
+       (4, 'Impact')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO notification_criticalities (id, name)
 VALUES (1, 'Info'),
        (2, 'Warning'),
