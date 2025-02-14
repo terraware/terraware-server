@@ -97,7 +97,7 @@ dependencies {
   implementation("com.google.auth:google-auth-library-oauth2-http:1.32.0")
   implementation("com.google.apis:google-api-services-drive:v3-rev20250122-2.0.0")
   implementation("com.opencsv:opencsv:5.10")
-  implementation("com.squarespace.cldr-engine:cldr-engine:1.8.3")
+  implementation("com.squarespace.cldr-engine:cldr-engine:1.10.1")
   implementation("commons-codec:commons-codec:1.18.0")
   implementation("commons-validator:commons-validator:1.9.0")
   implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.5.0")
