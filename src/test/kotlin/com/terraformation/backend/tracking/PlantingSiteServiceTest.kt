@@ -12,12 +12,20 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.PlantingSiteInUseException
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.tracking.tables.records.PlantingZonePopulationsRecord
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.edit.PlantingSiteEdit
+import com.terraformation.backend.tracking.edit.PlantingSiteEditBehavior
+import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
+import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.util.toInstant
 import io.mockk.every
+import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.ZoneId
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -32,6 +40,10 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
+  private val parentStore by lazy { ParentStore(dslContext) }
+  private val deliveryStore by lazy {
+    DeliveryStore(clock, deliveriesDao, dslContext, parentStore, plantingsDao)
+  }
   private val plantingSiteStore by lazy {
     PlantingSiteStore(
         clock,
@@ -40,13 +52,15 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         eventPublisher,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
-        ParentStore(dslContext),
+        parentStore,
         plantingSeasonsDao,
         plantingSitesDao,
         plantingSubzonesDao,
         plantingZonesDao)
   }
-  private val service by lazy { PlantingSiteService(eventPublisher, plantingSiteStore) }
+  private val service by lazy {
+    PlantingSiteService(deliveryStore, eventPublisher, plantingSiteStore)
+  }
 
   @BeforeEach
   fun setUp() {
@@ -154,6 +168,68 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
           "End time")
 
       assertIsEventListener<PlantingSiteTimeZoneChangedEvent>(service)
+    }
+  }
+
+  @Nested
+  inner class OnPlantingSiteMapEdited {
+    @Test
+    fun `recalculates zone-level planting site populations`() {
+      insertOrganization()
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
+      val plantingSiteId = insertPlantingSite()
+      val plantingZoneId1 = insertPlantingZone()
+      val plantingSubzoneId11 = insertPlantingSubzone()
+      val plantingSubzoneId12 = insertPlantingSubzone()
+      val plantingZoneId2 = insertPlantingZone()
+      val plantingSubzoneId21 = insertPlantingSubzone()
+
+      insertPlantingSubzonePopulation(plantingSubzoneId11, speciesId1, 10, 1)
+      insertPlantingSubzonePopulation(plantingSubzoneId12, speciesId1, 20, 2)
+      insertPlantingSubzonePopulation(plantingSubzoneId12, speciesId2, 40, 4)
+      insertPlantingSubzonePopulation(plantingSubzoneId21, speciesId1, 80, 8)
+
+      // Zone populations should be completely replaced
+      insertPlantingZonePopulation(plantingZoneId1, speciesId1, 160, 16)
+      insertPlantingZonePopulation(plantingZoneId2, speciesId2, 320, 32)
+
+      val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Subzone)
+
+      val existingSubzonePopulations = dslContext.selectFrom(PLANTING_SUBZONE_POPULATIONS).fetch()
+
+      service.on(
+          PlantingSiteMapEditedEvent(
+              site,
+              PlantingSiteEdit(
+                  BigDecimal.ZERO, PlantingSiteEditBehavior.Flexible, site, site, emptyList()),
+              ReplacementResult(emptySet(), emptySet())))
+
+      assertTableEquals(existingSubzonePopulations, "Subzone populations should not have changed")
+
+      assertTableEquals(
+          listOf(
+              PlantingZonePopulationsRecord(
+                  plantingZoneId = plantingZoneId1,
+                  plantsSinceLastObservation = 3,
+                  speciesId = speciesId1,
+                  totalPlants = 30,
+              ),
+              PlantingZonePopulationsRecord(
+                  plantingZoneId = plantingZoneId1,
+                  plantsSinceLastObservation = 4,
+                  speciesId = speciesId2,
+                  totalPlants = 40,
+              ),
+              PlantingZonePopulationsRecord(
+                  plantingZoneId = plantingZoneId2,
+                  plantsSinceLastObservation = 8,
+                  speciesId = speciesId1,
+                  totalPlants = 80,
+              ),
+          ))
+
+      assertIsEventListener<PlantingSiteMapEditedEvent>(service)
     }
   }
 }

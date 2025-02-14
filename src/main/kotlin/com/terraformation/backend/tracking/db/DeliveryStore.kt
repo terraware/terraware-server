@@ -22,6 +22,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.UndoOfUndoNotAllowedException
@@ -33,6 +34,7 @@ import java.time.Instant
 import java.time.InstantSource
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 
 @Named
 class DeliveryStore(
@@ -307,6 +309,49 @@ class DeliveryStore(
       }
 
       undoDeliveryId
+    }
+  }
+
+  /**
+   * Recalculates the populations of all the species in a site's planting zones based on the
+   * populations of its subzones. This is called in cases when the zone-level totals become invalid,
+   * e.g., after a map edit that moves a subzone from one zone to another.
+   */
+  fun recalculateZonePopulations(plantingSiteId: PlantingSiteId) {
+    dslContext.transaction { _ ->
+      with(PLANTING_ZONE_POPULATIONS) {
+        dslContext
+            .deleteFrom(PLANTING_ZONE_POPULATIONS)
+            .where(
+                PLANTING_ZONE_ID.`in`(
+                    DSL.select(PLANTING_ZONES.ID)
+                        .from(PLANTING_ZONES)
+                        .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))))
+            .execute()
+
+        dslContext
+            .insertInto(
+                PLANTING_ZONE_POPULATIONS,
+                PLANTING_ZONE_ID,
+                SPECIES_ID,
+                TOTAL_PLANTS,
+                PLANTS_SINCE_LAST_OBSERVATION)
+            .select(
+                with(PLANTING_SUBZONE_POPULATIONS) {
+                  DSL.select(
+                          PLANTING_SUBZONES.PLANTING_ZONE_ID,
+                          SPECIES_ID,
+                          DSL.sum(TOTAL_PLANTS).cast(SQLDataType.INTEGER),
+                          DSL.sum(PLANTS_SINCE_LAST_OBSERVATION).cast(SQLDataType.INTEGER),
+                      )
+                      .from(PLANTING_SUBZONE_POPULATIONS)
+                      .join(PLANTING_SUBZONES)
+                      .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                      .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+                      .groupBy(PLANTING_SUBZONES.PLANTING_ZONE_ID, SPECIES_ID)
+                })
+            .execute()
+      }
     }
   }
 
