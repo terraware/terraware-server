@@ -68,7 +68,7 @@ sealed interface PlantingZoneEdit {
   data class Create(
       override val desiredModel: AnyPlantingZoneModel,
       override val monitoringPlotEdits: List<MonitoringPlotEdit.Create>,
-      override val plantingSubzoneEdits: List<PlantingSubzoneEdit.Create>,
+      override val plantingSubzoneEdits: List<PlantingSubzoneEdit>,
   ) : PlantingZoneEdit {
     override val addedRegion: MultiPolygon
       get() = desiredModel.boundary

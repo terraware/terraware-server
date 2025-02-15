@@ -723,9 +723,14 @@ class PlantingSiteStore(
             })
 
         // If any subzones weren't edited, we still want to include them in the site's map history.
-        edit.existingModel.plantingSubzones.forEach { subzone ->
-          if (edit.plantingSubzoneEdits.none { it.existingModel?.id == subzone.id }) {
-            insertPlantingSubzoneHistory(subzone, plantingZoneHistoryId)
+        edit.existingModel.plantingSubzones.forEach { existingSubzone ->
+          val subzoneStillInThisZone =
+              edit.desiredModel.plantingSubzones.any { it.name == existingSubzone.name }
+          val noEditForThisSubzone =
+              edit.plantingSubzoneEdits.none { it.existingModel?.id == existingSubzone.id }
+
+          if (subzoneStillInThisZone && noEditForThisSubzone) {
+            insertPlantingSubzoneHistory(existingSubzone, plantingZoneHistoryId)
           }
         }
 
@@ -821,6 +826,7 @@ class PlantingSiteStore(
                   .set(MODIFIED_TIME, now)
                   .set(NAME, edit.desiredModel.name)
                   .let { if (markIncomplete) it.setNull(PLANTING_COMPLETED_TIME) else it }
+                  .set(PLANTING_ZONE_ID, plantingZoneId)
                   .where(ID.eq(plantingSubzoneId))
                   .execute()
           if (rowsUpdated != 1) {
