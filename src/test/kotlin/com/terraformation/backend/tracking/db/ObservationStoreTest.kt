@@ -1080,7 +1080,7 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception if observaiton has no completed plot when updating to Completed`() {
+    fun `throws exception if observation has no completed plot when updating to Completed`() {
       val observationId = insertObservation()
 
       every { user.canManageObservation(observationId) } returns false
