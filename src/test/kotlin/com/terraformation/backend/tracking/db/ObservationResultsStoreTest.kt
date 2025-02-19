@@ -43,7 +43,6 @@ import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
-import io.ktor.utils.io.core.use
 import io.mockk.every
 import java.io.InputStreamReader
 import java.math.BigDecimal
