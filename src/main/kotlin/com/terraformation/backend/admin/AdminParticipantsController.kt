@@ -2,7 +2,6 @@ package com.terraformation.backend.admin
 
 import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.accelerator.db.AcceleratorOrganizationStore
-import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.db.CohortStore
 import com.terraformation.backend.accelerator.db.ParticipantHasProjectsException
 import com.terraformation.backend.accelerator.db.ParticipantStore
@@ -42,7 +41,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @Validated
 class AdminParticipantsController(
     private val acceleratorOrganizationStore: AcceleratorOrganizationStore,
-    private val applicationStore: ApplicationStore,
     private val cohortStore: CohortStore,
     private val organizationsDao: OrganizationsDao,
     private val participantStore: ParticipantStore,
@@ -227,41 +225,6 @@ class AdminParticipantsController(
     }
 
     return redirectToParticipant(participantId)
-  }
-
-  @PostMapping("/updateProjectDealNames")
-  fun updateProjectDealNames(): String {
-    val participants = participantStore.findAll()
-    participants.forEach { participant ->
-      val projectIds = participant.projectIds
-      if (projectIds.size == 1) {
-        projectAcceleratorDetailsService.update(projectIds.single()) {
-          it.copy(dealName = participant.name)
-        }
-      } else {
-        projectIds.forEachIndexed { index, projectId ->
-          if (index == 0) {
-            projectAcceleratorDetailsService.update(projectId) {
-              it.copy(dealName = participant.name)
-            }
-          } else {
-            projectAcceleratorDetailsService.update(projectId) {
-              it.copy(dealName = "${participant.name} ${index + 1}")
-            }
-          }
-        }
-      }
-    }
-
-    val applications = applicationStore.fetchAll()
-    applications.forEach { application ->
-      projectAcceleratorDetailsService.update(application.projectId) {
-        // Update only projects that did not have a deal name already.
-        it.copy(dealName = it.dealName ?: application.internalName)
-      }
-    }
-
-    return redirectToAdminHome()
   }
 
   @InitBinder

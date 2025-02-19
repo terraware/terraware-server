@@ -45,8 +45,6 @@ class AdminController(
         "canCleanupApplicationDrive",
         config.accelerator.applicationGoogleFolderId != null &&
             GlobalRole.SuperAdmin in currentUser().globalRoles)
-    model.addAttribute(
-        "canMigrateAcceleratorProjectDetails", GlobalRole.SuperAdmin in currentUser().globalRoles)
     model.addAttribute("canAddAnyOrganizationUser", currentUser().canAddAnyOrganizationUser())
     model.addAttribute("canCreateDeviceManager", currentUser().canCreateDeviceManager())
     model.addAttribute("canDeleteUsers", currentUser().canDeleteUsers())

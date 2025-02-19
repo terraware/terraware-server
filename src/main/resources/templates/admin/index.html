@@ -194,18 +194,6 @@
             <input type="submit" value="Recalculate"/>
         </form>
     </th:block>
-
-    <th:block th:if="${canMigrateAcceleratorProjectDetails}">
-        <h3>Update Deal Names</h3>
-
-        <p>
-            This is a one-time operation to set project deal names to participant name
-        </p>
-
-        <form method="POST" action="/admin/updateProjectDealNames">
-            <input type="submit" value="Update"/>
-        </form>
-    </th:block>
 </details>
 
 <details id="sendTestEmail" class="section" th:if="${canSendTestEmail}">
