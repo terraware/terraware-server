@@ -30,6 +30,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.Size
 import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.WebApplicationException
@@ -242,28 +243,23 @@ data class UpdateOrganizationUserRequestPayload(
 )
 
 data class CreateOrganizationRequestPayload(
-    @Schema(
-        description = "ISO 3166 alpha-2 code of organization's country.",
-        example = "AU",
-        minLength = 2,
-        maxLength = 2)
+    @Schema(description = "ISO 3166 alpha-2 code of organization's country.", example = "AU")
+    @field:Size(min = 2, max = 2)
     val countryCode: String?,
     @Schema(
         description =
             "ISO 3166-2 code of organization's country subdivision (state, province, region, " +
                 "etc.) This is the full ISO 3166-2 code including the country prefix. If this is " +
                 "set, countryCode must also be set.",
-        example = "US-HI",
-        minLength = 4,
-        maxLength = 6)
+        example = "US-HI")
+    @field:Size(min = 4, max = 6)
     val countrySubdivisionCode: String?,
     val description: String?,
     val managedLocationTypes: Set<ManagedLocationType>?,
     @field:NotEmpty val name: String,
     val organizationType: OrganizationType?,
-    @Schema(
-        description = "Non-empty additional description of organization when type is Other.",
-        maxLength = 100)
+    @Schema(description = "Non-empty additional description of organization when type is Other.")
+    @field:Size(max = 100)
     val organizationTypeDetails: String?,
     val timeZone: ZoneId?,
     @Schema(
@@ -286,27 +282,22 @@ data class CreateOrganizationRequestPayload(
 }
 
 data class UpdateOrganizationRequestPayload(
-    @Schema(
-        description = "ISO 3166 alpha-2 code of organization's country.",
-        example = "AU",
-        minLength = 2,
-        maxLength = 2)
+    @Schema(description = "ISO 3166 alpha-2 code of organization's country.", example = "AU")
+    @field:Size(min = 2, max = 2)
     val countryCode: String?,
     @Schema(
         description =
             "ISO 3166-2 code of organization's country subdivision (state, province, region, " +
                 "etc.) This is the full ISO 3166-2 code including the country prefix. If this is " +
                 "set, countryCode must also be set.",
-        example = "US-HI",
-        minLength = 4,
-        maxLength = 6)
+        example = "US-HI")
+    @field:Size(min = 4, max = 6)
     val countrySubdivisionCode: String?,
     val description: String?,
     @field:NotEmpty val name: String,
     val organizationType: OrganizationType?,
-    @Schema(
-        description = "Non-empty additional description of organization when type is Other.",
-        maxLength = 100)
+    @Schema(description = "Non-empty additional description of organization when type is Other.")
+    @field:Size(max = 100)
     val organizationTypeDetails: String?,
     val timeZone: ZoneId?,
     val website: String?,
@@ -329,20 +320,16 @@ data class UpdateOrganizationRequestPayload(
 data class OrganizationPayload(
     @Schema(description = "Whether this organization can submit reports to Terraformation.")
     val canSubmitReports: Boolean,
-    @Schema(
-        description = "ISO 3166 alpha-2 code of organization's country.",
-        example = "AU",
-        minLength = 2,
-        maxLength = 2)
+    @Schema(description = "ISO 3166 alpha-2 code of organization's country.", example = "AU")
+    @field:Size(min = 2, max = 2)
     val countryCode: String?,
     @Schema(
         description =
             "ISO 3166-2 code of organization's country subdivision (state, province, region, " +
                 "etc.) This is the full ISO 3166-2 code including the country prefix. If this is " +
                 "set, countryCode will also be set.",
-        example = "US-HI",
-        minLength = 4,
-        maxLength = 6)
+        example = "US-HI")
+    @field:Size(min = 4, max = 6)
     val countrySubdivisionCode: String?,
     val createdTime: Instant,
     val description: String?,
