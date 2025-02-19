@@ -1,3 +1,4 @@
+e910970515f SW-6566 Support moving subzones between zones (#2841)
 50ab83d8b54 Remove deal names migration (#2845)
 bc2a8de2c03 Update ktor monorepo to v3.1.0 (#2838)
 d9cb0c43971 SW-6566 Recalculate zone populations after map edit (#2840)
