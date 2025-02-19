@@ -5,7 +5,9 @@ import com.terraformation.backend.customer.event.PlantingSiteTimeZoneChangedEven
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.PlantingSiteInUseException
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import jakarta.inject.Named
 import java.time.ZoneOffset
@@ -14,6 +16,7 @@ import org.springframework.context.event.EventListener
 
 @Named
 class PlantingSiteService(
+    private val deliveryStore: DeliveryStore,
     private val eventPublisher: ApplicationEventPublisher,
     private val plantingSiteStore: PlantingSiteStore,
 ) {
@@ -60,5 +63,10 @@ class PlantingSiteService(
           site.plantingSeasons,
           event.oldTimeZone)
     }
+  }
+
+  @EventListener
+  fun on(event: PlantingSiteMapEditedEvent) {
+    deliveryStore.recalculateZonePopulations(event.edited.id)
   }
 }
