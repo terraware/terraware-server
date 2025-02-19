@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.edit
 
+import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
@@ -11,6 +12,7 @@ import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 
 class PlantingSiteEditCalculatorV2Test {
@@ -228,6 +230,127 @@ class PlantingSiteEditCalculatorV2Test {
                     ),
                 ),
         ),
+        existing,
+        desired)
+  }
+
+  @Test
+  fun `moves existing subzones to new zones`() {
+    val existing = existingSite {
+      zone(name = "A", numPermanent = 2) {
+        subzone(name = "Subzone 1", width = 250) { cluster() }
+        subzone(name = "Subzone 2", width = 250) { cluster() }
+      }
+    }
+
+    val desired = newSite {
+      zone(name = "A", numPermanent = 1, width = 250) { subzone(name = "Subzone 1") }
+      zone(name = "B", numPermanent = 2, width = 250) { subzone(name = "Subzone 2") }
+    }
+
+    assertEditResult(
+        PlantingSiteEdit(
+            areaHaDifference = BigDecimal.ZERO,
+            behavior = PlantingSiteEditBehavior.Flexible,
+            desiredModel = desired,
+            existingModel = existing,
+            plantingZoneEdits =
+                listOf(
+                    // Zone A shrinks
+                    PlantingZoneEdit.Update(
+                        addedRegion = rectangle(0),
+                        areaHaDifference = BigDecimal("-12.5"),
+                        desiredModel = desired.plantingZones[0],
+                        existingModel = existing.plantingZones[0],
+                        monitoringPlotEdits = emptyList(),
+                        plantingSubzoneEdits = emptyList(),
+                        removedRegion = rectangle(x = 250, width = 250, height = 500),
+                    ),
+                    PlantingZoneEdit.Create(
+                        desiredModel = desired.plantingZones[1],
+                        monitoringPlotEdits =
+                            listOf(
+                                MonitoringPlotEdit.Create(
+                                    rectangle(x = 250, width = 250, height = 500), 2)),
+                        plantingSubzoneEdits =
+                            listOf(
+                                PlantingSubzoneEdit.Update(
+                                    addedRegion = rectangle(0),
+                                    areaHaDifference = BigDecimal.ZERO,
+                                    desiredModel = desired.plantingZones[1].plantingSubzones[0],
+                                    existingModel = existing.plantingZones[0].plantingSubzones[1],
+                                    monitoringPlotEdits =
+                                        listOf(MonitoringPlotEdit.Adopt(MonitoringPlotId(2), 1)),
+                                    removedRegion = rectangle(0),
+                                ))))),
+        existing,
+        desired)
+  }
+
+  @Test
+  fun `moves existing subzones between existing zones`() {
+    val existing =
+        existingSite(width = 750) {
+          zone(name = "A", width = 500, numPermanent = 3) {
+            subzone(name = "Subzone 1", width = 250) { cluster() }
+            subzone(name = "Subzone 2", width = 250) {
+              cluster()
+              cluster()
+            }
+          }
+          zone(name = "B", width = 250, numPermanent = 1) {
+            subzone(name = "Subzone 3", width = 250) { cluster() }
+          }
+        }
+
+    val desired =
+        newSite(width = 750) {
+          zone(name = "A", numPermanent = 1, width = 250) {
+            subzone(name = "Subzone 1", width = 250)
+          }
+          zone(name = "B", numPermanent = 2, width = 500) {
+            subzone(name = "Subzone 2", width = 250)
+            subzone(name = "Subzone 3", width = 250)
+          }
+        }
+
+    assertEditResult(
+        PlantingSiteEdit(
+            areaHaDifference = BigDecimal.ZERO,
+            behavior = PlantingSiteEditBehavior.Flexible,
+            desiredModel = desired,
+            existingModel = existing,
+            plantingZoneEdits =
+                listOf(
+                    // Zone A shrinks
+                    PlantingZoneEdit.Update(
+                        addedRegion = rectangle(0),
+                        areaHaDifference = BigDecimal("-12.5"),
+                        desiredModel = desired.plantingZones[0],
+                        existingModel = existing.plantingZones[0],
+                        monitoringPlotEdits = emptyList(),
+                        plantingSubzoneEdits = emptyList(),
+                        removedRegion = rectangle(x = 250, width = 250, height = 500),
+                    ),
+                    PlantingZoneEdit.Update(
+                        addedRegion = rectangle(x = 250, width = 250, height = 500),
+                        areaHaDifference = BigDecimal("12.5"),
+                        desiredModel = desired.plantingZones[1],
+                        existingModel = existing.plantingZones[1],
+                        monitoringPlotEdits = emptyList(),
+                        plantingSubzoneEdits =
+                            listOf(
+                                PlantingSubzoneEdit.Update(
+                                    addedRegion = rectangle(0),
+                                    areaHaDifference = BigDecimal.ZERO,
+                                    desiredModel = desired.plantingZones[1].plantingSubzones[0],
+                                    existingModel = existing.plantingZones[0].plantingSubzones[1],
+                                    monitoringPlotEdits =
+                                        listOf(MonitoringPlotEdit.Adopt(MonitoringPlotId(3), null)),
+                                    removedRegion = rectangle(0),
+                                ),
+                            ),
+                        removedRegion = rectangle(0)))),
         existing,
         desired)
   }
@@ -821,6 +944,25 @@ class PlantingSiteEditCalculatorV2Test {
             .calculateSiteEdit()
       }
     }
+
+    @Test
+    fun `throws exception if a subzone move is ambiguous`() {
+      assertThrows<IllegalArgumentException> {
+        PlantingSiteEditCalculatorV2(
+                existingSite {
+                  zone {
+                    subzone(name = "A")
+                    subzone(name = "B")
+                  }
+                },
+                newSite {
+                  zone { subzone(name = "B") }
+                  zone { subzone(name = "A") }
+                  zone { subzone(name = "A") }
+                })
+            .calculateSiteEdit()
+      }
+    }
   }
 
   private fun calculateSiteEdit(
@@ -836,7 +978,13 @@ class PlantingSiteEditCalculatorV2Test {
     val actual = calculateSiteEdit(existing, desired)
 
     if (!actual.equalsExact(expected)) {
-      assertEquals(expected, actual)
+      // Assert equality on both the native and JSON forms of the edit so we get two assertion
+      // failure messages. The native form is more precise and includes type information; the JSON
+      // form (since it's pretty-printed) produces diffs that are much easier to read.
+      assertAll(
+          { assertJsonEquals(expected, actual) },
+          { assertEquals(expected, actual) },
+      )
     }
   }
 

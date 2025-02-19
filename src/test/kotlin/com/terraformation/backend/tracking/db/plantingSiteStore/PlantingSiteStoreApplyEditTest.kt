@@ -632,6 +632,33 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       assertSubzonePlotNumbers(edited, mapOf("S1" to listOf(1L), "S2" to listOf(2L)))
     }
 
+    @Test
+    fun `moves existing subzones between zones`() {
+      val initial = newSite {
+        zone(name = "A", numPermanent = 2) {
+          subzone(name = "Subzone 1", width = 250) { cluster() }
+          subzone(name = "Subzone 2", width = 250) { cluster() }
+        }
+      }
+
+      val desired = newSite {
+        zone(name = "A", numPermanent = 1, width = 250) { subzone(name = "Subzone 1") }
+        zone(name = "B", numPermanent = 1, width = 250) { subzone(name = "Subzone 2") }
+      }
+
+      val (edited, existing) =
+          runScenario(initial = initial, desired = desired, useV2Calculator = true)
+
+      val existingSubzone2 = existing.plantingZones[0].plantingSubzones[1]
+      val editedSubzone2 = edited.plantingZones[1].plantingSubzones[0]
+
+      assertEquals(existingSubzone2.id, editedSubzone2.id, "ID of moved subzone")
+      assertEquals(
+          existingSubzone2.monitoringPlots[0].copy(permanentCluster = 1),
+          editedSubzone2.monitoringPlots[0],
+          "Monitoring plot in moved subzone")
+    }
+
     private fun createSite(initial: NewPlantingSiteModel): ExistingPlantingSiteModel {
       clock.instant = Instant.EPOCH
 
