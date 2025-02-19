@@ -1060,11 +1060,42 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       every { user.canManageObservation(observationId) } returns false
 
+      // at least one completed plot is required for Completed state.
+      val plotId = insertMonitoringPlot()
+      insertObservationPlot(
+          observationId = observationId,
+          monitoringPlotId = plotId,
+          claimedBy = currentUser().userId,
+          claimedTime = Instant.EPOCH,
+          completedBy = currentUser().userId,
+          completedTime = Instant.ofEpochSecond(6000),
+          statusId = ObservationPlotStatus.Completed)
+
       store.updateObservationState(observationId, ObservationState.Completed)
 
       assertEquals(
-          initial.copy(completedTime = clock.instant(), state = ObservationState.Completed),
+          initial.copy(
+              completedTime = Instant.ofEpochSecond(6000), state = ObservationState.Completed),
           store.fetchObservationById(observationId))
+    }
+
+    @Test
+    fun `throws exception if observation has no completed plot when updating to Completed`() {
+      val observationId = insertObservation()
+
+      every { user.canManageObservation(observationId) } returns false
+
+      val plotId = insertMonitoringPlot()
+      insertObservationPlot(
+          observationId = observationId,
+          monitoringPlotId = plotId,
+          claimedBy = currentUser().userId,
+          claimedTime = Instant.EPOCH,
+          statusId = ObservationPlotStatus.Claimed)
+
+      assertThrows<IllegalStateException> {
+        store.updateObservationState(observationId, ObservationState.Completed)
+      }
     }
 
     @Test
@@ -1112,7 +1143,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
     fun `sets an observation to Abandoned and incomplete plots to Not Observed and unclaims`() {
       insertPlantingZone()
       insertPlantingSubzone()
-      val completedPlotId = insertMonitoringPlot()
+      val earlierCompletedPlotId = insertMonitoringPlot()
+      val laterCompletedPlotId = insertMonitoringPlot()
       val unclaimedPlotId = insertMonitoringPlot()
       val claimedPlotId = insertMonitoringPlot()
 
@@ -1120,11 +1152,20 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       insertObservationPlot(
           observationId = observationId,
-          monitoringPlotId = completedPlotId,
+          monitoringPlotId = earlierCompletedPlotId,
           claimedBy = currentUser().userId,
           claimedTime = Instant.EPOCH,
           completedBy = currentUser().userId,
-          completedTime = Instant.EPOCH,
+          completedTime = Instant.ofEpochSecond(6000),
+          statusId = ObservationPlotStatus.Completed)
+
+      insertObservationPlot(
+          observationId = observationId,
+          monitoringPlotId = laterCompletedPlotId,
+          claimedBy = currentUser().userId,
+          claimedTime = Instant.EPOCH,
+          completedBy = currentUser().userId,
+          completedTime = Instant.ofEpochSecond(12000),
           statusId = ObservationPlotStatus.Completed)
 
       insertObservationPlot(
@@ -1142,7 +1183,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
       val existing = observationsDao.fetchOneById(observationId)!!
 
       val plotsRows = observationPlotsDao.findAll().associateBy { it.monitoringPlotId }
-      val completedRow = plotsRows[completedPlotId]!!
+      val earlierCompletedRow = plotsRows[earlierCompletedPlotId]!!
+      val laterCompletedRow = plotsRows[laterCompletedPlotId]!!
       val unclaimedRow = plotsRows[unclaimedPlotId]!!
       val claimedRow = plotsRows[claimedPlotId]!!
 
@@ -1152,7 +1194,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           setOf(
-              completedRow,
+              earlierCompletedRow,
+              laterCompletedRow,
               unclaimedRow.copy(statusId = ObservationPlotStatus.NotObserved),
               claimedRow.copy(
                   claimedBy = null,
@@ -1164,7 +1207,8 @@ class ObservationStoreTest : DatabaseTest(), RunsAsUser {
           "Observation plots after abandoning")
 
       assertEquals(
-          existing.copy(completedTime = clock.instant, stateId = ObservationState.Abandoned),
+          existing.copy(
+              completedTime = Instant.ofEpochSecond(12000), stateId = ObservationState.Abandoned),
           observationsDao.fetchOneById(observationId),
           "Observation after abandoning")
     }

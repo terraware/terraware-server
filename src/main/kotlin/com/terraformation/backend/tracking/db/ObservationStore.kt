@@ -575,12 +575,22 @@ class ObservationStore(
     withLockedObservation(observationId) { observation ->
       observation.validateStateTransition(newState)
 
+      val maxCompletedTime =
+          if (newState == ObservationState.Completed || newState == ObservationState.Abandoned) {
+            dslContext
+                .select(DSL.max(OBSERVATION_PLOTS.COMPLETED_TIME))
+                .from(OBSERVATION_PLOTS)
+                .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+                .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
+                .fetchOneInto(Instant::class.java)
+                ?: throw IllegalStateException("Observation $observationId has no completed plots")
+          } else {
+            null
+          }
+
       dslContext
           .update(OBSERVATIONS)
-          .apply {
-            if (newState == ObservationState.Completed || newState == ObservationState.Abandoned)
-                set(OBSERVATIONS.COMPLETED_TIME, clock.instant())
-          }
+          .set(OBSERVATIONS.COMPLETED_TIME, maxCompletedTime)
           .set(OBSERVATIONS.STATE_ID, newState)
           .where(OBSERVATIONS.ID.eq(observationId))
           .execute()
