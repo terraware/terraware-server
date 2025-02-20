@@ -794,42 +794,6 @@
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>monitoring_plot_overlaps_overlaps_plot_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/monitoring_plot_overlaps.html'>monitoring_plot_overlaps</a><span>.overlaps_plot_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/monitoring_plots.html'>monitoring_plots</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>monitoring_plot_overlaps_monitoring_plot_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/monitoring_plot_overlaps.html'>monitoring_plot_overlaps</a><span>.monitoring_plot_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/monitoring_plots.html'>monitoring_plots</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
                                         <td>observation_biomass_quadrat_species_monitoring_plot_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -926,6 +890,42 @@
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
                                                     <td><a href='tables/observations.html'>observations</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>monitoring_plot_overlaps_overlaps_plot_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/monitoring_plot_overlaps.html'>monitoring_plot_overlaps</a><span>.overlaps_plot_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/monitoring_plots.html'>monitoring_plots</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>monitoring_plot_overlaps_monitoring_plot_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/monitoring_plot_overlaps.html'>monitoring_plot_overlaps</a><span>.monitoring_plot_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/monitoring_plots.html'>monitoring_plots</a><span>.id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -1927,14 +1927,19 @@
                                         <td>((area_ha &gt; (0)::numeric))</td>
                                     </tr>
                                     <tr>
+                                        <td><a href='tables/observation_biomass_quadrat_species.html'>observation_biomass_quadrat_species</a></td>
+                                        <td>observation_biomass_quadrat_species_abundance_percent_check</td>
+                                        <td>(((abundance_percent &gt;= 0) AND (abundance_percent &lt;= 100)))</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/monitoring_plot_overlaps.html'>monitoring_plot_overlaps</a></td>
                                         <td>newer_overlaps_older</td>
                                         <td>((overlaps_plot_id &lt; monitoring_plot_id))</td>
                                     </tr>
                                     <tr>
-                                        <td><a href='tables/observation_biomass_quadrat_species.html'>observation_biomass_quadrat_species</a></td>
-                                        <td>observation_biomass_quadrat_species_abundance_percent_check</td>
-                                        <td>(((abundance_percent &gt;= 0) AND (abundance_percent &lt;= 100)))</td>
+                                        <td><a href='tables/recorded_plants.html'>recorded_plants</a></td>
+                                        <td>species_info_matches_certainty</td>
+                                        <td>((((certainty_id = 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id = 2) AND (species_id IS NULL)) OR ((certainty_id = 3) AND (species_id IS NULL) AND (species_name IS NULL))))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/planting_sites.html'>planting_sites</a></td>
@@ -1945,11 +1950,6 @@
                                         <td><a href='tables/planting_sites.html'>planting_sites</a></td>
                                         <td>planting_sites_description_check</td>
                                         <td>((description !~ similar_to_escape(&#39; *&#39;::text)))</td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href='tables/recorded_plants.html'>recorded_plants</a></td>
-                                        <td>species_info_matches_certainty</td>
-                                        <td>((((certainty_id = 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id = 2) AND (species_id IS NULL)) OR ((certainty_id = 3) AND (species_id IS NULL) AND (species_name IS NULL))))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/observations.html'>observations</a></td>
