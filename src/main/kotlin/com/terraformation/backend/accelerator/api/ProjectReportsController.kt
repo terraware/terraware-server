@@ -135,6 +135,20 @@ class ProjectReportsController(private val reportStore: ReportStore) {
   @ApiResponse200
   @ApiResponse400
   @ApiResponse404
+  @PostMapping("/{reportId}/submit")
+  @Operation(summary = "Submits a report for review")
+  fun submitAcceleratorReport(
+      @PathVariable projectId: ProjectId,
+      @PathVariable reportId: ReportId,
+  ): SimpleSuccessResponsePayload {
+    reportStore.submitReport(reportId)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400
+  @ApiResponse404
   @PutMapping("/configs")
   @Operation(
       summary = "Insert accelerator report configuration.",
