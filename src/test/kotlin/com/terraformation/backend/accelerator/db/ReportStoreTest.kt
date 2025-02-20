@@ -2,12 +2,15 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.event.ReportSubmittedEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.accelerator.model.StandardMetricModel
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -39,9 +42,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
 
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
-  private val store: ReportStore by lazy { ReportStore(clock, dslContext, reportsDao, systemUser) }
+  private val store: ReportStore by lazy {
+    ReportStore(clock, dslContext, eventPublisher, reportsDao, systemUser)
+  }
 
   private lateinit var organizationId: OrganizationId
   private lateinit var projectId: ProjectId
@@ -878,6 +884,67 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedTime = Instant.ofEpochSecond(9000),
           ),
           "Reports table")
+    }
+  }
+
+  @Nested
+  inner class SubmitReport {
+    @Test
+    fun `throws exception for non-organization users`() {
+      insertProjectReportConfig()
+      val reportId = insertReport(status = ReportStatus.NotSubmitted)
+      deleteOrganizationUser()
+      assertThrows<AccessDeniedException> { store.submitReport(reportId) }
+    }
+
+    @Test
+    fun `throws exception for reports not in NotSubmitted`() {
+      insertProjectReportConfig()
+      val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
+      val submittedReportId = insertReport(status = ReportStatus.Submitted)
+      val needsUpdateReportId = insertReport(status = ReportStatus.NeedsUpdate)
+      val approvedReportId = insertReport(status = ReportStatus.Approved)
+
+      assertThrows<IllegalStateException> { store.submitReport(notNeededReportId) }
+      assertThrows<IllegalStateException> { store.submitReport(submittedReportId) }
+      assertThrows<IllegalStateException> { store.submitReport(needsUpdateReportId) }
+      assertThrows<IllegalStateException> { store.submitReport(approvedReportId) }
+    }
+
+    @Test
+    fun `sets report to submitted status and publishes event`() {
+      val configId = insertProjectReportConfig()
+      val otherUserId = insertUser()
+      val reportId =
+          insertReport(
+              status = ReportStatus.NotSubmitted,
+              startDate = LocalDate.of(2025, Month.JANUARY, 1),
+              endDate = LocalDate.of(2025, Month.DECEMBER, 31),
+              createdBy = otherUserId,
+              modifiedBy = otherUserId)
+
+      clock.instant = Instant.ofEpochSecond(6000)
+
+      store.submitReport(reportId)
+
+      assertTableEquals(
+          ReportsRecord(
+              id = reportId,
+              configId = configId,
+              projectId = projectId,
+              statusId = ReportStatus.Submitted,
+              startDate = LocalDate.of(2025, Month.JANUARY, 1),
+              endDate = LocalDate.of(2025, Month.DECEMBER, 31),
+              createdBy = otherUserId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = otherUserId,
+              modifiedTime = Instant.EPOCH,
+              submittedBy = currentUser().userId,
+              submittedTime = clock.instant,
+          ),
+      )
+
+      eventPublisher.assertEventPublished(ReportSubmittedEvent(reportId))
     }
   }
 

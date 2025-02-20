@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.ReportSubmittedEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectReportConfigModel
@@ -31,12 +32,14 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 
 /** Store class intended for accelerator-admin to configure reports and metrics. */
 @Named
 class ReportStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val reportsDao: ReportsDao,
     private val systemUser: SystemUser,
 ) {
@@ -91,7 +94,7 @@ class ReportStore(
                 .returning(ID.asNonNullable())
                 .fetchOne { record ->
                   ExistingProjectReportConfigModel.of(newModel, record[ID.asNonNullable()])
-                } ?: throw IllegalStateException("Failed to insert project report config. ")
+                } ?: throw IllegalStateException("Failed to insert project report config.")
           }
       val reportRows = createReportRows(config)
       reportsDao.insert(reportRows)
@@ -159,6 +162,36 @@ class ReportStore(
     reportsDao.fetchOneById(reportId) ?: throw ReportNotFoundException(reportId)
 
     upsertReportStandardMetrics(reportId, entries, true)
+  }
+
+  fun submitReport(reportId: ReportId) {
+    requirePermissions { updateReport(reportId) }
+
+    val report =
+        fetchByCondition(REPORTS.ID.eq(reportId)).firstOrNull()
+            ?: throw ReportNotFoundException(reportId)
+
+    if (report.status != ReportStatus.NotSubmitted) {
+      throw IllegalStateException(
+          "Report $reportId cannot be submitted. Status is ${report.status.name}")
+    }
+
+    val rowsUpdated =
+        with(REPORTS) {
+          dslContext
+              .update(this)
+              .set(STATUS_ID, ReportStatus.Submitted)
+              .set(SUBMITTED_BY, currentUser().userId)
+              .set(SUBMITTED_TIME, clock.instant())
+              .where(ID.eq(reportId))
+              .execute()
+        }
+
+    if (rowsUpdated < 1) {
+      throw IllegalStateException("Failed to submit report $reportId")
+    }
+
+    eventPublisher.publishEvent(ReportSubmittedEvent(reportId))
   }
 
   fun updateReportStandardMetrics(
