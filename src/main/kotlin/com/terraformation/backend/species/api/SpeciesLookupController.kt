@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.validation.constraints.Size
 import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.NotFoundException
 import org.springframework.web.bind.annotation.GetMapping
@@ -38,9 +39,8 @@ class SpeciesLookupController(private val gbifStore: GbifStore) {
                   "are ignored, and matches are case-insensitive. The order of prefixes is " +
                   "significant; \"ag sc\" will match \"Aglaonema schottianum\" but won't match " +
                   "\"Scabiosa agrestis\".",
-          example = "ag sc",
-          minLength = 2,
-          maxLength = 100)
+          example = "ag sc")
+      @Size(min = 2, max = 100)
       search: String,
       @RequestParam("maxResults", defaultValue = "10")
       @Schema(description = "Maximum number of results to return.", minimum = "1", maximum = "50")
