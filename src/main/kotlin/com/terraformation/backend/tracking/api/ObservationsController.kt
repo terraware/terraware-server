@@ -747,6 +747,7 @@ data class ObservationMonitoringPlotResultsPayload(
     val claimedByName: String?,
     val claimedByUserId: UserId?,
     val completedTime: Instant?,
+    val conditions: Set<ObservableCondition>,
     @ArraySchema(
         arraySchema = Schema(description = "Observed coordinates, if any, up to one per position."))
     val coordinates: List<ObservationMonitoringPlotCoordinatesPayload>,
@@ -799,6 +800,7 @@ data class ObservationMonitoringPlotResultsPayload(
       claimedByName = model.claimedByName,
       claimedByUserId = model.claimedByUserId,
       completedTime = model.completedTime,
+      conditions = model.conditions,
       coordinates = model.coordinates.map { ObservationMonitoringPlotCoordinatesPayload(it) },
       isAdHoc = model.isAdHoc,
       isPermanent = model.isPermanent,

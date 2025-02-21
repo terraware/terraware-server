@@ -303,6 +303,7 @@ import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPhotoType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
@@ -364,6 +365,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQua
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQuadratSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPhotosRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubzonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
@@ -2593,6 +2595,21 @@ abstract class DatabaseBackedTest {
         )
 
     observationPlotsDao.insert(rowWithDefaults)
+  }
+
+  fun insertObservationPlotCondition(
+      row: ObservationPlotConditionsRow = ObservationPlotConditionsRow(),
+      observationId: ObservationId = row.observationId ?: inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      condition: ObservableCondition = row.conditionId ?: ObservableCondition.AnimalDamage,
+  ) {
+    val rowWtihDefaults =
+        row.copy(
+            observationId = observationId,
+            monitoringPlotId = monitoringPlotId,
+            conditionId = condition)
+
+    observationPlotConditionsDao.insert(rowWtihDefaults)
   }
 
   fun insertObservationRequestedSubzone(
