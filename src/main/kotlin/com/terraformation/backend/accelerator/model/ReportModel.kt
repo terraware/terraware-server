@@ -38,9 +38,10 @@ data class ReportModel(
     val incompleteStandardMetrics =
         standardMetrics.filter { it.entry.target == null || it.entry.value == null }
     if (incompleteStandardMetrics.isNotEmpty()) {
-      val metricIds = incompleteStandardMetrics.map { it.metric.id }.joinToString()
+      val metricNames =
+          incompleteStandardMetrics.joinToString(", ") { "(${it.metric.id}) ${it.metric.name}" }
       throw IllegalStateException(
-          "Report $id is missing targets or values for the following standard metrics: $metricIds")
+          "Report $id is missing targets or values for standard metrics: $metricNames")
     }
   }
 
