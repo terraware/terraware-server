@@ -22,6 +22,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOM
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PHOTOS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_CONDITIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
@@ -464,6 +465,20 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     }
   }
 
+  private val monitoringPlotConditionsMultiset =
+      DSL.multiset(
+              DSL.select(OBSERVATION_PLOT_CONDITIONS.CONDITION_ID)
+                  .from(OBSERVATION_PLOT_CONDITIONS)
+                  .where(
+                      OBSERVATION_PLOT_CONDITIONS.OBSERVATION_ID.eq(
+                          OBSERVATION_PLOTS.OBSERVATION_ID))
+                  .and(
+                      OBSERVATION_PLOT_CONDITIONS.MONITORING_PLOT_ID.eq(
+                          OBSERVATION_PLOTS.MONITORING_PLOT_ID)))
+          .convertFrom { results ->
+            results.map { record -> record[OBSERVATION_PLOT_CONDITIONS.CONDITION_ID]!! }.toSet()
+          }
+
   private val monitoringPlotOverlappedByMultiset =
       DSL.multiset(
               DSL.select(MONITORING_PLOT_OVERLAPS.MONITORING_PLOT_ID)
@@ -524,6 +539,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       MONITORING_PLOTS.IS_AD_HOC,
                       MONITORING_PLOTS.PLOT_NUMBER,
                       MONITORING_PLOTS.SIZE_METERS,
+                      monitoringPlotConditionsMultiset,
                       monitoringPlotOverlappedByMultiset,
                       monitoringPlotOverlapsMultiset,
                       monitoringPlotSpeciesMultiset,
@@ -566,6 +582,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                           record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
                   claimedByUserId = claimedBy,
                   completedTime = completedTime,
+                  conditions = record[monitoringPlotConditionsMultiset],
                   coordinates = record[coordinatesMultiset],
                   isAdHoc = record[MONITORING_PLOTS.IS_AD_HOC.asNonNullable()],
                   isPermanent = isPermanent,

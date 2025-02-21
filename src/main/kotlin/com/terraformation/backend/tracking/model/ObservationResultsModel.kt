@@ -4,6 +4,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPhotoType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
@@ -76,6 +77,7 @@ data class ObservationMonitoringPlotResultsModel(
     val claimedByName: String?,
     val claimedByUserId: UserId?,
     val completedTime: Instant?,
+    val conditions: Set<ObservableCondition>,
     val coordinates: List<ObservedPlotCoordinatesModel>,
     val isAdHoc: Boolean,
     val isPermanent: Boolean,

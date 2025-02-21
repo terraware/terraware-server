@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPhotoType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
@@ -223,6 +224,9 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       insertMonitoringPlot()
       insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
+      insertObservationPlotCondition(condition = ObservableCondition.AnimalDamage)
+      insertObservationPlotCondition(condition = ObservableCondition.Fungus)
+      insertObservationPlotCondition(condition = ObservableCondition.UnfavorableWeather)
 
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
       assertNull(results.find { it.observationId == adHocObservationId }, "No ad-hoc observation")
@@ -237,6 +241,13 @@ class ObservationResultsStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(inserted.monitoringPlotId, plotResults.monitoringPlotId, "Plot ID")
       assertFalse(plotResults.isAdHoc, "Plot Is Ad Hoc")
       assertEquals(2L, plotResults.monitoringPlotNumber, "Plot number")
+      assertEquals(
+          setOf(
+              ObservableCondition.AnimalDamage,
+              ObservableCondition.Fungus,
+              ObservableCondition.UnfavorableWeather),
+          plotResults.conditions,
+          "Plot conditions")
     }
 
     @Test
