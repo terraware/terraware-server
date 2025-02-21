@@ -2603,7 +2603,7 @@ abstract class DatabaseBackedTest {
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       condition: ObservableCondition = row.conditionId ?: ObservableCondition.AnimalDamage,
   ) {
-    val rowWtihDefaults =
+    val rowWithDefaults =
         row.copy(
             observationId = observationId,
             monitoringPlotId = monitoringPlotId,
