@@ -912,6 +912,32 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `throws exception for reports missing metric values or targets`() {
+      val metricId = insertStandardMetric()
+
+      insertProjectReportConfig()
+      val missingBothReportId = insertReport()
+      val missingTargetReportId = insertReport()
+      val missingValueReportId = insertReport()
+
+      insertReportStandardMetric(
+          reportId = missingTargetReportId,
+          metricId = metricId,
+          value = 25,
+      )
+
+      insertReportStandardMetric(
+          reportId = missingValueReportId,
+          metricId = metricId,
+          target = 25,
+      )
+
+      assertThrows<IllegalStateException> { store.submitReport(missingBothReportId) }
+      assertThrows<IllegalStateException> { store.submitReport(missingTargetReportId) }
+      assertThrows<IllegalStateException> { store.submitReport(missingValueReportId) }
+    }
+
+    @Test
     fun `sets report to submitted status and publishes event`() {
       val configId = insertProjectReportConfig()
       val otherUserId = insertUser()
