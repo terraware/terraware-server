@@ -2609,7 +2609,7 @@ abstract class DatabaseBackedTest {
             monitoringPlotId = monitoringPlotId,
             conditionId = condition)
 
-    observationPlotConditionsDao.insert(rowWtihDefaults)
+    observationPlotConditionsDao.insert(rowWithDefaults)
   }
 
   fun insertObservationRequestedSubzone(
