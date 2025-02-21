@@ -6,8 +6,8 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ReportSubmittedEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
+import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
-import com.terraformation.backend.accelerator.model.ReportStandardMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.accelerator.model.StandardMetricModel
 import com.terraformation.backend.auth.currentUser
@@ -26,7 +26,6 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.time.toInstant
 import java.time.Instant
 import java.time.LocalDate
 import java.time.Month
@@ -179,7 +178,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                                   type = MetricType.Impact,
                               ),
                           // all fields are null because no target/value have been set yet
-                          entry = ReportStandardMetricEntryModel()),
+                          entry = ReportMetricEntryModel()),
                       ReportStandardMetricModel(
                           metric =
                               StandardMetricModel(
@@ -191,7 +190,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                                   type = MetricType.Activity,
                               ),
                           entry =
-                              ReportStandardMetricEntryModel(
+                              ReportMetricEntryModel(
                                   target = 55,
                                   value = 45,
                                   notes = "Almost at target",
@@ -210,7 +209,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                                   type = MetricType.Outcome,
                               ),
                           entry =
-                              ReportStandardMetricEntryModel(
+                              ReportMetricEntryModel(
                                   target = 25,
                                   modifiedTime = Instant.ofEpochSecond(1500),
                                   modifiedBy = user.userId,
@@ -636,7 +635,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           reportId,
           mapOf(
               standardMetricId2 to
-                  ReportStandardMetricEntryModel(
+                  ReportMetricEntryModel(
                       target = 99,
                       value = 88,
                       notes = "New metric 2 notes",
@@ -647,7 +646,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       modifiedBy = UserId(99),
                   ),
               standardMetricId3 to
-                  ReportStandardMetricEntryModel(
+                  ReportMetricEntryModel(
                       target = 50,
                       value = 45,
                       notes = "New metric 3 notes",
@@ -818,7 +817,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           reportId,
           mapOf(
               standardMetricId2 to
-                  ReportStandardMetricEntryModel(
+                  ReportMetricEntryModel(
                       target = 99,
                       value = 88,
                       notes = "New metric 2 notes",
@@ -829,7 +828,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       modifiedBy = UserId(99),
                   ),
               standardMetricId3 to
-                  ReportStandardMetricEntryModel(
+                  ReportMetricEntryModel(
                       target = 50,
                       value = null,
                       notes = "New metric 3 notes",

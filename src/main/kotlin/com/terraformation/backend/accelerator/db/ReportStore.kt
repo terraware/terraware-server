@@ -4,8 +4,8 @@ import com.terraformation.backend.accelerator.event.ReportSubmittedEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectReportConfigModel
+import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
-import com.terraformation.backend.accelerator.model.ReportStandardMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
@@ -155,7 +155,7 @@ class ReportStore(
 
   fun reviewReportStandardMetrics(
       reportId: ReportId,
-      entries: Map<StandardMetricId, ReportStandardMetricEntryModel>
+      entries: Map<StandardMetricId, ReportMetricEntryModel>
   ) {
     requirePermissions { reviewReports() }
 
@@ -193,7 +193,7 @@ class ReportStore(
 
   fun updateReportStandardMetrics(
       reportId: ReportId,
-      entries: Map<StandardMetricId, ReportStandardMetricEntryModel>
+      entries: Map<StandardMetricId, ReportMetricEntryModel>
   ) {
     requirePermissions { updateReport(reportId) }
 
@@ -283,7 +283,7 @@ class ReportStore(
 
   private fun upsertReportStandardMetrics(
       reportId: ReportId,
-      entries: Map<StandardMetricId, ReportStandardMetricEntryModel>,
+      entries: Map<StandardMetricId, ReportMetricEntryModel>,
       updateInternalComment: Boolean,
   ) {
     dslContext.transaction { _ ->

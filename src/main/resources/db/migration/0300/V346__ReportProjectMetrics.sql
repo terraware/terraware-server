@@ -11,7 +11,6 @@ CREATE INDEX ON accelerator.project_metrics(project_id);
 
 CREATE TABLE accelerator.report_project_metrics(
     report_id BIGINT NOT NULL REFERENCES accelerator.reports ON DELETE CASCADE,
-    project_id BIGINT NOT NULL REFERENCES projects ON DELETE CASCADE,
     project_metric_id BIGINT NOT NULL REFERENCES accelerator.project_metrics,
     target INTEGER,
     value INTEGER,
@@ -20,8 +19,5 @@ CREATE TABLE accelerator.report_project_metrics(
     modified_by BIGINT NOT NULL REFERENCES users,
     modified_time TIMESTAMP WITH TIME ZONE NOT NULL,
 
-    FOREIGN KEY (report_id, project_id) REFERENCES accelerator.reports(id, project_id),
-    FOREIGN KEY (project_id, project_metric_id) REFERENCES accelerator.project_metrics(project_id, id),
-
-    PRIMARY KEY (report_id, project_id, project_metric_id)
+    PRIMARY KEY (report_id, project_metric_id)
 );
