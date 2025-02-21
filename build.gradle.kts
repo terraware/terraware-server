@@ -90,6 +90,10 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.session:spring-session-jdbc")
 
+  implementation(platform("org.springframework.ai:spring-ai-bom:1.0.0-M6"))
+  implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter")
+  implementation("com.pgvector:pgvector:0.1.6")
+
   implementation("ch.qos.logback.access:logback-access-tomcat:2.0.6")
   implementation("com.drewnoakes:metadata-extractor:2.19.0")
   implementation("com.dropbox.core:dropbox-core-sdk:7.0.0")

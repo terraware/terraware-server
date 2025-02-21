@@ -240,6 +240,9 @@ class TerrawareGenerator : KotlinGenerator() {
                 .withIncludeExpression("locale")
                 .withConverter("com.terraformation.backend.db.LocaleConverter")
                 .withUserType("java.util.Locale"),
+            ForcedType()
+                .withIncludeTypes("VECTOR")
+                .withUserType("com.pgvector.PGvector"),
         )
 
     ENUM_TABLES.forEach { (schemaName, tables) ->

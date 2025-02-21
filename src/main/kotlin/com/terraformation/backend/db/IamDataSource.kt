@@ -1,7 +1,9 @@
 package com.terraformation.backend.db
 
+import com.pgvector.PGvector
 import com.zaxxer.hikari.HikariDataSource
 import java.net.URI
+import java.sql.Connection
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Bean
@@ -35,6 +37,18 @@ class IamDataSource : HikariDataSource() {
             .build()
 
     return rdsUtilities.generateAuthenticationToken(tokenRequest)
+  }
+
+  override fun getConnection(): Connection {
+    val conn = super.getConnection()
+    PGvector.registerTypes(conn)
+    return conn
+  }
+
+  override fun getConnection(username: String?, password: String?): Connection {
+    val conn = super.getConnection(username, password)
+    PGvector.registerTypes(conn)
+    return conn
   }
 
   /**
