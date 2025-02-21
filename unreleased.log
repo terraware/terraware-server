@@ -1,3 +1,4 @@
+bf2834265b1 SW-4254 Added ObservableConditions to MonitoringPlotResults (#2852)
 546ee127dc4 SW-6523 Implemented submission endpoint (#2851)
 63eb7628825 SW-6556 Added migration to update existing observations time (#2850)
 df45f8f1c5c SW-6577 Enforce payload string length limits (#2848)
