@@ -6,6 +6,7 @@ import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
+import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
@@ -17,8 +18,10 @@ import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.tables.daos.ReportsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METRICS
 import com.terraformation.backend.db.asNonNullable
@@ -333,9 +336,8 @@ class ReportStore(
     }
   }
 
-  private val standardMetricsMultiset: Field<List<ReportStandardMetricModel>>
-    get() {
-      return DSL.multiset(
+  private val standardMetricsMultiset: Field<List<ReportStandardMetricModel>> =
+      DSL.multiset(
               DSL.select(
                       STANDARD_METRICS.asterisk(),
                       REPORT_STANDARD_METRICS.asterisk(),
@@ -346,5 +348,18 @@ class ReportStore(
                   .and(REPORTS.ID.eq(REPORT_STANDARD_METRICS.REPORT_ID))
                   .orderBy(STANDARD_METRICS.REFERENCE, STANDARD_METRICS.ID))
           .convertFrom { result -> result.map { ReportStandardMetricModel.of(it) } }
-    }
+
+  private val projectMetricsMultiset: Field<List<ReportProjectMetricModel>> =
+      DSL.multiset(
+          DSL.select(
+              PROJECT_METRICS.asterisk(),
+              REPORT_PROJECT_METRICS.asterisk(),
+          )
+              .from(PROJECT_METRICS)
+              .leftJoin(REPORT_PROJECT_METRICS)
+              .on(PROJECT_METRICS.ID.eq(REPORT_PROJECT_METRICS.PROJECT_METRIC_ID))
+              .and(REPORTS.ID.eq(REPORT_PROJECT_METRICS.REPORT_ID))
+              .where(PROJECT_METRICS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+              .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID))
+          .convertFrom { result -> result.map { ReportProjectMetricModel.of(it) } }
 }
