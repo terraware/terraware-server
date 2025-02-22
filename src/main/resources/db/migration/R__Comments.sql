@@ -594,6 +594,8 @@ COMMENT ON COLUMN accelerator.project_accelerator_details.file_naming IS 'Identi
 
 COMMENT ON VIEW accelerator.project_deliverables IS 'Deliverable information for projects including submission status and due dates.';
 
+COMMENT ON TABLE accelerator.project_metrics IS 'Metrics specific to one project to report on.';
+
 COMMENT ON TABLE accelerator.project_overall_scores IS 'Overall scores assigned to project by scorers.';
 
 COMMENT ON TABLE accelerator.project_report_configs IS 'Configurations for accelerator project reports, including reporting dates and reporting frequencies.';
@@ -607,6 +609,8 @@ COMMENT ON COLUMN accelerator.project_votes.vote_option_id IS 'Vote option can b
 COMMENT ON TABLE accelerator.project_vote_decisions IS 'Calculated vote decisions for project.';
 
 COMMENT ON TABLE accelerator.report_frequencies IS '(Enum) Frequencies of accelerator project reports.';
+
+COMMENT ON TABLE accelerator.report_project_metrics IS 'Report entries of targets and values for project metrics.';
 
 COMMENT ON TABLE accelerator.report_standard_metrics IS 'Report entries of targets and values for standard metrics.';
 
