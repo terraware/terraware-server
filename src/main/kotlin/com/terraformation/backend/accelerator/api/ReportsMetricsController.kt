@@ -1,14 +1,10 @@
 package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.db.ReportMetricStore
-import com.terraformation.backend.accelerator.model.ExistingStandardMetricModel
-import com.terraformation.backend.accelerator.model.NewStandardMetricModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.accelerator.MetricComponent
-import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.GetMapping
@@ -25,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 class ReportsController(private val metricStore: ReportMetricStore) {
   @ApiResponse200
   @GetMapping("/standardMetrics")
-  @Operation(summary = "List all standard metric.")
+  @Operation(summary = "List all standard metrics.")
   fun listStandardMetric(): ListStandardMetricsResponsePayload {
     val models = metricStore.fetchAllStandardMetrics()
     return ListStandardMetricsResponsePayload(models.map { ExistingStandardMetricPayload(it) })
@@ -37,7 +33,7 @@ class ReportsController(private val metricStore: ReportMetricStore) {
   fun createStandardMetric(
       @RequestBody payload: CreateStandardMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
-    metricStore.createStandardMetric(payload.metric.toModel())
+    metricStore.createStandardMetric(payload.metric.toStandardMetricModel())
     return SimpleSuccessResponsePayload()
   }
 
@@ -53,56 +49,7 @@ class ReportsController(private val metricStore: ReportMetricStore) {
   }
 }
 
-data class ExistingStandardMetricPayload(
-    val id: StandardMetricId,
-    val name: String,
-    val description: String?,
-    val component: MetricComponent,
-    val type: MetricType,
-    val reference: String,
-) {
-  constructor(
-      model: ExistingStandardMetricModel
-  ) : this(
-      id = model.id,
-      name = model.name,
-      description = model.description,
-      component = model.component,
-      type = model.type,
-      reference = model.reference)
-
-  fun toModel(): ExistingStandardMetricModel {
-    return ExistingStandardMetricModel(
-        id = id,
-        name = name,
-        description = description,
-        component = component,
-        type = type,
-        reference = reference,
-    )
-  }
-}
-
-data class NewStandardMetricPayload(
-    val name: String,
-    val description: String?,
-    val component: MetricComponent,
-    val type: MetricType,
-    val reference: String,
-) {
-  fun toModel(): NewStandardMetricModel {
-    return NewStandardMetricModel(
-        id = null,
-        name = name,
-        description = description,
-        component = component,
-        type = type,
-        reference = reference,
-    )
-  }
-}
-
-data class CreateStandardMetricRequestPayload(val metric: NewStandardMetricPayload)
+data class CreateStandardMetricRequestPayload(val metric: NewMetricPayload)
 
 data class ListStandardMetricsResponsePayload(val metrics: List<ExistingStandardMetricPayload>) :
     SuccessResponsePayload
