@@ -158,6 +158,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     inner class FetchOneProjectMetric {
       @Test
       fun `returns one project metric`() {
+        insertOrganization()
         val projectId = insertProject()
         val metricId =
             insertProjectMetric(
@@ -191,6 +192,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       @Test
       fun `throws access denied exception for non-accelerator admin`() {
+        insertOrganization()
         val projectId = insertProject()
         val metricId =
             insertProjectMetric(
@@ -210,7 +212,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Nested
     inner class FetchProjectMetricsForProject {
       @Test
-      fun `returns all standard metrics`() {
+      fun `returns all project metrics for one project`() {
+        insertOrganization()
         val projectId = insertProject()
         val metricId1 =
             insertProjectMetric(
@@ -282,6 +285,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       @Test
       fun `throws access denied exception for non-accelerator admin`() {
+        insertOrganization()
         val projectId = insertProject()
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
         assertThrows<AccessDeniedException> { store.fetchProjectMetricsForProject(projectId) }
@@ -357,6 +361,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     inner class ProjectMetric {
       @Test
       fun `inserts new record`() {
+        insertOrganization()
         val projectId = insertProject()
         val existingMetricId =
             insertProjectMetric(
@@ -405,6 +410,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       @Test
       fun `throws access denied exception for non-accelerator admin`() {
+        insertOrganization()
         val projectId = insertProject()
         val model =
             NewProjectMetricModel(
@@ -485,6 +491,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class ProjectMetrics {
     @Test
     fun `updates existing record`() {
+      insertOrganization()
       val projectId = insertProject()
       val existingMetricId =
           insertProjectMetric(
@@ -524,6 +531,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `throws access denied exception for non-accelerator admin`() {
+      insertOrganization()
       val projectId = insertProject()
       val existingMetricId =
           insertProjectMetric(
