@@ -29,6 +29,22 @@ data class ReportModel(
     val submittedTime: Instant? = null,
     val standardMetrics: List<ReportStandardMetricModel> = emptyList(),
 ) {
+  fun validateForSubmission() {
+    if (status != ReportStatus.NotSubmitted) {
+      throw IllegalStateException(
+          "Report $id not in Not Submitted status. Status is ${status.name}")
+    }
+
+    val incompleteStandardMetrics =
+        standardMetrics.filter { it.entry.target == null || it.entry.value == null }
+    if (incompleteStandardMetrics.isNotEmpty()) {
+      val metricNames =
+          incompleteStandardMetrics.joinToString(", ") { "(${it.metric.id}) ${it.metric.name}" }
+      throw IllegalStateException(
+          "Report $id is missing targets or values for standard metrics: $metricNames")
+    }
+  }
+
   companion object {
     val submittedStatuses =
         setOf(

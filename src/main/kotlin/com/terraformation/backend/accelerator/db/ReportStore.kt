@@ -168,13 +168,10 @@ class ReportStore(
     requirePermissions { updateReport(reportId) }
 
     val report =
-        fetchByCondition(REPORTS.ID.eq(reportId)).firstOrNull()
+        fetchByCondition(REPORTS.ID.eq(reportId), includeMetrics = true).firstOrNull()
             ?: throw ReportNotFoundException(reportId)
 
-    if (report.status != ReportStatus.NotSubmitted) {
-      throw IllegalStateException(
-          "Report $reportId cannot be submitted. Status is ${report.status.name}")
-    }
+    report.validateForSubmission()
 
     val rowsUpdated =
         with(REPORTS) {
