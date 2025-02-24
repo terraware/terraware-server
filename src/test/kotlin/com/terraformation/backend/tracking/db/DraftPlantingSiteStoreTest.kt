@@ -201,8 +201,8 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if callback attempts to change read-only field`() {
-      val otherOrgId = insertOrganization()
       insertDraftPlantingSite()
+      val otherOrgId = insertOrganization()
 
       assertThrows<AccessDeniedException> {
         store.update(inserted.draftPlantingSiteId) { it.organizationId = otherOrgId }

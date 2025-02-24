@@ -97,7 +97,7 @@ class DraftPlantingSiteStore(
         with(DRAFT_PLANTING_SITES) { listOf(CREATED_BY, CREATED_TIME, ID, ORGANIZATION_ID) }
 
     readOnlyFields.forEach { field ->
-      if (record.changed(field)) {
+      if (record.modified(field)) {
         throw AccessDeniedException("No permission to change $field")
       }
     }
