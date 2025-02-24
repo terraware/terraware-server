@@ -1,3 +1,7 @@
+d65affa13d9 Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.5 (#2859)
+964aff442fd Update dependency com.google.apis:google-api-services-drive to v3-rev20250216-2.0.0 (#2860)
+d0734dcb0cc Update JamesIves/github-pages-deploy-action action to v4.7.3 (#2856)
+f3c39fdf537 Update Spring dependencies (#2857)
 69bc2084245 SW-6523 Added validation step for incomplete reports (#2853)
 bf2834265b1 SW-4254 Added ObservableConditions to MonitoringPlotResults (#2852)
 546ee127dc4 SW-6523 Implemented submission endpoint (#2851)
