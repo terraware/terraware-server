@@ -92,6 +92,7 @@ dependencies {
 
   implementation(platform("org.springframework.ai:spring-ai-bom:1.0.0-M6"))
   implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter")
+  implementation("org.springframework.ai:spring-ai-pgvector-store-spring-boot-starter")
   implementation("com.pgvector:pgvector:0.1.6")
 
   implementation("ch.qos.logback.access:logback-access-tomcat:2.0.6")
