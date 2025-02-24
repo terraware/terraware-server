@@ -210,6 +210,8 @@ val ID_WRAPPERS =
                 IdWrapper(
                     "ParticipantProjectSpeciesId", listOf("participant_project_species\\.id")),
                 IdWrapper(
+                    "ProjectMetricId", listOf("project_metrics\\.id", ".*\\.project_metric_id")),
+                IdWrapper(
                     "ProjectReportConfigId",
                     listOf("project_report_configs\\.id", ".*\\.config_id")),
                 IdWrapper(

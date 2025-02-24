@@ -3,8 +3,8 @@ package com.terraformation.backend.accelerator.api
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
+import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
-import com.terraformation.backend.accelerator.model.ReportStandardMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
@@ -76,8 +76,7 @@ class ProjectReportsController(private val reportStore: ReportStore) {
 
     val standardMetricUpdates =
         payload.standardMetrics.associate {
-          it.id to
-              ReportStandardMetricEntryModel(target = it.target, value = it.value, notes = it.notes)
+          it.id to ReportMetricEntryModel(target = it.target, value = it.value, notes = it.notes)
         }
 
     reportStore.updateReportStandardMetrics(reportId, standardMetricUpdates)
@@ -119,7 +118,7 @@ class ProjectReportsController(private val reportStore: ReportStore) {
     val standardMetricUpdates =
         payload.standardMetrics.associate {
           it.id to
-              ReportStandardMetricEntryModel(
+              ReportMetricEntryModel(
                   target = it.target,
                   value = it.value,
                   notes = it.notes,
