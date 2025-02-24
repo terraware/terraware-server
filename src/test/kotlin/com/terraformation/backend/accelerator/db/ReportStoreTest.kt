@@ -439,6 +439,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `throws Access Denied Exception for non-TFExpert users`() {
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertUserGlobalRole(role = GlobalRole.ReadOnly)
 
       insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.Submitted)
@@ -452,6 +453,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         )
       }
 
+      deleteUserGlobalRole(role = GlobalRole.ReadOnly)
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
       assertDoesNotThrow {
@@ -543,6 +545,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `throws exception for non-TFExpert users`() {
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertUserGlobalRole(role = GlobalRole.ReadOnly)
 
       insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.Submitted)
@@ -551,6 +554,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.reviewReportStandardMetrics(reportId = reportId, emptyMap())
       }
 
+      deleteUserGlobalRole(role = GlobalRole.ReadOnly)
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
       assertDoesNotThrow { store.reviewReportStandardMetrics(reportId = reportId, emptyMap()) }
@@ -978,6 +982,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `throws exception for non accelerator admin users`() {
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertUserGlobalRole(role = GlobalRole.TFExpert)
 
       assertThrows<AccessDeniedException> { store.fetchProjectReportConfigs() }
     }
