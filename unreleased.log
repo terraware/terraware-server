@@ -1,3 +1,5 @@
+6df9555c038 Update database dependencies (#2858)
+f179a275cb4 SW-6550 Update subsections of new parent section (#2849)
 d65affa13d9 Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.5 (#2859)
 964aff442fd Update dependency com.google.apis:google-api-services-drive to v3-rev20250216-2.0.0 (#2860)
 d0734dcb0cc Update JamesIves/github-pages-deploy-action action to v4.7.3 (#2856)

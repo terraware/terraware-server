@@ -20,6 +20,7 @@ Authors and contributors of jOOQ or parts of jOOQ in alphabetical order:
 - Fabrice Le Roy
 - Gonzalo Ortiz Jaureguizar
 - Gregory Hlavac
+- Guillaume Surrel
 - Henrik Sjöstrand
 - Ivan Dugic
 - Javier Durante
@@ -38,6 +39,7 @@ Authors and contributors of jOOQ or parts of jOOQ in alphabetical order:
 - Miguel Gonzalez Sanchez
 - Mustafa Yücel
 - Nathaniel Fischer
+- Nicholas Chong W.B.
 - Octavia Togami
 - Oliver Flege
 - Per Lundberg
