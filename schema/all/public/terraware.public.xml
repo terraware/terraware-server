@@ -665,6 +665,7 @@
             <child column="project_id" foreignKey="event_projects_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="event_projects"/>
             <child column="project_id" foreignKey="participant_project_species_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="participant_project_species"/>
             <child column="project_id" foreignKey="project_accelerator_details_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_accelerator_details"/>
+            <child column="project_id" foreignKey="project_metrics_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_metrics"/>
             <child column="project_id" foreignKey="project_overall_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_overall_scores"/>
             <child column="project_id" foreignKey="project_report_configs_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_report_configs"/>
             <child column="project_id" foreignKey="project_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_scores"/>
@@ -1383,6 +1384,7 @@
             <child column="created_by" foreignKey="project_votes_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_votes"/>
             <child column="modified_by" foreignKey="project_votes_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_votes"/>
             <child column="user_id" foreignKey="project_votes_user_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_votes"/>
+            <child column="modified_by" foreignKey="report_project_metrics_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_project_metrics"/>
             <child column="modified_by" foreignKey="report_standard_metrics_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_standard_metrics"/>
             <child column="created_by" foreignKey="reports_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
             <child column="modified_by" foreignKey="reports_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>

@@ -9,6 +9,7 @@ project_scores
 project_accelerator_details
 application_modules
 report_standard_metrics
+report_project_metrics
 participant_project_species
 event_projects
 deliverable_project_due_dates
@@ -19,10 +20,11 @@ user_internal_interests
 submission_snapshots
 project_overall_scores
 deliverable_variables
-reports
+project_metrics
 events
 standard_metrics
 deal_stages
+reports
 submissions
 applications
 project_report_configs
@@ -34,8 +36,6 @@ modules
 score_categories
 report_statuses
 report_frequencies
-metric_types
-metric_components
 event_types
 event_statuses
 document_stores
@@ -43,6 +43,8 @@ application_module_statuses
 vote_options
 submission_statuses
 pipelines
+metric_types
+metric_components
 internal_interests
 deliverable_types
 application_statuses

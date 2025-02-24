@@ -2,6 +2,8 @@ cohort_phases
 application_statuses
 deliverable_types
 internal_interests
+metric_components
+metric_types
 pipelines
 submission_statuses
 vote_options
@@ -9,8 +11,6 @@ application_module_statuses
 document_stores
 event_statuses
 event_types
-metric_components
-metric_types
 report_frequencies
 report_statuses
 score_categories
@@ -22,10 +22,11 @@ deliverables
 project_report_configs
 applications
 submissions
+reports
 deal_stages
 standard_metrics
+project_metrics
 events
-reports
 default_project_leads
 default_voters
 cohort_modules
@@ -39,6 +40,7 @@ application_modules
 project_accelerator_details
 project_overall_scores
 project_vote_decisions
+report_project_metrics
 report_standard_metrics
 user_internal_interests
 deliverable_documents
