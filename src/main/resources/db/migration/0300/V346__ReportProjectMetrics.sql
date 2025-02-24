@@ -21,3 +21,8 @@ CREATE TABLE accelerator.report_project_metrics(
 
     PRIMARY KEY (report_id, project_metric_id)
 );
+CREATE INDEX ON accelerator.report_project_metrics(project_metric_id);
+CREATE INDEX ON accelerator.report_project_metrics(report_id, project_metric_id);
+
+CREATE INDEX ON accelerator.report_standard_metrics(standard_metric_id);
+CREATE INDEX ON accelerator.report_standard_metrics(report_id, standard_metric_id);
