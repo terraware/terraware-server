@@ -1,3 +1,4 @@
+c24941ab496 SW-6522 Added endpoint to configure project-specific report metrics (#2855)
 f31194ae281 SW-6522 Project specific metrics models and table (#2854)
 6df9555c038 Update database dependencies (#2858)
 f179a275cb4 SW-6550 Update subsections of new parent section (#2849)
