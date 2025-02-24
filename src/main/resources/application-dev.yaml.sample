@@ -1,4 +1,8 @@
 spring:
+  ai:
+    openapi:
+      api-key:
+
   security:
     oauth2:
       client:
