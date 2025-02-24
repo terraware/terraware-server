@@ -417,15 +417,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser(manager, role = Role.Manager)
     insertOrganizationUser(contributor, role = Role.Contributor)
 
-    service.on(
-        SeedFundReportCreatedEvent(
-            SeedFundReportMetadata(
-                SeedFundReportId(1),
-                organizationId = organizationId,
-                quarter = 3,
-                status = SeedFundReportStatus.New,
-                year = 2023)))
-
     val commonValues =
         NotificationsRow(
             body = "Your 2023-Q3 Report is ready to be completed and submitted to Terraformation.",
@@ -435,10 +426,15 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             title = "Time to Complete Your 2023-Q3 Report",
         )
 
-    assertNotifications(
+    testMultipleEventNotifications(
+        SeedFundReportCreatedEvent(
+            SeedFundReportMetadata(
+                SeedFundReportId(1),
+                organizationId = organizationId,
+                quarter = 3,
+                status = SeedFundReportStatus.New,
+                year = 2023)),
         listOf(commonValues.copy(userId = admin), commonValues.copy(userId = owner)))
-
-    assertIsEventListener<SeedFundReportCreatedEvent>(service)
   }
 
   @Test
@@ -608,9 +604,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertUserInternalInterest(InternalInterest.Compliance, user.userId)
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
-
-    assertNotifications(emptyList())
+    testMultipleEventNotifications(
+        DeliverableReadyForReviewEvent(deliverableId, projectId), emptyList())
   }
 
   @Test
@@ -631,24 +626,17 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertUserInternalInterest(InternalInterest.GIS, user.userId)
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
+    val commonValues =
+        NotificationsRow(
+            notificationTypeId = NotificationType.DeliverableReadyForReview,
+            title = "Review a submitted deliverable",
+            body = "A deliverable from participant1 is ready for review for approval.",
+            localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
+            organizationId = null)
 
-    assertNotifications(
-        listOf(
-            NotificationsRow(
-                notificationTypeId = NotificationType.DeliverableReadyForReview,
-                title = "Review a submitted deliverable",
-                body = "A deliverable from participant1 is ready for review for approval.",
-                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
-                userId = user.userId,
-                organizationId = null),
-            NotificationsRow(
-                notificationTypeId = NotificationType.DeliverableReadyForReview,
-                title = "Review a submitted deliverable",
-                body = "A deliverable from participant1 is ready for review for approval.",
-                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
-                userId = tfContact,
-                organizationId = null)))
+    testMultipleEventNotifications(
+        DeliverableReadyForReviewEvent(deliverableId, projectId),
+        listOf(commonValues.copy(userId = user.userId), commonValues.copy(userId = tfContact)))
   }
 
   @Test
@@ -667,24 +655,17 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         insertDeliverable(deliverableCategoryId = DeliverableCategory.CarbonEligibility)
     insertUserInternalInterest(InternalInterest.CarbonEligibility, user.userId)
 
-    service.on(DeliverableReadyForReviewEvent(deliverableId, projectId))
+    val commonValues =
+        NotificationsRow(
+            notificationTypeId = NotificationType.DeliverableReadyForReview,
+            title = "Review a submitted deliverable",
+            body = "A deliverable from participant1 is ready for review for approval.",
+            localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
+            organizationId = null)
 
-    assertNotifications(
-        listOf(
-            NotificationsRow(
-                notificationTypeId = NotificationType.DeliverableReadyForReview,
-                title = "Review a submitted deliverable",
-                body = "A deliverable from participant1 is ready for review for approval.",
-                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
-                userId = user.userId,
-                organizationId = null),
-            NotificationsRow(
-                notificationTypeId = NotificationType.DeliverableReadyForReview,
-                title = "Review a submitted deliverable",
-                body = "A deliverable from participant1 is ready for review for approval.",
-                localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
-                userId = tfContact,
-                organizationId = null)))
+    testMultipleEventNotifications(
+        DeliverableReadyForReviewEvent(deliverableId, projectId),
+        listOf(commonValues.copy(userId = user.userId), commonValues.copy(userId = tfContact)))
   }
 
   @Test
@@ -714,15 +695,14 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val submissionId = SubmissionId(1)
 
     insertOrganizationUser(role = Role.Admin)
-    service.on(
+    testMultipleEventNotifications(
         DeliverableStatusUpdatedEvent(
             deliverableId,
             projectId,
             SubmissionStatus.NeedsTranslation,
             SubmissionStatus.InReview,
-            submissionId))
-
-    assertNotifications(emptyList())
+            submissionId),
+        emptyList())
   }
 
   @Test
@@ -844,9 +824,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             title = "Your Workshop will start in 15 minutes",
         )
 
-    service.on(ModuleEventStartingEvent(eventId))
-
-    assertNotifications(
+    testMultipleEventNotifications(
+        ModuleEventStartingEvent(eventId),
         listOf(
             commonValues.copy(userId = currentUser().userId),
             commonValues.copy(userId = otherUserId),
@@ -927,8 +906,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
                 userId = userId)))
   }
 
-  // todo add common method here for tests that check multiple notifications
-
   private inline fun <reified T> testEventNotification(
       event: T,
       type: NotificationType,
@@ -952,6 +929,22 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     method.call(service, event)
 
     assertNotification(type, title, body, localUrl, organizationId, userId)
+
+    assertIsEventListener<T>(service)
+  }
+
+  private inline fun <reified T> testMultipleEventNotifications(
+      event: T,
+      expected: Collection<NotificationsRow>
+  ) {
+    val method =
+        service::class.members.find {
+          it.name == "on" && it.parameters.size == 2 && it.parameters[1].type.classifier == T::class
+        } ?: throw IllegalArgumentException("No matching on() method found for ${T::class}")
+
+    method.call(service, event)
+
+    assertNotifications(expected)
 
     assertIsEventListener<T>(service)
   }
