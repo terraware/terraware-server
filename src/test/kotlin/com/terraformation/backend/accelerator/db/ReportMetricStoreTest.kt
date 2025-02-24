@@ -81,6 +81,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+        insertUserGlobalRole(role = GlobalRole.TFExpert)
         assertThrows<AccessDeniedException> { store.fetchOneStandardMetric(metricId) }
       }
     }
@@ -150,6 +151,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       @Test
       fun `throws access denied exception for non-accelerator admin`() {
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+        insertUserGlobalRole(role = GlobalRole.TFExpert)
         assertThrows<AccessDeniedException> { store.fetchAllStandardMetrics() }
       }
     }
@@ -205,6 +207,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+        insertUserGlobalRole(role = GlobalRole.TFExpert)
         assertThrows<AccessDeniedException> { store.fetchOneProjectMetric(metricId) }
       }
     }
@@ -288,6 +291,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         insertOrganization()
         val projectId = insertProject()
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+        insertUserGlobalRole(role = GlobalRole.TFExpert)
         assertThrows<AccessDeniedException> { store.fetchProjectMetricsForProject(projectId) }
       }
     }
@@ -353,6 +357,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+        insertUserGlobalRole(role = GlobalRole.TFExpert)
         assertThrows<AccessDeniedException> { store.createStandardMetric(model) }
       }
     }
@@ -424,6 +429,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+        insertUserGlobalRole(role = GlobalRole.TFExpert)
         assertThrows<AccessDeniedException> { store.createProjectMetric(model) }
       }
     }
@@ -480,6 +486,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+        insertUserGlobalRole(role = GlobalRole.TFExpert)
         assertThrows<AccessDeniedException> {
           store.updateStandardMetric(existingMetricId) { it.copy(reference = "1.0") }
         }
@@ -544,6 +551,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertUserGlobalRole(role = GlobalRole.TFExpert)
       assertThrows<AccessDeniedException> {
         store.updateProjectMetric(existingMetricId) { it.copy(reference = "1.0") }
       }
