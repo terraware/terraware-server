@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.api
 
+import com.terraformation.backend.accelerator.db.ReportMetricStore
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
@@ -14,6 +15,7 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
+import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
@@ -37,7 +39,10 @@ import org.springframework.web.bind.annotation.RestController
 @AcceleratorEndpoint
 @RequestMapping("/api/v1/accelerator/projects/{projectId}/reports")
 @RestController
-class ProjectReportsController(private val reportStore: ReportStore) {
+class ProjectReportsController(
+    private val metricStore: ReportMetricStore,
+    private val reportStore: ReportStore
+) {
   @ApiResponse200
   @GetMapping
   @Operation(
@@ -174,6 +179,37 @@ class ProjectReportsController(private val reportStore: ReportStore) {
     return ListAcceleratorReportConfigResponsePayload(
         configs.map { ExistingAcceleratorReportConfigPayload(it) })
   }
+
+  @ApiResponse200
+  @GetMapping("/metrics")
+  @Operation(summary = "List all project metrics for one project.")
+  fun listProjectMetrics(@PathVariable projectId: ProjectId): ListProjectMetricsResponsePayload {
+    val models = metricStore.fetchProjectMetricsForProject(projectId)
+    return ListProjectMetricsResponsePayload(models.map { ExistingProjectMetricPayload(it) })
+  }
+
+  @ApiResponse200
+  @PutMapping("/metrics")
+  @Operation(summary = "Insert project metric, that the project will report on all future reports.")
+  fun createProjectMetric(
+      @PathVariable projectId: ProjectId,
+      @RequestBody payload: CreateProjectMetricRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    metricStore.createProjectMetric(payload.metric.toProjectMetricModel(projectId))
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @PostMapping("/metrics/{metricId}")
+  @Operation(summary = "Update one project metric by ID.")
+  fun updateProjectMetric(
+      @PathVariable metricId: ProjectMetricId,
+      @PathVariable projectId: ProjectId,
+      @RequestBody payload: UpdateProjectMetricRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    metricStore.updateProjectMetric(metricId) { payload.metric.toModel() }
+    return SimpleSuccessResponsePayload()
+  }
 }
 
 data class ExistingAcceleratorReportConfigPayload(
@@ -304,3 +340,10 @@ data class ListAcceleratorReportsResponsePayload(val reports: List<AcceleratorRe
 data class ListAcceleratorReportConfigResponsePayload(
     val configs: List<ExistingAcceleratorReportConfigPayload>
 ) : SuccessResponsePayload
+
+data class ListProjectMetricsResponsePayload(val metrics: List<ExistingProjectMetricPayload>) :
+    SuccessResponsePayload
+
+data class CreateProjectMetricRequestPayload(val metric: NewMetricPayload)
+
+data class UpdateProjectMetricRequestPayload(val metric: ExistingProjectMetricPayload)

@@ -1,6 +1,7 @@
 package com.terraformation.backend.db
 
 import com.terraformation.backend.db.accelerator.EventId
+import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.default_schema.AutomationId
@@ -144,6 +145,9 @@ class OrganizationNotFoundException(val organizationId: OrganizationId) :
 
 class PlantingSiteInUseException(val plantingSiteId: PlantingSiteId) :
     MismatchedStateException("Planting site $plantingSiteId is in use")
+
+class ProjectMetricNotFoundException(val metricId: ProjectMetricId) :
+    EntityNotFoundException("Project Metric $metricId not found")
 
 class ProjectNameInUseException(val name: String) :
     DuplicateEntityException("Project name $name already in use")
