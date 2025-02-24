@@ -147,6 +147,18 @@ class GoogleDriveWriter(
     return result.id
   }
 
+  fun getFileContentType(googleFileId: String): String? {
+    return driveClient.files().get(googleFileId).setSupportsAllDrives(true).execute().mimeType
+  }
+
+  fun downloadFile(googleFileId: String): InputStream {
+    return driveClient
+        .files()
+        .get(googleFileId)
+        .setSupportsAllDrives(true)
+        .executeMediaAsInputStream()
+  }
+
   /** Copies a file from a [FileStore] to Google Drive. */
   fun copyFile(
       driveId: String,

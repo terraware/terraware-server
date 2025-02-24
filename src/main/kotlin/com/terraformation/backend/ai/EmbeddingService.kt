@@ -1,28 +1,43 @@
 package com.terraformation.backend.ai
 
+import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
+import com.terraformation.backend.accelerator.model.ModuleDeliverableModel
+import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.accelerator.variables.AcceleratorProjectVariableValuesService
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
+import com.terraformation.backend.db.accelerator.DeliverableType
+import com.terraformation.backend.db.accelerator.DocumentStore
+import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
+import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DOCUMENTS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.VECTOR_STORE
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
+import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
+import org.apache.tika.exception.UnsupportedFormatException
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.springframework.ai.document.Document
+import org.springframework.ai.reader.tika.TikaDocumentReader
+import org.springframework.ai.transformer.splitter.TokenTextSplitter
 import org.springframework.ai.vectorstore.VectorStore
 import org.springframework.ai.vectorstore.filter.FilterExpressionBuilder
+import org.springframework.core.io.InputStreamResource
 
 @Named
 class EmbeddingService(
     private val acceleratorProjectVariableValuesService: AcceleratorProjectVariableValuesService,
+    private val deliverableStore: DeliverableStore,
     private val dslContext: DSLContext,
+    private val googleDriveWriter: GoogleDriveWriter,
     private val organizationStore: OrganizationStore,
     private val projectAcceleratorDetailsStore: ProjectAcceleratorDetailsStore,
     private val projectStore: ProjectStore,
@@ -30,6 +45,18 @@ class EmbeddingService(
     private val variableValueStore: VariableValueStore,
     private val vectorStore: VectorStore,
 ) {
+  private val allowedMimeTypes =
+      Regex(
+          """
+          application/(?:
+            pdf
+            | vnd\.openxmlformats.*
+          )
+          | text/.*
+          """
+              .trimIndent(),
+          RegexOption.COMMENTS)
+
   private val log = perClassLogger()
 
   fun embedProjectData(projectId: ProjectId) {
@@ -68,9 +95,90 @@ class EmbeddingService(
 
     vectorStore.delete(FilterExpressionBuilder().eq("projectId", projectId).build())
 
-    log.info("Embedding ${documents.size} documents for project $projectId")
+    log.info("Embedding ${documents.size} documents for project $projectId ${project.name}")
 
     vectorStore.add(documents)
+
+    embedGoogleDriveFiles(projectId, baseMetadata)
+  }
+
+  private fun embedGoogleDriveFiles(projectId: ProjectId, baseMetadata: Map<String, Any?>) {
+    dslContext
+        .selectDistinct(SUBMISSIONS.DELIVERABLE_ID)
+        .from(SUBMISSIONS)
+        .join(DELIVERABLES)
+        .on(SUBMISSIONS.DELIVERABLE_ID.eq(DELIVERABLES.ID))
+        .join(SUBMISSION_DOCUMENTS)
+        .on(SUBMISSIONS.ID.eq(SUBMISSION_DOCUMENTS.SUBMISSION_ID))
+        .where(SUBMISSIONS.PROJECT_ID.eq(projectId))
+        .and(DELIVERABLES.IS_SENSITIVE.isFalse)
+        .and(DELIVERABLES.DELIVERABLE_TYPE_ID.eq(DeliverableType.Document))
+        .fetch(SUBMISSIONS.DELIVERABLE_ID.asNonNullable())
+        .forEach { deliverableId ->
+          deliverableStore
+              .fetchDeliverableSubmissions(projectId = projectId, deliverableId = deliverableId)
+              .forEach { submission ->
+                val deliverable =
+                    deliverableStore.fetchDeliverables(submission.deliverableId).first()
+
+                submission.documents
+                    .filter { it.documentStore == DocumentStore.Google }
+                    .forEach { submissionDocument ->
+                      embedGoogleDriveFile(projectId, deliverable, submissionDocument, baseMetadata)
+                    }
+              }
+        }
+  }
+
+  private fun embedGoogleDriveFile(
+      projectId: ProjectId,
+      deliverable: ModuleDeliverableModel,
+      submissionDocument: SubmissionDocumentModel,
+      baseMetadata: Map<String, Any?>,
+  ) {
+    log.info(
+        "Embedding project $projectId deliverable ${deliverable.id} file ${submissionDocument.name}")
+
+    val metadata =
+        baseMetadata +
+            listOfNotNull(
+                    "deliverableId" to deliverable.id,
+                    "deliverableName" to deliverable.name,
+                    deliverable.descriptionHtml?.let { "deliverableDescriptionHtml" to it },
+                    "deliverableCategory" to deliverable.category,
+                    submissionDocument.description?.let { "documentDescription" to it },
+                    "submissionDocumentId" to submissionDocument.id,
+                    "submissionDocumentName" to submissionDocument.name,
+                )
+                .toMap()
+
+    try {
+      val mimeType = googleDriveWriter.getFileContentType(submissionDocument.location)
+      if (mimeType == null || !allowedMimeTypes.matches(mimeType)) {
+        log.info("Skipping file with unsupported type $mimeType")
+        return
+      }
+
+      val chunks =
+          TikaDocumentReader(
+                  InputStreamResource {
+                    googleDriveWriter.downloadFile(submissionDocument.location)
+                  })
+              .read()
+              .filter { it.isText }
+              .map { document -> document.mutate().metadata(metadata).build() }
+              .flatMap { document -> TokenTextSplitter().split(document) }
+
+      vectorStore.add(chunks)
+    } catch (e: Exception) {
+      if (e.cause is UnsupportedFormatException) {
+        log.info(
+            "Unsupported file format for project $projectId deliverable ${deliverable.id} " +
+                "submission document ${submissionDocument.id} ${submissionDocument.name}")
+      } else {
+        throw e
+      }
+    }
   }
 
   fun embedAllProjectData() {

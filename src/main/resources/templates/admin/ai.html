@@ -1,0 +1,42 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+
+<h2>AI</h2>
+
+<th:block th:if="${answer} != null">
+    <h3>Project</h3>
+
+    <p th:text="|${project.name} (${project.id})|"/>
+
+    <h3>Query</h3>
+
+    <p th:text="${query}" style="white-space: preserve-breaks"/>
+
+    <h3>Answer</h3>
+
+    <p th:utext="${answer}"/>
+</th:block>
+
+<form method="POST" action="/admin/ai">
+    <label>
+        Project ID:
+        <input type="text" required name="projectId" th:value="${project.id}"/>
+    </label>
+    <br/>
+    <label>
+        Query:
+        <textarea rows=4 cols=80 name="query"></textarea>
+    </label>
+    <br/>
+    <input type="hidden" name="history" th:value="${history}"/>
+    <input type="submit" value="Submit"/>
+</form>
+
+</body>
+</html>

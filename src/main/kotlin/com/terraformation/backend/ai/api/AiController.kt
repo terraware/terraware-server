@@ -1,12 +1,10 @@
 package com.terraformation.backend.ai.api
 
+import com.terraformation.backend.ai.ChatService
 import com.terraformation.backend.ai.EmbeddingService
-import com.terraformation.backend.ai.InjectMetadataAdvisor
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.log.perClassLogger
-import org.springframework.ai.chat.client.ChatClient
-import org.springframework.ai.chat.client.advisor.QuestionAnswerAdvisor
 import org.springframework.ai.document.Document
 import org.springframework.ai.vectorstore.SearchRequest
 import org.springframework.ai.vectorstore.VectorStore
@@ -21,28 +19,11 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/ai")
 @RestController
 class AiController(
-    private val chatClientBuilder: ChatClient.Builder,
+    private val chatService: ChatService,
     private val embeddingService: EmbeddingService,
-    private val injectMetadataAdvisor: InjectMetadataAdvisor,
+    private val systemUser: SystemUser,
     private val vectorStore: VectorStore,
 ) {
-  private val log = perClassLogger()
-
-  val userTextAdvise: String = """
-
-			Context information is below, surrounded by ---------------------
-
-			---------------------
-			{question_answer_context}
-			---------------------
-
-			Given the context and provided history information,
-			reply to the user comment. If the answer is not in the context, inform
-			the user that you can't answer the question. You may use general knowledge
-      of geography to interpret the context.
-			
-			""".trimIndent()
-
   @PostMapping("/embedding")
   fun createEmbedding(@RequestBody payload: CreateEmbeddingRequestPayload): String {
     val document = Document(payload.text, payload.metadata)
@@ -61,17 +42,8 @@ class AiController(
   }
 
   @GetMapping
-  fun queryAi(@RequestParam query: String): String {
-    val response =
-        chatClientBuilder
-            .build()
-            .prompt()
-            .advisors(QuestionAnswerAdvisor(vectorStore, SearchRequest.builder().build(), userTextAdvise), injectMetadataAdvisor)
-            .user(query)
-            .call()
-            .content()
-
-    return response ?: "No answer"
+  fun queryAi(@RequestParam projectId: ProjectId?, @RequestParam query: String): String {
+    return chatService.queryAi(projectId, query) ?: "No answer"
   }
 
   @PostMapping("/embedProjects")
@@ -83,8 +55,7 @@ class AiController(
 
   @PostMapping("/embedProject/{projectId}")
   fun embedProjectData(@PathVariable projectId: ProjectId): String {
-    embeddingService.embedProjectData(projectId)
-
+    systemUser.run { embeddingService.embedProjectData(projectId) }
     return "ok"
   }
 

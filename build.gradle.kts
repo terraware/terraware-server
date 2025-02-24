@@ -93,7 +93,9 @@ dependencies {
   implementation(platform("org.springframework.ai:spring-ai-bom:1.0.0-M6"))
   implementation("org.springframework.ai:spring-ai-openai-spring-boot-starter")
   implementation("org.springframework.ai:spring-ai-pgvector-store-spring-boot-starter")
+  implementation("org.springframework.ai:spring-ai-tika-document-reader")
   implementation("com.pgvector:pgvector:0.1.6")
+  implementation("org.commonmark:commonmark:0.24.0")
 
   implementation("ch.qos.logback.access:logback-access-tomcat:2.0.6")
   implementation("com.drewnoakes:metadata-extractor:2.19.0")

@@ -11,6 +11,7 @@ data class SubmissionDocumentModel(
     val description: String?,
     val documentStore: DocumentStore,
     val id: SubmissionDocumentId,
+    val location: String,
     val name: String,
     val originalName: String?,
 ) {
@@ -21,6 +22,7 @@ data class SubmissionDocumentModel(
           record[SUBMISSION_DOCUMENTS.DESCRIPTION],
           record[SUBMISSION_DOCUMENTS.DOCUMENT_STORE_ID]!!,
           record[SUBMISSION_DOCUMENTS.ID]!!,
+          record[SUBMISSION_DOCUMENTS.LOCATION]!!,
           record[SUBMISSION_DOCUMENTS.NAME]!!,
           record[SUBMISSION_DOCUMENTS.ORIGINAL_NAME],
       )
