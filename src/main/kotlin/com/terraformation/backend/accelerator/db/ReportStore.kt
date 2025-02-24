@@ -12,6 +12,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ReportNotFoundException
+import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportStatus
@@ -156,15 +157,19 @@ class ReportStore(
     }
   }
 
-  fun reviewReportStandardMetrics(
+  fun reviewReportMetrics(
       reportId: ReportId,
-      entries: Map<StandardMetricId, ReportMetricEntryModel>
+      standardMetrics: Map<StandardMetricId, ReportMetricEntryModel> = emptyMap(),
+      projectMetrics: Map<ProjectMetricId, ReportMetricEntryModel> = emptyMap(),
   ) {
     requirePermissions { reviewReports() }
 
     reportsDao.fetchOneById(reportId) ?: throw ReportNotFoundException(reportId)
 
-    upsertReportStandardMetrics(reportId, entries, true)
+    dslContext.transaction { _ ->
+      upsertReportStandardMetrics(reportId, standardMetrics, true)
+      upsertReportProjectMetrics(reportId, projectMetrics, true)
+    }
   }
 
   fun submitReport(reportId: ReportId) {
@@ -194,14 +199,15 @@ class ReportStore(
     eventPublisher.publishEvent(ReportSubmittedEvent(reportId))
   }
 
-  fun updateReportStandardMetrics(
+  fun updateReportMetrics(
       reportId: ReportId,
-      entries: Map<StandardMetricId, ReportMetricEntryModel>
+      standardMetrics: Map<StandardMetricId, ReportMetricEntryModel> = emptyMap(),
+      projectMetrics: Map<ProjectMetricId, ReportMetricEntryModel> = emptyMap(),
   ) {
     requirePermissions { updateReport(reportId) }
 
     val report =
-        fetchByCondition(REPORTS.ID.eq(reportId)).firstOrNull()
+        fetchByCondition(REPORTS.ID.eq(reportId), true).firstOrNull()
             ?: throw ReportNotFoundException(reportId)
 
     if (report.status != ReportStatus.NotSubmitted) {
@@ -209,7 +215,21 @@ class ReportStore(
           "Cannot update metrics for report $reportId of status ${report.status.name}")
     }
 
-    upsertReportStandardMetrics(reportId, entries, false)
+    val invalidProjectMetricIds =
+        projectMetrics.keys.filter { metricId ->
+          report.projectMetrics.any { it.metric.id == metricId }
+        }
+
+    if (projectMetrics.isNotEmpty()) {
+      throw IllegalArgumentException(
+          "Report $reportId does not contain these project metrics: " +
+              invalidProjectMetricIds.joinToString(", "))
+    }
+
+    dslContext.transaction { _ ->
+      upsertReportStandardMetrics(reportId, standardMetrics, false)
+      upsertReportProjectMetrics(reportId, projectMetrics, false)
+    }
   }
 
   private fun createReportRows(config: ExistingProjectReportConfigModel): List<ReportsRow> {
@@ -268,11 +288,18 @@ class ReportStore(
           null
         }
 
+    val projectMetricsField =
+        if (includeMetrics) {
+          projectMetricsMultiset
+        } else {
+          null
+        }
+
     return dslContext
-        .select(REPORTS.asterisk(), standardMetricsField)
+        .select(REPORTS.asterisk(), standardMetricsField, projectMetricsField)
         .from(REPORTS)
         .where(condition)
-        .fetch { ReportModel.of(it, standardMetricsField) }
+        .fetch { ReportModel.of(it, standardMetricsField, projectMetricsField) }
         .filter { currentUser().canReadReport(it.id) }
   }
 
@@ -336,6 +363,58 @@ class ReportStore(
     }
   }
 
+  private fun upsertReportProjectMetrics(
+      reportId: ReportId,
+      entries: Map<ProjectMetricId, ReportMetricEntryModel>,
+      updateInternalComment: Boolean,
+  ) {
+    dslContext.transaction { _ ->
+      var insertQuery = dslContext.insertInto(REPORT_PROJECT_METRICS).set()
+
+      val iterator = entries.iterator()
+
+      while (iterator.hasNext()) {
+        val (metricId, entry) = iterator.next()
+        insertQuery =
+            insertQuery
+                .set(REPORT_PROJECT_METRICS.REPORT_ID, reportId)
+                .set(REPORT_PROJECT_METRICS.PROJECT_METRIC_ID, metricId)
+                .set(REPORT_PROJECT_METRICS.TARGET, entry.target)
+                .set(REPORT_PROJECT_METRICS.VALUE, entry.value)
+                .set(REPORT_PROJECT_METRICS.NOTES, entry.notes)
+                .set(REPORT_PROJECT_METRICS.MODIFIED_BY, currentUser().userId)
+                .set(REPORT_PROJECT_METRICS.MODIFIED_TIME, clock.instant())
+                .apply {
+                  if (updateInternalComment) {
+                    this.set(REPORT_PROJECT_METRICS.INTERNAL_COMMENT, entry.internalComment)
+                  }
+                }
+                .apply {
+                  if (iterator.hasNext()) {
+                    this.newRecord()
+                  }
+                }
+      }
+
+      val rowsUpdated =
+          insertQuery
+              .onConflict(
+                  REPORT_PROJECT_METRICS.REPORT_ID, REPORT_PROJECT_METRICS.PROJECT_METRIC_ID)
+              .doUpdate()
+              .setAllToExcluded()
+              .execute()
+
+      if (rowsUpdated > 0) {
+        dslContext
+            .update(REPORTS)
+            .set(REPORTS.MODIFIED_BY, currentUser().userId)
+            .set(REPORTS.MODIFIED_TIME, clock.instant())
+            .where(REPORTS.ID.eq(reportId))
+            .execute()
+      }
+    }
+  }
+
   private val standardMetricsMultiset: Field<List<ReportStandardMetricModel>> =
       DSL.multiset(
               DSL.select(
@@ -351,15 +430,15 @@ class ReportStore(
 
   private val projectMetricsMultiset: Field<List<ReportProjectMetricModel>> =
       DSL.multiset(
-          DSL.select(
-              PROJECT_METRICS.asterisk(),
-              REPORT_PROJECT_METRICS.asterisk(),
-          )
-              .from(PROJECT_METRICS)
-              .leftJoin(REPORT_PROJECT_METRICS)
-              .on(PROJECT_METRICS.ID.eq(REPORT_PROJECT_METRICS.PROJECT_METRIC_ID))
-              .and(REPORTS.ID.eq(REPORT_PROJECT_METRICS.REPORT_ID))
-              .where(PROJECT_METRICS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-              .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID))
+              DSL.select(
+                      PROJECT_METRICS.asterisk(),
+                      REPORT_PROJECT_METRICS.asterisk(),
+                  )
+                  .from(PROJECT_METRICS)
+                  .leftJoin(REPORT_PROJECT_METRICS)
+                  .on(PROJECT_METRICS.ID.eq(REPORT_PROJECT_METRICS.PROJECT_METRIC_ID))
+                  .and(REPORTS.ID.eq(REPORT_PROJECT_METRICS.REPORT_ID))
+                  .where(PROJECT_METRICS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                  .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID))
           .convertFrom { result -> result.map { ReportProjectMetricModel.of(it) } }
 }
