@@ -21,6 +21,7 @@ import com.terraformation.backend.mockUser
 import io.mockk.every
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -537,6 +538,93 @@ class ManifestImporterTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf("Message: Name column is required, Field: Name, Value: null, Position: 2"),
           importResult.errors)
+    }
+
+    @Test
+    fun `creates new child section if its parent ID has changed`() {
+      val initialCsv = header + "\nTop,A,,,,," + "\nBottom,B,,,Top,,"
+      val updatedCsv = header + "\nTop,X,,,,," + "\nBottom,B,,,Top,,"
+
+      importer.import(inserted.documentTemplateId, sizedInputStream(initialCsv))
+      val initialTop = getVariableByName("Top")
+      val initialBottom = getVariableByName("Bottom")
+
+      importer.import(inserted.documentTemplateId, sizedInputStream(updatedCsv))
+      val updatedTop = getVariableByName("Top")
+      val updatedBottom = getVariableByName("Bottom")
+
+      assertNotEquals(initialTop, updatedTop, "Top-level section should be new")
+      assertNotEquals(initialBottom, updatedBottom, "Bottom section should be new")
+
+      assertNull(updatedTop.replacesVariableId, "Replaces ID for top")
+      assertEquals(initialBottom.id, updatedBottom.replacesVariableId, "Replaces ID for bottom")
+
+      assertEquals(
+          setOf(
+              VariableSectionsRow(
+                  renderHeading = true,
+                  variableId = updatedTop.id,
+                  variableTypeId = VariableType.Section,
+              ),
+              VariableSectionsRow(
+                  parentVariableId = updatedTop.id,
+                  parentVariableTypeId = VariableType.Section,
+                  renderHeading = true,
+                  variableId = updatedBottom.id,
+                  variableTypeId = VariableType.Section,
+              ),
+          ),
+          variableSectionsDao.fetchByVariableId(updatedTop.id!!, updatedBottom.id!!).toSet(),
+          "Updated sections")
+    }
+
+    @Test
+    fun `creates new sections if a child has moved to a new parent`() {
+      val initialCsv = header + "\nTop 1,A,,,,," + "\nTop 2,B,,,,," + "\nBottom,C,,,Top 1,,"
+      val updatedCsv = header + "\nTop 1,A,,,,," + "\nTop 2,B,,,,," + "\nBottom,C,,,Top 2,,"
+
+      importer.import(inserted.documentTemplateId, sizedInputStream(initialCsv))
+      val initialTop1 = getVariableByName("Top 1")
+      val initialTop2 = getVariableByName("Top 2")
+      val initialBottom = getVariableByName("Bottom")
+
+      importer.import(inserted.documentTemplateId, sizedInputStream(updatedCsv))
+      val updatedTop1 = getVariableByName("Top 1")
+      val updatedTop2 = getVariableByName("Top 2")
+      val updatedBottom = getVariableByName("Bottom")
+
+      assertNotEquals(initialTop1, updatedTop1, "First top-level section should be new")
+      assertNotEquals(initialTop2, updatedTop2, "Second top-level section should be new")
+      assertNotEquals(initialBottom, updatedBottom, "Bottom section should be new")
+
+      assertEquals(initialTop1.id, updatedTop1.replacesVariableId, "Replaces ID for first top")
+      assertEquals(initialTop2.id, updatedTop2.replacesVariableId, "Replaces ID for second top")
+      assertEquals(initialBottom.id, updatedBottom.replacesVariableId, "Replaces ID for bottom")
+
+      assertEquals(
+          setOf(
+              VariableSectionsRow(
+                  renderHeading = true,
+                  variableId = updatedTop1.id,
+                  variableTypeId = VariableType.Section,
+              ),
+              VariableSectionsRow(
+                  renderHeading = true,
+                  variableId = updatedTop2.id,
+                  variableTypeId = VariableType.Section,
+              ),
+              VariableSectionsRow(
+                  parentVariableId = updatedTop2.id,
+                  parentVariableTypeId = VariableType.Section,
+                  renderHeading = true,
+                  variableId = updatedBottom.id,
+                  variableTypeId = VariableType.Section,
+              ),
+          ),
+          variableSectionsDao
+              .fetchByVariableId(updatedTop1.id!!, updatedTop2.id!!, updatedBottom.id!!)
+              .toSet(),
+          "Updated sections")
     }
 
     @Test

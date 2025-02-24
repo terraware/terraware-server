@@ -140,8 +140,8 @@ class ManifestImporter(
               .fetchManifestVariables(existingManifestId)
               .filterIsInstance<SectionVariable>()
 
-      // Child variables such as subsections are not in the top-level list, so we
-      // need to recursively process them.
+      // Child variables such as subsections are not in the top-level list, so we need to
+      // recursively process them.
       fun processVariables(variables: List<SectionVariable>) {
         variables.forEach { variable ->
           val csvVariable = csvVariableByStableId[variable.stableId]
@@ -159,6 +159,8 @@ class ManifestImporter(
 
       processVariables(existingSectionVariables)
 
+      existingSectionVariables.forEach { markMovedSubsectionsNonReusable(it) }
+
       // At this point, tables and top-level sections are marked as non-reusable if any of their
       // children are non-reusable. But some of the children might still be marked as reusable, so
       // we need to propagate the non-reusability back down the hierarchy.
@@ -166,6 +168,24 @@ class ManifestImporter(
           .mapNotNull { csvVariableByStableId[it.stableId] }
           .filter { it.variableId == null }
           .forEach { markChildrenNonReusable(it) }
+    }
+
+    /**
+     * If a section is new but its children already exist, mark the children as non-reusable. Apply
+     * the same logic to each child section's children, walking the section tree to find
+     * transplanted branches.
+     */
+    private fun markMovedSubsectionsNonReusable(variable: SectionVariable) {
+      if (csvVariableByStableId[variable.stableId] != null) {
+        variable.children.forEach { markMovedSubsectionsNonReusable(it) }
+      } else {
+        fun findExistingSubsectionsStillInCsv(variable: SectionVariable): List<CsvSectionVariable> {
+          return listOfNotNull(csvVariableByStableId[variable.stableId]) +
+              variable.children.flatMap { findExistingSubsectionsStillInCsv(it) }
+        }
+
+        findExistingSubsectionsStillInCsv(variable).forEach { markSectionNonReusable(it) }
+      }
     }
 
     private fun importCsvVariables(
@@ -338,8 +358,8 @@ class ManifestImporter(
     }
 
     /**
-     * Returns true if the list of select options in a CSV variable is the same as the options of an
-     * existing variable.
+     * Returns true if the list of child sections in a CSV variable is the same as the children of
+     * an existing section variable.
      */
     private fun hasSameSubsections(
         csvVariable: CsvSectionVariable,
@@ -373,13 +393,16 @@ class ManifestImporter(
           hasSameSubsections(csvVariable, variable)
     }
 
+    private fun markSectionNonReusable(csvVariable: CsvSectionVariable) {
+      if (csvVariable.variableId != null) {
+        csvVariable.replacesVariableId = csvVariable.variableId
+        csvVariable.variableId = null
+      }
+    }
+
     private fun markChildrenNonReusable(csvVariable: CsvSectionVariable) {
       csvVariablesByParentPath[csvVariable.variablePath]?.forEach { child ->
-        if (child.variableId != null) {
-          child.replacesVariableId = child.variableId
-          child.variableId = null
-        }
-
+        markSectionNonReusable(child)
         markChildrenNonReusable(child)
       }
     }
