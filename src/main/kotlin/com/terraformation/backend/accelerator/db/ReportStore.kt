@@ -6,24 +6,31 @@ import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
+import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ReportNotFoundException
+import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
+import com.terraformation.backend.db.accelerator.ReportIdConverter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.tables.daos.ReportsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.UserIdConverter
 import jakarta.inject.Named
+import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
 import java.time.Month
@@ -31,7 +38,9 @@ import java.time.ZoneId
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
+import org.jooq.TableField
 import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 import org.springframework.context.ApplicationEventPublisher
 
 /** Store class intended for accelerator-admin to configure reports and metrics. */
@@ -153,15 +162,28 @@ class ReportStore(
     }
   }
 
-  fun reviewReportStandardMetrics(
+  fun reviewReportMetrics(
       reportId: ReportId,
-      entries: Map<StandardMetricId, ReportMetricEntryModel>
+      standardMetricEntries: Map<StandardMetricId, ReportMetricEntryModel> = emptyMap(),
+      projectMetricEntries: Map<ProjectMetricId, ReportMetricEntryModel> = emptyMap(),
   ) {
     requirePermissions { reviewReports() }
 
-    reportsDao.fetchOneById(reportId) ?: throw ReportNotFoundException(reportId)
+    val report =
+        fetchByCondition(REPORTS.ID.eq(reportId), true).firstOrNull()
+            ?: throw ReportNotFoundException(reportId)
 
-    upsertReportStandardMetrics(reportId, entries, true)
+    report.validateMetricEntries(
+        standardMetricEntries = standardMetricEntries, projectMetricEntries = projectMetricEntries)
+
+    dslContext.transaction { _ ->
+      val rowsUpdated =
+          upsertReportStandardMetrics(reportId, standardMetricEntries, true) +
+              upsertReportProjectMetrics(reportId, projectMetricEntries, true)
+      if (rowsUpdated > 0) {
+        updateReportModifiedTime(reportId)
+      }
+    }
   }
 
   fun submitReport(reportId: ReportId) {
@@ -191,14 +213,15 @@ class ReportStore(
     eventPublisher.publishEvent(ReportSubmittedEvent(reportId))
   }
 
-  fun updateReportStandardMetrics(
+  fun updateReportMetrics(
       reportId: ReportId,
-      entries: Map<StandardMetricId, ReportMetricEntryModel>
+      standardMetricEntries: Map<StandardMetricId, ReportMetricEntryModel> = emptyMap(),
+      projectMetricEntries: Map<ProjectMetricId, ReportMetricEntryModel> = emptyMap(),
   ) {
     requirePermissions { updateReport(reportId) }
 
     val report =
-        fetchByCondition(REPORTS.ID.eq(reportId)).firstOrNull()
+        fetchByCondition(REPORTS.ID.eq(reportId), true).firstOrNull()
             ?: throw ReportNotFoundException(reportId)
 
     if (report.status != ReportStatus.NotSubmitted) {
@@ -206,7 +229,17 @@ class ReportStore(
           "Cannot update metrics for report $reportId of status ${report.status.name}")
     }
 
-    upsertReportStandardMetrics(reportId, entries, false)
+    report.validateMetricEntries(
+        standardMetricEntries = standardMetricEntries, projectMetricEntries = projectMetricEntries)
+
+    dslContext.transaction { _ ->
+      val rowsUpdated =
+          upsertReportStandardMetrics(reportId, standardMetricEntries, false) +
+              upsertReportProjectMetrics(reportId, projectMetricEntries, false)
+      if (rowsUpdated > 0) {
+        updateReportModifiedTime(reportId)
+      }
+    }
   }
 
   private fun createReportRows(config: ExistingProjectReportConfigModel): List<ReportsRow> {
@@ -265,11 +298,18 @@ class ReportStore(
           null
         }
 
+    val projectMetricsField =
+        if (includeMetrics) {
+          projectMetricsMultiset
+        } else {
+          null
+        }
+
     return dslContext
-        .select(REPORTS.asterisk(), standardMetricsField)
+        .select(REPORTS.asterisk(), standardMetricsField, projectMetricsField)
         .from(REPORTS)
         .where(condition)
-        .fetch { ReportModel.of(it, standardMetricsField) }
+        .fetch { ReportModel.of(it, standardMetricsField, projectMetricsField) }
         .filter { currentUser().canReadReport(it.id) }
   }
 
@@ -281,61 +321,89 @@ class ReportStore(
     }
   }
 
+  private fun <ID : Any> upsertReportMetrics(
+      reportId: ReportId,
+      metricIdField: TableField<*, ID?>,
+      entries: Map<ID, ReportMetricEntryModel>,
+      updateInternalComment: Boolean,
+  ): Int {
+    val table = metricIdField.table!!
+    val reportIdField =
+        table.field("report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
+    val targetField = table.field("target", Int::class.java)!!
+    val valueField = table.field("value", Int::class.java)!!
+    val notesField = table.field("notes", String::class.java)!!
+    val internalCommentField = table.field("internal_comment", String::class.java)!!
+    val modifiedByField =
+        table.field("modified_by", SQLDataType.BIGINT.asConvertedDataType(UserIdConverter()))!!
+    val modifiedTimeField = table.field("modified_time", Instant::class.java)!!
+
+    var insertQuery = dslContext.insertInto(table).set()
+
+    val iterator = entries.iterator()
+
+    while (iterator.hasNext()) {
+      val (metricId, entry) = iterator.next()
+      insertQuery =
+          insertQuery
+              .set(reportIdField, reportId)
+              .set(metricIdField, metricId)
+              .set(targetField, entry.target)
+              .set(valueField, entry.value)
+              .set(notesField, entry.notes)
+              .set(modifiedByField, currentUser().userId)
+              .set(modifiedTimeField, clock.instant())
+              .apply {
+                if (updateInternalComment) {
+                  this.set(internalCommentField, entry.internalComment)
+                }
+              }
+              .apply {
+                if (iterator.hasNext()) {
+                  this.newRecord()
+                }
+              }
+    }
+
+    val rowsUpdated =
+        insertQuery.onConflict(reportIdField, metricIdField).doUpdate().setAllToExcluded().execute()
+
+    return rowsUpdated
+  }
+
   private fun upsertReportStandardMetrics(
       reportId: ReportId,
       entries: Map<StandardMetricId, ReportMetricEntryModel>,
       updateInternalComment: Boolean,
-  ) {
-    dslContext.transaction { _ ->
-      var insertQuery = dslContext.insertInto(REPORT_STANDARD_METRICS).set()
+  ) =
+      upsertReportMetrics(
+          reportId = reportId,
+          metricIdField = REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
+          entries = entries,
+          updateInternalComment = updateInternalComment)
 
-      val iterator = entries.iterator()
+  private fun upsertReportProjectMetrics(
+      reportId: ReportId,
+      entries: Map<ProjectMetricId, ReportMetricEntryModel>,
+      updateInternalComment: Boolean,
+  ) =
+      upsertReportMetrics(
+          reportId = reportId,
+          metricIdField = REPORT_PROJECT_METRICS.PROJECT_METRIC_ID,
+          entries = entries,
+          updateInternalComment = updateInternalComment)
 
-      while (iterator.hasNext()) {
-        val (metricId, entry) = iterator.next()
-        insertQuery =
-            insertQuery
-                .set(REPORT_STANDARD_METRICS.REPORT_ID, reportId)
-                .set(REPORT_STANDARD_METRICS.STANDARD_METRIC_ID, metricId)
-                .set(REPORT_STANDARD_METRICS.TARGET, entry.target)
-                .set(REPORT_STANDARD_METRICS.VALUE, entry.value)
-                .set(REPORT_STANDARD_METRICS.NOTES, entry.notes)
-                .set(REPORT_STANDARD_METRICS.MODIFIED_BY, currentUser().userId)
-                .set(REPORT_STANDARD_METRICS.MODIFIED_TIME, clock.instant())
-                .apply {
-                  if (updateInternalComment) {
-                    this.set(REPORT_STANDARD_METRICS.INTERNAL_COMMENT, entry.internalComment)
-                  }
-                }
-                .apply {
-                  if (iterator.hasNext()) {
-                    this.newRecord()
-                  }
-                }
-      }
-
-      val rowsUpdated =
-          insertQuery
-              .onConflict(
-                  REPORT_STANDARD_METRICS.REPORT_ID, REPORT_STANDARD_METRICS.STANDARD_METRIC_ID)
-              .doUpdate()
-              .setAllToExcluded()
-              .execute()
-
-      if (rowsUpdated > 0) {
-        dslContext
-            .update(REPORTS)
-            .set(REPORTS.MODIFIED_BY, currentUser().userId)
-            .set(REPORTS.MODIFIED_TIME, clock.instant())
-            .where(REPORTS.ID.eq(reportId))
-            .execute()
-      }
-    }
+  private fun updateReportModifiedTime(reportId: ReportId) {
+    dslContext
+        .update(REPORTS)
+        .set(REPORTS.MODIFIED_BY, currentUser().userId)
+        .set(REPORTS.MODIFIED_TIME, clock.instant())
+        .where(REPORTS.ID.eq(reportId))
+        .execute()
   }
 
-  private val standardMetricsMultiset: Field<List<ReportStandardMetricModel>>
-    get() {
-      return DSL.multiset(
+  private val standardMetricsMultiset: Field<List<ReportStandardMetricModel>> =
+      DSL.multiset(
               DSL.select(
                       STANDARD_METRICS.asterisk(),
                       REPORT_STANDARD_METRICS.asterisk(),
@@ -346,5 +414,18 @@ class ReportStore(
                   .and(REPORTS.ID.eq(REPORT_STANDARD_METRICS.REPORT_ID))
                   .orderBy(STANDARD_METRICS.REFERENCE, STANDARD_METRICS.ID))
           .convertFrom { result -> result.map { ReportStandardMetricModel.of(it) } }
-    }
+
+  private val projectMetricsMultiset: Field<List<ReportProjectMetricModel>> =
+      DSL.multiset(
+              DSL.select(
+                      PROJECT_METRICS.asterisk(),
+                      REPORT_PROJECT_METRICS.asterisk(),
+                  )
+                  .from(PROJECT_METRICS)
+                  .leftJoin(REPORT_PROJECT_METRICS)
+                  .on(PROJECT_METRICS.ID.eq(REPORT_PROJECT_METRICS.PROJECT_METRIC_ID))
+                  .and(REPORTS.ID.eq(REPORT_PROJECT_METRICS.REPORT_ID))
+                  .where(PROJECT_METRICS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                  .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID))
+          .convertFrom { result -> result.map { ReportProjectMetricModel.of(it) } }
 }

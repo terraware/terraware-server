@@ -84,7 +84,15 @@ class ProjectReportsController(
           it.id to ReportMetricEntryModel(target = it.target, value = it.value, notes = it.notes)
         }
 
-    reportStore.updateReportStandardMetrics(reportId, standardMetricUpdates)
+    val projectMetricUpdates =
+        payload.projectMetrics.associate {
+          it.id to ReportMetricEntryModel(target = it.target, value = it.value, notes = it.notes)
+        }
+
+    reportStore.updateReportMetrics(
+        reportId = reportId,
+        standardMetricEntries = standardMetricUpdates,
+        projectMetricEntries = projectMetricUpdates)
 
     return SimpleSuccessResponsePayload()
   }
@@ -131,7 +139,22 @@ class ProjectReportsController(
               )
         }
 
-    reportStore.reviewReportStandardMetrics(reportId, standardMetricUpdates)
+    val projectMetricUpdates =
+        payload.projectMetrics.associate {
+          it.id to
+              ReportMetricEntryModel(
+                  target = it.target,
+                  value = it.value,
+                  notes = it.notes,
+                  internalComment = it.internalComment,
+              )
+        }
+
+    reportStore.reviewReportMetrics(
+        reportId = reportId,
+        standardMetricEntries = standardMetricUpdates,
+        projectMetricEntries = projectMetricUpdates,
+    )
 
     return SimpleSuccessResponsePayload()
   }
@@ -318,6 +341,14 @@ data class ReportStandardMetricEntriesPayload(
     val internalComment: String?,
 )
 
+data class ReportProjectMetricEntriesPayload(
+    val id: ProjectMetricId,
+    val target: Int?,
+    val value: Int?,
+    val notes: String?,
+    val internalComment: String?,
+)
+
 data class CreateAcceleratorReportConfigRequestPayload(
     val config: NewAcceleratorReportConfigPayload
 )
@@ -328,10 +359,12 @@ data class ReviewAcceleratorReportRequestPayload(
 
 data class ReviewAcceleratorReportMetricsRequestPayload(
     val standardMetrics: List<ReportStandardMetricEntriesPayload>,
+    val projectMetrics: List<ReportProjectMetricEntriesPayload>,
 )
 
 data class UpdateAcceleratorReportMetricsRequestPayload(
     val standardMetrics: List<ReportStandardMetricEntriesPayload>,
+    val projectMetrics: List<ReportProjectMetricEntriesPayload>,
 )
 
 data class ListAcceleratorReportsResponsePayload(val reports: List<AcceleratorReportPayload>) :

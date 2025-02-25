@@ -1,9 +1,11 @@
 package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportStatus
+import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -28,6 +30,7 @@ data class ReportModel(
     val submittedBy: UserId? = null,
     val submittedTime: Instant? = null,
     val standardMetrics: List<ReportStandardMetricModel> = emptyList(),
+    val projectMetrics: List<ReportProjectMetricModel> = emptyList(),
 ) {
   fun validateForSubmission() {
     if (status != ReportStatus.NotSubmitted) {
@@ -43,6 +46,44 @@ data class ReportModel(
       throw IllegalStateException(
           "Report $id is missing targets or values for standard metrics: $metricNames")
     }
+
+    val incompleteProjectMetrics =
+        projectMetrics.filter { it.entry.target == null || it.entry.value == null }
+    if (incompleteProjectMetrics.isNotEmpty()) {
+      val metricNames =
+          incompleteProjectMetrics.joinToString(", ") { "(${it.metric.id}) ${it.metric.name}" }
+      throw IllegalStateException(
+          "Report $id is missing targets or values for project metrics: $metricNames")
+    }
+  }
+
+  fun validateMetricEntries(
+      standardMetricEntries: Map<StandardMetricId, ReportMetricEntryModel> = emptyMap(),
+      projectMetricEntries: Map<ProjectMetricId, ReportMetricEntryModel> = emptyMap(),
+  ) {
+    val invalidProjectMetricIds =
+        projectMetricEntries.keys.filter { metricId ->
+          projectMetrics.all { it.metric.id != metricId }
+        }
+
+    if (invalidProjectMetricIds.isNotEmpty()) {
+      throw IllegalArgumentException(
+          "Report $id does not contain these project metrics: " +
+              invalidProjectMetricIds.joinToString(", "),
+      )
+    }
+
+    val invalidStandardMetricIds =
+        standardMetricEntries.keys.filter { metricId ->
+          standardMetrics.all { it.metric.id != metricId }
+        }
+
+    if (invalidStandardMetricIds.isNotEmpty()) {
+      throw IllegalArgumentException(
+          "Report $id does not contain these standard metrics: " +
+              invalidStandardMetricIds.joinToString(", "),
+      )
+    }
   }
 
   companion object {
@@ -55,7 +96,8 @@ data class ReportModel(
 
     fun of(
         record: Record,
-        standardMetricsField: Field<List<ReportStandardMetricModel>>?
+        standardMetricsField: Field<List<ReportStandardMetricModel>>?,
+        projectMetricsField: Field<List<ReportProjectMetricModel>>?,
     ): ReportModel {
       return with(REPORTS) {
         ReportModel(
@@ -78,7 +120,9 @@ data class ReportModel(
             modifiedTime = record[MODIFIED_TIME]!!,
             submittedBy = record[SUBMITTED_BY],
             submittedTime = record[SUBMITTED_TIME],
-            standardMetrics = standardMetricsField?.let { record[it] } ?: emptyList())
+            standardMetrics = standardMetricsField?.let { record[it] } ?: emptyList(),
+            projectMetrics = projectMetricsField?.let { record[it] } ?: emptyList(),
+        )
       }
     }
   }

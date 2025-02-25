@@ -70,6 +70,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.ProjectReportConfig
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectScoresDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVoteDecisionsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
+import com.terraformation.backend.db.accelerator.tables.daos.ReportProjectMetricsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportStandardMetricsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportsDao
 import com.terraformation.backend.db.accelerator.tables.daos.StandardMetricsDao
@@ -101,6 +102,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ProjectReportConfi
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectScoresRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVoteDecisionsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ReportProjectMetricsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportStandardMetricsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.StandardMetricsRow
@@ -599,6 +601,7 @@ abstract class DatabaseBackedTest {
   protected val projectVotesDao: ProjectVotesDao by lazyDao()
   protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()
   protected val recordedTreesDao: RecordedTreesDao by lazyDao()
+  protected val reportProjectMetricsDao: ReportProjectMetricsDao by lazyDao()
   protected val reportStandardMetricsDao: ReportStandardMetricsDao by lazyDao()
   protected val reportsDao: ReportsDao by lazyDao()
   protected val seedFundReportFilesDao: SeedFundReportFilesDao by lazyDao()
@@ -2740,6 +2743,32 @@ abstract class DatabaseBackedTest {
     recordedPlantsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!
+  }
+
+  protected fun insertReportProjectMetric(
+      row: ReportProjectMetricsRow = ReportProjectMetricsRow(),
+      reportId: ReportId = row.reportId ?: inserted.reportId,
+      metricId: ProjectMetricId = row.projectMetricId ?: inserted.projectMetricId,
+      target: Int? = row.target,
+      value: Int? = row.value,
+      notes: String? = row.notes,
+      internalComment: String? = row.internalComment,
+      modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
+      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            reportId = reportId,
+            projectMetricId = metricId,
+            target = target,
+            value = value,
+            notes = notes,
+            internalComment = internalComment,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+        )
+
+    reportProjectMetricsDao.insert(rowWithDefaults)
   }
 
   protected fun insertReportStandardMetric(
