@@ -607,7 +607,7 @@ data class IndividualUser(
 
   override fun canUpdateCohort(cohortId: CohortId) = isAcceleratorAdmin()
 
-  override fun canUpdateDefaultVoters(): Boolean = isSuperAdmin()
+  override fun canUpdateDefaultVoters(): Boolean = isAcceleratorAdmin()
 
   override fun canUpdateDelivery(deliveryId: DeliveryId) =
       isMember(parentStore.getOrganizationId(deliveryId))
