@@ -1,9 +1,11 @@
 package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.accelerator.ProjectMetricId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportStatus
+import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -43,6 +45,35 @@ data class ReportModel(
           incompleteStandardMetrics.joinToString(", ") { "(${it.metric.id}) ${it.metric.name}" }
       throw IllegalStateException(
           "Report $id is missing targets or values for standard metrics: $metricNames")
+    }
+  }
+
+  fun validateMetricEntries(
+      standardMetricEntries: Map<StandardMetricId, ReportMetricEntryModel> = emptyMap(),
+      projectMetricEntries: Map<ProjectMetricId, ReportMetricEntryModel> = emptyMap(),
+  ) {
+    val invalidProjectMetricIds =
+        projectMetricEntries.keys.filter { metricId ->
+          projectMetrics.all { it.metric.id != metricId }
+        }
+
+    if (invalidProjectMetricIds.isNotEmpty()) {
+      throw IllegalArgumentException(
+          "Report $id does not contain these project metrics: " +
+              invalidProjectMetricIds.joinToString(", "),
+      )
+    }
+
+    val invalidStandardMetricIds =
+        standardMetricEntries.keys.filter { metricId ->
+          standardMetrics.all { it.metric.id != metricId }
+        }
+
+    if (invalidStandardMetricIds.isNotEmpty()) {
+      throw IllegalArgumentException(
+          "Report $id does not contain these standard metrics: " +
+              invalidStandardMetricIds.joinToString(", "),
+      )
     }
   }
 

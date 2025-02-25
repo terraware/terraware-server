@@ -91,8 +91,8 @@ class ProjectReportsController(
 
     reportStore.updateReportMetrics(
         reportId = reportId,
-        standardMetrics = standardMetricUpdates,
-        projectMetrics = projectMetricUpdates)
+        standardMetricEntries = standardMetricUpdates,
+        projectMetricEntries = projectMetricUpdates)
 
     return SimpleSuccessResponsePayload()
   }
@@ -152,8 +152,8 @@ class ProjectReportsController(
 
     reportStore.reviewReportMetrics(
         reportId = reportId,
-        standardMetrics = standardMetricUpdates,
-        projectMetrics = projectMetricUpdates,
+        standardMetricEntries = standardMetricUpdates,
+        projectMetricEntries = projectMetricUpdates,
     )
 
     return SimpleSuccessResponsePayload()
