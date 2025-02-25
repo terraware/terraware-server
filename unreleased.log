@@ -1,3 +1,4 @@
+55f44cf4af8 SW-6584 Used userID instead of email for removing default voters (#2862)
 ace132ec27a SW-6522 Implemented feature to update and review project metrics (#2861)
 1bd9cd85fa5 SW-4478 Extract common logic of AppNotificationServiceTest (#2824)
 c24941ab496 SW-6522 Added endpoint to configure project-specific report metrics (#2855)

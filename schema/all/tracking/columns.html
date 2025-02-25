@@ -196,11 +196,11 @@
         "comments": ""
     },
     {
-        "tableName": "observation_plot_conditions",
+        "tableName": "observed_subzone_species_totals",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_subzone_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
@@ -287,17 +287,17 @@
         "comments": ""
     },
     {
-        "tableName": "observations",
+        "tableName": "observed_plot_coordinates",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "end_date",
-        "type": "date",
-        "length": 13,
+        "name": "gps_coordinates",
+        "type": "geometry",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Last day of the observation. This is typically the last day of the same month as <code>start_date<\/code>.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observation_plots",
@@ -484,14 +484,14 @@
     {
         "tableName": "observed_plot_species_totals",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>species_name",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "√",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "total_live",
+        "type": "int4",
+        "length": 10,
+        "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "null",
+        "defaultValue": "0",
         "comments": ""
     },
     {
@@ -835,15 +835,15 @@
     {
         "tableName": "observations",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "completed_time",
-        "type": "timestamptz",
-        "length": 35,
-        "nullable": "√",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Server-generated date and time the final piece of data for the observation was received.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "plantings",
@@ -885,13 +885,13 @@
         "comments": ""
     },
     {
-        "tableName": "observation_plot_positions",
+        "tableName": "observed_plot_species_totals",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
-        "type": "text",
-        "length": 2147483647,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -1108,12 +1108,12 @@
     {
         "tableName": "observed_subzone_species_totals",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>species_name",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -1212,14 +1212,14 @@
     {
         "tableName": "observed_subzone_species_totals",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>certainty_id",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "total_existing",
         "type": "int4",
         "length": 10,
         "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "null",
+        "defaultValue": "0",
         "comments": ""
     },
     {
@@ -1266,13 +1266,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "is_ad_hoc",
-        "type": "bool",
-        "length": 1,
-        "nullable": "",
+        "name": "completed_time",
+        "type": "timestamptz",
+        "length": 35,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Server-generated date and time the final piece of data for the observation was received.<\/p>"
     },
     {
         "tableName": "recorded_trees",
@@ -1301,13 +1301,13 @@
         "comments": ""
     },
     {
-        "tableName": "observation_plot_positions",
+        "tableName": "observed_plot_species_totals",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -1355,15 +1355,15 @@
     {
         "tableName": "observations",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_type_id",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "end_date",
+        "type": "date",
+        "length": 13,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Last day of the observation. This is typically the last day of the same month as <code>start_date<\/code>.<\/p>"
     },
     {
         "tableName": "observation_biomass_details",
@@ -1409,13 +1409,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "mortality_rate",
+        "name": "permanent_live",
         "type": "int4",
         "length": 10,
-        "nullable": "√",
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "0",
-        "comments": "<p>If this is a permanent monitoring plot, percentage of plants of the species observed in this plot, in either this observation or in previous ones, that were dead. Null if this is not a permanent monitoring plot in the current observation.<\/p>"
+        "comments": "<p>If this is a permanent monitoring plot, the number of live and existing plants observed. 0 otherwise.<\/p>"
     },
     {
         "tableName": "observed_zone_species_totals",
@@ -1576,15 +1576,15 @@
     {
         "tableName": "observations",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_site_history_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "√",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "start_date",
+        "type": "date",
+        "length": 13,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which version of the planting site map was used for the observation. Null for upcoming observations since monitoring plots are only placed on the map when an observation starts.<\/p>"
+        "comments": "<p>First day of the observation. This is either the first day of the month following the end of the planting season, or 6 months after that day.<\/p>"
     },
     {
         "tableName": "deliveries",
@@ -1708,13 +1708,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "total_live",
+        "name": "mortality_rate",
         "type": "int4",
         "length": 10,
-        "nullable": "",
+        "nullable": "√",
         "autoUpdated": "",
-        "defaultValue": "0",
-        "comments": ""
+        "defaultValue": "null",
+        "comments": "<p>Percentage of plants of the species observed in permanent monitoring plots in the planting subzone, in either the current observation or in previous ones, that were dead.<\/p>"
     },
     {
         "tableName": "observation_plot_statuses",
@@ -1743,11 +1743,11 @@
         "comments": ""
     },
     {
-        "tableName": "observed_plot_coordinates",
+        "tableName": "observations",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>position_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_type_id",
         "type": "int4",
         "length": 10,
         "nullable": "",
@@ -1756,10 +1756,10 @@
         "comments": ""
     },
     {
-        "tableName": "observation_plot_conditions",
+        "tableName": "observed_subzone_species_totals",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
         "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
         "type": "int8",
         "length": 19,
@@ -1808,17 +1808,17 @@
         "comments": "<p>Boundary of the planting zone. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a planting zone has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).<\/p>"
     },
     {
-        "tableName": "observed_subzone_species_totals",
+        "tableName": "observation_plot_conditions",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "cumulative_dead",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "0",
-        "comments": "<p>Total number of dead plants of the species observed, both in this observation and in all previous ones, in plots in this subzone that are included as permanent plots in this observation.<\/p>"
+        "defaultValue": "null",
+        "comments": ""
     },
     {
         "tableName": "planting_zone_histories",
@@ -2072,9 +2072,9 @@
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>state_id",
-        "type": "int4",
-        "length": 10,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_site_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -2111,10 +2111,10 @@
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>species_id",
         "type": "int8",
         "length": 19,
-        "nullable": "",
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -2146,17 +2146,17 @@
         "comments": ""
     },
     {
-        "tableName": "observed_subzone_species_totals",
+        "tableName": "observation_plot_conditions",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "mortality_rate",
-        "type": "int4",
-        "length": 10,
-        "nullable": "√",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Percentage of plants of the species observed in permanent monitoring plots in the planting subzone, in either the current observation or in previous ones, that were dead.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "planting_subzone_populations",
@@ -2176,13 +2176,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "total_dead",
+        "name": "cumulative_dead",
         "type": "int4",
         "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "0",
-        "comments": ""
+        "comments": "<p>Total number of dead plants of the species observed, both in this observation and in all previous ones, in plots in this subzone that are included as permanent plots in this observation.<\/p>"
     },
     {
         "tableName": "planting_seasons",
@@ -2224,26 +2224,26 @@
         "comments": ""
     },
     {
-        "tableName": "observed_plot_species_totals",
+        "tableName": "observation_plot_positions",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "cumulative_dead",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
         "type": "int4",
         "length": 10,
         "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "0",
-        "comments": "<p>If this is a permanent monitoring plot, total number of dead plants observed in all observations including the current one.<\/p>"
+        "defaultValue": "null",
+        "comments": ""
     },
     {
-        "tableName": "observed_plot_coordinates",
+        "tableName": "observations",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "gps_coordinates",
-        "type": "geometry",
-        "length": 2147483647,
+        "name": "is_ad_hoc",
+        "type": "bool",
+        "length": 1,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -2254,7 +2254,7 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "total_live",
+        "name": "total_existing",
         "type": "int4",
         "length": 10,
         "nullable": "",
@@ -2267,13 +2267,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "upcoming_notification_sent_time",
+        "name": "created_time",
         "type": "timestamptz",
         "length": 35,
-        "nullable": "√",
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When the notification that the observation is starting in 1 month was sent. Null if the notification has not been sent yet.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observation_plots",
@@ -2328,13 +2328,13 @@
         "comments": "<p>When the monitoring plot was most recently modified.<\/p>"
     },
     {
-        "tableName": "observations",
+        "tableName": "observed_plot_coordinates",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "created_time",
-        "type": "timestamptz",
-        "length": 35,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -2380,24 +2380,24 @@
         "comments": ""
     },
     {
-        "tableName": "observed_plot_coordinates",
-        "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
-        "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": ""
-    },
-    {
         "tableName": "observations",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_site_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_site_history_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "√",
+        "autoUpdated": "",
+        "defaultValue": "null",
+        "comments": "<p>Which version of the planting site map was used for the observation. Null for upcoming observations since monitoring plots are only placed on the map when an observation starts.<\/p>"
+    },
+    {
+        "tableName": "observed_plot_coordinates",
+        "tableType": "Table",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
@@ -2549,17 +2549,17 @@
         "comments": ""
     },
     {
-        "tableName": "observed_plot_species_totals",
+        "tableName": "observation_plot_positions",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "permanent_live",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "0",
-        "comments": "<p>If this is a permanent monitoring plot, the number of live and existing plants observed. 0 otherwise.<\/p>"
+        "defaultValue": "null",
+        "comments": ""
     },
     {
         "tableName": "observed_site_species_totals",
@@ -2642,14 +2642,14 @@
     {
         "tableName": "observed_subzone_species_totals",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>species_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "√",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "total_live",
+        "type": "int4",
+        "length": 10,
+        "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "null",
+        "defaultValue": "0",
         "comments": ""
     },
     {
@@ -2681,12 +2681,12 @@
     {
         "tableName": "observed_plot_species_totals",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>species_name",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -2705,7 +2705,7 @@
         "comments": ""
     },
     {
-        "tableName": "observations",
+        "tableName": "observed_plot_coordinates",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
@@ -2731,14 +2731,14 @@
         "comments": ""
     },
     {
-        "tableName": "observation_plot_conditions",
+        "tableName": "observed_subzone_species_totals",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>condition_id",
-        "type": "int4",
-        "length": 10,
-        "nullable": "",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>species_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -2837,14 +2837,14 @@
     {
         "tableName": "observed_subzone_species_totals",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>species_name",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "√",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "total_dead",
+        "type": "int4",
+        "length": 10,
+        "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "null",
+        "defaultValue": "0",
         "comments": ""
     },
     {
@@ -2943,10 +2943,10 @@
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>species_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "√",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>certainty_id",
+        "type": "int4",
+        "length": 10,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -3004,17 +3004,17 @@
         "comments": "<p>Number of clusters to add to observation in addition to the number that is derived from the statistical formula. Typically this is due to additional area being added to a zone after initial creation. This is included in the value of <code>num_permanent_clusters<\/code>, that is, it is an input to the calculation of that column&rsquo;s value.<\/p>"
     },
     {
-        "tableName": "observed_subzone_species_totals",
+        "tableName": "observation_plot_conditions",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "permanent_live",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>condition_id",
         "type": "int4",
         "length": 10,
         "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "0",
-        "comments": "<p>The number of live and existing plants observed in permanent monitoring plots.<\/p>"
+        "defaultValue": "null",
+        "comments": ""
     },
     {
         "tableName": "observed_site_species_totals",
@@ -3307,9 +3307,9 @@
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>planting_subzone_id",
-        "type": "int8",
-        "length": 19,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>certainty_id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -3411,13 +3411,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "total_dead",
+        "name": "mortality_rate",
         "type": "int4",
         "length": 10,
-        "nullable": "",
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "0",
-        "comments": ""
+        "comments": "<p>If this is a permanent monitoring plot, percentage of plants of the species observed in this plot, in either this observation or in previous ones, that were dead. Null if this is not a permanent monitoring plot in the current observation.<\/p>"
     },
     {
         "tableName": "observed_zone_species_totals",
@@ -3487,14 +3487,14 @@
     {
         "tableName": "observed_plot_species_totals",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>certainty_id",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "total_dead",
         "type": "int4",
         "length": 10,
         "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "null",
+        "defaultValue": "0",
         "comments": ""
     },
     {
@@ -3554,13 +3554,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "total_existing",
+        "name": "cumulative_dead",
         "type": "int4",
         "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "0",
-        "comments": ""
+        "comments": "<p>If this is a permanent monitoring plot, total number of dead plants observed in all observations including the current one.<\/p>"
     },
     {
         "tableName": "planting_subzone_populations",
@@ -3680,17 +3680,17 @@
         "comments": ""
     },
     {
-        "tableName": "observed_plot_coordinates",
+        "tableName": "observations",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "upcoming_notification_sent_time",
+        "type": "timestamptz",
+        "length": 35,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>When the notification that the observation is starting in 1 month was sent. Null if the notification has not been sent yet.<\/p>"
     },
     {
         "tableName": "planting_types",
@@ -3732,17 +3732,17 @@
         "comments": ""
     },
     {
-        "tableName": "observations",
+        "tableName": "observed_plot_coordinates",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "start_date",
-        "type": "date",
-        "length": 13,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>position_id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>First day of the observation. This is either the first day of the month following the end of the planting season, or 6 months after that day.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "plantings",
@@ -3810,13 +3810,13 @@
         "comments": "<p>Which planting site this zone is part of.<\/p>"
     },
     {
-        "tableName": "observed_plot_coordinates",
+        "tableName": "observations",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>state_id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -3983,13 +3983,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "total_existing",
+        "name": "permanent_live",
         "type": "int4",
         "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "0",
-        "comments": ""
+        "comments": "<p>The number of live and existing plants observed in permanent monitoring plots.<\/p>"
     },
     {
         "tableName": "planting_types",

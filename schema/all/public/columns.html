@@ -263,15 +263,15 @@
     {
         "tableName": "device_managers",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>user_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "√",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "created_time",
+        "type": "timestamptz",
+        "length": 35,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>When this device manager was added to the local database. The Balena device may have been created earlier.<\/p>"
     },
     {
         "tableName": "devices",
@@ -432,12 +432,12 @@
     {
         "tableName": "device_managers",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>facility_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "√",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "refreshed_time",
+        "type": "timestamptz",
+        "length": 35,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -770,15 +770,15 @@
     {
         "tableName": "device_managers",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "update_progress",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>user_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Percent complete of software download and installation (0-100). Null if no software update is in progress.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "project_land_use_model_types",
@@ -898,11 +898,11 @@
         "comments": ""
     },
     {
-        "tableName": "device_managers",
+        "tableName": "ecosystem_types",
         "tableType": "Table",
         "keyClass": "indexedColumn",
         "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>balena_uuid",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
@@ -1199,15 +1199,15 @@
     {
         "tableName": "device_managers",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "last_connectivity_event",
-        "type": "timestamptz",
-        "length": 35,
-        "nullable": "√",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>sensor_kit_id",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>ID code that is physically printed on the sensor kit and set as a tag value in the Balena device configuration.<\/p>"
     },
     {
         "tableName": "user_preferences",
@@ -1860,13 +1860,13 @@
         "comments": "<p>ISO-3166 alpha-2 country code. We use this code to refer to countries elsewhere in the data model.<\/p>"
     },
     {
-        "tableName": "device_managers",
+        "tableName": "ecosystem_types",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "refreshed_time",
-        "type": "timestamptz",
-        "length": 35,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -2135,15 +2135,15 @@
     {
         "tableName": "device_managers",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "balena_modified_time",
+        "type": "timestamptz",
+        "length": 35,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Last modification timestamp from Balena. This is distinct from <code>refreshed_time<\/code>, which is updated locally.<\/p>"
     },
     {
         "tableName": "users",
@@ -2445,13 +2445,13 @@
         "comments": ""
     },
     {
-        "tableName": "ecosystem_types",
+        "tableName": "device_managers",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
         "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int4",
-        "length": 10,
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -2679,17 +2679,17 @@
         "comments": ""
     },
     {
-        "tableName": "ecosystem_types",
+        "tableName": "device_managers",
         "tableType": "Table",
         "keyClass": "indexedColumn",
         "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
-        "type": "text",
-        "length": 2147483647,
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>balena_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Balena-assigned device identifier.<\/p>"
     },
     {
         "tableName": "species",
@@ -2902,15 +2902,15 @@
     {
         "tableName": "device_managers",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "created_time",
-        "type": "timestamptz",
-        "length": 35,
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>balena_uuid",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When this device manager was added to the local database. The Balena device may have been created earlier.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "species_successional_groups",
@@ -3201,15 +3201,15 @@
     {
         "tableName": "device_managers",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>balena_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "device_name",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Balena-assigned device identifier.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "organizations",
@@ -3409,15 +3409,15 @@
     {
         "tableName": "device_managers",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>sensor_kit_id",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>facility_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>ID code that is physically printed on the sensor kit and set as a tag value in the Balena device configuration.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "species",
@@ -3437,10 +3437,10 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "device_name",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "",
+        "name": "last_connectivity_event",
+        "type": "timestamptz",
+        "length": 35,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -3632,13 +3632,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "balena_modified_time",
-        "type": "timestamptz",
-        "length": 35,
+        "name": "is_online",
+        "type": "bool",
+        "length": 1,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Last modification timestamp from Balena. This is distinct from <code>refreshed_time<\/code>, which is updated locally.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "organization_users",
@@ -4477,13 +4477,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "is_online",
-        "type": "bool",
-        "length": 1,
-        "nullable": "",
+        "name": "update_progress",
+        "type": "int4",
+        "length": 10,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Percent complete of software download and installation (0-100). Null if no software update is in progress.<\/p>"
     },
     {
         "tableName": "upload_statuses",
