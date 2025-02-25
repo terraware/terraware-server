@@ -15,9 +15,12 @@ import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DO
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.VECTOR_STORE
+import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.tables.references.VARIABLE_VALUES
 import com.terraformation.backend.documentproducer.db.VariableStore
 import com.terraformation.backend.documentproducer.db.VariableValueStore
+import com.terraformation.backend.documentproducer.model.ExistingValue
+import com.terraformation.backend.documentproducer.model.TableVariable
 import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
@@ -62,7 +65,7 @@ class EmbeddingService(
   fun embedProjectData(projectId: ProjectId) {
     val project = projectStore.fetchOneById(projectId)
     val organization = organizationStore.fetchOneById(project.organizationId)
-    val values = variableValueStore.listValues(projectId)
+    val valuesByVariableId = variableValueStore.listValues(projectId).groupBy { it.variableId }
     val projectDetails =
         projectAcceleratorDetailsStore.fetchOneById(
             projectId, acceleratorProjectVariableValuesService.fetchValues(projectId))
@@ -76,19 +79,27 @@ class EmbeddingService(
         )
 
     val documents =
-        values.map { variableValue ->
-          val variable = variableStore.fetchOneVariable(variableValue.variableId)
-          val metadata =
-              baseMetadata +
-                  listOfNotNull(
-                          "variableId" to variableValue.variableId,
-                          "variableName" to variable.name,
-                          variable.deliverableQuestion?.let { "question" to it },
-                      )
-                      .toMap()
+        valuesByVariableId
+            .filterValues { values -> values.any { it.rowValueId == null } }
+            .map { (variableId, values) ->
+              val variable = variableStore.fetchOneVariable(variableId)
+              val metadata =
+                  baseMetadata +
+                      listOfNotNull(
+                              "variableId" to variableId,
+                              "variableName" to variable.name,
+                              variable.deliverableQuestion?.let { "question" to it },
+                          )
+                          .toMap()
+              val text =
+                  if (variable is TableVariable) {
+                    renderTableAsMarkdown(variable, valuesByVariableId)
+                  } else {
+                    values.joinToString("\n") { it.value.toString() }
+                  }
 
-          Document(variableValue.value.toString(), metadata)
-        } +
+              Document(text, metadata)
+            } +
             Document(
                 "Here is some accelerator-related information about the project:\n$projectDetails",
                 baseMetadata)
@@ -100,6 +111,31 @@ class EmbeddingService(
     vectorStore.add(documents)
 
     embedGoogleDriveFiles(projectId, baseMetadata)
+  }
+
+  private fun renderTableAsMarkdown(
+      variable: TableVariable,
+      valuesByVariableId: Map<VariableId, List<ExistingValue>>,
+  ): String {
+    val rows = valuesByVariableId[variable.id] ?: return ""
+    val headerLines: List<List<String>> =
+        listOf(
+            variable.columns.map { it.variable.name },
+            variable.columns.map { "---" },
+        )
+
+    val dataLines: List<List<String>> =
+        rows.map { row ->
+          variable.columns.map { column ->
+            valuesByVariableId[column.variable.id]
+                ?.filter { it.rowValueId == row.id }
+                ?.joinToString("; ") { it.value.toString() } ?: "-"
+          }
+        }
+
+    return (headerLines + dataLines).joinToString("\n") { lineCells ->
+      lineCells.joinToString(" | ", "| ", " |")
+    }
   }
 
   private fun embedGoogleDriveFiles(projectId: ProjectId, baseMetadata: Map<String, Any?>) {

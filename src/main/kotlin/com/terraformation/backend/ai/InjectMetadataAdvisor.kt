@@ -24,11 +24,12 @@ class InjectMetadataAdvisor(private val order: Int = 1) : CallAroundAdvisor {
     val userParams = advisedRequest.userParams.toMutableMap()
 
     val documentContext =
-        documents.filterIsInstance<Document>().joinToString(System.lineSeparator()) { document ->
+        documents.filterIsInstance<Document>().joinToString("\n") { document ->
           val metadataText =
-              document.metadata.entries.joinToString(System.lineSeparator()) { (key, value) ->
-                "$key: $value"
-              }
+              document.metadata
+                  .filterKeys { !it.endsWith("Id") }
+                  .entries
+                  .joinToString("\n") { (key, value) -> "$key: $value" }
 
           metadataText + "\n" + document.text
         }
