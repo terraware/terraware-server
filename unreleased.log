@@ -1,3 +1,4 @@
+ace132ec27a SW-6522 Implemented feature to update and review project metrics (#2861)
 1bd9cd85fa5 SW-4478 Extract common logic of AppNotificationServiceTest (#2824)
 c24941ab496 SW-6522 Added endpoint to configure project-specific report metrics (#2855)
 f31194ae281 SW-6522 Project specific metrics models and table (#2854)
