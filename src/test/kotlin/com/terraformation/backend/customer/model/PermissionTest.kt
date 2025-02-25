@@ -1961,6 +1961,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectModules = true,
         readProjectScores = true,
         readProjectVotes = true,
+        updateDefaultVoters = true,
         updateInternalVariableWorkflowDetails = true,
         updateProject = true,
         updateProjectAcceleratorDetails = true,
