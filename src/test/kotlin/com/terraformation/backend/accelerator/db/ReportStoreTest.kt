@@ -6,8 +6,10 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ReportSubmittedEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
+import com.terraformation.backend.accelerator.model.ProjectMetricModel
 import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
+import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.accelerator.model.StandardMetricModel
 import com.terraformation.backend.auth.currentUser
@@ -131,6 +133,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = MetricType.Impact,
           )
 
+      val projectMetricId =
+          insertProjectMetric(
+              component = MetricComponent.ProjectObjectives,
+              description = "Project Metric description",
+              name = "Project Metric Name",
+              reference = "2.0",
+              type = MetricType.Activity,
+          )
+
       val configId = insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted)
 
@@ -149,6 +160,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           reportId = reportId,
           metricId = standardMetricId2,
           target = 25,
+          modifiedTime = Instant.ofEpochSecond(1500),
+          modifiedBy = user.userId,
+      )
+
+      insertReportProjectMetric(
+          reportId = reportId,
+          metricId = projectMetricId,
+          target = 100,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
       )
@@ -212,6 +231,26 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           entry =
                               ReportMetricEntryModel(
                                   target = 25,
+                                  modifiedTime = Instant.ofEpochSecond(1500),
+                                  modifiedBy = user.userId,
+                              )),
+                  ),
+              projectMetrics =
+                  listOf(
+                      ReportProjectMetricModel(
+                          metric =
+                              ProjectMetricModel(
+                                  id = projectMetricId,
+                                  projectId = projectId,
+                                  component = MetricComponent.ProjectObjectives,
+                                  description = "Project Metric description",
+                                  name = "Project Metric Name",
+                                  reference = "2.0",
+                                  type = MetricType.Activity,
+                              ),
+                          entry =
+                              ReportMetricEntryModel(
+                                  target = 100,
                                   modifiedTime = Instant.ofEpochSecond(1500),
                                   modifiedBy = user.userId,
                               )),

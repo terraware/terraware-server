@@ -46,6 +46,15 @@ data class ReportModel(
       throw IllegalStateException(
           "Report $id is missing targets or values for standard metrics: $metricNames")
     }
+
+    val incompleteProjectMetrics =
+        projectMetrics.filter { it.entry.target == null || it.entry.value == null }
+    if (incompleteProjectMetrics.isNotEmpty()) {
+      val metricNames =
+          incompleteProjectMetrics.joinToString(", ") { "(${it.metric.id}) ${it.metric.name}" }
+      throw IllegalStateException(
+          "Report $id is missing targets or values for project metrics: $metricNames")
+    }
   }
 
   fun validateMetricEntries(
