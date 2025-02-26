@@ -149,6 +149,29 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
+      fun `sorted by reference correctly`() {
+        val metricId1 = insertStandardMetric(reference = "2.0.2")
+        val metricId2 = insertStandardMetric(reference = "10.0")
+        val metricId3 = insertStandardMetric(reference = "1.0")
+        val metricId4 = insertStandardMetric(reference = "2.0")
+        val metricId5 = insertStandardMetric(reference = "1.1")
+        val metricId6 = insertStandardMetric(reference = "1.1.1")
+        val metricId7 = insertStandardMetric(reference = "1.2")
+
+        assertEquals(
+            listOf(
+                metricId3, // 1.0
+                metricId5, // 1.1
+                metricId6, // 1.1.1
+                metricId7, // 1.2
+                metricId4, // 2.0
+                metricId1, // 2.0.2
+                metricId2, // 10.0
+            ),
+            store.fetchAllStandardMetrics().map { it.id })
+      }
+
+      @Test
       fun `throws access denied exception for non-accelerator admin`() {
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
         insertUserGlobalRole(role = GlobalRole.TFExpert)
@@ -190,6 +213,32 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         assertThrows<ProjectMetricNotFoundException> {
           store.fetchOneProjectMetric(ProjectMetricId(-1))
         }
+      }
+
+      @Test
+      fun `sorted by reference correctly`() {
+        insertOrganization()
+        val projectId = insertProject()
+
+        val metricId1 = insertProjectMetric(reference = "2.0.2")
+        val metricId2 = insertProjectMetric(reference = "10.0")
+        val metricId3 = insertProjectMetric(reference = "1.0")
+        val metricId4 = insertProjectMetric(reference = "2.0")
+        val metricId5 = insertProjectMetric(reference = "1.1")
+        val metricId6 = insertProjectMetric(reference = "1.1.1")
+        val metricId7 = insertProjectMetric(reference = "1.2")
+
+        assertEquals(
+            listOf(
+                metricId3, // 1.0
+                metricId5, // 1.1
+                metricId6, // 1.1.1
+                metricId7, // 1.2
+                metricId4, // 2.0
+                metricId1, // 2.0.2
+                metricId2, // 10.0
+            ),
+            store.fetchProjectMetricsForProject(projectId).map { it.id })
       }
 
       @Test
