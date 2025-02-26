@@ -1,3 +1,4 @@
+0dcbf4a271a Include histories in migrations (#2871)
 dc5d652e8d0 SW-6590 Updated application statuses (#2869)
 1648c60d243 SW-6561 Fix migration PostgreSQL 17 incompatibility (#2870)
 0284bd9c54c SW-6624 Added numeric sorting to report reference (#2867)
