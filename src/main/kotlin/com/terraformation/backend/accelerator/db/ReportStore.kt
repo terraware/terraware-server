@@ -416,7 +416,11 @@ class ReportStore(
                   .leftJoin(REPORT_STANDARD_METRICS)
                   .on(STANDARD_METRICS.ID.eq(REPORT_STANDARD_METRICS.STANDARD_METRIC_ID))
                   .and(REPORTS.ID.eq(REPORT_STANDARD_METRICS.REPORT_ID))
-                  .orderBy(STANDARD_METRICS.REFERENCE, STANDARD_METRICS.ID))
+                  .orderBy(
+                      STANDARD_METRICS.REFERENCE,
+                      STANDARD_METRICS.SUB_REFERENCE.nullsFirst(),
+                      STANDARD_METRICS.SUB_SUB_REFERENCE.nullsFirst(),
+                      STANDARD_METRICS.ID))
           .convertFrom { result -> result.map { ReportStandardMetricModel.of(it) } }
 
   private val projectMetricsMultiset: Field<List<ReportProjectMetricModel>> =
@@ -430,6 +434,10 @@ class ReportStore(
                   .on(PROJECT_METRICS.ID.eq(REPORT_PROJECT_METRICS.PROJECT_METRIC_ID))
                   .and(REPORTS.ID.eq(REPORT_PROJECT_METRICS.REPORT_ID))
                   .where(PROJECT_METRICS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                  .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID))
+                  .orderBy(
+                      PROJECT_METRICS.REFERENCE,
+                      PROJECT_METRICS.SUB_REFERENCE.nullsFirst(),
+                      PROJECT_METRICS.SUB_SUB_REFERENCE.nullsFirst(),
+                      PROJECT_METRICS.ID))
           .convertFrom { result -> result.map { ReportProjectMetricModel.of(it) } }
 }

@@ -47,6 +47,8 @@ class ReportMetricStore(
           .set(COMPONENT_ID, model.component)
           .set(TYPE_ID, model.type)
           .set(REFERENCE, model.reference)
+          .set(SUB_REFERENCE, model.subReference)
+          .set(SUB_SUB_REFERENCE, model.subSubReference)
           .returning(ID)
           .fetchOne(ID)!!
     }
@@ -69,6 +71,8 @@ class ReportMetricStore(
           .set(COMPONENT_ID, new.component)
           .set(TYPE_ID, new.type)
           .set(REFERENCE, new.reference)
+          .set(SUB_REFERENCE, new.subReference)
+          .set(SUB_SUB_REFERENCE, new.subSubReference)
           .where(ID.eq(metricId))
           .execute()
     }
@@ -78,7 +82,12 @@ class ReportMetricStore(
     return dslContext
         .selectFrom(STANDARD_METRICS)
         .where(condition)
-        .orderBy(STANDARD_METRICS.REFERENCE, STANDARD_METRICS.ID)
+        .orderBy(
+            STANDARD_METRICS.REFERENCE,
+            STANDARD_METRICS.SUB_REFERENCE.nullsFirst(),
+            STANDARD_METRICS.SUB_SUB_REFERENCE.nullsFirst(),
+            STANDARD_METRICS.ID,
+        )
         .fetch { StandardMetricModel.of(it) }
   }
 
@@ -107,6 +116,8 @@ class ReportMetricStore(
           .set(COMPONENT_ID, model.component)
           .set(TYPE_ID, model.type)
           .set(REFERENCE, model.reference)
+          .set(SUB_REFERENCE, model.subReference)
+          .set(SUB_SUB_REFERENCE, model.subSubReference)
           .returning(ID)
           .fetchOne(ID)!!
     }
@@ -130,6 +141,8 @@ class ReportMetricStore(
           .set(COMPONENT_ID, new.component)
           .set(TYPE_ID, new.type)
           .set(REFERENCE, new.reference)
+          .set(SUB_REFERENCE, new.subReference)
+          .set(SUB_SUB_REFERENCE, new.subSubReference)
           .where(ID.eq(metricId))
           .execute()
     }

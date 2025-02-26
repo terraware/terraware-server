@@ -9,10 +9,12 @@ import org.jooq.Record
 data class StandardMetricModel<ID : StandardMetricId?>(
     val id: ID,
     val name: String,
-    val description: String?,
+    val description: String? = null,
     val component: MetricComponent,
     val type: MetricType,
-    val reference: String,
+    val reference: Int,
+    val subReference: Int? = null,
+    val subSubReference: Int? = null,
 ) {
   companion object {
     fun of(record: Record): ExistingStandardMetricModel {
@@ -24,6 +26,8 @@ data class StandardMetricModel<ID : StandardMetricId?>(
             component = record[COMPONENT_ID]!!,
             type = record[TYPE_ID]!!,
             reference = record[REFERENCE]!!,
+            subReference = record[SUB_REFERENCE],
+            subSubReference = record[SUB_SUB_REFERENCE],
         )
       }
     }

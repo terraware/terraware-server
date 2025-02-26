@@ -17,7 +17,9 @@ data class ExistingProjectMetricPayload(
     val description: String?,
     val component: MetricComponent,
     val type: MetricType,
-    val reference: String,
+    val reference: Int,
+    val subReference: Int?,
+    val subSubReference: Int?,
 ) {
   constructor(
       model: ExistingProjectMetricModel
@@ -28,7 +30,10 @@ data class ExistingProjectMetricPayload(
       description = model.description,
       component = model.component,
       type = model.type,
-      reference = model.reference)
+      reference = model.reference,
+      subReference = model.subReference,
+      subSubReference = model.subSubReference,
+  )
 
   fun toModel(): ExistingProjectMetricModel {
     return ExistingProjectMetricModel(
@@ -49,7 +54,9 @@ data class ExistingStandardMetricPayload(
     val description: String?,
     val component: MetricComponent,
     val type: MetricType,
-    val reference: String,
+    val reference: Int,
+    val subReference: Int?,
+    val subSubReference: Int?,
 ) {
   constructor(
       model: ExistingStandardMetricModel
@@ -59,7 +66,10 @@ data class ExistingStandardMetricPayload(
       description = model.description,
       component = model.component,
       type = model.type,
-      reference = model.reference)
+      reference = model.reference,
+      subReference = model.subReference,
+      subSubReference = model.subSubReference,
+  )
 
   fun toModel(): ExistingStandardMetricModel {
     return ExistingStandardMetricModel(
@@ -69,6 +79,8 @@ data class ExistingStandardMetricPayload(
         component = component,
         type = type,
         reference = reference,
+        subReference = subReference,
+        subSubReference = subSubReference,
     )
   }
 }
@@ -78,7 +90,9 @@ data class NewMetricPayload(
     val description: String?,
     val component: MetricComponent,
     val type: MetricType,
-    val reference: String,
+    val reference: Int,
+    val subReference: Int?,
+    val subSubReference: Int?,
 ) {
   fun toProjectMetricModel(projectId: ProjectId): NewProjectMetricModel {
     return NewProjectMetricModel(
@@ -89,6 +103,8 @@ data class NewMetricPayload(
         component = component,
         type = type,
         reference = reference,
+        subReference = subReference,
+        subSubReference = subSubReference,
     )
   }
 
@@ -100,6 +116,8 @@ data class NewMetricPayload(
         component = component,
         type = type,
         reference = reference,
+        subReference = subReference,
+        subSubReference = subSubReference,
     )
   }
 }

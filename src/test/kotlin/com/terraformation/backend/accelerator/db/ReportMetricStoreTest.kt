@@ -46,7 +46,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 component = MetricComponent.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
-                reference = "3.0",
+                reference = 3,
+                subReference = 0,
                 type = MetricType.Activity,
             )
 
@@ -56,7 +57,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 component = MetricComponent.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
-                reference = "3.0",
+                reference = 3,
+                subReference = 0,
                 type = MetricType.Activity,
             ),
             store.fetchOneStandardMetric(metricId))
@@ -76,7 +78,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 component = MetricComponent.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
-                reference = "3.0",
+                reference = 3,
+                subReference = 0,
                 type = MetricType.Activity,
             )
 
@@ -95,7 +98,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 component = MetricComponent.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
-                reference = "3.0",
+                reference = 3,
+                subReference = 0,
                 type = MetricType.Activity,
             )
 
@@ -104,7 +108,9 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 component = MetricComponent.Community,
                 description = "Community metric description",
                 name = "Community Metric",
-                reference = "5.0",
+                reference = 3,
+                subReference = 0,
+                subSubReference = 1,
                 type = MetricType.Outcome,
             )
 
@@ -113,7 +119,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 component = MetricComponent.ProjectObjectives,
                 description = "Project objectives metric description",
                 name = "Project Objectives Metric",
-                reference = "3.0",
+                reference = 3,
+                subReference = 0,
                 type = MetricType.Impact,
             )
 
@@ -125,7 +132,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     component = MetricComponent.Climate,
                     description = "Climate standard metric description",
                     name = "Climate Standard Metric",
-                    reference = "3.0",
+                    reference = 3,
+                    subReference = 0,
                     type = MetricType.Activity,
                 ),
                 ExistingStandardMetricModel(
@@ -133,7 +141,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     component = MetricComponent.ProjectObjectives,
                     description = "Project objectives metric description",
                     name = "Project Objectives Metric",
-                    reference = "3.0",
+                    reference = 3,
+                    subReference = 0,
                     type = MetricType.Impact,
                 ),
                 ExistingStandardMetricModel(
@@ -141,7 +150,9 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     component = MetricComponent.Community,
                     description = "Community metric description",
                     name = "Community Metric",
-                    reference = "5.0",
+                    reference = 3,
+                    subReference = 0,
+                    subSubReference = 1,
                     type = MetricType.Outcome,
                 ),
             ),
@@ -168,7 +179,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 projectId = projectId,
-                reference = "3.0",
+                reference = 3,
+                subReference = 0,
                 type = MetricType.Activity,
             )
 
@@ -179,7 +191,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 component = MetricComponent.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
-                reference = "3.0",
+                reference = 3,
+                subReference = 0,
                 type = MetricType.Activity,
             ),
             store.fetchOneProjectMetric(metricId))
@@ -202,7 +215,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 projectId = projectId,
-                reference = "3.0",
+                reference = 3,
+                subReference = 0,
                 type = MetricType.Activity,
             )
 
@@ -224,7 +238,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 projectId = projectId,
-                reference = "3.0",
+                reference = 3,
+                subReference = 0,
                 type = MetricType.Activity,
             )
 
@@ -234,7 +249,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Community metric description",
                 name = "Community Metric",
                 projectId = projectId,
-                reference = "5.0",
+                reference = 5,
+                subReference = 0,
                 type = MetricType.Outcome,
             )
 
@@ -244,7 +260,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Project objectives metric description",
                 name = "Project Objectives Metric",
                 projectId = projectId,
-                reference = "3.0",
+                reference = 3,
+                subReference = 0,
                 type = MetricType.Impact,
             )
 
@@ -261,7 +278,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     component = MetricComponent.Climate,
                     description = "Climate standard metric description",
                     name = "Climate Standard Metric",
-                    reference = "3.0",
+                    reference = 3,
+                    subReference = 0,
                     type = MetricType.Activity,
                 ),
                 ExistingProjectMetricModel(
@@ -270,7 +288,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     component = MetricComponent.ProjectObjectives,
                     description = "Project objectives metric description",
                     name = "Project Objectives Metric",
-                    reference = "3.0",
+                    reference = 3,
+                    subReference = 0,
                     type = MetricType.Impact,
                 ),
                 ExistingProjectMetricModel(
@@ -279,7 +298,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     component = MetricComponent.Community,
                     description = "Community metric description",
                     name = "Community Metric",
-                    reference = "5.0",
+                    reference = 5,
+                    subReference = 0,
                     type = MetricType.Outcome,
                 ),
             ),
@@ -308,7 +328,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 component = MetricComponent.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
-                reference = "3.0",
+                reference = 3,
+                subReference = 0,
                 type = MetricType.Activity,
             )
 
@@ -318,7 +339,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 component = MetricComponent.ProjectObjectives,
                 description = "Project objectives metric description",
                 name = "Project Objectives Metric",
-                reference = "1.0",
+                reference = 1,
+                subReference = 0,
                 type = MetricType.Impact,
             )
 
@@ -331,7 +353,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     componentId = MetricComponent.Climate,
                     description = "Climate standard metric description",
                     name = "Climate Standard Metric",
-                    reference = "3.0",
+                    reference = 3,
+                    subReference = 0,
                     typeId = MetricType.Activity,
                 ),
                 StandardMetricsRecord(
@@ -339,7 +362,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     componentId = MetricComponent.ProjectObjectives,
                     description = "Project objectives metric description",
                     name = "Project Objectives Metric",
-                    reference = "1.0",
+                    reference = 1,
+                    subReference = 0,
                     typeId = MetricType.Impact,
                 )))
       }
@@ -352,7 +376,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 component = MetricComponent.ProjectObjectives,
                 description = "Project objectives metric description",
                 name = "Project Objectives Metric",
-                reference = "1.0",
+                reference = 1,
+                subReference = 0,
                 type = MetricType.Impact,
             )
 
@@ -374,7 +399,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 projectId = projectId,
-                reference = "3.0",
+                reference = 3,
+                subReference = 0,
                 type = MetricType.Activity,
             )
 
@@ -385,7 +411,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 component = MetricComponent.ProjectObjectives,
                 description = "Project objectives metric description",
                 name = "Project Objectives Metric",
-                reference = "1.0",
+                reference = 1,
+                subReference = 0,
                 type = MetricType.Impact,
             )
 
@@ -399,7 +426,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     description = "Climate standard metric description",
                     name = "Climate Standard Metric",
                     projectId = projectId,
-                    reference = "3.0",
+                    reference = 3,
+                    subReference = 0,
                     typeId = MetricType.Activity,
                 ),
                 ProjectMetricsRecord(
@@ -408,7 +436,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     description = "Project objectives metric description",
                     name = "Project Objectives Metric",
                     projectId = projectId,
-                    reference = "1.0",
+                    reference = 1,
+                    subReference = 0,
                     typeId = MetricType.Impact,
                 )))
       }
@@ -424,7 +453,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Project objectives metric description",
                 name = "Project Objectives Metric",
                 projectId = projectId,
-                reference = "1.0",
+                reference = 1,
+                subReference = 0,
                 type = MetricType.Impact,
             )
 
@@ -446,7 +476,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 component = MetricComponent.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
-                reference = "3.0",
+                reference = 3,
+                subReference = 0,
                 type = MetricType.Activity,
             )
 
@@ -456,7 +487,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 component = MetricComponent.ProjectObjectives,
                 description = "Project objectives metric description",
                 name = "Project Objectives Metric",
-                reference = "1.0",
+                reference = 1,
+                subReference = 0,
                 type = MetricType.Impact,
             )
 
@@ -469,7 +501,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     componentId = MetricComponent.ProjectObjectives,
                     description = "Project objectives metric description",
                     name = "Project Objectives Metric",
-                    reference = "1.0",
+                    reference = 1,
+                    subReference = 0,
                     typeId = MetricType.Impact,
                 )))
       }
@@ -481,14 +514,15 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 component = MetricComponent.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
-                reference = "3.0",
+                reference = 1,
+                subReference = 0,
                 type = MetricType.Activity,
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
         insertUserGlobalRole(role = GlobalRole.TFExpert)
         assertThrows<AccessDeniedException> {
-          store.updateStandardMetric(existingMetricId) { it.copy(reference = "1.0") }
+          store.updateStandardMetric(existingMetricId) { it.copy(reference = 3) }
         }
       }
     }
@@ -506,7 +540,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Climate standard metric description",
               name = "Climate Standard Metric",
               projectId = projectId,
-              reference = "3.0",
+              reference = 3,
+              subReference = 0,
               type = MetricType.Activity,
           )
 
@@ -517,7 +552,9 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Project objectives metric description",
               name = "Project Objectives Metric",
               projectId = ProjectId(99), // this field is ignored
-              reference = "1.0",
+              reference = 1,
+              subReference = 3,
+              subSubReference = 1,
               type = MetricType.Impact,
           )
 
@@ -531,7 +568,9 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   description = "Project objectives metric description",
                   name = "Project Objectives Metric",
                   projectId = projectId,
-                  reference = "1.0",
+                  reference = 1,
+                  subReference = 3,
+                  subSubReference = 1,
                   typeId = MetricType.Impact,
               )))
     }
@@ -546,14 +585,15 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Climate standard metric description",
               name = "Climate Standard Metric",
               projectId = projectId,
-              reference = "3.0",
+              reference = 3,
+              subReference = 0,
               type = MetricType.Activity,
           )
 
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
       insertUserGlobalRole(role = GlobalRole.TFExpert)
       assertThrows<AccessDeniedException> {
-        store.updateProjectMetric(existingMetricId) { it.copy(reference = "1.0") }
+        store.updateProjectMetric(existingMetricId) { it.copy(reference = 1) }
       }
     }
   }

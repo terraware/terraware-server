@@ -111,7 +111,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               component = MetricComponent.Climate,
               description = "Climate standard metric description",
               name = "Climate Standard Metric",
-              reference = "3.0",
+              reference = 3,
+              subReference = 0,
               type = MetricType.Activity,
           )
 
@@ -120,7 +121,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               component = MetricComponent.Community,
               description = "Community metric description",
               name = "Community Metric",
-              reference = "5.0",
+              reference = 5,
+              subReference = 0,
               type = MetricType.Outcome,
           )
 
@@ -129,7 +131,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               component = MetricComponent.ProjectObjectives,
               description = "Project objectives metric description",
               name = "Project Objectives Metric",
-              reference = "1.0",
+              reference = 1,
+              subReference = 0,
               type = MetricType.Impact,
           )
 
@@ -138,7 +141,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               component = MetricComponent.ProjectObjectives,
               description = "Project Metric description",
               name = "Project Metric Name",
-              reference = "2.0",
+              reference = 2,
+              subReference = 0,
               type = MetricType.Activity,
           )
 
@@ -194,7 +198,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                                   component = MetricComponent.ProjectObjectives,
                                   description = "Project objectives metric description",
                                   name = "Project Objectives Metric",
-                                  reference = "1.0",
+                                  reference = 1,
+                                  subReference = 0,
                                   type = MetricType.Impact,
                               ),
                           // all fields are null because no target/value have been set yet
@@ -206,7 +211,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                                   component = MetricComponent.Climate,
                                   description = "Climate standard metric description",
                                   name = "Climate Standard Metric",
-                                  reference = "3.0",
+                                  reference = 3,
+                                  subReference = 0,
                                   type = MetricType.Activity,
                               ),
                           entry =
@@ -225,7 +231,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                                   component = MetricComponent.Community,
                                   description = "Community metric description",
                                   name = "Community Metric",
-                                  reference = "5.0",
+                                  reference = 5,
+                                  subReference = 0,
                                   type = MetricType.Outcome,
                               ),
                           entry =
@@ -245,7 +252,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                                   component = MetricComponent.ProjectObjectives,
                                   description = "Project Metric description",
                                   name = "Project Metric Name",
-                                  reference = "2.0",
+                                  reference = 2,
+                                  subReference = 0,
                                   type = MetricType.Activity,
                               ),
                           entry =
@@ -607,7 +615,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               component = MetricComponent.Climate,
               description = "Climate standard metric description",
               name = "Climate Standard Metric",
-              reference = "3.0",
+              reference = 3,
+              subReference = 0,
               type = MetricType.Activity,
           )
 
@@ -616,7 +625,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               component = MetricComponent.Community,
               description = "Community metric description",
               name = "Community Metric",
-              reference = "5.0",
+              reference = 5,
+              subReference = 0,
               type = MetricType.Outcome,
           )
 
@@ -625,7 +635,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               component = MetricComponent.ProjectObjectives,
               description = "Project objectives metric description",
               name = "Project Objectives Metric",
-              reference = "1.0",
+              reference = 1,
+              subReference = 0,
               type = MetricType.Impact,
           )
 
@@ -634,7 +645,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           component = MetricComponent.Biodiversity,
           description = "Biodiversity metric description",
           name = "Biodiversity Metric",
-          reference = "7.0",
+          reference = 7,
+          subReference = 0,
           type = MetricType.Impact,
       )
 
@@ -643,7 +655,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               component = MetricComponent.ProjectObjectives,
               description = "Project Metric description",
               name = "Project Metric Name",
-              reference = "2.0",
+              reference = 2,
+              subReference = 0,
               type = MetricType.Activity,
           )
 
@@ -834,7 +847,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               component = MetricComponent.Climate,
               description = "Climate standard metric description",
               name = "Climate Standard Metric",
-              reference = "3.0",
+              reference = 3,
+              subReference = 0,
               type = MetricType.Activity,
           )
 
@@ -843,7 +857,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               component = MetricComponent.Community,
               description = "Community metric description",
               name = "Community Metric",
-              reference = "5.0",
+              reference = 5,
+              subReference = 0,
               type = MetricType.Outcome,
           )
 
@@ -852,7 +867,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               component = MetricComponent.ProjectObjectives,
               description = "Project objectives metric description",
               name = "Project Objectives Metric",
-              reference = "1.0",
+              reference = 1,
+              subReference = 0,
               type = MetricType.Impact,
           )
 
@@ -861,7 +877,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           component = MetricComponent.Biodiversity,
           description = "Biodiversity metric description",
           name = "Biodiversity Metric",
-          reference = "7.0",
+          reference = 7,
+          subReference = 0,
           type = MetricType.Impact,
       )
 
@@ -870,7 +887,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               component = MetricComponent.ProjectObjectives,
               description = "Project Metric description",
               name = "Project Metric Name",
-              reference = "2.0",
+              reference = 2,
+              subReference = 0,
               type = MetricType.Activity,
           )
 

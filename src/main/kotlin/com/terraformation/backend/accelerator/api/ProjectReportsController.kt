@@ -6,6 +6,7 @@ import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigM
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
+import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
@@ -281,6 +282,7 @@ data class AcceleratorReportPayload(
     val submittedBy: UserId?,
     val submittedTime: Instant?,
     val standardMetrics: List<ReportStandardMetricPayload>,
+    val projectMetrics: List<ReportProjectMetricPayload>,
 ) {
   constructor(
       model: ReportModel
@@ -296,7 +298,9 @@ data class AcceleratorReportPayload(
       modifiedTime = model.modifiedTime,
       submittedBy = model.submittedBy,
       submittedTime = model.submittedTime,
-      standardMetrics = model.standardMetrics.map { ReportStandardMetricPayload(it) })
+      standardMetrics = model.standardMetrics.map { ReportStandardMetricPayload(it) },
+      projectMetrics = model.projectMetrics.map { ReportProjectMetricPayload(it) },
+  )
 }
 
 data class ReportReviewPayload(
@@ -312,7 +316,9 @@ data class ReportStandardMetricPayload(
     val description: String?,
     val component: MetricComponent,
     val type: MetricType,
-    val reference: String,
+    val reference: Int,
+    val subReference: Int?,
+    val subSubReference: Int?,
     val target: Int?,
     val value: Int?,
     val notes: String?,
@@ -327,6 +333,39 @@ data class ReportStandardMetricPayload(
       component = model.metric.component,
       type = model.metric.type,
       reference = model.metric.reference,
+      subReference = model.metric.subReference,
+      subSubReference = model.metric.subSubReference,
+      target = model.entry.target,
+      value = model.entry.value,
+      notes = model.entry.notes,
+      internalComment = model.entry.internalComment)
+}
+
+data class ReportProjectMetricPayload(
+    val id: ProjectMetricId,
+    val name: String,
+    val description: String?,
+    val component: MetricComponent,
+    val type: MetricType,
+    val reference: Int,
+    val subReference: Int?,
+    val subSubReference: Int?,
+    val target: Int?,
+    val value: Int?,
+    val notes: String?,
+    val internalComment: String?
+) {
+  constructor(
+      model: ReportProjectMetricModel
+  ) : this(
+      id = model.metric.id,
+      name = model.metric.name,
+      description = model.metric.description,
+      component = model.metric.component,
+      type = model.metric.type,
+      reference = model.metric.reference,
+      subReference = model.metric.subReference,
+      subSubReference = model.metric.subSubReference,
       target = model.entry.target,
       value = model.entry.value,
       notes = model.entry.notes,

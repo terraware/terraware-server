@@ -835,7 +835,9 @@ abstract class DatabaseBackedTest {
       component: MetricComponent = row.componentId ?: MetricComponent.ProjectObjectives,
       description: String? = row.description,
       name: String = row.name ?: "Metric name",
-      reference: String = row.reference ?: "1.1",
+      reference: Int = row.reference ?: 1,
+      subReference: Int? = row.subReference,
+      subSubReference: Int? = row.subSubReference,
       projectId: ProjectId = row.projectId ?: inserted.projectId,
       type: MetricType = row.typeId ?: MetricType.Impact,
   ): ProjectMetricId {
@@ -845,6 +847,8 @@ abstract class DatabaseBackedTest {
             description = description,
             name = name,
             reference = reference,
+            subReference = subReference,
+            subSubReference = subSubReference,
             projectId = projectId,
             typeId = type,
         )
@@ -2358,7 +2362,9 @@ abstract class DatabaseBackedTest {
       component: MetricComponent = row.componentId ?: MetricComponent.ProjectObjectives,
       description: String? = row.description,
       name: String = row.name ?: "Metric name",
-      reference: String = row.reference ?: "1.1",
+      reference: Int = row.reference ?: 1,
+      subReference: Int? = row.subReference,
+      subSubReference: Int? = row.subSubReference,
       type: MetricType = row.typeId ?: MetricType.Impact,
   ): StandardMetricId {
     val rowWithDefaults =
@@ -2367,6 +2373,8 @@ abstract class DatabaseBackedTest {
             description = description,
             name = name,
             reference = reference,
+            subReference = subReference,
+            subSubReference = subSubReference,
             typeId = type,
         )
 
