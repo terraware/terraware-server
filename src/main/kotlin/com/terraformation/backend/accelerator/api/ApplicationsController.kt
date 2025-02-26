@@ -248,18 +248,16 @@ class ApplicationsController(
  */
 enum class ApiApplicationStatus(@get:JsonValue val jsonValue: String) {
   Accepted("Accepted"),
-  CarbonEligible("Carbon Eligible"),
+  CarbonAssessment("Carbon Assessment"),
+  ExpertReview("Expert Review"),
   FailedPreScreen("Failed Pre-screen"),
-  IssueActive("Issue Active"),
-  IssuePending("Issue Pending"),
-  IssueResolved("Issue Resolved"),
-  NeedsFollowUp("Needs Follow-up"),
-  NotAccepted("Not Accepted"),
+  IssueReassessment("Issue Reassessment"),
+  NotEligible("Not Eligible"),
   NotSubmitted("Not Submitted"),
+  P0Eligible("P0 Eligible"),
   PassedPreScreen("Passed Pre-screen"),
-  PLReview("PL Review"),
-  PreCheck("Pre-check"),
-  ReadyForReview("Ready for Review"),
+  SourcingTeamReview("Sourcing Team Review"),
+  GISAssessment("GIS Assessment"),
   Submitted("Submitted"),
   // User-facing statuses, not stored in database
   InReview("In Review"),
@@ -275,18 +273,16 @@ enum class ApiApplicationStatus(@get:JsonValue val jsonValue: String) {
 
       return when (status) {
         ApplicationStatus.Accepted -> Accepted
-        ApplicationStatus.CarbonEligible -> CarbonEligible
+        ApplicationStatus.CarbonAssessment -> CarbonAssessment
+        ApplicationStatus.ExpertReview -> ExpertReview
         ApplicationStatus.FailedPreScreen -> FailedPreScreen
-        ApplicationStatus.IssueActive -> IssueActive
-        ApplicationStatus.IssuePending -> IssuePending
-        ApplicationStatus.IssueResolved -> IssueResolved
-        ApplicationStatus.NeedsFollowUp -> NeedsFollowUp
-        ApplicationStatus.NotAccepted -> NotAccepted
+        ApplicationStatus.GISAssessment -> GISAssessment
+        ApplicationStatus.IssueReassessment -> IssueReassessment
+        ApplicationStatus.NotEligible -> NotEligible
         ApplicationStatus.NotSubmitted -> NotSubmitted
+        ApplicationStatus.P0Eligible -> P0Eligible
         ApplicationStatus.PassedPreScreen -> PassedPreScreen
-        ApplicationStatus.PLReview -> PLReview
-        ApplicationStatus.PreCheck -> PreCheck
-        ApplicationStatus.ReadyForReview -> ReadyForReview
+        ApplicationStatus.SourcingTeamReview -> SourcingTeamReview
         ApplicationStatus.Submitted -> Submitted
       }
     }
@@ -298,7 +294,7 @@ enum class ApiApplicationStatus(@get:JsonValue val jsonValue: String) {
         ExternalApplicationStatus.PassedPreScreen -> PassedPreScreen
         ExternalApplicationStatus.InReview -> InReview
         ExternalApplicationStatus.Accepted -> Accepted
-        ExternalApplicationStatus.NotAccepted -> NotAccepted
+        ExternalApplicationStatus.NotEligible -> NotEligible
         ExternalApplicationStatus.Waitlist -> Waitlist
       }
     }

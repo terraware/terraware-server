@@ -171,7 +171,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               feedback = "feedback",
               internalComment = "internal comment",
               internalName = "internalName",
-              status = ApplicationStatus.PreCheck,
+              status = ApplicationStatus.ExpertReview,
           )
 
       org1ProjectId2 = insertProject(organizationId = organizationId, name = "Project B")
@@ -182,7 +182,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
               feedback = "feedback 2",
               internalComment = "internal comment 2",
               internalName = "internalName2",
-              status = ApplicationStatus.PLReview,
+              status = ApplicationStatus.SourcingTeamReview,
           )
 
       organizationId2 = insertOrganization(name = "Organization 2")
@@ -217,7 +217,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 organizationName = organizationName,
                 projectId = org1ProjectId1,
                 projectName = "Project A",
-                status = ApplicationStatus.PreCheck),
+                status = ApplicationStatus.ExpertReview),
             store.fetchOneById(org1Project1ApplicationId))
       }
 
@@ -261,7 +261,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
         assertEquals(
             "Project A", simpleFeature.getAttribute("projectName"), "projectName attribute")
         assertEquals(
-            ApplicationStatus.PreCheck.jsonValue,
+            ApplicationStatus.ExpertReview.jsonValue,
             simpleFeature.getAttribute("status"),
             "status attribute")
       }
@@ -298,7 +298,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     organizationName = organizationName,
                     projectId = org1ProjectId1,
                     projectName = "Project A",
-                    status = ApplicationStatus.PreCheck)),
+                    status = ApplicationStatus.ExpertReview)),
             store.fetchByProjectId(org1ProjectId1))
       }
 
@@ -343,7 +343,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     organizationName = organizationName,
                     projectId = org1ProjectId1,
                     projectName = "Project A",
-                    status = ApplicationStatus.PreCheck),
+                    status = ApplicationStatus.ExpertReview),
                 ExistingApplicationModel(
                     boundary = rectangle(2),
                     createdTime = Instant.EPOCH,
@@ -356,7 +356,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     organizationName = organizationName,
                     projectId = org1ProjectId2,
                     projectName = "Project B",
-                    status = ApplicationStatus.PLReview),
+                    status = ApplicationStatus.SourcingTeamReview),
             ),
             store.fetchByOrganizationId(organizationId))
       }
@@ -390,7 +390,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     organizationName = organizationName,
                     projectId = org1ProjectId1,
                     projectName = "Project A",
-                    status = ApplicationStatus.PreCheck),
+                    status = ApplicationStatus.ExpertReview),
                 ExistingApplicationModel(
                     boundary = rectangle(2),
                     createdTime = Instant.EPOCH,
@@ -403,7 +403,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                     organizationName = organizationName,
                     projectId = org1ProjectId2,
                     projectName = "Project B",
-                    status = ApplicationStatus.PLReview),
+                    status = ApplicationStatus.SourcingTeamReview),
                 ExistingApplicationModel(
                     countryCode = "US",
                     createdTime = Instant.EPOCH,
@@ -1071,13 +1071,13 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             internalName = "new name",
             organizationId = OrganizationId(-1),
             projectId = ProjectId(-1),
-            status = ApplicationStatus.PLReview)
+            status = ApplicationStatus.SourcingTeamReview)
       }
 
       assertEquals(
           listOf(
               initial.copy(
-                  applicationStatusId = ApplicationStatus.PLReview,
+                  applicationStatusId = ApplicationStatus.SourcingTeamReview,
                   feedback = "feedback",
                   internalComment = "internal comment",
                   modifiedBy = user.userId,
@@ -1091,7 +1091,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                   applicationId = applicationId,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
-                  applicationStatusId = ApplicationStatus.PLReview,
+                  applicationStatusId = ApplicationStatus.SourcingTeamReview,
                   internalComment = "internal comment",
                   feedback = "feedback")),
           applicationHistoriesDao.findAll().map { it.copy(id = null) })
