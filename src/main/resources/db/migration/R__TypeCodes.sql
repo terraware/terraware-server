@@ -665,13 +665,13 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name,
 
 -- Depends on user_types
 INSERT INTO internal_tags (id, name, description, is_system, created_by, created_time, modified_by, modified_time)
-SELECT t.id, t.name, t.description, TRUE, system_user.id, NOW(), system_user.id, NOW()
+SELECT t.id, t.name, t.description, TRUE, su.id, NOW(), su.id, NOW()
 FROM (
          SELECT id
          FROM users
          WHERE user_type_id = 4
            AND email = 'system'
-     ) AS system_user, (
+     ) AS su, (
          VALUES (1, 'Reporter', 'Organization must submit reports to Terraformation.'),
                 (2, 'Internal', 'Terraformation-managed internal organization, not a customer.'),
                 (3, 'Testing', 'Used for internal testing; may contain invalid data.'),

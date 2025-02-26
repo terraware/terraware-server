@@ -29,7 +29,7 @@ WHERE (cut_test_seeds_compromised IS NOT NULL
     OR cut_test_seeds_filled IS NOT NULL)
   AND remaining_quantity IS NOT NULL;
 
-WITH system_user AS (SELECT id FROM users WHERE user_type_id = 4)
+WITH su AS (SELECT id FROM users WHERE user_type_id = 4)
 INSERT
 INTO withdrawals (accession_id,
                   created_by,
@@ -41,7 +41,7 @@ INTO withdrawals (accession_id,
                   updated_time,
                   viability_test_id)
 SELECT vt.accession_id,
-       (SELECT id FROM system_user),
+       (SELECT id FROM su),
        NOW(),
        a.modified_time::DATE,
        vt.remaining_grams,
