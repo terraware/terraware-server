@@ -1,3 +1,4 @@
+0284bd9c54c SW-6624 Added numeric sorting to report reference (#2867)
 4c5a2d9e6d6 SW-6629 Set report dates to be within reporting config dates (#2865)
 7d65fcb1ee4 Update plugin dev.monosoul.jooq-docker to v7 (#2863)
 92c8a06dadb SW-6586 Updated permissions for update default voters (#2864)
