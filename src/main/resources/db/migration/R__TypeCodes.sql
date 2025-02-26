@@ -28,16 +28,14 @@ VALUES (1, 'Not Submitted'),
        (2, 'Failed Pre-screen'),
        (3, 'Passed Pre-screen'),
        (4, 'Submitted'),
-       (5, 'PL Review'),
-       (6, 'Ready for Review'),
-       (7, 'Pre-check'),
-       (8, 'Needs Follow-up'),
-       (9, 'Carbon Eligible'),
+       (5, 'Sourcing Team Review'),
+       (6, 'GIS Assessment'),
+       (7, 'Expert Review'),
+       (8, 'Carbon Assessment'),
+       (9, 'P0 Eligible'),
        (10, 'Accepted'),
-       (11, 'Issue Active'),
-       (12, 'Issue Pending'),
-       (13, 'Issue Resolved'),
-       (14, 'Not Accepted')
+       (11, 'Issue Reassessment'),
+       (12, 'Not Eligible')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO nursery.batch_quantity_history_types (id, name)
