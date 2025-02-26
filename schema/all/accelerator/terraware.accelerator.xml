@@ -60,7 +60,7 @@
             <column ascending="true" name="application_id"/>
          </index>
       </table>
-      <table name="application_statuses" numRows="14" remarks="(Enum) Possible statuses for an application to the accelerator program." schema="accelerator" type="TABLE">
+      <table name="application_statuses" numRows="12" remarks="(Enum) Possible statuses for an application to the accelerator program." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="application_status_id" foreignKey="application_histories_application_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="application_histories"/>
             <child column="application_status_id" foreignKey="applications_application_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="applications"/>
