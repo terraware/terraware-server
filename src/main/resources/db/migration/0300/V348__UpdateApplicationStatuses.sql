@@ -24,5 +24,16 @@ SET application_status_id = CASE
     ELSE application_status_id
 END;
 
+UPDATE accelerator.application_histories
+    SET application_status_id = CASE
+    -- 7 -> 7, 'Pre-check' -> 'Expert Review'
+    WHEN application_status_id = 8 THEN 7 -- 'Needs Follow-up' -> 'Expert Review'
+    -- 11 -> 11, 'Issue Active' -> 'Issue Reassessment'
+    WHEN application_status_id = 12 THEN 11 -- 'Issue Pending' -> 'Issue Reassessment'
+    WHEN application_status_id = 13 THEN 11 -- 'Issue Resolved' -> 'Issue Reassessment'
+    WHEN application_status_id = 14 THEN 12 -- 'Not Accepted' -> 'Not Eligible'
+    ELSE application_status_id
+END;
+
 DELETE FROM accelerator.application_statuses
 WHERE id = 13 OR id = 14;
