@@ -1236,7 +1236,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   configId = configId,
                   projectId = projectId,
                   statusId = ReportStatus.NotSubmitted,
-                  startDate = LocalDate.of(2025, Month.JANUARY, 1),
+                  startDate = LocalDate.of(2025, Month.MAY, 5),
                   endDate = LocalDate.of(2025, Month.DECEMBER, 31),
                   createdBy = systemUser.userId,
                   createdTime = clock.instant,
@@ -1270,7 +1270,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   projectId = projectId,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2028, Month.JANUARY, 1),
-                  endDate = LocalDate.of(2028, Month.DECEMBER, 31),
+                  endDate = LocalDate.of(2028, Month.MARCH, 2),
                   createdBy = systemUser.userId,
                   createdTime = clock.instant,
                   modifiedBy = systemUser.userId,
@@ -1290,7 +1290,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
               frequency = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
-              reportingEndDate = LocalDate.of(2026, Month.MARCH, 31),
+              reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
           )
 
       store.insertProjectReportConfig(config)
@@ -1303,7 +1303,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
               reportFrequencyId = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
-              reportingEndDate = LocalDate.of(2026, Month.MARCH, 31),
+              reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
           ),
           "Project report config tables")
 
@@ -1313,7 +1313,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   configId = configId,
                   projectId = projectId,
                   statusId = ReportStatus.NotSubmitted,
-                  startDate = LocalDate.of(2025, Month.APRIL, 1),
+                  startDate = LocalDate.of(2025, Month.MAY, 5),
                   endDate = LocalDate.of(2025, Month.JUNE, 30),
                   createdBy = systemUser.userId,
                   createdTime = clock.instant,
@@ -1347,7 +1347,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   projectId = projectId,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2026, Month.JANUARY, 1),
-                  endDate = LocalDate.of(2026, Month.MARCH, 31),
+                  endDate = LocalDate.of(2026, Month.MARCH, 29),
                   createdBy = systemUser.userId,
                   createdTime = clock.instant,
                   modifiedBy = systemUser.userId,

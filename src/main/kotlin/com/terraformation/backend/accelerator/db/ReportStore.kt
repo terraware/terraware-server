@@ -284,6 +284,10 @@ class ReportStore(
           ))
     } while (!startDate.isAfter(config.reportingEndDate))
 
+    // Set the first and last report to take account of config dates
+    rows[0] = rows[0].copy(startDate = config.reportingStartDate)
+    rows[rows.lastIndex] = rows[rows.lastIndex].copy(endDate = config.reportingEndDate)
+
     return rows
   }
 
