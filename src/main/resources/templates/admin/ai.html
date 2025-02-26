@@ -26,7 +26,7 @@
 <form method="POST" action="/admin/ai">
     <label>
         Project ID:
-        <input type="text" required name="projectId" th:value="${project.id}"/>
+        <input type="text" required name="projectId" th:value="${project?.id}"/>
     </label>
     <br/>
     <label>
@@ -34,7 +34,6 @@
         <textarea rows=4 cols=80 name="query"></textarea>
     </label>
     <br/>
-    <input type="hidden" name="history" th:value="${history}"/>
     <input type="submit" value="Submit"/>
 </form>
 
