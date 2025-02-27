@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.model.DeviceManagerUser
+import com.terraformation.backend.customer.model.FunderUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -68,6 +69,18 @@ interface RunsAsDatabaseUser : RunsAsUser {
                     ParentStore(dslContext),
                     PermissionStore(dslContext))
             UserType.System -> SystemUser(UsersDao(dslContext.configuration()))
+            UserType.Funder ->
+                FunderUser(
+                    record.createdTime!!,
+                    record.id!!,
+                    record.authId,
+                    record.email!!,
+                    record.emailNotificationsEnabled!!,
+                    record.firstName,
+                    record.lastName,
+                    record.cookiesConsented,
+                    record.cookiesConsentedTime,
+                )
           }
 
       CurrentUserHolder.setCurrentUser(user)

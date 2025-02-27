@@ -204,7 +204,8 @@ tasks {
 
   generateJooqClasses {
     basePackageName = "com.terraformation.backend.db"
-    schemas = listOf("public", "docprod", "accelerator", "nursery", "seedbank", "tracking")
+    schemas =
+        listOf("public", "docprod", "accelerator", "nursery", "seedbank", "tracking", "funder")
     outputSchemaToDefault.add("public")
 
     usingJavaConfig {

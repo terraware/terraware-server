@@ -5,6 +5,7 @@ import com.terraformation.backend.db.SchemaDocsGenerator.Slice.ALL
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.CUSTOMER
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.DEVICE
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.DOCPROD
+import com.terraformation.backend.db.SchemaDocsGenerator.Slice.FUNDER
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.NURSERY
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SEEDBANK
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SPECIES
@@ -115,6 +116,7 @@ class SchemaDocsGenerator : DatabaseTest() {
     CUSTOMER("customer"),
     DEVICE("device"),
     DOCPROD("docprod"),
+    FUNDER("funder"),
     NURSERY("nursery"),
     SEEDBANK("seedbank"),
     SPECIES("species"),
@@ -214,6 +216,12 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "variable_workflow_history" to setOf(ALL, DOCPROD),
                   "variable_workflow_statuses" to setOf(ALL, DOCPROD),
                   "variables" to setOf(ALL, DOCPROD),
+              ),
+          "funder" to
+              mapOf(
+                  "funding_entities" to setOf(ALL, FUNDER),
+                  "funding_entity_users" to setOf(ALL, FUNDER),
+                  "funding_entity_projects" to setOf(ALL, FUNDER),
               ),
           "nursery" to
               mapOf(
