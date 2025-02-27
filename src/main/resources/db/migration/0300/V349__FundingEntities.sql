@@ -12,7 +12,7 @@ CREATE TABLE funder.funding_entities
 
 CREATE TABLE funder.funding_entity_projects
 (
-    funding_entity_id BIGINT NOT NULL REFERENCES funder.funding_entities,
+    funding_entity_id BIGINT NOT NULL REFERENCES funder.funding_entities ON DELETE CASCADE,
     project_id        BIGINT NOT NULL REFERENCES projects ON DELETE CASCADE
 );
 CREATE INDEX ON funder.funding_entity_projects(funding_entity_id);
@@ -22,7 +22,7 @@ CREATE INDEX ON funder.funding_entity_projects(project_id);
 CREATE TABLE funder.funding_entity_users
 (
     user_id           BIGINT PRIMARY KEY REFERENCES users ON DELETE CASCADE,
-    funding_entity_id BIGINT NOT NULL REFERENCES funder.funding_entities
+    funding_entity_id BIGINT NOT NULL REFERENCES funder.funding_entities ON DELETE CASCADE
 );
 CREATE INDEX ON funder.funding_entity_users(funding_entity_id);
 CREATE INDEX ON funder.funding_entity_users(user_id);

@@ -10,7 +10,7 @@ import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.log.perClassLogger
 import java.time.Instant
 import java.time.ZoneId
-import java.time.ZoneOffset
+import java.util.Locale
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
@@ -22,15 +22,15 @@ class FunderUser(
     val emailNotificationsEnabled: Boolean,
     val firstName: String?,
     val lastName: String?,
+    val countryCode: String?,
     val cookiesConsented: Boolean?,
     val cookiesConsentedTime: Instant?,
+    override val locale: Locale?,
+    override val timeZone: ZoneId?,
 ) : TerrawareUser, UserDetails {
   companion object {
     private val log = perClassLogger()
   }
-
-  override val timeZone: ZoneId
-    get() = ZoneOffset.UTC
 
   override val userType: UserType
     get() = UserType.Funder
@@ -40,12 +40,12 @@ class FunderUser(
    */
   override val organizationRoles: Map<OrganizationId, Role>
     get() {
-      throw NotImplementedError("System user does not support enumerating roles")
+      throw NotImplementedError("Funder user does not support enumerating roles")
     }
 
   override val facilityRoles: Map<FacilityId, Role>
     get() {
-      throw NotImplementedError("System user does not support enumerating roles")
+      throw NotImplementedError("Funder user does not support enumerating roles")
     }
 
   override val globalRoles: Set<GlobalRole>

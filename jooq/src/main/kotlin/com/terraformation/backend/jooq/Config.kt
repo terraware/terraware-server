@@ -250,6 +250,11 @@ val ID_WRAPPERS =
                 IdWrapper("VariableValueTableRowId", listOf("variable_value_table_rows\\.id")),
                 IdWrapper("VariableWorkflowHistoryId", listOf("variable_workflow_history\\.id")),
             ),
+        "funder" to
+            listOf(
+                IdWrapper(
+                    "FundingEntityId", listOf("funding_entities\\.id", ".*\\.funding_entity_id")),
+            ),
         "nursery" to
             listOf(
                 IdWrapper(
