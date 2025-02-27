@@ -8,7 +8,7 @@ enum class ExternalApplicationStatus {
   PassedPreScreen,
   InReview,
   Accepted,
-  NotAccepted,
+  NotEligible,
   Waitlist;
 
   fun shouldNotify(): Boolean {
@@ -18,7 +18,7 @@ enum class ExternalApplicationStatus {
       PassedPreScreen,
       InReview -> false
       Accepted,
-      NotAccepted,
+      NotEligible,
       Waitlist -> true
     }
   }
@@ -30,16 +30,14 @@ enum class ExternalApplicationStatus {
         ApplicationStatus.FailedPreScreen -> FailedPreScreen
         ApplicationStatus.PassedPreScreen -> PassedPreScreen
         ApplicationStatus.Submitted,
-        ApplicationStatus.PLReview,
-        ApplicationStatus.ReadyForReview,
-        ApplicationStatus.PreCheck,
-        ApplicationStatus.NeedsFollowUp,
-        ApplicationStatus.CarbonEligible -> InReview
-        ApplicationStatus.IssueActive,
-        ApplicationStatus.IssuePending,
-        ApplicationStatus.IssueResolved -> Waitlist
+        ApplicationStatus.CarbonAssessment,
+        ApplicationStatus.GISAssessment,
+        ApplicationStatus.ExpertReview,
+        ApplicationStatus.P0Eligible,
+        ApplicationStatus.SourcingTeamReview -> InReview
+        ApplicationStatus.IssueReassessment -> Waitlist
         ApplicationStatus.Accepted -> Accepted
-        ApplicationStatus.NotAccepted -> NotAccepted
+        ApplicationStatus.NotEligible -> NotEligible
       }
     }
   }

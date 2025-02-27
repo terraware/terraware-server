@@ -28,16 +28,14 @@ VALUES (1, 'Not Submitted'),
        (2, 'Failed Pre-screen'),
        (3, 'Passed Pre-screen'),
        (4, 'Submitted'),
-       (5, 'PL Review'),
-       (6, 'Ready for Review'),
-       (7, 'Pre-check'),
-       (8, 'Needs Follow-up'),
-       (9, 'Carbon Eligible'),
+       (5, 'Sourcing Team Review'),
+       (6, 'GIS Assessment'),
+       (7, 'Expert Review'),
+       (8, 'Carbon Assessment'),
+       (9, 'P0 Eligible'),
        (10, 'Accepted'),
-       (11, 'Issue Active'),
-       (12, 'Issue Pending'),
-       (13, 'Issue Resolved'),
-       (14, 'Not Accepted')
+       (11, 'Issue Reassessment'),
+       (12, 'Not Eligible')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO nursery.batch_quantity_history_types (id, name)
@@ -666,13 +664,13 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name,
 
 -- Depends on user_types
 INSERT INTO internal_tags (id, name, description, is_system, created_by, created_time, modified_by, modified_time)
-SELECT t.id, t.name, t.description, TRUE, system_user.id, NOW(), system_user.id, NOW()
+SELECT t.id, t.name, t.description, TRUE, su.id, NOW(), su.id, NOW()
 FROM (
          SELECT id
          FROM users
          WHERE user_type_id = 4
            AND email = 'system'
-     ) AS system_user, (
+     ) AS su, (
          VALUES (1, 'Reporter', 'Organization must submit reports to Terraformation.'),
                 (2, 'Internal', 'Terraformation-managed internal organization, not a customer.'),
                 (3, 'Testing', 'Used for internal testing; may contain invalid data.'),
