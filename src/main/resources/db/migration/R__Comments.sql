@@ -710,4 +710,8 @@ COMMENT ON COLUMN docprod.variable_workflow_history.max_variable_value_id IS 'Th
 
 COMMENT ON TABLE docprod.variable_workflow_statuses IS '(Enum) Workflow statuses of variables in projects. The list of valid statuses depends on the variable type.';
 
+COMMENT ON TABLE funder.funding_entities IS 'Top-level information about Funding Entities for Funders.';
+COMMENT ON TABLE funder.funding_entity_projects IS 'Which funding entities are associated with which projects.';
+COMMENT ON TABLE funder.funding_entity_users IS 'Funding Entity membership.';
+
 -- When adding new tables, put them in alphabetical (ASCII) order.
