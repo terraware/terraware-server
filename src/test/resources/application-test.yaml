@@ -23,6 +23,9 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: http://dummy
+  ai:
+    openai:
+      api-key: dummy
 
 terraware:
   web-app-url: "http://dummy/"

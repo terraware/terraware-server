@@ -389,6 +389,7 @@ class SchemaDocsGenerator : DatabaseTest() {
           Regex("public\\.jobrunr_.*"),
           Regex("public\\.spatial_ref_sys"),
           Regex("public\\.spring_.*"),
+          Regex("public\\.vector_store"),
       )
 
   @EnumSource(Slice::class)

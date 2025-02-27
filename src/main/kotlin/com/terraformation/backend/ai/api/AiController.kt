@@ -2,6 +2,7 @@ package com.terraformation.backend.ai.api
 
 import com.terraformation.backend.ai.ChatService
 import com.terraformation.backend.ai.EmbeddingService
+import com.terraformation.backend.api.InternalEndpoint
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
+@InternalEndpoint
 @RequestMapping("/api/v1/ai")
 @RestController
 class AiController(
