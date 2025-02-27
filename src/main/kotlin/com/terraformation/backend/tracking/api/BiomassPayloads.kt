@@ -270,6 +270,7 @@ data class ExistingBiomassMeasurementPayload(
     val tide: MangroveTide?,
     @Schema(description = "Time when ide is observed.") //
     val tideTime: Instant?,
+    val treeSpeciesCount: Int,
     val trees: List<ExistingTreePayload>,
     @Schema(description = "Measured in centimeters.") //
     val waterDepth: Int?,
@@ -278,14 +279,21 @@ data class ExistingBiomassMeasurementPayload(
     fun of(model: ExistingBiomassDetailsModel): ExistingBiomassMeasurementPayload {
       val species = model.species.associateBy { BiomassSpeciesKey(it.speciesId, it.scientificName) }
 
+      val treeSpecies =
+          species.filterKeys { key ->
+            model.trees.any { BiomassSpeciesKey(it.speciesId, it.speciesName) == key }
+          }
+
+      val quadratSpecies =
+          species.filterKeys { key ->
+            model.quadrats
+                .flatMap { it.value.species }
+                .any { BiomassSpeciesKey(it.speciesId, it.speciesName) == key }
+          }
+
       // Find species that are not part of a tree or a quadrat
       val additionalSpecies =
-          species.filterKeys { key ->
-            model.trees.all { BiomassSpeciesKey(it.speciesId, it.speciesName) != key } &&
-                model.quadrats
-                    .flatMap { it.value.species }
-                    .all { BiomassSpeciesKey(it.speciesId, it.speciesName) != key }
-          }
+          species.filterKeys { treeSpecies[it] == null && quadratSpecies[it] == null }
 
       return ExistingBiomassMeasurementPayload(
           additionalSpecies = additionalSpecies.map { BiomassSpeciesPayload(it.value) },
@@ -303,6 +311,7 @@ data class ExistingBiomassMeasurementPayload(
           soilAssessment = model.soilAssessment,
           tide = model.tide,
           tideTime = model.tideTime,
+          treeSpeciesCount = treeSpecies.size,
           trees = model.trees.map { ExistingTreePayload(it, species) },
           waterDepth = model.waterDepthCm,
       )

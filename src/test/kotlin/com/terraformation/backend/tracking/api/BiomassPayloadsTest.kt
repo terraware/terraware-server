@@ -371,6 +371,7 @@ class BiomassPayloadsTest {
               soilAssessment = "soil",
               tide = null,
               tideTime = null,
+              treeSpeciesCount = 3,
               trees =
                   listOf(
                       ExistingTreePayload(
