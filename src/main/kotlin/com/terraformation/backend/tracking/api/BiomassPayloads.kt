@@ -10,6 +10,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
+import com.terraformation.backend.tracking.model.BiomassSpeciesKey
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
@@ -19,51 +20,6 @@ import io.swagger.v3.oas.annotations.media.DiscriminatorMapping
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.Instant
-
-data class BiomassQuadratPayload(
-    val description: String?,
-    val position: ObservationPlotPosition,
-    val species: List<BiomassQuadratSpeciesPayload>,
-) {
-  constructor(
-      model: BiomassQuadratModel,
-      position: ObservationPlotPosition
-  ) : this(
-      description = model.description,
-      position = position,
-      species = model.species.map { BiomassQuadratSpeciesPayload(it) },
-  )
-
-  fun toModel(): BiomassQuadratModel {
-    return BiomassQuadratModel(
-        description = description,
-        species = species.map { it.toModel() }.toSet(),
-    )
-  }
-}
-
-data class BiomassQuadratSpeciesPayload(
-    @Schema(minimum = "0", maximum = "100") //
-    val abundancePercent: Int,
-    val speciesId: SpeciesId?,
-    val speciesName: String?,
-) {
-  constructor(
-      model: BiomassQuadratSpeciesModel,
-  ) : this(
-      abundancePercent = model.abundancePercent,
-      speciesId = model.speciesId,
-      speciesName = model.speciesName,
-  )
-
-  fun toModel(): BiomassQuadratSpeciesModel {
-    return BiomassQuadratSpeciesModel(
-        abundancePercent = abundancePercent,
-        speciesId = speciesId,
-        speciesName = speciesName,
-    )
-  }
-}
 
 data class BiomassSpeciesPayload(
     val commonName: String?,
@@ -93,6 +49,69 @@ data class BiomassSpeciesPayload(
   }
 }
 
+data class ExistingBiomassQuadratPayload(
+    val description: String?,
+    val position: ObservationPlotPosition,
+    val species: List<ExistingBiomassQuadratSpeciesPayload>,
+) {
+  constructor(
+      model: BiomassQuadratModel,
+      position: ObservationPlotPosition,
+      species: Map<BiomassSpeciesKey, BiomassSpeciesModel>,
+  ) : this(
+      description = model.description,
+      position = position,
+      species = model.species.map { ExistingBiomassQuadratSpeciesPayload(it, species) },
+  )
+}
+
+data class ExistingBiomassQuadratSpeciesPayload(
+    val abundancePercent: Int,
+    val isInvasive: Boolean,
+    val isThreatened: Boolean,
+    val speciesId: SpeciesId?,
+    val speciesName: String?,
+) {
+  constructor(
+      model: BiomassQuadratSpeciesModel,
+      species: Map<BiomassSpeciesKey, BiomassSpeciesModel>,
+  ) : this(
+      abundancePercent = model.abundancePercent,
+      isInvasive = species[BiomassSpeciesKey(model.speciesId, model.speciesName)]!!.isInvasive,
+      isThreatened = species[BiomassSpeciesKey(model.speciesId, model.speciesName)]!!.isThreatened,
+      speciesId = model.speciesId,
+      speciesName = model.speciesName,
+  )
+}
+
+data class NewBiomassQuadratPayload(
+    val description: String?,
+    val position: ObservationPlotPosition,
+    val species: List<NewBiomassQuadratSpeciesPayload>,
+) {
+  fun toModel(): BiomassQuadratModel {
+    return BiomassQuadratModel(
+        description = description,
+        species = species.map { it.toModel() }.toSet(),
+    )
+  }
+}
+
+data class NewBiomassQuadratSpeciesPayload(
+    @Schema(minimum = "0", maximum = "100") //
+    val abundancePercent: Int,
+    val speciesId: SpeciesId?,
+    val speciesName: String?,
+) {
+  fun toModel(): BiomassQuadratSpeciesModel {
+    return BiomassQuadratSpeciesModel(
+        abundancePercent = abundancePercent,
+        speciesId = speciesId,
+        speciesName = speciesName,
+    )
+  }
+}
+
 data class ExistingTreePayload(
     val description: String?,
     @Schema(description = "Measured in centimeters.") //
@@ -100,6 +119,8 @@ data class ExistingTreePayload(
     @Schema(description = "Measured in meters.") //
     val height: BigDecimal?,
     val isDead: Boolean,
+    val isInvasive: Boolean,
+    val isThreatened: Boolean,
     @Schema(description = "Measured in meters.") //
     val pointOfMeasurement: BigDecimal?,
     val shrubDiameter: Int?,
@@ -110,12 +131,15 @@ data class ExistingTreePayload(
     val trunkNumber: Int,
 ) {
   constructor(
-      model: ExistingRecordedTreeModel
+      model: ExistingRecordedTreeModel,
+      species: Map<BiomassSpeciesKey, BiomassSpeciesModel>,
   ) : this(
       description = model.description,
       diameterAtBreastHeight = model.diameterAtBreastHeightCm,
       height = model.heightM,
       isDead = model.isDead,
+      isInvasive = species[BiomassSpeciesKey(model.speciesId, model.speciesName)]!!.isInvasive,
+      isThreatened = species[BiomassSpeciesKey(model.speciesId, model.speciesName)]!!.isThreatened,
       pointOfMeasurement = model.pointOfMeasurementM,
       shrubDiameter = model.shrubDiameterCm,
       speciesId = model.speciesId,
@@ -231,11 +255,12 @@ data class NewTreeWithTrunksPayload(
 }
 
 data class ExistingBiomassMeasurementPayload(
+    val additionalSpecies: List<BiomassSpeciesPayload>,
     val description: String?,
     val forestType: BiomassForestType,
     val herbaceousCoverPercent: Int,
     val ph: BigDecimal?,
-    val quadrats: List<BiomassQuadratPayload>,
+    val quadrats: List<ExistingBiomassQuadratPayload>,
     @Schema(description = "Measured in ppt") //
     val salinity: BigDecimal?,
     val smallTreeCountLow: Int,
@@ -246,29 +271,43 @@ data class ExistingBiomassMeasurementPayload(
     @Schema(description = "Time when ide is observed.") //
     val tideTime: Instant?,
     val trees: List<ExistingTreePayload>,
-    val species: List<BiomassSpeciesPayload>,
     @Schema(description = "Measured in centimeters.") //
     val waterDepth: Int?,
 ) {
-  constructor(
-      model: ExistingBiomassDetailsModel
-  ) : this(
-      description = model.description,
-      forestType = model.forestType,
-      herbaceousCoverPercent = model.herbaceousCoverPercent,
-      ph = model.ph,
-      quadrats =
-          model.quadrats.map { (position, quadrat) -> BiomassQuadratPayload(quadrat, position) },
-      salinity = model.salinityPpt,
-      smallTreeCountLow = model.smallTreeCountRange.first,
-      smallTreeCountHigh = model.smallTreeCountRange.second,
-      soilAssessment = model.soilAssessment,
-      species = model.species.map { BiomassSpeciesPayload(it) },
-      tide = model.tide,
-      tideTime = model.tideTime,
-      trees = model.trees.map { ExistingTreePayload(it) },
-      waterDepth = model.waterDepthCm,
-  )
+  companion object {
+    fun of(model: ExistingBiomassDetailsModel): ExistingBiomassMeasurementPayload {
+      val species = model.species.associateBy { BiomassSpeciesKey(it.speciesId, it.scientificName) }
+
+      // Find species that are not part of a tree or a quadrat
+      val additionalSpecies =
+          species.filterKeys { key ->
+            model.trees.all { BiomassSpeciesKey(it.speciesId, it.speciesName) != key } &&
+                model.quadrats
+                    .flatMap { it.value.species }
+                    .all { BiomassSpeciesKey(it.speciesId, it.speciesName) != key }
+          }
+
+      return ExistingBiomassMeasurementPayload(
+          additionalSpecies = additionalSpecies.map { BiomassSpeciesPayload(it.value) },
+          description = model.description,
+          forestType = model.forestType,
+          herbaceousCoverPercent = model.herbaceousCoverPercent,
+          ph = model.ph,
+          quadrats =
+              model.quadrats.map { (position, quadrat) ->
+                ExistingBiomassQuadratPayload(quadrat, position, species)
+              },
+          salinity = model.salinityPpt,
+          smallTreeCountLow = model.smallTreeCountRange.first,
+          smallTreeCountHigh = model.smallTreeCountRange.second,
+          soilAssessment = model.soilAssessment,
+          tide = model.tide,
+          tideTime = model.tideTime,
+          trees = model.trees.map { ExistingTreePayload(it, species) },
+          waterDepth = model.waterDepthCm,
+      )
+    }
+  }
 }
 
 data class NewBiomassMeasurementPayload(
@@ -278,7 +317,7 @@ data class NewBiomassMeasurementPayload(
     val herbaceousCoverPercent: Int,
     @Schema(description = "Required for Mangrove forest.", minimum = "0", maximum = "14")
     val ph: BigDecimal?,
-    val quadrats: List<BiomassQuadratPayload>,
+    val quadrats: List<NewBiomassQuadratPayload>,
     @Schema(description = "Measured in ppt. Required for Mangrove forest.", minimum = "0")
     val salinity: BigDecimal?,
     @Schema(minimum = "0") //
