@@ -78,8 +78,11 @@ interface RunsAsDatabaseUser : RunsAsUser {
                     record.emailNotificationsEnabled!!,
                     record.firstName,
                     record.lastName,
+                    record.countryCode,
                     record.cookiesConsented,
                     record.cookiesConsentedTime,
+                    record.locale,
+                    record.timeZone,
                 )
           }
 
