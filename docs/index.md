@@ -21,9 +21,9 @@ Setup docs for optional parts of the system, only needed if you're working on co
 The database has some subject-area-specific schemas as well as a default public one.
 
 * [Default schema](schema/all/public/relationships.html) (`public`), or a subset of its tables:
-    * [Customer-related tables](schema/customer/public/relationships.html)
-    * [Device-related tables](schema/device/public/relationships.html)
-    * [Species-related tables](schema/species/public/relationships.html)
+  * [Customer-related tables](schema/customer/public/relationships.html)
+  * [Device-related tables](schema/device/public/relationships.html)
+  * [Species-related tables](schema/species/public/relationships.html)
 * [Accelerator schema](schema/all/accelerator/relationships.html) (`accelerator`)
 * [Document Producer schema](schema/all/docprod/relationships.html) (`docprod`)
 * [Funder schema](schema/all/funder/relationships.html) (`funder`)
