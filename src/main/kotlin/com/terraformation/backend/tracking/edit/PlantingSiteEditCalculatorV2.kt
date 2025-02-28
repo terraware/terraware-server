@@ -99,6 +99,10 @@ class PlantingSiteEditCalculatorV2(
 
               if (subzoneEdits.isEmpty() &&
                   createMonitoringPlotEdits.isEmpty() &&
+                  existingZone.errorMargin == desiredZone.errorMargin &&
+                  existingZone.studentsT == desiredZone.studentsT &&
+                  existingZone.targetPlantingDensity == desiredZone.targetPlantingDensity &&
+                  existingZone.variance == desiredZone.variance &&
                   existingUsableBoundary.equalsExact(desiredUsableBoundary, 0.00001)) {
                 null
               } else {

@@ -84,6 +84,36 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     }
 
     @Test
+    fun `updates settings`() {
+      val newErrorMargin = BigDecimal(101)
+      val newStudentsT = BigDecimal("1.646")
+      val newTargetPlantingDensity = BigDecimal(1100)
+      val newVariance = BigDecimal(40001)
+
+      val (edited) =
+          runScenario(
+              initial = newSite(),
+              desired =
+                  newSite {
+                    zone {
+                      errorMargin = newErrorMargin
+                      studentsT = newStudentsT
+                      targetPlantingDensity = newTargetPlantingDensity
+                      variance = newVariance
+                    }
+                  },
+              useV2Calculator = true)
+
+      assertEquals(newErrorMargin, edited.plantingZones[0].errorMargin, "Error margin")
+      assertEquals(newStudentsT, edited.plantingZones[0].studentsT, "Student's t")
+      assertEquals(
+          newTargetPlantingDensity,
+          edited.plantingZones[0].targetPlantingDensity,
+          "Target planting density")
+      assertEquals(newVariance, edited.plantingZones[0].variance, "Variance")
+    }
+
+    @Test
     fun `creates new zones`() {
       runScenario(
           newSite(width = 500),
