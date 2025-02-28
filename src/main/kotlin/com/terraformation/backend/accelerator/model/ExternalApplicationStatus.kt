@@ -35,6 +35,7 @@ enum class ExternalApplicationStatus {
         ApplicationStatus.ExpertReview,
         ApplicationStatus.P0Eligible,
         ApplicationStatus.SourcingTeamReview -> InReview
+        ApplicationStatus.IssueActive,
         ApplicationStatus.IssueReassessment -> Waitlist
         ApplicationStatus.Accepted -> Accepted
         ApplicationStatus.NotEligible -> NotEligible
