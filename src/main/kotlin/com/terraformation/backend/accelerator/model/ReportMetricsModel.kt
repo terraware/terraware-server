@@ -1,10 +1,15 @@
 package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_SYSTEM_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.UserId
 import java.time.Instant
+import org.jooq.Field
 import org.jooq.Record
 
 data class ReportMetricEntryModel(
@@ -76,6 +81,51 @@ data class ReportProjectMetricModel(
                 },
         )
       }
+    }
+  }
+}
+
+data class ReportSystemMetricEntryModel(
+    val target: Int? = null,
+    val systemValue: Int,
+    val overrideValue: Int? = null,
+    val modifiedBy: UserId? = null,
+    val modifiedTime: Instant? = null,
+    val notes: String? = null,
+    val internalComment: String? = null,
+) {
+  companion object {
+    fun of(record: Record, systemValueField: Field<Int?>): ReportSystemMetricEntryModel {
+      return with(REPORT_SYSTEM_METRICS) {
+        ReportSystemMetricEntryModel(
+            target = record[TARGET],
+            systemValue = record[systemValueField] ?: 0,
+            overrideValue = record[OVERRIDE_VALUE],
+            modifiedBy = record[MODIFIED_BY],
+            modifiedTime = record[MODIFIED_TIME],
+            notes = record[NOTES],
+            internalComment =
+                if (currentUser().canReadReportInternalComments()) {
+                  record[INTERNAL_COMMENT]
+                } else {
+                  null
+                },
+        )
+      }
+    }
+  }
+}
+
+data class ReportSystemMetricModel(
+    val metric: SystemMetric,
+    val entry: ReportSystemMetricEntryModel,
+) {
+  companion object {
+    fun of(record: Record, systemValueField: Field<Int?>): ReportSystemMetricModel {
+      return ReportSystemMetricModel(
+          metric = record[SYSTEM_METRICS.ID.asNonNullable()],
+          entry = ReportSystemMetricEntryModel.of(record, systemValueField),
+      )
     }
   }
 }
