@@ -120,7 +120,12 @@ class SecurityConfig(
       headers { addHeaderWriter(StaticHeadersWriter("Server", "Terraware-Server/$VERSION")) }
 
       oauth2Login {
-        authorizationEndpoint { baseUri = "/api/oauth2/authorization" }
+        authorizationEndpoint {
+          baseUri = "/api/oauth2/authorization"
+          authorizationRequestResolver =
+              CustomOAuth2AuthorizationRequestResolver(
+                  clientRegistrationRepository, "/api/oauth2/authorization")
+        }
         redirectionEndpoint { baseUri = "/api/oauth2/code/*" }
       }
 
