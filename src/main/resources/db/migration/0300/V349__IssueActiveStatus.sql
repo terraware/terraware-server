@@ -15,15 +15,9 @@ VALUES (1, 'Not Submitted'),
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 UPDATE accelerator.applications
-SET application_status_id = CASE
-    WHEN application_status_id = 11 THEN 12
-    WHEN application_status_id = 12 THEN 13
-    ELSE application_status_id
-END;
+SET application_status_id = 13
+WHERE application_status_id = 12;
 
 UPDATE accelerator.application_histories
-SET application_status_id = CASE
-    WHEN application_status_id = 11 THEN 12
-    WHEN application_status_id = 12 THEN 13
-    ELSE application_status_id
-END;
+SET application_status_id = 13
+WHERE application_status_id = 12;
