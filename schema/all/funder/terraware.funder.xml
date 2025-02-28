@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<database name="terraware" schema="funder" type="PostgreSQL - 13.1 (Debian 13.1-1.pgdg100+1)">
+   <tables>
+      <table name="funding_entities" numRows="0" remarks="Top-level information about Funding Entities for Funders." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="funding_entity_id" foreignKey="funding_entity_projects_funding_entity_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entity_projects"/>
+            <child column="funding_entity_id" foreignKey="funding_entity_users_funding_entity_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entity_users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="funding_entities_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="funding_entities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="funding_entities_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="funding_entities_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="funding_entity_projects" numRows="0" remarks="Which funding entities are associated with which projects." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="funding_entity_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="funding_entity_projects_funding_entity_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entities"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="funding_entity_projects_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <index name="funding_entity_projects_funding_entity_id_idx" unique="false">
+            <column ascending="true" name="funding_entity_id"/>
+         </index>
+         <index name="funding_entity_projects_project_id_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+         </index>
+      </table>
+      <table name="funding_entity_users" numRows="0" remarks="Funding Entity membership." schema="funder" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="user_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="funding_entity_users_user_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="funding_entity_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="funding_entity_users_funding_entity_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="funding_entities"/>
+         </column>
+         <primaryKey column="user_id" sequenceNumberInPK="1"/>
+         <index name="funding_entity_users_pkey" unique="true">
+            <column ascending="true" name="user_id"/>
+         </index>
+         <index name="funding_entity_users_funding_entity_id_idx" unique="false">
+            <column ascending="true" name="funding_entity_id"/>
+         </index>
+         <index name="funding_entity_users_user_id_idx" unique="false">
+            <column ascending="true" name="user_id"/>
+         </index>
+      </table>
+   </tables>
+</database>
