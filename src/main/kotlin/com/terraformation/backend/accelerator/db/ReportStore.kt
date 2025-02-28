@@ -8,6 +8,7 @@ import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
+import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
@@ -18,6 +19,7 @@ import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportIdConverter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
+import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.daos.ReportsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_METRICS
@@ -25,7 +27,9 @@ import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPOR
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_SYSTEM_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserIdConverter
@@ -432,4 +436,30 @@ class ReportStore(
                   .where(PROJECT_METRICS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                   .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID))
           .convertFrom { result -> result.map { ReportProjectMetricModel.of(it) } }
+
+  private val systemValueField =
+      DSL.coalesce(
+          REPORT_SYSTEM_METRICS.SYSTEM_VALUE,
+          DSL.case_()
+              // ToDo: Implement each system query
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.MortalityRate), 1)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), 2)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), 3)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SpeciesPlanted), 4)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.TreesPlanted), 5)
+              .else_(0))
+
+  private val systemMetricsMultiset: Field<List<ReportSystemMetricModel>> =
+      DSL.multiset(
+              DSL.select(
+                      SYSTEM_METRICS.ID,
+                      REPORT_SYSTEM_METRICS.asterisk(),
+                      systemValueField,
+                  )
+                  .from(SYSTEM_METRICS)
+                  .leftJoin(REPORT_SYSTEM_METRICS)
+                  .on(SYSTEM_METRICS.ID.eq(REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID))
+                  .and(REPORTS.ID.eq(REPORT_SYSTEM_METRICS.REPORT_ID))
+                  .orderBy(SYSTEM_METRICS.REFERENCE, SYSTEM_METRICS.ID))
+          .convertFrom { result -> result.map { ReportSystemMetricModel.of(it, systemValueField) } }
 }
