@@ -4,7 +4,7 @@ CREATE TABLE accelerator.system_metrics(
     type_id INTEGER NOT NULL REFERENCES accelerator.metric_types,
     component_id INTEGER NOT NULL REFERENCES accelerator.metric_components,
     description TEXT,
-    reference TEXT NOT NULL
+    reference TEXT COLLATE natural_numeric NOT NULL
 );
 
 CREATE TABLE accelerator.report_system_metrics(
