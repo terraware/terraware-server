@@ -84,6 +84,7 @@ class ProjectCohortFetcherTest : DatabaseTest(), RunsAsUser {
               ApplicationStatus.ExpertReview to CohortPhase.Application,
               ApplicationStatus.FailedPreScreen to CohortPhase.PreScreen,
               ApplicationStatus.GISAssessment to CohortPhase.Application,
+              ApplicationStatus.IssueActive to CohortPhase.Application,
               ApplicationStatus.IssueReassessment to CohortPhase.Application,
               ApplicationStatus.NotEligible to CohortPhase.Application,
               ApplicationStatus.NotSubmitted to CohortPhase.PreScreen,

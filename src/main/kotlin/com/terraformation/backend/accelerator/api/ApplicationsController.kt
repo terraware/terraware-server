@@ -251,6 +251,7 @@ enum class ApiApplicationStatus(@get:JsonValue val jsonValue: String) {
   CarbonAssessment("Carbon Assessment"),
   ExpertReview("Expert Review"),
   FailedPreScreen("Failed Pre-screen"),
+  IssueActive("IssueActive"),
   IssueReassessment("Issue Reassessment"),
   NotEligible("Not Eligible"),
   NotSubmitted("Not Submitted"),
@@ -277,6 +278,7 @@ enum class ApiApplicationStatus(@get:JsonValue val jsonValue: String) {
         ApplicationStatus.ExpertReview -> ExpertReview
         ApplicationStatus.FailedPreScreen -> FailedPreScreen
         ApplicationStatus.GISAssessment -> GISAssessment
+        ApplicationStatus.IssueActive -> IssueActive
         ApplicationStatus.IssueReassessment -> IssueReassessment
         ApplicationStatus.NotEligible -> NotEligible
         ApplicationStatus.NotSubmitted -> NotSubmitted
