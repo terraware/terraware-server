@@ -251,7 +251,7 @@ enum class ApiApplicationStatus(@get:JsonValue val jsonValue: String) {
   CarbonAssessment("Carbon Assessment"),
   ExpertReview("Expert Review"),
   FailedPreScreen("Failed Pre-screen"),
-  IssueActive("IssueActive"),
+  IssueActive("Issue Active"),
   IssueReassessment("Issue Reassessment"),
   NotEligible("Not Eligible"),
   NotSubmitted("Not Submitted"),
