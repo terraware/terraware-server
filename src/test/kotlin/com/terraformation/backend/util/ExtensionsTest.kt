@@ -77,4 +77,33 @@ class ExtensionsTest {
       assertEquals(BigDecimal("101.8"), geometry.calculateAreaHectares())
     }
   }
+
+  @Nested
+  inner class ToMultiPolygon {
+    @Test
+    fun `converts GeometryCollection to MultiPolygon even if it includes Points`() {
+      val factory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+      val polygon1 =
+          factory.createPolygon(
+              arrayOf(
+                  CoordinateXY(0.0, 0.0),
+                  CoordinateXY(0.0, 1.0),
+                  CoordinateXY(1.0, 1.0),
+                  CoordinateXY(0.0, 0.0)))
+      val polygon2 =
+          factory.createPolygon(
+              arrayOf(
+                  CoordinateXY(10.0, 0.0),
+                  CoordinateXY(10.0, 1.0),
+                  CoordinateXY(11.0, 1.0),
+                  CoordinateXY(10.0, 0.0)))
+      val geometryCollection =
+          factory.createGeometryCollection(
+              arrayOf(polygon1, polygon2, factory.createPoint(CoordinateXY(20.0, 0.0))))
+
+      assertEquals(
+          factory.createMultiPolygon(arrayOf(polygon1, polygon2)),
+          geometryCollection.toMultiPolygon())
+    }
+  }
 }
