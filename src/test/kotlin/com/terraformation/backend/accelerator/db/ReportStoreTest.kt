@@ -11,6 +11,8 @@ import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
+import com.terraformation.backend.accelerator.model.ReportSystemMetricEntryModel
+import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
 import com.terraformation.backend.accelerator.model.StandardMetricModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SystemUser
@@ -20,6 +22,7 @@ import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportStatus
+import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.records.ProjectReportConfigsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportProjectMetricsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportStandardMetricsRecord
@@ -184,6 +187,26 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
               modifiedTime = Instant.EPOCH,
+              projectMetrics =
+                  listOf(
+                      ReportProjectMetricModel(
+                          metric =
+                              ProjectMetricModel(
+                                  id = projectMetricId,
+                                  projectId = projectId,
+                                  component = MetricComponent.ProjectObjectives,
+                                  description = "Project Metric description",
+                                  name = "Project Metric Name",
+                                  reference = "2.0",
+                                  type = MetricType.Activity,
+                              ),
+                          entry =
+                              ReportMetricEntryModel(
+                                  target = 100,
+                                  modifiedTime = Instant.ofEpochSecond(1500),
+                                  modifiedBy = user.userId,
+                              )),
+                  ),
               standardMetrics =
                   listOf(
                       // ordered by reference
@@ -235,24 +258,37 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                                   modifiedBy = user.userId,
                               )),
                   ),
-              projectMetrics =
+              systemMetrics =
                   listOf(
-                      ReportProjectMetricModel(
-                          metric =
-                              ProjectMetricModel(
-                                  id = projectMetricId,
-                                  projectId = projectId,
-                                  component = MetricComponent.ProjectObjectives,
-                                  description = "Project Metric description",
-                                  name = "Project Metric Name",
-                                  reference = "2.0",
-                                  type = MetricType.Activity,
-                              ),
+                      ReportSystemMetricModel(
+                          metric = SystemMetric.SeedsCollected,
                           entry =
-                              ReportMetricEntryModel(
-                                  target = 100,
-                                  modifiedTime = Instant.ofEpochSecond(1500),
-                                  modifiedBy = user.userId,
+                              ReportSystemMetricEntryModel(
+                                  systemValue = 3,
+                              )),
+                      ReportSystemMetricModel(
+                          metric = SystemMetric.Seedlings,
+                          entry =
+                              ReportSystemMetricEntryModel(
+                                  systemValue = 2,
+                              )),
+                      ReportSystemMetricModel(
+                          metric = SystemMetric.TreesPlanted,
+                          entry =
+                              ReportSystemMetricEntryModel(
+                                  systemValue = 5,
+                              )),
+                      ReportSystemMetricModel(
+                          metric = SystemMetric.SpeciesPlanted,
+                          entry =
+                              ReportSystemMetricEntryModel(
+                                  systemValue = 4,
+                              )),
+                      ReportSystemMetricModel(
+                          metric = SystemMetric.MortalityRate,
+                          entry =
+                              ReportSystemMetricEntryModel(
+                                  systemValue = 1,
                               )),
                   ))
 

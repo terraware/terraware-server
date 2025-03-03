@@ -88,6 +88,8 @@ data class ReportProjectMetricModel(
 data class ReportSystemMetricEntryModel(
     val target: Int? = null,
     val systemValue: Int,
+    /** Time when system value is recorded. If null, the system value is current. */
+    val systemTime: Instant? = null,
     val overrideValue: Int? = null,
     val modifiedBy: UserId? = null,
     val modifiedTime: Instant? = null,
@@ -100,6 +102,7 @@ data class ReportSystemMetricEntryModel(
         ReportSystemMetricEntryModel(
             target = record[TARGET],
             systemValue = record[systemValueField] ?: 0,
+            systemTime = record[SYSTEM_TIME],
             overrideValue = record[OVERRIDE_VALUE],
             modifiedBy = record[MODIFIED_BY],
             modifiedTime = record[MODIFIED_TIME],
