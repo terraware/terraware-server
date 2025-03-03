@@ -3,12 +3,14 @@ package com.terraformation.backend.funder.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.funder.FundingEntityId
+import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITIES
 import com.terraformation.backend.funder.model.FundingEntityModel
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.springframework.dao.DuplicateKeyException
 
 @Named
 class FundingEntityStore(
@@ -38,13 +40,36 @@ class FundingEntityStore(
                 .set(CREATED_TIME, now)
                 .set(MODIFIED_BY, userId)
                 .set(MODIFIED_TIME, now)
-                .onConflict()
+                .onConflict(NAME)
                 .doNothing()
                 .returning(ID)
                 .fetchOne(ID) ?: throw FundingEntityExistsException(name)
           }
 
       fetchOneById(fundingEntityId)
+    }
+  }
+
+  fun update(row: FundingEntitiesRow) {
+    val fundingEntityId = row.id ?: throw IllegalArgumentException("Funding Entity ID must be set")
+
+    requirePermissions { manageFundingEntities() }
+
+    val userId = currentUser().userId
+    val now = clock.instant()
+
+    try {
+      with(FUNDING_ENTITIES) {
+        dslContext
+            .update(FUNDING_ENTITIES)
+            .set(NAME, row.name)
+            .set(MODIFIED_BY, userId)
+            .set(MODIFIED_TIME, now)
+            .where(ID.eq(fundingEntityId))
+            .execute()
+      }
+    } catch (e: DuplicateKeyException) {
+      throw FundingEntityExistsException(row.name!!)
     }
   }
 

@@ -8,6 +8,7 @@ import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -77,5 +78,58 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `create rejects duplicates by name`() {
     assertThrows<FundingEntityExistsException> { store.create("TestFundingEntity") }
+  }
+
+  @Test
+  fun `update throws exception when no id attached`() {
+    assertThrows<IllegalArgumentException> {
+      store.update(FundingEntitiesRow(name = "Funding Entity without Id"))
+    }
+  }
+
+  @Test
+  fun `update throws exception if user has no permission to manage funding entities`() {
+    every { user.canManageFundingEntities() } returns false
+
+    assertThrows<AccessDeniedException> {
+      store.update(FundingEntitiesRow(id = fundingEntityId, name = "Updated Funding Entity"))
+    }
+  }
+
+  @Test
+  fun `update throws exception when name conflict`() {
+    insertFundingEntity("Existing Funding Entity")
+
+    assertThrows<FundingEntityExistsException> {
+      store.update(FundingEntitiesRow(id = fundingEntityId, name = "Existing Funding Entity"))
+    }
+  }
+
+  @Test
+  fun `update populates modified by fields`() {
+    val newTime = clock.instant().plusSeconds(1000)
+    clock.instant = newTime
+
+    val newUserId = insertUser()
+
+    val updates =
+        FundingEntitiesRow(
+            id = fundingEntityId,
+            name = "New Name",
+        )
+    val expected =
+        updates.copy(
+            createdBy = user.userId,
+            createdTime = Instant.EPOCH,
+            modifiedBy = newUserId,
+            modifiedTime = newTime,
+        )
+
+    every { user.userId } returns newUserId
+
+    store.update(updates)
+
+    val actual = fundingEntitiesDao.fetchOneById(fundingEntityId)!!
+    assertEquals(expected, actual)
   }
 }
