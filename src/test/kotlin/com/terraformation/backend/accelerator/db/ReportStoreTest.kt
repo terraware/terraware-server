@@ -355,11 +355,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           startDate = LocalDate.of(2025, Month.JANUARY, 1),
           endDate = LocalDate.of(2025, Month.MARCH, 31))
 
-      val facilityId = insertFacility()
+      val otherProjectId = insertProject()
+      val facilityId1 = insertFacility()
+      val facilityId2 = insertFacility()
 
+      // Seeds Collected
       listOf(
               AccessionsRow(
-                  facilityId = facilityId,
+                  facilityId = facilityId1,
                   projectId = projectId,
                   collectedDate = LocalDate.of(2025, Month.JANUARY, 11),
                   estSeedCount = 25,
@@ -369,7 +372,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               // Used-up accession
               AccessionsRow(
-                  facilityId = facilityId,
+                  facilityId = facilityId1,
                   projectId = projectId,
                   collectedDate = LocalDate.of(2025, Month.FEBRUARY, 21),
                   estSeedCount = 0,
@@ -379,7 +382,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   totalWithdrawnCount = 35),
               // Weight-based accession
               AccessionsRow(
-                  facilityId = facilityId,
+                  facilityId = facilityId2,
                   projectId = projectId,
                   collectedDate = LocalDate.of(2025, Month.MARCH, 17),
                   estSeedCount = 32,
@@ -396,11 +399,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               // Outside of report date range
               AccessionsRow(
-                  facilityId = facilityId,
+                  facilityId = facilityId1,
                   projectId = projectId,
                   collectedDate = LocalDate.of(2024, Month.DECEMBER, 25),
                   estSeedCount = 2500,
                   remainingQuantity = BigDecimal(2500),
+                  remainingUnitsId = SeedQuantityUnits.Seeds,
+                  stateId = AccessionState.Processing,
+              ),
+              // Different project
+              AccessionsRow(
+                  facilityId = facilityId2,
+                  projectId = otherProjectId,
+                  collectedDate = LocalDate.of(2025, Month.JANUARY, 25),
+                  estSeedCount = 1500,
+                  remainingQuantity = BigDecimal(1500),
                   remainingUnitsId = SeedQuantityUnits.Seeds,
                   stateId = AccessionState.Processing,
               ),
