@@ -118,13 +118,11 @@
 <polygon fill="none" stroke="black" points="436,-358 436,-380 620,-380 620,-358 436,-358"/>
 <text text-anchor="start" x="441" y="-367.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">funding_entity_projects</text>
 <text text-anchor="start" x="581" y="-366.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="#ffffff" stroke="none" points="436,-336 436,-358 620,-358 620,-336 436,-336"/>
 <polygon fill="none" stroke="black" points="436,-336 436,-358 620,-358 620,-336 436,-336"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="441" y="-353"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="441" y="-353"/>
 <text text-anchor="start" x="468" y="-344.2" font-family="Helvetica,sans-Serif" font-size="11.00">funding_entity_id</text>
-<polygon fill="#ffffff" stroke="none" points="436,-314 436,-336 620,-336 620,-314 436,-314"/>
 <polygon fill="none" stroke="black" points="436,-314 436,-336 620,-336 620,-314 436,-314"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="441" y="-331"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="441" y="-331"/>
 <text text-anchor="start" x="468" y="-322.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
 <polygon fill="#ffffff" stroke="none" points="436,-296 436,-314 512,-314 512,-296 436,-296"/>
 <polygon fill="none" stroke="black" points="436,-296 436,-314 512,-314 512,-296 436,-296"/>
