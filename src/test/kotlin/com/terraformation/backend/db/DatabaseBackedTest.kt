@@ -271,6 +271,9 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariableValueTableRows
 import com.terraformation.backend.db.docprod.tables.pojos.VariableValuesRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariableWorkflowHistoryRow
 import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
+import com.terraformation.backend.db.funder.FundingEntityId
+import com.terraformation.backend.db.funder.tables.daos.FundingEntitiesDao
+import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
@@ -547,6 +550,7 @@ abstract class DatabaseBackedTest {
   protected val eventsDao: EventsDao by lazyDao()
   protected val facilitiesDao: FacilitiesDao by lazyDao()
   protected val filesDao: FilesDao by lazyDao()
+  protected val fundingEntitiesDao: FundingEntitiesDao by lazyDao()
   protected val geolocationsDao: GeolocationsDao by lazyDao()
   protected val identifierSequencesDao: IdentifierSequencesDao by lazyDao()
   protected val internalTagsDao: InternalTagsDao by lazyDao()
@@ -3759,6 +3763,27 @@ abstract class DatabaseBackedTest {
     }
   }
 
+  protected fun insertFundingEntity(
+      name: String = "TestFundingEntity",
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+      modifiedBy: UserId = currentUser().userId,
+      modifiedTime: Instant = Instant.EPOCH,
+  ): FundingEntityId {
+    val row =
+        FundingEntitiesRow(
+            name = name,
+            createdBy = createdBy,
+            createdTime = createdTime,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+        )
+
+    fundingEntitiesDao.insert(row)
+
+    return row.id!!.also { inserted.fundingEntitiesIds.add(it) }
+  }
+
   protected fun setupStableIdVariables(): Map<StableId, VariableId> {
     val stableIds: Map<StableId, VariableType> =
         with(StableIds) {
@@ -3949,6 +3974,7 @@ abstract class DatabaseBackedTest {
     val eventIds = mutableListOf<EventId>()
     val facilityIds = mutableListOf<FacilityId>()
     val fileIds = mutableListOf<FileId>()
+    val fundingEntitiesIds = mutableListOf<FundingEntityId>()
     val internalTagIds = mutableListOf<InternalTagId>()
     val moduleIds = mutableListOf<ModuleId>()
     val monitoringPlotHistoryIds = mutableListOf<MonitoringPlotHistoryId>()

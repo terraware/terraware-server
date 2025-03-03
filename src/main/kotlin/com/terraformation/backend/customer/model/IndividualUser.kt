@@ -360,6 +360,8 @@ data class IndividualUser(
 
   override fun canManageDocumentProducer() = isTFExpertOrHigher()
 
+  override fun canManageFundingEntities() = isAcceleratorAdmin()
+
   override fun canManageInternalTags() = isSuperAdmin()
 
   override fun canManageModuleEvents() = isAcceleratorAdmin()
@@ -423,6 +425,8 @@ data class IndividualUser(
       isManagerOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
 
   override fun canReadFacility(facilityId: FacilityId) = isMember(facilityId)
+
+  override fun canReadFundingEntities() = isReadOnlyOrHigher()
 
   override fun canReadGlobalRoles() = isTFExpertOrHigher()
 

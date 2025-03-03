@@ -548,6 +548,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun manageDeliverables() = allow { manageDeliverables() } ifUser { canManageDeliverables() }
 
+  @Test
+  fun manageFundingEntities() =
+      allow { manageFundingEntities() } ifUser { canManageFundingEntities() }
+
   @Test fun manageModuleEvents() = allow { manageModuleEvents() } ifUser { canManageModuleEvents() }
 
   @Test
@@ -627,6 +631,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readDraftPlantingSite() = testRead { readDraftPlantingSite(draftPlantingSiteId) }
 
   @Test fun readFacility() = testRead { readFacility(facilityId) }
+
+  @Test
+  fun readFundingEntities() = allow { readFundingEntities() } ifUser { canReadFundingEntities() }
 
   @Test fun readGlobalRoles() = allow { readGlobalRoles() } ifUser { canReadGlobalRoles() }
 

@@ -658,6 +658,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun manageFundingEntities() {
+    user.recordPermissionChecks {
+      if (!user.canManageFundingEntities()) {
+        throw AccessDeniedException("No permission to manage funding entities")
+      }
+    }
+  }
+
   fun manageInternalTags() {
     user.recordPermissionChecks {
       if (!user.canManageInternalTags()) {
@@ -849,6 +857,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     user.recordPermissionChecks {
       if (!user.canReadFacility(facilityId)) {
         throw FacilityNotFoundException(facilityId)
+      }
+    }
+  }
+
+  fun readFundingEntities() {
+    user.recordPermissionChecks {
+      if (!user.canReadFundingEntities()) {
+        throw AccessDeniedException("No permission to read funding entities")
       }
     }
   }

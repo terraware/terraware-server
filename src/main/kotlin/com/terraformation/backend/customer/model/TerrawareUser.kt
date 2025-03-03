@@ -265,6 +265,8 @@ interface TerrawareUser : Principal {
 
   fun canManageDeliverables(): Boolean = defaultPermission
 
+  fun canManageFundingEntities(): Boolean = defaultPermission
+
   fun canManageDocumentProducer(): Boolean = defaultPermission
 
   fun canManageInternalTags(): Boolean = defaultPermission
@@ -315,6 +317,8 @@ interface TerrawareUser : Principal {
       defaultPermission
 
   fun canReadFacility(facilityId: FacilityId): Boolean = defaultPermission
+
+  fun canReadFundingEntities(): Boolean = defaultPermission
 
   fun canReadGlobalRoles(): Boolean = defaultPermission
 
