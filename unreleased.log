@@ -1,3 +1,5 @@
+1d51f4457f2 Revert "Add primary key to funding_entity_projects"
+dc16c9ea74f Add primary key to funding_entity_projects
 0174f9bdcc5 SW-6652 Save planting zone settings on edit (#2880)
 e65ed174732 SW-6620 Fix DB version overlap (#2878)
 17c352b7fa6 SW-6620 Create Tables for Funding Entities and Funders (#2868)
