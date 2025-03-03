@@ -466,10 +466,13 @@ class ReportStore(
   private val seedlingsField =
       with(BATCHES) {
         DSL.field(
-            DSL.select(DSL.sum(READY_QUANTITY) + DSL.sum(GERMINATING_QUANTITY) + DSL.sum(NOT_READY_QUANTITY))
-                .from(this)
-                .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                .and(ADDED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE)))
+                DSL.select(
+                        DSL.sum(READY_QUANTITY) +
+                            DSL.sum(GERMINATING_QUANTITY) +
+                            DSL.sum(NOT_READY_QUANTITY))
+                    .from(this)
+                    .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                    .and(ADDED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE)))
             .convertFrom { it.toInt() }
       }
 
