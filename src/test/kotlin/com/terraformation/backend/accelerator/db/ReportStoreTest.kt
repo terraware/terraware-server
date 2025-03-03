@@ -175,6 +175,35 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.Seedlings,
+          target = 1000,
+          modifiedTime = Instant.ofEpochSecond(2500),
+          modifiedBy = user.userId,
+      )
+
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.SeedsCollected,
+          target = 2000,
+          systemValue = 1800,
+          systemTime = Instant.ofEpochSecond(8000),
+          modifiedTime = Instant.ofEpochSecond(500),
+          modifiedBy = user.userId,
+      )
+
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.TreesPlanted,
+          target = 600,
+          systemValue = 300,
+          systemTime = Instant.ofEpochSecond(7000),
+          overrideValue = 250,
+          modifiedTime = Instant.ofEpochSecond(700),
+          modifiedBy = user.userId,
+      )
+
       val reportModel =
           ReportModel(
               id = reportId,
@@ -264,31 +293,43 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           metric = SystemMetric.SeedsCollected,
                           entry =
                               ReportSystemMetricEntryModel(
-                                  systemValue = 3,
+                                  target = 2000,
+                                  systemValue = 1800,
+                                  systemTime = Instant.ofEpochSecond(8000),
+                                  modifiedTime = Instant.ofEpochSecond(500),
+                                  modifiedBy = user.userId,
                               )),
                       ReportSystemMetricModel(
                           metric = SystemMetric.Seedlings,
                           entry =
                               ReportSystemMetricEntryModel(
-                                  systemValue = 2,
+                                  target = 1000,
+                                  systemValue = -2,
+                                  modifiedTime = Instant.ofEpochSecond(2500),
+                                  modifiedBy = user.userId,
                               )),
                       ReportSystemMetricModel(
                           metric = SystemMetric.TreesPlanted,
                           entry =
                               ReportSystemMetricEntryModel(
-                                  systemValue = 5,
+                                  target = 600,
+                                  systemValue = 300,
+                                  systemTime = Instant.ofEpochSecond(7000),
+                                  overrideValue = 250,
+                                  modifiedTime = Instant.ofEpochSecond(700),
+                                  modifiedBy = user.userId,
                               )),
                       ReportSystemMetricModel(
                           metric = SystemMetric.SpeciesPlanted,
                           entry =
                               ReportSystemMetricEntryModel(
-                                  systemValue = 4,
+                                  systemValue = -4,
                               )),
                       ReportSystemMetricModel(
                           metric = SystemMetric.MortalityRate,
                           entry =
                               ReportSystemMetricEntryModel(
-                                  systemValue = 1,
+                                  systemValue = -1,
                               )),
                   ))
 
