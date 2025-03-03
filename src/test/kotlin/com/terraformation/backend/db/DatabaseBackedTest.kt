@@ -2812,17 +2812,17 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertReportSystemMetric(
-    row: ReportSystemMetricsRow = ReportSystemMetricsRow(),
-    reportId: ReportId = row.reportId ?: inserted.reportId,
-    metric: SystemMetric = row.systemMetricId ?: SystemMetric.SeedsCollected,
-    target: Int? = row.target,
-    systemValue: Int? = row.systemValue,
-    systemTime: Instant? = row.systemTime,
-    overrideValue: Int? = row.overrideValue,
-    notes: String? = row.notes,
-    internalComment: String? = row.internalComment,
-    modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
-    modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
+      row: ReportSystemMetricsRow = ReportSystemMetricsRow(),
+      reportId: ReportId = row.reportId ?: inserted.reportId,
+      metric: SystemMetric = row.systemMetricId ?: SystemMetric.SeedsCollected,
+      target: Int? = row.target,
+      systemValue: Int? = row.systemValue,
+      systemTime: Instant? = row.systemTime,
+      overrideValue: Int? = row.overrideValue,
+      notes: String? = row.notes,
+      internalComment: String? = row.internalComment,
+      modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
+      modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
     val rowWithDefaults =
         row.copy(
