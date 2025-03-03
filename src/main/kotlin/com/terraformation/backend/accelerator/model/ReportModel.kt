@@ -29,8 +29,9 @@ data class ReportModel(
     val modifiedTime: Instant,
     val submittedBy: UserId? = null,
     val submittedTime: Instant? = null,
-    val standardMetrics: List<ReportStandardMetricModel> = emptyList(),
     val projectMetrics: List<ReportProjectMetricModel> = emptyList(),
+    val standardMetrics: List<ReportStandardMetricModel> = emptyList(),
+    val systemMetrics: List<ReportSystemMetricModel> = emptyList(),
 ) {
   fun validateForSubmission() {
     if (status != ReportStatus.NotSubmitted) {
@@ -96,8 +97,9 @@ data class ReportModel(
 
     fun of(
         record: Record,
-        standardMetricsField: Field<List<ReportStandardMetricModel>>?,
         projectMetricsField: Field<List<ReportProjectMetricModel>>?,
+        standardMetricsField: Field<List<ReportStandardMetricModel>>?,
+        systemMetricsField: Field<List<ReportSystemMetricModel>>?,
     ): ReportModel {
       return with(REPORTS) {
         ReportModel(
@@ -120,8 +122,9 @@ data class ReportModel(
             modifiedTime = record[MODIFIED_TIME]!!,
             submittedBy = record[SUBMITTED_BY],
             submittedTime = record[SUBMITTED_TIME],
-            standardMetrics = standardMetricsField?.let { record[it] } ?: emptyList(),
             projectMetrics = projectMetricsField?.let { record[it] } ?: emptyList(),
+            standardMetrics = standardMetricsField?.let { record[it] } ?: emptyList(),
+            systemMetrics = systemMetricsField?.let { record[it] } ?: emptyList(),
         )
       }
     }

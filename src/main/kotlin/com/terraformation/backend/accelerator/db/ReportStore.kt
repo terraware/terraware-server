@@ -299,13 +299,6 @@ class ReportStore(
       condition: Condition,
       includeMetrics: Boolean = false
   ): List<ReportModel> {
-    val standardMetricsField =
-        if (includeMetrics) {
-          standardMetricsMultiset
-        } else {
-          null
-        }
-
     val projectMetricsField =
         if (includeMetrics) {
           projectMetricsMultiset
@@ -313,11 +306,32 @@ class ReportStore(
           null
         }
 
+    val standardMetricsField =
+        if (includeMetrics) {
+          standardMetricsMultiset
+        } else {
+          null
+        }
+
+    val systemMetricsField =
+        if (includeMetrics) {
+          systemMetricsMultiset
+        } else {
+          null
+        }
+
     return dslContext
-        .select(REPORTS.asterisk(), standardMetricsField, projectMetricsField)
+        .select(REPORTS.asterisk(), projectMetricsField, standardMetricsField, systemMetricsField)
         .from(REPORTS)
         .where(condition)
-        .fetch { ReportModel.of(it, standardMetricsField, projectMetricsField) }
+        .fetch {
+          ReportModel.of(
+              record = it,
+              projectMetricsField = projectMetricsField,
+              standardMetricsField = standardMetricsField,
+              systemMetricsField = systemMetricsField,
+          )
+        }
         .filter { currentUser().canReadReport(it.id) }
   }
 
