@@ -6,12 +6,14 @@ import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.FunderEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
 import com.terraformation.backend.funder.FundingEntityService
 import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.funder.model.FundingEntityModel
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @FunderEndpoint
@@ -34,9 +37,13 @@ class FundingEntitiesController(
   @GetMapping("/{fundingEntityId}")
   @Operation(summary = "Gets information about a funding entity")
   fun getFundingEntity(
-      @PathVariable fundingEntityId: FundingEntityId
+      @PathVariable fundingEntityId: FundingEntityId,
+      @RequestParam("depth", defaultValue = "FundingEntity")
+      @Schema(
+          description = "Return this level of  information about the funding entity's contents.")
+      depth: FundingEntityStore.FetchDepth,
   ): GetFundingEntityResponsePayload {
-    val model = fundingEntityStore.fetchOneById(fundingEntityId)
+    val model = fundingEntityStore.fetchOneById(fundingEntityId, depth)
     return GetFundingEntityResponsePayload(
         FundingEntityPayload(model),
     )
@@ -47,7 +54,7 @@ class FundingEntitiesController(
   fun createFundingEntity(
       @RequestBody @Valid payload: CreateFundingEntityRequestPayload
   ): GetFundingEntityResponsePayload {
-    val model = fundingEntityStore.create(payload.name)
+    val model = fundingEntityService.create(payload.name, payload.projects)
 
     return GetFundingEntityResponsePayload(FundingEntityPayload(model))
   }
@@ -58,7 +65,7 @@ class FundingEntitiesController(
       @PathVariable("fundingEntityId") fundingEntityId: FundingEntityId,
       @RequestBody @Valid payload: UpdateFundingEntityRequestPayload
   ): SimpleSuccessResponsePayload {
-    fundingEntityStore.update(payload.toRow().copy(id = fundingEntityId))
+    fundingEntityService.update(payload.toRow().copy(id = fundingEntityId))
     return SimpleSuccessResponsePayload()
   }
 
@@ -85,7 +92,10 @@ data class FundingEntityPayload(
 data class GetFundingEntityResponsePayload(val fundingEntity: FundingEntityPayload) :
     SuccessResponsePayload
 
-data class CreateFundingEntityRequestPayload(val name: String) {}
+data class CreateFundingEntityRequestPayload(
+    val name: String,
+    val projects: Set<ProjectId>? = null,
+)
 
 data class UpdateFundingEntityRequestPayload(val name: String) {
   fun toRow(): FundingEntitiesRow {

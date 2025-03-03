@@ -273,7 +273,9 @@ import com.terraformation.backend.db.docprod.tables.pojos.VariableWorkflowHistor
 import com.terraformation.backend.db.docprod.tables.pojos.VariablesRow
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.daos.FundingEntitiesDao
+import com.terraformation.backend.db.funder.tables.daos.FundingEntityProjectsDao
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
+import com.terraformation.backend.db.funder.tables.pojos.FundingEntityProjectsRow
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
@@ -551,6 +553,7 @@ abstract class DatabaseBackedTest {
   protected val facilitiesDao: FacilitiesDao by lazyDao()
   protected val filesDao: FilesDao by lazyDao()
   protected val fundingEntitiesDao: FundingEntitiesDao by lazyDao()
+  protected val fundingEntityProjectsDao: FundingEntityProjectsDao by lazyDao()
   protected val geolocationsDao: GeolocationsDao by lazyDao()
   protected val identifierSequencesDao: IdentifierSequencesDao by lazyDao()
   protected val internalTagsDao: InternalTagsDao by lazyDao()
@@ -3782,6 +3785,14 @@ abstract class DatabaseBackedTest {
     fundingEntitiesDao.insert(row)
 
     return row.id!!.also { inserted.fundingEntitiesIds.add(it) }
+  }
+
+  protected fun insertFundingEntityProject(
+      fundingEntityId: FundingEntityId,
+      projectId: ProjectId,
+  ) {
+    fundingEntityProjectsDao.insert(
+        FundingEntityProjectsRow(fundingEntityId = fundingEntityId, projectId = projectId))
   }
 
   protected fun setupStableIdVariables(): Map<StableId, VariableId> {

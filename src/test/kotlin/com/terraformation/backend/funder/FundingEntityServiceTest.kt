@@ -1,11 +1,16 @@
 package com.terraformation.backend.funder
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.funder.FundingEntityId
+import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
+import com.terraformation.backend.funder.db.FundingEntityExistsException
+import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.mockUser
 import io.mockk.every
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -15,16 +20,132 @@ import org.springframework.security.access.AccessDeniedException
 class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
+  private val clock = TestClock()
+  private lateinit var fundingEntityStore: FundingEntityStore
   private lateinit var fundingEntityId: FundingEntityId
   private lateinit var service: FundingEntityService
 
   @BeforeEach
   fun setUp() {
-    service = FundingEntityService(dslContext)
+    fundingEntityStore = FundingEntityStore(dslContext)
+    service = FundingEntityService(clock, dslContext, fundingEntityStore)
 
     fundingEntityId = insertFundingEntity()
 
+    every { user.canReadFundingEntities() } returns true
     every { user.canManageFundingEntities() } returns true
+  }
+
+  @Test
+  fun `create requires user to be able to manage funding entities`() {
+    every { user.canManageFundingEntities() } returns false
+
+    assertThrows<AccessDeniedException> { service.create("Some Other Entity") }
+  }
+
+  @Test
+  fun `create populates created and modified fields`() {
+    val newTime = clock.instant().plusSeconds(1000)
+    clock.instant = newTime
+
+    val newUserId = insertUser()
+
+    val name = "New Funding Entity"
+    val row = FundingEntitiesRow(name = name)
+
+    every { user.userId } returns newUserId
+
+    val createdModel = service.create(row.name!!)
+
+    val expected =
+        row.copy(
+            createdBy = user.userId,
+            createdTime = clock.instant(),
+            id = createdModel.id,
+            modifiedBy = newUserId,
+            modifiedTime = clock.instant(),
+            name = name,
+        )
+    // retrieving both row and model to check createdBy/modifiedBy as well as projects
+    val actualRow = fundingEntitiesDao.fetchOneById(createdModel.id)!!
+    val actualModel =
+        fundingEntityStore.fetchOneById(createdModel.id, FundingEntityStore.FetchDepth.Project)
+
+    assertEquals(expected, actualRow)
+    assertEquals(0, actualModel.projects!!.size)
+  }
+
+  @Test
+  fun `create rejects duplicates by name`() {
+    assertThrows<FundingEntityExistsException> { service.create("TestFundingEntity") }
+  }
+
+  @Test
+  fun `create adds project rows`() {
+    insertOrganization()
+    val projectId1 = insertProject()
+    val projectId2 = insertProject()
+    val projectSet = setOf(projectId1, projectId2)
+
+    val inserted = service.create("New Funding Entity with Projects", projectSet)
+
+    val actual = fundingEntityStore.fetchOneById(inserted.id, FundingEntityStore.FetchDepth.Project)
+
+    assertEquals(2, actual.projects!!.size)
+    assertEquals(projectSet, actual.projects!!.map { it.id }.toSet())
+  }
+
+  @Test
+  fun `update throws exception when no id attached`() {
+    assertThrows<IllegalArgumentException> {
+      service.update(FundingEntitiesRow(name = "Funding Entity without Id"))
+    }
+  }
+
+  @Test
+  fun `update throws exception if user has no permission to manage funding entities`() {
+    every { user.canManageFundingEntities() } returns false
+
+    assertThrows<AccessDeniedException> {
+      service.update(FundingEntitiesRow(id = fundingEntityId, name = "Updated Funding Entity"))
+    }
+  }
+
+  @Test
+  fun `update throws exception when name conflict`() {
+    insertFundingEntity("Existing Funding Entity")
+
+    assertThrows<FundingEntityExistsException> {
+      service.update(FundingEntitiesRow(id = fundingEntityId, name = "Existing Funding Entity"))
+    }
+  }
+
+  @Test
+  fun `update populates modified by fields`() {
+    val newTime = clock.instant().plusSeconds(1000)
+    clock.instant = newTime
+
+    val newUserId = insertUser()
+
+    val updates =
+        FundingEntitiesRow(
+            id = fundingEntityId,
+            name = "New Name",
+        )
+    val expected =
+        updates.copy(
+            createdBy = user.userId,
+            createdTime = Instant.EPOCH,
+            modifiedBy = newUserId,
+            modifiedTime = newTime,
+        )
+
+    every { user.userId } returns newUserId
+
+    service.update(updates)
+
+    val actual = fundingEntitiesDao.fetchOneById(fundingEntityId)!!
+    assertEquals(expected, actual)
   }
 
   @Test

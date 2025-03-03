@@ -1,17 +1,89 @@
 package com.terraformation.backend.funder
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.funder.FundingEntityId
+import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITIES
+import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
+import com.terraformation.backend.funder.db.FundingEntityExistsException
+import com.terraformation.backend.funder.db.FundingEntityStore
+import com.terraformation.backend.funder.model.FundingEntityModel
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
+import java.time.InstantSource
 import org.jooq.DSLContext
+import org.springframework.dao.DuplicateKeyException
 
 @Named
 class FundingEntityService(
+    private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val fundingEntityStore: FundingEntityStore,
 ) {
   private val log = perClassLogger()
+
+  fun create(name: String, projects: Set<ProjectId>? = null): FundingEntityModel {
+    requirePermissions { manageFundingEntities() }
+
+    val userId = currentUser().userId
+    val now = clock.instant()
+
+    return dslContext.transactionResult { _ ->
+      val fundingEntityId =
+          with(FUNDING_ENTITIES) {
+            dslContext
+                .insertInto(FUNDING_ENTITIES)
+                .set(NAME, name)
+                .set(CREATED_BY, userId)
+                .set(CREATED_TIME, now)
+                .set(MODIFIED_BY, userId)
+                .set(MODIFIED_TIME, now)
+                .onConflict(NAME)
+                .doNothing()
+                .returning(ID)
+                .fetchOne(ID) ?: throw FundingEntityExistsException(name)
+          }
+
+      for (projectId in projects.orEmpty()) {
+        with(FUNDING_ENTITY_PROJECTS) {
+          dslContext
+              .insertInto(FUNDING_ENTITY_PROJECTS)
+              .set(FUNDING_ENTITY_ID, fundingEntityId)
+              .set(PROJECT_ID, projectId)
+              .onConflict()
+              .doNothing()
+              .execute()
+        }
+      }
+
+      fundingEntityStore.fetchOneById(fundingEntityId)
+    }
+  }
+
+  fun update(row: FundingEntitiesRow) {
+    val fundingEntityId = row.id ?: throw IllegalArgumentException("Funding Entity ID must be set")
+
+    requirePermissions { manageFundingEntities() }
+
+    val userId = currentUser().userId
+    val now = clock.instant()
+
+    try {
+      with(FUNDING_ENTITIES) {
+        dslContext
+            .update(FUNDING_ENTITIES)
+            .set(NAME, row.name)
+            .set(MODIFIED_BY, userId)
+            .set(MODIFIED_TIME, now)
+            .where(ID.eq(fundingEntityId))
+            .execute()
+      }
+    } catch (e: DuplicateKeyException) {
+      throw FundingEntityExistsException(row.name!!)
+    }
+  }
 
   fun deleteFundingEntity(fundingEntityId: FundingEntityId) {
     requirePermissions { manageFundingEntities() }
