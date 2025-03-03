@@ -19,7 +19,15 @@ CREATE TABLE accelerator.report_system_metrics(
     modified_by BIGINT NOT NULL REFERENCES users,
     modified_time TIMESTAMP WITH TIME ZONE NOT NULL,
 
-    PRIMARY KEY (report_id, system_metric_id)
+    PRIMARY KEY (report_id, system_metric_id),
+
+    CONSTRAINT system_time CHECK ((
+        system_value IS NULL AND
+        system_time IS NULL
+    ) OR (
+        system_value IS NOT NULL AND
+        system_time IS NOT NULL
+    ))
 );
 
 CREATE INDEX ON accelerator.report_system_metrics(system_metric_id);
