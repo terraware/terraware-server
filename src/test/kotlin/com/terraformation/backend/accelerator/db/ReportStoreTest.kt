@@ -32,6 +32,10 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.seedbank.AccessionState
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
+import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.time.Month
@@ -108,7 +112,48 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `includes current metrics for Not Submitted, and recorded metrics for Submitted`() {
+    fun `includes metrics`() {
+      val configId = insertProjectReportConfig()
+      val reportId = insertReport(status = ReportStatus.NotSubmitted)
+
+      val projectMetricId =
+          insertProjectMetric(
+              component = MetricComponent.ProjectObjectives,
+              description = "Project Metric description",
+              name = "Project Metric Name",
+              reference = "2.0",
+              type = MetricType.Activity,
+          )
+
+      insertReportProjectMetric(
+          reportId = reportId,
+          metricId = projectMetricId,
+          target = 100,
+          modifiedTime = Instant.ofEpochSecond(1500),
+          modifiedBy = user.userId,
+      )
+
+      val projectMetrics =
+          listOf(
+              ReportProjectMetricModel(
+                  metric =
+                      ProjectMetricModel(
+                          id = projectMetricId,
+                          projectId = projectId,
+                          component = MetricComponent.ProjectObjectives,
+                          description = "Project Metric description",
+                          name = "Project Metric Name",
+                          reference = "2.0",
+                          type = MetricType.Activity,
+                      ),
+                  entry =
+                      ReportMetricEntryModel(
+                          target = 100,
+                          modifiedTime = Instant.ofEpochSecond(1500),
+                          modifiedBy = user.userId,
+                      )),
+          )
+
       val standardMetricId1 =
           insertStandardMetric(
               component = MetricComponent.Climate,
@@ -136,18 +181,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = MetricType.Impact,
           )
 
-      val projectMetricId =
-          insertProjectMetric(
-              component = MetricComponent.ProjectObjectives,
-              description = "Project Metric description",
-              name = "Project Metric Name",
-              reference = "2.0",
-              type = MetricType.Activity,
-          )
-
-      val configId = insertProjectReportConfig()
-      val reportId = insertReport(status = ReportStatus.NotSubmitted)
-
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId1,
@@ -167,13 +200,57 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertReportProjectMetric(
-          reportId = reportId,
-          metricId = projectMetricId,
-          target = 100,
-          modifiedTime = Instant.ofEpochSecond(1500),
-          modifiedBy = user.userId,
-      )
+      val standardMetrics =
+          listOf(
+              // ordered by reference
+              ReportStandardMetricModel(
+                  metric =
+                      StandardMetricModel(
+                          id = standardMetricId3,
+                          component = MetricComponent.ProjectObjectives,
+                          description = "Project objectives metric description",
+                          name = "Project Objectives Metric",
+                          reference = "2.0",
+                          type = MetricType.Impact,
+                      ),
+                  // all fields are null because no target/value have been set yet
+                  entry = ReportMetricEntryModel()),
+              ReportStandardMetricModel(
+                  metric =
+                      StandardMetricModel(
+                          id = standardMetricId1,
+                          component = MetricComponent.Climate,
+                          description = "Climate standard metric description",
+                          name = "Climate Standard Metric",
+                          reference = "2.1",
+                          type = MetricType.Activity,
+                      ),
+                  entry =
+                      ReportMetricEntryModel(
+                          target = 55,
+                          value = 45,
+                          notes = "Almost at target",
+                          internalComment = "Not quite there yet",
+                          modifiedTime = Instant.ofEpochSecond(3000),
+                          modifiedBy = user.userId,
+                      )),
+              ReportStandardMetricModel(
+                  metric =
+                      StandardMetricModel(
+                          id = standardMetricId2,
+                          component = MetricComponent.Community,
+                          description = "Community metric description",
+                          name = "Community Metric",
+                          reference = "10.0",
+                          type = MetricType.Outcome,
+                      ),
+                  entry =
+                      ReportMetricEntryModel(
+                          target = 25,
+                          modifiedTime = Instant.ofEpochSecond(1500),
+                          modifiedBy = user.userId,
+                      )),
+          )
 
       insertReportSystemMetric(
           reportId = reportId,
@@ -204,6 +281,53 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
+      // These are ordered by reference.
+      val systemMetrics =
+          listOf(
+              ReportSystemMetricModel(
+                  metric = SystemMetric.SeedsCollected,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          target = 2000,
+                          systemValue = 1800,
+                          systemTime = Instant.ofEpochSecond(8000),
+                          modifiedTime = Instant.ofEpochSecond(500),
+                          modifiedBy = user.userId,
+                      )),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.Seedlings,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          target = 1000,
+                          systemValue = -2,
+                          modifiedTime = Instant.ofEpochSecond(2500),
+                          modifiedBy = user.userId,
+                      )),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.TreesPlanted,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          target = 600,
+                          systemValue = 300,
+                          systemTime = Instant.ofEpochSecond(7000),
+                          overrideValue = 250,
+                          modifiedTime = Instant.ofEpochSecond(700),
+                          modifiedBy = user.userId,
+                      )),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.SpeciesPlanted,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          systemValue = -4,
+                      )),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.MortalityRate,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          systemValue = -1,
+                      )),
+          )
+
       val reportModel =
           ReportModel(
               id = reportId,
@@ -216,124 +340,107 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
               modifiedTime = Instant.EPOCH,
-              projectMetrics =
-                  listOf(
-                      ReportProjectMetricModel(
-                          metric =
-                              ProjectMetricModel(
-                                  id = projectMetricId,
-                                  projectId = projectId,
-                                  component = MetricComponent.ProjectObjectives,
-                                  description = "Project Metric description",
-                                  name = "Project Metric Name",
-                                  reference = "2.0",
-                                  type = MetricType.Activity,
-                              ),
-                          entry =
-                              ReportMetricEntryModel(
-                                  target = 100,
-                                  modifiedTime = Instant.ofEpochSecond(1500),
-                                  modifiedBy = user.userId,
-                              )),
-                  ),
-              standardMetrics =
-                  listOf(
-                      // ordered by reference
-                      ReportStandardMetricModel(
-                          metric =
-                              StandardMetricModel(
-                                  id = standardMetricId3,
-                                  component = MetricComponent.ProjectObjectives,
-                                  description = "Project objectives metric description",
-                                  name = "Project Objectives Metric",
-                                  reference = "2.0",
-                                  type = MetricType.Impact,
-                              ),
-                          // all fields are null because no target/value have been set yet
-                          entry = ReportMetricEntryModel()),
-                      ReportStandardMetricModel(
-                          metric =
-                              StandardMetricModel(
-                                  id = standardMetricId1,
-                                  component = MetricComponent.Climate,
-                                  description = "Climate standard metric description",
-                                  name = "Climate Standard Metric",
-                                  reference = "2.1",
-                                  type = MetricType.Activity,
-                              ),
-                          entry =
-                              ReportMetricEntryModel(
-                                  target = 55,
-                                  value = 45,
-                                  notes = "Almost at target",
-                                  internalComment = "Not quite there yet",
-                                  modifiedTime = Instant.ofEpochSecond(3000),
-                                  modifiedBy = user.userId,
-                              )),
-                      ReportStandardMetricModel(
-                          metric =
-                              StandardMetricModel(
-                                  id = standardMetricId2,
-                                  component = MetricComponent.Community,
-                                  description = "Community metric description",
-                                  name = "Community Metric",
-                                  reference = "10.0",
-                                  type = MetricType.Outcome,
-                              ),
-                          entry =
-                              ReportMetricEntryModel(
-                                  target = 25,
-                                  modifiedTime = Instant.ofEpochSecond(1500),
-                                  modifiedBy = user.userId,
-                              )),
-                  ),
-              systemMetrics =
-                  listOf(
-                      ReportSystemMetricModel(
-                          metric = SystemMetric.SeedsCollected,
-                          entry =
-                              ReportSystemMetricEntryModel(
-                                  target = 2000,
-                                  systemValue = 1800,
-                                  systemTime = Instant.ofEpochSecond(8000),
-                                  modifiedTime = Instant.ofEpochSecond(500),
-                                  modifiedBy = user.userId,
-                              )),
-                      ReportSystemMetricModel(
-                          metric = SystemMetric.Seedlings,
-                          entry =
-                              ReportSystemMetricEntryModel(
-                                  target = 1000,
-                                  systemValue = -2,
-                                  modifiedTime = Instant.ofEpochSecond(2500),
-                                  modifiedBy = user.userId,
-                              )),
-                      ReportSystemMetricModel(
-                          metric = SystemMetric.TreesPlanted,
-                          entry =
-                              ReportSystemMetricEntryModel(
-                                  target = 600,
-                                  systemValue = 300,
-                                  systemTime = Instant.ofEpochSecond(7000),
-                                  overrideValue = 250,
-                                  modifiedTime = Instant.ofEpochSecond(700),
-                                  modifiedBy = user.userId,
-                              )),
-                      ReportSystemMetricModel(
-                          metric = SystemMetric.SpeciesPlanted,
-                          entry =
-                              ReportSystemMetricEntryModel(
-                                  systemValue = -4,
-                              )),
-                      ReportSystemMetricModel(
-                          metric = SystemMetric.MortalityRate,
-                          entry =
-                              ReportSystemMetricEntryModel(
-                                  systemValue = -1,
-                              )),
-                  ))
+              projectMetrics = projectMetrics,
+              standardMetrics = standardMetrics,
+              systemMetrics = systemMetrics)
 
       assertEquals(listOf(reportModel), store.fetch(includeMetrics = true))
+    }
+
+    @Test
+    fun `returns stored system metric values or live query data`() {
+      insertProjectReportConfig()
+      insertReport(
+          status = ReportStatus.NotSubmitted,
+          startDate = LocalDate.of(2025, Month.JANUARY, 1),
+          endDate = LocalDate.of(2025, Month.MARCH, 31))
+
+      val facilityId = insertFacility()
+
+      listOf(
+              AccessionsRow(
+                  facilityId = facilityId,
+                  projectId = projectId,
+                  collectedDate = LocalDate.of(2025, Month.JANUARY, 11),
+                  estSeedCount = 25,
+                  remainingQuantity = BigDecimal(25),
+                  remainingUnitsId = SeedQuantityUnits.Seeds,
+                  stateId = AccessionState.Processing,
+              ),
+              // Used-up accession
+              AccessionsRow(
+                  facilityId = facilityId,
+                  projectId = projectId,
+                  collectedDate = LocalDate.of(2025, Month.FEBRUARY, 21),
+                  estSeedCount = 0,
+                  remainingQuantity = BigDecimal(0),
+                  remainingUnitsId = SeedQuantityUnits.Seeds,
+                  stateId = AccessionState.UsedUp,
+                  totalWithdrawnCount = 35),
+              // Weight-based accession
+              AccessionsRow(
+                  facilityId = facilityId,
+                  projectId = projectId,
+                  collectedDate = LocalDate.of(2025, Month.MARCH, 17),
+                  estSeedCount = 32,
+                  remainingGrams = BigDecimal(32),
+                  remainingQuantity = BigDecimal(32),
+                  remainingUnitsId = SeedQuantityUnits.Grams,
+                  stateId = AccessionState.Processing,
+                  subsetCount = 10,
+                  subsetWeightGrams = BigDecimal(10),
+                  totalWithdrawnCount = 6,
+                  totalWithdrawnWeightGrams = BigDecimal(6),
+                  totalWithdrawnWeightUnitsId = SeedQuantityUnits.Grams,
+                  totalWithdrawnWeightQuantity = BigDecimal(6),
+              ),
+              // Outside of report date range
+              AccessionsRow(
+                  facilityId = facilityId,
+                  projectId = projectId,
+                  collectedDate = LocalDate.of(2024, Month.DECEMBER, 25),
+                  estSeedCount = 2500,
+                  remainingQuantity = BigDecimal(2500),
+                  remainingUnitsId = SeedQuantityUnits.Seeds,
+                  stateId = AccessionState.Processing,
+              ),
+          )
+          .forEach { insertAccession(it) }
+
+      assertEquals(
+          listOf(
+              ReportSystemMetricModel(
+                  metric = SystemMetric.SeedsCollected,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          systemValue = 98,
+                      )),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.Seedlings,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          systemValue = -2,
+                      )),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.TreesPlanted,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          systemValue = -5,
+                      )),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.SpeciesPlanted,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          systemValue = -4,
+                      )),
+              ReportSystemMetricModel(
+                  metric = SystemMetric.MortalityRate,
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          systemValue = -1,
+                      )),
+          ),
+          store.fetch(includeFuture = true, includeMetrics = true).first().systemMetrics)
     }
 
     @Test
