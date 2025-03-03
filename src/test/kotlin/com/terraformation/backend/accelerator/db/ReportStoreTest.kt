@@ -348,7 +348,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns stored system metric values or live query data`() {
+    fun `queries Terraware data for system metrics`() {
       insertProjectReportConfig()
       insertReport(
           status = ReportStatus.NotSubmitted,
