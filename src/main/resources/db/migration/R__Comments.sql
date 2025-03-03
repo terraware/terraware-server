@@ -620,7 +620,7 @@ COMMENT ON TABLE accelerator.report_statuses IS '(Enum) Statuses of accelerator 
 
 COMMENT ON TABLE accelerator.report_system_metrics IS 'Report entries of targets and values for system metrics.';
 COMMENT ON COLUMN accelerator.report_system_metrics.override_value IS 'Value inputted by accelerator admin to override system value. Null for no overrides.';
-COMMENT ON COLUMN accelerator.report_system_metrics.system_time IS 'System value recorded time. If null, the value is not recorded yet and a live query of Terraware data should be use instead.';
+COMMENT ON COLUMN accelerator.report_system_metrics.system_time IS 'System value recorded time. If null, the value is not recorded yet and a live query of Terraware data should be used instead.';
 COMMENT ON COLUMN accelerator.report_system_metrics.system_value IS 'Value collected via Terraware data. Null before value is submitted.';
 COMMENT ON TABLE accelerator.reports IS 'Accelerator project reports.';
 
