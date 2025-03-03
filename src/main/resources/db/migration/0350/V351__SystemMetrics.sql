@@ -12,6 +12,7 @@ CREATE TABLE accelerator.report_system_metrics(
     system_metric_id INTEGER NOT NULL REFERENCES accelerator.system_metrics,
     target INTEGER,
     system_value INTEGER,
+    system_time TIMESTAMP WITH TIME ZONE,
     override_value INTEGER,
     notes TEXT,
     internal_comment TEXT,
