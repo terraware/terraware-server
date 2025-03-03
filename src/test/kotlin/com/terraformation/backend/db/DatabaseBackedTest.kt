@@ -44,6 +44,7 @@ import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionSnapshotId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.keys.COHORTS_PKEY
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationHistoriesDao
@@ -72,6 +73,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.ProjectVoteDecision
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportProjectMetricsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportStandardMetricsDao
+import com.terraformation.backend.db.accelerator.tables.daos.ReportSystemMetricsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportsDao
 import com.terraformation.backend.db.accelerator.tables.daos.StandardMetricsDao
 import com.terraformation.backend.db.accelerator.tables.daos.SubmissionDocumentsDao
@@ -104,6 +106,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVoteDecisio
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportProjectMetricsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportStandardMetricsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ReportSystemMetricsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.StandardMetricsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionDocumentsRow
@@ -613,6 +616,7 @@ abstract class DatabaseBackedTest {
   protected val recordedTreesDao: RecordedTreesDao by lazyDao()
   protected val reportProjectMetricsDao: ReportProjectMetricsDao by lazyDao()
   protected val reportStandardMetricsDao: ReportStandardMetricsDao by lazyDao()
+  protected val reportSystemMetricsDao: ReportSystemMetricsDao by lazyDao()
   protected val reportsDao: ReportsDao by lazyDao()
   protected val seedFundReportFilesDao: SeedFundReportFilesDao by lazyDao()
   protected val seedFundReportPhotosDao: SeedFundReportPhotosDao by lazyDao()
@@ -2805,6 +2809,36 @@ abstract class DatabaseBackedTest {
         )
 
     reportStandardMetricsDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertReportSystemMetric(
+    row: ReportSystemMetricsRow = ReportSystemMetricsRow(),
+    reportId: ReportId = row.reportId ?: inserted.reportId,
+    metric: SystemMetric = row.systemMetricId ?: SystemMetric.SeedsCollected,
+    target: Int? = row.target,
+    systemValue: Int? = row.systemValue,
+    systemTime: Instant? = row.systemTime,
+    overrideValue: Int? = row.overrideValue,
+    notes: String? = row.notes,
+    internalComment: String? = row.internalComment,
+    modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
+    modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            reportId = reportId,
+            systemMetricId = metric,
+            target = target,
+            systemValue = systemValue,
+            systemTime = systemTime,
+            overrideValue = overrideValue,
+            notes = notes,
+            internalComment = internalComment,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+        )
+
+    reportSystemMetricsDao.insert(rowWithDefaults)
   }
 
   protected fun insertReport(

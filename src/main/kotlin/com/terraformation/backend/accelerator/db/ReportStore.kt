@@ -456,11 +456,11 @@ class ReportStore(
           REPORT_SYSTEM_METRICS.SYSTEM_VALUE,
           DSL.case_()
               // ToDo: Implement each system query
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.MortalityRate), 1)
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), 2)
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), 3)
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SpeciesPlanted), 4)
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.TreesPlanted), 5)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.MortalityRate), -1)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), -2)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), -3)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SpeciesPlanted), -4)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.TreesPlanted), -5)
               .else_(0))
 
   private val systemMetricsMultiset: Field<List<ReportSystemMetricModel>> =
