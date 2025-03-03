@@ -32,6 +32,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
@@ -299,7 +300,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   entry =
                       ReportSystemMetricEntryModel(
                           target = 1000,
-                          systemValue = -2,
+                          systemValue = 0,
                           modifiedTime = Instant.ofEpochSecond(2500),
                           modifiedBy = user.userId,
                       )),
@@ -420,6 +421,51 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
           .forEach { insertAccession(it) }
 
+      // Seedlings
+      insertSpecies()
+
+      listOf(
+              BatchesRow(
+                  facilityId = facilityId1,
+                  projectId = projectId,
+                  addedDate = LocalDate.of(2025, Month.JANUARY, 30),
+                  notReadyQuantity = 15,
+                  germinatingQuantity = 7,
+                  readyQuantity = 3,
+                  totalLost = 100,
+              ),
+              BatchesRow(
+                  facilityId = facilityId2,
+                  projectId = projectId,
+                  addedDate = LocalDate.of(2025, Month.FEBRUARY, 14),
+                  notReadyQuantity = 4,
+                  germinatingQuantity = 3,
+                  readyQuantity = 2,
+                  totalLost = 100,
+              ),
+              // Other project
+              BatchesRow(
+                  facilityId = facilityId1,
+                  projectId = otherProjectId,
+                  addedDate = LocalDate.of(2025, Month.MARCH, 6),
+                  notReadyQuantity = 100,
+                  germinatingQuantity = 100,
+                  readyQuantity = 100,
+                  totalLost = 100,
+              ),
+              // Outside of date range
+              BatchesRow(
+                  facilityId = facilityId2,
+                  projectId = projectId,
+                  addedDate = LocalDate.of(2024, Month.DECEMBER, 25),
+                  notReadyQuantity = 100,
+                  germinatingQuantity = 100,
+                  readyQuantity = 100,
+                  totalLost = 100,
+              ),
+          )
+          .forEach { insertBatch(it) }
+
       assertEquals(
           listOf(
               ReportSystemMetricModel(
@@ -432,7 +478,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   metric = SystemMetric.Seedlings,
                   entry =
                       ReportSystemMetricEntryModel(
-                          systemValue = -2,
+                          systemValue = 34,
                       )),
               ReportSystemMetricModel(
                   metric = SystemMetric.TreesPlanted,
