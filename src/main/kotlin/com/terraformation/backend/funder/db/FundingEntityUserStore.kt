@@ -13,7 +13,6 @@ class FundingEntityUserStore(private val dslContext: DSLContext) {
         .select(FUNDING_ENTITY_USERS.FUNDING_ENTITY_ID)
         .from(FUNDING_ENTITY_USERS)
         .where(FUNDING_ENTITY_USERS.USER_ID.eq(userId))
-        .fetchOne()
-        ?.getValue(FUNDING_ENTITY_USERS.FUNDING_ENTITY_ID)
+        .fetchOne(FUNDING_ENTITY_USERS.FUNDING_ENTITY_ID)
   }
 }

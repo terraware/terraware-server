@@ -22,7 +22,6 @@ import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
 import java.util.UUID
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -38,9 +37,6 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     FundingEntityService(clock, dslContext, fundingEntityStore, fundingEntityUserStore)
   }
 
-  private val fundingEntityId by lazy { insertFundingEntity() }
-  private lateinit var fundingEntityName: String
-
   @BeforeEach
   fun setUp() {
     insertOrganization()
@@ -50,9 +46,6 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canDeleteFundingEntities() } returns true
     every { user.canUpdateFundingEntities() } returns true
     every { user.canUpdateFundingEntityProjects() } returns true
-
-    // has to be after permissions in order to read correctly
-    fundingEntityName = fundingEntityStore.fetchOneById(fundingEntityId).name
   }
 
   @Test
@@ -64,15 +57,6 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create populates created and modified fields`() {
-    val initialRecord =
-        FundingEntitiesRecord(
-            createdBy = currentUser().userId,
-            createdTime = clock.instant(),
-            id = fundingEntityId,
-            modifiedBy = currentUser().userId,
-            modifiedTime = clock.instant(),
-            name = fundingEntityName,
-        )
     val newTime = clock.instant().plusSeconds(1000)
     clock.instant = newTime
 
@@ -84,22 +68,22 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     val createdModel = service.create(name)
 
     assertTableEquals(
-        listOf(
-            initialRecord,
-            FundingEntitiesRecord(
-                createdBy = user.userId,
-                createdTime = clock.instant(),
-                id = createdModel.id,
-                modifiedBy = newUserId,
-                modifiedTime = clock.instant(),
-                name = name,
-            )))
+        FundingEntitiesRecord(
+            createdBy = user.userId,
+            createdTime = clock.instant(),
+            id = createdModel.id,
+            modifiedBy = newUserId,
+            modifiedTime = clock.instant(),
+            name = name,
+        ))
     assertTableEmpty(FUNDING_ENTITY_PROJECTS)
   }
 
   @Test
   fun `create rejects duplicates by name`() {
-    assertThrows<FundingEntityExistsException> { service.create(fundingEntityName) }
+    val name = "Duplicate Name ${UUID.randomUUID()}"
+    insertFundingEntity(name)
+    assertThrows<FundingEntityExistsException> { service.create(name) }
   }
 
   @Test
@@ -128,6 +112,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update throws exception if user has no permission to manage funding entities`() {
+    val fundingEntityId = insertFundingEntity()
     every { user.canUpdateFundingEntities() } returns false
 
     assertThrows<AccessDeniedException> {
@@ -137,10 +122,11 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update throws exception when name conflict`() {
+    val firstEntityId = insertFundingEntity()
     insertFundingEntity("Existing Funding Entity")
 
     assertThrows<FundingEntityExistsException> {
-      service.update(FundingEntitiesRow(id = fundingEntityId, name = "Existing Funding Entity"))
+      service.update(FundingEntitiesRow(id = firstEntityId, name = "Existing Funding Entity"))
     }
   }
 
@@ -154,6 +140,8 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update populates modifiedBy fields`() {
+    val fundingEntityId = insertFundingEntity()
+
     val newTime = clock.instant().plusSeconds(1000)
     clock.instant = newTime
 
@@ -184,6 +172,9 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update correctly adds new projects`() {
+    val fundingEntityName = "Entity Name ${UUID.randomUUID()}"
+    val fundingEntityId = insertFundingEntity(fundingEntityName)
+
     val row = FundingEntitiesRow(id = fundingEntityId, name = fundingEntityName)
     val projectId1 = insertProject()
 
@@ -197,6 +188,9 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update correctly removes projects`() {
+    val fundingEntityName = "Entity Name ${UUID.randomUUID()}"
+    val fundingEntityId = insertFundingEntity(fundingEntityName)
+
     val row = FundingEntitiesRow(id = fundingEntityId, name = fundingEntityName)
     val projectId1 = insertProject()
     insertFundingEntityProject(fundingEntityId)
@@ -227,6 +221,9 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update correctly adds and removes projects`() {
+    val fundingEntityName = "Entity Name ${UUID.randomUUID()}"
+    val fundingEntityId = insertFundingEntity(fundingEntityName)
+
     val row = FundingEntitiesRow(id = fundingEntityId, name = fundingEntityName)
     val projectId1 = insertProject()
     insertFundingEntityProject(fundingEntityId)
@@ -263,6 +260,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `delete throws exception if user can't manage funding entities`() {
+    val fundingEntityId = insertFundingEntity()
     every { user.canDeleteFundingEntities() } returns false
 
     assertThrows<AccessDeniedException> { service.deleteFundingEntity(fundingEntityId) }
@@ -277,6 +275,8 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `delete successfully removes funding entity`() {
+    val fundingEntityId = insertFundingEntity()
+
     service.deleteFundingEntity(fundingEntityId)
 
     assertTableEmpty(FUNDING_ENTITIES)
@@ -289,18 +289,14 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `user deletion removes row from funding_entity_users table`() {
+    val fundingEntityId = insertFundingEntity()
+
     insertFundingEntityUser(fundingEntityId, currentUser().userId)
 
     val event = UserDeletionStartedEvent(currentUser().userId)
 
     service.on(event)
 
-    assertNull(
-        dslContext
-            .select(FUNDING_ENTITY_USERS.USER_ID)
-            .from(FUNDING_ENTITY_USERS)
-            .where(FUNDING_ENTITY_USERS.USER_ID.eq(currentUser().userId))
-            .and(FUNDING_ENTITY_USERS.FUNDING_ENTITY_ID.eq(fundingEntityId))
-            .fetchOne())
+    assertTableEmpty(FUNDING_ENTITY_USERS)
   }
 }
