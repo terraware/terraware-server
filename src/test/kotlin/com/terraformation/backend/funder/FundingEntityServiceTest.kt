@@ -9,6 +9,10 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
+import com.terraformation.backend.db.funder.tables.records.FundingEntitiesRecord
+import com.terraformation.backend.db.funder.tables.records.FundingEntityProjectsRecord
+import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITIES
+import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_USERS
 import com.terraformation.backend.funder.db.FundingEntityExistsException
 import com.terraformation.backend.funder.db.FundingEntityNotFoundException
@@ -17,7 +21,7 @@ import com.terraformation.backend.funder.db.FundingEntityUserStore
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.assertEquals
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -28,18 +32,17 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
   private val clock = TestClock()
-  private lateinit var fundingEntityStore: FundingEntityStore
-  private lateinit var fundingEntityUserStore: FundingEntityUserStore
-  private lateinit var fundingEntityId: FundingEntityId
-  private lateinit var service: FundingEntityService
+  private val fundingEntityStore by lazy { FundingEntityStore(dslContext) }
+  private val fundingEntityUserStore by lazy { FundingEntityUserStore(dslContext) }
+  private val service by lazy {
+    FundingEntityService(clock, dslContext, fundingEntityStore, fundingEntityUserStore)
+  }
+
+  private val fundingEntityId by lazy { insertFundingEntity() }
+  private lateinit var fundingEntityName: String
 
   @BeforeEach
   fun setUp() {
-    fundingEntityStore = FundingEntityStore(dslContext)
-    fundingEntityUserStore = FundingEntityUserStore(dslContext)
-    service = FundingEntityService(clock, dslContext, fundingEntityStore, fundingEntityUserStore)
-
-    fundingEntityId = insertFundingEntity()
     insertOrganization()
 
     every { user.canReadFundingEntities() } returns true
@@ -47,6 +50,9 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canDeleteFundingEntities() } returns true
     every { user.canUpdateFundingEntities() } returns true
     every { user.canUpdateFundingEntityProjects() } returns true
+
+    // has to be after permissions in order to read correctly
+    fundingEntityName = fundingEntityStore.fetchOneById(fundingEntityId).name
   }
 
   @Test
@@ -58,38 +64,42 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `create populates created and modified fields`() {
+    val initialRecord =
+        FundingEntitiesRecord(
+            createdBy = currentUser().userId,
+            createdTime = clock.instant(),
+            id = fundingEntityId,
+            modifiedBy = currentUser().userId,
+            modifiedTime = clock.instant(),
+            name = fundingEntityName,
+        )
     val newTime = clock.instant().plusSeconds(1000)
     clock.instant = newTime
 
     val newUserId = insertUser()
-
-    val name = "New Funding Entity"
-    val row = FundingEntitiesRow(name = name)
+    val name = "New Funding Entity ${UUID.randomUUID()}"
 
     every { user.userId } returns newUserId
 
-    val createdModel = service.create(row.name!!)
+    val createdModel = service.create(name)
 
-    val expected =
-        row.copy(
-            createdBy = user.userId,
-            createdTime = clock.instant(),
-            id = createdModel.id,
-            modifiedBy = newUserId,
-            modifiedTime = clock.instant(),
-            name = name,
-        )
-    // retrieving both row and model to check createdBy/modifiedBy as well as projects
-    val actualRow = fundingEntitiesDao.fetchOneById(createdModel.id)!!
-    val actualModel = fundingEntityStore.fetchOneById(createdModel.id)
-
-    assertEquals(expected, actualRow)
-    assertEquals(0, actualModel.projects!!.size)
+    assertTableEquals(
+        listOf(
+            initialRecord,
+            FundingEntitiesRecord(
+                createdBy = user.userId,
+                createdTime = clock.instant(),
+                id = createdModel.id,
+                modifiedBy = newUserId,
+                modifiedTime = clock.instant(),
+                name = name,
+            )))
+    assertTableEmpty(FUNDING_ENTITY_PROJECTS)
   }
 
   @Test
   fun `create rejects duplicates by name`() {
-    assertThrows<FundingEntityExistsException> { service.create("TestFundingEntity") }
+    assertThrows<FundingEntityExistsException> { service.create(fundingEntityName) }
   }
 
   @Test
@@ -99,12 +109,14 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     val projectId2 = insertProject()
     val projectSet = setOf(projectId1, projectId2)
 
-    val inserted = service.create("New Funding Entity with Projects", projectSet)
+    val inserted =
+        service.create("New Funding Entity with Projects ${UUID.randomUUID()}", projectSet)
 
-    val actual = fundingEntityStore.fetchOneById(inserted.id)
-
-    assertEquals(2, actual.projects!!.size)
-    assertEquals(projectSet, actual.projects!!.toSet())
+    assertTableEquals(
+        listOf(
+            FundingEntityProjectsRecord(fundingEntityId = inserted.id, projectId = projectId1),
+            FundingEntityProjectsRecord(fundingEntityId = inserted.id, projectId = projectId2),
+        ))
   }
 
   @Test
@@ -147,13 +159,16 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
     val newUserId = insertUser()
 
+    val newName = "New Name ${UUID.randomUUID()}"
     val updates =
         FundingEntitiesRow(
             id = fundingEntityId,
-            name = "New Name",
+            name = newName,
         )
     val expected =
-        updates.copy(
+        FundingEntitiesRecord(
+            id = fundingEntityId,
+            name = newName,
             createdBy = user.userId,
             createdTime = Instant.EPOCH,
             modifiedBy = newUserId,
@@ -164,58 +179,86 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
     service.update(updates)
 
-    val actual = fundingEntitiesDao.fetchOneById(fundingEntityId)!!
-    assertEquals(expected, actual)
+    assertTableEquals(expected)
   }
 
   @Test
   fun `update correctly adds new projects`() {
-    val row = FundingEntitiesRow(id = fundingEntityId, name = "TestFundingEntity")
+    val row = FundingEntitiesRow(id = fundingEntityId, name = fundingEntityName)
     val projectId1 = insertProject()
 
-    assertEquals(0, fundingEntityProjectsDao.fetchByFundingEntityId(fundingEntityId).size)
+    assertTableEmpty(FUNDING_ENTITY_PROJECTS)
 
     service.update(row, setOf(projectId1))
 
-    assertEquals(1, fundingEntityProjectsDao.fetchByFundingEntityId(fundingEntityId).size)
+    assertTableEquals(
+        FundingEntityProjectsRecord(fundingEntityId = fundingEntityId, projectId = projectId1))
   }
 
   @Test
   fun `update correctly removes projects`() {
-    val row = FundingEntitiesRow(id = fundingEntityId, name = "TestFundingEntity")
+    val row = FundingEntitiesRow(id = fundingEntityId, name = fundingEntityName)
     val projectId1 = insertProject()
+    insertFundingEntityProject(fundingEntityId)
     val projectId2 = insertProject()
-    insertFundingEntityProject(fundingEntityId, projectId1)
-    insertFundingEntityProject(fundingEntityId, projectId2)
+    insertFundingEntityProject(fundingEntityId)
 
-    assertEquals(2, fundingEntityProjectsDao.fetchByFundingEntityId(fundingEntityId).size)
+    assertTableEquals(
+        listOf(
+            FundingEntityProjectsRecord(
+                fundingEntityId = fundingEntityId,
+                projectId = projectId1,
+            ),
+            FundingEntityProjectsRecord(
+                fundingEntityId = fundingEntityId,
+                projectId = projectId2,
+            ),
+        ))
 
     service.update(row, emptySet(), setOf(projectId1))
 
-    val actual =
-        fundingEntityProjectsDao.fetchByFundingEntityId(fundingEntityId).map { it.projectId }
-    assertEquals(1, actual.size)
-    assertEquals(projectId2, actual.first())
+    assertTableEquals(
+        FundingEntityProjectsRecord(
+            fundingEntityId = fundingEntityId,
+            projectId = projectId2,
+        ),
+    )
   }
 
   @Test
   fun `update correctly adds and removes projects`() {
-    val row = FundingEntitiesRow(id = fundingEntityId, name = "TestFundingEntity")
+    val row = FundingEntitiesRow(id = fundingEntityId, name = fundingEntityName)
     val projectId1 = insertProject()
+    insertFundingEntityProject(fundingEntityId)
     val projectId2 = insertProject()
+    insertFundingEntityProject(fundingEntityId)
     val projectId3 = insertProject()
 
-    insertFundingEntityProject(fundingEntityId, projectId1)
-    insertFundingEntityProject(fundingEntityId, projectId2)
-
-    assertEquals(2, fundingEntityProjectsDao.fetchByFundingEntityId(fundingEntityId).size)
+    assertTableEquals(
+        listOf(
+            FundingEntityProjectsRecord(
+                fundingEntityId = fundingEntityId,
+                projectId = projectId1,
+            ),
+            FundingEntityProjectsRecord(
+                fundingEntityId = fundingEntityId,
+                projectId = projectId2,
+            ),
+        ))
 
     service.update(row, setOf(projectId3), setOf(projectId1))
 
-    val actual =
-        fundingEntityProjectsDao.fetchByFundingEntityId(fundingEntityId).map { it.projectId }
-    assertEquals(2, actual.size)
-    assertEquals(listOf(projectId2, projectId3), actual)
+    assertTableEquals(
+        listOf(
+            FundingEntityProjectsRecord(
+                fundingEntityId = fundingEntityId,
+                projectId = projectId3,
+            ),
+            FundingEntityProjectsRecord(
+                fundingEntityId = fundingEntityId,
+                projectId = projectId2,
+            ),
+        ))
   }
 
   @Test
@@ -236,7 +279,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
   fun `delete successfully removes funding entity`() {
     service.deleteFundingEntity(fundingEntityId)
 
-    assertEquals(0, fundingEntitiesDao.findAll().size)
+    assertTableEmpty(FUNDING_ENTITIES)
   }
 
   @Test

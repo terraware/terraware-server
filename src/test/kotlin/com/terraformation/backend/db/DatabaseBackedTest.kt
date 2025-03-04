@@ -3770,7 +3770,7 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertFundingEntity(
-      name: String = "TestFundingEntity",
+      name: String = "TestFundingEntity ${UUID.randomUUID()}",
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       modifiedBy: UserId = currentUser().userId,
@@ -3787,20 +3787,20 @@ abstract class DatabaseBackedTest {
 
     fundingEntitiesDao.insert(row)
 
-    return row.id!!.also { inserted.fundingEntitiesIds.add(it) }
+    return row.id!!.also { inserted.fundingEntityIds.add(it) }
   }
 
   protected fun insertFundingEntityProject(
-      fundingEntityId: FundingEntityId,
-      projectId: ProjectId,
+      fundingEntityId: FundingEntityId = inserted.fundingEntityId,
+      projectId: ProjectId = inserted.projectId,
   ) {
     fundingEntityProjectsDao.insert(
         FundingEntityProjectsRow(fundingEntityId = fundingEntityId, projectId = projectId))
   }
 
   protected fun insertFundingEntityUser(
-      fundingEntityId: FundingEntityId,
-      userId: UserId,
+      fundingEntityId: FundingEntityId = inserted.fundingEntityId,
+      userId: UserId = inserted.userId,
   ) {
     fundingEntityUsersDao.insert(
         FundingEntityUsersRow(fundingEntityId = fundingEntityId, userId = userId))
@@ -3996,7 +3996,7 @@ abstract class DatabaseBackedTest {
     val eventIds = mutableListOf<EventId>()
     val facilityIds = mutableListOf<FacilityId>()
     val fileIds = mutableListOf<FileId>()
-    val fundingEntitiesIds = mutableListOf<FundingEntityId>()
+    val fundingEntityIds = mutableListOf<FundingEntityId>()
     val internalTagIds = mutableListOf<InternalTagId>()
     val moduleIds = mutableListOf<ModuleId>()
     val monitoringPlotHistoryIds = mutableListOf<MonitoringPlotHistoryId>()
@@ -4082,6 +4082,9 @@ abstract class DatabaseBackedTest {
 
     val fileId
       get() = fileIds.last()
+
+    val fundingEntityId
+      get() = fundingEntityIds.last()
 
     val internalTagId
       get() = internalTagIds.last()

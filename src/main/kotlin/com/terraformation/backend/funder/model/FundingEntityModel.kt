@@ -12,7 +12,7 @@ data class FundingEntityModel(
     val name: String,
     val createdTime: Instant,
     val modifiedTime: Instant,
-    val projects: List<ProjectId>? = emptyList(),
+    val projects: List<ProjectId> = emptyList(),
 ) {
   constructor(
       record: Record,

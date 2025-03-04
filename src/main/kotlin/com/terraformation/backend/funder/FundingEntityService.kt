@@ -111,17 +111,18 @@ class FundingEntityService(
     }
   }
 
-  private fun removeProjectsFromEntity(fundingEntityId: FundingEntityId, projects: Set<ProjectId>) {
+  private fun removeProjectsFromEntity(
+      fundingEntityId: FundingEntityId,
+      projectIds: Set<ProjectId>
+  ) {
     requirePermissions { updateFundingEntityProjects() }
 
-    for (projectId in projects) {
-      with(FUNDING_ENTITY_PROJECTS) {
-        dslContext
-            .deleteFrom(FUNDING_ENTITY_PROJECTS)
-            .where(FUNDING_ENTITY_ID.eq(fundingEntityId))
-            .and(PROJECT_ID.eq(projectId))
-            .execute()
-      }
+    with(FUNDING_ENTITY_PROJECTS) {
+      dslContext
+          .deleteFrom(FUNDING_ENTITY_PROJECTS)
+          .where(FUNDING_ENTITY_ID.eq(fundingEntityId))
+          .and(PROJECT_ID.`in`(projectIds))
+          .execute()
     }
   }
 

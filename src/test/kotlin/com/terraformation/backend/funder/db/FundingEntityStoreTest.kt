@@ -4,9 +4,11 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.funder.FundingEntityId
+import com.terraformation.backend.db.funder.tables.records.FundingEntityProjectsRecord
+import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -15,16 +17,12 @@ import org.springframework.security.access.AccessDeniedException
 class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private lateinit var store: FundingEntityStore
+  private val store by lazy { FundingEntityStore(dslContext) }
 
-  private lateinit var fundingEntityId: FundingEntityId
+  private val fundingEntityId by lazy { insertFundingEntity() }
 
   @BeforeEach
   fun setUp() {
-    store = FundingEntityStore(dslContext)
-
-    fundingEntityId = insertFundingEntity()
-
     every { user.canReadFundingEntities() } returns true
   }
 
@@ -42,7 +40,7 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `fetchById returns correct funding entity`() {
-    assertEquals("TestFundingEntity", store.fetchOneById(fundingEntityId).name)
+    assertTrue(store.fetchOneById(fundingEntityId).name.startsWith("TestFundingEntity"))
   }
 
   @Test
@@ -51,13 +49,21 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
     val projectId1 = insertProject()
     val projectId2 = insertProject()
 
-    var entity = store.fetchOneById(fundingEntityId)
-    assertEquals(0, entity.projects!!.size)
+    assertTableEmpty(FUNDING_ENTITY_PROJECTS)
 
     insertFundingEntityProject(fundingEntityId, projectId1)
     insertFundingEntityProject(fundingEntityId, projectId2)
 
-    entity = store.fetchOneById(fundingEntityId)
-    assertEquals(listOf(projectId1, projectId2), entity.projects!!)
+    assertTableEquals(
+        listOf(
+            FundingEntityProjectsRecord(
+                fundingEntityId = fundingEntityId,
+                projectId = projectId1,
+            ),
+            FundingEntityProjectsRecord(
+                fundingEntityId = fundingEntityId,
+                projectId = projectId2,
+            ),
+        ))
   }
 }

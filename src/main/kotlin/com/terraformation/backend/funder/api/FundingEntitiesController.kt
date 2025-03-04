@@ -38,9 +38,7 @@ class FundingEntitiesController(
       @PathVariable fundingEntityId: FundingEntityId,
   ): GetFundingEntityResponsePayload {
     val model = fundingEntityStore.fetchOneById(fundingEntityId)
-    return GetFundingEntityResponsePayload(
-        FundingEntityPayload(model),
-    )
+    return GetFundingEntityResponsePayload(FundingEntityPayload(model))
   }
 
   @Operation(summary = "Creates a new funding entity")
