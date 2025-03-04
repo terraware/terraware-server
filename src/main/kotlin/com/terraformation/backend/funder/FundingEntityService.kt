@@ -46,23 +46,17 @@ class FundingEntityService(
                 .fetchOne(ID) ?: throw FundingEntityExistsException(name)
           }
 
-      for (projectId in projects.orEmpty()) {
-        with(FUNDING_ENTITY_PROJECTS) {
-          dslContext
-              .insertInto(FUNDING_ENTITY_PROJECTS)
-              .set(FUNDING_ENTITY_ID, fundingEntityId)
-              .set(PROJECT_ID, projectId)
-              .onConflict()
-              .doNothing()
-              .execute()
-        }
-      }
+      addProjectsToEntity(fundingEntityId, projects.orEmpty())
 
       fundingEntityStore.fetchOneById(fundingEntityId)
     }
   }
 
-  fun update(row: FundingEntitiesRow) {
+  fun update(
+      row: FundingEntitiesRow,
+      addProjects: Set<ProjectId>? = null,
+      removeProjects: Set<ProjectId>? = null,
+  ) {
     val fundingEntityId = row.id ?: throw IllegalArgumentException("Funding Entity ID must be set")
 
     requirePermissions { manageFundingEntities() }
@@ -70,18 +64,23 @@ class FundingEntityService(
     val userId = currentUser().userId
     val now = clock.instant()
 
-    try {
-      with(FUNDING_ENTITIES) {
-        dslContext
-            .update(FUNDING_ENTITIES)
-            .set(NAME, row.name)
-            .set(MODIFIED_BY, userId)
-            .set(MODIFIED_TIME, now)
-            .where(ID.eq(fundingEntityId))
-            .execute()
+    dslContext.transaction { _ ->
+      try {
+        with(FUNDING_ENTITIES) {
+          dslContext
+              .update(FUNDING_ENTITIES)
+              .set(NAME, row.name)
+              .set(MODIFIED_BY, userId)
+              .set(MODIFIED_TIME, now)
+              .where(ID.eq(fundingEntityId))
+              .execute()
+        }
+      } catch (e: DuplicateKeyException) {
+        throw FundingEntityExistsException(row.name!!)
       }
-    } catch (e: DuplicateKeyException) {
-      throw FundingEntityExistsException(row.name!!)
+
+      removeProjectsFromEntity(fundingEntityId, removeProjects.orEmpty())
+      addProjectsToEntity(fundingEntityId, addProjects.orEmpty())
     }
   }
 
@@ -95,6 +94,32 @@ class FundingEntityService(
           .deleteFrom(FUNDING_ENTITIES)
           .where(FUNDING_ENTITIES.ID.eq(fundingEntityId))
           .execute()
+    }
+  }
+
+  private fun addProjectsToEntity(fundingEntityId: FundingEntityId, projects: Set<ProjectId>) {
+    for (projectId in projects) {
+      with(FUNDING_ENTITY_PROJECTS) {
+        dslContext
+            .insertInto(FUNDING_ENTITY_PROJECTS)
+            .set(FUNDING_ENTITY_ID, fundingEntityId)
+            .set(PROJECT_ID, projectId)
+            .onConflict()
+            .doNothing()
+            .execute()
+      }
+    }
+  }
+
+  private fun removeProjectsFromEntity(fundingEntityId: FundingEntityId, projects: Set<ProjectId>) {
+    for (projectId in projects) {
+      with(FUNDING_ENTITY_PROJECTS) {
+        dslContext
+            .deleteFrom(FUNDING_ENTITY_PROJECTS)
+            .where(FUNDING_ENTITY_ID.eq(fundingEntityId))
+            .and(PROJECT_ID.eq(projectId))
+            .execute()
+      }
     }
   }
 }

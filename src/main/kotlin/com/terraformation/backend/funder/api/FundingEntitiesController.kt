@@ -13,7 +13,6 @@ import com.terraformation.backend.funder.FundingEntityService
 import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.funder.model.FundingEntityModel
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @FunderEndpoint
@@ -38,12 +36,8 @@ class FundingEntitiesController(
   @Operation(summary = "Gets information about a funding entity")
   fun getFundingEntity(
       @PathVariable fundingEntityId: FundingEntityId,
-      @RequestParam("depth", defaultValue = "FundingEntity")
-      @Schema(
-          description = "Return this level of  information about the funding entity's contents.")
-      depth: FundingEntityStore.FetchDepth,
   ): GetFundingEntityResponsePayload {
-    val model = fundingEntityStore.fetchOneById(fundingEntityId, depth)
+    val model = fundingEntityStore.fetchOneById(fundingEntityId)
     return GetFundingEntityResponsePayload(
         FundingEntityPayload(model),
     )
@@ -65,7 +59,8 @@ class FundingEntitiesController(
       @PathVariable("fundingEntityId") fundingEntityId: FundingEntityId,
       @RequestBody @Valid payload: UpdateFundingEntityRequestPayload
   ): SimpleSuccessResponsePayload {
-    fundingEntityService.update(payload.toRow().copy(id = fundingEntityId))
+    fundingEntityService.update(
+        payload.toRow().copy(id = fundingEntityId), payload.addProjects, payload.removeProjects)
     return SimpleSuccessResponsePayload()
   }
 
@@ -97,7 +92,11 @@ data class CreateFundingEntityRequestPayload(
     val projects: Set<ProjectId>? = null,
 )
 
-data class UpdateFundingEntityRequestPayload(val name: String) {
+data class UpdateFundingEntityRequestPayload(
+    val name: String,
+    val addProjects: Set<ProjectId>? = null,
+    val removeProjects: Set<ProjectId>? = null,
+) {
   fun toRow(): FundingEntitiesRow {
     return FundingEntitiesRow(name = name)
   }

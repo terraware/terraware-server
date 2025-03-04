@@ -46,18 +46,18 @@ class FundingEntityStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchById respects fetch depth`() {
+  fun `fetchById retrieves projectIds`() {
     insertOrganization()
     val projectId1 = insertProject()
     val projectId2 = insertProject()
 
-    var entity = store.fetchOneById(fundingEntityId, FundingEntityStore.FetchDepth.Project)
+    var entity = store.fetchOneById(fundingEntityId)
     assertEquals(0, entity.projects!!.size)
 
     insertFundingEntityProject(fundingEntityId, projectId1)
     insertFundingEntityProject(fundingEntityId, projectId2)
 
-    entity = store.fetchOneById(fundingEntityId, FundingEntityStore.FetchDepth.Project)
-    assertEquals(2, entity.projects!!.size)
+    entity = store.fetchOneById(fundingEntityId)
+    assertEquals(listOf(projectId1, projectId2), entity.projects!!)
   }
 }

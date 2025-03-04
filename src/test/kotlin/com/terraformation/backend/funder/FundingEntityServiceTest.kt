@@ -31,6 +31,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     service = FundingEntityService(clock, dslContext, fundingEntityStore)
 
     fundingEntityId = insertFundingEntity()
+    insertOrganization()
 
     every { user.canReadFundingEntities() } returns true
     every { user.canManageFundingEntities() } returns true
@@ -68,8 +69,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
         )
     // retrieving both row and model to check createdBy/modifiedBy as well as projects
     val actualRow = fundingEntitiesDao.fetchOneById(createdModel.id)!!
-    val actualModel =
-        fundingEntityStore.fetchOneById(createdModel.id, FundingEntityStore.FetchDepth.Project)
+    val actualModel = fundingEntityStore.fetchOneById(createdModel.id)
 
     assertEquals(expected, actualRow)
     assertEquals(0, actualModel.projects!!.size)
@@ -89,10 +89,10 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
     val inserted = service.create("New Funding Entity with Projects", projectSet)
 
-    val actual = fundingEntityStore.fetchOneById(inserted.id, FundingEntityStore.FetchDepth.Project)
+    val actual = fundingEntityStore.fetchOneById(inserted.id)
 
     assertEquals(2, actual.projects!!.size)
-    assertEquals(projectSet, actual.projects!!.map { it.id }.toSet())
+    assertEquals(projectSet, actual.projects!!.toSet())
   }
 
   @Test
@@ -146,6 +146,56 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
     val actual = fundingEntitiesDao.fetchOneById(fundingEntityId)!!
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `update correctly adds new projects`() {
+    val row = FundingEntitiesRow(id = fundingEntityId, name = "TestFundingEntity")
+    val projectId1 = insertProject()
+
+    assertEquals(0, fundingEntityProjectsDao.fetchByFundingEntityId(fundingEntityId).size)
+
+    service.update(row, setOf(projectId1))
+
+    assertEquals(1, fundingEntityProjectsDao.fetchByFundingEntityId(fundingEntityId).size)
+  }
+
+  @Test
+  fun `update correctly removes projects`() {
+    val row = FundingEntitiesRow(id = fundingEntityId, name = "TestFundingEntity")
+    val projectId1 = insertProject()
+    val projectId2 = insertProject()
+    insertFundingEntityProject(fundingEntityId, projectId1)
+    insertFundingEntityProject(fundingEntityId, projectId2)
+
+    assertEquals(2, fundingEntityProjectsDao.fetchByFundingEntityId(fundingEntityId).size)
+
+    service.update(row, emptySet(), setOf(projectId1))
+
+    val actual =
+        fundingEntityProjectsDao.fetchByFundingEntityId(fundingEntityId).map { it.projectId }
+    assertEquals(1, actual.size)
+    assertEquals(projectId2, actual.first())
+  }
+
+  @Test
+  fun `update correctly adds and removes projects`() {
+    val row = FundingEntitiesRow(id = fundingEntityId, name = "TestFundingEntity")
+    val projectId1 = insertProject()
+    val projectId2 = insertProject()
+    val projectId3 = insertProject()
+
+    insertFundingEntityProject(fundingEntityId, projectId1)
+    insertFundingEntityProject(fundingEntityId, projectId2)
+
+    assertEquals(2, fundingEntityProjectsDao.fetchByFundingEntityId(fundingEntityId).size)
+
+    service.update(row, setOf(projectId3), setOf(projectId1))
+
+    val actual =
+        fundingEntityProjectsDao.fetchByFundingEntityId(fundingEntityId).map { it.projectId }
+    assertEquals(2, actual.size)
+    assertEquals(listOf(projectId2, projectId3), actual)
   }
 
   @Test
