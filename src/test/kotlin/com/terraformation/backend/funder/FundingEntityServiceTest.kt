@@ -34,12 +34,15 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganization()
 
     every { user.canReadFundingEntities() } returns true
-    every { user.canManageFundingEntities() } returns true
+    every { user.canCreateFundingEntity() } returns true
+    every { user.canDeleteFundingEntity() } returns true
+    every { user.canUpdateFundingEntities() } returns true
+    every { user.canUpdateFundingEntityProjects() } returns true
   }
 
   @Test
   fun `create requires user to be able to manage funding entities`() {
-    every { user.canManageFundingEntities() } returns false
+    every { user.canCreateFundingEntity() } returns false
 
     assertThrows<AccessDeniedException> { service.create("Some Other Entity") }
   }
@@ -104,7 +107,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update throws exception if user has no permission to manage funding entities`() {
-    every { user.canManageFundingEntities() } returns false
+    every { user.canUpdateFundingEntities() } returns false
 
     assertThrows<AccessDeniedException> {
       service.update(FundingEntitiesRow(id = fundingEntityId, name = "Updated Funding Entity"))
@@ -121,7 +124,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `update populates modified by fields`() {
+  fun `update populates modifiedBy fields`() {
     val newTime = clock.instant().plusSeconds(1000)
     clock.instant = newTime
 
@@ -200,7 +203,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `delete throws exception if user can't manage funding entities`() {
-    every { user.canManageFundingEntities() } returns false
+    every { user.canDeleteFundingEntity() } returns false
 
     assertThrows<AccessDeniedException> { service.deleteFundingEntity(fundingEntityId) }
   }

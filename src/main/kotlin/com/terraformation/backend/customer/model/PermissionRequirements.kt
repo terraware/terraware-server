@@ -50,6 +50,7 @@ import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -299,6 +300,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createFundingEntity() {
+    user.recordPermissionChecks {
+      if (!user.canCreateFundingEntity()) {
+        throw AccessDeniedException("No permission to create funding entity")
+      }
+    }
+  }
+
   fun createNotification(userId: UserId, organizationId: OrganizationId) {
     readOrganization(organizationId)
     if (!user.canCreateNotification(userId, organizationId)) {
@@ -474,6 +483,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
         readDraftPlantingSite(draftPlantingSiteId)
         throw AccessDeniedException(
             "No permission to delete draft planting site $draftPlantingSiteId")
+      }
+    }
+  }
+
+  fun deleteFundingEntity() {
+    user.recordPermissionChecks {
+      if (!user.canDeleteFundingEntity()) {
+        throw AccessDeniedException("No permission to delete funding entity")
       }
     }
   }
@@ -654,14 +671,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
     user.recordPermissionChecks {
       if (!user.canManageDeliverables()) {
         throw AccessDeniedException("No permission to manage deliverables")
-      }
-    }
-  }
-
-  fun manageFundingEntities() {
-    user.recordPermissionChecks {
-      if (!user.canManageFundingEntities()) {
-        throw AccessDeniedException("No permission to manage funding entities")
       }
     }
   }
@@ -1464,6 +1473,30 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateFacility(facilityId)) {
         readFacility(facilityId)
         throw AccessDeniedException("No permission to update facility $facilityId")
+      }
+    }
+  }
+
+  fun updateFundingEntities() {
+    user.recordPermissionChecks {
+      if (!user.canUpdateFundingEntities()) {
+        throw AccessDeniedException("No permission to update funding entities")
+      }
+    }
+  }
+
+  fun updateFundingEntityProjects() {
+    user.recordPermissionChecks {
+      if (!user.canUpdateFundingEntityProjects()) {
+        throw AccessDeniedException("No permission to update funding entity projects")
+      }
+    }
+  }
+
+  fun updateFundingEntityUsers(fundingEntityId: FundingEntityId) {
+    user.recordPermissionChecks {
+      if (!user.canUpdateFundingEntityUsers(fundingEntityId)) {
+        throw AccessDeniedException("No permission to update funding entity users")
       }
     }
   }

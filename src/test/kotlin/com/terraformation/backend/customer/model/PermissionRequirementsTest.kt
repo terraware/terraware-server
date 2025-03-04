@@ -46,6 +46,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -58,6 +59,7 @@ import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.funder.db.FundingEntityNotFoundException
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
 import com.terraformation.backend.tracking.db.DeliveryNotFoundException
@@ -139,6 +141,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(EventNotFoundException::class) { canReadModuleEvent(it) }
   private val facilityId: FacilityId by
       readableId(FacilityNotFoundException::class) { canReadFacility(it) }
+  private val fundingEntityId: FundingEntityId by
+      readableId(FundingEntityNotFoundException::class) { canReadFundingEntities() }
   private val moduleId: ModuleId by readableId(ModuleNotFoundException::class) { canReadModule(it) }
   private val monitoringPlotId: MonitoringPlotId by
       readableId(PlotNotFoundException::class) { canReadMonitoringPlot(it) }
@@ -377,6 +381,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { createFacility(organizationId) } ifUser { canCreateFacility(organizationId) }
 
   @Test
+  fun createFundingEntity() = allow { createFundingEntity() } ifUser { canCreateFundingEntity() }
+
+  @Test
   fun createNotification() =
       allow { createNotification(notificationUserId, organizationId) } ifUser
           {
@@ -460,6 +467,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
           {
             canDeleteDraftPlantingSite(draftPlantingSiteId)
           }
+
+  @Test
+  fun deleteFundingEntity() = allow { deleteFundingEntity() } ifUser { canDeleteFundingEntity() }
 
   @Test
   fun deleteOrganization() =
@@ -547,10 +557,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { manageDefaultProjectLeads() } ifUser { canManageDefaultProjectLeads() }
 
   @Test fun manageDeliverables() = allow { manageDeliverables() } ifUser { canManageDeliverables() }
-
-  @Test
-  fun manageFundingEntities() =
-      allow { manageFundingEntities() } ifUser { canManageFundingEntities() }
 
   @Test fun manageModuleEvents() = allow { manageModuleEvents() } ifUser { canManageModuleEvents() }
 
@@ -941,6 +947,22 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun updateFacility() =
       allow { updateFacility(facilityId) } ifUser { canUpdateFacility(facilityId) }
+
+  @Test
+  fun updateFundingEntities() =
+      allow { updateFundingEntities() } ifUser { canUpdateFundingEntities() }
+
+  @Test
+  fun updateFundingEntityProjects() =
+      allow { updateFundingEntityProjects() } ifUser { canUpdateFundingEntityProjects() }
+
+  @Test
+  fun updateFundingEntityUsers() {
+    assertThrows<AccessDeniedException> { requirements.updateFundingEntityUsers(fundingEntityId) }
+
+    grant { user.canUpdateFundingEntityUsers(fundingEntityId) }
+    requirements.updateFundingEntityUsers(fundingEntityId)
+  }
 
   @Test
   fun updateGlobalNotifications() =

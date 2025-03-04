@@ -25,7 +25,7 @@ class FundingEntityService(
   private val log = perClassLogger()
 
   fun create(name: String, projects: Set<ProjectId>? = null): FundingEntityModel {
-    requirePermissions { manageFundingEntities() }
+    requirePermissions { createFundingEntity() }
 
     val userId = currentUser().userId
     val now = clock.instant()
@@ -59,7 +59,7 @@ class FundingEntityService(
   ) {
     val fundingEntityId = row.id ?: throw IllegalArgumentException("Funding Entity ID must be set")
 
-    requirePermissions { manageFundingEntities() }
+    requirePermissions { updateFundingEntities() }
 
     val userId = currentUser().userId
     val now = clock.instant()
@@ -84,20 +84,9 @@ class FundingEntityService(
     }
   }
 
-  fun deleteFundingEntity(fundingEntityId: FundingEntityId) {
-    requirePermissions { manageFundingEntities() }
+  fun addProjectsToEntity(fundingEntityId: FundingEntityId, projects: Set<ProjectId>) {
+    requirePermissions { updateFundingEntityProjects() }
 
-    log.info("Deleting funding entity $fundingEntityId")
-
-    dslContext.transaction { _ ->
-      dslContext
-          .deleteFrom(FUNDING_ENTITIES)
-          .where(FUNDING_ENTITIES.ID.eq(fundingEntityId))
-          .execute()
-    }
-  }
-
-  private fun addProjectsToEntity(fundingEntityId: FundingEntityId, projects: Set<ProjectId>) {
     for (projectId in projects) {
       with(FUNDING_ENTITY_PROJECTS) {
         dslContext
@@ -111,7 +100,9 @@ class FundingEntityService(
     }
   }
 
-  private fun removeProjectsFromEntity(fundingEntityId: FundingEntityId, projects: Set<ProjectId>) {
+  fun removeProjectsFromEntity(fundingEntityId: FundingEntityId, projects: Set<ProjectId>) {
+    requirePermissions { updateFundingEntityProjects() }
+
     for (projectId in projects) {
       with(FUNDING_ENTITY_PROJECTS) {
         dslContext
@@ -120,6 +111,21 @@ class FundingEntityService(
             .and(PROJECT_ID.eq(projectId))
             .execute()
       }
+    }
+  }
+
+  fun deleteFundingEntity(fundingEntityId: FundingEntityId) {
+    requirePermissions { deleteFundingEntity() }
+
+    log.info("Deleting funding entity $fundingEntityId")
+
+    dslContext.transaction { _ ->
+      dslContext
+          .deleteFrom(FUNDING_ENTITIES)
+          .where(FUNDING_ENTITIES.ID.eq(fundingEntityId))
+          .execute()
+
+      // todo delete associated Funders here
     }
   }
 }
