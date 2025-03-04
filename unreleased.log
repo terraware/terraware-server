@@ -1,3 +1,4 @@
+59380a96fe3 SW-6596 Auto redirect to funder login page from terraware.io/funder (#2879)
 3755fe2a94f Add primary key to funding_entity_projects (#2891)
 1d51f4457f2 Revert "Add primary key to funding_entity_projects"
 dc16c9ea74f Add primary key to funding_entity_projects
