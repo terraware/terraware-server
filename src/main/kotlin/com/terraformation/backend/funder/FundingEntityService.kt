@@ -10,6 +10,7 @@ import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITIES
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_USERS
 import com.terraformation.backend.funder.db.FundingEntityExistsException
+import com.terraformation.backend.funder.db.FundingEntityNotFoundException
 import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.funder.db.FundingEntityUserStore
 import com.terraformation.backend.funder.model.FundingEntityModel
@@ -71,14 +72,19 @@ class FundingEntityService(
 
     dslContext.transaction { _ ->
       try {
-        with(FUNDING_ENTITIES) {
-          dslContext
-              .update(FUNDING_ENTITIES)
-              .set(NAME, row.name)
-              .set(MODIFIED_BY, userId)
-              .set(MODIFIED_TIME, now)
-              .where(ID.eq(fundingEntityId))
-              .execute()
+        val updatedRows =
+            with(FUNDING_ENTITIES) {
+              dslContext
+                  .update(FUNDING_ENTITIES)
+                  .set(NAME, row.name)
+                  .set(MODIFIED_BY, userId)
+                  .set(MODIFIED_TIME, now)
+                  .where(ID.eq(fundingEntityId))
+                  .execute()
+            }
+
+        if (updatedRows == 0) {
+          throw FundingEntityNotFoundException(fundingEntityId)
         }
       } catch (e: DuplicateKeyException) {
         throw FundingEntityExistsException(row.name!!)
@@ -125,10 +131,15 @@ class FundingEntityService(
     log.info("Deleting funding entity $fundingEntityId")
 
     dslContext.transaction { _ ->
-      dslContext
-          .deleteFrom(FUNDING_ENTITIES)
-          .where(FUNDING_ENTITIES.ID.eq(fundingEntityId))
-          .execute()
+      val deletedRows =
+          dslContext
+              .deleteFrom(FUNDING_ENTITIES)
+              .where(FUNDING_ENTITIES.ID.eq(fundingEntityId))
+              .execute()
+
+      if (deletedRows == 0) {
+        throw FundingEntityNotFoundException(fundingEntityId)
+      }
 
       // delete associated Funders here in SW-6655
     }

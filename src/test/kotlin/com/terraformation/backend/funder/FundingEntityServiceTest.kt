@@ -11,6 +11,7 @@ import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_USERS
 import com.terraformation.backend.funder.db.FundingEntityExistsException
+import com.terraformation.backend.funder.db.FundingEntityNotFoundException
 import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.funder.db.FundingEntityUserStore
 import com.terraformation.backend.mockUser
@@ -132,6 +133,14 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `update throws exception when no matching entity`() {
+    assertThrows<FundingEntityNotFoundException> {
+      service.update(
+          FundingEntitiesRow(id = FundingEntityId(1093), name = "Missing Funding Entity"))
+    }
+  }
+
+  @Test
   fun `update populates modifiedBy fields`() {
     val newTime = clock.instant().plusSeconds(1000)
     clock.instant = newTime
@@ -214,6 +223,13 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canDeleteFundingEntity() } returns false
 
     assertThrows<AccessDeniedException> { service.deleteFundingEntity(fundingEntityId) }
+  }
+
+  @Test
+  fun `delete throws exception if entity doesn't exist`() {
+    assertThrows<FundingEntityNotFoundException> {
+      service.deleteFundingEntity(FundingEntityId(1097))
+    }
   }
 
   @Test
