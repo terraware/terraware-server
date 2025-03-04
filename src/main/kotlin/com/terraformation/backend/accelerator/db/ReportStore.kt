@@ -37,6 +37,7 @@ import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import jakarta.inject.Named
 import java.time.Instant
 import java.time.InstantSource
@@ -491,6 +492,19 @@ class ReportStore(
             .convertFrom { it.toInt() }
       }
 
+  private val treesPlantedField =
+      with(DELIVERIES) {
+        DSL.field(
+                DSL.select(DSL.sum(BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN))
+                    .from(this)
+                    .join(BATCH_WITHDRAWALS)
+                    .on(BATCH_WITHDRAWALS.WITHDRAWAL_ID.eq(WITHDRAWAL_ID))
+                    .where(withdrawals.WITHDRAWN_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
+                    .and(withdrawals.PURPOSE_ID.eq(WithdrawalPurpose.OutPlant))
+                    .and(plantingSites.PROJECT_ID.eq(REPORTS.PROJECT_ID)))
+            .convertFrom { it.toInt() }
+      }
+
   private val systemValueField =
       DSL.coalesce(
           REPORT_SYSTEM_METRICS.SYSTEM_VALUE,
@@ -500,7 +514,7 @@ class ReportStore(
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), seedlingsField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), seedsCollectedField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SpeciesPlanted), -4)
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.TreesPlanted), -5)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.TreesPlanted), treesPlantedField)
               .else_(0),
           DSL.value(0))
 
