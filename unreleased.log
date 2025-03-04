@@ -1,3 +1,10 @@
+bcd90c74c04 Update dependency types-requests to v2.32.0.20250301 (#2886)
+f9f94acebf5 Update ktor monorepo to v3.1.1 (#2885)
+19a5e07c440 Update dependency io.mockk:mockk to v1.13.17 (#2883)
+9ff756dffd2 Update database dependencies (#2882)
+32833201cdd Update dependency gradle to v8.13 (#2877)
+9cf334d02ed Update dependency com.google.auth:google-auth-library-oauth2-http to v1.33.1 (#2876)
+390242498d8 SW-6653 Fix stack overflow on map update (#2881)
 59380a96fe3 SW-6596 Auto redirect to funder login page from terraware.io/funder (#2879)
 3755fe2a94f Add primary key to funding_entity_projects (#2891)
 1d51f4457f2 Revert "Add primary key to funding_entity_projects"
