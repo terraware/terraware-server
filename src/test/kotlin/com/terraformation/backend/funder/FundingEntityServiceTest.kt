@@ -2,16 +2,22 @@ package com.terraformation.backend.funder
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
+import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_USERS
 import com.terraformation.backend.funder.db.FundingEntityExistsException
 import com.terraformation.backend.funder.db.FundingEntityStore
+import com.terraformation.backend.funder.db.FundingEntityUserStore
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -22,13 +28,15 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private lateinit var fundingEntityStore: FundingEntityStore
+  private lateinit var fundingEntityUserStore: FundingEntityUserStore
   private lateinit var fundingEntityId: FundingEntityId
   private lateinit var service: FundingEntityService
 
   @BeforeEach
   fun setUp() {
     fundingEntityStore = FundingEntityStore(dslContext)
-    service = FundingEntityService(clock, dslContext, fundingEntityStore)
+    fundingEntityUserStore = FundingEntityUserStore(dslContext)
+    service = FundingEntityService(clock, dslContext, fundingEntityStore, fundingEntityUserStore)
 
     fundingEntityId = insertFundingEntity()
     insertOrganization()
@@ -213,5 +221,27 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     service.deleteFundingEntity(fundingEntityId)
 
     assertEquals(0, fundingEntitiesDao.findAll().size)
+  }
+
+  @Test
+  fun `event listener exists for UserDeletionStartedEvent`() {
+    assertIsEventListener<UserDeletionStartedEvent>(service)
+  }
+
+  @Test
+  fun `user deletion removes row from funding_entity_users table`() {
+    insertFundingEntityUser(fundingEntityId, currentUser().userId)
+
+    val event = UserDeletionStartedEvent(currentUser().userId)
+
+    service.on(event)
+
+    assertNull(
+        dslContext
+            .select(FUNDING_ENTITY_USERS.USER_ID)
+            .from(FUNDING_ENTITY_USERS)
+            .where(FUNDING_ENTITY_USERS.USER_ID.eq(currentUser().userId))
+            .and(FUNDING_ENTITY_USERS.FUNDING_ENTITY_ID.eq(fundingEntityId))
+            .fetchOne())
   }
 }

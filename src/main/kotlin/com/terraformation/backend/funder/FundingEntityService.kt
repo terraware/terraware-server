@@ -1,19 +1,23 @@
 package com.terraformation.backend.funder
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITIES
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
+import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_USERS
 import com.terraformation.backend.funder.db.FundingEntityExistsException
 import com.terraformation.backend.funder.db.FundingEntityStore
+import com.terraformation.backend.funder.db.FundingEntityUserStore
 import com.terraformation.backend.funder.model.FundingEntityModel
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.DSLContext
+import org.springframework.context.event.EventListener
 import org.springframework.dao.DuplicateKeyException
 
 @Named
@@ -21,6 +25,7 @@ class FundingEntityService(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val fundingEntityStore: FundingEntityStore,
+    private val fundingEntityUserStore: FundingEntityUserStore,
 ) {
   private val log = perClassLogger()
 
@@ -125,7 +130,20 @@ class FundingEntityService(
           .where(FUNDING_ENTITIES.ID.eq(fundingEntityId))
           .execute()
 
-      // todo delete associated Funders here
+      // delete associated Funders here in SW-6655
+    }
+  }
+
+  @EventListener
+  fun on(event: UserDeletionStartedEvent) {
+    val fundingEntityId = fundingEntityUserStore.getFundingEntityId(event.userId)
+
+    if (fundingEntityId != null) {
+      dslContext
+          .deleteFrom(FUNDING_ENTITY_USERS)
+          .where(FUNDING_ENTITY_USERS.FUNDING_ENTITY_ID.eq(fundingEntityId))
+          .and(FUNDING_ENTITY_USERS.USER_ID.eq(event.userId))
+          .execute()
     }
   }
 }
