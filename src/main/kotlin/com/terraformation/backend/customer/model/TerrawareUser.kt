@@ -178,7 +178,7 @@ interface TerrawareUser : Principal {
 
   fun canCreateFacility(organizationId: OrganizationId): Boolean = defaultPermission
 
-  fun canCreateFundingEntity(): Boolean = defaultPermission
+  fun canCreateFundingEntities(): Boolean = defaultPermission
 
   fun canCreateNotification(targetUserId: UserId, organizationId: OrganizationId): Boolean =
       defaultPermission
@@ -223,7 +223,7 @@ interface TerrawareUser : Principal {
   fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean =
       defaultPermission
 
-  fun canDeleteFundingEntity(): Boolean = defaultPermission
+  fun canDeleteFundingEntities(): Boolean = defaultPermission
 
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean = defaultPermission
 

@@ -381,7 +381,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { createFacility(organizationId) } ifUser { canCreateFacility(organizationId) }
 
   @Test
-  fun createFundingEntity() = allow { createFundingEntity() } ifUser { canCreateFundingEntity() }
+  fun createFundingEntities() =
+      allow { createFundingEntities() } ifUser { canCreateFundingEntities() }
 
   @Test
   fun createNotification() =
@@ -469,7 +470,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
           }
 
   @Test
-  fun deleteFundingEntity() = allow { deleteFundingEntity() } ifUser { canDeleteFundingEntity() }
+  fun deleteFundingEntities() =
+      allow { deleteFundingEntities() } ifUser { canDeleteFundingEntities() }
 
   @Test
   fun deleteOrganization() =

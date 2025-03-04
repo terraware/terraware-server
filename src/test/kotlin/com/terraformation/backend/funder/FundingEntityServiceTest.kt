@@ -43,15 +43,15 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganization()
 
     every { user.canReadFundingEntities() } returns true
-    every { user.canCreateFundingEntity() } returns true
-    every { user.canDeleteFundingEntity() } returns true
+    every { user.canCreateFundingEntities() } returns true
+    every { user.canDeleteFundingEntities() } returns true
     every { user.canUpdateFundingEntities() } returns true
     every { user.canUpdateFundingEntityProjects() } returns true
   }
 
   @Test
   fun `create requires user to be able to manage funding entities`() {
-    every { user.canCreateFundingEntity() } returns false
+    every { user.canCreateFundingEntities() } returns false
 
     assertThrows<AccessDeniedException> { service.create("Some Other Entity") }
   }
@@ -220,7 +220,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `delete throws exception if user can't manage funding entities`() {
-    every { user.canDeleteFundingEntity() } returns false
+    every { user.canDeleteFundingEntities() } returns false
 
     assertThrows<AccessDeniedException> { service.deleteFundingEntity(fundingEntityId) }
   }

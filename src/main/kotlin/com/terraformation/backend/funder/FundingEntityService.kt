@@ -31,7 +31,7 @@ class FundingEntityService(
   private val log = perClassLogger()
 
   fun create(name: String, projects: Set<ProjectId>? = null): FundingEntityModel {
-    requirePermissions { createFundingEntity() }
+    requirePermissions { createFundingEntities() }
 
     val userId = currentUser().userId
     val now = clock.instant()
@@ -95,7 +95,7 @@ class FundingEntityService(
     }
   }
 
-  fun addProjectsToEntity(fundingEntityId: FundingEntityId, projects: Set<ProjectId>) {
+  private fun addProjectsToEntity(fundingEntityId: FundingEntityId, projects: Set<ProjectId>) {
     requirePermissions { updateFundingEntityProjects() }
 
     for (projectId in projects) {
@@ -111,7 +111,7 @@ class FundingEntityService(
     }
   }
 
-  fun removeProjectsFromEntity(fundingEntityId: FundingEntityId, projects: Set<ProjectId>) {
+  private fun removeProjectsFromEntity(fundingEntityId: FundingEntityId, projects: Set<ProjectId>) {
     requirePermissions { updateFundingEntityProjects() }
 
     for (projectId in projects) {
@@ -126,7 +126,7 @@ class FundingEntityService(
   }
 
   fun deleteFundingEntity(fundingEntityId: FundingEntityId) {
-    requirePermissions { deleteFundingEntity() }
+    requirePermissions { deleteFundingEntities() }
 
     log.info("Deleting funding entity $fundingEntityId")
 

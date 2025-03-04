@@ -300,10 +300,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun createFundingEntity() {
+  fun createFundingEntities() {
     user.recordPermissionChecks {
-      if (!user.canCreateFundingEntity()) {
-        throw AccessDeniedException("No permission to create funding entity")
+      if (!user.canCreateFundingEntities()) {
+        throw AccessDeniedException("No permission to create funding entities")
       }
     }
   }
@@ -487,10 +487,10 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun deleteFundingEntity() {
+  fun deleteFundingEntities() {
     user.recordPermissionChecks {
-      if (!user.canDeleteFundingEntity()) {
-        throw AccessDeniedException("No permission to delete funding entity")
+      if (!user.canDeleteFundingEntities()) {
+        throw AccessDeniedException("No permission to delete funding entities")
       }
     }
   }

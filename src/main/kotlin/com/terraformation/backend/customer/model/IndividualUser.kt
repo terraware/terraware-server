@@ -237,7 +237,7 @@ data class IndividualUser(
 
   override fun canCreateFacility(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
 
-  override fun canCreateFundingEntity() = isAcceleratorAdmin()
+  override fun canCreateFundingEntities() = isAcceleratorAdmin()
 
   override fun canCreateNotification(
       targetUserId: UserId,
@@ -299,7 +299,7 @@ data class IndividualUser(
       userId == parentStore.getUserId(draftPlantingSiteId) &&
           isAdminOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
 
-  override fun canDeleteFundingEntity() = isAcceleratorAdmin()
+  override fun canDeleteFundingEntities() = isAcceleratorAdmin()
 
   override fun canDeleteOrganization(organizationId: OrganizationId) = isOwner(organizationId)
 
