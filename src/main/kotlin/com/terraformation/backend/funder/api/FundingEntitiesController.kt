@@ -66,7 +66,7 @@ class FundingEntitiesController(
 
   @ApiResponseSimpleSuccess
   @Operation(
-      summary = "Deletes an existing funding  entity",
+      summary = "Deletes an existing funding entity",
   )
   @DeleteMapping("/{fundingEntityId}")
   fun deleteFundingEntity(
