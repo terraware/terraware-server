@@ -31,4 +31,3 @@ CREATE TABLE accelerator.report_system_metrics(
 );
 
 CREATE INDEX ON accelerator.report_system_metrics(system_metric_id);
-CREATE INDEX ON accelerator.report_system_metrics(report_id, system_metric_id);
