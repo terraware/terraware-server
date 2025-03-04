@@ -51,6 +51,11 @@ annotation class TrackingEndpoint
 annotation class AcceleratorEndpoint
 
 @Retention(AnnotationRetention.RUNTIME)
+@Tag(name = "Funder")
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+annotation class FunderEndpoint
+
+@Retention(AnnotationRetention.RUNTIME)
 @Tag(name = "internal")
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 annotation class InternalEndpoint

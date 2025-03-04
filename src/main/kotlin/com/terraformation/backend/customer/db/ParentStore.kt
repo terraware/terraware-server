@@ -48,6 +48,8 @@ import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
+import com.terraformation.backend.db.funder.FundingEntityId
+import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_USERS
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
@@ -334,6 +336,15 @@ class ParentStore(private val dslContext: DSLContext) {
           .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
           .where(ORGANIZATION_USERS.USER_ID.eq(userId))
           .and(PARTICIPANTS.ID.eq(participantId))
+          .fetch()
+          .isNotEmpty
+
+  fun exists(fundingEntityId: FundingEntityId, userId: UserId): Boolean =
+      dslContext
+          .selectOne()
+          .from(FUNDING_ENTITY_USERS)
+          .where(FUNDING_ENTITY_USERS.FUNDING_ENTITY_ID.eq(fundingEntityId))
+          .and(FUNDING_ENTITY_USERS.USER_ID.eq(userId))
           .fetch()
           .isNotEmpty
 

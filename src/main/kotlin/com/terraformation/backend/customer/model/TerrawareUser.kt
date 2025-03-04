@@ -27,6 +27,7 @@ import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -177,6 +178,8 @@ interface TerrawareUser : Principal {
 
   fun canCreateFacility(organizationId: OrganizationId): Boolean = defaultPermission
 
+  fun canCreateFundingEntities(): Boolean = defaultPermission
+
   fun canCreateNotification(targetUserId: UserId, organizationId: OrganizationId): Boolean =
       defaultPermission
 
@@ -219,6 +222,8 @@ interface TerrawareUser : Principal {
 
   fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean =
       defaultPermission
+
+  fun canDeleteFundingEntities(): Boolean = defaultPermission
 
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean = defaultPermission
 
@@ -315,6 +320,8 @@ interface TerrawareUser : Principal {
       defaultPermission
 
   fun canReadFacility(facilityId: FacilityId): Boolean = defaultPermission
+
+  fun canReadFundingEntities(): Boolean = defaultPermission
 
   fun canReadGlobalRoles(): Boolean = defaultPermission
 
@@ -462,6 +469,12 @@ interface TerrawareUser : Principal {
       defaultPermission
 
   fun canUpdateFacility(facilityId: FacilityId): Boolean = defaultPermission
+
+  fun canUpdateFundingEntities(): Boolean = defaultPermission
+
+  fun canUpdateFundingEntityProjects(): Boolean = defaultPermission
+
+  fun canUpdateFundingEntityUsers(fundingEntityId: FundingEntityId): Boolean = defaultPermission
 
   fun canUpdateGlobalRoles(): Boolean = defaultPermission
 
