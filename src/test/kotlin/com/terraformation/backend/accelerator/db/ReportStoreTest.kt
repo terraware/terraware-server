@@ -424,6 +424,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
+      val otherSpeciesId = insertSpecies()
 
       val batchId1 =
           insertBatch(
@@ -630,7 +631,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   metric = SystemMetric.TreesPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
-                          systemValue = -5,
+                          systemValue = 33,
                       )),
               ReportSystemMetricModel(
                   metric = SystemMetric.SpeciesPlanted,
