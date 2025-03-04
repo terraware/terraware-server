@@ -1,3 +1,4 @@
+27fb5a0e803 SW-6607 CRUD Funding Entities (#2887)
 8694e9687e3 Update dependency software.amazon.awssdk:bom to v2.30.31 (#2884)
 bcd90c74c04 Update dependency types-requests to v2.32.0.20250301 (#2886)
 f9f94acebf5 Update ktor monorepo to v3.1.1 (#2885)
