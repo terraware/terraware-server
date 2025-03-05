@@ -8,6 +8,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.DeviceManagerUser
+import com.terraformation.backend.customer.model.FunderUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
@@ -176,6 +177,26 @@ class UserStore(
         }
 
     return user?.let { rowToIndividualUser(it) }
+  }
+
+  /**
+   * Returns the row for the user with a given email address.
+   *
+   * @param email Email address to search for. If the address has upper-case characters, they will
+   *   be folded to lower case.
+   * @return null if no user has the requested email address, or if users that do have been deleted.
+   */
+  fun fetchUserRowByEmail(email: String): UsersRow? {
+    val user = usersDao.fetchByEmail(email.lowercase()).firstOrNull()
+
+    // Deleted users have invalid email addresses that should never match legitimate calls to this
+    // method, but if a caller somehow passes in one of those values, we still don't want to treat
+    // it as a match.
+    if (user?.deletedTime != null) {
+      return null
+    }
+
+    return user
   }
 
   /**
@@ -463,6 +484,27 @@ class UserStore(
   }
 
   /**
+   * Creates a new funder user by email.
+   *
+   * The user is not registered in Keycloak yet because they have to go through their own
+   * registration via email invite.
+   */
+  fun createFunderUser(
+      email: String,
+  ): FunderUser {
+    val usersRow =
+        UsersRow(
+            email = email.lowercase(),
+            userTypeId = UserType.Funder,
+            createdTime = clock.instant(),
+            modifiedTime = clock.instant(),
+        )
+    usersDao.insert(usersRow)
+
+    return rowToFunderUser(usersRow)
+  }
+
+  /**
    * Registers a user in Keycloak and returns its representation.
    *
    * @throws DuplicateKeyException There was already a user with the requested email address in
@@ -702,6 +744,15 @@ class UserStore(
     } else {
       rowToIndividualUser(user)
     }
+  }
+
+  private fun rowToFunderUser(usersRow: UsersRow): FunderUser {
+    return FunderUser(
+        userId =
+            usersRow.id ?: throw java.lang.IllegalArgumentException("User ID should never be null"),
+        email = usersRow.email ?: throw IllegalArgumentException("Email should never be null"),
+        createdTime = usersRow.createdTime!!,
+    )
   }
 
   private fun insertKeycloakUser(

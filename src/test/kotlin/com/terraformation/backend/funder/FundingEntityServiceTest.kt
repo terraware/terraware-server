@@ -2,39 +2,79 @@ package com.terraformation.backend.funder
 
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertIsEventListener
+import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.PermissionStore
+import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
 import com.terraformation.backend.db.funder.tables.records.FundingEntitiesRecord
 import com.terraformation.backend.db.funder.tables.records.FundingEntityProjectsRecord
+import com.terraformation.backend.db.funder.tables.records.FundingEntityUsersRecord
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITIES
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_USERS
+import com.terraformation.backend.dummyKeycloakInfo
+import com.terraformation.backend.funder.db.EmailExistsException
 import com.terraformation.backend.funder.db.FundingEntityExistsException
 import com.terraformation.backend.funder.db.FundingEntityNotFoundException
 import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.funder.db.FundingEntityUserStore
+import com.terraformation.backend.funder.event.FunderInvitedToFundingEntityEvent
 import com.terraformation.backend.mockUser
 import io.mockk.every
+import io.mockk.mockk
 import java.time.Instant
 import java.util.UUID
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.access.AccessDeniedException
 
 class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
+  @Autowired private lateinit var config: TerrawareServerConfig
   private val clock = TestClock()
   private val fundingEntityStore by lazy { FundingEntityStore(dslContext) }
   private val fundingEntityUserStore by lazy { FundingEntityUserStore(dslContext) }
+  private val parentStore by lazy { ParentStore(dslContext) }
+  private val organizationStore by lazy {
+    OrganizationStore(clock, dslContext, organizationsDao, publisher)
+  }
+  private val publisher by lazy { TestEventPublisher() }
+  private val userStore by lazy {
+    UserStore(
+        clock,
+        config,
+        dslContext,
+        mockk(),
+        InMemoryKeycloakAdminClient(),
+        dummyKeycloakInfo(),
+        organizationStore,
+        parentStore,
+        PermissionStore(dslContext),
+        publisher,
+        usersDao,
+    )
+  }
   private val service by lazy {
-    FundingEntityService(clock, dslContext, fundingEntityStore, fundingEntityUserStore)
+    FundingEntityService(
+        clock, dslContext, fundingEntityStore, fundingEntityUserStore, userStore, publisher)
   }
 
   @BeforeEach
@@ -298,5 +338,88 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
     service.on(event)
 
     assertTableEmpty(FUNDING_ENTITY_USERS)
+  }
+
+  @Nested
+  inner class InviteFunder {
+    @BeforeEach
+    fun setUp() {
+      every { user.canUpdateFundingEntityUsers(any()) } returns true
+    }
+
+    @Test
+    fun `inviteFunder throws exception if user can't update entity users`() {
+      val fundingEntityId = insertFundingEntity()
+
+      every { user.canUpdateFundingEntityUsers(fundingEntityId) } returns false
+
+      assertThrows<AccessDeniedException> {
+        service.inviteFunder(fundingEntityId, "email@example.com")
+      }
+    }
+
+    @Test
+    fun `inviteFunder throws exception if user exists and is not funder`() {
+      val email = "email_${UUID.randomUUID()}@example.com"
+      insertUser(email = email)
+      val fundingEntityId = insertFundingEntity()
+
+      assertThrows<EmailExistsException> { service.inviteFunder(fundingEntityId, email) }
+    }
+
+    @Test
+    fun `inviteFunder throws exception if user is funder in different funding entity`() {
+      val email = "email_${UUID.randomUUID()}@example.com"
+      val funderId = insertUser(email = email, authId = null, type = UserType.Funder)
+      val fundingEntityId1 = insertFundingEntity()
+      val fundingEntityId2 = insertFundingEntity()
+      insertFundingEntityUser(fundingEntityId1, funderId)
+
+      assertThrows<EmailExistsException> { service.inviteFunder(fundingEntityId2, email) }
+    }
+
+    @Test
+    fun `inviteFunder throws exception if user is funder and has already registered`() {
+      val email = "email_${UUID.randomUUID()}@example.com"
+      val funderId = insertUser(email = email, type = UserType.Funder)
+      val fundingEntityId = insertFundingEntity()
+      insertFundingEntityUser(fundingEntityId, funderId)
+
+      assertThrows<EmailExistsException> { service.inviteFunder(fundingEntityId, email) }
+    }
+
+    @Test
+    fun `inviteFunder resends event when user has not yet registered`() {
+      val email = "email_${UUID.randomUUID()}@example.com"
+      val funderId = insertUser(email = email, authId = null, type = UserType.Funder)
+      val fundingEntityId = insertFundingEntity()
+      insertFundingEntityUser(fundingEntityId, funderId)
+
+      service.inviteFunder(fundingEntityId, email)
+
+      publisher.assertExactEventsPublished(
+          setOf(
+              FunderInvitedToFundingEntityEvent(email = email, fundingEntityId = fundingEntityId)))
+    }
+
+    @Test
+    fun `inviteFunder creates the funder, adds to entity, and sends event`() {
+      val email = "email_${UUID.randomUUID()}@example.com"
+      val fundingEntityId = insertFundingEntity()
+
+      service.inviteFunder(fundingEntityId, email)
+
+      val userRecord = dslContext.selectFrom(USERS).where(USERS.EMAIL.eq(email)).fetchOne()!!
+
+      assertNull(userRecord.authId)
+      assertEquals(userRecord.email, email)
+      assertEquals(userRecord.userTypeId, UserType.Funder)
+      assertTableEquals(
+          FundingEntityUsersRecord(fundingEntityId = fundingEntityId, userId = userRecord.id))
+
+      publisher.assertExactEventsPublished(
+          setOf(
+              FunderInvitedToFundingEntityEvent(email = email, fundingEntityId = fundingEntityId)))
+    }
   }
 }

@@ -54,6 +54,7 @@ import com.terraformation.backend.email.model.DeviceUnresponsive
 import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
+import com.terraformation.backend.email.model.FunderAddedToFundingEntity
 import com.terraformation.backend.email.model.MissingContact
 import com.terraformation.backend.email.model.NurserySeedlingBatchReady
 import com.terraformation.backend.email.model.ObservationNotScheduled
@@ -79,6 +80,8 @@ import com.terraformation.backend.email.model.SensorBoundsAlert
 import com.terraformation.backend.email.model.UnknownAutomationTriggered
 import com.terraformation.backend.email.model.UserAddedToOrganization
 import com.terraformation.backend.email.model.UserAddedToTerraware
+import com.terraformation.backend.funder.db.FundingEntityStore
+import com.terraformation.backend.funder.event.FunderInvitedToFundingEntityEvent
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
@@ -117,6 +120,7 @@ class EmailNotificationService(
     private val documentStore: DocumentStore,
     private val emailService: EmailService,
     private val facilityStore: FacilityStore,
+    private val fundingEntityStore: FundingEntityStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val participantStore: ParticipantStore,
@@ -706,6 +710,20 @@ class EmailNotificationService(
             false)
       }
     }
+  }
+
+  @EventListener
+  fun on(event: FunderInvitedToFundingEntityEvent) {
+    val funderPortalRegistrationUrl = webAppUrls.funderPortalRegistrationUrl(event.email).toString()
+
+    val fundingEntity = systemUser.run { fundingEntityStore.fetchOneById(event.fundingEntityId) }
+
+    emailService.sendLocaleEmails(
+        listOf(event.email),
+        FunderAddedToFundingEntity(
+            config = config,
+            fundingEntityName = fundingEntity.name,
+            funderPortalRegistrationUrl = funderPortalRegistrationUrl))
   }
 
   @EventListener

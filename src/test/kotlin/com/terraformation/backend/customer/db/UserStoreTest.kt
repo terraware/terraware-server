@@ -260,6 +260,31 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
+  fun `fetchUserRowByEmail returns null if no row in db`() {
+    assertNull(userStore.fetchUserRowByEmail(userRepresentation.email.uppercase()))
+  }
+
+  @Test
+  fun `fetchUserRowByEmail returns null if user has been deleted`() {
+    insertUser(email = userRepresentation.email)
+    dslContext
+        .update(USERS)
+        .set(USERS.DELETED_TIME, Instant.EPOCH)
+        .where(USERS.ID.eq(inserted.userId))
+        .execute()
+
+    assertNull(userStore.fetchUserRowByEmail(userRepresentation.email.uppercase()))
+  }
+
+  @Test
+  fun `fetchUserRowByEmail returns user ignoring email case`() {
+    insertUser(email = userRepresentation.email)
+
+    val actual = userStore.fetchUserRowByEmail(userRepresentation.email.uppercase())!!
+    assertEquals(userRepresentation.email, actual.email)
+  }
+
+  @Test
   fun `fetchOrCreateByEmail returns existing user`() {
     insertUser(email = userRepresentation.email.uppercase())
 
@@ -943,6 +968,21 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
       val userId = insertUser()
 
       assertThrows<AccessDeniedException> { userStore.updateGlobalRoles(setOf(userId), emptySet()) }
+    }
+  }
+
+  @Nested
+  inner class FunderUser {
+    @Test
+    fun `createFunderUser happy path`() {
+      val email = "testFunderUser@example.com"
+
+      val funderUser = userStore.createFunderUser(email)
+
+      assertNotNull(funderUser.userId)
+      assertEquals(email.lowercase(), funderUser.email)
+      assertEquals(Instant.EPOCH, funderUser.createdTime)
+      assertEquals(UserType.Funder, funderUser.userType)
     }
   }
 }
