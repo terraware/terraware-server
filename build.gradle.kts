@@ -21,7 +21,7 @@ plugins {
   // Uncomment the kapt line in the dependencies block if you enable this.
   // kotlin("kapt")
 
-  id("dev.monosoul.jooq-docker") version "7.0.0"
+  id("dev.monosoul.jooq-docker") version "7.0.1"
   id("com.diffplug.spotless") version "7.0.2"
   id("org.springframework.boot") version "3.4.3"
   id("io.spring.dependency-management") version "1.1.7"
@@ -94,7 +94,7 @@ dependencies {
   implementation("com.drewnoakes:metadata-extractor:2.19.0")
   implementation("com.dropbox.core:dropbox-core-sdk:7.0.0")
   implementation("com.google.api-client:google-api-client:2.7.2")
-  implementation("com.google.auth:google-auth-library-oauth2-http:1.32.1")
+  implementation("com.google.auth:google-auth-library-oauth2-http:1.33.1")
   implementation("com.google.apis:google-api-services-drive:v3-rev20250216-2.0.0")
   implementation("com.opencsv:opencsv:5.10")
   implementation("com.squarespace.cldr-engine:cldr-engine:1.10.1")
@@ -136,7 +136,7 @@ dependencies {
   runtimeOnly("net.logstash.logback:logstash-logback-encoder:8.0")
 
   testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
-  testImplementation("io.mockk:mockk:1.13.16")
+  testImplementation("io.mockk:mockk:1.13.17")
   testImplementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   testImplementation("org.hsqldb:hsqldb:2.7.4")
   testImplementation("org.junit.platform:junit-platform-launcher")
@@ -204,7 +204,8 @@ tasks {
 
   generateJooqClasses {
     basePackageName = "com.terraformation.backend.db"
-    schemas = listOf("public", "docprod", "accelerator", "nursery", "seedbank", "tracking")
+    schemas =
+        listOf("public", "docprod", "accelerator", "nursery", "seedbank", "tracking", "funder")
     outputSchemaToDefault.add("public")
 
     usingJavaConfig {

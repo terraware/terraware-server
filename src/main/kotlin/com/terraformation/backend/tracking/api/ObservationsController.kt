@@ -976,7 +976,7 @@ data class ObservationResultsPayload(
       model: ObservationResultsModel
   ) : this(
       adHocPlot = model.adHocPlot?.let { ObservationMonitoringPlotResultsPayload(it) },
-      biomassMeasurements = model.biomassDetails?.let { ExistingBiomassMeasurementPayload(it) },
+      biomassMeasurements = model.biomassDetails?.let { ExistingBiomassMeasurementPayload.of(it) },
       completedTime = model.completedTime,
       estimatedPlants = model.estimatedPlants,
       isAdHoc = model.isAdHoc,

@@ -10,6 +10,7 @@ import com.terraformation.backend.rectangle
 import com.terraformation.backend.rectanglePolygon
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.differenceNullable
+import java.math.BigDecimal
 import java.time.Instant
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
@@ -206,6 +207,11 @@ private constructor(
       private val numTemporaryPlots: Int = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
       private val extraPermanentClusters: Int = 0,
   ) {
+    var errorMargin: BigDecimal = PlantingZoneModel.DEFAULT_ERROR_MARGIN
+    var studentsT: BigDecimal = PlantingZoneModel.DEFAULT_STUDENTS_T
+    var targetPlantingDensity: BigDecimal = PlantingZoneModel.DEFAULT_TARGET_PLANTING_DENSITY
+    var variance: BigDecimal = PlantingZoneModel.DEFAULT_VARIANCE
+
     private val boundary: MultiPolygon = rectangle(width, height, x, y)
     private var nextPermanentCluster = 1
     private var nextSubzoneX = x
@@ -216,12 +222,16 @@ private constructor(
           areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
           boundary = boundary,
           boundaryModifiedTime = Instant.EPOCH,
+          errorMargin = errorMargin,
           extraPermanentClusters = extraPermanentClusters,
           id = PlantingZoneId(currentZoneId),
           name = name,
           numPermanentClusters = numPermanentClusters,
           numTemporaryPlots = numTemporaryPlots,
           plantingSubzones = plantingSubzones.ifEmpty { listOf(subzone()) },
+          studentsT = studentsT,
+          targetPlantingDensity = targetPlantingDensity,
+          variance = variance,
       )
     }
 

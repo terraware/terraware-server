@@ -34,8 +34,9 @@ VALUES (1, 'Not Submitted'),
        (8, 'Carbon Assessment'),
        (9, 'P0 Eligible'),
        (10, 'Accepted'),
-       (11, 'Issue Reassessment'),
-       (12, 'Not Eligible')
+       (11, 'Issue Active'),
+       (12, 'Issue Reassessment'),
+       (13, 'Not Eligible')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO nursery.batch_quantity_history_types (id, name)
@@ -575,7 +576,8 @@ INSERT INTO user_types (id, name)
 VALUES (1, 'Individual'),
        -- 2 was Super-Admin, which is now a global role
        (3, 'Device Manager'),
-       (4, 'System')
+       (4, 'System'),
+       (5, 'Funder')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO docprod.variable_workflow_statuses (id, name)

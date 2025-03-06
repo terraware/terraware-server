@@ -130,13 +130,26 @@ fun GeometryFactory.createRectangle(
 
 /**
  * Returns a MultiPolygon version of a polygonal geometry. If the geometry is already a
- * MultiPolygon, returns it as-is.
+ * MultiPolygon, returns it as-is. If the geometry is a GeometryCollection, discards any Point
+ * members of the collection.
  */
 fun Geometry.toMultiPolygon(): MultiPolygon {
+  fun extractPolygonsFromCollection(collection: GeometryCollection): List<Polygon> {
+    val polygons = mutableListOf<Polygon>()
+    for (n in 0..<collection.numGeometries) {
+      when (val element = collection.getGeometryN(n)) {
+        is Polygon -> polygons.add(element)
+        is GeometryCollection -> polygons.addAll(extractPolygonsFromCollection(element))
+      }
+    }
+    return polygons
+  }
+
   return when (this) {
     is MultiPolygon -> this
-    is GeometryCollection -> union().toMultiPolygon()
     is Polygon -> factory.createMultiPolygon(arrayOf(this))
+    is GeometryCollection ->
+        factory.createMultiPolygon(extractPolygonsFromCollection(this).toTypedArray())
     else -> throw IllegalArgumentException("Cannot convert $geometryType to MultiPolygon")
   }
 }

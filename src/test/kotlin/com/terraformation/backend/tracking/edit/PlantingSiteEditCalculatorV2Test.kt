@@ -118,6 +118,43 @@ class PlantingSiteEditCalculatorV2Test {
   }
 
   @Test
+  fun `returns zone update for settings change`() {
+    val newErrorMargin = BigDecimal(101)
+    val newStudentsT = BigDecimal("1.646")
+    val newTargetPlantingDensity = BigDecimal(1100)
+    val newVariance = BigDecimal(40001)
+
+    val existing = existingSite { zone { subzone { repeat(8) { cluster() } } } }
+    val desired = newSite {
+      zone {
+        errorMargin = newErrorMargin
+        studentsT = newStudentsT
+        targetPlantingDensity = newTargetPlantingDensity
+        variance = newVariance
+      }
+    }
+
+    assertEditResult(
+        PlantingSiteEdit(
+            areaHaDifference = BigDecimal.ZERO,
+            behavior = PlantingSiteEditBehavior.Flexible,
+            desiredModel = desired,
+            existingModel = existing,
+            plantingZoneEdits =
+                listOf(
+                    PlantingZoneEdit.Update(
+                        addedRegion = rectangle(0),
+                        areaHaDifference = BigDecimal.ZERO,
+                        desiredModel = desired.plantingZones[0],
+                        existingModel = existing.plantingZones[0],
+                        monitoringPlotEdits = emptyList(),
+                        plantingSubzoneEdits = emptyList(),
+                        removedRegion = rectangle(0)))),
+        existing,
+        desired)
+  }
+
+  @Test
   fun `returns updates with both added and removed regions if boundary change was not a simple expansion`() {
     val existing = existingSite(x = 0, width = 500, height = 500)
     val desired = newSite(x = 100, width = 600, height = 500) { zone(numPermanent = 1) }

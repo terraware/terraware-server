@@ -692,6 +692,7 @@ class PlantingSiteStore(
                           .set(BOUNDARY_MODIFIED_TIME, now)
                     }
                   }
+                  .set(ERROR_MARGIN, edit.desiredModel.errorMargin)
                   .set(EXTRA_PERMANENT_CLUSTERS, totalExtraPermanentClusters)
                   .set(MODIFIED_BY, currentUser().userId)
                   .set(MODIFIED_TIME, now)
@@ -699,7 +700,9 @@ class PlantingSiteStore(
                   .set(
                       NUM_PERMANENT_CLUSTERS,
                       edit.desiredModel.numPermanentClusters + totalExtraPermanentClusters)
+                  .set(STUDENTS_T, edit.desiredModel.studentsT)
                   .set(TARGET_PLANTING_DENSITY, edit.desiredModel.targetPlantingDensity)
+                  .set(VARIANCE, edit.desiredModel.variance)
                   .where(ID.eq(edit.existingModel.id))
                   .execute()
           if (rowsUpdated != 1) {

@@ -31,6 +31,7 @@ import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.docprod.DocumentId
+import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.seedbank.AccessionId
@@ -236,6 +237,8 @@ data class IndividualUser(
 
   override fun canCreateFacility(organizationId: OrganizationId) = isAdminOrHigher(organizationId)
 
+  override fun canCreateFundingEntities() = isAcceleratorAdmin()
+
   override fun canCreateNotification(
       targetUserId: UserId,
       organizationId: OrganizationId
@@ -295,6 +298,8 @@ data class IndividualUser(
   override fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
       userId == parentStore.getUserId(draftPlantingSiteId) &&
           isAdminOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
+
+  override fun canDeleteFundingEntities() = isAcceleratorAdmin()
 
   override fun canDeleteOrganization(organizationId: OrganizationId) = isOwner(organizationId)
 
@@ -423,6 +428,8 @@ data class IndividualUser(
       isManagerOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
 
   override fun canReadFacility(facilityId: FacilityId) = isMember(facilityId)
+
+  override fun canReadFundingEntities() = isReadOnlyOrHigher()
 
   override fun canReadGlobalRoles() = isTFExpertOrHigher()
 
@@ -633,6 +640,13 @@ data class IndividualUser(
           isAdminOrHigher(parentStore.getOrganizationId(draftPlantingSiteId))
 
   override fun canUpdateFacility(facilityId: FacilityId) = isAdminOrHigher(facilityId)
+
+  override fun canUpdateFundingEntities() = isAcceleratorAdmin()
+
+  override fun canUpdateFundingEntityProjects() = isAcceleratorAdmin()
+
+  override fun canUpdateFundingEntityUsers(fundingEntityId: FundingEntityId) =
+      isAcceleratorAdmin() || parentStore.exists(fundingEntityId, userId)
 
   override fun canUpdateGlobalRoles(): Boolean = isSuperAdmin()
 
