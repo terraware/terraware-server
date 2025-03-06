@@ -36,8 +36,10 @@ import com.terraformation.backend.db.default_schema.UserIdConverter
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
+import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import jakarta.inject.Named
 import java.time.Instant
 import java.time.InstantSource
@@ -493,14 +495,15 @@ class ReportStore(
       }
 
   private val treesPlantedField =
-      with(DELIVERIES) {
+      with(PLANTINGS) {
         DSL.field(
-                DSL.select(DSL.sum(BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN))
+                DSL.select(DSL.sum(NUM_PLANTS))
                     .from(this)
-                    .join(BATCH_WITHDRAWALS)
-                    .on(BATCH_WITHDRAWALS.WITHDRAWAL_ID.eq(WITHDRAWAL_ID))
-                    .where(withdrawals.WITHDRAWN_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
-                    .and(withdrawals.PURPOSE_ID.eq(WithdrawalPurpose.OutPlant))
+                    .join(DELIVERIES)
+                    .on(DELIVERIES.ID.eq(DELIVERY_ID))
+                    .join(WITHDRAWALS)
+                    .on(WITHDRAWALS.ID.eq(DELIVERIES.WITHDRAWAL_ID))
+                    .where(WITHDRAWALS.WITHDRAWN_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
                     .and(plantingSites.PROJECT_ID.eq(REPORTS.PROJECT_ID)))
             .convertFrom { it.toInt() }
       }

@@ -424,7 +424,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
-      val otherSpeciesId = insertSpecies()
 
       val batchId1 =
           insertBatch(
@@ -479,31 +478,46 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   totalLost = 100,
               ))
 
-      val outplantWithdrawalId =
+      val outplantWithdrawalId1 =
           insertWithdrawal(
               purpose = WithdrawalPurpose.OutPlant,
               withdrawnDate = LocalDate.of(2025, Month.MARCH, 30))
       insertBatchWithdrawal(
           batchId = batchId1,
-          withdrawalId = outplantWithdrawalId,
+          withdrawalId = outplantWithdrawalId1,
           readyQuantityWithdrawn = 4,
       )
       insertBatchWithdrawal(
           batchId = batchId2,
-          withdrawalId = outplantWithdrawalId,
+          withdrawalId = outplantWithdrawalId1,
           readyQuantityWithdrawn = 6,
       )
 
-      // Not counted towards seedlings
+      // Not counted towards seedlings, but counted towards planting
       insertBatchWithdrawal(
           batchId = otherBatchId,
-          withdrawalId = outplantWithdrawalId,
-          readyQuantityWithdrawn = 100,
+          withdrawalId = outplantWithdrawalId1,
+          readyQuantityWithdrawn = 8,
       )
       insertBatchWithdrawal(
           batchId = outdatedBatchId,
-          withdrawalId = outplantWithdrawalId,
-          readyQuantityWithdrawn = 100,
+          withdrawalId = outplantWithdrawalId1,
+          readyQuantityWithdrawn = 9,
+      )
+
+      val outplantWithdrawalId2 =
+          insertWithdrawal(
+              purpose = WithdrawalPurpose.OutPlant,
+              withdrawnDate = LocalDate.of(2025, Month.MARCH, 27))
+      insertBatchWithdrawal(
+          batchId = batchId1,
+          withdrawalId = outplantWithdrawalId2,
+          readyQuantityWithdrawn = 2,
+      )
+      insertBatchWithdrawal(
+          batchId = batchId2,
+          withdrawalId = outplantWithdrawalId2,
+          readyQuantityWithdrawn = 4,
       )
 
       // This will count towards the seedlings metric, but not the trees planted metric
@@ -613,6 +627,44 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           notReadyQuantityWithdrawn = -100,
       )
 
+      val plantingSiteId = insertPlantingSite(projectId = projectId)
+      val otherPlantingSiteId = insertPlantingSite(projectId = otherProjectId)
+
+      val deliveryId =
+          insertDelivery(
+              plantingSiteId = plantingSiteId,
+              withdrawalId = outplantWithdrawalId1,
+          )
+      insertPlanting(
+          plantingSiteId = plantingSiteId,
+          deliveryId = deliveryId,
+          numPlants = 27, // This should match up with the number of seedlings withdrawn
+      )
+
+      // Does not count, since planting site is outside of project
+      val otherDeliveryId =
+          insertDelivery(
+              plantingSiteId = otherPlantingSiteId,
+              withdrawalId = outplantWithdrawalId2,
+          )
+      insertPlanting(
+          plantingSiteId = otherPlantingSiteId,
+          deliveryId = otherDeliveryId,
+          numPlants = 6,
+      )
+
+      // Does not count, since the withdrawal date is not within the report date range
+      val futureDeliveryId =
+          insertDelivery(
+              plantingSiteId = plantingSiteId,
+              withdrawalId = futureWithdrawalId,
+          )
+      insertPlanting(
+          plantingSiteId = plantingSiteId,
+          deliveryId = futureDeliveryId,
+          numPlants = 9,
+      )
+
       assertEquals(
           listOf(
               ReportSystemMetricModel(
@@ -625,13 +677,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   metric = SystemMetric.Seedlings,
                   entry =
                       ReportSystemMetricEntryModel(
-                          systemValue = 77,
+                          systemValue = 83,
                       )),
               ReportSystemMetricModel(
                   metric = SystemMetric.TreesPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
-                          systemValue = 33,
+                          systemValue = 27,
                       )),
               ReportSystemMetricModel(
                   metric = SystemMetric.SpeciesPlanted,
