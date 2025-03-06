@@ -32,6 +32,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
@@ -421,10 +422,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
           .forEach { insertAccession(it) }
 
-      // Seedlings
-      insertSpecies()
+      val speciesId1 = insertSpecies()
+      val speciesId2 = insertSpecies()
 
-      listOf(
+      val batchId1 =
+          insertBatch(
               BatchesRow(
                   facilityId = facilityId1,
                   projectId = projectId,
@@ -433,7 +435,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   germinatingQuantity = 7,
                   readyQuantity = 3,
                   totalLost = 100,
-              ),
+                  speciesId = speciesId1,
+              ))
+
+      val batchId2 =
+          insertBatch(
               BatchesRow(
                   facilityId = facilityId2,
                   projectId = projectId,
@@ -442,8 +448,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   germinatingQuantity = 3,
                   readyQuantity = 2,
                   totalLost = 100,
-              ),
-              // Other project
+                  speciesId = speciesId2,
+              ))
+
+      // Other project
+      val otherBatchId =
+          insertBatch(
               BatchesRow(
                   facilityId = facilityId1,
                   projectId = otherProjectId,
@@ -452,8 +462,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   germinatingQuantity = 100,
                   readyQuantity = 100,
                   totalLost = 100,
-              ),
-              // Outside of date range
+                  speciesId = speciesId1,
+              ))
+
+      // Outside of date range
+      val outdatedBatchId =
+          insertBatch(
               BatchesRow(
                   facilityId = facilityId2,
                   projectId = projectId,
@@ -462,9 +476,141 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   germinatingQuantity = 100,
                   readyQuantity = 100,
                   totalLost = 100,
-              ),
+              ))
+
+      val outplantWithdrawalId =
+          insertWithdrawal(
+              purpose = WithdrawalPurpose.OutPlant,
+              withdrawnDate = LocalDate.of(2025, Month.MARCH, 30))
+      insertBatchWithdrawal(
+          batchId = batchId1,
+          withdrawalId = outplantWithdrawalId,
+          readyQuantityWithdrawn = 4,
+      )
+      insertBatchWithdrawal(
+          batchId = batchId2,
+          withdrawalId = outplantWithdrawalId,
+          readyQuantityWithdrawn = 6,
+      )
+
+      // Not counted towards seedlings
+      insertBatchWithdrawal(
+          batchId = otherBatchId,
+          withdrawalId = outplantWithdrawalId,
+          readyQuantityWithdrawn = 100,
+      )
+      insertBatchWithdrawal(
+          batchId = outdatedBatchId,
+          withdrawalId = outplantWithdrawalId,
+          readyQuantityWithdrawn = 100,
+      )
+
+      // This will count towards the seedlings metric, but not the trees planted metric
+      val futureWithdrawalId =
+          insertWithdrawal(
+              purpose = WithdrawalPurpose.OutPlant,
+              withdrawnDate = LocalDate.of(2025, Month.MAY, 30))
+      insertBatchWithdrawal(
+          batchId = batchId1,
+          withdrawalId = futureWithdrawalId,
+          readyQuantityWithdrawn = 7,
+      )
+      insertBatchWithdrawal(
+          batchId = batchId2,
+          withdrawalId = futureWithdrawalId,
+          readyQuantityWithdrawn = 2,
+      )
+
+      val otherWithdrawalId =
+          insertWithdrawal(
+              purpose = WithdrawalPurpose.Other,
+              withdrawnDate = LocalDate.of(2025, Month.MARCH, 30))
+      insertBatchWithdrawal(
+          batchId = batchId1,
+          withdrawalId = otherWithdrawalId,
+          germinatingQuantityWithdrawn = 1,
+          notReadyQuantityWithdrawn = 2,
+      )
+      insertBatchWithdrawal(
+          batchId = batchId2,
+          withdrawalId = otherWithdrawalId,
+          germinatingQuantityWithdrawn = 4,
+          notReadyQuantityWithdrawn = 3,
+      )
+
+      val deadWithdrawalId =
+          insertWithdrawal(
+              purpose = WithdrawalPurpose.Dead, withdrawnDate = LocalDate.of(2025, Month.MARCH, 30))
+      insertBatchWithdrawal(
+          batchId = batchId1,
+          withdrawalId = deadWithdrawalId,
+          germinatingQuantityWithdrawn = 6,
+      )
+      insertBatchWithdrawal(
+          batchId = batchId2,
+          withdrawalId = deadWithdrawalId,
+          germinatingQuantityWithdrawn = 8,
+      )
+
+      // This will not be counted, to prevent double-counting of seedlings
+      val nurseryTransferWithdrawalId =
+          insertWithdrawal(
+              purpose = WithdrawalPurpose.NurseryTransfer,
+              withdrawnDate = LocalDate.of(2025, Month.MARCH, 30))
+      insertBatchWithdrawal(
+          batchId = batchId1,
+          withdrawalId = nurseryTransferWithdrawalId,
+          readyQuantityWithdrawn = 100,
+          germinatingQuantityWithdrawn = 100,
+          notReadyQuantityWithdrawn = 100,
+      )
+      insertBatchWithdrawal(
+          batchId = batchId2,
+          withdrawalId = nurseryTransferWithdrawalId,
+          readyQuantityWithdrawn = 100,
+          germinatingQuantityWithdrawn = 100,
+          notReadyQuantityWithdrawn = 100,
+      )
+
+      // These two will be counted towards the seedlings metric, but should negate each other
+      val undoneWithdrawalId =
+          insertWithdrawal(
+              purpose = WithdrawalPurpose.OutPlant,
+              withdrawnDate = LocalDate.of(2025, Month.MARCH, 28))
+      val undoWithdrawalId =
+          insertWithdrawal(
+              purpose = WithdrawalPurpose.Undo,
+              undoesWithdrawalId = undoneWithdrawalId,
+              withdrawnDate = LocalDate.of(2025, Month.MARCH, 29),
           )
-          .forEach { insertBatch(it) }
+      insertBatchWithdrawal(
+          batchId = batchId1,
+          withdrawalId = undoneWithdrawalId,
+          readyQuantityWithdrawn = 100,
+          germinatingQuantityWithdrawn = 100,
+          notReadyQuantityWithdrawn = 100,
+      )
+      insertBatchWithdrawal(
+          batchId = batchId2,
+          withdrawalId = undoneWithdrawalId,
+          readyQuantityWithdrawn = 100,
+          germinatingQuantityWithdrawn = 100,
+          notReadyQuantityWithdrawn = 100,
+      )
+      insertBatchWithdrawal(
+          batchId = batchId1,
+          withdrawalId = undoWithdrawalId,
+          readyQuantityWithdrawn = -100,
+          germinatingQuantityWithdrawn = -100,
+          notReadyQuantityWithdrawn = -100,
+      )
+      insertBatchWithdrawal(
+          batchId = batchId2,
+          withdrawalId = undoWithdrawalId,
+          readyQuantityWithdrawn = -100,
+          germinatingQuantityWithdrawn = -100,
+          notReadyQuantityWithdrawn = -100,
+      )
 
       assertEquals(
           listOf(
@@ -478,7 +624,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   metric = SystemMetric.Seedlings,
                   entry =
                       ReportSystemMetricEntryModel(
-                          systemValue = 34,
+                          systemValue = 77,
                       )),
               ReportSystemMetricModel(
                   metric = SystemMetric.TreesPlanted,
