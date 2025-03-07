@@ -37,7 +37,10 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
+import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingType
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.multiPolygon
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -327,7 +330,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   metric = SystemMetric.MortalityRate,
                   entry =
                       ReportSystemMetricEntryModel(
-                          systemValue = -1,
+                          systemValue = 0,
                       )),
           )
 
@@ -613,16 +616,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           readyQuantityWithdrawn = -100,
       )
 
-      val plantingSiteId = insertPlantingSite(projectId = projectId)
-      val otherPlantingSiteId = insertPlantingSite(projectId = otherProjectId)
+      val plantingSiteId1 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
+      val plantingSiteHistoryId1 = insertPlantingSiteHistory()
+      val plantingSiteId2 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
+      val plantingSiteHistoryId2 = insertPlantingSiteHistory()
+      val otherPlantingSiteId =
+          insertPlantingSite(projectId = otherProjectId, boundary = multiPolygon(1))
+      val otherPlantingSiteHistoryId = insertPlantingSiteHistory()
 
       val deliveryId =
           insertDelivery(
-              plantingSiteId = plantingSiteId,
+              plantingSiteId = plantingSiteId1,
               withdrawalId = outplantWithdrawalId1,
           )
       insertPlanting(
-          plantingSiteId = plantingSiteId,
+          plantingSiteId = plantingSiteId1,
           deliveryId = deliveryId,
           numPlants = 27, // This should match up with the number of seedlings withdrawn
       )
@@ -630,21 +638,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       // These two should negate each other, in both tree planted and species planted
       val undoneDeliveryId =
           insertDelivery(
-              plantingSiteId = plantingSiteId,
+              plantingSiteId = plantingSiteId1,
               withdrawalId = undoneWithdrawalId,
           )
       insertPlanting(
-          plantingSiteId = plantingSiteId,
+          plantingSiteId = plantingSiteId1,
           deliveryId = undoneDeliveryId,
           numPlants = 200,
       )
       val undoDeliveryId =
           insertDelivery(
-              plantingSiteId = plantingSiteId,
+              plantingSiteId = plantingSiteId1,
               withdrawalId = undoWithdrawalId,
           )
       insertPlanting(
-          plantingSiteId = plantingSiteId,
+          plantingSiteId = plantingSiteId1,
           plantingTypeId = PlantingType.Undo,
           deliveryId = undoDeliveryId,
           numPlants = -200,
@@ -665,14 +673,123 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       // Does not count, since the withdrawal date is not within the report date range
       val futureDeliveryId =
           insertDelivery(
-              plantingSiteId = plantingSiteId,
+              plantingSiteId = plantingSiteId1,
               withdrawalId = futureWithdrawalId,
           )
       insertPlanting(
-          plantingSiteId = plantingSiteId,
+          plantingSiteId = plantingSiteId1,
           deliveryId = futureDeliveryId,
           numPlants = 9,
       )
+
+      // Not the latest observation, so the number does not count towards mortality rate
+      val site1OldObservationId =
+          insertObservation(
+              plantingSiteId = plantingSiteId1,
+              plantingSiteHistoryId = plantingSiteHistoryId1,
+              state = ObservationState.Completed,
+              completedTime =
+                  LocalDate.of(2025, Month.JANUARY, 15).atStartOfDay().toInstant(ZoneOffset.UTC))
+      insertObservedSiteSpeciesTotals(
+          observationId = site1OldObservationId,
+          plantingSiteId = plantingSiteId1,
+          certainty = RecordedSpeciesCertainty.Known,
+          speciesId = speciesId,
+          permanentLive = 0,
+          cumulativeDead = 1000,
+      )
+      insertObservedSiteSpeciesTotals(
+          observationId = site1OldObservationId,
+          plantingSiteId = plantingSiteId1,
+          certainty = RecordedSpeciesCertainty.Known,
+          speciesId = otherSpeciesId,
+          permanentLive = 0,
+          cumulativeDead = 1000,
+      )
+      insertObservedSiteSpeciesTotals(
+          observationId = site1OldObservationId,
+          plantingSiteId = plantingSiteId1,
+          certainty = RecordedSpeciesCertainty.Other,
+          speciesName = "Other",
+          permanentLive = 0,
+          cumulativeDead = 1000,
+      )
+
+      val site1NewObservationId =
+          insertObservation(
+              plantingSiteId = plantingSiteId1,
+              plantingSiteHistoryId = plantingSiteHistoryId1,
+              state = ObservationState.Completed,
+              completedTime =
+                  LocalDate.of(2025, Month.JANUARY, 16).atStartOfDay().toInstant(ZoneOffset.UTC))
+      insertObservedSiteSpeciesTotals(
+          observationId = site1NewObservationId,
+          plantingSiteId = plantingSiteId1,
+          certainty = RecordedSpeciesCertainty.Known,
+          speciesId = speciesId,
+          permanentLive = 6,
+          cumulativeDead = 1,
+      )
+      insertObservedSiteSpeciesTotals(
+          observationId = site1NewObservationId,
+          plantingSiteId = plantingSiteId1,
+          certainty = RecordedSpeciesCertainty.Known,
+          speciesId = otherSpeciesId,
+          permanentLive = 11,
+          cumulativeDead = 3,
+      )
+      insertObservedSiteSpeciesTotals(
+          observationId = site1NewObservationId,
+          plantingSiteId = plantingSiteId1,
+          certainty = RecordedSpeciesCertainty.Other,
+          speciesName = "Other",
+          permanentLive = 6,
+          cumulativeDead = 7,
+      )
+      // Unknown plants are not counted towards mortality rate
+      insertObservedSiteSpeciesTotals(
+          observationId = site1NewObservationId,
+          plantingSiteId = plantingSiteId1,
+          certainty = RecordedSpeciesCertainty.Unknown,
+          permanentLive = 0,
+          cumulativeDead = 1000,
+      )
+
+      // Latest observation before the reporting period counts towards mortality rate
+      val site2ObservationId =
+          insertObservation(
+              plantingSiteId = plantingSiteId2,
+              plantingSiteHistoryId = plantingSiteHistoryId2,
+              state = ObservationState.Completed,
+              completedTime =
+                  LocalDate.of(2024, Month.AUGUST, 15).atStartOfDay().toInstant(ZoneOffset.UTC))
+      insertObservedSiteSpeciesTotals(
+          observationId = site2ObservationId,
+          plantingSiteId = plantingSiteId2,
+          certainty = RecordedSpeciesCertainty.Known,
+          speciesId = speciesId,
+          permanentLive = 7,
+          cumulativeDead = 9,
+      )
+
+      // Planting sites not part of the project is never counted
+      val otherSiteObservationId =
+          insertObservation(
+              plantingSiteId = otherPlantingSiteId,
+              plantingSiteHistoryId = otherPlantingSiteHistoryId,
+              state = ObservationState.Completed,
+              completedTime =
+                  LocalDate.of(2025, Month.JANUARY, 15).atStartOfDay().toInstant(ZoneOffset.UTC))
+      insertObservedSiteSpeciesTotals(
+          observationId = otherSiteObservationId,
+          plantingSiteId = plantingSiteId1,
+          certainty = RecordedSpeciesCertainty.Known,
+          speciesId = speciesId,
+          permanentLive = 0,
+          cumulativeDead = 1000,
+      )
+      // Total plants: 50
+      // Dead plants: 20
 
       assertEquals(
           listOf(
@@ -704,7 +821,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   metric = SystemMetric.MortalityRate,
                   entry =
                       ReportSystemMetricEntryModel(
-                          systemValue = -1,
+                          systemValue = 40,
                       )),
           ),
           store.fetch(includeFuture = true, includeMetrics = true).first().systemMetrics)
