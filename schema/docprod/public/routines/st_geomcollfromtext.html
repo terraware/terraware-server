@@ -125,7 +125,7 @@
                             </div>
                         </div>
                         <div class="box-body">
-                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">&#10;&#9;SELECT CASE&#10;&#9;WHEN public.geometrytype(public.ST_GeomFromText($1, $2)) = &#39;GEOMETRYCOLLECTION&#39;&#10;&#9;THEN public.ST_GeomFromText($1,$2)&#10;&#9;ELSE NULL END&#10;&#9;</textarea>
+                            <textarea id="sql-script-codemirror" name="sql-script-codemirror" rows="" style="display: none;">&#10;&#9;SELECT CASE&#10;&#9;WHEN public.geometrytype(public.ST_GeomFromText($1)) = &#39;GEOMETRYCOLLECTION&#39;&#10;&#9;THEN public.ST_GeomFromText($1)&#10;&#9;ELSE NULL END&#10;&#9;</textarea>
                         </div>
                     </div>
                 </section>
