@@ -424,7 +424,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           .forEach { insertAccession(it) }
 
       val speciesId = insertSpecies()
-      val otherSpeicesId = insertSpecies()
+      val otherSpeciesId = insertSpecies()
 
       val batchId1 =
           insertBatch(
@@ -449,7 +449,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   germinatingQuantity = 3,
                   readyQuantity = 2,
                   totalLost = 100,
-                  speciesId = otherSpeicesId,
+                  speciesId = otherSpeciesId,
               ))
 
       // Other project
