@@ -509,10 +509,12 @@ class ReportStore(
                         .on(DELIVERIES.ID.eq(DELIVERY_ID))
                         .join(WITHDRAWALS)
                         .on(WITHDRAWALS.ID.eq(DELIVERIES.WITHDRAWAL_ID))
+                        .join(PLANTING_SITES)
+                        .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
                         .where(
                             WITHDRAWALS.WITHDRAWN_DATE.between(
                                 REPORTS.START_DATE, REPORTS.END_DATE))
-                        .and(plantingSites.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                        .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                         .groupBy(SPECIES_ID)
                         .having(DSL.sum(NUM_PLANTS).ge(BigDecimal.ZERO))))
       }
