@@ -40,6 +40,7 @@ import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import jakarta.inject.Named
 import java.time.Instant
 import java.time.InstantSource
@@ -503,8 +504,10 @@ class ReportStore(
                     .on(DELIVERIES.ID.eq(DELIVERY_ID))
                     .join(WITHDRAWALS)
                     .on(WITHDRAWALS.ID.eq(DELIVERIES.WITHDRAWAL_ID))
+                    .join(PLANTING_SITES)
+                    .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
                     .where(WITHDRAWALS.WITHDRAWN_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
-                    .and(plantingSites.PROJECT_ID.eq(REPORTS.PROJECT_ID)))
+                    .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID)))
             .convertFrom { it.toInt() }
       }
 
