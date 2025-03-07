@@ -37,6 +37,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
+import com.terraformation.backend.db.tracking.PlantingType
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -320,7 +321,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   metric = SystemMetric.SpeciesPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
-                          systemValue = -4,
+                          systemValue = 0,
                       )),
               ReportSystemMetricModel(
                   metric = SystemMetric.MortalityRate,
@@ -422,8 +423,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
           .forEach { insertAccession(it) }
 
-      val speciesId1 = insertSpecies()
-      val speciesId2 = insertSpecies()
+      val speciesId = insertSpecies()
+      val otherSpeciesId = insertSpecies()
 
       val batchId1 =
           insertBatch(
@@ -435,7 +436,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   germinatingQuantity = 7,
                   readyQuantity = 3,
                   totalLost = 100,
-                  speciesId = speciesId1,
+                  speciesId = speciesId,
               ))
 
       val batchId2 =
@@ -448,7 +449,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   germinatingQuantity = 3,
                   readyQuantity = 2,
                   totalLost = 100,
-                  speciesId = speciesId2,
+                  speciesId = otherSpeciesId,
               ))
 
       // Other project
@@ -462,7 +463,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   germinatingQuantity = 100,
                   readyQuantity = 100,
                   totalLost = 100,
-                  speciesId = speciesId1,
+                  speciesId = speciesId,
               ))
 
       // Outside of date range
@@ -476,6 +477,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   germinatingQuantity = 100,
                   readyQuantity = 100,
                   totalLost = 100,
+                  speciesId = speciesId,
               ))
 
       val outplantWithdrawalId1 =
@@ -485,12 +487,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertBatchWithdrawal(
           batchId = batchId1,
           withdrawalId = outplantWithdrawalId1,
-          readyQuantityWithdrawn = 4,
-      )
-      insertBatchWithdrawal(
-          batchId = batchId2,
-          withdrawalId = outplantWithdrawalId1,
-          readyQuantityWithdrawn = 6,
+          readyQuantityWithdrawn = 10,
       )
 
       // Not counted towards seedlings, but counted towards planting
@@ -512,15 +509,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertBatchWithdrawal(
           batchId = batchId1,
           withdrawalId = outplantWithdrawalId2,
-          readyQuantityWithdrawn = 2,
-      )
-      insertBatchWithdrawal(
-          batchId = batchId2,
-          withdrawalId = outplantWithdrawalId2,
-          readyQuantityWithdrawn = 4,
+          readyQuantityWithdrawn = 6,
       )
 
-      // This will count towards the seedlings metric, but not the trees planted metric
+      // This will count towards the seedlings metric, but not the trees planted metric.
+      // This includes two species, but does not count towards species planted.
       val futureWithdrawalId =
           insertWithdrawal(
               purpose = WithdrawalPurpose.OutPlant,
@@ -567,7 +560,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           germinatingQuantityWithdrawn = 8,
       )
 
-      // This will not be counted, to prevent double-counting of seedlings
+      // This will not be counted towards seedlings, to prevent double-counting
       val nurseryTransferWithdrawalId =
           insertWithdrawal(
               purpose = WithdrawalPurpose.NurseryTransfer,
@@ -588,6 +581,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       // These two will be counted towards the seedlings metric, but should negate each other
+      // These should not be counted towards species planted metric
       val undoneWithdrawalId =
           insertWithdrawal(
               purpose = WithdrawalPurpose.OutPlant,
@@ -602,29 +596,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           batchId = batchId1,
           withdrawalId = undoneWithdrawalId,
           readyQuantityWithdrawn = 100,
-          germinatingQuantityWithdrawn = 100,
-          notReadyQuantityWithdrawn = 100,
       )
       insertBatchWithdrawal(
           batchId = batchId2,
           withdrawalId = undoneWithdrawalId,
           readyQuantityWithdrawn = 100,
-          germinatingQuantityWithdrawn = 100,
-          notReadyQuantityWithdrawn = 100,
       )
       insertBatchWithdrawal(
           batchId = batchId1,
           withdrawalId = undoWithdrawalId,
           readyQuantityWithdrawn = -100,
-          germinatingQuantityWithdrawn = -100,
-          notReadyQuantityWithdrawn = -100,
       )
       insertBatchWithdrawal(
           batchId = batchId2,
           withdrawalId = undoWithdrawalId,
           readyQuantityWithdrawn = -100,
-          germinatingQuantityWithdrawn = -100,
-          notReadyQuantityWithdrawn = -100,
       )
 
       val plantingSiteId = insertPlantingSite(projectId = projectId)
@@ -641,7 +627,30 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           numPlants = 27, // This should match up with the number of seedlings withdrawn
       )
 
-      // Does not count, since planting site is outside of project
+      // These two should negate each other, in both tree planted and species planted
+      val undoneDeliveryId =
+          insertDelivery(
+              plantingSiteId = plantingSiteId,
+              withdrawalId = undoneWithdrawalId,
+          )
+      insertPlanting(
+          plantingSiteId = plantingSiteId,
+          deliveryId = undoneDeliveryId,
+          numPlants = 200,
+      )
+      val undoDeliveryId =
+          insertDelivery(
+              plantingSiteId = plantingSiteId,
+              withdrawalId = undoWithdrawalId,
+          )
+      insertPlanting(
+          plantingSiteId = plantingSiteId,
+          plantingTypeId = PlantingType.Undo,
+          deliveryId = undoDeliveryId,
+          numPlants = -200,
+      )
+
+      // Does not count towards trees or speces planted, since planting site is outside of project
       val otherDeliveryId =
           insertDelivery(
               plantingSiteId = otherPlantingSiteId,
@@ -689,7 +698,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   metric = SystemMetric.SpeciesPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
-                          systemValue = -4,
+                          systemValue = 1,
                       )),
               ReportSystemMetricModel(
                   metric = SystemMetric.MortalityRate,
