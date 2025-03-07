@@ -1,6 +1,6 @@
 package com.terraformation.backend.tracking.db
 
-import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.customer.model.OrdinaryUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -578,8 +578,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               ObservationMonitoringPlotResultsModel(
                   boundary = record[monitoringPlotsBoundaryField] as Polygon,
                   claimedByName =
-                      IndividualUser.makeFullName(
-                          record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
+                      OrdinaryUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME]),
                   claimedByUserId = claimedBy,
                   completedTime = completedTime,
                   conditions = record[monitoringPlotConditionsMultiset],
