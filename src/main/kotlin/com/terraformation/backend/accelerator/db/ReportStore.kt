@@ -38,9 +38,13 @@ import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.util.toInstant
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Instant
@@ -460,6 +464,41 @@ class ReportStore(
                   .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID))
           .convertFrom { result -> result.map { ReportProjectMetricModel.of(it) } }
 
+  private val mortalityRateDenominatorField =
+      with(OBSERVED_SITE_SPECIES_TOTALS) { DSL.sum(CUMULATIVE_DEAD) + DSL.sum(PERMANENT_LIVE) }
+
+  private val mortalityRateNominatorField =
+      with(OBSERVED_SITE_SPECIES_TOTALS) { DSL.sum(CUMULATIVE_DEAD) }
+
+  // Fetch the latest observations per planting site from the reporting period, and calculate the
+  // mortality rate
+  private val mortalityRateField =
+      with(OBSERVED_SITE_SPECIES_TOTALS) {
+        DSL.field(
+                DSL.select(
+                        DSL.if_(
+                            mortalityRateDenominatorField.notEqual(BigDecimal.ZERO),
+                            (mortalityRateNominatorField * 100.0) / mortalityRateDenominatorField,
+                            BigDecimal.ZERO))
+                    .from(this)
+                    .where(
+                        OBSERVATION_ID.`in`(
+                            DSL.select(OBSERVATIONS.ID)
+                                .distinctOn(OBSERVATIONS.PLANTING_SITE_ID)
+                                .from(OBSERVATIONS)
+                                .where(
+                                    OBSERVATIONS.COMPLETED_TIME.lessThan(
+                                        REPORTS.END_DATE.convertFrom {
+                                          it!!.plusDays(1).toInstant(ZoneId.systemDefault())
+                                        }))
+                                .and(OBSERVATIONS.plantingSites.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                                .orderBy(
+                                    OBSERVATIONS.PLANTING_SITE_ID,
+                                    OBSERVATIONS.COMPLETED_TIME.desc())))
+                    .and(CERTAINTY_ID.notEqual(RecordedSpeciesCertainty.Unknown)))
+            .convertFrom { it.toInt() }
+      }
+
   private val seedsCollectedField =
       with(ACCESSIONS) {
         DSL.field(
@@ -539,8 +578,7 @@ class ReportStore(
       DSL.coalesce(
           REPORT_SYSTEM_METRICS.SYSTEM_VALUE,
           DSL.case_()
-              // ToDo: Implement each system query
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.MortalityRate), -1)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.MortalityRate), mortalityRateField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), seedlingsField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), seedsCollectedField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SpeciesPlanted), speciesPlantedField)
