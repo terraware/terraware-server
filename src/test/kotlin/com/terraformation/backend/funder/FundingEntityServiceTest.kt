@@ -74,7 +74,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
   }
   private val service by lazy {
     FundingEntityService(
-        clock, dslContext, fundingEntityStore, fundingEntityUserStore, userStore, publisher)
+        clock, dslContext, fundingEntityStore, fundingEntityUserStore, publisher, userStore)
   }
 
   @BeforeEach
@@ -411,7 +411,7 @@ class FundingEntityServiceTest : DatabaseTest(), RunsAsUser {
 
       val userRecord = dslContext.selectFrom(USERS).where(USERS.EMAIL.eq(email)).fetchOne()!!
 
-      assertNull(userRecord.authId)
+      assertNull(userRecord.authId, "New Funder Auth ID should be null")
       assertEquals(userRecord.email, email)
       assertEquals(userRecord.userTypeId, UserType.Funder)
       assertTableEquals(

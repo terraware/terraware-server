@@ -10,6 +10,7 @@ import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.DeviceManagerUser
 import com.terraformation.backend.customer.model.FunderUser
 import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.KeycloakRequestFailedException
@@ -186,7 +187,7 @@ class UserStore(
    *   be folded to lower case.
    * @return null if no user has the requested email address, or if users that do have been deleted.
    */
-  fun fetchUserRowByEmail(email: String): UsersRow? {
+  fun fetchTerrawareUserByEmail(email: String): TerrawareUser? {
     val user = usersDao.fetchByEmail(email.lowercase()).firstOrNull()
 
     // Deleted users have invalid email addresses that should never match legitimate calls to this
@@ -196,7 +197,7 @@ class UserStore(
       return null
     }
 
-    return user
+    return user?.let { rowToModel(user) }
   }
 
   /**
@@ -645,8 +646,8 @@ class UserStore(
     requirePermissions { deleteUsers() }
 
     val user = fetchOneById(userId)
-    if (user !is IndividualUser || user.userType != UserType.Individual) {
-      throw AccessDeniedException("Not allowed to delete non-individual users")
+    if (user.userType != UserType.Individual && user.userType != UserType.Funder) {
+      throw AccessDeniedException("Not allowed to delete non-individual and non-funder users")
     }
 
     deleteUser(user)
@@ -739,19 +740,31 @@ class UserStore(
   }
 
   private fun rowToModel(user: UsersRow): TerrawareUser {
-    return if (user.userTypeId == UserType.DeviceManager) {
-      rowToDeviceManagerUser(user)
-    } else {
-      rowToIndividualUser(user)
+    return when (user.userTypeId) {
+      UserType.DeviceManager -> rowToDeviceManagerUser(user)
+      UserType.Funder -> rowToFunderUser(user)
+      UserType.Individual -> rowToIndividualUser(user)
+      UserType.System -> SystemUser(usersDao)
+      else ->
+          throw AccessDeniedException(
+              "User type ${user.userTypeId} is not allowed to be converted to a model")
     }
   }
 
   private fun rowToFunderUser(usersRow: UsersRow): FunderUser {
     return FunderUser(
-        userId =
-            usersRow.id ?: throw java.lang.IllegalArgumentException("User ID should never be null"),
-        email = usersRow.email ?: throw IllegalArgumentException("Email should never be null"),
-        createdTime = usersRow.createdTime!!,
+        usersRow.createdTime!!,
+        usersRow.id ?: throw java.lang.IllegalArgumentException("User ID should never be null"),
+        usersRow.authId,
+        usersRow.email ?: throw IllegalArgumentException("Email should never be null"),
+        usersRow.emailNotificationsEnabled ?: true,
+        usersRow.firstName,
+        usersRow.lastName,
+        usersRow.countryCode,
+        usersRow.cookiesConsented,
+        usersRow.cookiesConsentedTime,
+        usersRow.locale,
+        usersRow.timeZone,
     )
   }
 

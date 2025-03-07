@@ -33,8 +33,8 @@ class FundingEntityService(
     private val dslContext: DSLContext,
     private val fundingEntityStore: FundingEntityStore,
     private val fundingEntityUserStore: FundingEntityUserStore,
-    private val userStore: UserStore,
     private val publisher: ApplicationEventPublisher,
+    private val userStore: UserStore,
 ) {
   private val log = perClassLogger()
 
@@ -126,17 +126,17 @@ class FundingEntityService(
   fun inviteFunder(fundingEntityId: FundingEntityId, email: String) {
     requirePermissions { updateFundingEntityUsers(fundingEntityId) }
 
-    val existingUser = userStore.fetchUserRowByEmail(email)
+    val existingUser = userStore.fetchTerrawareUserByEmail(email)
     if (existingUser != null) {
-      if (existingUser.userTypeId == UserType.Individual) {
-        throw EmailExistsException(email)
-      } else if (existingUser.userTypeId == UserType.Funder) {
-        val existingUserEntityId = fundingEntityUserStore.getFundingEntityId(existingUser.id!!)
+      if (existingUser.userType == UserType.Funder) {
+        val existingUserEntityId = fundingEntityUserStore.getFundingEntityId(existingUser.userId)
         // If the user already belongs to a different Funding Entity or has already registered,
         // throw an error
         if (existingUserEntityId != fundingEntityId || existingUser.authId != null) {
           throw EmailExistsException(email)
         }
+      } else {
+        throw EmailExistsException(email)
       }
     }
 

@@ -14,12 +14,12 @@ import java.util.Locale
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
-class FunderUser(
+data class FunderUser(
     val createdTime: Instant,
     override val userId: UserId,
     override val authId: String? = null,
-    val email: String,
-    val emailNotificationsEnabled: Boolean? = null,
+    override val email: String,
+    val emailNotificationsEnabled: Boolean = true,
     val firstName: String? = null,
     val lastName: String? = null,
     val countryCode: String? = null,

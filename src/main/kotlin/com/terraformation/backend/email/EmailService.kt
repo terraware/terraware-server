@@ -104,7 +104,7 @@ class EmailService(
     if (requireOptIn && !user.emailNotificationsEnabled) {
       log.info("Skipping email notification for user ${user.userId} because they didn't enable it")
     } else {
-      sendLocaleEmails(listOf(user.email), model, user.locale)
+      sendLocaleEmails(model, listOf(user.email), user.locale)
     }
   }
 
@@ -123,7 +123,7 @@ class EmailService(
     val allUsers = userStore.fetchUsers(requireOptIn)
     allUsers.forEach { user ->
       try {
-        sendLocaleEmails(listOf(user.email), model, user.locale)
+        sendLocaleEmails(model, listOf(user.email), user.locale)
       } catch (e: Exception) {
         log.error("Failed to send email to user ${user.userId}: ${e.message}")
       }
@@ -136,7 +136,7 @@ class EmailService(
    * @param [model] Model object containing values that can be referenced by the template.
    */
   fun sendSupportNotification(model: EmailTemplateModel) {
-    config.support.email?.let { supportEmail -> sendLocaleEmails(listOf(supportEmail), model) }
+    config.support.email?.let { supportEmail -> sendLocaleEmails(model, listOf(supportEmail)) }
   }
 
   /**
@@ -147,8 +147,8 @@ class EmailService(
    * @param [initialLocale] Optional Locale object; uses ENGLISH if unspecified.
    */
   fun sendLocaleEmails(
-      recipients: List<String>,
       model: EmailTemplateModel,
+      recipients: List<String>,
       initialLocale: Locale? = null,
   ) {
     val finalLocale = initialLocale ?: Locale.ENGLISH

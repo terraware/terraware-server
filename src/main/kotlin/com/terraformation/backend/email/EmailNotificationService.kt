@@ -719,11 +719,11 @@ class EmailNotificationService(
     val fundingEntity = systemUser.run { fundingEntityStore.fetchOneById(event.fundingEntityId) }
 
     emailService.sendLocaleEmails(
-        listOf(event.email),
         FunderAddedToFundingEntity(
             config = config,
             fundingEntityName = fundingEntity.name,
-            funderPortalRegistrationUrl = funderPortalRegistrationUrl))
+            funderPortalRegistrationUrl = funderPortalRegistrationUrl),
+        listOf(event.email))
   }
 
   @EventListener

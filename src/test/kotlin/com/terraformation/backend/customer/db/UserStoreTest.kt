@@ -10,6 +10,7 @@ import com.terraformation.backend.auth.UserRepresentation
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.event.UserDeletionStartedEvent
 import com.terraformation.backend.customer.model.DeviceManagerUser
+import com.terraformation.backend.customer.model.FunderUser
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -260,12 +261,12 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `fetchUserRowByEmail returns null if no row in db`() {
-    assertNull(userStore.fetchUserRowByEmail(userRepresentation.email.uppercase()))
+  fun `fetchTerrawareUserByEmail returns null if no row in db`() {
+    assertNull(userStore.fetchTerrawareUserByEmail(userRepresentation.email.uppercase()))
   }
 
   @Test
-  fun `fetchUserRowByEmail returns null if user has been deleted`() {
+  fun `fetchTerrawareUserByEmail returns null if user has been deleted`() {
     insertUser(email = userRepresentation.email)
     dslContext
         .update(USERS)
@@ -273,14 +274,14 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
         .where(USERS.ID.eq(inserted.userId))
         .execute()
 
-    assertNull(userStore.fetchUserRowByEmail(userRepresentation.email.uppercase()))
+    assertNull(userStore.fetchTerrawareUserByEmail(userRepresentation.email.uppercase()))
   }
 
   @Test
-  fun `fetchUserRowByEmail returns user ignoring email case`() {
+  fun `fetchTerrawareUserByEmail returns user ignoring email case`() {
     insertUser(email = userRepresentation.email)
 
-    val actual = userStore.fetchUserRowByEmail(userRepresentation.email.uppercase())!!
+    val actual = userStore.fetchTerrawareUserByEmail(userRepresentation.email.uppercase())!!
     assertEquals(userRepresentation.email, actual.email)
   }
 
@@ -979,9 +980,9 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
       val funderUser = userStore.createFunderUser(email)
 
-      assertNotNull(funderUser.userId)
-      assertEquals(email.lowercase(), funderUser.email)
-      assertEquals(Instant.EPOCH, funderUser.createdTime)
+      assertEquals(
+          FunderUser(Instant.EPOCH, funderUser.userId, null, email.lowercase()), funderUser)
+
       assertEquals(UserType.Funder, funderUser.userType)
     }
   }
