@@ -36,7 +36,11 @@ import com.terraformation.backend.db.default_schema.UserIdConverter
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
+import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import jakarta.inject.Named
 import java.time.Instant
 import java.time.InstantSource
@@ -491,6 +495,22 @@ class ReportStore(
             .convertFrom { it.toInt() }
       }
 
+  private val treesPlantedField =
+      with(PLANTINGS) {
+        DSL.field(
+                DSL.select(DSL.sum(NUM_PLANTS))
+                    .from(this)
+                    .join(DELIVERIES)
+                    .on(DELIVERIES.ID.eq(DELIVERY_ID))
+                    .join(WITHDRAWALS)
+                    .on(WITHDRAWALS.ID.eq(DELIVERIES.WITHDRAWAL_ID))
+                    .join(PLANTING_SITES)
+                    .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
+                    .where(WITHDRAWALS.WITHDRAWN_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
+                    .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID)))
+            .convertFrom { it.toInt() }
+      }
+
   private val systemValueField =
       DSL.coalesce(
           REPORT_SYSTEM_METRICS.SYSTEM_VALUE,
@@ -500,7 +520,7 @@ class ReportStore(
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), seedlingsField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), seedsCollectedField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SpeciesPlanted), -4)
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.TreesPlanted), -5)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.TreesPlanted), treesPlantedField)
               .else_(0),
           DSL.value(0))
 
