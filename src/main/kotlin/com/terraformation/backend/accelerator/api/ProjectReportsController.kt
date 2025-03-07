@@ -6,7 +6,9 @@ import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigM
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
+import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
+import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse400
@@ -21,6 +23,7 @@ import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardMetricId
+import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
@@ -280,7 +283,9 @@ data class AcceleratorReportPayload(
     val modifiedTime: Instant,
     val submittedBy: UserId?,
     val submittedTime: Instant?,
+    val projectMetrics: List<ReportProjectMetricPayload>,
     val standardMetrics: List<ReportStandardMetricPayload>,
+    val systemMetrics: List<ReportSystemMetricPayload>,
 ) {
   constructor(
       model: ReportModel
@@ -296,7 +301,10 @@ data class AcceleratorReportPayload(
       modifiedTime = model.modifiedTime,
       submittedBy = model.submittedBy,
       submittedTime = model.submittedTime,
-      standardMetrics = model.standardMetrics.map { ReportStandardMetricPayload(it) })
+      projectMetrics = model.projectMetrics.map { ReportProjectMetricPayload(it) },
+      standardMetrics = model.standardMetrics.map { ReportStandardMetricPayload(it) },
+      systemMetrics = model.systemMetrics.map { ReportSystemMetricPayload(it) },
+  )
 }
 
 data class ReportReviewPayload(
@@ -340,6 +348,62 @@ data class ReportStandardMetricEntriesPayload(
     val notes: String?,
     val internalComment: String?,
 )
+
+data class ReportSystemMetricPayload(
+    val metric: SystemMetric,
+    val description: String?,
+    val component: MetricComponent,
+    val type: MetricType,
+    val reference: String,
+    val target: Int?,
+    val systemValue: Int,
+    val systemTime: Instant?,
+    val overrideValue: Int?,
+    val notes: String?,
+    val internalComment: String?
+) {
+  constructor(
+      model: ReportSystemMetricModel
+  ) : this(
+      metric = model.metric,
+      description = model.metric.description,
+      component = model.metric.componentId,
+      type = model.metric.typeId,
+      reference = model.metric.reference,
+      target = model.entry.target,
+      systemValue = model.entry.systemValue,
+      systemTime = model.entry.systemTime,
+      overrideValue = model.entry.overrideValue,
+      notes = model.entry.notes,
+      internalComment = model.entry.internalComment)
+}
+
+data class ReportProjectMetricPayload(
+    val id: ProjectMetricId,
+    val name: String,
+    val description: String?,
+    val component: MetricComponent,
+    val type: MetricType,
+    val reference: String,
+    val target: Int?,
+    val value: Int?,
+    val notes: String?,
+    val internalComment: String?
+) {
+  constructor(
+      model: ReportProjectMetricModel
+  ) : this(
+      id = model.metric.id,
+      name = model.metric.name,
+      description = model.metric.description,
+      component = model.metric.component,
+      type = model.metric.type,
+      reference = model.metric.reference,
+      target = model.entry.target,
+      value = model.entry.value,
+      notes = model.entry.notes,
+      internalComment = model.entry.internalComment)
+}
 
 data class ReportProjectMetricEntriesPayload(
     val id: ProjectMetricId,
