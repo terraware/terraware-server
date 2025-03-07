@@ -26,6 +26,7 @@ import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.records.ProjectReportConfigsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportProjectMetricsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportStandardMetricsRecord
+import com.terraformation.backend.db.accelerator.tables.records.ReportSystemMetricsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportsRecord
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -46,6 +47,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.Month
 import java.time.ZoneOffset
+import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -361,435 +363,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           startDate = LocalDate.of(2025, Month.JANUARY, 1),
           endDate = LocalDate.of(2025, Month.MARCH, 31))
 
-      val otherProjectId = insertProject()
-      val facilityId1 = insertFacility()
-      val facilityId2 = insertFacility()
-
-      // Seeds Collected
-      listOf(
-              AccessionsRow(
-                  facilityId = facilityId1,
-                  projectId = projectId,
-                  collectedDate = LocalDate.of(2025, Month.JANUARY, 11),
-                  estSeedCount = 25,
-                  remainingQuantity = BigDecimal(25),
-                  remainingUnitsId = SeedQuantityUnits.Seeds,
-                  stateId = AccessionState.Processing,
-              ),
-              // Used-up accession
-              AccessionsRow(
-                  facilityId = facilityId1,
-                  projectId = projectId,
-                  collectedDate = LocalDate.of(2025, Month.FEBRUARY, 21),
-                  estSeedCount = 0,
-                  remainingQuantity = BigDecimal(0),
-                  remainingUnitsId = SeedQuantityUnits.Seeds,
-                  stateId = AccessionState.UsedUp,
-                  totalWithdrawnCount = 35),
-              // Weight-based accession
-              AccessionsRow(
-                  facilityId = facilityId2,
-                  projectId = projectId,
-                  collectedDate = LocalDate.of(2025, Month.MARCH, 17),
-                  estSeedCount = 32,
-                  remainingGrams = BigDecimal(32),
-                  remainingQuantity = BigDecimal(32),
-                  remainingUnitsId = SeedQuantityUnits.Grams,
-                  stateId = AccessionState.Processing,
-                  subsetCount = 10,
-                  subsetWeightGrams = BigDecimal(10),
-                  totalWithdrawnCount = 6,
-                  totalWithdrawnWeightGrams = BigDecimal(6),
-                  totalWithdrawnWeightUnitsId = SeedQuantityUnits.Grams,
-                  totalWithdrawnWeightQuantity = BigDecimal(6),
-              ),
-              // Outside of report date range
-              AccessionsRow(
-                  facilityId = facilityId1,
-                  projectId = projectId,
-                  collectedDate = LocalDate.of(2024, Month.DECEMBER, 25),
-                  estSeedCount = 2500,
-                  remainingQuantity = BigDecimal(2500),
-                  remainingUnitsId = SeedQuantityUnits.Seeds,
-                  stateId = AccessionState.Processing,
-              ),
-              // Different project
-              AccessionsRow(
-                  facilityId = facilityId2,
-                  projectId = otherProjectId,
-                  collectedDate = LocalDate.of(2025, Month.JANUARY, 25),
-                  estSeedCount = 1500,
-                  remainingQuantity = BigDecimal(1500),
-                  remainingUnitsId = SeedQuantityUnits.Seeds,
-                  stateId = AccessionState.Processing,
-              ),
-          )
-          .forEach { insertAccession(it) }
-
-      val speciesId = insertSpecies()
-      val otherSpeciesId = insertSpecies()
-
-      val batchId1 =
-          insertBatch(
-              BatchesRow(
-                  facilityId = facilityId1,
-                  projectId = projectId,
-                  addedDate = LocalDate.of(2025, Month.JANUARY, 30),
-                  notReadyQuantity = 15,
-                  germinatingQuantity = 7,
-                  readyQuantity = 3,
-                  totalLost = 100,
-                  speciesId = speciesId,
-              ))
-
-      val batchId2 =
-          insertBatch(
-              BatchesRow(
-                  facilityId = facilityId2,
-                  projectId = projectId,
-                  addedDate = LocalDate.of(2025, Month.FEBRUARY, 14),
-                  notReadyQuantity = 4,
-                  germinatingQuantity = 3,
-                  readyQuantity = 2,
-                  totalLost = 100,
-                  speciesId = otherSpeciesId,
-              ))
-
-      // Other project
-      val otherBatchId =
-          insertBatch(
-              BatchesRow(
-                  facilityId = facilityId1,
-                  projectId = otherProjectId,
-                  addedDate = LocalDate.of(2025, Month.MARCH, 6),
-                  notReadyQuantity = 100,
-                  germinatingQuantity = 100,
-                  readyQuantity = 100,
-                  totalLost = 100,
-                  speciesId = speciesId,
-              ))
-
-      // Outside of date range
-      val outdatedBatchId =
-          insertBatch(
-              BatchesRow(
-                  facilityId = facilityId2,
-                  projectId = projectId,
-                  addedDate = LocalDate.of(2024, Month.DECEMBER, 25),
-                  notReadyQuantity = 100,
-                  germinatingQuantity = 100,
-                  readyQuantity = 100,
-                  totalLost = 100,
-                  speciesId = speciesId,
-              ))
-
-      val outplantWithdrawalId1 =
-          insertWithdrawal(
-              purpose = WithdrawalPurpose.OutPlant,
-              withdrawnDate = LocalDate.of(2025, Month.MARCH, 30))
-      insertBatchWithdrawal(
-          batchId = batchId1,
-          withdrawalId = outplantWithdrawalId1,
-          readyQuantityWithdrawn = 10,
+      insertDataForSystemMetrics(
+          reportStartDate = LocalDate.of(2025, Month.JANUARY, 1),
+          reportEndDate = LocalDate.of(2025, Month.MARCH, 31),
       )
-
-      // Not counted towards seedlings, but counted towards planting
-      insertBatchWithdrawal(
-          batchId = otherBatchId,
-          withdrawalId = outplantWithdrawalId1,
-          readyQuantityWithdrawn = 8,
-      )
-      insertBatchWithdrawal(
-          batchId = outdatedBatchId,
-          withdrawalId = outplantWithdrawalId1,
-          readyQuantityWithdrawn = 9,
-      )
-
-      val outplantWithdrawalId2 =
-          insertWithdrawal(
-              purpose = WithdrawalPurpose.OutPlant,
-              withdrawnDate = LocalDate.of(2025, Month.MARCH, 27))
-      insertBatchWithdrawal(
-          batchId = batchId1,
-          withdrawalId = outplantWithdrawalId2,
-          readyQuantityWithdrawn = 6,
-      )
-
-      // This will count towards the seedlings metric, but not the trees planted metric.
-      // This includes two species, but does not count towards species planted.
-      val futureWithdrawalId =
-          insertWithdrawal(
-              purpose = WithdrawalPurpose.OutPlant,
-              withdrawnDate = LocalDate.of(2025, Month.MAY, 30))
-      insertBatchWithdrawal(
-          batchId = batchId1,
-          withdrawalId = futureWithdrawalId,
-          readyQuantityWithdrawn = 7,
-      )
-      insertBatchWithdrawal(
-          batchId = batchId2,
-          withdrawalId = futureWithdrawalId,
-          readyQuantityWithdrawn = 2,
-      )
-
-      val otherWithdrawalId =
-          insertWithdrawal(
-              purpose = WithdrawalPurpose.Other,
-              withdrawnDate = LocalDate.of(2025, Month.MARCH, 30))
-      insertBatchWithdrawal(
-          batchId = batchId1,
-          withdrawalId = otherWithdrawalId,
-          germinatingQuantityWithdrawn = 1,
-          notReadyQuantityWithdrawn = 2,
-      )
-      insertBatchWithdrawal(
-          batchId = batchId2,
-          withdrawalId = otherWithdrawalId,
-          germinatingQuantityWithdrawn = 4,
-          notReadyQuantityWithdrawn = 3,
-      )
-
-      val deadWithdrawalId =
-          insertWithdrawal(
-              purpose = WithdrawalPurpose.Dead, withdrawnDate = LocalDate.of(2025, Month.MARCH, 30))
-      insertBatchWithdrawal(
-          batchId = batchId1,
-          withdrawalId = deadWithdrawalId,
-          germinatingQuantityWithdrawn = 6,
-      )
-      insertBatchWithdrawal(
-          batchId = batchId2,
-          withdrawalId = deadWithdrawalId,
-          germinatingQuantityWithdrawn = 8,
-      )
-
-      // This will not be counted towards seedlings, to prevent double-counting
-      val nurseryTransferWithdrawalId =
-          insertWithdrawal(
-              purpose = WithdrawalPurpose.NurseryTransfer,
-              withdrawnDate = LocalDate.of(2025, Month.MARCH, 30))
-      insertBatchWithdrawal(
-          batchId = batchId1,
-          withdrawalId = nurseryTransferWithdrawalId,
-          readyQuantityWithdrawn = 100,
-          germinatingQuantityWithdrawn = 100,
-          notReadyQuantityWithdrawn = 100,
-      )
-      insertBatchWithdrawal(
-          batchId = batchId2,
-          withdrawalId = nurseryTransferWithdrawalId,
-          readyQuantityWithdrawn = 100,
-          germinatingQuantityWithdrawn = 100,
-          notReadyQuantityWithdrawn = 100,
-      )
-
-      // These two will be counted towards the seedlings metric, but should negate each other
-      // These should not be counted towards species planted metric
-      val undoneWithdrawalId =
-          insertWithdrawal(
-              purpose = WithdrawalPurpose.OutPlant,
-              withdrawnDate = LocalDate.of(2025, Month.MARCH, 28))
-      val undoWithdrawalId =
-          insertWithdrawal(
-              purpose = WithdrawalPurpose.Undo,
-              undoesWithdrawalId = undoneWithdrawalId,
-              withdrawnDate = LocalDate.of(2025, Month.MARCH, 29),
-          )
-      insertBatchWithdrawal(
-          batchId = batchId1,
-          withdrawalId = undoneWithdrawalId,
-          readyQuantityWithdrawn = 100,
-      )
-      insertBatchWithdrawal(
-          batchId = batchId2,
-          withdrawalId = undoneWithdrawalId,
-          readyQuantityWithdrawn = 100,
-      )
-      insertBatchWithdrawal(
-          batchId = batchId1,
-          withdrawalId = undoWithdrawalId,
-          readyQuantityWithdrawn = -100,
-      )
-      insertBatchWithdrawal(
-          batchId = batchId2,
-          withdrawalId = undoWithdrawalId,
-          readyQuantityWithdrawn = -100,
-      )
-
-      val plantingSiteId1 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
-      val plantingSiteHistoryId1 = insertPlantingSiteHistory()
-      val plantingSiteId2 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
-      val plantingSiteHistoryId2 = insertPlantingSiteHistory()
-      val otherPlantingSiteId =
-          insertPlantingSite(projectId = otherProjectId, boundary = multiPolygon(1))
-      val otherPlantingSiteHistoryId = insertPlantingSiteHistory()
-
-      val deliveryId =
-          insertDelivery(
-              plantingSiteId = plantingSiteId1,
-              withdrawalId = outplantWithdrawalId1,
-          )
-      insertPlanting(
-          plantingSiteId = plantingSiteId1,
-          deliveryId = deliveryId,
-          numPlants = 27, // This should match up with the number of seedlings withdrawn
-      )
-
-      // These two should negate each other, in both tree planted and species planted
-      val undoneDeliveryId =
-          insertDelivery(
-              plantingSiteId = plantingSiteId1,
-              withdrawalId = undoneWithdrawalId,
-          )
-      insertPlanting(
-          plantingSiteId = plantingSiteId1,
-          deliveryId = undoneDeliveryId,
-          numPlants = 200,
-      )
-      val undoDeliveryId =
-          insertDelivery(
-              plantingSiteId = plantingSiteId1,
-              withdrawalId = undoWithdrawalId,
-          )
-      insertPlanting(
-          plantingSiteId = plantingSiteId1,
-          plantingTypeId = PlantingType.Undo,
-          deliveryId = undoDeliveryId,
-          numPlants = -200,
-      )
-
-      // Does not count towards trees or speces planted, since planting site is outside of project
-      val otherDeliveryId =
-          insertDelivery(
-              plantingSiteId = otherPlantingSiteId,
-              withdrawalId = outplantWithdrawalId2,
-          )
-      insertPlanting(
-          plantingSiteId = otherPlantingSiteId,
-          deliveryId = otherDeliveryId,
-          numPlants = 6,
-      )
-
-      // Does not count, since the withdrawal date is not within the report date range
-      val futureDeliveryId =
-          insertDelivery(
-              plantingSiteId = plantingSiteId1,
-              withdrawalId = futureWithdrawalId,
-          )
-      insertPlanting(
-          plantingSiteId = plantingSiteId1,
-          deliveryId = futureDeliveryId,
-          numPlants = 9,
-      )
-
-      // Not the latest observation, so the number does not count towards mortality rate
-      val site1OldObservationId =
-          insertObservation(
-              plantingSiteId = plantingSiteId1,
-              plantingSiteHistoryId = plantingSiteHistoryId1,
-              state = ObservationState.Completed,
-              completedTime =
-                  LocalDate.of(2025, Month.JANUARY, 15).atStartOfDay().toInstant(ZoneOffset.UTC))
-      insertObservedSiteSpeciesTotals(
-          observationId = site1OldObservationId,
-          plantingSiteId = plantingSiteId1,
-          certainty = RecordedSpeciesCertainty.Known,
-          speciesId = speciesId,
-          permanentLive = 0,
-          cumulativeDead = 1000,
-      )
-      insertObservedSiteSpeciesTotals(
-          observationId = site1OldObservationId,
-          plantingSiteId = plantingSiteId1,
-          certainty = RecordedSpeciesCertainty.Known,
-          speciesId = otherSpeciesId,
-          permanentLive = 0,
-          cumulativeDead = 1000,
-      )
-      insertObservedSiteSpeciesTotals(
-          observationId = site1OldObservationId,
-          plantingSiteId = plantingSiteId1,
-          certainty = RecordedSpeciesCertainty.Other,
-          speciesName = "Other",
-          permanentLive = 0,
-          cumulativeDead = 1000,
-      )
-
-      val site1NewObservationId =
-          insertObservation(
-              plantingSiteId = plantingSiteId1,
-              plantingSiteHistoryId = plantingSiteHistoryId1,
-              state = ObservationState.Completed,
-              completedTime =
-                  LocalDate.of(2025, Month.JANUARY, 16).atStartOfDay().toInstant(ZoneOffset.UTC))
-      insertObservedSiteSpeciesTotals(
-          observationId = site1NewObservationId,
-          plantingSiteId = plantingSiteId1,
-          certainty = RecordedSpeciesCertainty.Known,
-          speciesId = speciesId,
-          permanentLive = 6,
-          cumulativeDead = 1,
-      )
-      insertObservedSiteSpeciesTotals(
-          observationId = site1NewObservationId,
-          plantingSiteId = plantingSiteId1,
-          certainty = RecordedSpeciesCertainty.Known,
-          speciesId = otherSpeciesId,
-          permanentLive = 11,
-          cumulativeDead = 3,
-      )
-      insertObservedSiteSpeciesTotals(
-          observationId = site1NewObservationId,
-          plantingSiteId = plantingSiteId1,
-          certainty = RecordedSpeciesCertainty.Other,
-          speciesName = "Other",
-          permanentLive = 6,
-          cumulativeDead = 7,
-      )
-      // Unknown plants are not counted towards mortality rate
-      insertObservedSiteSpeciesTotals(
-          observationId = site1NewObservationId,
-          plantingSiteId = plantingSiteId1,
-          certainty = RecordedSpeciesCertainty.Unknown,
-          permanentLive = 0,
-          cumulativeDead = 1000,
-      )
-
-      // Latest observation before the reporting period counts towards mortality rate
-      val site2ObservationId =
-          insertObservation(
-              plantingSiteId = plantingSiteId2,
-              plantingSiteHistoryId = plantingSiteHistoryId2,
-              state = ObservationState.Completed,
-              completedTime =
-                  LocalDate.of(2024, Month.AUGUST, 15).atStartOfDay().toInstant(ZoneOffset.UTC))
-      insertObservedSiteSpeciesTotals(
-          observationId = site2ObservationId,
-          plantingSiteId = plantingSiteId2,
-          certainty = RecordedSpeciesCertainty.Known,
-          speciesId = speciesId,
-          permanentLive = 7,
-          cumulativeDead = 9,
-      )
-
-      // Planting sites not part of the project is never counted
-      val otherSiteObservationId =
-          insertObservation(
-              plantingSiteId = otherPlantingSiteId,
-              plantingSiteHistoryId = otherPlantingSiteHistoryId,
-              state = ObservationState.Completed,
-              completedTime =
-                  LocalDate.of(2025, Month.JANUARY, 15).atStartOfDay().toInstant(ZoneOffset.UTC))
-      insertObservedSiteSpeciesTotals(
-          observationId = otherSiteObservationId,
-          plantingSiteId = plantingSiteId1,
-          certainty = RecordedSpeciesCertainty.Known,
-          speciesId = speciesId,
-          permanentLive = 0,
-          cumulativeDead = 1000,
-      )
-      // Total plants: 50
-      // Dead plants: 20
 
       assertEquals(
           listOf(
@@ -1569,6 +1146,125 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
+  inner class RefreshSystemMetricValues {
+    @Test
+    fun `throws exception if no permission to review report`() {
+      @Test
+      fun `throws Access Denied Exception for non-TFExpert users`() {
+        deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+        insertUserGlobalRole(role = GlobalRole.ReadOnly)
+
+        insertProjectReportConfig()
+        val reportId = insertReport(status = ReportStatus.Submitted)
+
+        assertThrows<AccessDeniedException> {
+          store.refreshSystemMetricValues(reportId, emptySet())
+        }
+
+        deleteUserGlobalRole(role = GlobalRole.ReadOnly)
+        insertUserGlobalRole(role = GlobalRole.TFExpert)
+
+        assertDoesNotThrow { store.refreshSystemMetricValues(reportId, emptySet()) }
+      }
+    }
+
+    @Test
+    fun `inserts into or updates report system metrics table`() {
+      val otherUserId = insertUser()
+      insertProjectReportConfig()
+      val reportId =
+          insertReport(
+              status = ReportStatus.NotSubmitted,
+              startDate = LocalDate.of(2025, Month.JANUARY, 1),
+              endDate = LocalDate.of(2025, Month.MARCH, 31))
+
+      insertDataForSystemMetrics(
+          reportStartDate = LocalDate.of(2025, Month.JANUARY, 1),
+          reportEndDate = LocalDate.of(2025, Month.MARCH, 31))
+
+      insertReportSystemMetric(
+          metric = SystemMetric.SeedsCollected,
+          target = 80,
+          systemValue = 1000,
+          systemTime = Instant.ofEpochSecond(3000),
+          overrideValue = 74,
+          modifiedBy = otherUserId,
+          modifiedTime = Instant.ofEpochSecond(3000),
+      )
+      insertReportSystemMetric(
+          metric = SystemMetric.Seedlings,
+          target = 60,
+          systemValue = 2000,
+          systemTime = Instant.ofEpochSecond(3000),
+          overrideValue = 98,
+          modifiedBy = otherUserId,
+          modifiedTime = Instant.ofEpochSecond(3000),
+      )
+      insertReportSystemMetric(
+          metric = SystemMetric.TreesPlanted,
+          systemValue = 3000,
+          systemTime = Instant.ofEpochSecond(3000),
+          modifiedBy = otherUserId,
+          modifiedTime = Instant.ofEpochSecond(3000),
+      )
+      val existingReport = reportsDao.fetchOneById(reportId)!!
+
+      clock.instant = Instant.ofEpochSecond(9000)
+      store.refreshSystemMetricValues(
+          reportId,
+          setOf(SystemMetric.Seedlings, SystemMetric.TreesPlanted, SystemMetric.SpeciesPlanted))
+
+      assertTableEquals(
+          listOf(
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.SeedsCollected,
+                  target = 80,
+                  systemValue = 1000,
+                  systemTime = Instant.ofEpochSecond(3000),
+                  overrideValue = 74,
+                  modifiedBy = otherUserId,
+                  modifiedTime = Instant.ofEpochSecond(3000),
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.Seedlings,
+                  target = 60,
+                  systemValue = 83,
+                  systemTime = clock.instant,
+                  overrideValue = 98,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.TreesPlanted,
+                  systemValue = 27,
+                  systemTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              ),
+              ReportSystemMetricsRecord(
+                  reportId = reportId,
+                  systemMetricId = SystemMetric.SpeciesPlanted,
+                  systemValue = 1,
+                  systemTime = clock.instant,
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant,
+              ),
+          ))
+
+      val updatedReport =
+          existingReport.copy(
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
+
+      assertTableEquals(ReportsRecord(updatedReport))
+    }
+  }
+
+  @Nested
   inner class SubmitReport {
     @Test
     fun `throws exception for non-organization users`() {
@@ -1924,5 +1620,445 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           "Reports table",
       )
     }
+  }
+
+  private fun getRandomDate(startDate: LocalDate, endDate: LocalDate): LocalDate {
+    val startEpochDay = startDate.toEpochDay()
+    val endEpochDay = endDate.toEpochDay()
+
+    val randomDay = Random.nextLong(startEpochDay, endEpochDay + 1)
+
+    return LocalDate.ofEpochDay(randomDay)
+  }
+
+  private fun insertDataForSystemMetrics(reportStartDate: LocalDate, reportEndDate: LocalDate) {
+    val otherProjectId = insertProject()
+    val facilityId1 = insertFacility()
+    val facilityId2 = insertFacility()
+
+    // Seeds Collected
+    listOf(
+            AccessionsRow(
+                facilityId = facilityId1,
+                projectId = projectId,
+                collectedDate = getRandomDate(reportStartDate, reportEndDate),
+                estSeedCount = 25,
+                remainingQuantity = BigDecimal(25),
+                remainingUnitsId = SeedQuantityUnits.Seeds,
+                stateId = AccessionState.Processing,
+            ),
+            // Used-up accession
+            AccessionsRow(
+                facilityId = facilityId1,
+                projectId = projectId,
+                collectedDate = getRandomDate(reportStartDate, reportEndDate),
+                estSeedCount = 0,
+                remainingQuantity = BigDecimal(0),
+                remainingUnitsId = SeedQuantityUnits.Seeds,
+                stateId = AccessionState.UsedUp,
+                totalWithdrawnCount = 35),
+            // Weight-based accession
+            AccessionsRow(
+                facilityId = facilityId2,
+                projectId = projectId,
+                collectedDate = getRandomDate(reportStartDate, reportEndDate),
+                estSeedCount = 32,
+                remainingGrams = BigDecimal(32),
+                remainingQuantity = BigDecimal(32),
+                remainingUnitsId = SeedQuantityUnits.Grams,
+                stateId = AccessionState.Processing,
+                subsetCount = 10,
+                subsetWeightGrams = BigDecimal(10),
+                totalWithdrawnCount = 6,
+                totalWithdrawnWeightGrams = BigDecimal(6),
+                totalWithdrawnWeightUnitsId = SeedQuantityUnits.Grams,
+                totalWithdrawnWeightQuantity = BigDecimal(6),
+            ),
+            // Outside of report date range
+            AccessionsRow(
+                facilityId = facilityId1,
+                projectId = projectId,
+                collectedDate = reportEndDate.plusDays(1),
+                estSeedCount = 2500,
+                remainingQuantity = BigDecimal(2500),
+                remainingUnitsId = SeedQuantityUnits.Seeds,
+                stateId = AccessionState.Processing,
+            ),
+            // Different project
+            AccessionsRow(
+                facilityId = facilityId2,
+                projectId = otherProjectId,
+                collectedDate = getRandomDate(reportStartDate, reportEndDate),
+                estSeedCount = 1500,
+                remainingQuantity = BigDecimal(1500),
+                remainingUnitsId = SeedQuantityUnits.Seeds,
+                stateId = AccessionState.Processing,
+            ),
+        )
+        .forEach { insertAccession(it) }
+
+    val speciesId = insertSpecies()
+    val otherSpeciesId = insertSpecies()
+
+    val batchId1 =
+        insertBatch(
+            BatchesRow(
+                facilityId = facilityId1,
+                projectId = projectId,
+                addedDate = getRandomDate(reportStartDate, reportEndDate),
+                notReadyQuantity = 15,
+                germinatingQuantity = 7,
+                readyQuantity = 3,
+                totalLost = 100,
+                speciesId = speciesId,
+            ))
+
+    val batchId2 =
+        insertBatch(
+            BatchesRow(
+                facilityId = facilityId2,
+                projectId = projectId,
+                addedDate = getRandomDate(reportStartDate, reportEndDate),
+                notReadyQuantity = 4,
+                germinatingQuantity = 3,
+                readyQuantity = 2,
+                totalLost = 100,
+                speciesId = otherSpeciesId,
+            ))
+
+    // Other project
+    val otherBatchId =
+        insertBatch(
+            BatchesRow(
+                facilityId = facilityId1,
+                projectId = otherProjectId,
+                addedDate = getRandomDate(reportStartDate, reportEndDate),
+                notReadyQuantity = 100,
+                germinatingQuantity = 100,
+                readyQuantity = 100,
+                totalLost = 100,
+                speciesId = speciesId,
+            ))
+
+    // Outside of date range
+    val outdatedBatchId =
+        insertBatch(
+            BatchesRow(
+                facilityId = facilityId2,
+                projectId = projectId,
+                addedDate = reportStartDate.minusDays(1),
+                notReadyQuantity = 100,
+                germinatingQuantity = 100,
+                readyQuantity = 100,
+                totalLost = 100,
+                speciesId = speciesId,
+            ))
+
+    val outplantWithdrawalId1 =
+        insertWithdrawal(
+            purpose = WithdrawalPurpose.OutPlant,
+            withdrawnDate = getRandomDate(reportStartDate, reportEndDate))
+    insertBatchWithdrawal(
+        batchId = batchId1,
+        withdrawalId = outplantWithdrawalId1,
+        readyQuantityWithdrawn = 10,
+    )
+
+    // Not counted towards seedlings, but counted towards planting
+    insertBatchWithdrawal(
+        batchId = otherBatchId,
+        withdrawalId = outplantWithdrawalId1,
+        readyQuantityWithdrawn = 8,
+    )
+    insertBatchWithdrawal(
+        batchId = outdatedBatchId,
+        withdrawalId = outplantWithdrawalId1,
+        readyQuantityWithdrawn = 9,
+    )
+
+    val outplantWithdrawalId2 =
+        insertWithdrawal(
+            purpose = WithdrawalPurpose.OutPlant,
+            withdrawnDate = getRandomDate(reportStartDate, reportEndDate))
+    insertBatchWithdrawal(
+        batchId = batchId1,
+        withdrawalId = outplantWithdrawalId2,
+        readyQuantityWithdrawn = 6,
+    )
+
+    // This will count towards the seedlings metric, but not the trees planted metric.
+    // This includes two species, but does not count towards species planted.
+    val futureWithdrawalId =
+        insertWithdrawal(
+            purpose = WithdrawalPurpose.OutPlant, withdrawnDate = reportEndDate.plusDays(1))
+    insertBatchWithdrawal(
+        batchId = batchId1,
+        withdrawalId = futureWithdrawalId,
+        readyQuantityWithdrawn = 7,
+    )
+    insertBatchWithdrawal(
+        batchId = batchId2,
+        withdrawalId = futureWithdrawalId,
+        readyQuantityWithdrawn = 2,
+    )
+
+    val otherWithdrawalId =
+        insertWithdrawal(
+            purpose = WithdrawalPurpose.Other,
+            withdrawnDate = getRandomDate(reportStartDate, reportEndDate))
+    insertBatchWithdrawal(
+        batchId = batchId1,
+        withdrawalId = otherWithdrawalId,
+        germinatingQuantityWithdrawn = 1,
+        notReadyQuantityWithdrawn = 2,
+    )
+    insertBatchWithdrawal(
+        batchId = batchId2,
+        withdrawalId = otherWithdrawalId,
+        germinatingQuantityWithdrawn = 4,
+        notReadyQuantityWithdrawn = 3,
+    )
+
+    val deadWithdrawalId =
+        insertWithdrawal(
+            purpose = WithdrawalPurpose.Dead,
+            withdrawnDate = getRandomDate(reportStartDate, reportEndDate))
+    insertBatchWithdrawal(
+        batchId = batchId1,
+        withdrawalId = deadWithdrawalId,
+        germinatingQuantityWithdrawn = 6,
+    )
+    insertBatchWithdrawal(
+        batchId = batchId2,
+        withdrawalId = deadWithdrawalId,
+        germinatingQuantityWithdrawn = 8,
+    )
+
+    // This will not be counted towards seedlings, to prevent double-counting
+    val nurseryTransferWithdrawalId =
+        insertWithdrawal(
+            purpose = WithdrawalPurpose.NurseryTransfer,
+            withdrawnDate = getRandomDate(reportStartDate, reportEndDate))
+    insertBatchWithdrawal(
+        batchId = batchId1,
+        withdrawalId = nurseryTransferWithdrawalId,
+        readyQuantityWithdrawn = 100,
+        germinatingQuantityWithdrawn = 100,
+        notReadyQuantityWithdrawn = 100,
+    )
+    insertBatchWithdrawal(
+        batchId = batchId2,
+        withdrawalId = nurseryTransferWithdrawalId,
+        readyQuantityWithdrawn = 100,
+        germinatingQuantityWithdrawn = 100,
+        notReadyQuantityWithdrawn = 100,
+    )
+
+    // These two will be counted towards the seedlings metric, but should negate each other
+    // These should not be counted towards species planted metric
+    val undoDate = getRandomDate(reportStartDate, reportEndDate)
+    val undoneWithdrawalId =
+        insertWithdrawal(purpose = WithdrawalPurpose.OutPlant, withdrawnDate = undoDate)
+    val undoWithdrawalId =
+        insertWithdrawal(
+            purpose = WithdrawalPurpose.Undo,
+            undoesWithdrawalId = undoneWithdrawalId,
+            withdrawnDate = undoDate,
+        )
+    insertBatchWithdrawal(
+        batchId = batchId1,
+        withdrawalId = undoneWithdrawalId,
+        readyQuantityWithdrawn = 100,
+    )
+    insertBatchWithdrawal(
+        batchId = batchId2,
+        withdrawalId = undoneWithdrawalId,
+        readyQuantityWithdrawn = 100,
+    )
+    insertBatchWithdrawal(
+        batchId = batchId1,
+        withdrawalId = undoWithdrawalId,
+        readyQuantityWithdrawn = -100,
+    )
+    insertBatchWithdrawal(
+        batchId = batchId2,
+        withdrawalId = undoWithdrawalId,
+        readyQuantityWithdrawn = -100,
+    )
+
+    val plantingSiteId1 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
+    val plantingSiteHistoryId1 = insertPlantingSiteHistory()
+    val plantingSiteId2 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
+    val plantingSiteHistoryId2 = insertPlantingSiteHistory()
+    val otherPlantingSiteId =
+        insertPlantingSite(projectId = otherProjectId, boundary = multiPolygon(1))
+    val otherPlantingSiteHistoryId = insertPlantingSiteHistory()
+
+    val deliveryId =
+        insertDelivery(
+            plantingSiteId = plantingSiteId1,
+            withdrawalId = outplantWithdrawalId1,
+        )
+    insertPlanting(
+        plantingSiteId = plantingSiteId1,
+        deliveryId = deliveryId,
+        numPlants = 27, // This should match up with the number of seedlings withdrawn
+    )
+
+    // These two should negate each other, in both tree planted and species planted
+    val undoneDeliveryId =
+        insertDelivery(
+            plantingSiteId = plantingSiteId1,
+            withdrawalId = undoneWithdrawalId,
+        )
+    insertPlanting(
+        plantingSiteId = plantingSiteId1,
+        deliveryId = undoneDeliveryId,
+        numPlants = 200,
+    )
+    val undoDeliveryId =
+        insertDelivery(
+            plantingSiteId = plantingSiteId1,
+            withdrawalId = undoWithdrawalId,
+        )
+    insertPlanting(
+        plantingSiteId = plantingSiteId1,
+        plantingTypeId = PlantingType.Undo,
+        deliveryId = undoDeliveryId,
+        numPlants = -200,
+    )
+
+    // Does not count towards trees or speces planted, since planting site is outside of project
+    val otherDeliveryId =
+        insertDelivery(
+            plantingSiteId = otherPlantingSiteId,
+            withdrawalId = outplantWithdrawalId2,
+        )
+    insertPlanting(
+        plantingSiteId = otherPlantingSiteId,
+        deliveryId = otherDeliveryId,
+        numPlants = 6,
+    )
+
+    // Does not count, since the withdrawal date is not within the report date range
+    val futureDeliveryId =
+        insertDelivery(
+            plantingSiteId = plantingSiteId1,
+            withdrawalId = futureWithdrawalId,
+        )
+    insertPlanting(
+        plantingSiteId = plantingSiteId1,
+        deliveryId = futureDeliveryId,
+        numPlants = 9,
+    )
+
+    // Not the latest observation, so the number does not count towards mortality rate
+    val observationDate = getRandomDate(reportStartDate, reportEndDate.minusDays(1))
+    val site1OldObservationId =
+        insertObservation(
+            plantingSiteId = plantingSiteId1,
+            plantingSiteHistoryId = plantingSiteHistoryId1,
+            state = ObservationState.Completed,
+            completedTime = observationDate.atStartOfDay().toInstant(ZoneOffset.UTC))
+    insertObservedSiteSpeciesTotals(
+        observationId = site1OldObservationId,
+        plantingSiteId = plantingSiteId1,
+        certainty = RecordedSpeciesCertainty.Known,
+        speciesId = speciesId,
+        permanentLive = 0,
+        cumulativeDead = 1000,
+    )
+    insertObservedSiteSpeciesTotals(
+        observationId = site1OldObservationId,
+        plantingSiteId = plantingSiteId1,
+        certainty = RecordedSpeciesCertainty.Known,
+        speciesId = otherSpeciesId,
+        permanentLive = 0,
+        cumulativeDead = 1000,
+    )
+    insertObservedSiteSpeciesTotals(
+        observationId = site1OldObservationId,
+        plantingSiteId = plantingSiteId1,
+        certainty = RecordedSpeciesCertainty.Other,
+        speciesName = "Other",
+        permanentLive = 0,
+        cumulativeDead = 1000,
+    )
+
+    val site1NewObservationId =
+        insertObservation(
+            plantingSiteId = plantingSiteId1,
+            plantingSiteHistoryId = plantingSiteHistoryId1,
+            state = ObservationState.Completed,
+            completedTime = observationDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
+    insertObservedSiteSpeciesTotals(
+        observationId = site1NewObservationId,
+        plantingSiteId = plantingSiteId1,
+        certainty = RecordedSpeciesCertainty.Known,
+        speciesId = speciesId,
+        permanentLive = 6,
+        cumulativeDead = 1,
+    )
+    insertObservedSiteSpeciesTotals(
+        observationId = site1NewObservationId,
+        plantingSiteId = plantingSiteId1,
+        certainty = RecordedSpeciesCertainty.Known,
+        speciesId = otherSpeciesId,
+        permanentLive = 11,
+        cumulativeDead = 3,
+    )
+    insertObservedSiteSpeciesTotals(
+        observationId = site1NewObservationId,
+        plantingSiteId = plantingSiteId1,
+        certainty = RecordedSpeciesCertainty.Other,
+        speciesName = "Other",
+        permanentLive = 6,
+        cumulativeDead = 7,
+    )
+    // Unknown plants are not counted towards mortality rate
+    insertObservedSiteSpeciesTotals(
+        observationId = site1NewObservationId,
+        plantingSiteId = plantingSiteId1,
+        certainty = RecordedSpeciesCertainty.Unknown,
+        permanentLive = 0,
+        cumulativeDead = 1000,
+    )
+
+    // Latest observation before the reporting period counts towards mortality rate
+    val site2ObservationId =
+        insertObservation(
+            plantingSiteId = plantingSiteId2,
+            plantingSiteHistoryId = plantingSiteHistoryId2,
+            state = ObservationState.Completed,
+            completedTime = reportStartDate.minusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC))
+    insertObservedSiteSpeciesTotals(
+        observationId = site2ObservationId,
+        plantingSiteId = plantingSiteId2,
+        certainty = RecordedSpeciesCertainty.Known,
+        speciesId = speciesId,
+        permanentLive = 7,
+        cumulativeDead = 9,
+    )
+
+    // Planting sites not part of the project is never counted
+    val otherSiteObservationId =
+        insertObservation(
+            plantingSiteId = otherPlantingSiteId,
+            plantingSiteHistoryId = otherPlantingSiteHistoryId,
+            state = ObservationState.Completed,
+            completedTime =
+                getRandomDate(reportStartDate, reportEndDate)
+                    .atStartOfDay()
+                    .toInstant(ZoneOffset.UTC))
+    insertObservedSiteSpeciesTotals(
+        observationId = otherSiteObservationId,
+        plantingSiteId = plantingSiteId1,
+        certainty = RecordedSpeciesCertainty.Known,
+        speciesId = speciesId,
+        permanentLive = 0,
+        cumulativeDead = 1000,
+    )
+    // Total plants: 50
+    // Dead plants: 20
   }
 }
