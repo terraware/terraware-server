@@ -1,3 +1,4 @@
+545fa3c44bc Added project and system metrics to report fetch endpoints (#2898)
 0200a077c67 SW-6520 Implemented mortality rate metrics (#2896)
 1598915e102 SW-6520 Implemented species planted metric (#2895)
 a63fe8a3304 SW-6520 Trees Planted Metrics (#2893)
