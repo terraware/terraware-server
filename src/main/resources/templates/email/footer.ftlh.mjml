@@ -1,1 +1,4 @@
-<mj-text mj-class="text-footer" css-class="text-footer"><span>&#169;</span>${strings("notification.email.html.footer.1")}</mj-text>
+<mj-text mj-class="text-footer" css-class="text-footer">
+    <span>&#169;</span>
+${.now?string('yyyy')} ${strings("notification.email.html.footer.1")}
+</mj-text>
