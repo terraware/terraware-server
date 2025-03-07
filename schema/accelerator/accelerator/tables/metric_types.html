@@ -132,6 +132,10 @@
                                                 <td title="standard_metrics.type_id references metric_types.id via standard_metrics_type_id_fkey"><a href='standard_metrics.html'>standard_metrics</a><span class='relatedKey'>.type_id</span></td>
                                                 <td class="constraint detail">standard_metrics_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
+                                            <tr>
+                                                <td title="system_metrics.type_id references metric_types.id via system_metrics_type_id_fkey"><a href='system_metrics.html'>system_metrics</a><span class='relatedKey'>.type_id</span></td>
+                                                <td class="constraint detail">system_metrics_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -217,20 +221,23 @@
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/project_metrics.html" target="_top" title="project_metrics" alt="" coords="347,5,552,211">
-<area shape="rect" id="node2" href="../../tables/metric_types.html" target="_top" title="metric_types" alt="" coords="5,159,296,287">
+<area shape="rect" id="node2" href="../../tables/metric_types.html" target="_top" title="metric_types" alt="" coords="5,255,296,383">
 <area shape="rect" id="node3" href="../../tables/standard_metrics.html" target="_top" title="standard_metrics" alt="" coords="340,228,559,404">
+<area shape="rect" id="node4" href="../../tables/system_metrics.html" target="_top" title="system_metrics" alt="" coords="347,421,551,597">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/metric_types.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
 <area shape="rect" id="node1" href="../../tables/project_metrics.html" target="_top" title="project_metrics" alt="" coords="347,5,552,211">
-<area shape="rect" id="node2" href="../../tables/metric_components.html" target="_top" title="metric_components" alt="" coords="32,288,269,376">
+<area shape="rect" id="node2" href="../../tables/metric_components.html" target="_top" title="metric_components" alt="" coords="32,345,269,433">
 <area shape="rect" id="node3" href="../../../public/tables/projects.html" target="_top" title="public.projects" alt="" coords="51,37,251,125">
-<area shape="rect" id="node4" href="../../tables/metric_types.html" target="_top" title="metric_types" alt="" coords="5,143,296,271">
+<area shape="rect" id="node4" href="../../tables/metric_types.html" target="_top" title="metric_types" alt="" coords="5,200,296,328">
 <area shape="rect" id="node5" href="../../tables/report_project_metrics.html" target="_top" title="report_project_metrics" alt="" coords="610,8,870,96">
-<area shape="rect" id="node6" href="../../tables/report_standard_metrics.html" target="_top" title="report_standard_metrics" alt="" coords="603,231,877,319">
-<area shape="rect" id="node7" href="../../tables/standard_metrics.html" target="_top" title="standard_metrics" alt="" coords="340,228,559,404">
+<area shape="rect" id="node6" href="../../tables/report_standard_metrics.html" target="_top" title="report_standard_metrics" alt="" coords="603,424,877,512">
+<area shape="rect" id="node7" href="../../tables/standard_metrics.html" target="_top" title="standard_metrics" alt="" coords="340,421,559,597">
+<area shape="rect" id="node8" href="../../tables/report_system_metrics.html" target="_top" title="report_system_metrics" alt="" coords="611,231,869,319">
+<area shape="rect" id="node9" href="../../tables/system_metrics.html" target="_top" title="system_metrics" alt="" coords="347,228,551,404">
 </map>
                                         <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/metric_types.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>

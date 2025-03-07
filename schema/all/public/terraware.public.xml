@@ -1387,6 +1387,7 @@
             <child column="user_id" foreignKey="project_votes_user_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_votes"/>
             <child column="modified_by" foreignKey="report_project_metrics_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_project_metrics"/>
             <child column="modified_by" foreignKey="report_standard_metrics_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_standard_metrics"/>
+            <child column="modified_by" foreignKey="report_system_metrics_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_system_metrics"/>
             <child column="created_by" foreignKey="reports_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
             <child column="modified_by" foreignKey="reports_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
             <child column="submitted_by" foreignKey="reports_submitted_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
