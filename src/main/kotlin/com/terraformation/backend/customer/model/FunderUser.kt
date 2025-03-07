@@ -14,19 +14,19 @@ import java.util.Locale
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
-class FunderUser(
+data class FunderUser(
     val createdTime: Instant,
     override val userId: UserId,
-    override val authId: String?,
-    val email: String,
-    val emailNotificationsEnabled: Boolean,
-    val firstName: String?,
-    val lastName: String?,
-    val countryCode: String?,
-    val cookiesConsented: Boolean?,
-    val cookiesConsentedTime: Instant?,
-    override val locale: Locale?,
-    override val timeZone: ZoneId?,
+    override val authId: String? = null,
+    override val email: String,
+    val emailNotificationsEnabled: Boolean = true,
+    val firstName: String? = null,
+    val lastName: String? = null,
+    val countryCode: String? = null,
+    val cookiesConsented: Boolean? = null,
+    val cookiesConsentedTime: Instant? = null,
+    override val locale: Locale? = null,
+    override val timeZone: ZoneId? = null,
 ) : TerrawareUser, UserDetails {
   companion object {
     private val log = perClassLogger()

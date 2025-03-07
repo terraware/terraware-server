@@ -9,3 +9,5 @@ class FundingEntityNotFoundException(fundingEntityId: FundingEntityId) :
 
 class FundingEntityExistsException(name: String) :
     MismatchedStateException("Funding entity $name already exists")
+
+class EmailExistsException(email: String) : MismatchedStateException("Email $email already exists")

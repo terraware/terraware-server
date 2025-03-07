@@ -65,6 +65,8 @@ interface TerrawareUser : Principal {
    */
   val authId: String?
 
+  val email: String?
+
   /** The user's role in each organization they belong to. */
   val organizationRoles: Map<OrganizationId, Role>
 

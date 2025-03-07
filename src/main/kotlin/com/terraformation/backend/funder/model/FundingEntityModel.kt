@@ -14,14 +14,18 @@ data class FundingEntityModel(
     val modifiedTime: Instant,
     val projects: List<ProjectId> = emptyList(),
 ) {
-  constructor(
-      record: Record,
-      projectsField: Field<List<ProjectId>>,
-  ) : this(
-      id = record[FUNDING_ENTITIES.ID]!!,
-      name = record[FUNDING_ENTITIES.NAME]!!,
-      createdTime = record[FUNDING_ENTITIES.CREATED_TIME]!!,
-      modifiedTime = record[FUNDING_ENTITIES.MODIFIED_TIME]!!,
-      projects = record[projectsField]!!,
-  )
+  companion object {
+    fun of(
+        record: Record,
+        projectsField: Field<List<ProjectId>>,
+    ): FundingEntityModel {
+      return FundingEntityModel(
+          id = record[FUNDING_ENTITIES.ID]!!,
+          name = record[FUNDING_ENTITIES.NAME]!!,
+          createdTime = record[FUNDING_ENTITIES.CREATED_TIME]!!,
+          modifiedTime = record[FUNDING_ENTITIES.MODIFIED_TIME]!!,
+          projects = record[projectsField]!!,
+      )
+    }
+  }
 }
