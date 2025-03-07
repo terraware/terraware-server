@@ -702,7 +702,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           observationId = site1OldObservationId,
           plantingSiteId = plantingSiteId1,
           certainty = RecordedSpeciesCertainty.Known,
-          speciesId = otherSpeicesId,
+          speciesId = otherSpeciesId,
           permanentLive = 0,
           cumulativeDead = 1000,
       )
@@ -734,7 +734,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           observationId = site1NewObservationId,
           plantingSiteId = plantingSiteId1,
           certainty = RecordedSpeciesCertainty.Known,
-          speciesId = otherSpeicesId,
+          speciesId = otherSpeciesId,
           permanentLive = 11,
           cumulativeDead = 3,
       )
