@@ -33,6 +33,9 @@ import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRIC
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserIdConverter
+import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import jakarta.inject.Named
 import java.time.Instant
@@ -462,17 +465,44 @@ class ReportStore(
             .convertFrom { it.toInt() }
       }
 
+  private val withdrawnSeedlingsField =
+      with(BATCH_WITHDRAWALS) {
+        DSL.field(
+            DSL.select(
+                    DSL.sum(READY_QUANTITY_WITHDRAWN) +
+                        DSL.sum(GERMINATING_QUANTITY_WITHDRAWN) +
+                        DSL.sum(NOT_READY_QUANTITY_WITHDRAWN))
+                .from(this)
+                .where(BATCH_ID.eq(BATCHES.ID))
+                .and(withdrawals.PURPOSE_ID.notEqual(WithdrawalPurpose.NurseryTransfer)))
+      }
+
+  private val seedlingsField =
+      with(BATCHES) {
+        DSL.field(
+                DSL.select(
+                        DSL.sum(READY_QUANTITY) +
+                            DSL.sum(GERMINATING_QUANTITY) +
+                            DSL.sum(NOT_READY_QUANTITY) +
+                            DSL.coalesce(DSL.sum(withdrawnSeedlingsField), 0))
+                    .from(this)
+                    .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                    .and(ADDED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE)))
+            .convertFrom { it.toInt() }
+      }
+
   private val systemValueField =
       DSL.coalesce(
           REPORT_SYSTEM_METRICS.SYSTEM_VALUE,
           DSL.case_()
               // ToDo: Implement each system query
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.MortalityRate), -1)
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), -2)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), seedlingsField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), seedsCollectedField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SpeciesPlanted), -4)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.TreesPlanted), -5)
-              .else_(0))
+              .else_(0),
+          DSL.value(0))
 
   private val systemMetricsMultiset: Field<List<ReportSystemMetricModel>> =
       DSL.multiset(
