@@ -46,6 +46,31 @@ val ENUM_TABLES =
                 EnumTable("report_statuses", listOf("reports\\.status_id")),
                 EnumTable("score_categories", isLocalizable = false),
                 EnumTable("submission_statuses"),
+                EnumTable(
+                    "system_metrics",
+                    listOf("system_metrics\\.id", ".*\\.system_metric_id"),
+                    additionalColumns =
+                        listOf(
+                            EnumTableColumnInfo(
+                                "type_id",
+                                "MetricType",
+                                true,
+                            ),
+                            EnumTableColumnInfo(
+                                "component_id",
+                                "MetricComponent",
+                                true,
+                            ),
+                            EnumTableColumnInfo(
+                                "description",
+                                "String",
+                            ),
+                            EnumTableColumnInfo(
+                                "reference",
+                                "String",
+                            ),
+                        ),
+                    isLocalizable = false),
                 EnumTable("vote_options", isLocalizable = false),
             ),
         "docprod" to
