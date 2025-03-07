@@ -2716,7 +2716,7 @@ abstract class DatabaseBackedTest {
               ?: if (cumulativeDead + permanentLive == 0) {
                 0
               } else {
-                cumulativeDead / (cumulativeDead + permanentLive)
+                (cumulativeDead * 100.0 / (cumulativeDead + permanentLive)).roundToInt()
               },
   ) {
     with(OBSERVED_SITE_SPECIES_TOTALS) {
