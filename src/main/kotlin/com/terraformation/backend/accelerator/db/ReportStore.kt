@@ -467,37 +467,40 @@ class ReportStore(
   private val mortalityRateDenominatorField =
       with(OBSERVED_SITE_SPECIES_TOTALS) { DSL.sum(CUMULATIVE_DEAD) + DSL.sum(PERMANENT_LIVE) }
 
-  private val mortalityRateNominatorField =
+  private val mortalityRateNumeratorField =
       with(OBSERVED_SITE_SPECIES_TOTALS) { DSL.sum(CUMULATIVE_DEAD) }
 
   // Fetch the latest observations per planting site from the reporting period, and calculate the
   // mortality rate
   private val mortalityRateField =
-      with(OBSERVED_SITE_SPECIES_TOTALS) {
-        DSL.field(
-                DSL.select(
-                        DSL.if_(
-                            mortalityRateDenominatorField.notEqual(BigDecimal.ZERO),
-                            (mortalityRateNominatorField * 100.0) / mortalityRateDenominatorField,
-                            BigDecimal.ZERO))
-                    .from(this)
-                    .where(
-                        OBSERVATION_ID.`in`(
-                            DSL.select(OBSERVATIONS.ID)
-                                .distinctOn(OBSERVATIONS.PLANTING_SITE_ID)
-                                .from(OBSERVATIONS)
-                                .where(
-                                    OBSERVATIONS.COMPLETED_TIME.lessThan(
-                                        REPORTS.END_DATE.convertFrom {
-                                          it!!.plusDays(1).toInstant(ZoneId.systemDefault())
-                                        }))
-                                .and(OBSERVATIONS.plantingSites.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                                .orderBy(
-                                    OBSERVATIONS.PLANTING_SITE_ID,
-                                    OBSERVATIONS.COMPLETED_TIME.desc())))
-                    .and(CERTAINTY_ID.notEqual(RecordedSpeciesCertainty.Unknown)))
-            .convertFrom { it.toInt() }
-      }
+      DSL.field(
+              DSL.select(
+                      DSL.if_(
+                          mortalityRateDenominatorField.notEqual(BigDecimal.ZERO),
+                          (mortalityRateNumeratorField * 100.0) / mortalityRateDenominatorField,
+                          BigDecimal.ZERO))
+                  .from(OBSERVED_SITE_SPECIES_TOTALS)
+                  .where(
+                      OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.`in`(
+                          DSL.select(OBSERVATIONS.ID)
+                              .distinctOn(OBSERVATIONS.PLANTING_SITE_ID)
+                              .from(OBSERVATIONS)
+                              .join(PLANTING_SITES)
+                              .on(PLANTING_SITES.ID.eq(OBSERVATIONS.PLANTING_SITE_ID))
+                              .where(
+                                  OBSERVATIONS.COMPLETED_TIME.lessThan(
+                                      REPORTS.END_DATE.convertFrom {
+                                        it!!.plusDays(1).toInstant(ZoneId.systemDefault())
+                                      }))
+                              .and(OBSERVATIONS.plantingSites.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                              .and(OBSERVATIONS.IS_AD_HOC.isFalse)
+                              .orderBy(
+                                  OBSERVATIONS.PLANTING_SITE_ID,
+                                  OBSERVATIONS.COMPLETED_TIME.desc())))
+                  .and(
+                      OBSERVED_SITE_SPECIES_TOTALS.CERTAINTY_ID.notEqual(
+                          RecordedSpeciesCertainty.Unknown)))
+          .convertFrom { it.toInt() }
 
   private val seedsCollectedField =
       with(ACCESSIONS) {
