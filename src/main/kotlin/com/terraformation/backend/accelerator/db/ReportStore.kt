@@ -33,6 +33,7 @@ import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRIC
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserIdConverter
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import jakarta.inject.Named
 import java.time.Instant
 import java.time.InstantSource
@@ -451,6 +452,16 @@ class ReportStore(
                   .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID))
           .convertFrom { result -> result.map { ReportProjectMetricModel.of(it) } }
 
+  private val seedsCollectedField =
+      with(ACCESSIONS) {
+        DSL.field(
+                DSL.select(DSL.sum(EST_SEED_COUNT) + DSL.sum(TOTAL_WITHDRAWN_COUNT))
+                    .from(this)
+                    .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                    .and(COLLECTED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE)))
+            .convertFrom { it.toInt() }
+      }
+
   private val systemValueField =
       DSL.coalesce(
           REPORT_SYSTEM_METRICS.SYSTEM_VALUE,
@@ -458,7 +469,7 @@ class ReportStore(
               // ToDo: Implement each system query
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.MortalityRate), -1)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), -2)
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), -3)
+              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), seedsCollectedField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SpeciesPlanted), -4)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.TreesPlanted), -5)
               .else_(0))
