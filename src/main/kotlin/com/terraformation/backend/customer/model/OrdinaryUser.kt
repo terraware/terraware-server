@@ -62,7 +62,7 @@ import org.springframework.security.core.userdetails.UserDetails
  * want to use [requirePermissions] instead of interacting directly with this class. See that
  * function's docs for more details.
  */
-open class OrdinaryUser(
+abstract class OrdinaryUser(
     open val createdTime: Instant,
     override val userId: UserId,
     override val authId: String? = null,
