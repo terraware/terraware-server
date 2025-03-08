@@ -47,9 +47,9 @@ import java.util.Locale
 /**
  * An entity on whose behalf the system can do work.
  *
- * The vast majority of the time, this will be a [IndividualUser], which represents an individual
- * user or a device manager. However, it can also be the [SystemUser], which isn't associated with a
- * particular person or a particular organization.
+ * The vast majority of the time, this will be a [OrdinaryUser], which represents an individual user
+ * or a funder. However, it can also be the [SystemUser], which isn't associated with a particular
+ * person or a particular organization, or a [DeviceManagerUser].
  */
 interface TerrawareUser : Principal {
   val userId: UserId
@@ -94,7 +94,7 @@ interface TerrawareUser : Principal {
   fun <T> run(func: () -> T): T
 
   /** Returns true if the user is an admin or owner of any organizations. */
-  fun hasAnyAdminRole(): Boolean
+  fun hasAnyAdminRole(): Boolean = false
 
   /**
    * Returns the default permission value for this user. This is to support the system and device

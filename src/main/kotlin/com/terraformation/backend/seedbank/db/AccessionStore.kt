@@ -2,7 +2,7 @@ package com.terraformation.backend.seedbank.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
-import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.customer.model.OrdinaryUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AccessionNotFoundException
 import com.terraformation.backend.db.AccessionSpeciesHasDeliveriesException
@@ -535,7 +535,7 @@ class AccessionStore(
           val oldState = record[ACCESSION_STATE_HISTORY.OLD_STATE_ID]
           val userId = record[ACCESSION_STATE_HISTORY.UPDATED_BY]!!
           val fullName =
-              IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
+              OrdinaryUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
 
           if (oldState == null) {
             AccessionHistoryModel(
@@ -580,7 +580,7 @@ class AccessionStore(
           val createdTime = record[ACCESSION_QUANTITY_HISTORY.CREATED_TIME]!!
           val date = LocalDate.ofInstant(createdTime, timeZone)
           val fullName =
-              IndividualUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
+              OrdinaryUser.makeFullName(record[USERS.FIRST_NAME], record[USERS.LAST_NAME])
           val notes = record[ACCESSION_QUANTITY_HISTORY.NOTES]
           val remainingQuantity =
               SeedQuantityModel(
