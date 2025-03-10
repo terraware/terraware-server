@@ -1148,24 +1148,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class RefreshSystemMetricValues {
     @Test
-    fun `throws exception if no permission to review report`() {
-      @Test
-      fun `throws Access Denied Exception for non-TFExpert users`() {
-        deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-        insertUserGlobalRole(role = GlobalRole.ReadOnly)
+    fun `throws Access Denied Exception for non-TFExpert users`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      insertUserGlobalRole(role = GlobalRole.ReadOnly)
 
-        insertProjectReportConfig()
-        val reportId = insertReport(status = ReportStatus.Submitted)
+      insertProjectReportConfig()
+      val reportId = insertReport(status = ReportStatus.Submitted)
 
-        assertThrows<AccessDeniedException> {
-          store.refreshSystemMetricValues(reportId, emptySet())
-        }
+      assertThrows<AccessDeniedException> { store.refreshSystemMetricValues(reportId, emptySet()) }
 
-        deleteUserGlobalRole(role = GlobalRole.ReadOnly)
-        insertUserGlobalRole(role = GlobalRole.TFExpert)
+      deleteUserGlobalRole(role = GlobalRole.ReadOnly)
+      insertUserGlobalRole(role = GlobalRole.TFExpert)
 
-        assertDoesNotThrow { store.refreshSystemMetricValues(reportId, emptySet()) }
-      }
+      assertDoesNotThrow { store.refreshSystemMetricValues(reportId, emptySet()) }
     }
 
     @Test
